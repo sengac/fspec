@@ -4,11 +4,11 @@
       "name": "BackgroundSession round-trips set_role / get_role / clear_role",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc082_role_injection.rs",
+          "file": "rust/agent-loop/tests/rpc082_role_injection.rs",
           "lines": "161-232",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 829,
                 830,
@@ -40,11 +40,11 @@
       "name": "run_with_provider! macro reads session.get_role() and passes it to create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc082_role_injection.rs",
+          "file": "rust/agent-loop/tests/rpc082_role_injection.rs",
           "lines": "236-291",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 37,
                 38,
@@ -126,11 +126,11 @@
       "name": "OpenAI inlined arm reads session.get_role() and passes it to create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc082_role_injection.rs",
+          "file": "rust/agent-loop/tests/rpc082_role_injection.rs",
           "lines": "295-329",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 869,
                 870,
@@ -188,11 +188,11 @@
       "name": "Custom-provider fallthrough arm reads session.get_role() and passes it to CustomProvider::create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc082_role_injection.rs",
+          "file": "rust/agent-loop/tests/rpc082_role_injection.rs",
           "lines": "333-438",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 953,
                 954,
@@ -272,11 +272,11 @@
       "name": "Every dispatched provider type accepts an Option<&str> preamble in create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc082_role_injection.rs",
+          "file": "rust/agent-loop/tests/rpc082_role_injection.rs",
           "lines": "442-546",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 507,
                 508,
@@ -370,7 +370,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 410,
                 411,
@@ -426,7 +426,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 130,
                 131,
@@ -482,7 +482,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "rust/providers/src/zai.rs",
               "lines": [
                 218,
                 219,
@@ -530,7 +530,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 331,
                 332,
@@ -585,7 +585,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/rig_agent.rs",
+              "file": "rust/providers/src/copilot/rig_agent.rs",
               "lines": [
                 56,
                 57,
@@ -645,7 +645,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/custom/custom_provider.rs",
+              "file": "rust/providers/src/custom/custom_provider.rs",
               "lines": [
                 110,
                 111,
@@ -720,19 +720,19 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc082_role_injection.rs"
+      "rust/agent-loop/tests/rpc082_role_injection.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/background_session.rs",
-      "codelet/agent-loop/src/dispatch.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/providers/src/claude.rs",
-      "codelet/providers/src/openai.rs",
-      "codelet/providers/src/gemini.rs",
-      "codelet/providers/src/zai.rs",
-      "codelet/providers/src/codex/mod.rs",
-      "codelet/providers/src/copilot/rig_agent.rs",
-      "codelet/providers/src/custom/custom_provider.rs"
+      "rust/sessions/src/background_session.rs",
+      "rust/agent-loop/src/dispatch.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/openai.rs",
+      "rust/providers/src/gemini.rs",
+      "rust/providers/src/zai.rs",
+      "rust/providers/src/codex/mod.rs",
+      "rust/providers/src/copilot/rig_agent.rs",
+      "rust/providers/src/custom/custom_provider.rs"
     ],
     "totalLinesCovered": 978
   }

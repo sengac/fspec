@@ -4,11 +4,11 @@
       "name": "BackgroundSession owns the AtomicBool + Notify interrupt handles",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "211-251",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 307,
                 308,
@@ -24,11 +24,11 @@
       "name": "BackgroundSession::interrupt() flips the flag and wakes notifier",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "257-345",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 1114,
                 1115,
@@ -55,11 +55,11 @@
       "name": "Agent loop calls reset_interrupt() at the start of each turn",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "354-422",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 307,
                 308
@@ -73,11 +73,11 @@
       "name": "run_with_provider! macro forwards both interrupt handles to run_agent_stream_with_images",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "428-528",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 88,
                 89,
@@ -100,11 +100,11 @@
       "name": "OpenAI inlined arm and custom-provider fallthrough forward both interrupt handles",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "570-650",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 897,
                 898,
@@ -227,11 +227,11 @@
       "name": "BackgroundOutput translates StreamEvent::Interrupted into StreamChunk::interrupted",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "657-695",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 255,
                 256,
@@ -248,11 +248,11 @@
       "name": "codelet_rpc_types::StreamChunk declares Interrupted variant + constructor",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs",
+          "file": "rust/agent-loop/tests/rpc088_interrupt_cascade.rs",
           "lines": "702-743",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1052,
                 1053,
@@ -389,14 +389,14 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc088_interrupt_cascade.rs"
+      "rust/agent-loop/tests/rpc088_interrupt_cascade.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/background_session.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/agent-loop/src/dispatch.rs",
-      "codelet/agent-loop/src/background_output.rs",
-      "codelet/rpc-types/src/lib.rs"
+      "rust/sessions/src/background_session.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/dispatch.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 733
   }

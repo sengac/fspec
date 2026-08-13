@@ -4,7 +4,7 @@
 @PROV-057
 Feature: Copilot DeepSearch sub-agent provider configuration
   """
-  PROV-057 L3 (DeepSearch half): codelet/napi/src/deep_search_provider_config.rs
+  PROV-057 L3 (DeepSearch half): rust/napi/src/deep_search_provider_config.rs
   must import select_copilot_facade and handle the github-copilot branch
   so DeepSearch sub-agents can use Copilot as their provider without
   tripping the "Unsupported provider for DeepSearch sub-agent" error.

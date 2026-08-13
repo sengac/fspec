@@ -4,11 +4,11 @@
       "name": "ErrorDialog renders red bordered modal with sticky ESC-only dismissal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "77-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/error_dialog.rs",
+              "file": "rust/fspec-tui/src/components/error_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -175,11 +175,11 @@
       "name": "NotificationDialog success severity shows cyan border with green title and 2s countdown",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "136-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/notification_dialog.rs",
+              "file": "rust/fspec-tui/src/components/notification_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -618,11 +618,11 @@
       "name": "NotificationDialog warning severity with auto_dismiss_ms=0 is sticky with yellow border",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "195-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/notification_dialog.rs",
+              "file": "rust/fspec-tui/src/components/notification_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1061,11 +1061,11 @@
       "name": "StatusDialog in Restoring state shows progress counter and ignores ESC",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "257-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/status_dialog.rs",
+              "file": "rust/fspec-tui/src/components/status_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1487,11 +1487,11 @@
       "name": "StatusDialog transitions Restoring to Complete with green title and 3s auto-close",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "300-360",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/status_dialog.rs",
+              "file": "rust/fspec-tui/src/components/status_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1913,11 +1913,11 @@
       "name": "StatusDialog transitions Restoring to Error with red border and ESC dismissal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "363-408",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/status_dialog.rs",
+              "file": "rust/fspec-tui/src/components/status_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -2339,11 +2339,11 @@
       "name": "No raw FspecDialog struct literals remain in non-test code after the wrappers ship",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "410-508",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
               "lines": [
                 1,
                 2,
@@ -2395,11 +2395,11 @@
       "name": "ErrorDialog is shown when an LLM provider error chunk arrives",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "522-580",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
               "lines": [
                 55,
                 56,
@@ -2421,11 +2421,11 @@
       "name": "End-to-end App.render paints ErrorDialog modal on top of AgentView when a provider Error chunk arrives",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/dialogs_rpc079.rs",
+          "file": "rust/fspec-tui/tests/dialogs_rpc079.rs",
           "lines": "593-683",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 157,
                 158,
@@ -2436,7 +2436,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
               "lines": [
                 57,
                 58,
@@ -2458,14 +2458,14 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/dialogs_rpc079.rs"
+      "rust/fspec-tui/tests/dialogs_rpc079.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/error_dialog.rs",
-      "codelet/fspec-tui/src/components/notification_dialog.rs",
-      "codelet/fspec-tui/src/components/status_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
-      "codelet/fspec-tui/src/app/events.rs"
+      "rust/fspec-tui/src/components/error_dialog.rs",
+      "rust/fspec-tui/src/components/notification_dialog.rs",
+      "rust/fspec-tui/src/components/status_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
+      "rust/fspec-tui/src/app/events.rs"
     ],
     "totalLinesCovered": 2863
   }

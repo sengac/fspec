@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from Rust use statements",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/rust_edge_extraction_test.rs",
+          "file": "rust/napi/tests/rust_edge_extraction_test.rs",
           "lines": "19-60",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
               "lines": [
                 170,
                 171,
@@ -75,11 +75,11 @@
       "name": "Extract Calls edges from Rust function calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/rust_edge_extraction_test.rs",
+          "file": "rust/napi/tests/rust_edge_extraction_test.rs",
           "lines": "65-93",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
               "lines": [
                 228,
                 229,
@@ -130,11 +130,11 @@
       "name": "Extract TypeRef edges from Rust type annotations",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/rust_edge_extraction_test.rs",
+          "file": "rust/napi/tests/rust_edge_extraction_test.rs",
           "lines": "98-122",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
               "lines": [
                 270,
                 271,
@@ -197,10 +197,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/rust_edge_extraction_test.rs"
+      "rust/napi/tests/rust_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_rust_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_rust_extractor.rs"
     ],
     "totalLinesCovered": 239
   }

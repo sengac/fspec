@@ -4,11 +4,11 @@
       "name": "Dispatcher reports all feature files valid when every tag is registered",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "123-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -407,11 +407,11 @@
       "name": "Dispatcher flags an unregistered feature tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "147-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -810,11 +810,11 @@
       "name": "Dispatcher rejects a scenario-level work-unit tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "183-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -1213,11 +1213,11 @@
       "name": "Dispatcher reports a feature-level work-unit tag that is not in work-units.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "214-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -1616,11 +1616,11 @@
       "name": "Dispatcher reports a feature-level work-unit tag when work-units.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "245-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -2019,11 +2019,11 @@
       "name": "Dispatcher reports a missing required component tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "279-303",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -2422,11 +2422,11 @@
       "name": "Dispatcher reports a missing required feature-group tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "304-331",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -2825,11 +2825,11 @@
       "name": "Dispatcher flags a lowercase work-unit-like tag as malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "332-359",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -3228,11 +3228,11 @@
       "name": "Dispatcher flags a placeholder @component tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "360-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -3631,11 +3631,11 @@
       "name": "Dispatcher returns zero counts when no feature files exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "382-401",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -4034,11 +4034,11 @@
       "name": "Dispatcher validates only the single file named by the file argument",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "402-428",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -4437,11 +4437,11 @@
       "name": "Dispatcher skips a file that does not parse as Gherkin",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_tags.rs",
+          "file": "rust/fspec-core/tests/validate_tags.rs",
           "lines": "429-452",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_tags.rs",
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
               "lines": [
                 68,
                 69,
@@ -4842,10 +4842,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/validate_tags.rs"
+      "rust/fspec-core/tests/validate_tags.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/validate_tags.rs"
+      "rust/fspec-core/src/commands/validate_tags.rs"
     ],
     "totalLinesCovered": 4974
   }

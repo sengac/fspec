@@ -6,7 +6,7 @@ Feature: Limit File Reads to 25000 Tokens
   """
   Architecture notes:
   - Add tiktoken-rs dependency with cl100k_base encoding for accurate token counting
-  - Create shared TokenEstimator in codelet/common/src/token_estimator.rs wrapping tiktoken-rs
+  - Create shared TokenEstimator in rust/common/src/token_estimator.rs wrapping tiktoken-rs
   - TokenEstimator provides count_tokens(text: &str) -> usize method
   - Error type: TokenLimit with tool, file_path, estimated_tokens, and max_tokens fields
   - Exempt file types detected by extension AND magic bytes: .png, .jpg, .jpeg, .gif, .webp, .svg, .pdf, .ipynb
@@ -14,10 +14,10 @@ Feature: Limit File Reads to 25000 Tokens
   - Integration: Called in read tool before returning content for text files only
 
   Migration scope - replace existing byte-based estimation:
-  - codelet/cli/src/interactive_helpers.rs: estimate_tokens() function - MIGRATED
-  - codelet/napi/src/persistence/storage.rs: estimate_tokens() function - MIGRATED
-  - codelet/core/src/compaction/compactor.rs: token estimation - MIGRATED
-  - codelet/cli/src/interactive/stream_loop.rs: inline estimation - MIGRATED
+  - rust/cli/src/interactive_helpers.rs: estimate_tokens() function - MIGRATED
+  - rust/napi/src/persistence/storage.rs: estimate_tokens() function - MIGRATED
+  - rust/core/src/compaction/compactor.rs: token estimation - MIGRATED
+  - rust/cli/src/interactive/stream_loop.rs: inline estimation - MIGRATED
   """
 
   # ========================================
@@ -30,7 +30,7 @@ Feature: Limit File Reads to 25000 Tokens
   #   3. Token limit applies only to text files - images and PDFs are exempt (they have different processing)
   #   4. Token limit is configurable via environment variable or config, defaulting to 25,000
   #   5. Partial reads (offset/limit parameters) are validated after extracting the requested portion, not the full file
-  #   6. Create a shared TokenEstimator utility in codelet/core that wraps tiktoken-rs for reuse across the codebase
+  #   6. Create a shared TokenEstimator utility in rust/core that wraps tiktoken-rs for reuse across the codebase
   #   7. Replace existing byte-based token estimation (text.len() / 3.0 or / 4) with tiktoken-rs throughout the codebase
   #
   # EXAMPLES:
@@ -108,7 +108,7 @@ Feature: Limit File Reads to 25000 Tokens
     And the result should be more accurate than byte-based approximation
 
   Scenario: TokenEstimator is shared across codebase
-    Given the TokenEstimator utility in codelet/core
+    Given the TokenEstimator utility in rust/core
     When token estimation is needed in any module
     Then the shared TokenEstimator should be used
     And no duplicate estimation logic should exist

@@ -4,11 +4,11 @@
       "name": "Auto-creates spec/work-units.json and spec/prefixes.json on first run",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "95-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -208,7 +208,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 1,
                 2,
@@ -351,11 +351,11 @@
       "name": "Lists all work units in insertion order when no filters are applied",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "154-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -562,11 +562,11 @@
       "name": "Filters by status when --status flag is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "193-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -773,11 +773,11 @@
       "name": "Filters by prefix appending hyphen before startsWith match",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "218-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -984,11 +984,11 @@
       "name": "Filters by epic with exact equality",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "254-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1195,11 +1195,11 @@
       "name": "Filters by type defaulting missing type to story",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "277-329",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1406,11 +1406,11 @@
       "name": "Combines multiple filters with AND semantics",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "331-349",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1617,11 +1617,11 @@
       "name": "Text format prints No work units found for empty result",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "351-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1828,11 +1828,11 @@
       "name": "Text format prints work units header and entries when populated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "382-420",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -2039,11 +2039,11 @@
       "name": "Returns structured error when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "422-443",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -2247,14 +2247,14 @@
       ]
     },
     {
-      "name": "Shared infrastructure modules exist under codelet/fspec-core for reuse by other commands",
+      "name": "Shared infrastructure modules exist under rust/fspec-core for reuse by other commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "445-484",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_work_units.rs",
+              "file": "rust/fspec-core/src/commands/list_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -2463,12 +2463,12 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_work_units.rs",
-      "codelet/fspec/tests/cli_list_work_units.rs"
+      "rust/fspec-core/tests/list_work_units.rs",
+      "rust/fspec/tests/cli_list_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_work_units.rs",
-      "codelet/fspec-core/src/io/ensure.rs"
+      "rust/fspec-core/src/commands/list_work_units.rs",
+      "rust/fspec-core/src/io/ensure.rs"
     ],
     "totalLinesCovered": 2880
   }

@@ -4,11 +4,11 @@
       "name": "Rust codebase compiles after supervisor removal",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "11-50",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 257,
                 258,
@@ -275,11 +275,11 @@
       "name": "All Rust tests pass after supervisor removal",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "53-73",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 257,
                 258,
@@ -546,11 +546,11 @@
       "name": "No supervisor infrastructure references remain in Rust source",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "100-128",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 257,
                 258,
@@ -817,7 +817,7 @@
       "name": "TUI supervisor command and views removed",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "103-133",
           "implMappings": [
             {
@@ -842,11 +842,11 @@
       "name": "ChainOfCommand ownership tracking still works",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "28-69",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 257,
                 258,
@@ -1113,11 +1113,11 @@
       "name": "Regular agent_loop sessions work unchanged",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "159-178",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4449,
                 4450,
@@ -1287,11 +1287,11 @@
       "name": "Role simplified from struct to plain string",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "75-97",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 511,
                 512,
@@ -1313,11 +1313,11 @@
       "name": "NAPI type declarations updated",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/supervisor_removal_verification_test.rs",
+          "file": "rust/napi/tests/supervisor_removal_verification_test.rs",
           "lines": "199-227",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5481,
                 5482,
@@ -1366,10 +1366,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/supervisor_removal_verification_test.rs"
+      "rust/napi/tests/supervisor_removal_verification_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/utils/slashCommands.ts"
     ],
     "totalLinesCovered": 1467

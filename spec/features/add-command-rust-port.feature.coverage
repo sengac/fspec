@@ -4,11 +4,11 @@
       "name": "First add seeds eventStorm and appends command id 0 on a clean specifying work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command.rs",
+          "file": "rust/fspec-core/tests/add_command.rs",
           "lines": "79-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command.rs",
+              "file": "rust/fspec-core/src/commands/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -242,11 +242,11 @@
       "name": "Second add appends with auto-incremented id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command.rs",
+          "file": "rust/fspec-core/tests/add_command.rs",
           "lines": "137-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command.rs",
+              "file": "rust/fspec-core/src/commands/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -480,11 +480,11 @@
       "name": "Optional actor is stored on the command item",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command.rs",
+          "file": "rust/fspec-core/tests/add_command.rs",
           "lines": "185-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command.rs",
+              "file": "rust/fspec-core/src/commands/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -718,11 +718,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command.rs",
+          "file": "rust/fspec-core/tests/add_command.rs",
           "lines": "208-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command.rs",
+              "file": "rust/fspec-core/src/commands/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -956,11 +956,11 @@
       "name": "Done or blocked status is rejected verbatim and disk is untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command.rs",
+          "file": "rust/fspec-core/tests/add_command.rs",
           "lines": "236-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command.rs",
+              "file": "rust/fspec-core/src/commands/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -1194,11 +1194,11 @@
       "name": "Missing spec/work-units.json reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command.rs",
+          "file": "rust/fspec-core/tests/add_command.rs",
           "lines": "264-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command.rs",
+              "file": "rust/fspec-core/src/commands/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -1434,10 +1434,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_command.rs"
+      "rust/fspec-core/tests/add_command.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_command.rs"
+      "rust/fspec-core/src/commands/add_command.rs"
     ],
     "totalLinesCovered": 1531
   }

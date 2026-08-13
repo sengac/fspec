@@ -4,11 +4,11 @@
       "name": "CANONICAL_PROVIDERS slice declares exactly 17 entries in the TS-canonical order",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "61-78",
           "implMappings": [
             {
-              "file": "codelet/providers/src/catalog.rs",
+              "file": "rust/providers/src/catalog.rs",
               "lines": [
                 49,
                 50,
@@ -144,11 +144,11 @@
       "name": "CANONICAL_PROVIDERS display names match the TS PROVIDER_REGISTRY byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "80-94",
           "implMappings": [
             {
-              "file": "codelet/providers/src/catalog.rs",
+              "file": "rust/providers/src/catalog.rs",
               "lines": [
                 49,
                 50,
@@ -284,11 +284,11 @@
       "name": "CANONICAL_PROVIDERS tags codex, anthropic, and github-copilot as OAuth auth_type",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "96-121",
           "implMappings": [
             {
-              "file": "codelet/providers/src/catalog.rs",
+              "file": "rust/providers/src/catalog.rs",
               "lines": [
                 17,
                 18,
@@ -307,11 +307,11 @@
       "name": "Empty workspace returns 17 canonical rows in order with canonical display names",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "285-323",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 95,
                 96,
@@ -370,11 +370,11 @@
       "name": "ANTHROPIC_API_KEY alone marks the Anthropic row configured under slug \"anthropic\"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "326-372",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 95,
                 96,
@@ -433,11 +433,11 @@
       "name": "Canonical rows precede custom providers in the response",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "375-418",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 95,
                 96,
@@ -532,11 +532,11 @@
       "name": "display_name on every canonical entry is sourced from the catalog not the slug",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "422-466",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 126,
                 127,
@@ -564,11 +564,11 @@
       "name": "Embedded and WebSocket transports surface the same 17 canonical rows in the same order",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
           "lines": "526-583",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 869,
                 870,
@@ -616,12 +616,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs"
+      "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/catalog.rs",
-      "codelet/providers/src/custom/management.rs",
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/providers/src/catalog.rs",
+      "rust/providers/src/custom/management.rs",
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 774
   }

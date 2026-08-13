@@ -6,7 +6,7 @@
 Feature: Port tag-stats command to Rust
   """
   Two-front-doors pattern: dispatcher (LLM tool-call JSON) and clap CLI subcommand BOTH call the single fspec_core::commands::tag_stats::run function. CLI bridge only marshals empty args JSON; never duplicates counting/projection/rendering logic.
-  Reuse codelet/fspec-core/src/io/feature_glob::glob_feature_files for spec/features/**/*.feature enumeration. When that helper returns FspecCoreError::DirectoryNotFound, tag-stats MUST catch it locally and treat it as an empty list (matching tinyglobby's empty-array-on-missing-dir behaviour). No shared-file change required.
+  Reuse rust/fspec-core/src/io/feature_glob::glob_feature_files for spec/features/**/*.feature enumeration. When that helper returns FspecCoreError::DirectoryNotFound, tag-stats MUST catch it locally and treat it as an empty list (matching tinyglobby's empty-array-on-missing-dir behaviour). No shared-file change required.
   tags.json loading: DO NOT use ensure_tags_file (which auto-creates AND escalates parse errors). Read inline with std::fs::read_to_string + serde_json::from_str::<TagsData>. ANY failure (ENOENT, malformed JSON) → tagsFileFound=false and tagsData=None (mirrors TS bare catch at tag-stats.ts:42-49).
   Feature-tag extraction: reuse the inline gherkin scanner pattern from list_feature_tags::parse_feature_tags (private helper, copied into tag_stats.rs to keep the change parallel-safe). Returns Option<Vec<String>> — None means 'no Feature: header found' → file added to invalidFiles.
   Output struct: typed `TagStatsResult` with `#[derive(Serialize)]` and explicit `#[serde(rename_all = "camelCase")]` to preserve declaration order: success → totalFiles → uniqueTags → totalOccurrences → categories → unusedTags → tagsFileFound → invalidFiles.
@@ -49,10 +49,10 @@ Feature: Port tag-stats command to Rust
   #   10. Dispatcher with format='text' against tempdir without tags.json prints header 'Tag Usage Statistics', counters, then `⚠ Warning: spec/tags.json not found`
   #   11. Dispatcher text format with one bad gherkin file prints '⚠ Warning: 1 file(s) with invalid syntax skipped:' followed by '  - spec/features/bad.feature'
   #   12. Dispatcher text format with tags.json containing unused tags prints 'Unused Registered Tags' section then 'N registered tag(s) not used in any feature file:' then '  @tag' lines alphabetically
-  #   13. Running `./codelet/target/release/fspec tag-stats` in an empty directory exits 0 with stdout containing 'Total feature files: 0' and `⚠ Warning: spec/tags.json not found`
-  #   14. Running `./codelet/target/release/fspec tag-stats --help` exits 0 and stdout is byte-for-byte identical to codelet/fspec/tests/fixtures/help/tag-stats.txt
-  #   15. Running `./codelet/target/release/fspec tag-stats --help` exits 0 with stdout NOT containing '--category', '--format', '--workspace' or '--status' flags
-  #   16. Both invocation paths produce equivalent data: (a) dispatch_command('tag-stats', '{"format":"json"}', project_root) and (b) `./codelet/target/release/fspec tag-stats` against the same on-disk state — CLI bridge file contains NO counting/projection/rendering logic
+  #   13. Running `./rust/target/release/fspec tag-stats` in an empty directory exits 0 with stdout containing 'Total feature files: 0' and `⚠ Warning: spec/tags.json not found`
+  #   14. Running `./rust/target/release/fspec tag-stats --help` exits 0 and stdout is byte-for-byte identical to rust/fspec/tests/fixtures/help/tag-stats.txt
+  #   15. Running `./rust/target/release/fspec tag-stats --help` exits 0 with stdout NOT containing '--category', '--format', '--workspace' or '--status' flags
+  #   16. Both invocation paths produce equivalent data: (a) dispatch_command('tag-stats', '{"format":"json"}', project_root) and (b) `./rust/target/release/fspec tag-stats` against the same on-disk state — CLI bridge file contains NO counting/projection/rendering logic
   #
   # ========================================
   Background: User Story
@@ -61,8 +61,8 @@ Feature: Port tag-stats command to Rust
     So that I can audit tag usage and surface registered-but-unused tags without relying on Node.js, sharing one source-of-truth between the LLM dispatcher and the CLI
 
   Scenario: Clap exposes tag-stats as a subcommand and prints flag-aware --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec tag-stats --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec tag-stats --help` from a shell
     Then the command exits 0
     Then stdout contains a description of the tag-stats subcommand
     Then stdout does NOT contain the substring '--category'
@@ -72,7 +72,7 @@ Feature: Port tag-stats command to Rust
 
   Scenario: CLI against empty directory prints zero-totals output and does not auto-create files
     Given an empty directory with no spec subdirectory is set as the current working directory
-    When I run `./codelet/target/release/fspec tag-stats` from that directory
+    When I run `./rust/target/release/fspec tag-stats` from that directory
     Then the command exits 0
     Then stdout contains the substring 'Total feature files: 0'
     Then stdout contains the substring '⚠ Warning: spec/tags.json not found'
@@ -83,7 +83,7 @@ Feature: Port tag-stats command to Rust
     Given spec/tags.json declares Phase Tags=[@critical, @high]
     Given spec/features/a.feature has feature-level tags '@critical'
     Given spec/features/b.feature has feature-level tags '@critical @high'
-    When I run `./codelet/target/release/fspec tag-stats` from the workspace
+    When I run `./rust/target/release/fspec tag-stats` from the workspace
     Then the command exits 0
     Then stdout contains the substring 'Tag Usage Statistics'
     Then stdout contains the substring 'Total feature files: 2'
@@ -93,14 +93,14 @@ Feature: Port tag-stats command to Rust
 
   Scenario: CLI text output prints invalid-files warning when a feature file is malformed
     Given spec/features/bad.feature contains the bytes 'not gherkin'
-    When I run `./codelet/target/release/fspec tag-stats` from the workspace
+    When I run `./rust/target/release/fspec tag-stats` from the workspace
     Then the command exits 0
     Then stdout contains the substring '⚠ Warning: 1 file(s) with invalid syntax skipped:'
     Then stdout contains the exact line '  - spec/features/bad.feature'
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has tag-stats registered as a clap subcommand
-    When I run `./codelet/target/release/fspec --help`
+    When I run `./rust/target/release/fspec --help`
     Then the help output lists tag-stats as an available subcommand
     Then the long-about description still documents that running fspec with no subcommand enters combined TUI mode
 
@@ -109,12 +109,12 @@ Feature: Port tag-stats command to Rust
     Given spec/features/a.feature has feature-level tags '@critical'
     When I dispatch tag-stats through fspec_core::dispatch::dispatch_command with format='json'
     Then the dispatcher result has totalFiles=1, uniqueTags=1, totalOccurrences=1
-    Then running `./codelet/target/release/fspec tag-stats` against the same on-disk state exits 0 and stdout reports the same counters
-    Then the CLI bridge module codelet/fspec/src/tag_stats.rs contains NO inline tag-counting, category-projection, or rendering logic
+    Then running `./rust/target/release/fspec tag-stats` against the same on-disk state exits 0 and stdout reports the same counters
+    Then the CLI bridge module rust/fspec/src/tag_stats.rs contains NO inline tag-counting, category-projection, or rendering logic
 
   Scenario: tag-stats --help is byte-for-byte identical to the TS formatCommandHelp reference output
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec tag-stats --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec tag-stats --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/tag-stats.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/tag-stats.txt
     And stdout starts with a blank line followed by 'TAG-STATS'

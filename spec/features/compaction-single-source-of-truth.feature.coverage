@@ -4,11 +4,11 @@
       "name": "PromptCancelled with flag true routes to recovery",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_single_source_of_truth_test.rs",
+          "file": "rust/cli/tests/compaction_single_source_of_truth_test.rs",
           "lines": "45-77",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 250,
                 251,
@@ -56,11 +56,11 @@
       "name": "PromptCancelled with flag false still recovers",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_single_source_of_truth_test.rs",
+          "file": "rust/cli/tests/compaction_single_source_of_truth_test.rs",
           "lines": "79-113",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 250,
                 251,
@@ -108,11 +108,11 @@
       "name": "Unrelated error with flag true does not trigger recovery",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_single_source_of_truth_test.rs",
+          "file": "rust/cli/tests/compaction_single_source_of_truth_test.rs",
           "lines": "115-147",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 250,
                 251,
@@ -162,10 +162,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_single_source_of_truth_test.rs"
+      "rust/cli/tests/compaction_single_source_of_truth_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/error_classifiers.rs"
+      "rust/cli/src/interactive/error_classifiers.rs"
     ],
     "totalLinesCovered": 209
   }

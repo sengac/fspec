@@ -5,9 +5,9 @@
 @mutation
 Feature: Port create-epic command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/create_epic.rs reads spec/epics.json (tolerating missing/malformed via TS bare-catch parity), validates the epic id with regex `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, rejects duplicates, then writes the merged store via io::locked_file::write_json_atomic. Errors are wrapped with the 'Failed to create epic: ' prefix to mirror TS outer-catch semantics.
-  Help config at codelet/fspec-core/src/help/configs/create_epic.rs mirrors src/commands/create-epic-help.ts byte-for-byte.
-  CLI bridge at codelet/fspec/src/create_epic.rs marshals the two positional args (epicId, title) plus optional -d/--description into JSON and delegates to commands::create_epic::run. No logic duplication.
+  Core impl at rust/fspec-core/src/commands/create_epic.rs reads spec/epics.json (tolerating missing/malformed via TS bare-catch parity), validates the epic id with regex `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, rejects duplicates, then writes the merged store via io::locked_file::write_json_atomic. Errors are wrapped with the 'Failed to create epic: ' prefix to mirror TS outer-catch semantics.
+  Help config at rust/fspec-core/src/help/configs/create_epic.rs mirrors src/commands/create-epic-help.ts byte-for-byte.
+  CLI bridge at rust/fspec/src/create_epic.rs marshals the two positional args (epicId, title) plus optional -d/--description into JSON and delegates to commands::create_epic::run. No logic duplication.
   Two-front-doors: clap CLI and LLM dispatcher both call commands::create_epic::run(args_json, project_root).
   """
 

@@ -4,7 +4,7 @@
 @RPC-190
 Feature: Port add-scenario command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_scenario.rs: run(args_json,&Path) args {feature, scenario, dryRun?}. Path resolution mirrors TS endsWith/startsWith/else against project_root. Validation + duplicate detection via crate::io::gherkin::parse_feature_lenient; scenario-name comparison uses scenario.name with keyword.trim()=='Scenario' filter. Insertion is TS line-based split('\n')/slice/join, NOT AST round-trip. Response {success, valid, warning?}; CLI bridge prints ✓/⚠ and Error+Suggestion on failure. Two-front-doors: bridge marshals <feature> <scenario> + optional --dry-run into JSON only.
+  Core impl at rust/fspec-core/src/commands/add_scenario.rs: run(args_json,&Path) args {feature, scenario, dryRun?}. Path resolution mirrors TS endsWith/startsWith/else against project_root. Validation + duplicate detection via crate::io::gherkin::parse_feature_lenient; scenario-name comparison uses scenario.name with keyword.trim()=='Scenario' filter. Insertion is TS line-based split('\n')/slice/join, NOT AST round-trip. Response {success, valid, warning?}; CLI bridge prints ✓/⚠ and Error+Suggestion on failure. Two-front-doors: bridge marshals <feature> <scenario> + optional --dry-run into JSON only.
   """
 
   # ========================================

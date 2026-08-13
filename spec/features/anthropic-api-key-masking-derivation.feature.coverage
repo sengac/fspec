@@ -4,11 +4,11 @@
       "name": "Anthropic env API key is masked as an env-sourced credential",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov_099_anthropic_apikey_classification_test.rs",
+          "file": "rust/providers/tests/prov_099_anthropic_apikey_classification_test.rs",
           "lines": "97-130",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 144,
                 145,
@@ -39,11 +39,11 @@
       "name": "Anthropic configured by an OAuth auth file carries no masked key",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov_099_anthropic_apikey_classification_test.rs",
+          "file": "rust/providers/tests/prov_099_anthropic_apikey_classification_test.rs",
           "lines": "131-170",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 144,
                 145,
@@ -74,11 +74,11 @@
       "name": "OAuth-only providers with an empty env var carry no masked key",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov_099_anthropic_apikey_classification_test.rs",
+          "file": "rust/providers/tests/prov_099_anthropic_apikey_classification_test.rs",
           "lines": "171-203",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 144,
                 145,
@@ -111,10 +111,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/prov_099_anthropic_apikey_classification_test.rs"
+      "rust/providers/tests/prov_099_anthropic_apikey_classification_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/management.rs"
+      "rust/providers/src/custom/management.rs"
     ],
     "totalLinesCovered": 164
   }

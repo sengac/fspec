@@ -5,7 +5,7 @@
 @RPC-249
 Feature: List scenario tags CLI subcommand
   """
-  CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_scenario_tags::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
+  CLI subcommand is wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_scenario_tags::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
   The subcommand exposes two required positional arguments `<file>` and `<scenario>` plus the boolean `--show-categories` flag — mirroring the TypeScript Commander.js registration at src/commands/list-scenario-tags.ts:182-200. No other flags are surfaced; --format, --workspace, etc. are intentionally out of scope for RPC-249.
 
@@ -18,8 +18,8 @@ Feature: List scenario tags CLI subcommand
     So that I can audit the tag set of a single scenario from a script or terminal without going through the LLM tool-call dispatcher
 
   Scenario: Clap exposes list-scenario-tags as a subcommand and prints flag-aware --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-scenario-tags --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec list-scenario-tags --help` from a shell
     Then the command exits 0
     Then stdout contains clap-generated help describing the list-scenario-tags subcommand
     Then stdout contains the positional placeholder "<FILE>"
@@ -29,13 +29,13 @@ Feature: List scenario tags CLI subcommand
 
   Scenario: CLI exits 2 when required positional arguments are missing
     Given an empty directory is set as the current working directory
-    When I run `./codelet/target/release/fspec list-scenario-tags` (no positionals) from that directory
+    When I run `./rust/target/release/fspec list-scenario-tags` (no positionals) from that directory
     Then the command exits with code 2
     Then stderr names the missing required argument
 
   Scenario: CLI prints tag list and exits 0 when scenario has tags
     Given the working directory contains spec/features/user-login.feature with a Scenario 'Login with valid credentials' tagged '@smoke @critical'
-    When I run `./codelet/target/release/fspec list-scenario-tags spec/features/user-login.feature "Login with valid credentials"`
+    When I run `./rust/target/release/fspec list-scenario-tags spec/features/user-login.feature "Login with valid credentials"`
     Then the command exits 0
     Then stdout contains the substring "Tags on scenario 'Login with valid credentials':"
     Then stdout contains the exact line "  @smoke"
@@ -45,13 +45,13 @@ Feature: List scenario tags CLI subcommand
     Given a project root whose spec/features/user-login.feature has a Scenario 'Login with valid credentials' tagged '@smoke'
     When I dispatch list-scenario-tags through fspec_core::dispatch::dispatch_command with file='spec/features/user-login.feature', scenario='Login with valid credentials', and format='json'
     Then the dispatcher's DispatchResult.data parses to a JSON object with tags array of length 1
-    Then the CLI bridge module codelet/fspec/src/list_scenario_tags.rs contains NO inline Gherkin parsing, tag accumulation, or category lookup logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/list_scenario_tags.rs contains NO inline Gherkin parsing, tag accumulation, or category lookup logic — its only computation is JSON arg marshalling
 
   Scenario: list-scenario-tags --help is byte-for-byte identical to TS minimal formatCommandHelp reference output
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-scenario-tags --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec list-scenario-tags --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the TS reference fixture at codelet/fspec/tests/fixtures/help/list-scenario-tags.txt
+    And stdout is byte-for-byte identical to the TS reference fixture at rust/fspec/tests/fixtures/help/list-scenario-tags.txt
     And stdout starts with a blank line followed by 'LIST-SCENARIO-TAGS'
     And stdout contains '<file> (required)' and '<scenario> (required)' lines
     And stdout does NOT contain 'WHEN TO USE' or 'NOTES' section headers

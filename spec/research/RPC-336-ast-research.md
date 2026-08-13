@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-18
 **Tool:** AstGrep (Rust) + Grep
-**Scope:** `codelet/fspec-core/tests/dispatcher_test.rs`, `codelet/fspec-core/tests/list_work_units.rs`, `codelet/fspec-core/src/canonical.rs`, `codelet/fspec-core/src/dispatch.rs`
+**Scope:** `rust/fspec-core/tests/dispatcher_test.rs`, `rust/fspec-core/tests/list_work_units.rs`, `rust/fspec-core/src/canonical.rs`, `rust/fspec-core/src/dispatch.rs`
 
 ## Confirmed: cleanup still pending
 

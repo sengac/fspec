@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_scenario.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_scenario.rs",
           "lines": "67-95",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_scenario.rs",
+              "file": "rust/fspec/src/remove_tag_from_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -94,11 +94,11 @@
       "name": "CLI successfully removes a tag and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_scenario.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_scenario.rs",
           "lines": "97-129",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_scenario.rs",
+              "file": "rust/fspec/src/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -142,11 +142,11 @@
       "name": "CLI variadic positional collects multiple tags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_scenario.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_scenario.rs",
           "lines": "131-164",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_scenario.rs",
+              "file": "rust/fspec/src/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -190,11 +190,11 @@
       "name": "CLI idempotent path for non-matching tags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_scenario.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_scenario.rs",
           "lines": "166-195",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_scenario.rs",
+              "file": "rust/fspec/src/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -238,11 +238,11 @@
       "name": "CLI reports missing feature file with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_scenario.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_scenario.rs",
           "lines": "197-224",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_scenario.rs",
+              "file": "rust/fspec/src/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -286,11 +286,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_scenario.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_scenario.rs",
           "lines": "226-280",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_scenario.rs",
+              "file": "rust/fspec/src/remove_tag_from_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -378,10 +378,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_tag_from_scenario.rs"
+      "rust/fspec/tests/cli_remove_tag_from_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_tag_from_scenario.rs"
+      "rust/fspec/src/remove_tag_from_scenario.rs"
     ],
     "totalLinesCovered": 485
   }

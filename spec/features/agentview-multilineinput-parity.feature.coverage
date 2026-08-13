@@ -4,11 +4,11 @@
       "name": "Running session paints Thinking spinner on first frame",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "32-66",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/spinner.rs",
+              "file": "rust/fspec-tui/src/views/agent/spinner.rs",
               "lines": [
                 1,
                 2,
@@ -130,11 +130,11 @@
       "name": "Running session advances spinner frame at 80ms cadence",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "71-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/spinner.rs",
+              "file": "rust/fspec-tui/src/views/agent/spinner.rs",
               "lines": [
                 32,
                 33,
@@ -160,11 +160,11 @@
       "name": "Compacting session paints Compacting spinner on first frame",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "88-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_transition.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_transition.rs",
               "lines": [
                 1,
                 2,
@@ -276,11 +276,11 @@
       "name": "Compacting blocks printable character insertion",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "120-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 162,
                 163,
@@ -356,11 +356,11 @@
       "name": "Compacting blocks Backspace",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "139-151",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 162,
                 163,
@@ -436,11 +436,11 @@
       "name": "Compacting blocks Delete and forward-delete",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "156-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 162,
                 163,
@@ -516,11 +516,11 @@
       "name": "Compacting swallows Enter so input is not submitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "174-186",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 162,
                 163,
@@ -596,11 +596,11 @@
       "name": "Cursor movement still works during Running",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "191-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 162,
                 163,
@@ -676,11 +676,11 @@
       "name": "Idle placeholder text is verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "215-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 55,
                 56,
@@ -703,11 +703,11 @@
       "name": "New modules stay under the 300-LoC source-shape ceiling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
           "lines": "246-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/spinner.rs",
+              "file": "rust/fspec-tui/src/views/agent/spinner.rs",
               "lines": [
                 1,
                 2,
@@ -831,15 +831,15 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/multilineinput_parity_rpc095.rs",
-      "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs"
+      "rust/fspec-tui/tests/multilineinput_parity_rpc095.rs",
+      "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/spinner.rs",
-      "codelet/fspec-tui/src/views/agent/input_transition.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
-      "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/spinner.rs",
+      "rust/fspec-tui/src/views/agent/input_transition.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs",
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 1081
   }

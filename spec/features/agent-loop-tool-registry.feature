@@ -23,7 +23,7 @@ Feature: Agent loop registers tools and executes them end-to-end
     So that the assistant can act on my filesystem like the TS Ink frontend does
 
   Scenario: run_with_provider! macro body contains the five canonical tool-registry calls in order
-    Given the source file codelet/agent-loop/src/dispatch.rs
+    Given the source file rust/agent-loop/src/dispatch.rs
     When I locate the run_with_provider! macro body
     Then the body contains `codelet_tools::gather_mcp_tool_wrappers($session.id)`
     And the body contains `provider.create_rig_agent($session.id, role_preamble.as_deref(), $thinking.clone())`
@@ -33,7 +33,7 @@ Feature: Agent loop registers tools and executes them end-to-end
     And those five calls appear in the order: gather → create_rig_agent → add_tool loop → set_mcp_tool_server_handle → with_default_depth
 
   Scenario: OpenAI inlined arm in agent_loop.rs mirrors the macro body with the same five canonical calls
-    Given the source file codelet/agent-loop/src/agent_loop.rs
+    Given the source file rust/agent-loop/src/agent_loop.rs
     When I locate the "openai" => match arm body
     Then the arm contains `codelet_tools::gather_mcp_tool_wrappers(session.id)`
     And the arm contains `provider.create_rig_agent(session.id, role_preamble.as_deref(), thinking_config_value.clone())`
@@ -42,7 +42,7 @@ Feature: Agent loop registers tools and executes them end-to-end
     And the arm contains `codelet_core::RigAgent::with_default_depth(agent)`
 
   Scenario: Custom-provider fallthrough arm wraps CustomProvider::create_rig_agent with the four follow-up calls
-    Given the source file codelet/agent-loop/src/agent_loop.rs
+    Given the source file rust/agent-loop/src/agent_loop.rs
     When I locate the `_ =>` fallthrough match arm body
     Then the arm calls `codelet_providers::custom::CustomProvider::create_rig_agent`
     And the arm contains `codelet_tools::gather_mcp_tool_wrappers(session.id)`

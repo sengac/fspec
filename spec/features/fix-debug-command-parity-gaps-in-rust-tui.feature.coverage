@@ -4,11 +4,11 @@
       "name": "/debug resolves debug directory to ~/.fspec by default",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "63-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 29,
                 30,
@@ -29,11 +29,11 @@
       "name": "/debug respects FSPEC_DEBUG_DIR environment variable override",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "108-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 29,
                 30,
@@ -54,11 +54,11 @@
       "name": "/debug toggles pre-session debug state when no active session exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "144-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 51,
                 52,
@@ -85,11 +85,11 @@
       "name": "/debug toggles pre-session debug state off on second invocation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "174-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 51,
                 52,
@@ -116,11 +116,11 @@
       "name": "Session attach hydrates debug state from backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "197-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_chrome.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
               "lines": [
                 99,
                 100,
@@ -147,11 +147,11 @@
       "name": "Session creation propagates pre-session debug state when enabled",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "235-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 161,
                 162,
@@ -174,11 +174,11 @@
       "name": "Session creation does NOT propagate debug state when pre-session is disabled",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "275-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 161,
                 162,
@@ -201,11 +201,11 @@
       "name": "/debug with active session calls toggle_debug with correct directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/debug_parity_rpc430.rs",
+          "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
           "lines": "306-341",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 29,
                 30,
@@ -228,12 +228,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/debug_parity_rpc430.rs"
+      "rust/fspec-tui/tests/debug_parity_rpc430.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
-      "codelet/fspec-tui/src/app/dispatch_session_chrome.rs",
-      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
+      "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
+      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs"
     ],
     "totalLinesCovered": 360
   }

@@ -4,11 +4,11 @@
       "name": "Dispatcher removes an existing diagram by title",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "55-91",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -135,11 +135,11 @@
       "name": "Dispatcher fails when spec/foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "92-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -266,11 +266,11 @@
       "name": "Dispatcher fails when title is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "123-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -397,11 +397,11 @@
       "name": "Dispatcher removes only the middle entry from a list of three diagrams",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "161-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -528,11 +528,11 @@
       "name": "Dispatcher leaves architectureDiagrams as an empty array after removing the only entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "188-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -659,11 +659,11 @@
       "name": "Dispatcher preserves unknown top-level fields on write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "214-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -790,11 +790,11 @@
       "name": "Dispatcher matches by title only — section argument is informational (Framing A)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_diagram.rs",
+          "file": "rust/fspec-core/tests/delete_diagram.rs",
           "lines": "245-276",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_diagram.rs",
+              "file": "rust/fspec-core/src/commands/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -923,10 +923,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_diagram.rs"
+      "rust/fspec-core/tests/delete_diagram.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_diagram.rs"
+      "rust/fspec-core/src/commands/delete_diagram.rs"
     ],
     "totalLinesCovered": 1027
   }

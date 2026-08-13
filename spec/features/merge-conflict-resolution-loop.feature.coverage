@@ -4,11 +4,11 @@
       "name": "Re-merge after conflict resolution does not enter infinite loop",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "185-249",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -126,11 +126,11 @@
       "name": "First merge creates pending conflict state file alongside markers",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "309-347",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -248,11 +248,11 @@
       "name": "Resolved conflict file is accepted without re-running three-way merge",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "355-400",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -370,11 +370,11 @@
       "name": "Unresolved file with markers still present is reported without regenerating markers",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "408-452",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -492,11 +492,11 @@
       "name": "Multi-file conflict with partial resolution reports only unresolved files",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "459-517",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -614,11 +614,11 @@
       "name": "Resolution matching main exactly succeeds on re-merge",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "524-562",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -736,11 +736,11 @@
       "name": "Pending conflicts state file is not collected as a worktree file",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "572-622",
           "implMappings": [
             {
-              "file": "codelet/git/src/tree_utils.rs",
+              "file": "rust/git/src/tree_utils.rs",
               "lines": [
                 123,
                 124,
@@ -757,11 +757,11 @@
       "name": "Re-merge without fix produces double-nested markers corruption",
       "testMappings": [
         {
-          "file": "codelet/git/tests/conflict_resolution_loop_tests.rs",
+          "file": "rust/git/tests/conflict_resolution_loop_tests.rs",
           "lines": "254-304",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 135,
                 136,
@@ -881,11 +881,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/conflict_resolution_loop_tests.rs"
+      "rust/git/tests/conflict_resolution_loop_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/session_result.rs",
-      "codelet/git/src/tree_utils.rs"
+      "rust/git/src/session_result.rs",
+      "rust/git/src/tree_utils.rs"
     ],
     "totalLinesCovered": 1142
   }

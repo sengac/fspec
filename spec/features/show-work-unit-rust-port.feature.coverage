@@ -4,11 +4,11 @@
       "name": "Returns a minimal work unit with declaration-order fields and an empty linkedFeatures array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "92-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -1073,11 +1073,11 @@
       "name": "Returns success=false when spec/work-units.json is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "129-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -2142,11 +2142,11 @@
       "name": "Returns success=false with the canonical missing-work-unit message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "161-186",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -3211,11 +3211,11 @@
       "name": "Projects active rules and omits soft-deleted entries in non-verbose mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "190-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -4280,11 +4280,11 @@
       "name": "Projects active examples and omits soft-deleted entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "230-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -5349,11 +5349,11 @@
       "name": "Filters questions by both deleted and selected flags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "265-297",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -6418,11 +6418,11 @@
       "name": "Projects active architecture notes and omits soft-deleted entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "301-333",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -7487,11 +7487,11 @@
       "name": "Rejects legacy bare-string question entries with a canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "337-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -8556,11 +8556,11 @@
       "name": "Emits the bare soft-delete count notice when rules has both active and deleted entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "370-422",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -9625,11 +9625,11 @@
       "name": "Inherits feature-level work-unit tags onto scenarios that lack their own override",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "426-466",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -10694,11 +10694,11 @@
       "name": "Silently degrades when spec/features/ does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "470-495",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -11763,11 +11763,11 @@
       "name": "Consolidates multiple system reminders into a single wrapped block",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "499-543",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -12832,11 +12832,11 @@
       "name": "Emits the large-estimate reminder with the create-feature-file-first branch",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "547-589",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -13901,11 +13901,11 @@
       "name": "Honours the FSPEC_DISABLE_REMINDERS=1 environment gate",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "593-630",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -14970,11 +14970,11 @@
       "name": "Text format renders a multi-section dump with type status epic and dependency lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "634-710",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -16039,11 +16039,11 @@
       "name": "JSON format emits a 2-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "714-752",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -17108,11 +17108,11 @@
       "name": "Defaults to text format when the format argument is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "756-778",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -18177,11 +18177,11 @@
       "name": "Returns a structured error when workUnitId is missing from the dispatcher args",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "782-804",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -19246,11 +19246,11 @@
       "name": "Shared infrastructure delegation",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_work_unit.rs",
+          "file": "rust/fspec-core/tests/show_work_unit.rs",
           "lines": "807-826",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -20317,10 +20317,10 @@
     "coveredScenarios": 19,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/show_work_unit.rs"
+      "rust/fspec-core/tests/show_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/show_work_unit.rs"
+      "rust/fspec-core/src/commands/show_work_unit.rs"
     ],
     "totalLinesCovered": 21371
   }

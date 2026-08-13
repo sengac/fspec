@@ -4,11 +4,11 @@
       "name": "create_session declines when no default model is set",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+          "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
           "lines": "51-74",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 82,
                 83,
@@ -40,11 +40,11 @@
       "name": "create_session uses the explicit default model, never anthropic",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+          "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
           "lines": "77-105",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 82,
                 83,
@@ -76,11 +76,11 @@
       "name": "create_isolated_session errors when no default model is set",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+          "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
           "lines": "108-127",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 815,
                 816,
@@ -125,10 +125,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov101_no_selection_fallbacks.rs"
+      "rust/sessions/tests/prov101_no_selection_fallbacks.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 144
   }

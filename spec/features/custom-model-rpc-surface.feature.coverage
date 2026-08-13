@@ -4,11 +4,11 @@
       "name": "add_custom_model appends a new definition to an existing profile",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "file": "rust/sessions/tests/custom_model_rpc_surface.rs",
           "lines": "63-92",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1075,
                 1076,
@@ -31,11 +31,11 @@
       "name": "update_custom_model replaces an existing definition in place",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "file": "rust/sessions/tests/custom_model_rpc_surface.rs",
           "lines": "93-124",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1086,
                 1087,
@@ -64,11 +64,11 @@
       "name": "delete_custom_model removes an entry and drops the empty key",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "file": "rust/sessions/tests/custom_model_rpc_surface.rs",
           "lines": "125-153",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1103,
                 1104,
@@ -89,11 +89,11 @@
       "name": "delete_custom_model on a missing profile or non-openai provider is an idempotent no-op",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "file": "rust/sessions/tests/custom_model_rpc_surface.rs",
           "lines": "154-178",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1103,
                 1104,
@@ -114,11 +114,11 @@
       "name": "add_custom_model and update_custom_model on a non-openai provider return an error",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "file": "rust/sessions/tests/custom_model_rpc_surface.rs",
           "lines": "198-229",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1032,
                 1033,
@@ -167,11 +167,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "file": "rust/sessions/tests/custom_model_rpc_surface.rs",
           "lines": "198-229",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1075,
                 1076,
@@ -226,10 +226,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/custom_model_rpc_surface.rs"
+      "rust/sessions/tests/custom_model_rpc_surface.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 309
   }

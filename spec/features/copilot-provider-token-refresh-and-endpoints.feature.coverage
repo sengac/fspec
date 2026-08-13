@@ -4,11 +4,11 @@
       "name": "Cached Copilot token is refreshed when within 60 seconds of expiry",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/provider_tests.rs",
+          "file": "rust/providers/src/copilot/provider_tests.rs",
           "lines": "140-155",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 305,
                 306,
@@ -72,11 +72,11 @@
       "name": "Cached Copilot token is reused when not near expiry",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/provider_tests.rs",
+          "file": "rust/providers/src/copilot/provider_tests.rs",
           "lines": "165-184",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 358,
                 359,
@@ -101,11 +101,11 @@
       "name": "Chat requests honour the endpoints.api URL from the token exchange response",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/provider_tests.rs",
+          "file": "rust/providers/src/copilot/provider_tests.rs",
           "lines": "251-283",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 195,
                 196,
@@ -145,10 +145,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/copilot/provider_tests.rs"
+      "rust/providers/src/copilot/provider_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/provider.rs"
+      "rust/providers/src/copilot/provider.rs"
     ],
     "totalLinesCovered": 160
   }

@@ -4,11 +4,11 @@
       "name": "navigate_next returns CreateDialog and navigate_prev returns Board when the store is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "37-50",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 36,
                 37,
@@ -52,11 +52,11 @@
       "name": "navigate_next returns CreateDialog at the last session index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "52-65",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 39,
                 40,
@@ -81,11 +81,11 @@
       "name": "navigate_prev returns Session(idx-1) when not at the first session index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "67-79",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 56,
                 57,
@@ -109,11 +109,11 @@
       "name": "navigate_next returns Session(idx+1) when not at the last session index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "81-98",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 39,
                 40,
@@ -138,11 +138,11 @@
       "name": "navigate_prev returns Board at the first session index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "100-116",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 56,
                 57,
@@ -166,11 +166,11 @@
       "name": "Shift+Right with a single attached session opens the Create Session dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "118-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 29,
                 30,
@@ -209,11 +209,11 @@
       "name": "Shift+Left with a single attached session exits AgentView back to the Board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "139-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 29,
                 30,
@@ -252,11 +252,11 @@
       "name": "Shift+Right at the last index preserves the typed draft when opening the Create Session dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "158-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 37,
                 38,
@@ -276,11 +276,11 @@
       "name": "Shift+Left at the first index snapshots the outgoing draft before exiting to the Board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "180-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 44,
                 45,
@@ -303,11 +303,11 @@
       "name": "Mid-list Shift+Right preserves the RPC-024 draft round-trip and session switch",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "208-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 60,
                 61,
@@ -345,11 +345,11 @@
       "name": "cycle_session is removed from the AgentViewStore public API",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "file": "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
           "lines": "240-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 16,
                 17,
@@ -447,11 +447,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs"
+      "rust/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/navigation.rs",
-      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs"
+      "rust/fspec-tui/src/store/agent_view/navigation.rs",
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs"
     ],
     "totalLinesCovered": 494
   }

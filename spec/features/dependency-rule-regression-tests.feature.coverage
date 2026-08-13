@@ -4,11 +4,11 @@
       "name": "codelet-test-helpers crate is wired into the workspace as a library",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "35-92",
           "implMappings": [
             {
-              "file": "codelet/test-helpers/Cargo.toml",
+              "file": "rust/test-helpers/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -35,11 +35,11 @@
       "name": "codelet-test-helpers exposes the shared dependency-rule helper API",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "94-141",
           "implMappings": [
             {
-              "file": "codelet/test-helpers/src/dependency_rules.rs",
+              "file": "rust/test-helpers/src/dependency_rules.rs",
               "lines": [
                 1,
                 2,
@@ -323,11 +323,11 @@
       "name": "codelet-test-helpers itself has no transitive dependency on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "143-161",
           "implMappings": [
             {
-              "file": "codelet/test-helpers/Cargo.toml",
+              "file": "rust/test-helpers/Cargo.toml",
               "lines": [
                 9,
                 10,
@@ -346,11 +346,11 @@
       "name": "codelet-core forbidden-arrow regression test passes against the current workspace",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "381-411",
           "implMappings": [
             {
-              "file": "codelet/core/tests/no_napi_dependency.rs",
+              "file": "rust/core/tests/no_napi_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -397,11 +397,11 @@
       "name": "codelet-rpc-types forbidden-arrow regression test passes against the current workspace",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "413-449",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/tests/no_napi_dependency.rs",
+              "file": "rust/rpc-types/tests/no_napi_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -452,11 +452,11 @@
       "name": "Migrated codelet-fspec regression test delegates to the shared helper",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "163-197",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/no_napi_dependency.rs",
+              "file": "rust/fspec/tests/no_napi_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -503,11 +503,11 @@
       "name": "Migrated codelet-fspec-tui regression test delegates to the shared helper",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "199-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/no_napi_dependency.rs",
+              "file": "rust/fspec-tui/tests/no_napi_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -554,11 +554,11 @@
       "name": "Migrated codelet-sessions regression test delegates to the shared helper",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "221-241",
           "implMappings": [
             {
-              "file": "codelet/sessions/tests/no_napi_dependency.rs",
+              "file": "rust/sessions/tests/no_napi_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -609,11 +609,11 @@
       "name": "rpc_006_source_shape.rs is left untouched",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "243-268",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+              "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
               "lines": [
                 1,
                 2,
@@ -878,11 +878,11 @@
       "name": "cargo test --workspace passes after all RPC-067 changes",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "349-379",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -944,11 +944,11 @@
       "name": "Sabotaging codelet-core by adding a codelet-napi dependency makes its test fail",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "295-347",
           "implMappings": [
             {
-              "file": "codelet/test-helpers/src/dependency_rules.rs",
+              "file": "rust/test-helpers/src/dependency_rules.rs",
               "lines": [
                 100,
                 101,
@@ -1048,11 +1048,11 @@
       "name": "Source-scan helper ignores comments containing the forbidden substring",
       "testMappings": [
         {
-          "file": "codelet/test-helpers/tests/rpc067_shape_invariants.rs",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
           "lines": "270-289",
           "implMappings": [
             {
-              "file": "codelet/test-helpers/src/dependency_rules.rs",
+              "file": "rust/test-helpers/src/dependency_rules.rs",
               "lines": [
                 46,
                 47,
@@ -1091,18 +1091,18 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/test-helpers/tests/rpc067_shape_invariants.rs"
+      "rust/test-helpers/tests/rpc067_shape_invariants.rs"
     ],
     "implFiles": [
-      "codelet/test-helpers/Cargo.toml",
-      "codelet/test-helpers/src/dependency_rules.rs",
-      "codelet/core/tests/no_napi_dependency.rs",
-      "codelet/rpc-types/tests/no_napi_dependency.rs",
-      "codelet/fspec/tests/no_napi_dependency.rs",
-      "codelet/fspec-tui/tests/no_napi_dependency.rs",
-      "codelet/sessions/tests/no_napi_dependency.rs",
-      "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
-      "codelet/Cargo.toml"
+      "rust/test-helpers/Cargo.toml",
+      "rust/test-helpers/src/dependency_rules.rs",
+      "rust/core/tests/no_napi_dependency.rs",
+      "rust/rpc-types/tests/no_napi_dependency.rs",
+      "rust/fspec/tests/no_napi_dependency.rs",
+      "rust/fspec-tui/tests/no_napi_dependency.rs",
+      "rust/sessions/tests/no_napi_dependency.rs",
+      "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
+      "rust/Cargo.toml"
     ],
     "totalLinesCovered": 1293
   }

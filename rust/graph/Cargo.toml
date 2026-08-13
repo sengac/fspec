@@ -1,0 +1,67 @@
+[package]
+name = "codelet-graph"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Embedded graph databases for the AST and Learnings dual-graph architecture (RPC-092 lift from rust/napi/src/graph/)"
+
+# RPC-092: do NOT inherit workspace lints. The source crate (codelet-napi)
+# does not inherit them either, so a verbatim lift cannot newly fail
+# clippy::unwrap_used / clippy::expect_used / clippy::uninlined_format_args
+# checks. Tightening these is a separate workstream (see RPC-072 attachment
+# §16 follow-ups).
+
+[dependencies]
+# Graph DB
+nanograph = "1.0.0"
+
+# Provider — only used by call_learnings_extraction_llm
+codelet-providers = { workspace = true }
+
+# Tools (graph_search action types used by re-exported handlers)
+codelet-tools = { workspace = true }
+
+# AST extractors
+ast-grep-core = { workspace = true }
+ast-grep-language = { workspace = true }
+
+# File walking
+ignore = { workspace = true }
+
+# Utilities
+chrono = { workspace = true }
+globset = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+tracing = { workspace = true }
+lazy_static = { workspace = true }
+uuid = { workspace = true }
+
+# Arrow types for export
+arrow-array = "57"
+arrow-schema = "57"
+
+# rig — used inside learnings extraction LLM call
+rig-core = { version = "0.28.0", default-features = false }
+
+# Async runtime (used by graph DB ops and tokio::task::block_in_place)
+tokio = { workspace = true }
+
+# === Common (data_dir resolution used by registry.rs) ===
+codelet-common = { workspace = true }
+
+# === TOML parsing (used by cargo + pip dep extractors) ===
+toml = { workspace = true }
+
+# === ZIP (used by bundle.rs export/import) ===
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true }
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers = { workspace = true }
+serde_json = { workspace = true }

@@ -30,7 +30,7 @@ Feature: Multi-client broadcast capacity and tracing
     And no chunk is delivered to one client and not the other
 
   Scenario: Broadcast capacities are explicit and tuned
-    Given codelet/rpc/src/lib.rs
+    Given rust/rpc/src/lib.rs
     When inspecting the broadcast capacity constants
     Then DEFAULT_CHUNKS_CAPACITY equals 1024
     And DEFAULT_LOGS_CAPACITY equals 4096

@@ -2,7 +2,7 @@
 @RPC-274
 Feature: Port remove-foundation-bounded-context command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs. Signature
+  Core impl at rust/fspec-core/src/commands/remove_foundation_bounded_context.rs. Signature
   run(args_json, project_root). Args struct {contextName: String, cascade: Option<bool>} (serde
   camelCase). Operates on spec/foundation.json's top-level eventStorm sub-object. Loads foundation
   via crate::io::ensure::ensure_foundation_file, round-trips the whole document as a

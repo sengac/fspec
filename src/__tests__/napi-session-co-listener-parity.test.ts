@@ -5,12 +5,12 @@
  * a Rust embedded subscriber on the same SessionManager
  *
  * Vitest smoke test that confirms the existing TS shape of the global chunk
- * callback is unchanged after the StreamChunk lift to codelet/rpc-types and
+ * callback is unchanged after the StreamChunk lift to rust/rpc-types and
  * after SharedFspecService gains an Arc<dyn SessionManagerHandle>. The Rust
  * side of the parity (a Rust embedded subscriber observing byte-equal
  * StreamChunks against the same SessionManager singleton) is asserted in
- * codelet/rpc-embedded/tests/embedded_session_repl.rs and
- * codelet/rpc-server/tests/cross_transport_chunk_parity.rs.
+ * rust/rpc-embedded/tests/embedded_session_repl.rs and
+ * rust/rpc-server/tests/cross_transport_chunk_parity.rs.
  *
  * The Rust-side parity asserts byte-equal StreamChunks. This Vitest test
  * asserts the existing TS API surface — sessionManagerCreate,
@@ -51,7 +51,7 @@ describe('Feature: NAPI co-listener parity after StreamChunk lift (RPC-007)', ()
 
     it('preserves the TS shape of sessionSetGlobalChunkCallback and sessionManagerCreate after the StreamChunk lift', async () => {
       // @step Given the SessionManager singleton is shared by a NAPI host and an EmbeddedTransport via the same SessionManagerHandle
-      // (Rust-side parity asserted in codelet/rpc-embedded/tests/embedded_session_repl.rs.)
+      // (Rust-side parity asserted in rust/rpc-embedded/tests/embedded_session_repl.rs.)
 
       // @step And the TS frontend has registered a callback via sessionSetGlobalChunkCallback
       const observed: ChunkCallbackArgs[] = [];
@@ -65,12 +65,12 @@ describe('Feature: NAPI co-listener parity after StreamChunk lift (RPC-007)', ()
       expect(typeof callback).toBe('function');
 
       // @step And a Rust embedded caller has subscribed to EmbeddedTransport::chunks_rx()
-      // (Rust-side parity asserted in codelet/rpc-server/tests/cross_transport_chunk_parity.rs.)
+      // (Rust-side parity asserted in rust/rpc-server/tests/cross_transport_chunk_parity.rs.)
 
       // @step When a session is created via sessionManagerCreate and input is sent via sessionSendInput
       // sessionManagerCreate(model, project) is the existing TS API
       // shape preserved by RPC-007 rule [10]. The lift adds new
-      // SessionId/SessionInfo/StreamChunk types in codelet/rpc-types
+      // SessionId/SessionInfo/StreamChunk types in rust/rpc-types
       // but does NOT change the NAPI export signatures. Real session
       // construction requires a data directory + provider credentials
       // (exercised by background-session.test.ts) — here we only
@@ -108,7 +108,7 @@ describe('Feature: NAPI co-listener parity after StreamChunk lift (RPC-007)', ()
       }
 
       // @step And the Rust embedded subscriber observes byte-equal StreamChunks on chunks_rx()
-      // (Rust-side parity asserted in codelet/rpc-server/tests/cross_transport_chunk_parity.rs::
+      // (Rust-side parity asserted in rust/rpc-server/tests/cross_transport_chunk_parity.rs::
       // scenario_napi_co_listener_byte_equal_with_embedded_subscriber.)
     });
   });

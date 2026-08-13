@@ -8,7 +8,7 @@
 @RPC-031
 Feature: Lift MessageEnvelope types into codelet-core::persistence::message_envelope
   """
-  MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent, TokenUsagePerMessage, ToolUseResultMetadata, ImageSource, DocumentSource, and CacheControl move into codelet/core/src/persistence/message_envelope.rs. NAPI provides a thin re-export shim (`pub use codelet_core::persistence::message_envelope::*;`). The on-disk JSONL wire format (rename_all = camelCase outer wrapper, tag = type for content enums, untagged MessagePayload) is byte-identical before and after the move. The single test that references `crate::persistence::should_use_blob_storage` (which lives in napi::persistence::blob until RPC-034) is relocated to the NAPI shim's #[cfg(test)] block. Both codelet-napi and codelet-rpc-embedded now consume MessageEnvelope from codelet-core without a `rpc → napi` arrow.
+  MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent, TokenUsagePerMessage, ToolUseResultMetadata, ImageSource, DocumentSource, and CacheControl move into rust/core/src/persistence/message_envelope.rs. NAPI provides a thin re-export shim (`pub use codelet_core::persistence::message_envelope::*;`). The on-disk JSONL wire format (rename_all = camelCase outer wrapper, tag = type for content enums, untagged MessagePayload) is byte-identical before and after the move. The single test that references `crate::persistence::should_use_blob_storage` (which lives in napi::persistence::blob until RPC-034) is relocated to the NAPI shim's #[cfg(test)] block. Both codelet-napi and codelet-rpc-embedded now consume MessageEnvelope from codelet-core without a `rpc → napi` arrow.
   """
 
   # ========================================
@@ -16,8 +16,8 @@ Feature: Lift MessageEnvelope types into codelet-core::persistence::message_enve
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. All 11 envelope types live in codelet/core/src/persistence/message_envelope.rs with identical serde derives, rename_all, tag attributes, and field order
-  #   2. codelet/napi/src/persistence/message_envelope.rs becomes a thin re-export shim (`pub use codelet_core::persistence::message_envelope::*;`) so every `crate::persistence::MessageEnvelope` import in NAPI continues to compile unchanged
+  #   1. All 11 envelope types live in rust/core/src/persistence/message_envelope.rs with identical serde derives, rename_all, tag attributes, and field order
+  #   2. rust/napi/src/persistence/message_envelope.rs becomes a thin re-export shim (`pub use codelet_core::persistence::message_envelope::*;`) so every `crate::persistence::MessageEnvelope` import in NAPI continues to compile unchanged
   #   3. On-disk messages.jsonl format remains byte-identical (no field reorder, no rename, no #[napi] attributes added)
   #   4. The `test_blob_threshold` test referencing `crate::persistence::should_use_blob_storage` is kept in the NAPI shim's `#[cfg(test)]` block (since `should_use_blob_storage` lives in napi::persistence::blob until RPC-034)
   #

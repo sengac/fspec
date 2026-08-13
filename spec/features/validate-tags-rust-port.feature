@@ -5,7 +5,7 @@
 @RPC-324
 Feature: Port validate-tags command to Rust
   """
-  File layout: core impl codelet/fspec-core/src/commands/validate_tags.rs (rewrite stub); help config codelet/fspec-core/src/help/configs/validate_tags.rs; CLI bridge codelet/fspec/src/validate_tags.rs; core test codelet/fspec-core/tests/validate_tags.rs; CLI test codelet/fspec/tests/cli_validate_tags.rs; help fixture codelet/fspec/tests/fixtures/help/validate-tags.txt
+  File layout: core impl rust/fspec-core/src/commands/validate_tags.rs (rewrite stub); help config rust/fspec-core/src/help/configs/validate_tags.rs; CLI bridge rust/fspec/src/validate_tags.rs; core test rust/fspec-core/tests/validate_tags.rs; CLI test rust/fspec/tests/cli_validate_tags.rs; help fixture rust/fspec/tests/fixtures/help/validate-tags.txt
   Reuse: ensure_tags_file (RPC-251), io::gherkin::parse_feature_lenient (RPC-299) for feature+scenario tag extraction. SHARED-FILE REQUEST to supervisor: (1) a read-only work-units loader returning Option<WorkUnitsData> on any error (null parity) — model in-command as Option or add io::ensure::read_work_units_or_none; (2) non-throwing feature glob (glob_feature_files errors on missing spec/features; need empty-vec parity) — either add glob_feature_files_or_empty or handle DirectoryNotFound in-command; (3) supervisor wires canonical.rs PORTED_COMMANDS, dispatch.rs run_ported, commands/mod.rs already has module, help/configs/mod.rs, main.rs Mode+intercept+forward. Work-unit tag regexes ported inline.
   """
 

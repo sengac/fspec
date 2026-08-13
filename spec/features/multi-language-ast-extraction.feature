@@ -18,7 +18,7 @@ Feature: Multi-Language AST Extraction
 
   """
   Architecture:
-  Each language has a dedicated ast_<lang>_extractor.rs in codelet/napi/src/graph/ast_pipeline/.
+  Each language has a dedicated ast_<lang>_extractor.rs in rust/napi/src/graph/ast_pipeline/.
   All extractors follow the same pattern: parse source with SupportLang::<Lang>, extract Function
   and Type nodes using ast-grep patterns, and return Vec<GraphEntity>.
   Dependency extractors parse language-specific manifest files (requirements.txt, go.mod, pom.xml,

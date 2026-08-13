@@ -4,11 +4,11 @@
       "name": "Pressing lowercase t in Detail::Summary is silently ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
           "lines": "142-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 46,
                 47,
@@ -75,11 +75,11 @@
       "name": "Pressing uppercase T in Detail::Summary is silently ignored even with existing Testing status",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
           "lines": "197-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 46,
                 47,
@@ -146,11 +146,11 @@
       "name": "handle_summary_key source body contains zero KeyCode::Char('t') or KeyCode::Char('T') matches",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
           "lines": "250-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 46,
                 47,
@@ -217,11 +217,11 @@
       "name": "handle_summary_key source body contains zero Action::TestProviderConnection construction sites",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
           "lines": "276-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 46,
                 47,
@@ -288,11 +288,11 @@
       "name": "TS reference confirms no `t` keybind exists for TestProviderConnection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
           "lines": "302-345",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 46,
                 47,
@@ -361,10 +361,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs"
+      "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
     "totalLinesCovered": 458
   }

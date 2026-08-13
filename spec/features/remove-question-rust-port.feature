@@ -4,7 +4,7 @@
 @mutation
 Feature: Port remove-question command to Rust
   """
-  Files (replace stub) codelet/fspec-core/src/commands/remove_question.rs; NEW codelet/fspec-core/src/help/configs/remove_question.rs; NEW codelet/fspec/src/remove_question.rs (bridge); NEW codelet/fspec-core/tests/remove_question.rs (dispatcher); NEW codelet/fspec/tests/cli_remove_question.rs; NEW codelet/fspec/tests/fixtures/help/remove-question.txt
+  Files (replace stub) rust/fspec-core/src/commands/remove_question.rs; NEW rust/fspec-core/src/help/configs/remove_question.rs; NEW rust/fspec/src/remove_question.rs (bridge); NEW rust/fspec-core/tests/remove_question.rs (dispatcher); NEW rust/fspec/tests/cli_remove_question.rs; NEW rust/fspec/tests/fixtures/help/remove-question.txt
   Reuses shared infra: io::ensure::ensure_work_units_file (auto-create), io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps). Questions live in WorkUnit.extra under 'questions' as Value::Array; lookup is by id field, NOT by positional offset.
   Two-front-doors: dispatcher AND clap CLI both call commands::remove_question::run(args_json, project_root). CLI bridge marshals positional workUnitId + index into JSON {workUnitId, index}.
   """

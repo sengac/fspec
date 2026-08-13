@@ -4,11 +4,11 @@
       "name": "Path B produces identical end state as Path C from identical starting conditions",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_recovery_unification_test.rs",
+          "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "94-192",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 136,
                 137,
@@ -82,7 +82,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1156,
                 1157,
@@ -129,11 +129,11 @@
       "name": "Path D preserves all messages when pop_user_prompt is false",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_recovery_unification_test.rs",
+          "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "195-245",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 136,
                 137,
@@ -207,7 +207,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
                 329,
                 330,
@@ -253,11 +253,11 @@
       "name": "Helper emits compaction lifecycle events exactly once per entry",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_recovery_unification_test.rs",
+          "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "245-288",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 195,
                 196,
@@ -270,7 +270,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/compaction_retry.rs",
+              "file": "rust/cli/src/interactive/compaction_retry.rs",
               "lines": [
                 53,
                 54,
@@ -293,11 +293,11 @@
       "name": "Helper emits a warning when compaction_needed flag was already true on entry",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_recovery_unification_test.rs",
+          "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "291-335",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 164,
                 165,
@@ -335,11 +335,11 @@
       "name": "Empty partial assistant text does not append an empty Assistant message",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_recovery_unification_test.rs",
+          "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "335-375",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 68,
                 69,
@@ -382,13 +382,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_recovery_unification_test.rs"
+      "rust/cli/tests/compaction_recovery_unification_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/recovery_compaction.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/gemini_continuation.rs",
-      "codelet/cli/src/interactive/compaction_retry.rs"
+      "rust/cli/src/interactive/recovery_compaction.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/gemini_continuation.rs",
+      "rust/cli/src/interactive/compaction_retry.rs"
     ],
     "totalLinesCovered": 561
   }

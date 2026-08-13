@@ -4,11 +4,11 @@
       "name": "Dispatch dependencies for a unit with all four relationship types renders the header and all four lines in fixed order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dependencies.rs",
+          "file": "rust/fspec-core/tests/dependencies.rs",
           "lines": "69-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/dependencies.rs",
+              "file": "rust/fspec-core/src/commands/dependencies.rs",
               "lines": [
                 56,
                 57,
@@ -164,11 +164,11 @@
       "name": "Dispatch dependencies for a unit with no relationships renders only the header line",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dependencies.rs",
+          "file": "rust/fspec-core/tests/dependencies.rs",
           "lines": "108-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/dependencies.rs",
+              "file": "rust/fspec-core/src/commands/dependencies.rs",
               "lines": [
                 56,
                 57,
@@ -324,11 +324,11 @@
       "name": "Dispatch dependencies with --graph renders a depth-first blocks tree with increasing indentation",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dependencies.rs",
+          "file": "rust/fspec-core/tests/dependencies.rs",
           "lines": "126-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/dependencies.rs",
+              "file": "rust/fspec-core/src/commands/dependencies.rs",
               "lines": [
                 56,
                 57,
@@ -484,11 +484,11 @@
       "name": "Relationship values fall back to legacy top-level fields when relationships object is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dependencies.rs",
+          "file": "rust/fspec-core/tests/dependencies.rs",
           "lines": "162-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/dependencies.rs",
+              "file": "rust/fspec-core/src/commands/dependencies.rs",
               "lines": [
                 56,
                 57,
@@ -644,11 +644,11 @@
       "name": "Dispatch dependencies for a missing work unit returns a structured does-not-exist error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dependencies.rs",
+          "file": "rust/fspec-core/tests/dependencies.rs",
           "lines": "190-207",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/dependencies.rs",
+              "file": "rust/fspec-core/src/commands/dependencies.rs",
               "lines": [
                 56,
                 57,
@@ -696,10 +696,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/dependencies.rs"
+      "rust/fspec-core/tests/dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/dependencies.rs"
+      "rust/fspec-core/src/commands/dependencies.rs"
     ],
     "totalLinesCovered": 745
   }

@@ -3,7 +3,7 @@
 @BLOCK-001
 Feature: Blocklist System Integration Tests
   """
-  Integration tests should be placed in codelet/tools/tests/ for Rust E2E tests and src/__tests__/integration/ for TypeScript/React E2E tests
+  Integration tests should be placed in rust/tools/tests/ for Rust E2E tests and src/__tests__/integration/ for TypeScript/React E2E tests
   Use mock file system and mock session context to test complete flows without requiring actual TUI rendering
   Test NAPI bindings integration: blocklist_load, blocklist_check, blocklist_allow_session must be tested across Rust→Node boundary
   """

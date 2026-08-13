@@ -4,11 +4,11 @@
       "name": "WebSocket client receives an initial WorkUnitsUpdate frame on connection",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/websocket_work_units_push.rs",
+          "file": "rust/rpc-server/tests/websocket_work_units_push.rs",
           "lines": "29-66",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 1,
                 2,
@@ -176,11 +176,11 @@
       "name": "WebSocket client receives a WorkUnitsUpdate frame on file mutation",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/websocket_work_units_push.rs",
+          "file": "rust/rpc-server/tests/websocket_work_units_push.rs",
           "lines": "68-110",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/pump.rs",
+              "file": "rust/rpc-server/src/pump.rs",
               "lines": [
                 1,
                 2,
@@ -367,11 +367,11 @@
       "name": "WorkUnitsUpdate frames are encoded with bincode and not JSON",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/websocket_work_units_push.rs",
+          "file": "rust/rpc-server/tests/websocket_work_units_push.rs",
           "lines": "112-159",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/envelope.rs",
+              "file": "rust/rpc-server/src/envelope.rs",
               "lines": [
                 1,
                 2,
@@ -448,12 +448,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/websocket_work_units_push.rs"
+      "rust/rpc-server/tests/websocket_work_units_push.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/server.rs",
-      "codelet/rpc-server/src/pump.rs",
-      "codelet/rpc-server/src/envelope.rs"
+      "rust/rpc-server/src/server.rs",
+      "rust/rpc-server/src/pump.rs",
+      "rust/rpc-server/src/envelope.rs"
     ],
     "totalLinesCovered": 523
   }

@@ -4,11 +4,11 @@
       "name": "Stalled SSE stream detected and agent recovers to idle",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "80-120",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 563,
                 564,
@@ -109,11 +109,11 @@
       "name": "Normal token generation does not trigger stall timeout",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "127-160",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 563,
                 564,
@@ -214,11 +214,11 @@
       "name": "Slow but active generation does not trigger stall timeout",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "167-203",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 563,
                 564,
@@ -319,11 +319,11 @@
       "name": "DeepSearch sub-agent stall triggers wall-clock timeout",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "267-311",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 212,
                 213,
@@ -358,11 +358,11 @@
       "name": "Network retry logic is not affected by stall timeout",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "462-496",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 100,
                 101,
@@ -387,11 +387,11 @@
       "name": "Stream loop panic triggers drop guard to restore idle status",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "230-273",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5014,
                 5015,
@@ -430,11 +430,11 @@
       "name": "Mid-response stall preserves partial text in history",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "210-228",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 563,
                 564,
@@ -535,11 +535,11 @@
       "name": "Stall timeout error is not caught by error classifiers",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/recovery_stall.rs",
+          "file": "rust/cli/src/interactive/recovery_stall.rs",
           "lines": "406-460",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1112,
                 1113,
@@ -565,13 +565,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/src/interactive/recovery_stall.rs"
+      "rust/cli/src/interactive/recovery_stall.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/napi/src/deep_search_handler.rs",
-      "codelet/cli/src/interactive/error_classifiers.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/napi/src/deep_search_handler.rs",
+      "rust/cli/src/interactive/error_classifiers.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 741
   }

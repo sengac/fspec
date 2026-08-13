@@ -4,11 +4,11 @@
       "name": "Reset flag deletes on-disk database and re-indexes with fresh schema",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/graph_reset_tests.rs",
+          "file": "rust/napi/src/graph/graph_reset_tests.rs",
           "lines": "47-88",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/registry.rs",
+              "file": "rust/napi/src/graph/registry.rs",
               "lines": [
                 67,
                 68,
@@ -59,11 +59,11 @@
       "name": "Reset flag clears in-memory graph singleton so fresh schema takes effect",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/graph_reset_tests.rs",
+          "file": "rust/napi/src/graph/graph_reset_tests.rs",
           "lines": "93-146",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/registry.rs",
+              "file": "rust/napi/src/graph/registry.rs",
               "lines": [
                 57,
                 58,
@@ -102,11 +102,11 @@
       "name": "Schema mismatch without reset flag returns actionable error",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/graph_reset_tests.rs",
+          "file": "rust/napi/src/graph/graph_reset_tests.rs",
           "lines": "151-182",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 78,
                 79,
@@ -162,11 +162,11 @@
       "name": "Queries work immediately after reset and re-index",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/graph_reset_tests.rs",
+          "file": "rust/napi/src/graph/graph_reset_tests.rs",
           "lines": "193-268",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_index.rs",
+              "file": "rust/napi/src/graph/ast_index.rs",
               "lines": [
                 24,
                 25,
@@ -315,12 +315,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/graph_reset_tests.rs"
+      "rust/napi/src/graph/graph_reset_tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/registry.rs",
-      "codelet/napi/src/graph/database.rs",
-      "codelet/napi/src/graph/ast_index.rs"
+      "rust/napi/src/graph/registry.rs",
+      "rust/napi/src/graph/database.rs",
+      "rust/napi/src/graph/ast_index.rs"
     ],
     "totalLinesCovered": 449
   }

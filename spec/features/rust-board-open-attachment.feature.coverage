@@ -4,11 +4,11 @@
       "name": "Pressing A on a card with attachments opens the picker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
           "lines": "55-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 191,
                 192,
@@ -35,11 +35,11 @@
       "name": "Pressing A on a card with no attachments is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
           "lines": "79-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 191,
                 192,
@@ -66,11 +66,11 @@
       "name": "Pressing lowercase a behaves the same as uppercase A",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
           "lines": "96-118",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 191,
                 192,
@@ -97,11 +97,11 @@
       "name": "The picker lists the selected work unit's attachments",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
           "lines": "120-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/attachment_picker_dialog.rs",
+              "file": "rust/fspec-tui/src/components/attachment_picker_dialog.rs",
               "lines": [
                 48,
                 49,
@@ -136,11 +136,11 @@
       "name": "Selecting an attachment opens it at the encoded viewer URL",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
           "lines": "139-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_viewer.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
               "lines": [
                 33,
                 34,
@@ -170,11 +170,11 @@
       "name": "Selecting an attachment is a safe no-op when the viewer server is unavailable",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
           "lines": "160-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_viewer.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
               "lines": [
                 95,
                 96,
@@ -207,12 +207,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/board_open_attachment_rpc374.rs"
+      "rust/fspec-tui/tests/board_open_attachment_rpc374.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/components/attachment_picker_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_viewer.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/components/attachment_picker_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_viewer.rs"
     ],
     "totalLinesCovered": 224
   }

@@ -4,11 +4,11 @@
       "name": "Valid conversation batch produces concept, decision, and relation entities",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_extraction.rs",
+          "file": "rust/napi/src/graph/llm_extraction.rs",
           "lines": "443-518",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 1,
                 2,
@@ -455,11 +455,11 @@
       "name": "Malformed concept entry is skipped without failing the batch",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_extraction.rs",
+          "file": "rust/napi/src/graph/llm_extraction.rs",
           "lines": "523-546",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 150,
                 151,
@@ -587,11 +587,11 @@
       "name": "Self-referencing relation is rejected",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_extraction.rs",
+          "file": "rust/napi/src/graph/llm_extraction.rs",
           "lines": "551-579",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 337,
                 338,
@@ -657,11 +657,11 @@
       "name": "Tool-result-only batch is skipped without LLM invocation",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_extraction.rs",
+          "file": "rust/napi/src/graph/llm_extraction.rs",
           "lines": "585-606",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 109,
                 110,
@@ -682,11 +682,11 @@
       "name": "Long conversation turns are truncated before extraction",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_extraction.rs",
+          "file": "rust/napi/src/graph/llm_extraction.rs",
           "lines": "611-639",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 119,
                 120,
@@ -725,11 +725,11 @@
       "name": "Invalid enum values in entities are rejected",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_extraction.rs",
+          "file": "rust/napi/src/graph/llm_extraction.rs",
           "lines": "644-677",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 204,
                 205,
@@ -874,10 +874,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/llm_extraction.rs"
+      "rust/napi/src/graph/llm_extraction.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/llm_extraction.rs"
+      "rust/napi/src/graph/llm_extraction.rs"
     ],
     "totalLinesCovered": 986
   }

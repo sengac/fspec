@@ -4,11 +4,11 @@
       "name": "Removing an existing domain event soft-deletes it and returns the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_domain_event_from_foundation.rs",
           "lines": "91-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
               "lines": [
                 52,
                 53,
@@ -131,11 +131,11 @@
       "name": "Removing when the foundation has no event storm reports the no-data error and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_domain_event_from_foundation.rs",
           "lines": "142-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
               "lines": [
                 52,
                 53,
@@ -258,11 +258,11 @@
       "name": "Removing from a non-existent bounded context fails with the context not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_domain_event_from_foundation.rs",
           "lines": "179-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
               "lines": [
                 52,
                 53,
@@ -385,11 +385,11 @@
       "name": "Removing an event name that does not exist in the matched context fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_domain_event_from_foundation.rs",
           "lines": "219-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
               "lines": [
                 52,
                 53,
@@ -512,11 +512,11 @@
       "name": "A domain event belonging to a different context id is not matched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_domain_event_from_foundation.rs",
           "lines": "259-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
               "lines": [
                 52,
                 53,
@@ -639,11 +639,11 @@
       "name": "Removing an already soft-deleted domain event fails as not-found",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_domain_event_from_foundation.rs",
           "lines": "292-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs",
               "lines": [
                 52,
                 53,
@@ -768,10 +768,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_domain_event_from_foundation.rs"
+      "rust/fspec-core/tests/remove_domain_event_from_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs"
+      "rust/fspec-core/src/commands/remove_domain_event_from_foundation.rs"
     ],
     "totalLinesCovered": 869
   }

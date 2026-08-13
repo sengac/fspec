@@ -4,11 +4,11 @@
       "name": "Parse structured DAG with multiple depth levels",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "18-67",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 324,
                 325,
@@ -129,11 +129,11 @@
       "name": "Parse plain markdown DAG with no dag-node blocks",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "73-91",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 370,
                 371,
@@ -208,11 +208,11 @@
       "name": "Clamp turn range when turn_end exceeds message count",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "97-118",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 370,
                 371,
@@ -287,11 +287,11 @@
       "name": "Skip dag-node with invalid depth value",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "124-143",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 370,
                 371,
@@ -366,11 +366,11 @@
       "name": "Skip dag-node with missing required attributes",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "149-170",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 370,
                 371,
@@ -445,11 +445,11 @@
       "name": "Parse overlapping turn ranges with warning",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "176-200",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 370,
                 371,
@@ -524,11 +524,11 @@
       "name": "DagNodeMeta serialization round-trip",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "206-225",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 324,
                 325,
@@ -585,11 +585,11 @@
       "name": "Compaction instruction specifies structured dag-node format",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "244-290",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 245,
                 246,
@@ -641,11 +641,11 @@
       "name": "Parsed DagNodeMeta stored in InjectSummaryState for downstream access",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs",
           "lines": "292-315",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 168,
                 169,
@@ -706,12 +706,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs"
+      "rust/core/src/compaction/__tests__/dag_node_parsing.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/model.rs",
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/napi/src/inject_summary_handler.rs"
+      "rust/core/src/compaction/model.rs",
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/napi/src/inject_summary_handler.rs"
     ],
     "totalLinesCovered": 805
   }

@@ -4,11 +4,11 @@
       "name": "SlashCommandPopup renders with the cyan accent and \"Slash Commands\" inner title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "69-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -318,11 +318,11 @@
       "name": "SlashCommandPopup uses the two-character marker on every match row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "88-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -632,11 +632,11 @@
       "name": "SlashCommandPopup highlights the selected match with the inverse cyan/black style",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "121-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -946,11 +946,11 @@
       "name": "SlashCommandPopup footer documents Tab/Enter Select",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "146-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1260,11 +1260,11 @@
       "name": "FileSearchPopup renders with the cyan accent and \"File Search\" inner title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "165-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1570,11 +1570,11 @@
       "name": "FileSearchPopup uses the two-character marker on every match row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "185-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1880,11 +1880,11 @@
       "name": "FileSearchPopup empty-state literals render in plain text",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "210-225",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -2190,11 +2190,11 @@
       "name": "FileSearchPopup no-match state renders with the filter quoted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs",
           "lines": "226-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -2502,11 +2502,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_parity_gh.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_gh.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
-      "codelet/fspec-tui/src/views/agent/file_search_popup.rs"
+      "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
+      "rust/fspec-tui/src/views/agent/file_search_popup.rs"
     ],
     "totalLinesCovered": 2542
   }

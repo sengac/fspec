@@ -4,11 +4,11 @@
       "name": "Clap exposes show-work-unit as a subcommand with positional workUnitId and a format option",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "66-107",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -135,11 +135,11 @@
       "name": "CLI prints text-format dump when the work unit exists",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "110-138",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -266,11 +266,11 @@
       "name": "CLI prints JSON payload when --format json is supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "141-173",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -397,11 +397,11 @@
       "name": "CLI exits 1 and writes the canonical message to stderr when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "176-201",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -528,11 +528,11 @@
       "name": "CLI exits 1 when spec/work-units.json is absent (no auto-create)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "204-227",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -659,11 +659,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "230-271",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -790,11 +790,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "274-334",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_work_unit.rs",
+              "file": "rust/fspec/src/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -921,11 +921,11 @@
       "name": "show-work-unit --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_work_unit.rs",
+          "file": "rust/fspec/tests/cli_show_work_unit.rs",
           "lines": "337-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/show_work_unit.rs",
+              "file": "rust/fspec-core/src/help/configs/show_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -1066,11 +1066,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_work_unit.rs"
+      "rust/fspec/tests/cli_show_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/show_work_unit.rs",
-      "codelet/fspec-core/src/help/configs/show_work_unit.rs"
+      "rust/fspec/src/show_work_unit.rs",
+      "rust/fspec-core/src/help/configs/show_work_unit.rs"
     ],
     "totalLinesCovered": 1498
   }

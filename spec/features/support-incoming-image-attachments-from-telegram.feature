@@ -12,7 +12,7 @@ Feature: Support Incoming Image Attachments from Telegram
 
   Assumptions:
   - Media groups (multiple photos in one message) are out of scope - only single photos handled
-  - The codelet/Claude session will handle the images array format - no changes needed on that side
+  - The rust/Claude session will handle the images array format - no changes needed on that side
   """
 
   # ========================================

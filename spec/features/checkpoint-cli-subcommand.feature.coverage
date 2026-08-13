@@ -4,11 +4,11 @@
       "name": "Clap exposes checkpoint as a subcommand with two positionals",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_checkpoint.rs",
           "lines": "72-98",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/checkpoint.rs",
+              "file": "rust/fspec/src/checkpoint.rs",
               "lines": [
                 35,
                 36,
@@ -66,11 +66,11 @@
       "name": "CLI creates a checkpoint and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_checkpoint.rs",
           "lines": "100-121",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/checkpoint.rs",
+              "file": "rust/fspec/src/checkpoint.rs",
               "lines": [
                 35,
                 36,
@@ -128,11 +128,11 @@
       "name": "CLI exits 1 when the working tree is clean",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_checkpoint.rs",
           "lines": "123-134",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/checkpoint.rs",
+              "file": "rust/fspec/src/checkpoint.rs",
               "lines": [
                 47,
                 48,
@@ -177,11 +177,11 @@
       "name": "Default combined TUI mode is preserved after adding checkpoint",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_checkpoint.rs",
           "lines": "136-161",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/checkpoint.rs",
+              "file": "rust/fspec/src/checkpoint.rs",
               "lines": [
                 34,
                 35
@@ -195,11 +195,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_checkpoint.rs",
           "lines": "163-209",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/checkpoint.rs",
+              "file": "rust/fspec/src/checkpoint.rs",
               "lines": [
                 35,
                 36,
@@ -257,11 +257,11 @@
       "name": "checkpoint --help is byte-for-byte identical to TS",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_checkpoint.rs",
           "lines": "211-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/checkpoint.rs",
+              "file": "rust/fspec-core/src/help/configs/checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -315,11 +315,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_checkpoint.rs"
+      "rust/fspec/tests/cli_checkpoint.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/checkpoint.rs",
-      "codelet/fspec-core/src/help/configs/checkpoint.rs"
+      "rust/fspec/src/checkpoint.rs",
+      "rust/fspec-core/src/help/configs/checkpoint.rs"
     ],
     "totalLinesCovered": 377
   }

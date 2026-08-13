@@ -4,11 +4,11 @@
       "name": "Esc level 1 — slash popup dismiss takes precedence over interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "121-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 226,
                 227,
@@ -33,11 +33,11 @@
       "name": "Esc level 2 — HelpDialog dismiss takes precedence over interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "153-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 56,
                 57,
@@ -59,11 +59,11 @@
       "name": "Esc level 3 — resume mode-view dismiss takes precedence over interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "180-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 54,
                 55,
@@ -102,11 +102,11 @@
       "name": "Esc level 3 — search mode-view dismiss takes precedence over interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "209-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 82,
                 83,
@@ -140,11 +140,11 @@
       "name": "Esc level 4 — Running session interrupts without navigating back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "234-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -184,11 +184,11 @@
       "name": "Esc level 4 — Compacting session interrupts without navigating back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "270-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -228,11 +228,11 @@
       "name": "Esc level 5 — no current session navigates back to Board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "349-368",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -272,11 +272,11 @@
       "name": "Ctrl+R opens SearchHistoryView with the input field focused on mount",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "371-403",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 210,
                 211,
@@ -297,11 +297,11 @@
       "name": "Shift+up/down snapshots draft, walks history, and restores draft on return",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "406-488",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 36,
                 37,
@@ -438,11 +438,11 @@
       "name": "Shift+up at end of history is a no-op (clamped at tail)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "491-529",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 76,
                 77,
@@ -479,13 +479,13 @@
     "coveredScenarios": 10,
     "coveragePercent": 83,
     "testFiles": [
-      "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs"
+      "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/dispatch.rs",
-      "codelet/fspec-tui/src/app/events.rs",
-      "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
-      "codelet/fspec-tui/src/app/dispatch_history_recall.rs"
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/app/events.rs",
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+      "rust/fspec-tui/src/app/dispatch_history_recall.rs"
     ],
     "totalLinesCovered": 748
   }

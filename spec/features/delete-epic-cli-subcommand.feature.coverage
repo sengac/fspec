@@ -4,11 +4,11 @@
       "name": "Clap exposes delete-epic with a positional arg and --force flag in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "file": "rust/fspec/tests/cli_delete_epic.rs",
           "lines": "90-135",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_epic.rs",
+              "file": "rust/fspec/src/delete_epic.rs",
               "lines": [
                 47,
                 48,
@@ -57,11 +57,11 @@
       "name": "CLI deletes an existing epic and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "file": "rust/fspec/tests/cli_delete_epic.rs",
           "lines": "137-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_epic.rs",
+              "file": "rust/fspec/src/delete_epic.rs",
               "lines": [
                 47,
                 48,
@@ -110,11 +110,11 @@
       "name": "CLI accepts --force without changing behaviour (TS impl ignores it)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "file": "rust/fspec/tests/cli_delete_epic.rs",
           "lines": "161-182",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_epic.rs",
+              "file": "rust/fspec/src/delete_epic.rs",
               "lines": [
                 47,
                 48,
@@ -163,11 +163,11 @@
       "name": "CLI exits 1 when the epic does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "file": "rust/fspec/tests/cli_delete_epic.rs",
           "lines": "184-213",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_epic.rs",
+              "file": "rust/fspec/src/delete_epic.rs",
               "lines": [
                 75,
                 76,
@@ -188,11 +188,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "file": "rust/fspec/tests/cli_delete_epic.rs",
           "lines": "215-263",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_epic.rs",
+              "file": "rust/fspec/src/delete_epic.rs",
               "lines": [
                 47,
                 48,
@@ -241,11 +241,11 @@
       "name": "delete-epic --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "file": "rust/fspec/tests/cli_delete_epic.rs",
           "lines": "265-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/delete_epic.rs",
+              "file": "rust/fspec-core/src/help/configs/delete_epic.rs",
               "lines": [
                 1,
                 2,
@@ -310,11 +310,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_epic.rs"
+      "rust/fspec/tests/cli_delete_epic.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_epic.rs",
-      "codelet/fspec-core/src/help/configs/delete_epic.rs"
+      "rust/fspec/src/delete_epic.rs",
+      "rust/fspec-core/src/help/configs/delete_epic.rs"
     ],
     "totalLinesCovered": 408
   }

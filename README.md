@@ -110,7 +110,7 @@ This opens the factory floor—your Kanban board with AI workstations ready to t
 
 ## Rust Binary Architecture
 
-The `fspec` binary is a pure-Rust application built in the `codelet/` directory.
+The `fspec` binary is a pure-Rust application built in the `rust/` directory.
 It provides the TUI, WebSocket server, and ACDD command surface as a single
 self-contained executable — no Node.js runtime required.
 

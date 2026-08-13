@@ -2,7 +2,7 @@
 @RPC-282
 Feature: Port remove-tag-from-scenario command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_tag_from_scenario.rs. Reads the target
+  Core impl at rust/fspec-core/src/commands/remove_tag_from_scenario.rs. Reads the target
   feature file (relative to project_root), parses with parse_feature_lenient to find the named
   top-level Scenario, intersects requested tags with the scenario's existing tags, then mutates
   the raw source lines (NOT a re-emit) to drop only the matching tag lines that sit between the

@@ -4,11 +4,11 @@
       "name": "Search Dart files for class declarations using AstGrepTool",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "72-100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/dart_lang.rs",
+              "file": "rust/tools/src/dart_lang.rs",
               "lines": [
                 1,
                 2,
@@ -76,11 +76,11 @@
       "name": "Search Dart files for function declarations with meta-variable capture",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "107-148",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 43,
                 44,
@@ -147,11 +147,11 @@
       "name": "Unsupported language error message includes dart in supported list",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "262-288",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 164,
                 165,
@@ -170,11 +170,11 @@
       "name": "AstGrepTool finds .dart files when walking a directory",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "294-360",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 64,
                 65,
@@ -220,11 +220,11 @@
       "name": "Refactor a Dart source file by replacing a matched class pattern",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "150-201",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 134,
                 135,
@@ -252,11 +252,11 @@
       "name": "Batch replace all occurrences of a Dart class pattern",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "209-249",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 134,
                 135,
@@ -284,11 +284,11 @@
       "name": "Solidity file extensions are mapped correctly",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "356-393",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 93
               ]
@@ -301,11 +301,11 @@
       "name": "Nix file extensions are mapped correctly",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "401-427",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 94
               ]
@@ -318,11 +318,11 @@
       "name": "Hcl file extensions are mapped correctly",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "file": "rust/tools/tests/astgrep_dart_test.rs",
           "lines": "435-461",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 95,
                 96
@@ -338,12 +338,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/astgrep_dart_test.rs"
+      "rust/tools/tests/astgrep_dart_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/dart_lang.rs",
-      "codelet/tools/src/astgrep.rs",
-      "codelet/tools/src/astgrep_refactor.rs"
+      "rust/tools/src/dart_lang.rs",
+      "rust/tools/src/astgrep.rs",
+      "rust/tools/src/astgrep_refactor.rs"
     ],
     "totalLinesCovered": 538
   }

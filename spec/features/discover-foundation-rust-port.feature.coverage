@@ -4,11 +4,11 @@
       "name": "Fresh discovery creates the draft with placeholders and a first-field reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "91-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 83,
                 84,
@@ -179,11 +179,11 @@
       "name": "Re-running without force when a draft already exists is blocked",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "123-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 150,
                 151,
@@ -287,11 +287,11 @@
       "name": "Running without force when foundation.json already exists is blocked",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "150-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 150,
                 151,
@@ -395,11 +395,11 @@
       "name": "Force overwrite regenerates the draft from scratch with a warning",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "175-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 150,
                 151,
@@ -503,11 +503,11 @@
       "name": "Finalize blocked when the draft still has placeholder fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "198-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 255,
                 256,
@@ -647,11 +647,11 @@
       "name": "Finalize blocked when the filled draft violates the schema",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "226-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 255,
                 256,
@@ -791,11 +791,11 @@
       "name": "Finalize success writes foundation.json, deletes the draft, and creates the FOUND work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "250-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 255,
                 256,
@@ -1048,11 +1048,11 @@
       "name": "Finalize FOUND auto-creation is idempotent when a FOUND unit already exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_foundation.rs",
+          "file": "rust/fspec-core/tests/discover_foundation.rs",
           "lines": "287-327",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_foundation.rs",
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
               "lines": [
                 383,
                 384,
@@ -1179,10 +1179,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/discover_foundation.rs"
+      "rust/fspec-core/tests/discover_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/discover_foundation.rs"
+      "rust/fspec-core/src/commands/discover_foundation.rs"
     ],
     "totalLinesCovered": 1268
   }

@@ -83,7 +83,7 @@ Feature: App bootstrap sequence + subscriber tasks + action bus extensions (RPC-
     And the task subsequently re-fetches a snapshot via `backend.list_work_units()` and emits a fresh `Action::WorkUnitsLoaded`
 
   Scenario: Action enum gains seven new variants while existing variants are preserved
-    Given the Action enum in codelet/fspec-tui/src/components/mod.rs
+    Given the Action enum in rust/fspec-tui/src/components/mod.rs
     Then it contains the existing variants Quit, Redraw, Custom(String)
     And it additionally contains LoadWorkUnits
     And it additionally contains WorkUnitsLoaded(Vec<WorkUnitInfo>)

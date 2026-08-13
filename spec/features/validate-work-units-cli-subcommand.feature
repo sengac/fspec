@@ -5,7 +5,7 @@
 @RPC-325
 Feature: Validate-work-units CLI subcommand
   """
-  File layout: core impl codelet/fspec-core/src/commands/validate_work_units.rs (rewrite stub); help config codelet/fspec-core/src/help/configs/validate_work_units.rs; CLI bridge codelet/fspec/src/validate_work_units.rs; core test codelet/fspec-core/tests/validate_work_units.rs; CLI test codelet/fspec/tests/cli_validate_work_units.rs; help fixture codelet/fspec/tests/fixtures/help/validate-work-units.txt
+  File layout: core impl rust/fspec-core/src/commands/validate_work_units.rs (rewrite stub); help config rust/fspec-core/src/help/configs/validate_work_units.rs; CLI bridge rust/fspec/src/validate_work_units.rs; core test rust/fspec-core/tests/validate_work_units.rs; CLI test rust/fspec/tests/cli_validate_work_units.rs; help fixture rust/fspec/tests/fixtures/help/validate-work-units.txt
   Implement validation over RAW serde_json::Value (mirror TS untyped JSON.parse) because every check inspects ad-hoc fields and TS keeps invalid status as a raw string. SHARED-FILE REQUEST to supervisor: add io::ensure helper to load spec/work-units.json as raw Value with ensure semantics (auto-create default, escalate parse) — proposed ensure_work_units_value(cwd) -> Result<Value> — OR confirm we can call ensure_work_units_file then serde_json::to_value (note: typed WorkUnitsData parse would REJECT an invalid status before Check 4 can run, breaking parity, so a raw loader is preferred). Supervisor also wires canonical.rs PORTED_COMMANDS, dispatch.rs run_ported, help/configs/mod.rs, main.rs Mode+intercept+forward.
   OPEN DECISION for supervisor: validate-work-units-help.ts lists a '--fix' OPTION but the TS Commander registration implements NO flags. Capture the byte-exact --help fixture in PHASE B from `node dist/index.js validate-work-units --help` to settle whether the help OPTIONS section shows --fix (rich help) or nothing (bare Commander). The clap surface exposes no functional flag regardless; --fix is documented-only.
   """
@@ -42,34 +42,34 @@ Feature: Validate-work-units CLI subcommand
     So that I can detect corrupted or inconsistent work-units.json and know to run repair-work-units before continuing
 
   Scenario: validate-work-units --help is byte-for-byte identical to the TS reference
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec validate-work-units --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec validate-work-units --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/validate-work-units.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/validate-work-units.txt
     And stdout starts with a blank line followed by 'VALIDATE-WORK-UNITS'
 
   Scenario: CLI prints success and exits 0 for a clean store
     Given spec/work-units.json contains consistent work units with valid statuses and matching state arrays
-    When I run `./codelet/target/release/fspec validate-work-units`
+    When I run `./rust/target/release/fspec validate-work-units`
     Then the command exits 0
     Then stdout contains the substring '✓ All work units are valid'
 
   Scenario: CLI prints errors to stderr and exits 1 for a corrupt store
     Given spec/work-units.json contains AUTH-002 with a non-existent parent AUTH-001
-    When I run `./codelet/target/release/fspec validate-work-units`
+    When I run `./rust/target/release/fspec validate-work-units`
     Then the command exits with code 1
     Then stderr contains the substring '✗ Failed to validate work units'
     Then stderr contains the substring "Cannot read properties of undefined (reading 'children')"
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root whose spec/work-units.json contains an invalid status value
-    When I dispatch validate-work-units through fspec_core::dispatch::dispatch_command and also run `./codelet/target/release/fspec validate-work-units` against the same on-disk state
+    When I dispatch validate-work-units through fspec_core::dispatch::dispatch_command and also run `./rust/target/release/fspec validate-work-units` against the same on-disk state
     Then both paths agree the store is invalid
-    Then the CLI bridge module codelet/fspec/src/validate_work_units.rs contains NO inline validation logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/validate_work_units.rs contains NO inline validation logic — its only computation is JSON arg marshalling
 
   Scenario: CLI rejects the documented-only --fix flag at runtime
     Given the --fix option appears in `validate-work-units --help` output (for byte-parity with the TS rich help)
-    When I run `./codelet/target/release/fspec validate-work-units --fix` against a clean store
+    When I run `./rust/target/release/fspec validate-work-units --fix` against a clean store
     Then the command exits with code 1
     Then stderr contains the substring "error: unknown option '--fix'"
     Then the matching TS command `fspec validate-work-units --fix` also exits 1 with the same 'unknown option' message

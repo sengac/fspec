@@ -7,10 +7,10 @@
 Feature: GitHub Copilot model catalog, provider options & reasoning effort
   """
   Wire format is always OpenAI-shaped — reuse existing OpenAIFspecFacade for wire translation; only the reasoning-variant selection and options transformation differs per family
-  CopilotModelCatalogService lives at codelet/providers/src/copilot/models.rs; exposes fetch_models(base_url, token) -> Result<Vec<ModelInfo>>; the function calls /models, parses the response, filters by model_picker_enabled, and maps each entry to ModelInfo via build_model_info — there is NO merge step and NO existing parameter
+  CopilotModelCatalogService lives at rust/providers/src/copilot/models.rs; exposes fetch_models(base_url, token) -> Result<Vec<ModelInfo>>; the function calls /models, parses the response, filters by model_picker_enabled, and maps each entry to ModelInfo via build_model_info — there is NO merge step and NO existing parameter
   CopilotProvider::list_models() (from PROV-055) calls CopilotModelCatalogService.fetch_models() and returns the resulting Vec<ModelInfo>; the TUI model picker consumes this list via the existing provider registry — no models.dev fallback, no static catalog merge
-  Provider-level zero-retention enforcement (store: false) lives at codelet/providers/src/copilot/provider_options.rs as a single pure function apply_store_false(options) that is called for ALL Copilot requests irrespective of model — there is no per-model branching
-  Reasoning-variant emission lives at codelet/providers/src/copilot/models.rs as part of build_model_info(remote_entry) → ModelInfo: it copies capabilities.supports.reasoning_effort verbatim from the response into ModelInfo.reasoning_variants (Vec<String>); empty/missing → empty Vec; no transformation, no filtering, no family branching
+  Provider-level zero-retention enforcement (store: false) lives at rust/providers/src/copilot/provider_options.rs as a single pure function apply_store_false(options) that is called for ALL Copilot requests irrespective of model — there is no per-model branching
+  Reasoning-variant emission lives at rust/providers/src/copilot/models.rs as part of build_model_info(remote_entry) → ModelInfo: it copies capabilities.supports.reasoning_effort verbatim from the response into ModelInfo.reasoning_variants (Vec<String>); empty/missing → empty Vec; no transformation, no filtering, no family branching
   """
 
   # ========================================

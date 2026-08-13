@@ -4,11 +4,11 @@
       "name": "WebSocketFspecBackend smoke test round-trips list_work_units across the WS wire",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/ws_backend_smoke.rs",
+          "file": "rust/fspec-tui/tests/ws_backend_smoke.rs",
           "lines": "39-95",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1,
                 2,
@@ -109,11 +109,11 @@
       "name": "WebSocketFspecBackend.connect uses tokio_tungstenite::connect_async directly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/ws_backend_smoke.rs",
+          "file": "rust/fspec-tui/tests/ws_backend_smoke.rs",
           "lines": "100-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1,
                 2,
@@ -216,10 +216,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/ws_backend_smoke.rs"
+      "rust/fspec-tui/tests/ws_backend_smoke.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/websocket.rs"
+      "rust/fspec-tui/src/transport/websocket.rs"
     ],
     "totalLinesCovered": 295
   }

@@ -4,11 +4,11 @@
       "name": "Typing '/' on an empty input opens the slash command palette",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "60-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -283,11 +283,11 @@
       "name": "Typing characters after '/' filters the slash command list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "82-95",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -562,11 +562,11 @@
       "name": "Pressing Enter on /quit emits Action::Quit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "97-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 25,
                 26,
@@ -599,11 +599,11 @@
       "name": "Pressing Enter on /clear resets the AgentView scrollback and input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "124-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 25,
                 26,
@@ -636,11 +636,11 @@
       "name": "Pressing Enter on /help pushes the HelpDialog onto the Compositor at Priority::Critical",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "172-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 20,
                 21,
@@ -673,11 +673,11 @@
       "name": "Pressing Enter on an unimplemented command emits a scrollback notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "202-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 20,
                 21,
@@ -710,11 +710,11 @@
       "name": "Pressing Tab on a selected slash command fills the input without executing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "239-266",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -989,11 +989,11 @@
       "name": "Pressing Esc on the slash popup dismisses it without clearing the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "270-291",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1268,11 +1268,11 @@
       "name": "Typing '@' inside any input opens the file search popup at the '@' anchor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "295-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1526,11 +1526,11 @@
       "name": "Pressing Enter on a file search result splices the chosen path with a trailing space",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "324-341",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1784,11 +1784,11 @@
       "name": "Pressing Tab on a file search result splices the chosen path without a trailing space",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "345-359",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -2042,11 +2042,11 @@
       "name": "Typing a space after '@' auto-dismisses the file search popup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "363-377",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -2275,11 +2275,11 @@
       "name": "Pressing Esc on the file search popup dismisses it without modifying the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "381-396",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -2533,11 +2533,11 @@
       "name": "While the slash popup is open, plain Enter is intercepted (not submitted to the chat)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "400-422",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -2812,11 +2812,11 @@
       "name": "While the slash popup is open, 'q' is treated as a typed character not as Quit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs",
+          "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
           "lines": "426-449",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -3093,13 +3093,13 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_agent_popups_rpc020.rs"
+      "rust/fspec-tui/tests/view_agent_popups_rpc020.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/views/agent/file_search_popup.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 3201
   }

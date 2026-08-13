@@ -4,11 +4,11 @@
       "name": "RoleBanner renders zero rows when no role is set on the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "71-97",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/role_banner.rs",
+              "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
               "lines": [
                 33,
                 34,
@@ -33,11 +33,11 @@
       "name": "RoleBanner renders one row when a role is set on the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "98-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 201,
                 202,
@@ -93,11 +93,11 @@
       "name": "Multi-line role text is collapsed to a single line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "134-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/role_banner.rs",
+              "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
               "lines": [
                 50,
                 51,
@@ -128,11 +128,11 @@
       "name": "Long role text is truncated to terminal width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "159-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/role_banner.rs",
+              "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
               "lines": [
                 33,
                 34,
@@ -157,11 +157,11 @@
       "name": "RoleBanner reflects the focused session only, not background sessions",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "178-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 201,
                 202,
@@ -217,11 +217,11 @@
       "name": "RoleBanner is suppressed while resume_view is active",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "216-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 191,
                 192,
@@ -241,11 +241,11 @@
       "name": "RoleBanner is suppressed while search_view is active",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "235-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 191,
                 192,
@@ -265,11 +265,11 @@
       "name": "role_banner.rs stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs",
+          "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
           "lines": "254-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/role_banner.rs",
+              "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
               "lines": [
                 1,
                 2,
@@ -423,11 +423,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/role_banner_integration_rpc022.rs"
+      "rust/fspec-tui/tests/role_banner_integration_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/role_banner.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/role_banner.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 488
   }

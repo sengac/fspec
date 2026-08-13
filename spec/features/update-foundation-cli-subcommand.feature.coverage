@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_foundation.rs",
+          "file": "rust/fspec/tests/cli_update_foundation.rs",
           "lines": "90-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/update_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/update_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -197,11 +197,11 @@
       "name": "CLI updates a final foundation field and prints the success lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_foundation.rs",
+          "file": "rust/fspec/tests/cli_update_foundation.rs",
           "lines": "117-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_foundation.rs",
+              "file": "rust/fspec/src/update_foundation.rs",
               "lines": [
                 49,
                 50,
@@ -234,11 +234,11 @@
       "name": "CLI updates the draft when a foundation.json.draft is present",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_foundation.rs",
+          "file": "rust/fspec/tests/cli_update_foundation.rs",
           "lines": "150-175",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_foundation.rs",
+              "file": "rust/fspec/src/update_foundation.rs",
               "lines": [
                 49,
                 50,
@@ -272,11 +272,11 @@
       "name": "CLI rejects an unknown section with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_foundation.rs",
+          "file": "rust/fspec/tests/cli_update_foundation.rs",
           "lines": "177-206",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_foundation.rs",
+              "file": "rust/fspec/src/update_foundation.rs",
               "lines": [
                 71,
                 72,
@@ -296,11 +296,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_foundation.rs",
+          "file": "rust/fspec/tests/cli_update_foundation.rs",
           "lines": "208-254",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_foundation.rs",
+              "file": "rust/fspec/src/update_foundation.rs",
               "lines": [
                 40,
                 41,
@@ -355,11 +355,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_foundation.rs"
+      "rust/fspec/tests/cli_update_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/update_foundation.rs",
-      "codelet/fspec/src/update_foundation.rs"
+      "rust/fspec-core/src/help/configs/update_foundation.rs",
+      "rust/fspec/src/update_foundation.rs"
     ],
     "totalLinesCovered": 430
   }

@@ -5,7 +5,7 @@
 @TOOL-008
 Feature: System Prompt Facade for Provider-Specific Prompt Handling
   """
-  SystemPromptFacade trait with provider(), identity_prefix(), transform_preamble(), format_for_api() methods. Provider-specific implementations: ClaudeOAuthSystemPromptFacade (with identity prefix), ClaudeApiKeySystemPromptFacade (no prefix), GeminiSystemPromptFacade, OpenAISystemPromptFacade. Located in codelet/tools/src/facade/system_prompt.rs. Integrates with provider implementations via facade selection based on auth type.
+  SystemPromptFacade trait with provider(), identity_prefix(), transform_preamble(), format_for_api() methods. Provider-specific implementations: ClaudeOAuthSystemPromptFacade (with identity prefix), ClaudeApiKeySystemPromptFacade (no prefix), GeminiSystemPromptFacade, OpenAISystemPromptFacade. Located in rust/tools/src/facade/system_prompt.rs. Integrates with provider implementations via facade selection based on auth type.
   """
 
   # ========================================

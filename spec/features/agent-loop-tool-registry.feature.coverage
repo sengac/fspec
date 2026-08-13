@@ -4,11 +4,11 @@
       "name": "run_with_provider! macro body contains the five canonical tool-registry calls in order",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "157-247",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 37,
                 38,
@@ -90,11 +90,11 @@
       "name": "OpenAI inlined arm in agent_loop.rs mirrors the macro body with the same five canonical calls",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "251-312",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 869,
                 870,
@@ -152,11 +152,11 @@
       "name": "Custom-provider fallthrough arm wraps CustomProvider::create_rig_agent with the four follow-up calls",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "315-379",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 953,
                 954,
@@ -236,11 +236,11 @@
       "name": "Every provider's create_rig_agent accepts the (session_id, preamble, thinking) signature the macro relies on",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "382-463",
           "implMappings": [
             {
-              "file": "codelet/providers/src/lib.rs",
+              "file": "rust/providers/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -382,11 +382,11 @@
       "name": "RigAgent::with_default_depth accepts any rig Agent built by create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "466-493",
           "implMappings": [
             {
-              "file": "codelet/core/src/rig_agent.rs",
+              "file": "rust/core/src/rig_agent.rs",
               "lines": [
                 47,
                 48,
@@ -401,11 +401,11 @@
       "name": "gather_mcp_tool_wrappers and set_mcp_tool_server_handle have stable session-id signatures",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "496-513",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 888,
                 889,
@@ -571,11 +571,11 @@
       "name": "gather_mcp_tool_wrappers returns an empty Vec when no MCP servers are connected for the session",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc083_tool_registry.rs",
+          "file": "rust/agent-loop/tests/rpc083_tool_registry.rs",
           "lines": "516-534",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 1041,
                 1042,
@@ -639,14 +639,14 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc083_tool_registry.rs"
+      "rust/agent-loop/tests/rpc083_tool_registry.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/dispatch.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/providers/src/lib.rs",
-      "codelet/core/src/rig_agent.rs",
-      "codelet/tools/src/mcp.rs"
+      "rust/agent-loop/src/dispatch.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/providers/src/lib.rs",
+      "rust/core/src/rig_agent.rs",
+      "rust/tools/src/mcp.rs"
     ],
     "totalLinesCovered": 886
   }

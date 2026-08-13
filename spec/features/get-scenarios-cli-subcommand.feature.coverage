@@ -4,11 +4,11 @@
       "name": "Clap exposes get-scenarios as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_get_scenarios.rs",
+          "file": "rust/fspec/tests/cli_get_scenarios.rs",
           "lines": "48-74",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/get_scenarios.rs",
+              "file": "rust/fspec-core/src/help/configs/get_scenarios.rs",
               "lines": [
                 1,
                 2,
@@ -77,11 +77,11 @@
       "name": "CLI with --format=json prints a JSON array of scenario objects",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_get_scenarios.rs",
+          "file": "rust/fspec/tests/cli_get_scenarios.rs",
           "lines": "76-103",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/get_scenarios.rs",
+              "file": "rust/fspec/src/get_scenarios.rs",
               "lines": [
                 41,
                 42,
@@ -182,11 +182,11 @@
       "name": "CLI default text output prints the count message and groups scenarios by feature",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_get_scenarios.rs",
+          "file": "rust/fspec/tests/cli_get_scenarios.rs",
           "lines": "105-128",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/get_scenarios.rs",
+              "file": "rust/fspec/src/get_scenarios.rs",
               "lines": [
                 41,
                 42,
@@ -287,11 +287,11 @@
       "name": "CLI against a workspace with no spec/features exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_get_scenarios.rs",
+          "file": "rust/fspec/tests/cli_get_scenarios.rs",
           "lines": "130-153",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/get_scenarios.rs",
+              "file": "rust/fspec/src/get_scenarios.rs",
               "lines": [
                 41,
                 42,
@@ -392,11 +392,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_get_scenarios.rs",
+          "file": "rust/fspec/tests/cli_get_scenarios.rs",
           "lines": "155-209",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/get_scenarios.rs",
+              "file": "rust/fspec/src/get_scenarios.rs",
               "lines": [
                 41,
                 42,
@@ -497,11 +497,11 @@
       "name": "get-scenarios --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_get_scenarios.rs",
+          "file": "rust/fspec/tests/cli_get_scenarios.rs",
           "lines": "211-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/get_scenarios.rs",
+              "file": "rust/fspec-core/src/help/configs/get_scenarios.rs",
               "lines": [
                 1,
                 2,
@@ -572,11 +572,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_get_scenarios.rs"
+      "rust/fspec/tests/cli_get_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/get_scenarios.rs",
-      "codelet/fspec/src/get_scenarios.rs"
+      "rust/fspec-core/src/help/configs/get_scenarios.rs",
+      "rust/fspec/src/get_scenarios.rs"
     ],
     "totalLinesCovered": 652
   }

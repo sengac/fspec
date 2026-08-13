@@ -4,11 +4,11 @@
       "name": "Spawn subordinate with Anthropic provider passes correct model string",
       "testMappings": [
         {
-          "file": "codelet/napi/src/agent_manager_handler.rs",
+          "file": "rust/napi/src/agent_manager_handler.rs",
           "lines": "615-637",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 29,
                 30,
@@ -83,11 +83,11 @@
       "name": "Spawn subordinate with Google provider passes correct model string",
       "testMappings": [
         {
-          "file": "codelet/napi/src/agent_manager_handler.rs",
+          "file": "rust/napi/src/agent_manager_handler.rs",
           "lines": "639-659",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 29,
                 30,
@@ -162,11 +162,11 @@
       "name": "Spawn subordinate with OpenAI provider passes through unchanged",
       "testMappings": [
         {
-          "file": "codelet/napi/src/agent_manager_handler.rs",
+          "file": "rust/napi/src/agent_manager_handler.rs",
           "lines": "661-681",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 29,
                 30,
@@ -243,10 +243,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/agent_manager_handler.rs"
+      "rust/napi/src/agent_manager_handler.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/agent_manager_handler.rs"
+      "rust/napi/src/agent_manager_handler.rs"
     ],
     "totalLinesCovered": 254
   }

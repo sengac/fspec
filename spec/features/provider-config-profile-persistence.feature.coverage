@@ -4,11 +4,11 @@
       "name": "Saving a new profile to a missing config file creates it",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "23-48",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 47,
                 48,
@@ -143,11 +143,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "23-48",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1114,
                 1115,
@@ -178,11 +178,11 @@
       "name": "Saving an existing profile preserves its custom models",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "50-83",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 47,
                 48,
@@ -322,11 +322,11 @@
       "name": "Saving a profile preserves sibling profiles and top-level keys",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "85-117",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 47,
                 48,
@@ -466,11 +466,11 @@
       "name": "Saving a profile writes supplied optional fields",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "119-152",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 47,
                 48,
@@ -605,11 +605,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "119-152",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/conversions.rs",
+              "file": "rust/sessions/src/conversions.rs",
               "lines": [
                 165,
                 166,
@@ -642,11 +642,11 @@
       "name": "Saving a profile for a non-openai provider is rejected",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "154-179",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1114,
                 1115,
@@ -677,11 +677,11 @@
       "name": "Deleting a profile removes only the named profile",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "181-209",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 82,
                 83,
@@ -805,11 +805,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "181-209",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1134,
                 1135,
@@ -825,11 +825,11 @@
       "name": "Deleting from a missing config file is a no-op",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "211-228",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 82,
                 83,
@@ -958,11 +958,11 @@
       "name": "Deleting a non-existent profile leaves config unchanged",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/profile_rpc_surface.rs",
+          "file": "rust/sessions/tests/profile_rpc_surface.rs",
           "lines": "230-254",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 82,
                 83,
@@ -1093,12 +1093,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/profile_rpc_surface.rs"
+      "rust/sessions/tests/profile_rpc_surface.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/profile_persistence.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/conversions.rs"
+      "rust/sessions/src/profile_persistence.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/conversions.rs"
     ],
     "totalLinesCovered": 1240
   }

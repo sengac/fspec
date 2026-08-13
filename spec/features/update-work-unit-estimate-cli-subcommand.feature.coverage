@@ -4,11 +4,11 @@
       "name": "Clap exposes update-work-unit-estimate with two positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_estimate.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_estimate.rs",
           "lines": "72-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/help/configs/update_work_unit_estimate.rs",
               "lines": [
                 86,
                 87,
@@ -39,11 +39,11 @@
       "name": "CLI sets a task estimate and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_estimate.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_estimate.rs",
           "lines": "121-142",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_estimate.rs",
+              "file": "rust/fspec/src/update_work_unit_estimate.rs",
               "lines": [
                 42,
                 43,
@@ -87,11 +87,11 @@
       "name": "CLI reports an invalid estimate on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_estimate.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_estimate.rs",
           "lines": "148-165",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_estimate.rs",
+              "file": "rust/fspec/src/update_work_unit_estimate.rs",
               "lines": [
                 61,
                 62,
@@ -116,11 +116,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_work_unit_estimate.rs"
+      "rust/fspec/tests/cli_update_work_unit_estimate.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/update_work_unit_estimate.rs",
-      "codelet/fspec/src/update_work_unit_estimate.rs"
+      "rust/fspec-core/src/help/configs/update_work_unit_estimate.rs",
+      "rust/fspec/src/update_work_unit_estimate.rs"
     ],
     "totalLinesCovered": 146
   }

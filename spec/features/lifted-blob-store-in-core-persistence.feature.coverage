@@ -4,11 +4,11 @@
       "name": "Envelope tool_result round-trips through the lifted blob storage in codelet-core",
       "testMappings": [
         {
-          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "54-141",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/blob_processing.rs",
+              "file": "rust/core/src/persistence/blob_processing.rs",
               "lines": [
                 150,
                 151,
@@ -86,11 +86,11 @@
       "name": "Identical blobs deduplicate to a single on-disk file",
       "testMappings": [
         {
-          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "147-188",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/blob.rs",
+              "file": "rust/core/src/persistence/blob.rs",
               "lines": [
                 57,
                 58,
@@ -129,11 +129,11 @@
       "name": "codelet-core consumers can hash-store and rehydrate envelope blobs without depending on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "199-227",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/mod.rs",
+              "file": "rust/core/src/persistence/mod.rs",
               "lines": [
                 22,
                 23,
@@ -156,11 +156,11 @@
       "name": "Pre-lift blob files at {data_dir}/blobs/{first2}/{hash} remain resolvable",
       "testMappings": [
         {
-          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "233-265",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/blob.rs",
+              "file": "rust/core/src/persistence/blob.rs",
               "lines": [
                 85,
                 86,
@@ -236,11 +236,11 @@
       "name": "BLOB_REF_PREFIX wire-format value is preserved exactly",
       "testMappings": [
         {
-          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "271-296",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/blob_processing.rs",
+              "file": "rust/core/src/persistence/blob_processing.rs",
               "lines": [
                 20,
                 21,
@@ -272,11 +272,11 @@
       "name": "should_use_blob_storage preserves the 10KB threshold from the pre-lift implementation",
       "testMappings": [
         {
-          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "302-334",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/blob.rs",
+              "file": "rust/core/src/persistence/blob.rs",
               "lines": [
                 180,
                 181,
@@ -297,12 +297,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/blob_store_lifted_test.rs"
+      "rust/core/tests/blob_store_lifted_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/blob_processing.rs",
-      "codelet/core/src/persistence/blob.rs",
-      "codelet/core/src/persistence/mod.rs"
+      "rust/core/src/persistence/blob_processing.rs",
+      "rust/core/src/persistence/blob.rs",
+      "rust/core/src/persistence/mod.rs"
     ],
     "totalLinesCovered": 446
   }

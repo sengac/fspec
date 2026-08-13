@@ -3,7 +3,7 @@
 Feature: Resume session overwrites manifest destroying message references
 
   """
-  The fix is in codelet/sessions/src/handle_impl.rs resume_session(). Instead of calling create_session_with_id() which overwrites the manifest, we need to create the BackgroundSession directly using the loaded manifest data. The manifest already has message references - we just need to pass them to the BackgroundSession.
+  The fix is in rust/sessions/src/handle_impl.rs resume_session(). Instead of calling create_session_with_id() which overwrites the manifest, we need to create the BackgroundSession directly using the loaded manifest data. The manifest already has message references - we just need to pass them to the BackgroundSession.
   """
 
   # ========================================

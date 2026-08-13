@@ -8,7 +8,7 @@
 @e2e
 Feature: Provider Integration and E2E Tests
   """
-  ClaudeProvider needs FacadeToolWrapper(ClaudeWebSearchFacade) in create_rig_agent(). GeminiProvider already uses all facades. E2E tests in codelet/tests/*_facade_e2e_test.rs with #[ignore] for CI. Claude supports oneOf schemas so only WebSearch needs facade; other tools use raw implementations.
+  ClaudeProvider needs FacadeToolWrapper(ClaudeWebSearchFacade) in create_rig_agent(). GeminiProvider already uses all facades. E2E tests in rust/tests/*_facade_e2e_test.rs with #[ignore] for CI. Claude supports oneOf schemas so only WebSearch needs facade; other tools use raw implementations.
   """
 
   # ========================================
@@ -60,7 +60,7 @@ Feature: Provider Integration and E2E Tests
   @e2e
   @integration
   Scenario: E2E tests are marked with ignore attribute for CI
-    Given E2E test files in codelet/tests/
+    Given E2E test files in rust/tests/
     When the tests are compiled
     Then tests requiring real API keys have #[ignore] attribute
     And tests can be run explicitly with --ignored flag

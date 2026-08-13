@@ -4,11 +4,11 @@
       "name": "CodexGrepFilesFacade maps include param to InternalSearchParams::Grep",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "582-607",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 281,
                 282,
@@ -28,11 +28,11 @@
       "name": "CodexGrepFilesFacade maps limit param to InternalSearchParams::Grep",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "608-632",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 281,
                 282,
@@ -52,11 +52,11 @@
       "name": "CodexGrepFilesFacade maps both include and limit params",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "633-658",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 281,
                 282,
@@ -76,11 +76,11 @@
       "name": "CodexGrepFilesFacade remains backward compatible without include or limit",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "659-680",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 281,
                 282,
@@ -100,11 +100,11 @@
       "name": "InternalSearchParams::Grep includes optional include and limit fields",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "685-715",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/traits.rs",
+              "file": "rust/tools/src/facade/traits.rs",
               "lines": [
                 148,
                 149,
@@ -135,11 +135,11 @@
       "name": "SearchToolFacadeWrapper passes include as glob to GrepTool",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "880-910",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 1115,
                 1116,
@@ -213,11 +213,11 @@
       "name": "SearchToolFacadeWrapper applies limit to cap grep results",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "912-945",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 1115,
                 1116,
@@ -291,11 +291,11 @@
       "name": "GrepArgs struct supports optional glob field",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "856-878",
           "implMappings": [
             {
-              "file": "codelet/tools/src/grep.rs",
+              "file": "rust/tools/src/grep.rs",
               "lines": [
                 380,
                 381,
@@ -325,11 +325,11 @@
       "name": "ZAI grep facade constructs InternalSearchParams::Grep with None defaults",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "945-970",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/zai.rs",
+              "file": "rust/tools/src/facade/zai.rs",
               "lines": [
                 332,
                 333,
@@ -346,11 +346,11 @@
       "name": "Gemini grep facade constructs InternalSearchParams::Grep with None defaults",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "972-1000",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/search.rs",
+              "file": "rust/tools/src/facade/search.rs",
               "lines": [
                 46,
                 47,
@@ -381,15 +381,15 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/tools/src/facade/traits.rs",
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/grep.rs",
-      "codelet/tools/src/facade/zai.rs",
-      "codelet/tools/src/facade/search.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/tools/src/facade/traits.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/grep.rs",
+      "rust/tools/src/facade/zai.rs",
+      "rust/tools/src/facade/search.rs"
     ],
     "totalLinesCovered": 488
   }

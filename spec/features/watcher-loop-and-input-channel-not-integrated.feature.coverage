@@ -4,11 +4,11 @@
       "name": "Parent session processes watcher injections",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "2613-2637",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3027,
                 3028,
@@ -112,11 +112,11 @@
       "name": "Watcher session subscribes to parent broadcast on creation",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "2644-2661",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 2843,
                 2844,
@@ -213,11 +213,11 @@
       "name": "Watcher loop processes parent observations at breakpoints",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "2668-2719",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 325,
                 326,
@@ -395,10 +395,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 436
   }

@@ -8,7 +8,7 @@
           "lines": "34-81",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 531,
                 532,
@@ -129,7 +129,7 @@
           "lines": "127-165",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 549,
                 550,
@@ -162,7 +162,7 @@
           "lines": "167-204",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 567,
                 568,
@@ -192,7 +192,7 @@
           "lines": "206-231",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 381,
                 382,
@@ -225,9 +225,9 @@
       "src/tui/__tests__/CODE-009-structured-fspectool-results.test.tsx"
     ],
     "implFiles": [
-      "codelet/napi/src/types.rs",
+      "rust/napi/src/types.rs",
       "src/tui/components/AgentView.tsx",
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "totalLinesCovered": 330
   }

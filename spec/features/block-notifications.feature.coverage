@@ -4,11 +4,11 @@
       "name": "Notify user when AI command is blocked",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/block_notifications_integration_test.rs",
+          "file": "rust/tools/tests/block_notifications_integration_test.rs",
           "lines": "60-119",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 573,
                 574,
@@ -121,11 +121,11 @@
       "name": "Notify user when AI file write is blocked by stage permissions",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/block_notifications_integration_test.rs",
+          "file": "rust/tools/tests/block_notifications_integration_test.rs",
           "lines": "162-198",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 261,
                 262,
@@ -246,11 +246,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/block_notifications_integration_test.rs",
+      "rust/tools/tests/block_notifications_integration_test.rs",
       "src/__tests__/block-notifications-napi-integration.test.ts"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "totalLinesCovered": 340
   }

@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from Ruby require_relative statements",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ruby_edge_extraction_test.rs",
+          "file": "rust/napi/tests/ruby_edge_extraction_test.rs",
           "lines": "14-60",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
               "lines": [
                 28,
                 29,
@@ -43,11 +43,11 @@
       "name": "Extract Calls edges from Ruby method calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ruby_edge_extraction_test.rs",
+          "file": "rust/napi/tests/ruby_edge_extraction_test.rs",
           "lines": "65-95",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
               "lines": [
                 52,
                 53,
@@ -110,10 +110,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ruby_edge_extraction_test.rs"
+      "rust/napi/tests/ruby_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs"
     ],
     "totalLinesCovered": 150
   }

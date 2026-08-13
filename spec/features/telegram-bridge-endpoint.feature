@@ -19,7 +19,7 @@ Feature: Telegram Bridge Endpoint
   #
   # BUSINESS RULES:
   #   1. Telegram messages limited to 4096 characters - must truncate longer content
-  #   2. Endpoint runs as WebSocket server - codelet's BridgeManager connects as client
+  #   2. Endpoint runs as WebSocket server - rust's BridgeManager connects as client
   #   3. Uses node-telegram-bot-api npm package for Telegram Bot API integration
   #   4. Bot token from BotFather stored in .env file (TELEGRAM_BOT_TOKEN)
   #   5. MarkdownV2 formatting for code blocks, bold, italic - with proper character escaping

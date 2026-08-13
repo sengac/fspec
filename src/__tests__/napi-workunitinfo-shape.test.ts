@@ -3,24 +3,24 @@
  *
  * RPC-005 Scenario: TS frontend smoke test confirms get_all_work_units shape after the lift.
  *
- * Single Vitest smoke test that imports getAllWorkUnits via the codelet/napi
+ * Single Vitest smoke test that imports getAllWorkUnits via the rust/napi
  * binding and asserts the returned object keys match the WorkUnitInfo shape
- * after WorkUnitInfo was lifted from codelet/napi into codelet/rpc-types.
+ * after WorkUnitInfo was lifted from rust/napi into rust/rpc-types.
  * Codifies the "TS frontend unchanged" invariant — any future regression to
  * the NAPI re-export pattern fails this test loudly in CI.
  */
 
 import { describe, it, expect } from 'vitest';
-import { getAllWorkUnits } from '../../codelet/napi/index.js';
+import { getAllWorkUnits } from '../../rust/napi/index.js';
 
 describe('Feature: TS frontend NAPI WorkUnitInfo shape preserved after rpc-types lift', () => {
   describe('Scenario: TS frontend smoke test confirms get_all_work_units shape after the lift', () => {
     it('returns an array whose elements expose the seven canonical WorkUnitInfo keys', () => {
-      // @step Given the WorkUnitInfo type has been lifted from codelet/napi into codelet/rpc-types and codelet/napi has been rebuilt
+      // @step Given the WorkUnitInfo type has been lifted from rust/napi into rust/rpc-types and rust/napi has been rebuilt
       // (Build prerequisite: the codelet-napi .node binary has been rebuilt
-      //  after WorkUnitInfo was moved into codelet/rpc-types.)
+      //  after WorkUnitInfo was moved into rust/rpc-types.)
 
-      // @step When the Vitest smoke test imports get_all_work_units from the codelet/napi binding and calls it
+      // @step When the Vitest smoke test imports get_all_work_units from the rust/napi binding and calls it
       const result = getAllWorkUnits();
 
       // @step Then the returned value is an array whose elements have the keys id, title, workType, status, description, estimate, and epic and the existing TypeScript test suite npm test passes without modification

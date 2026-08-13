@@ -6,7 +6,7 @@
 @TOOLS-004
 Feature: Enhanced AST Refactor Tool with Transforms and Batch Mode
   """
-  Extends astgrep_refactor tool in codelet/tools/src/astgrep_refactor.rs. Uses ast-grep-language crate for pattern matching and AST manipulation. Transforms implemented inline (substring, replace, convert) with topological sort for dependency ordering. No external transform library - pure Rust implementation. Tool description in rig::tool::Tool definition method must include comprehensive pattern and transform documentation.
+  Extends astgrep_refactor tool in rust/tools/src/astgrep_refactor.rs. Uses ast-grep-language crate for pattern matching and AST manipulation. Transforms implemented inline (substring, replace, convert) with topological sort for dependency ordering. No external transform library - pure Rust implementation. Tool description in rig::tool::Tool definition method must include comprehensive pattern and transform documentation.
   """
 
   # ========================================

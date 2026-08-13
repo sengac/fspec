@@ -4,11 +4,11 @@
       "name": "Edit rejects PNG file with named binary-guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "78-120",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 112,
                 113,
@@ -40,11 +40,11 @@
       "name": "Edit rejects PDF file with named binary-guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "122-164",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 112,
                 113,
@@ -76,11 +76,11 @@
       "name": "Edit rejects ELF binary with generic binary-guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "166-208",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 112,
                 113,
@@ -112,11 +112,11 @@
       "name": "Edit rejects file containing raw NUL bytes with generic binary-guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "210-244",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 112,
                 113,
@@ -148,11 +148,11 @@
       "name": "Edit on a UTF-8 text file succeeds unchanged",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "246-278",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 112,
                 113,
@@ -184,11 +184,11 @@
       "name": "Edit on a UTF-8 text file containing emoji and CJK succeeds unchanged",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "280-311",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 112,
                 113,
@@ -220,11 +220,11 @@
       "name": "apply_patch Update rejects PDF target with named binary-guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "313-359",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 148,
                 149,
@@ -278,11 +278,11 @@
       "name": "apply_patch Update rejects PNG target with named binary-guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "361-402",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 148,
                 149,
@@ -336,11 +336,11 @@
       "name": "apply_patch Update on UTF-8 source file applies cleanly",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "404-439",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 148,
                 149,
@@ -394,11 +394,11 @@
       "name": "Binary guard inspects only the first 8 KiB of a large file",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "441-480",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 38,
                 39,
@@ -477,11 +477,11 @@
       "name": "Glob has no binary-guard surface because it never returns file bytes",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs",
+          "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
           "lines": "482-525",
           "implMappings": [
             {
-              "file": "codelet/tools/src/glob.rs",
+              "file": "rust/tools/src/glob.rs",
               "lines": [
                 91,
                 92,
@@ -601,13 +601,13 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/binary_guard_file_reading_surfaces_test.rs"
+      "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/edit.rs",
-      "codelet/tools/src/apply_patch/mod.rs",
-      "codelet/tools/src/bash_binary_guard.rs",
-      "codelet/tools/src/glob.rs"
+      "rust/tools/src/edit.rs",
+      "rust/tools/src/apply_patch/mod.rs",
+      "rust/tools/src/bash_binary_guard.rs",
+      "rust/tools/src/glob.rs"
     ],
     "totalLinesCovered": 857
   }

@@ -2,7 +2,7 @@
 @RPC-279
 Feature: Port remove-rule command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),
+  Core impl at rust/fspec-core/src/commands/remove_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),
   io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps). The rules array lives in
   WorkUnit.extra and is mutated in place — soft-delete sets `deleted=true` plus `deletedAt`, never removes the entry.
   Two-front-doors: bridge marshals JSON {workUnitId, index} only.

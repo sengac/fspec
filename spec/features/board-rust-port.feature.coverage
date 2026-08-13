@@ -4,11 +4,11 @@
       "name": "Sums story points and builds done column entry with estimate",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/board.rs",
+          "file": "rust/fspec-core/tests/board.rs",
           "lines": "48-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/board.rs",
+              "file": "rust/fspec-core/src/commands/board.rs",
               "lines": [
                 58,
                 59,
@@ -116,11 +116,11 @@
       "name": "Omits the estimate key and contributes zero points for an unestimated unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/board.rs",
+          "file": "rust/fspec-core/tests/board.rs",
           "lines": "93-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/board.rs",
+              "file": "rust/fspec-core/src/commands/board.rs",
               "lines": [
                 114,
                 115,
@@ -193,11 +193,11 @@
       "name": "Fails with the foundation-missing error when foundation.json is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/board.rs",
+          "file": "rust/fspec-core/tests/board.rs",
           "lines": "136-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/board.rs",
+              "file": "rust/fspec-core/src/commands/board.rs",
               "lines": [
                 67,
                 68,
@@ -213,11 +213,11 @@
       "name": "Auto-creates work-units.json and renders all seven empty columns",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/board.rs",
+          "file": "rust/fspec-core/tests/board.rs",
           "lines": "155-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/board.rs",
+              "file": "rust/fspec-core/src/commands/board.rs",
               "lines": [
                 73,
                 74,
@@ -312,10 +312,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/board.rs"
+      "rust/fspec-core/tests/board.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/board.rs"
+      "rust/fspec-core/src/commands/board.rs"
     ],
     "totalLinesCovered": 392
   }

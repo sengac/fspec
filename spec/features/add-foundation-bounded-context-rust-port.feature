@@ -2,7 +2,7 @@
 @RPC-183
 Feature: Port add-foundation-bounded-context command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_foundation_bounded_context.rs. Signature
+  Core impl at rust/fspec-core/src/commands/add_foundation_bounded_context.rs. Signature
   run(args_json, project_root) mirroring add_diagram.rs. Operates on spec/foundation.json's
   top-level eventStorm sub-object at the big_picture level (NOT work-units.json). Uses
   crate::io::ensure::ensure_foundation_file (auto-creates the canonical generic schema v2.0.0

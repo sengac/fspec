@@ -4,7 +4,7 @@
 @GIT-019
 Feature: Isolated Session Creation and effective_cwd
   """
-  Primary implementation in codelet/napi/src/session_manager.rs. Add worktree_path and base_commit fields to BackgroundSession struct. Uses create_worktree() from codelet/git/src/worktree.rs (GIT-014). Worktrees stored at .fspec/worktrees/<session-id>/. effective_cwd() method returns worktree path or project root based on isolation mode.
+  Primary implementation in rust/napi/src/session_manager.rs. Add worktree_path and base_commit fields to BackgroundSession struct. Uses create_worktree() from rust/git/src/worktree.rs (GIT-014). Worktrees stored at .fspec/worktrees/<session-id>/. effective_cwd() method returns worktree path or project root based on isolation mode.
   """
 
   # ========================================

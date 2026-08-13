@@ -8,7 +8,7 @@
           "lines": "23-34",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 26,
                 27,
@@ -36,7 +36,7 @@
           "lines": "36-53",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 26,
                 27,
@@ -64,7 +64,7 @@
           "lines": "55-68",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 49,
                 50,
@@ -107,7 +107,7 @@
           "lines": "70-100",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 189,
                 190,
@@ -218,7 +218,7 @@
           "lines": "102-125",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 77,
                 78,
@@ -255,7 +255,7 @@
           "lines": "127-160",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 154,
                 155,
@@ -285,7 +285,7 @@
           "lines": "162-192",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 316,
                 317,
@@ -314,7 +314,7 @@
           "lines": "194-225",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 329,
                 330,
@@ -360,7 +360,7 @@
           "lines": "227-255",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 30,
                 31,
@@ -379,7 +379,7 @@
           "lines": "257-285",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 169,
                 170,
@@ -415,7 +415,7 @@
       "src/__tests__/codelet-napi.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/session.rs"
+      "rust/napi/src/session.rs"
     ],
     "totalLinesCovered": 785
   }

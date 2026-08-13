@@ -6,7 +6,7 @@
  * Every Gherkin scenario in the linked feature file maps 1:1 to one
  * `it(...)` here. The audit is structural: file presence/absence,
  * identifier presence/absence, Cargo manifest declarations, and the
- * function-export surface of `codelet/napi/index.d.ts` against the
+ * function-export surface of `rust/napi/index.d.ts` against the
  * pre-RPC-030 baseline commit `ea0ed0a0`. The dependency-rule scenario
  * shells out to cargo so the same `npm test` invocation that proves
  * the TS surface is intact also proves the Rust boundary invariants.
@@ -31,7 +31,7 @@ import {
 } from './helpers/rpc-068-audit-helpers';
 
 const PROJECT_ROOT = process.cwd();
-const CODELET = join(PROJECT_ROOT, 'codelet');
+const CODELET = join(PROJECT_ROOT, 'rust');
 const PRE_RPC030_BASELINE = 'ea0ed0a0';
 
 describe('Feature: Final TS-frontend regression + boundary audit', () => {
@@ -52,9 +52,9 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
 
       // @step When I run `cargo test -p codelet-core -p codelet-sessions -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui --test no_napi_dependency`
       // NOTE (2026-07-10): package-scoped on purpose. An unscoped
-      // `--workspace` run in codelet/ compiles 944 test binaries with
+      // `--workspace` run in rust/ compiles 944 test binaries with
       // full DWARF (1.4-2 GB each), has filled the disk to 302 GB and
-      // crashed the machine. See codelet/Cargo.toml (RPC-043 + incident
+      // crashed the machine. See rust/Cargo.toml (RPC-043 + incident
       // note). This scoped invocation builds only the five
       // no_napi_dependency targets and is behaviourally identical.
       const output = execSync(
@@ -108,8 +108,8 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
       );
       expect(smRaw).toContain('broadcast::Sender<(SessionId, StreamChunk)>');
 
-      // @step When I run `rg "static GLOBAL_CHUNK_CALLBACK" codelet/` from the repository root
-      // We scan every .rs file under codelet/{core,sessions,napi,rpc,
+      // @step When I run `rg "static GLOBAL_CHUNK_CALLBACK" rust/` from the repository root
+      // We scan every .rs file under rust/{core,sessions,napi,rpc,
       // rpc-types,rpc-embedded,rpc-server,fspec,fspec-tui}/src and
       // strip comments before asserting the static is absent.
       const executableSrc = codeRootDirs(CODELET)
@@ -123,7 +123,7 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
         /unsafe impl (Send|Sync) for GlobalChunkCallback\b/
       );
 
-      // @step And the only references that remain are doc-string comments in `codelet/sessions/src/*.rs` and assertion-only references inside `codelet/napi/tests/global_chunk_callback_napi_test.rs` and `codelet/sessions/tests/background_session_shape.rs`
+      // @step And the only references that remain are doc-string comments in `rust/sessions/src/*.rs` and assertion-only references inside `rust/napi/tests/global_chunk_callback_napi_test.rs` and `rust/sessions/tests/background_session_shape.rs`
       expect(
         existsSync(
           join(CODELET, 'napi', 'tests', 'global_chunk_callback_napi_test.rs')
@@ -139,12 +139,12 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
 
   describe('Scenario: TS-facing NAPI export surface is a strict superset of the pre-RPC-030 baseline', () => {
     it('should preserve every baseline export and add exactly the five known additive exports', () => {
-      // @step Given the pre-RPC-030 baseline `codelet/napi/index.d.ts` from commit `ea0ed0a0`
-      // @step When I extract the `export declare function` identifiers from the baseline and from the current `codelet/napi/index.d.ts`
+      // @step Given the pre-RPC-030 baseline `rust/napi/index.d.ts` from commit `ea0ed0a0`
+      // @step When I extract the `export declare function` identifiers from the baseline and from the current `rust/napi/index.d.ts`
       const baselineDts = gitShow(
         PROJECT_ROOT,
         PRE_RPC030_BASELINE,
-        'codelet/napi/index.d.ts'
+        'rust/napi/index.d.ts'
       );
       const currentDts = readFileMaybe(join(CODELET, 'napi', 'index.d.ts'));
       const baselineFns = extractDeclaredFunctions(baselineDts);
@@ -170,14 +170,14 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
       // @step Given the RPC-031 to RPC-035 persistence lift chain has landed
       // (the body of this test is the assertion)
 
-      // @step When I list `codelet/napi/src/persistence/`
+      // @step When I list `rust/napi/src/persistence/`
       const napiPersistenceDir = join(CODELET, 'napi', 'src', 'persistence');
       const napiEntries = readdirSync(napiPersistenceDir).sort();
 
       // @step Then the directory contains exactly `mod.rs` and `napi_bindings.rs`
       expect(napiEntries).toEqual(['mod.rs', 'napi_bindings.rs']);
 
-      // @step And `codelet/core/src/persistence/` contains the lifted pure-Rust modules `message_envelope.rs`, `messages.rs`, `manifest.rs`, `blob.rs`, `blob_processing.rs`, and `history.rs`
+      // @step And `rust/core/src/persistence/` contains the lifted pure-Rust modules `message_envelope.rs`, `messages.rs`, `manifest.rs`, `blob.rs`, `blob_processing.rs`, and `history.rs`
       const corePersistenceDir = join(CODELET, 'core', 'src', 'persistence');
       for (const f of LIFTED_PERSISTENCE_MODULES) {
         expect(existsSync(join(corePersistenceDir, f))).toBe(true);
@@ -187,7 +187,7 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
 
   describe('Scenario: TS test suite remains green after the watch-024 path fix', () => {
     it('should have a watch-024 test that reads from the new file union and asserts the same supervisor invariants', () => {
-      // @step Given the RPC-030 chain has split `codelet/napi/src/session_manager.rs` across `codelet/sessions/src/*.rs` and `codelet/napi/src/{session_bindings,agent_loop,bridges}.rs`
+      // @step Given the RPC-030 chain has split `rust/napi/src/session_manager.rs` across `rust/sessions/src/*.rs` and `rust/napi/src/{session_bindings,agent_loop,bridges}.rs`
       for (const segs of WATCH_024_REQUIRED_SOURCE_FILES) {
         expect(existsSync(join(PROJECT_ROOT, ...segs))).toBe(true);
       }

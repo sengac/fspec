@@ -4,11 +4,11 @@
       "name": "Returns text render with PROJECT PROBLEM SPACE SOLUTION SPACE and PERSONAS sections by default",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "351-383",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "Returns the entire foundation as pretty-printed JSON when format is json",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "385-403",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "Resolves projectName via FIELD_MAP and emits a raw string in text format",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "405-419",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Resolves projectName via FIELD_MAP and emits a JSON-quoted string in json format",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "421-435",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "Section pointing to an object emits pretty-printed JSON in text format",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "437-456",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "Missing section returns Field not found error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "458-474",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "Dotted path bypasses FIELD_MAP for unmapped sections",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "476-490",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "draft=true with no draft file returns the canonical missing draft error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "492-508",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "draft=true reads the draft file instead of foundation.json",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "510-527",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -139,11 +139,11 @@
       "name": "Empty workspace auto-creates spec/foundation.json with canonical defaults",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "529-546",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -154,11 +154,11 @@
       "name": "Escalates malformed foundation.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "548-563",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -169,11 +169,11 @@
       "name": "output writes formatted content to disk and CLI prints success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "565-580",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -184,11 +184,11 @@
       "name": "Default format value is 'text' when format flag is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "582-596",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_foundation.rs",
+              "file": "rust/fspec-core/src/commands/show_foundation.rs",
               "lines": "1-382"
             }
           ]
@@ -201,7 +201,7 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_foundation.rs"
+      "rust/fspec/tests/cli_show_foundation.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 234

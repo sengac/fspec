@@ -23,7 +23,7 @@ interface TokenStateChunk {
   contextFill?: {
     fillPercentage: number;
     // RPC-101: extra fields carried on the wire by ContextFillInfo
-    // (codelet/napi/index.d.ts:2952-2957). Optional here because
+    // (rust/napi/index.d.ts:2952-2957). Optional here because
     // older fixtures only set fillPercentage; consumers that want
     // real-time recompute on TokenUpdate need threshold.
     effectiveTokens?: number;
@@ -106,7 +106,7 @@ export function extractTokenStateFromChunks(
 
 /**
  * Maximum output token reservation for context threshold calculation.
- * Matches the constant in Rust (codelet/cli/src/compaction_threshold.rs).
+ * Matches the constant in Rust (rust/cli/src/compaction_threshold.rs).
  */
 const MAX_OUTPUT_RESERVATION = 32000;
 

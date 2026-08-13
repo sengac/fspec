@@ -4,11 +4,11 @@
       "name": "DeepSearch implements rig::tool::Tool trait",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "21-105",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 37,
                 38,
@@ -126,11 +126,11 @@
       "name": "Search code files within a scoped directory",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "356-427,574-616",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 96,
                 97,
@@ -252,11 +252,11 @@
       "name": "Narrow scope restricts sub-agent to specific file",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "623-641",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 153,
                 154,
@@ -312,11 +312,11 @@
       "name": "Max depth limits tool call rounds",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "644-689",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 96,
                 97,
@@ -394,11 +394,11 @@
       "name": "Default max depth is 50",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "161-179",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 35,
                 36,
@@ -433,11 +433,11 @@
       "name": "Search session history combined with code scope",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "574-619",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 96,
                 97,
@@ -555,11 +555,11 @@
       "name": "Search across multiple sessions without code scope",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "431-487",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 96,
                 97,
@@ -697,11 +697,11 @@
       "name": "System prompt describes available tools and code scope",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "216-276",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 153,
                 154,
@@ -757,11 +757,11 @@
       "name": "Missing query returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "112-154",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 39,
                 40,
@@ -809,11 +809,11 @@
       "name": "Scope is optional for session-only queries",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "186-209",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 39,
                 40,
@@ -905,11 +905,11 @@
       "name": "Sub-agent is ephemeral with no persistence",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "737-756",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 35,
                 36,
@@ -955,11 +955,11 @@
       "name": "SessionSearch handler registered and cleaned up",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "318-353",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 35,
                 36,
@@ -1005,11 +1005,11 @@
       "name": "Sub-agent has only read-only search tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "283-313",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 200,
                 201,
@@ -1037,11 +1037,11 @@
       "name": "Sub-agent uses non-streaming RigAgent::prompt()",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "496-533",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 70,
                 71,
@@ -1094,11 +1094,11 @@
       "name": "Sub-agent reuses parent session credentials",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "537-581",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 70,
                 71,
@@ -1127,11 +1127,11 @@
       "name": "DeepSearch tool wired into provider agent builders",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "785-798",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 502,
                 503,
@@ -1176,12 +1176,12 @@
     "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/deep_search/tests.rs"
+      "rust/tools/src/deep_search/tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/deep_search/mod.rs",
-      "codelet/napi/src/deep_search_handler.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/tools/src/deep_search/mod.rs",
+      "rust/napi/src/deep_search_handler.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 1689
   }

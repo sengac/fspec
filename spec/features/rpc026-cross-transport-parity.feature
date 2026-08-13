@@ -8,7 +8,7 @@
 @RPC-026
 Feature: Cross-transport parity for persistence_delete_session (RPC-021c)
   """
-  Lifting delete_session: codelet/core/src/persistence/sessions.rs is a new file < 100 LoC that imports the SAME `~/.fspec/sessions.jsonl` reader/writer logic the existing NAPI module uses. It re-exports `delete_session(uuid)`, `list_sessions()` (for the FspecServiceImpl::list_sessions to also use), and any helper needed. codelet/napi/src/persistence/mod.rs::delete_session becomes a one-line delegate to codelet_core::persistence::sessions::delete_session — preserving the byte-identical TS surface. NO #[napi] export signatures change.
+  Lifting delete_session: rust/core/src/persistence/sessions.rs is a new file < 100 LoC that imports the SAME `~/.fspec/sessions.jsonl` reader/writer logic the existing NAPI module uses. It re-exports `delete_session(uuid)`, `list_sessions()` (for the FspecServiceImpl::list_sessions to also use), and any helper needed. rust/napi/src/persistence/mod.rs::delete_session becomes a one-line delegate to codelet_core::persistence::sessions::delete_session — preserving the byte-identical TS surface. NO #[napi] export signatures change.
   Both mode views MUST work against EmbeddedFspecBackend AND WebSocketFspecBackend (RPC-002 invariant). Cross-transport-parity tests live in tests/rpc026-*.rs and drive the SAME scripted scenarios against both transports.
   """
 
@@ -28,7 +28,7 @@ Feature: Cross-transport parity for persistence_delete_session (RPC-021c)
     When codelet_core::persistence::delete_session(Uuid("s-2")) is called
     Then the on-disk sessions.jsonl no longer lists "s-2"
     And codelet_core::persistence::sessions::list() returns ["s-1", "s-3"]
-    And the NAPI export persistence_delete_session from codelet/napi/src/persistence/napi_bindings.rs is a one-line delegate to codelet_core::persistence::delete_session
+    And the NAPI export persistence_delete_session from rust/napi/src/persistence/napi_bindings.rs is a one-line delegate to codelet_core::persistence::delete_session
 
   @rpc
   @cross-transport

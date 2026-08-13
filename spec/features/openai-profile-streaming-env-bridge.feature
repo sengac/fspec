@@ -5,7 +5,7 @@
 @provider-settings
 Feature: OpenAI profile streaming flag env-var bridge
   """
-  apply_profile_env_vars (codelet/sessions/src/model_resolution.rs) is the
+  apply_profile_env_vars (rust/sessions/src/model_resolution.rs) is the
   single source of truth that exports a selected profile's connection settings
   as OPENAI_* environment variables. It now also exports OPENAI_STREAMING from
   the loaded profile's streaming flag, mirroring the existing OPENAI_BASE_URL /

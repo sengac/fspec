@@ -4,7 +4,7 @@
 @GIT-025
 Feature: Session Manager Discard Operations
   """
-  Implement discard_session() and DiscardResult in codelet/git/src/session_status.rs alongside merge_session()
+  Implement discard_session() and DiscardResult in rust/git/src/session_status.rs alongside merge_session()
   discard_session() uses abort_session() from session_result.rs (GIT-015) to remove worktree
   discard_session() uses delete_manifest() from session_status.rs to clean up manifest
   """

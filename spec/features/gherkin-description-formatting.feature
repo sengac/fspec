@@ -4,7 +4,7 @@
 @RPC-330
 Feature: Gherkin Description Blank-Line Preservation in Formatter
   """
-  Fix lives in codelet/fspec-core/src/io/gherkin_format.rs: feature/scenario/Background/Rule descriptions must be re-extracted from RAW source (between the header line and the first child construct), mirroring extract_description_verbatim in show_acceptance_criteria.rs, because gherkin-0.16 parser.rs:381 `description = (description_line ** _)` consumes inter-paragraph blank lines. Doc-string bodies (format_docstring/dedent) must NOT be touched by this change.
+  Fix lives in rust/fspec-core/src/io/gherkin_format.rs: feature/scenario/Background/Rule descriptions must be re-extracted from RAW source (between the header line and the first child construct), mirroring extract_description_verbatim in show_acceptance_criteria.rs, because gherkin-0.16 parser.rs:381 `description = (description_line ** _)` consumes inter-paragraph blank lines. Doc-string bodies (format_docstring/dedent) must NOT be touched by this change.
   """
 
   # ========================================

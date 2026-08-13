@@ -4,11 +4,11 @@
       "name": "SessionContext lives in its own sub-module under the 300-LoC ceiling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc024.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
           "lines": "32-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 1,
                 2,
@@ -166,11 +166,11 @@
       "name": "SessionContext module declares the required public surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc024.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
           "lines": "81-95",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 25,
                 26,
@@ -252,11 +252,11 @@
       "name": "AgentViewStore exposes the multi-session surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc024.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
           "lines": "99-118",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 67,
                 68,
@@ -420,11 +420,11 @@
       "name": "Removing set_session_index closes the explicit-setter regression hole",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc024.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
           "lines": "121-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 227,
                 228,
@@ -444,11 +444,11 @@
       "name": "AgentView no longer owns the scrollback / next_seq fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc024.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
           "lines": "146-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 70,
                 71,
@@ -489,12 +489,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc024.rs"
+      "rust/fspec-tui/tests/source_shape_rpc024.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs",
-      "codelet/fspec-tui/src/store/agent_view.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/store/agent_view/session_context.rs",
+      "rust/fspec-tui/src/store/agent_view.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 655
   }

@@ -4,11 +4,11 @@
       "name": "ResumeSessionView paints full-screen and hides the normal AgentView layout",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_view_routing.rs",
+          "file": "rust/fspec-tui/tests/rpc026_view_routing.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -270,11 +270,11 @@
       "name": "Ctrl+R opens the same search view as /search",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_view_routing.rs",
+          "file": "rust/fspec-tui/tests/rpc026_view_routing.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -588,11 +588,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_view_routing.rs"
+      "rust/fspec-tui/tests/rpc026_view_routing.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch.rs"
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs"
     ],
     "totalLinesCovered": 1150
   }

@@ -5,7 +5,7 @@
 @rust
 Feature: Shell Job Execution
   """
-  Create codelet/napi/src/scheduler/shell_job.rs with trigger_shell_job function using tokio::process::Command
+  Create rust/napi/src/scheduler/shell_job.rs with trigger_shell_job function using tokio::process::Command
   Add ShellJobResult struct to types.rs: exit_code, stdout, stderr
   Wire shell job routing in engine.rs evaluate_and_run — match on job_type field to choose agent vs shell
   """

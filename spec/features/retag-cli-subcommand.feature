@@ -2,7 +2,7 @@
 @RPC-293
 Feature: fspec retag CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/retag.rs — clap-derived struct mirroring the TS Commander.js
+  CLI bridge: rust/fspec/src/retag.rs — clap-derived struct mirroring the TS Commander.js
   registration (src/commands/retag.ts:214-221). Surface: `fspec retag --from <tag> --to <tag> [--dry-run]`.
   Stdout (success, real): '✓ <message>' then 'Modified files:' + '  - <file>' list, exit 0.
   Stdout (dry-run): 'Dry run mode - no files modified' + cyan summary + '  - <file>' list, exit 0.
@@ -22,7 +22,7 @@ Feature: fspec retag CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec retag --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/retag.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/retag.txt
 
   Scenario: CLI renames a tag and prints the success summary
     Given a project root tempdir with two spec/features feature files that each tag a scenario with @wip
@@ -52,4 +52,4 @@ Feature: fspec retag CLI subcommand
     When I dispatch retag via fspec_core::dispatch::dispatch_command with from='@wip' to='@done'
     Then the dispatcher returns success=true
     And running `fspec retag --from @done --to @wip` afterwards exits 0
-    And the CLI bridge module codelet/fspec/src/retag.rs contains NO inline glob, regex replace, Gherkin re-parse, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/retag.rs contains NO inline glob, regex replace, Gherkin re-parse, or file-write logic — its only computation is JSON arg marshalling

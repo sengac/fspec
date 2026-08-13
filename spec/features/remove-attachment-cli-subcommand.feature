@@ -4,7 +4,7 @@
 @RPC-268
 Feature: fspec remove-attachment CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_attachment.rs — clap-derived struct mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/remove_attachment.rs — clap-derived struct mirroring TS Commander.js
   registration at src/commands/remove-attachment.ts:87-117. Surface: `fspec remove-attachment
   <workUnitId> <fileName> [--keep-file]`. Bridge owns ONLY: (a) clap arg parsing; (b) JSON
   marshalling; (c) stdout printing of the core's rendered output; (d) stderr printing of
@@ -27,10 +27,10 @@ Feature: fspec remove-attachment CLI subcommand
     So that any existing TS-CLI-driven attachment-cleanup script keeps working after the cutover
 
   Scenario: Help output matches the captured TS fixture byte-for-byte
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
     When I run `fspec remove-attachment --help` piped to non-TTY (no color codes)
     Then the exit code is 0
-    And stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-attachment.txt
+    And stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-attachment.txt
     And stdout starts with a blank line followed by 'REMOVE-ATTACHMENT'
     And stdout contains the section header 'USAGE' followed by '  fspec remove-attachment <workUnitId> <fileName> [options]'
     And stdout contains the section header 'ARGUMENTS'
@@ -104,4 +104,4 @@ Feature: fspec remove-attachment CLI subcommand
     And the corresponding files exist on disk
     When I dispatch remove-attachment via fspec_core::dispatch::dispatch_command with workUnitId='AUTH-001' fileName='a.png'
     Then the dispatcher returns success
-    And the CLI bridge module codelet/fspec/src/remove_attachment.rs contains NO splice, file unlink, or atomic write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/remove_attachment.rs contains NO splice, file unlink, or atomic write logic — its only computation is JSON arg marshalling

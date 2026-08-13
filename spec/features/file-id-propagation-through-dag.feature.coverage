@@ -4,11 +4,11 @@
       "name": "Engine appends dag-files block when agent omits it",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "24-73",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 163,
                 164,
@@ -123,11 +123,11 @@
       "name": "Agent-provided dag-files block is preserved without duplication",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "79-110",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 275,
                 276,
@@ -205,11 +205,11 @@
       "name": "Merge existing dag-files with new annotations across compactions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "116-164",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 228,
                 229,
@@ -259,11 +259,11 @@
       "name": "No dag-files block when no file modifications exist",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "170-188",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 228,
                 229,
@@ -313,11 +313,11 @@
       "name": "Incremental compaction instruction includes dag-files preservation guidance",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "194-213",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 308,
                 309,
@@ -348,11 +348,11 @@
       "name": "Parse dag-files block from existing DAG content",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "219-245",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 163,
                 164,
@@ -427,11 +427,11 @@
       "name": "Fresh compaction instruction mentions dag-files in Active Files section",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "251-263",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 283,
                 284,
@@ -457,11 +457,11 @@
       "name": "dag-files block format uses deterministic path ordering",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/file_id_propagation_test.rs",
+          "file": "rust/napi/tests/file_id_propagation_test.rs",
           "lines": "269-298",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 228,
                 229,
@@ -513,11 +513,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/file_id_propagation_test.rs"
+      "rust/napi/tests/file_id_propagation_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/inject_summary_handler.rs",
-      "codelet/cli/src/interactive_helpers.rs"
+      "rust/napi/src/inject_summary_handler.rs",
+      "rust/cli/src/interactive_helpers.rs"
     ],
     "totalLinesCovered": 619
   }

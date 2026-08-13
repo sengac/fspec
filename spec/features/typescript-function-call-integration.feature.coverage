@@ -8,7 +8,7 @@
           "lines": "11-62",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 135,
                 136,
@@ -104,7 +104,7 @@
           "lines": "169-233",
           "implMappings": [
             {
-              "file": "codelet/napi/src/fspec.rs",
+              "file": "rust/napi/src/fspec.rs",
               "lines": [
                 10,
                 11,
@@ -174,9 +174,9 @@
       "src/test/typescript-function-call-integration.test.ts"
     ],
     "implFiles": [
-      "codelet/tools/src/fspec.rs",
+      "rust/tools/src/fspec.rs",
       "src/utils/fspec-callback.ts",
-      "codelet/napi/src/fspec.rs"
+      "rust/napi/src/fspec.rs"
     ],
     "totalLinesCovered": 362
   }

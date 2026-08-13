@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_coverage.rs",
+          "file": "rust/fspec/tests/cli_generate_coverage.rs",
           "lines": "62-82",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/generate_coverage.rs",
+              "file": "rust/fspec-core/src/help/configs/generate_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -110,11 +110,11 @@
       "name": "CLI creates a missing sidecar and prints the success report",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_coverage.rs",
+          "file": "rust/fspec/tests/cli_generate_coverage.rs",
           "lines": "89-115",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_coverage.rs",
+              "file": "rust/fspec/src/generate_coverage.rs",
               "lines": [
                 33,
                 34,
@@ -132,11 +132,11 @@
       "name": "CLI forwards the --dry-run flag without writing files",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_coverage.rs",
+          "file": "rust/fspec/tests/cli_generate_coverage.rs",
           "lines": "122-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_coverage.rs",
+              "file": "rust/fspec/src/generate_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -151,11 +151,11 @@
       "name": "CLI reports a missing features directory with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_coverage.rs",
+          "file": "rust/fspec/tests/cli_generate_coverage.rs",
           "lines": "157-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_coverage.rs",
+              "file": "rust/fspec/src/generate_coverage.rs",
               "lines": [
                 39,
                 40,
@@ -177,11 +177,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_coverage.rs",
+          "file": "rust/fspec/tests/cli_generate_coverage.rs",
           "lines": "178-196",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1811
               ]
@@ -194,11 +194,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_coverage.rs",
+          "file": "rust/fspec/tests/cli_generate_coverage.rs",
           "lines": "203-265",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_coverage.rs",
+              "file": "rust/fspec/src/generate_coverage.rs",
               "lines": [
                 33,
                 34,
@@ -217,12 +217,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_generate_coverage.rs"
+      "rust/fspec/tests/cli_generate_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/generate_coverage.rs",
-      "codelet/fspec/src/generate_coverage.rs",
-      "codelet/fspec/src/main.rs"
+      "rust/fspec-core/src/help/configs/generate_coverage.rs",
+      "rust/fspec/src/generate_coverage.rs",
+      "rust/fspec/src/main.rs"
     ],
     "totalLinesCovered": 289
   }

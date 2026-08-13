@@ -4,11 +4,11 @@
       "name": "Per-session handler isolation — execute dispatches only to the registered session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "22-66",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -116,11 +116,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "22-66",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -207,11 +207,11 @@
       "name": "Clearing one session's handler does not affect another session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "72-117",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -319,11 +319,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "72-117",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -410,11 +410,11 @@
       "name": "execute_bridge_command for an unregistered session returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "123-140",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -522,11 +522,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "123-140",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -613,11 +613,11 @@
       "name": "has_bridge_handler_for_session checks per-session handler and context",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "146-180",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -725,11 +725,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bridge_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/bridge_handler_session_isolation_test.rs",
           "lines": "146-180",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 61,
                 62,
@@ -832,10 +832,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/bridge_handler_session_isolation_test.rs"
+      "rust/tools/tests/bridge_handler_session_isolation_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bridge_handler.rs"
+      "rust/tools/src/bridge_handler.rs"
     ],
     "totalLinesCovered": 1006
   }

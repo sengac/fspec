@@ -4,9 +4,9 @@
 @cli
 Feature: Remove hook CLI subcommand
   """
-  CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::remove_hook::run(args_json, &cwd).
+  CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::remove_hook::run(args_json, &cwd).
   Positional arguments `<event>` and `<name>` (both required). NO options.
-  Help text intercepted via codelet/fspec-core/src/help/configs/remove_hook.rs (CONFIG const) — byte-exact parity with the TS `node dist/index.js remove-hook --help` reference fixture.
+  Help text intercepted via rust/fspec-core/src/help/configs/remove_hook.rs (CONFIG const) — byte-exact parity with the TS `node dist/index.js remove-hook --help` reference fixture.
   """
 
   Background: User Story
@@ -18,7 +18,7 @@ Feature: Remove hook CLI subcommand
     Given the fspec Rust binary has been compiled
     When I run `fspec remove-hook --help` with NO_COLOR=1
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the captured TS help fixture at codelet/fspec/tests/fixtures/help/remove-hook.txt
+    Then stdout is byte-for-byte identical to the captured TS help fixture at rust/fspec/tests/fixtures/help/remove-hook.txt
     Then stdout contains the section header "USAGE" followed by "  fspec remove-hook <event> <name>"
     Then stdout contains the section header "ARGUMENTS"
     Then stdout contains the section header "OPTIONS" followed by "  No options available"
@@ -58,4 +58,4 @@ Feature: Remove hook CLI subcommand
     Given a project root whose spec/fspec-hooks.json contains event 'post-implementing' with hooks ['lint','test']
     When I dispatch remove-hook through fspec_core::dispatch::dispatch_command with event='post-implementing' name='lint'
     Then the dispatcher returns success=true
-    Then the CLI bridge module codelet/fspec/src/remove_hook.rs contains NO inline parsing or write logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/remove_hook.rs contains NO inline parsing or write logic — its only computation is JSON arg marshalling

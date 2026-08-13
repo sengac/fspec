@@ -5,8 +5,8 @@
 @mutation
 Feature: Port delete-work-unit command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/delete_work_unit.rs: ensure_work_units_file -> existence/children/dependency checks -> optional cascade dereference (blocks/blockedBy/relatesTo, NOT dependsOn) -> parent.children filter -> states filter -> remove from work_units IndexMap -> single write_json_atomic. children/blocks/blockedBy/dependsOn/relatesTo/parent read from WorkUnit.extra as JSON arrays/strings.
-  CLI bridge codelet/fspec/src/delete_work_unit.rs marshals {workUnitId, cascadeDependencies?} JSON only; --force/--skip-confirmation parsed by clap for parity but NOT forwarded. Success prints '✓ Work unit <id> deleted successfully' + '⚠ <warning>' lines; errors to stderr prefixed '✗ Failed to delete work unit:'; exit 1 on error.
+  Core impl at rust/fspec-core/src/commands/delete_work_unit.rs: ensure_work_units_file -> existence/children/dependency checks -> optional cascade dereference (blocks/blockedBy/relatesTo, NOT dependsOn) -> parent.children filter -> states filter -> remove from work_units IndexMap -> single write_json_atomic. children/blocks/blockedBy/dependsOn/relatesTo/parent read from WorkUnit.extra as JSON arrays/strings.
+  CLI bridge rust/fspec/src/delete_work_unit.rs marshals {workUnitId, cascadeDependencies?} JSON only; --force/--skip-confirmation parsed by clap for parity but NOT forwarded. Success prints '✓ Work unit <id> deleted successfully' + '⚠ <warning>' lines; errors to stderr prefixed '✗ Failed to delete work unit:'; exit 1 on error.
   Two-front-doors: clap CLI and LLM dispatcher both call commands::delete_work_unit::run(args_json, project_root). The CLI bridge marshals only — no validation or rendering logic is duplicated.
   """
 

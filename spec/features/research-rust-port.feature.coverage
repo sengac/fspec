@@ -4,11 +4,11 @@
       "name": "List mode enumerates the bundled tool registry with ast configured by default",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/research.rs",
+          "file": "rust/fspec-core/tests/research.rs",
           "lines": "66-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/research.rs",
+              "file": "rust/fspec-core/src/commands/research.rs",
               "lines": [
                 168,
                 169,
@@ -206,11 +206,11 @@
       "name": "List mode reflects a configured perplexity api key from project config",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/research.rs",
+          "file": "rust/fspec-core/tests/research.rs",
           "lines": "95-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/research.rs",
+              "file": "rust/fspec-core/src/commands/research.rs",
               "lines": [
                 221,
                 222,
@@ -355,11 +355,11 @@
       "name": "List mode does not create any files or spawn any process",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/research.rs",
+          "file": "rust/fspec-core/tests/research.rs",
           "lines": "135-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/research.rs",
+              "file": "rust/fspec-core/src/commands/research.rs",
               "lines": [
                 168,
                 169,
@@ -557,11 +557,11 @@
       "name": "Execute mode rejects an unknown tool name before doing any work",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/research.rs",
+          "file": "rust/fspec-core/tests/research.rs",
           "lines": "160-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/research.rs",
+              "file": "rust/fspec-core/src/commands/research.rs",
               "lines": [
                 168,
                 169,
@@ -626,11 +626,11 @@
       "name": "Both front doors converge on the same fspec-core function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/research.rs",
+          "file": "rust/fspec-core/tests/research.rs",
           "lines": "179-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/research.rs",
+              "file": "rust/fspec-core/src/commands/research.rs",
               "lines": [
                 168,
                 169,
@@ -828,11 +828,11 @@
       "name": "List mode reports stakeholder as configured when its required webhook field is present",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/research.rs",
+          "file": "rust/fspec-core/tests/research.rs",
           "lines": "115-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/research.rs",
+              "file": "rust/fspec-core/src/commands/research.rs",
               "lines": [
                 221,
                 222,
@@ -979,10 +979,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/research.rs"
+      "rust/fspec-core/tests/research.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/research.rs"
+      "rust/fspec-core/src/commands/research.rs"
     ],
     "totalLinesCovered": 1006
   }

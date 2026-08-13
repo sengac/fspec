@@ -4,7 +4,7 @@
 @cli
 Feature: Port add-hook command to Rust
   """
-  Replace the stub at codelet/fspec-core/src/commands/add_hook.rs with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Module exposes the same signature shape as list_hooks::run.
+  Replace the stub at rust/fspec-core/src/commands/add_hook.rs with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Module exposes the same signature shape as list_hooks::run.
   Local on-disk shapes: `struct HookFile { hooks: IndexMap<String, Vec<HookEntry>>, #[serde(flatten)] extra: Map<String,Value> }` and `struct HookEntry { name: String, command: String, blocking: bool, #[serde(skip_serializing_if=Option::is_none)] timeout: Option<u64>, #[serde(flatten)] extra: Map<String,Value> }`. Local, NOT promoted to types/hooks.rs.
   Load strategy: `std::fs::read_to_string` + `serde_json::from_str` wrapped in a single helper that returns `HookFile::default()` on EITHER IO error OR parse error (TS bare-catch parity at add-hook.ts:26-32). Do NOT use ensure.rs helpers — they auto-write the default to disk, which would race the subsequent atomic write.
   Args struct: `#[serde(default, rename_all = "camelCase")] struct AddHookArgs { event: String, name: String, command: String, #[serde(default)] blocking: bool, timeout: Option<u64> }`. The CLI bridge marshals clap fields → JSON, omitting `None` for timeout.

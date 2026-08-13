@@ -4,7 +4,7 @@
       "name": "The Vitest smoke test for WorkUnitInfo shape remains green",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/napi_untouched.rs",
+          "file": "rust/fspec-tui/tests/napi_untouched.rs",
           "lines": "30-106",
           "implMappings": [
             {
@@ -122,7 +122,7 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/napi_untouched.rs"
+      "rust/fspec-tui/tests/napi_untouched.rs"
     ],
     "implFiles": [
       "src/__tests__/napi-workunitinfo-shape.test.ts"

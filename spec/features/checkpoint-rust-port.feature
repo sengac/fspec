@@ -3,9 +3,9 @@
 @wip
 Feature: Port checkpoint command to Rust
   """
-  File layout: core codelet/fspec-core/src/commands/checkpoint.rs is the single source of
-  truth (run(args_json, project_root)); CLI bridge codelet/fspec/src/checkpoint.rs marshals
-  the two positionals into JSON; help config codelet/fspec-core/src/help/configs/checkpoint.rs.
+  File layout: core rust/fspec-core/src/commands/checkpoint.rs is the single source of
+  truth (run(args_json, project_root)); CLI bridge rust/fspec/src/checkpoint.rs marshals
+  the two positionals into JSON; help config rust/fspec-core/src/help/configs/checkpoint.rs.
 
   codelet_git wiring: calls codelet_git::ghost_commit::create_ghost_commit(project_root,&wu,&name);
   an empty files vec => success:false. The .git/fspec-checkpoints-index/<wu>.json metadata write

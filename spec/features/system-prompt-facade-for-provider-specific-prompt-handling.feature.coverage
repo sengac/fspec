@@ -4,11 +4,11 @@
       "name": "Claude OAuth facade prepends identity prefix to preamble",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "15-59",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 47,
                 48,
@@ -60,11 +60,11 @@
       "name": "Claude API key facade passes preamble through unchanged",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "64-96",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 91,
                 92,
@@ -107,11 +107,11 @@
       "name": "Gemini facade formats preamble as plain string",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "101-118",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 126,
                 127,
@@ -146,11 +146,11 @@
       "name": "OpenAI facade formats preamble as plain string",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "123-140",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 153,
                 154,
@@ -185,11 +185,11 @@
       "name": "Claude facade formats system prompts with cache_control",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "145-184",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 47,
                 48,
@@ -276,11 +276,11 @@
       "name": "ClaudeProvider selects correct facade based on token type",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "189-208",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 47,
                 48,
@@ -332,11 +332,11 @@
       "name": "ClaudeProvider uses API key facade for non-OAuth tokens",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/system_prompt_facade_test.rs",
+          "file": "rust/tools/tests/system_prompt_facade_test.rs",
           "lines": "213-228",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/system_prompt.rs",
+              "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
                 91,
                 92,
@@ -381,10 +381,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/system_prompt_facade_test.rs"
+      "rust/tools/tests/system_prompt_facade_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/system_prompt.rs"
+      "rust/tools/src/facade/system_prompt.rs"
     ],
     "totalLinesCovered": 453
   }

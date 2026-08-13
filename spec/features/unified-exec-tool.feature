@@ -1,8 +1,8 @@
 @TOOL-016
 Feature: Unified Exec Tool with PTY Session Management
   """
-  Create codelet/tools/src/unified_exec/ module with mod.rs (constants, types), process_store.rs (ProcessStore HashMap with LRU eviction), and tool.rs (UnifiedExecTool implementing rig::tool::Tool). The tool uses action-based dispatch: run spawns processes, write/poll interact with running sessions, list/close manage sessions. ProcessStore is a global static behind Arc<Mutex<>>. BashTool remains unchanged for direct Claude usage; providers that need session management use UnifiedExecTool via facades.
-  New facade trait ExecToolFacade in codelet/tools/src/facade/traits.rs with InternalExecParams enum (Run, Write, Poll, List, Close variants). ExecToolFacadeWrapper in wrapper.rs delegates to UnifiedExecTool. Codex facades (BUG-114, BUG-115) implement ExecToolFacade to map exec_command/write_stdin/shell to the internal params. Current BashToolFacade and BashToolFacadeWrapper remain untouched.
+  Create rust/tools/src/unified_exec/ module with mod.rs (constants, types), process_store.rs (ProcessStore HashMap with LRU eviction), and tool.rs (UnifiedExecTool implementing rig::tool::Tool). The tool uses action-based dispatch: run spawns processes, write/poll interact with running sessions, list/close manage sessions. ProcessStore is a global static behind Arc<Mutex<>>. BashTool remains unchanged for direct Claude usage; providers that need session management use UnifiedExecTool via facades.
+  New facade trait ExecToolFacade in rust/tools/src/facade/traits.rs with InternalExecParams enum (Run, Write, Poll, List, Close variants). ExecToolFacadeWrapper in wrapper.rs delegates to UnifiedExecTool. Codex facades (BUG-114, BUG-115) implement ExecToolFacade to map exec_command/write_stdin/shell to the internal params. Current BashToolFacade and BashToolFacadeWrapper remain untouched.
   """
 
   # ========================================

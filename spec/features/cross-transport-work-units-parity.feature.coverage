@@ -4,11 +4,11 @@
       "name": "Both transports produce byte-identical WorkUnitsUpdate payloads for the same mutation",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/cross_transport_push_parity.rs",
+          "file": "rust/rpc-server/tests/cross_transport_push_parity.rs",
           "lines": "27-81",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/client.rs",
+              "file": "rust/rpc-server/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -158,10 +158,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/cross_transport_push_parity.rs"
+      "rust/rpc-server/tests/cross_transport_push_parity.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/client.rs"
+      "rust/rpc-server/src/client.rs"
     ],
     "totalLinesCovered": 191
   }

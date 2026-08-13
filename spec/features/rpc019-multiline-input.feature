@@ -29,7 +29,7 @@ Feature: RPC-019 AgentView multi-line input (tui-textarea-backed MultiLineInput)
   (RPC-402: 'Shift+Enter' leads and the string fits 80 cols).
 
   Pair: render tests live in
-  codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs.
+  rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs.
   """
 
   Background: User Story

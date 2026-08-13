@@ -4,11 +4,11 @@
       "name": "Clap exposes suggest-dependencies as a subcommand and prints --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "61-86",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 39,
                 40,
@@ -41,11 +41,11 @@
       "name": "CLI without options prints the empty sentinel against an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "88-104",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 39,
                 40,
@@ -78,11 +78,11 @@
       "name": "CLI with --output=json prints empty suggestions array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "106-124",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 39,
                 40,
@@ -115,11 +115,11 @@
       "name": "CLI text output lists a sequential suggestion",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "126-149",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 39,
                 40,
@@ -152,11 +152,11 @@
       "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "151-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 51,
                 52,
@@ -176,11 +176,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "173-229",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 39,
                 40,
@@ -213,11 +213,11 @@
       "name": "suggest-dependencies --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
           "lines": "233-257",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "file": "rust/fspec/src/suggest_dependencies.rs",
               "lines": [
                 31,
                 32,
@@ -260,10 +260,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_suggest_dependencies.rs"
+      "rust/fspec/tests/cli_suggest_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/suggest_dependencies.rs"
+      "rust/fspec/src/suggest_dependencies.rs"
     ],
     "totalLinesCovered": 331
   }

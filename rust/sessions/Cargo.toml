@@ -1,0 +1,72 @@
+[package]
+name = "codelet-sessions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "NAPI-free session manager and background session for the codelet AI agent (RPC-038)"
+
+[lints]
+workspace = true
+
+[dependencies]
+# RPC-030 Phase 4 architecture: codelet-sessions hosts the agent loop that
+# both the Rust `fspec` binary and the `codelet-napi` adapter consume via
+# `codelet_core::SessionManagerHandle`. The dep arrows below mirror the
+# crates that the current `rust/napi/src/session_manager.rs` already
+# touches today; the new crate is NAPI-free by absence of any
+# napi/napi-derive entry.
+codelet-common = { workspace = true }
+codelet-tools = { workspace = true }
+codelet-providers = { workspace = true }
+codelet-cli = { workspace = true }
+codelet-git = { workspace = true }
+codelet-core = { workspace = true }
+# codelet-rpc-types is depended on WITHOUT the `napi` feature so that the
+# transitive napi crate is excluded from the codelet-sessions graph. The
+# forbidden arrow `sessions → napi` is enforced by
+# rust/sessions/tests/skeleton_invariants.rs (RPC-038).
+codelet-rpc-types = { workspace = true }
+
+# RPC-081: rig::message types used by restore_session_messages to push
+# User/Assistant envelopes into session.inner.messages.
+rig-core = { workspace = true }
+
+# === Async runtime ===
+tokio = { workspace = true }
+async-trait = { workspace = true }
+
+# === Serialization ===
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# === Error handling ===
+thiserror = { workspace = true }
+
+# === Utilities ===
+uuid = { workspace = true }
+chrono = { workspace = true }
+indexmap = { workspace = true }
+parking_lot = { workspace = true }
+once_cell = { workspace = true }
+lazy_static = { workspace = true }
+arc-swap = { workspace = true }
+dotenvy = { workspace = true }
+dirs = { workspace = true }
+
+# === Logging ===
+tracing = { workspace = true }
+
+[dev-dependencies]
+# Used by rust/sessions/tests/skeleton_invariants.rs to parse the JSON
+# output of `cargo metadata` while asserting the forbidden-arrow invariant.
+serde_json = { workspace = true }
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers = { workspace = true }
+# RPC-081: restoration tests need a hermetic data dir.
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }
+# RPC-347: custom-model RPC surface tests mutate the process-global
+# FSPEC_USER_DIR env var, so they must run serially.
+serial_test.workspace = true

@@ -4,11 +4,11 @@
       "name": "End-to-end via tui-test: user typing produces correct prefixes, no duplicates, no truncation",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/scrollback_pty_rpc078.rs",
+          "file": "rust/fspec/tests/scrollback_pty_rpc078.rs",
           "lines": "123-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -95,10 +95,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/scrollback_pty_rpc078.rs"
+      "rust/fspec/tests/scrollback_pty_rpc078.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs"
+      "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
     "totalLinesCovered": 228
   }

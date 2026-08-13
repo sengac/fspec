@@ -6,7 +6,7 @@
 @PROV-108
 Feature: Backend profile write path — save/delete profile in fspec-config.json
   """
-  New module codelet/sessions/src/profile_persistence.rs holds save_profile/delete_profile (env-resolved) + save_profile_at/delete_profile_at (path-injectable cores). Reuses fspec_user_dir/read_config_value/write_config_value from profile_sections (made pub(crate)) to avoid duplication and NOT bloat profile_sections.rs (485 prod LoC).
+  New module rust/sessions/src/profile_persistence.rs holds save_profile/delete_profile (env-resolved) + save_profile_at/delete_profile_at (path-injectable cores). Reuses fspec_user_dir/read_config_value/write_config_value from profile_sections (made pub(crate)) to avoid duplication and NOT bloat profile_sections.rs (485 prod LoC).
   Wire type codelet_rpc_types::ProfileDefinition (base_url, api_key, optional context_window/max_output_tokens + flat compaction_threshold_type/value) mirrors CustomModelDefinition convention. conversions::profile_def_from_wire folds flat compaction fields into profile_sections::CompactionThreshold.
   Wired through 5 crates mirroring RPC-347: SessionManagerHandle::save_profile/delete_profile (core default no-op), sessions handle_impl override (openai-guard Err on save, delegates to profile_persistence), rpc FspecService add/delete, napi bindings. Tests offline via FSPEC_USER_DIR temp dir + path-injectable cores.
   """

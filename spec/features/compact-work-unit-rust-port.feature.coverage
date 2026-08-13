@@ -4,11 +4,11 @@
       "name": "Dispatcher removes soft-deleted rules and renumbers the survivors",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "87-116",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -220,11 +220,11 @@
       "name": "Dispatcher rejects compaction of a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "118-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -436,11 +436,11 @@
       "name": "Dispatcher requires force when status is not done",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "140-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -652,11 +652,11 @@
       "name": "Dispatcher compacts during non-done status when force is set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "166-186",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -868,11 +868,11 @@
       "name": "Dispatcher resets counters when there are no deleted items",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "188-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -1084,11 +1084,11 @@
       "name": "Dispatcher updates the work unit and meta timestamps",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "214-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -1300,11 +1300,11 @@
       "name": "Dispatcher fails fast when required args are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compact_work_unit.rs",
+          "file": "rust/fspec-core/tests/compact_work_unit.rs",
           "lines": "244-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
                 57,
                 58,
@@ -1436,10 +1436,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/compact_work_unit.rs"
+      "rust/fspec-core/tests/compact_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/compact_work_unit.rs"
+      "rust/fspec-core/src/commands/compact_work_unit.rs"
     ],
     "totalLinesCovered": 1488
   }

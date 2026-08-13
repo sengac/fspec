@@ -4,11 +4,11 @@
       "name": "codelet workspace declares tui-textarea as a dep",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "33-43",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 76,
                 77,
@@ -24,11 +24,11 @@
       "name": "codelet-fspec-tui declares tui-textarea as a dep",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "45-55",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 28,
                 29
@@ -42,11 +42,11 @@
       "name": "New MultiLineInput module exists with the documented surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "57-75",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 1,
                 2,
@@ -108,11 +108,11 @@
       "name": "New ScrollbackList module exists with the documented surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "77-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 1,
                 2,
@@ -214,11 +214,11 @@
       "name": "AgentView orchestrator now wires the new widgets",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "95-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 27,
                 28,
@@ -241,11 +241,11 @@
       "name": "Action enum gains four navigation variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "108-121",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 225,
                 226,
@@ -274,11 +274,11 @@
       "name": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "123-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -537,11 +537,11 @@
       "name": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "148-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 17,
                 18,
@@ -560,7 +560,7 @@
       "name": "Existing TS AgentView input + scrollback files are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc019.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
           "lines": "191-203",
           "implMappings": [
             {
@@ -628,15 +628,15 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc019.rs"
+      "rust/fspec-tui/tests/source_shape_rpc019.rs"
     ],
     "implFiles": [
-      "codelet/Cargo.toml",
-      "codelet/fspec-tui/Cargo.toml",
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
+      "rust/Cargo.toml",
+      "rust/fspec-tui/Cargo.toml",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs",
+      "rust/fspec-tui/src/views/agent/scrollback.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/components/mod.rs",
       "src/tui/components/MultiLineInput.tsx"
     ],
     "totalLinesCovered": 641

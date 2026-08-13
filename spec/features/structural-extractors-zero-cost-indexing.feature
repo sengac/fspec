@@ -1,7 +1,7 @@
 @KGRAPH-004
 Feature: Structural Extractors (Zero-Cost Indexing)
   """
-  Pure extractor functions in codelet/napi/src/graph/extractors.rs. Batch EntityQueue in the same file. Integration hook in session_manager.rs after tool call responses. No LLM dependency — pattern matching only.
+  Pure extractor functions in rust/napi/src/graph/extractors.rs. Batch EntityQueue in the same file. Integration hook in session_manager.rs after tool call responses. No LLM dependency — pattern matching only.
   """
 
   # ========================================

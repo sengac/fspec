@@ -9,7 +9,7 @@ Feature: Port list-epics command to Rust
 
   Reuses the existing RPC-248 `read_work_units_or_empty` helper for the bare-catch work-units read path — the TS bare `catch {}` semantics at src/commands/list-epics.ts:60-66 are identical to those at src/commands/list-prefixes.ts:57-63, so no new helper is needed.
 
-  The shape of each Epic record in spec/epics.json is `{ id: string, title?: string, description?: string, ...extra }` (TS interface at src/commands/list-epics.ts:7-12). Add a typed `Epic` struct to codelet/fspec-core/src/types/epic.rs with `#[serde(flatten)] extra: Map<String, Value>` for forward-compat. EpicsData container goes alongside PrefixesData keyed by `IndexMap<String, Epic>` to preserve insertion order.
+  The shape of each Epic record in spec/epics.json is `{ id: string, title?: string, description?: string, ...extra }` (TS interface at src/commands/list-epics.ts:7-12). Add a typed `Epic` struct to rust/fspec-core/src/types/epic.rs with `#[serde(flatten)] extra: Map<String, Value>` for forward-compat. EpicsData container goes alongside PrefixesData keyed by `IndexMap<String, Epic>` to preserve insertion order.
   """
 
   # ========================================
@@ -138,9 +138,9 @@ Feature: Port list-epics command to Rust
     When I dispatch list-epics with format='json'
     Then the auth entry has totalWorkUnits=1, completedWorkUnits=1, completionPercentage=100
 
-  Scenario: Shared infrastructure modules exist under codelet/fspec-core for reuse
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+  Scenario: Shared infrastructure modules exist under rust/fspec-core for reuse
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the module io::ensure::read_epics_or_empty exists and is publicly accessible from the crate root
     Then types::epic::Epic exists and EpicsData.epics is keyed by an IndexMap to preserve insertion order
     Then list_epics::run delegates to these shared modules rather than embedding its own filesystem logic

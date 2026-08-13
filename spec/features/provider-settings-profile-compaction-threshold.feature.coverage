@@ -4,11 +4,11 @@
       "name": "A below-minimum percentage is treated as unset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
           "lines": "34-52",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 257,
                 258,
@@ -30,11 +30,11 @@
       "name": "Percentage boundaries 1 and 100 are accepted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
           "lines": "58-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 257,
                 258,
@@ -56,11 +56,11 @@
       "name": "An above-maximum percentage is omitted but the profile still saves",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
           "lines": "84-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 153,
                 154,
@@ -87,11 +87,11 @@
       "name": "A below-minimum token count is treated as unset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
           "lines": "109-132",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 257,
                 258,
@@ -113,11 +113,11 @@
       "name": "Empty and non-numeric input remain unset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
           "lines": "138-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 257,
                 258,
@@ -141,10 +141,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
     "totalLinesCovered": 265
   }

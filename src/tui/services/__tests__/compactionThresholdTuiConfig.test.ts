@@ -337,7 +337,7 @@ describe('Feature: TUI Configuration Fields and NAPI Bridge for Compaction Thres
   describe('Scenario: NAPI type declarations include compaction threshold parameters', () => {
     it('should have compaction threshold params in sessionSetModel and sessionSetModelProfile', () => {
       // @step Given the codelet-napi index.d.ts type declarations
-      const indexDtsPath = join(process.cwd(), 'codelet/napi/index.d.ts');
+      const indexDtsPath = join(process.cwd(), 'rust/napi/index.d.ts');
       const content = readFileSync(indexDtsPath, 'utf-8');
 
       // @step Then sessionSetModel should accept optional compactionThresholdType and compactionThresholdValue parameters

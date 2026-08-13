@@ -2,7 +2,7 @@
 @RPC-289
 Feature: fspec restore-example CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/restore_example.rs — clap variant mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/restore_example.rs — clap variant mirroring TS Commander.js
   at src/commands/restore-example.ts:88-110. Surface: `fspec restore-example <workUnitId> <index>`.
   Stdout (success): '✓ Restored example: "<text>"' (with optional '  Item ID <n> already active'
   second line for idempotent path).
@@ -22,7 +22,7 @@ Feature: fspec restore-example CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec restore-example --help`
     Then the exit code is 0
-    And stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/restore-example.txt
+    And stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/restore-example.txt
 
   Scenario: Happy-path restore via CLI
     Given a project root tempdir with spec/work-units.json where AUTH-001 status=specifying has one example id=0 'hello' deleted=true with a deletedAt timestamp

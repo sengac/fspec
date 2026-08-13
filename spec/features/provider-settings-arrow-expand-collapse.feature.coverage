@@ -4,11 +4,11 @@
       "name": "Right arrow expands a collapsed provider header",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
           "lines": "75-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 124,
                 125,
@@ -38,11 +38,11 @@
       "name": "Right arrow on an already-expanded provider header does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
           "lines": "108-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 124,
                 125,
@@ -72,11 +72,11 @@
       "name": "Left arrow collapses an expanded provider header",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
           "lines": "142-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 150,
                 151
@@ -90,11 +90,11 @@
       "name": "Left arrow on an already-collapsed provider header does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
           "lines": "176-204",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 124,
                 125,
@@ -124,11 +124,11 @@
       "name": "Left arrow on a child row does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
           "lines": "209-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 124,
                 125,
@@ -160,11 +160,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs"
+      "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 222
   }

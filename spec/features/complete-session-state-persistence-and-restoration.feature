@@ -82,7 +82,7 @@ Feature: Complete Session State Persistence and Restoration
   - URL references stored inline (just the URL string)
   - media_type MUST be preserved (required by all LLM providers)
 
-  See: codelet/spec/research/NAPI-008/session-persistence-analysis.md
+  See: rust/spec/research/NAPI-008/session-persistence-analysis.md
   """
 
   Background: User Story

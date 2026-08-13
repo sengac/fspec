@@ -4,11 +4,11 @@
       "name": "120-wide terminal divides into seven equal 16-wide columns",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
           "lines": "18-39",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "file": "rust/fspec-tui/src/views/board/grid.rs",
               "lines": [
                 47,
                 48,
@@ -46,11 +46,11 @@
       "name": "125-wide terminal spreads a 5-wide remainder across the leading columns",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
           "lines": "41-63",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "file": "rust/fspec-tui/src/views/board/grid.rs",
               "lines": [
                 47,
                 48,
@@ -98,11 +98,11 @@
       "name": "Narrow terminals clamp to the 8-column minimum and report zero remainder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
           "lines": "65-80",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "file": "rust/fspec-tui/src/views/board/grid.rs",
               "lines": [
                 47,
                 48,
@@ -140,11 +140,11 @@
       "name": "build_border_row produces the four canonical separator strings for a 120-wide layout",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
           "lines": "82-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "file": "rust/fspec-tui/src/views/board/grid.rs",
               "lines": [
                 84,
                 85,
@@ -190,10 +190,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/grid_unit_rpc014.rs"
+      "rust/fspec-tui/tests/grid_unit_rpc014.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/grid.rs"
+      "rust/fspec-tui/src/views/board/grid.rs"
     ],
     "totalLinesCovered": 214
   }

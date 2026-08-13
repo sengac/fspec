@@ -4,11 +4,11 @@
       "name": "Read PNG image and display visually",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "file": "rust/tools/tests/read_multimodal_test.rs",
           "lines": "11-48",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 131,
                 132,
@@ -72,11 +72,11 @@
       "name": "Read text file with line numbers",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "file": "rust/tools/tests/read_multimodal_test.rs",
           "lines": "51-75",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 131,
                 132,
@@ -140,11 +140,11 @@
       "name": "Handle corrupted image gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "file": "rust/tools/tests/read_multimodal_test.rs",
           "lines": "78-114",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 131,
                 132,
@@ -208,11 +208,11 @@
       "name": "Detect image type by content when extension missing",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "file": "rust/tools/tests/read_multimodal_test.rs",
           "lines": "117-157",
           "implMappings": [
             {
-              "file": "codelet/tools/src/file_type.rs",
+              "file": "rust/tools/src/file_type.rs",
               "lines": [
                 89,
                 90,
@@ -241,11 +241,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/read_multimodal_test.rs"
+      "rust/tools/tests/read_multimodal_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/read.rs",
-      "codelet/tools/src/file_type.rs"
+      "rust/tools/src/read.rs",
+      "rust/tools/src/file_type.rs"
     ],
     "totalLinesCovered": 312
   }

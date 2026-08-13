@@ -4,11 +4,11 @@
       "name": "List all session worktrees with status information",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "84-160",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 313,
                 314,
@@ -116,11 +116,11 @@
       "name": "List only orphaned session worktrees",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "167-221",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 313,
                 314,
@@ -228,11 +228,11 @@
       "name": "List sessions with pending_merge filter",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "228-289",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 313,
                 314,
@@ -340,11 +340,11 @@
       "name": "List sessions returns empty when no worktrees exist",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "296-311",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 313,
                 314,
@@ -452,11 +452,11 @@
       "name": "Inspect session diff before merging",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "318-386",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 420,
                 421,
@@ -483,11 +483,11 @@
       "name": "Inspect session shows deleted files",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "393-419",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 420,
                 421,
@@ -514,11 +514,11 @@
       "name": "Inspect clean session returns empty diff",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "426-454",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 420,
                 421,
@@ -545,11 +545,11 @@
       "name": "Inspect session fails for non-existent session",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_list_inspect_tests.rs",
+          "file": "rust/git/tests/session_list_inspect_tests.rs",
           "lines": "461-481",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 420,
                 421,
@@ -578,10 +578,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/session_list_inspect_tests.rs"
+      "rust/git/tests/session_list_inspect_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/session_status.rs"
+      "rust/git/src/session_status.rs"
     ],
     "totalLinesCovered": 800
   }

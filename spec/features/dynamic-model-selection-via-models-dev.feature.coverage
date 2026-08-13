@@ -4,11 +4,11 @@
       "name": "Select model using full provider/model path",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "283-313",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 61,
                 62,
@@ -77,11 +77,11 @@
       "name": "First run fetches models from API and creates cache",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "129-158",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/cache.rs",
+              "file": "rust/providers/src/models/cache.rs",
               "lines": [
                 53,
                 54,
@@ -106,11 +106,11 @@
       "name": "Subsequent runs use cached models without network call",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "164-193",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/cache.rs",
+              "file": "rust/providers/src/models/cache.rs",
               "lines": [
                 53,
                 54,
@@ -135,11 +135,11 @@
       "name": "Force refresh fetches fresh data from API",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "199-230",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/cache.rs",
+              "file": "rust/providers/src/models/cache.rs",
               "lines": [
                 68,
                 69,
@@ -155,11 +155,11 @@
       "name": "List models for a specific provider",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "319-346",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 151,
                 152,
@@ -178,11 +178,11 @@
       "name": "Unknown model shows error with fuzzy suggestions",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "352-378",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 89,
                 90,
@@ -223,11 +223,11 @@
       "name": "Corrupted cache triggers automatic refetch",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "236-264",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/cache.rs",
+              "file": "rust/providers/src/models/cache.rs",
               "lines": [
                 53,
                 54,
@@ -252,11 +252,11 @@
       "name": "Reject model without tool_call capability",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "384-410",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 119,
                 120,
@@ -288,11 +288,11 @@
       "name": "Filter models by reasoning capability",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "416-442",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 160,
                 161,
@@ -321,11 +321,11 @@
       "name": "Use embedded fallback when network unavailable on first run",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "270-299",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/cache.rs",
+              "file": "rust/providers/src/models/cache.rs",
               "lines": [
                 74,
                 75,
@@ -349,11 +349,11 @@
       "name": "List all available providers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "448-476",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 141,
                 142,
@@ -373,11 +373,11 @@
       "name": "Filter models by vision capability",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "482-504",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 160,
                 161,
@@ -406,11 +406,11 @@
       "name": "Search models with fuzzy matching",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "510-535",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 178,
                 179,
@@ -439,11 +439,11 @@
       "name": "Show verbose model details",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/model_selection_test.rs",
+          "file": "rust/providers/tests/model_selection_test.rs",
           "lines": "541-566",
           "implMappings": [
             {
-              "file": "codelet/providers/src/models/registry.rs",
+              "file": "rust/providers/src/models/registry.rs",
               "lines": [
                 89,
                 90,
@@ -486,11 +486,11 @@
     "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/model_selection_test.rs"
+      "rust/providers/tests/model_selection_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/models/registry.rs",
-      "codelet/providers/src/models/cache.rs"
+      "rust/providers/src/models/registry.rs",
+      "rust/providers/src/models/cache.rs"
     ],
     "totalLinesCovered": 651
   }

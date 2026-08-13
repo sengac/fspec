@@ -4,11 +4,11 @@
       "name": "Parse a space-separated supervisor envelope from the real backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
+          "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
           "lines": "124-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 205,
                 206,
@@ -45,11 +45,11 @@
       "name": "Parse a newline-separated supervisor envelope from the replay path",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
+          "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
           "lines": "152-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 205,
                 206,
@@ -86,11 +86,11 @@
       "name": "Fall back to the default role when no header is present",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
+          "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
           "lines": "179-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 205,
                 206,
@@ -127,11 +127,11 @@
       "name": "Render a space-separated incoming supervisor message in the scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
+          "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
           "lines": "96-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 124,
                 125,
@@ -154,10 +154,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/supervisor_message_rendering_rpc387.rs"
+      "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs"
+      "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
     "totalLinesCovered": 170
   }

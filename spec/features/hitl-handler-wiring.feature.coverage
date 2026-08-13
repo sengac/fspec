@@ -8,7 +8,7 @@
           "lines": "204-240",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5748
               ]
@@ -25,7 +25,7 @@
           "lines": "242-283",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5438,
                 5439,
@@ -44,7 +44,7 @@
           "lines": "409-435",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6600,
                 6601,
@@ -105,7 +105,7 @@
           "lines": "437-460",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6600,
                 6601,
@@ -166,7 +166,7 @@
           "lines": "218-240",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5435,
                 5436,
@@ -203,7 +203,7 @@
           "lines": "161-176",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 981,
                 982,
@@ -255,7 +255,7 @@
           "lines": "71-93",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6536,
                 6537,
@@ -820,7 +820,7 @@
       "src/tui/components/__tests__/hitl-tui-integration.test.tsx"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/hooks/useRustSessionState.ts",
       "src/tui/components/InputTransition.tsx",
       "src/tui/services/GlobalSessionStreamManager.ts"

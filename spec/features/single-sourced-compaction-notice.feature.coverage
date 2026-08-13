@@ -4,11 +4,11 @@
       "name": "/compact Ok emits no immediate success notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "file": "rust/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
           "lines": "111-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 65,
                 66,
@@ -53,11 +53,11 @@
       "name": "Exactly one compaction notice lands when the CompactionComplete chunk arrives after /compact",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "file": "rust/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
           "lines": "148-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 125,
                 126,
@@ -116,11 +116,11 @@
       "name": "/compact failure still emits the error notice and no compaction notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "file": "rust/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
           "lines": "203-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 80,
                 81,
@@ -149,11 +149,11 @@
       "name": "Auto-compaction emits exactly one notice without a preceding /compact",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "file": "rust/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
           "lines": "242-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 125,
                 126,
@@ -214,11 +214,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs"
+      "rust/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
     ],
     "totalLinesCovered": 289
   }

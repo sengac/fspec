@@ -1,7 +1,7 @@
 @KGRAPH-021
 Feature: Learnings Extraction Pipeline — Session Boundary Analysis
   """
-  Extraction pipeline in codelet/napi/src/graph/learnings_extraction.rs.
+  Extraction pipeline in rust/napi/src/graph/learnings_extraction.rs.
   Uses the Learnings graph via registry. LLM prompt template uses Residue methodology structure.
   Entities loaded via GraphDatabase::load_entities batch API.
   Tests use REAL nanograph databases (tempdir), REAL fixture JSON for LLM responses,

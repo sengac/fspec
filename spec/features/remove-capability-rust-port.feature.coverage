@@ -4,11 +4,11 @@
       "name": "Dispatcher removes a capability from an existing foundation.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "69-102",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -173,11 +173,11 @@
       "name": "Draft takes precedence over the final foundation file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "103-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -342,11 +342,11 @@
       "name": "Only the first exact case-sensitive match is removed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "148-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -511,11 +511,11 @@
       "name": "Dispatcher fails when no capabilities exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "176-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -680,11 +680,11 @@
       "name": "Dispatcher fails and lists available capabilities when the name is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "204-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -849,11 +849,11 @@
       "name": "Dispatcher fails when neither foundation.json nor its draft exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "238-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -1018,11 +1018,11 @@
       "name": "Unknown top-level fields and untouched capabilities are preserved on write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_capability.rs",
+          "file": "rust/fspec-core/tests/remove_capability.rs",
           "lines": "264-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_capability.rs",
+              "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -1189,10 +1189,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_capability.rs"
+      "rust/fspec-core/tests/remove_capability.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_capability.rs"
+      "rust/fspec-core/src/commands/remove_capability.rs"
     ],
     "totalLinesCovered": 1293
   }

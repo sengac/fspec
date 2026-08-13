@@ -4,11 +4,11 @@
       "name": "list-schedules --help is byte-for-byte identical to TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_schedules.rs",
+          "file": "rust/fspec/tests/cli_list_schedules.rs",
           "lines": "332-398",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_schedules.rs",
+              "file": "rust/fspec-core/src/help/configs/list_schedules.rs",
               "lines": [
                 1,
                 2,
@@ -105,11 +105,11 @@
       "name": "CLI surface accepts only the --json flag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_schedules.rs",
+          "file": "rust/fspec/tests/cli_list_schedules.rs",
           "lines": "72-113",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 142,
                 143,
@@ -128,11 +128,11 @@
       "name": "CLI delegates to the same fspec_core function as dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_schedules.rs",
+          "file": "rust/fspec/tests/cli_list_schedules.rs",
           "lines": "257-326",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_schedules.rs",
+              "file": "rust/fspec/src/list_schedules.rs",
               "lines": [
                 1,
                 2,
@@ -206,12 +206,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_schedules.rs"
+      "rust/fspec/tests/cli_list_schedules.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/list_schedules.rs",
-      "codelet/fspec/src/main.rs",
-      "codelet/fspec/src/list_schedules.rs"
+      "rust/fspec-core/src/help/configs/list_schedules.rs",
+      "rust/fspec/src/main.rs",
+      "rust/fspec/src/list_schedules.rs"
     ],
     "totalLinesCovered": 331
   }

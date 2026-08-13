@@ -5,7 +5,7 @@
 @RPC-277
 Feature: fspec remove-persona CLI subcommand
   """
-  File layout: rewrite stub codelet/fspec-core/src/commands/remove_persona.rs; add CLI bridge codelet/fspec/src/remove_persona.rs; help config codelet/fspec-core/src/help/configs/remove_persona.rs; dispatcher test codelet/fspec-core/tests/remove_persona.rs; CLI test codelet/fspec/tests/cli_remove_persona.rs; help fixture codelet/fspec/tests/fixtures/help/remove-persona.txt
+  File layout: rewrite stub rust/fspec-core/src/commands/remove_persona.rs; add CLI bridge rust/fspec/src/remove_persona.rs; help config rust/fspec-core/src/help/configs/remove_persona.rs; dispatcher test rust/fspec-core/tests/remove_persona.rs; CLI test rust/fspec/tests/cli_remove_persona.rs; help fixture rust/fspec/tests/fixtures/help/remove-persona.txt
   Core signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> (2-arg form). Args (camelCase): { name: String }. Does NOT use ensure_foundation_file — inline draft-precedence read, errors on ENOENT (no auto-create). Returns JSON { success: true, fileName, name }.
   Wiring intent (SHARED FILES — supervisor must apply): register remove_persona module in commands/mod.rs; route kebab 'remove-persona' in canonical.rs + dispatch.rs to the 2-arg run; register help config in help/configs/mod.rs; add Mode::RemovePersona clap variant in fspec/src/main.rs. Worker will REQUEST these, not edit them.
   Write-format divergence: TS writes JSON.stringify(foundation, null, 2) + '\n' (trailing newline); the shared write_json_atomic helper omits the trailing newline, so remove-persona writes the foundation file inline (to_string_pretty + '\n') for byte parity. serde_json preserve_order keeps unknown top-level fields and key order. CLI bridge does ONLY arg marshalling + stdout/stderr rendering (exit 1 on error).
@@ -44,7 +44,7 @@ Feature: fspec remove-persona CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-persona --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-persona.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-persona.txt
     And stdout starts with a blank line followed by 'REMOVE-PERSONA'
 
   Scenario: CLI removes a persona and prints the success line
@@ -86,4 +86,4 @@ Feature: fspec remove-persona CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec remove-persona "Admin"` afterwards exits 0
     And spec/foundation.json on disk shows personas has length 1
-    And the CLI bridge module codelet/fspec/src/remove_persona.rs contains NO inline persona-match, file-read, or file-write logic — its only computation is JSON arg marshalling and stdout rendering
+    And the CLI bridge module rust/fspec/src/remove_persona.rs contains NO inline persona-match, file-read, or file-write logic — its only computation is JSON arg marshalling and stdout rendering

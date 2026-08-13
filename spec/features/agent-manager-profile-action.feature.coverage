@@ -4,11 +4,11 @@
       "name": "Profile a runaway hot loop within a 10-second window",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "28-78",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/session.rs",
+              "file": "rust/tools/src/profile/session.rs",
               "lines": [
                 58,
                 59,
@@ -96,11 +96,11 @@
       "name": "Detect tokio task leak via runtime metrics during the profile window",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "84-120",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/session.rs",
+              "file": "rust/tools/src/profile/session.rs",
               "lines": [
                 149,
                 150,
@@ -159,11 +159,11 @@
       "name": "Filter scopes by label_prefix to narrow diagnosis to one module",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "126-167",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/registry.rs",
+              "file": "rust/tools/src/profile/registry.rs",
               "lines": [
                 94,
                 95,
@@ -229,11 +229,11 @@
       "name": "Reject overlapping profile sessions with profile_session_active error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "173-214",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/session.rs",
+              "file": "rust/tools/src/profile/session.rs",
               "lines": [
                 72,
                 73,
@@ -256,11 +256,11 @@
       "name": "Diagnose channel backpressure via lagged_during_window count",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "220-261",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/channels.rs",
+              "file": "rust/tools/src/profile/channels.rs",
               "lines": [
                 32,
                 33,
@@ -373,11 +373,11 @@
       "name": "Invoke profile action via rig::tool::Tool from a subordinate LLM agent",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "267-316",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 96,
                 97,
@@ -419,11 +419,11 @@
       "name": "Validate duration_secs is within the allowed 1 to 60 second range",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "322-370",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/session.rs",
+              "file": "rust/tools/src/profile/session.rs",
               "lines": [
                 63,
                 64,
@@ -443,11 +443,11 @@
       "name": "Counters reset to zero at the start of each profile session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "376-412",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/registry.rs",
+              "file": "rust/tools/src/profile/registry.rs",
               "lines": [
                 87,
                 88,
@@ -465,11 +465,11 @@
       "name": "Steady-state instrumentation overhead is sub-1ns when no profile session is active",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/tests.rs",
+          "file": "rust/tools/src/profile/tests.rs",
           "lines": "418-452",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/scope.rs",
+              "file": "rust/tools/src/profile/scope.rs",
               "lines": [
                 40,
                 41,
@@ -498,14 +498,14 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/profile/tests.rs"
+      "rust/tools/src/profile/tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/profile/session.rs",
-      "codelet/tools/src/profile/registry.rs",
-      "codelet/tools/src/profile/channels.rs",
-      "codelet/tools/src/agent_manager/types.rs",
-      "codelet/tools/src/profile/scope.rs"
+      "rust/tools/src/profile/session.rs",
+      "rust/tools/src/profile/registry.rs",
+      "rust/tools/src/profile/channels.rs",
+      "rust/tools/src/agent_manager/types.rs",
+      "rust/tools/src/profile/scope.rs"
     ],
     "totalLinesCovered": 733
   }

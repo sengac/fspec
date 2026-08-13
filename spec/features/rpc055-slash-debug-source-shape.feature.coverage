@@ -4,11 +4,11 @@
       "name": "SessionManagerHandle declares set_debug_directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc055.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
           "lines": "25-50",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 399,
                 400,
@@ -29,11 +29,11 @@
       "name": "FspecService declares set_debug_directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc055.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
           "lines": "53-69",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 296,
                 297,
@@ -48,11 +48,11 @@
       "name": "FspecBackend declares set_debug_directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc055.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
           "lines": "72-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 406,
                 407,
@@ -70,11 +70,11 @@
       "name": "Both transports implement set_debug_directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc055.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
           "lines": "86-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 439,
                 440,
@@ -92,11 +92,11 @@
       "name": "/debug slash command wiring lives in dispatch_slash_debug.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc055.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
           "lines": "117-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 1,
                 2,
@@ -178,14 +178,14 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc055.rs"
+      "rust/fspec-tui/tests/source_shape_rpc055.rs"
     ],
     "implFiles": [
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_debug.rs"
+      "rust/core/src/session_manager_handle.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_debug.rs"
     ],
     "totalLinesCovered": 194
   }

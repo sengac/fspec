@@ -5,7 +5,7 @@
 @RPC-280
 Feature: Port remove-schedule command to Rust
   """
-  New impl at codelet/fspec-core/src/commands/remove_schedule.rs replaces NotYetPorted stub. Signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Args struct (camelCase) { name: String }. Load spec/schedules.json (read existing, default empty if missing — TS does NOT ensure-create), check key, remove, write_json_atomic. SHARED-FILE REQUEST: reuse the same ensure_schedules_file/schedules path helper requested for RPC-191; remove only needs the path + read (not auto-create). Model SchedulesData { version, schedules: IndexMap<String, Value> } with #[serde(flatten)] extra. Returns {success:true} JSON.
+  New impl at rust/fspec-core/src/commands/remove_schedule.rs replaces NotYetPorted stub. Signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Args struct (camelCase) { name: String }. Load spec/schedules.json (read existing, default empty if missing — TS does NOT ensure-create), check key, remove, write_json_atomic. SHARED-FILE REQUEST: reuse the same ensure_schedules_file/schedules path helper requested for RPC-191; remove only needs the path + read (not auto-create). Model SchedulesData { version, schedules: IndexMap<String, Value> } with #[serde(flatten)] extra. Returns {success:true} JSON.
   """
 
   # ========================================
@@ -13,7 +13,7 @@ Feature: Port remove-schedule command to Rust
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. The Rust dispatcher route for `remove-schedule` MUST replace the NotYetPorted stub at codelet/fspec-core/src/commands/remove_schedule.rs
+  #   1. The Rust dispatcher route for `remove-schedule` MUST replace the NotYetPorted stub at rust/fspec-core/src/commands/remove_schedule.rs
   #   2. Takes a single positional argument `name` (the schedule slug to remove)
   #   3. Uses getSchedulesFilePath (spec/schedules.json) — does NOT call ensureSchedulesFile; opens the file directly via fileManager.transaction. If the file is missing the transaction read still yields the default empty schedules map so the not-found branch fires
   #   4. If data.schedules does NOT contain `name`, error 'Schedule '<name>' does not exist' and no write occurs

@@ -4,11 +4,11 @@
       "name": "Same-depth overlap drops later node and warns",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "363-390",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -63,11 +63,11 @@
       "name": "Disjoint same-depth ranges are both kept",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "392-414",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -122,11 +122,11 @@
       "name": "Boundary touch counts as overlap because turn_end is inclusive",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "417-441",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -181,11 +181,11 @@
       "name": "Cross-depth coverage of the same span is intentional and accepted",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "444-471",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -240,11 +240,11 @@
       "name": "Containment overlap drops only the inner node and preserves disjoint neighbours",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "474-497",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -299,11 +299,11 @@
       "name": "Empty input and singleton same-depth input are unaffected",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "500-520",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -358,11 +358,11 @@
       "name": "Property — every pair of same-depth output nodes has disjoint turn ranges",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "527-559",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 492,
                 493,
@@ -419,10 +419,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs"
+      "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/model.rs"
+      "rust/core/src/compaction/model.rs"
     ],
     "totalLinesCovered": 483
   }

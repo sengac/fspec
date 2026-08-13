@@ -6,9 +6,9 @@
 @RPC-106
 Feature: Provider settings: TS-parity footer hints with context-sensitive per-row-type strings and bullet separators
   """
-  Test plan: new `codelet/fspec-tui/tests/provider_settings_footer_hints.rs` integration suite — 10 assertions (provider/oauth-status/oauth-login/api-key/profile/add-profile/None branches, bullet-not-pipe, lowercase-colon, render-into-bottom-row-with-dim-style). Pure string + widget tests using ratatui `TestBackend`. Depends on RPC-103 for the flat NavItem tree and on RPC-104 for `RowKind` — both are sibling cards in the same RPC-054 fan-out, so the test crate can refer to their exports.
+  Test plan: new `rust/fspec-tui/tests/provider_settings_footer_hints.rs` integration suite — 10 assertions (provider/oauth-status/oauth-login/api-key/profile/add-profile/None branches, bullet-not-pipe, lowercase-colon, render-into-bottom-row-with-dim-style). Pure string + widget tests using ratatui `TestBackend`. Depends on RPC-103 for the flat NavItem tree and on RPC-104 for `RowKind` — both are sibling cards in the same RPC-054 fan-out, so the test crate can refer to their exports.
   Implementation:
-  - introduce `codelet/fspec-tui/src/views/provider_settings/footer_hints.rs` exposing `FOOTER_COMMON` and `footer_hint_for(Option<RowKind>) -> String`. `mod.rs::footer_hint()` becomes a wrapper that looks up the currently-selected NavItem (via the flat tree from RPC-103), maps it to a `RowKind`, and passes it through `footer_hint_for`. Detail-mode hints (EditApiKey, OAuthNotice, Summary) keep their dedicated strings but adopt the bullet (`·`) separator + lowercase-colon style for visual consistency.
+  - introduce `rust/fspec-tui/src/views/provider_settings/footer_hints.rs` exposing `FOOTER_COMMON` and `footer_hint_for(Option<RowKind>) -> String`. `mod.rs::footer_hint()` becomes a wrapper that looks up the currently-selected NavItem (via the flat tree from RPC-103), maps it to a `RowKind`, and passes it through `footer_hint_for`. Detail-mode hints (EditApiKey, OAuthNotice, Summary) keep their dedicated strings but adopt the bullet (`·`) separator + lowercase-colon style for visual consistency.
   """
 
   # ========================================

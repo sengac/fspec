@@ -4,7 +4,7 @@
 @RPC-185
 Feature: add-hotspot CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_hotspot.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-hotspot.ts). Surface: `fspec add-hotspot <workUnitId> <text> [--concern <desc>] [--timestamp <ms>] [--bounded-context <name>]`.
+  CLI bridge: rust/fspec/src/add_hotspot.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-hotspot.ts). Surface: `fspec add-hotspot <workUnitId> <text> [--concern <desc>] [--timestamp <ms>] [--bounded-context <name>]`.
   Stdout (success): '✓ Hotspot added to <workUnitId> (id: <hotspotId>)' (chalk.green; ANSI tolerated via substring match).
   Stderr (failure): '✗ Failed to add hotspot: <message>'; exit code 1.
   Two-front-doors invariant: bridge marshals positional/option args into JSON and forwards to commands::add_hotspot::run — NO domain logic in the bridge.
@@ -20,7 +20,7 @@ Feature: add-hotspot CLI subcommand
     given the fspec Rust binary is built and on PATH
     when I run `fspec add-hotspot --help`
     then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-hotspot.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-hotspot.txt
 
   Scenario: CLI appends a hotspot and prints the success line
     given a project root tempdir with spec/work-units.json containing RPC-185 status=specifying
@@ -43,4 +43,4 @@ Feature: add-hotspot CLI subcommand
     then the dispatcher returns success=true
     And running `fspec add-hotspot RPC-185 "H2"` afterwards exits 0
     And spec/work-units.json on disk shows RPC-185 eventStorm items has length 2
-    And the CLI bridge module codelet/fspec/src/add_hotspot.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_hotspot.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

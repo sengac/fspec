@@ -4,11 +4,11 @@
       "name": "Pressing r with the Files pane focused opens a single-file restore confirmation naming the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "57-72",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 19,
                 20,
@@ -38,11 +38,11 @@
       "name": "Pressing r with the Checkpoints pane focused is a no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "74-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 19,
                 20,
@@ -72,11 +72,11 @@
       "name": "Pressing t opens a restore-all confirmation naming the file count",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "94-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 38,
                 39,
@@ -102,11 +102,11 @@
       "name": "Confirming a single-file restore emits the RestoreCheckpointFile action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "112-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 80,
                 81,
@@ -148,11 +148,11 @@
       "name": "Cancelling the restore confirmation closes the dialog and emits nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "133-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 53,
                 54,
@@ -190,11 +190,11 @@
       "name": "A restore result drives the status dialog to complete then refreshes the diff and counts",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "150-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 111,
                 112,
@@ -238,11 +238,11 @@
       "name": "A failed restore drives the status dialog to error with the message",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
           "lines": "183-207",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
               "lines": [
                 111,
                 112,
@@ -288,10 +288,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs"
+      "rust/fspec-tui/src/views/checkpoints/restore_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/checkpoints/restore.rs"
+      "rust/fspec-tui/src/views/checkpoints/restore.rs"
     ],
     "totalLinesCovered": 315
   }

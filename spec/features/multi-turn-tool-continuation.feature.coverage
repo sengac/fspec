@@ -4,11 +4,11 @@
       "name": "Turn with a tool call and trailing text before stop_reason end_turn continues to a second request",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/tests/multi_turn_tool_continuation.rs",
+          "file": "rust/patches/rig-core/tests/multi_turn_tool_continuation.rs",
           "lines": "193-228",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 764,
                 765,
@@ -33,11 +33,11 @@
       "name": "Turn with a tool call and a trailing reasoning delta continues to a second request",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/tests/multi_turn_tool_continuation.rs",
+          "file": "rust/patches/rig-core/tests/multi_turn_tool_continuation.rs",
           "lines": "235-258",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 764,
                 765,
@@ -62,11 +62,11 @@
       "name": "Text-only turn exits the loop after exactly one request",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/tests/multi_turn_tool_continuation.rs",
+          "file": "rust/patches/rig-core/tests/multi_turn_tool_continuation.rs",
           "lines": "264-281",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 764,
                 765,
@@ -91,11 +91,11 @@
       "name": "Tool-only turn with stop_reason tool_use still continues to a second request",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/tests/multi_turn_tool_continuation.rs",
+          "file": "rust/patches/rig-core/tests/multi_turn_tool_continuation.rs",
           "lines": "288-307",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 764,
                 765,
@@ -122,10 +122,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/patches/rig-core/tests/multi_turn_tool_continuation.rs"
+      "rust/patches/rig-core/tests/multi_turn_tool_continuation.rs"
     ],
     "implFiles": [
-      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
     "totalLinesCovered": 150
   }

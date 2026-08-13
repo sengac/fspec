@@ -4,11 +4,11 @@
       "name": "Mermaid is initialized theme-aware with run on load",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "14-52",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 11,
                 12,
@@ -38,11 +38,11 @@
       "name": "Page loads the Panzoom CDN script",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "54-66",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
                 12,
                 13,
@@ -57,11 +57,11 @@
       "name": "Each mermaid diagram gets a wrapper with fullscreen and download buttons",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "68-98",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
                 62,
                 63,
@@ -102,11 +102,11 @@
       "name": "Modal opens and closes on ESC and backdrop click",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "100-130",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
                 108,
                 109,
@@ -191,11 +191,11 @@
       "name": "Zoom is clamped with reset and live percentage",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "132-170",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
                 183,
                 184,
@@ -232,11 +232,11 @@
       "name": "Space enters pan mode and SVG downloads as a Blob",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "172-188",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
                 164,
                 165,
@@ -257,11 +257,11 @@
       "name": "Existing mermaid server-render still works and files stay small",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "190-225",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mod.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mod.rs",
               "lines": [
                 21,
                 22,
@@ -310,11 +310,11 @@
       "name": "Cursor-centered wheel zoom is clamped to 0.5x and 5x",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "221-235",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
               "lines": [
                 39,
                 40,
@@ -367,11 +367,11 @@
       "name": "Horizontal scroll pans the diagram in zoom mode",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "237-245",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
               "lines": [
                 83,
                 84,
@@ -393,11 +393,11 @@
       "name": "The mode indicator fades after a period of inactivity",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "247-256",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
               "lines": [
                 97,
                 98,
@@ -418,11 +418,11 @@
       "name": "Holding Space toggles the pan-mode class on the diagram container",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
+          "file": "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs",
           "lines": "258-267",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
                 150,
                 151,
@@ -446,13 +446,13 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/attachment-viewer/tests/viewer_mermaid_fullscreen.rs"
+      "rust/attachment-viewer/tests/viewer_mermaid_fullscreen.rs"
     ],
     "implFiles": [
-      "codelet/attachment-viewer/src/markdown/template/scripts.rs",
-      "codelet/attachment-viewer/src/markdown/template/mermaid_modal.rs",
-      "codelet/attachment-viewer/src/markdown/template/mod.rs",
-      "codelet/attachment-viewer/src/markdown/template/mermaid_wheel.rs"
+      "rust/attachment-viewer/src/markdown/template/scripts.rs",
+      "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
+      "rust/attachment-viewer/src/markdown/template/mod.rs",
+      "rust/attachment-viewer/src/markdown/template/mermaid_wheel.rs"
     ],
     "totalLinesCovered": 514
   }

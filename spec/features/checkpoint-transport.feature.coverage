@@ -4,11 +4,11 @@
       "name": "list_checkpoints returns checkpoints most-recent-first with automatic flags",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "46-80",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 32,
                 33,
@@ -49,11 +49,11 @@
       "name": "list_checkpoints caps the result at 200 entries",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "81-106",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 20,
                 21,
@@ -106,11 +106,11 @@
       "name": "checkpoint_diff_files returns one ChangedFile per changed file",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "107-127",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 62,
                 63,
@@ -139,11 +139,11 @@
       "name": "checkpoint_file_diff returns the unified diff for a changed file",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "128-146",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 80,
                 81,
@@ -166,11 +166,11 @@
       "name": "restore_checkpoint_all restores the working tree",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "147-170",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 447,
                 448,
@@ -249,11 +249,11 @@
       "name": "delete_checkpoint removes one checkpoint",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "171-189",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 113,
                 114,
@@ -276,11 +276,11 @@
       "name": "restore_checkpoint_file restores a single file",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "192-209",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 111,
                 112,
@@ -300,11 +300,11 @@
       "name": "delete_all_checkpoints removes every checkpoint",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
           "lines": "212-229",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/checkpoints.rs",
+              "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
                 140,
                 141,
@@ -328,11 +328,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc/tests/checkpoint_transport_rpc362.rs"
+      "rust/rpc/tests/checkpoint_transport_rpc362.rs"
     ],
     "implFiles": [
-      "codelet/rpc/src/checkpoints.rs",
-      "codelet/git/src/ghost_commit.rs"
+      "rust/rpc/src/checkpoints.rs",
+      "rust/git/src/ghost_commit.rs"
     ],
     "totalLinesCovered": 374
   }

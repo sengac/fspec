@@ -4,11 +4,11 @@
       "name": "Trim Read tool result to compact file reference",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "178-220",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 87,
                 88,
@@ -57,11 +57,11 @@
       "name": "Trim Write tool parameters to persistence reference",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "227-263",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 61,
                 62,
@@ -115,11 +115,11 @@
       "name": "Condense Edit tool parameters to change summary",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "270-308",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 61,
                 62,
@@ -174,11 +174,11 @@
       "name": "Truncate long Bash output with head and tail",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "315-369",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 87,
                 88,
@@ -250,11 +250,11 @@
       "name": "Short Bash output passes through unchanged",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "376-403",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 87,
                 88,
@@ -307,11 +307,11 @@
       "name": "Strip base64 image data to metadata placeholder",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "410-461",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer_base64.rs",
+              "file": "rust/core/src/compaction/trimmer_base64.rs",
               "lines": [
                 10,
                 11,
@@ -388,11 +388,11 @@
       "name": "Truncate Search/Grep output to first matches",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "468-502",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 87,
                 88,
@@ -447,11 +447,11 @@
       "name": "User messages pass through unchanged",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "509-526",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 87,
                 88,
@@ -475,11 +475,11 @@
       "name": "Assistant reasoning text passes through unchanged",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "533-551",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 61,
                 62,
@@ -504,11 +504,11 @@
       "name": "Messages without tool metadata pass through unchanged",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "558-572",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 47,
                 48,
@@ -531,11 +531,11 @@
       "name": "Trimming is deterministic",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "579-608",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 47,
                 48,
@@ -558,11 +558,11 @@
       "name": "Trimmed output is measurably smaller than input",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
           "lines": "615-642",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/trimmer.rs",
+              "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
                 87,
                 88,
@@ -613,11 +613,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/trimmer.test.rs"
+      "rust/core/src/compaction/__tests__/trimmer.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/trimmer.rs",
-      "codelet/core/src/compaction/trimmer_base64.rs"
+      "rust/core/src/compaction/trimmer.rs",
+      "rust/core/src/compaction/trimmer_base64.rs"
     ],
     "totalLinesCovered": 814
   }

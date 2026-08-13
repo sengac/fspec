@@ -4,11 +4,11 @@
       "name": "CLI successfully adds architecture docs and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_architecture.rs",
+          "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "55-86",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_architecture.rs",
+              "file": "rust/fspec/src/add_architecture.rs",
               "lines": [
                 46,
                 47,
@@ -45,11 +45,11 @@
       "name": "CLI resolves a bare feature name by basename",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_architecture.rs",
+          "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "88-121",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_architecture.rs",
+              "file": "rust/fspec/src/add_architecture.rs",
               "lines": [
                 46,
                 47,
@@ -86,11 +86,11 @@
       "name": "CLI surfaces empty-text error with stderr Error prefix and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_architecture.rs",
+          "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "123-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_architecture.rs",
+              "file": "rust/fspec/src/add_architecture.rs",
               "lines": [
                 46,
                 47,
@@ -127,11 +127,11 @@
       "name": "CLI surfaces not-found error with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_architecture.rs",
+          "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "150-174",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_architecture.rs",
+              "file": "rust/fspec/src/add_architecture.rs",
               "lines": [
                 46,
                 47,
@@ -168,11 +168,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_architecture.rs",
+          "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "176-201",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_architecture.rs",
+              "file": "rust/fspec/src/add_architecture.rs",
               "lines": [
                 46,
                 47,
@@ -209,11 +209,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_architecture.rs",
+          "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "203-247",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_architecture.rs",
+              "file": "rust/fspec/src/add_architecture.rs",
               "lines": [
                 46,
                 47,
@@ -252,10 +252,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_architecture.rs"
+      "rust/fspec/tests/cli_add_architecture.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_architecture.rs"
+      "rust/fspec/src/add_architecture.rs"
     ],
     "totalLinesCovered": 338
   }

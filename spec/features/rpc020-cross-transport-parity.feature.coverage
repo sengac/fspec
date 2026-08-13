@@ -4,11 +4,11 @@
       "name": "EmbeddedFspecBackend::search_files delegates through the shared service",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_files_parity_rpc020.rs",
+          "file": "rust/fspec-tui/tests/search_files_parity_rpc020.rs",
           "lines": "52-73",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 1,
                 2,
@@ -163,11 +163,11 @@
       "name": "WebSocketFspecBackend::search_files crosses tarpc cleanly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_files_parity_rpc020.rs",
+          "file": "rust/fspec-tui/tests/search_files_parity_rpc020.rs",
           "lines": "77-101",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1,
                 2,
@@ -654,11 +654,11 @@
       "name": "Both transports return identical Vec<String> for the same SharedFspecService",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_files_parity_rpc020.rs",
+          "file": "rust/fspec-tui/tests/search_files_parity_rpc020.rs",
           "lines": "104-138",
           "implMappings": [
             {
-              "file": "codelet/core/src/file_search.rs",
+              "file": "rust/core/src/file_search.rs",
               "lines": [
                 1,
                 2,
@@ -831,11 +831,11 @@
       "name": "search_files returns an empty Vec when no cwd is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_files_parity_rpc020.rs",
+          "file": "rust/fspec-tui/tests/search_files_parity_rpc020.rs",
           "lines": "140-155",
           "implMappings": [
             {
-              "file": "codelet/core/src/file_search.rs",
+              "file": "rust/core/src/file_search.rs",
               "lines": [
                 1,
                 2,
@@ -1008,11 +1008,11 @@
       "name": "search_files honours the limit argument across transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_files_parity_rpc020.rs",
+          "file": "rust/fspec-tui/tests/search_files_parity_rpc020.rs",
           "lines": "159-179",
           "implMappings": [
             {
-              "file": "codelet/core/src/file_search.rs",
+              "file": "rust/core/src/file_search.rs",
               "lines": [
                 1,
                 2,
@@ -1187,12 +1187,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/search_files_parity_rpc020.rs"
+      "rust/fspec-tui/tests/search_files_parity_rpc020.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/core/src/file_search.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/core/src/file_search.rs"
     ],
     "totalLinesCovered": 1220
   }

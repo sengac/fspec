@@ -7,7 +7,7 @@
 @RPC-163
 Feature: Provider settings: Delete key (in addition to Backspace) in API-key edit form
   """
-  TS reference: src/tui/components/ProviderSettingsPanel.tsx uses Ink's useInput, where key.backspace and key.delete are sibling boolean flags both wired to draft.slice(0, -1). Rust impl currently only binds KeyCode::Backspace at codelet/fspec-tui/src/views/provider_settings/detail.rs:139-146.
+  TS reference: src/tui/components/ProviderSettingsPanel.tsx uses Ink's useInput, where key.backspace and key.delete are sibling boolean flags both wired to draft.slice(0, -1). Rust impl currently only binds KeyCode::Backspace at rust/fspec-tui/src/views/provider_settings/detail.rs:139-146.
   Summary/OAuthNotice sub-modes already route to handle_summary_key / handle_oauth_notice_key — Delete falls into the catch-all `_` arm there and preserves state (no change required, but explicit guard scenario required).
   Implementation:
   - merge KeyCode::Delete into the existing Backspace arm via `KeyCode::Backspace | KeyCode::Delete => { draft.pop(); ... }` — single shared body guarantees no behavioural divergence (Rule 3).

@@ -5,7 +5,7 @@
 @RPC-285
 Feature: Port report-bug-to-github command to Rust
   """
-  Core impl target: codelet/fspec-core/src/commands/report_bug_to_github.rs. Signature changes from the
+  Core impl target: rust/fspec-core/src/commands/report_bug_to_github.rs. Signature changes from the
   current stub run(_args_json) to the canonical run(args_json, project_root). Args mirror the TS
   ReportBugOptions CLI surface registered at src/commands/report-bug-to-github.ts:359-413:
   {projectRoot:Option<String>, bugDescription:Option<String>, expectedBehavior:Option<String>,

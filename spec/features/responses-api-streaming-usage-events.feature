@@ -1,7 +1,7 @@
 @PROV-038
 Feature: Codex provider token tracking shows 0 input tokens — Responses API streaming never emits Usage events
   """
-  Fix is in rig-core patched Responses API streaming (codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs). When response.completed contains usage data, yield RawStreamingChoice::Usage before FinalResponse. Mirrors what Chat Completions API and Anthropic providers already do.
+  Fix is in rig-core patched Responses API streaming (rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs). When response.completed contains usage data, yield RawStreamingChoice::Usage before FinalResponse. Mirrors what Chat Completions API and Anthropic providers already do.
   """
 
   # ========================================

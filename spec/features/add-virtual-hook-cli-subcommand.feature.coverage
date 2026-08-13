@@ -4,11 +4,11 @@
       "name": "Clap exposes add-virtual-hook as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_add_virtual_hook.rs",
           "lines": "98-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_virtual_hook.rs",
+              "file": "rust/fspec/src/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -98,11 +98,11 @@
       "name": "CLI adds a simple hook and prints the canonical success lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_add_virtual_hook.rs",
           "lines": "160-204",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_virtual_hook.rs",
+              "file": "rust/fspec/src/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -192,11 +192,11 @@
       "name": "CLI fails with exit 1 when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_add_virtual_hook.rs",
           "lines": "205-238",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_virtual_hook.rs",
+              "file": "rust/fspec/src/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -286,11 +286,11 @@
       "name": "CLI with --git-context generates a shell script and stores its relative path",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_add_virtual_hook.rs",
           "lines": "240-300",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_virtual_hook.rs",
+              "file": "rust/fspec/src/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -380,11 +380,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_add_virtual_hook.rs",
           "lines": "302-365",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_virtual_hook.rs",
+              "file": "rust/fspec/src/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -474,11 +474,11 @@
       "name": "add-virtual-hook --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_add_virtual_hook.rs",
           "lines": "366-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/help/configs/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -648,11 +648,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_virtual_hook.rs"
+      "rust/fspec/tests/cli_add_virtual_hook.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_virtual_hook.rs",
-      "codelet/fspec-core/src/help/configs/add_virtual_hook.rs"
+      "rust/fspec/src/add_virtual_hook.rs",
+      "rust/fspec-core/src/help/configs/add_virtual_hook.rs"
     ],
     "totalLinesCovered": 839
   }

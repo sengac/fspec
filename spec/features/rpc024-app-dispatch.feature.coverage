@@ -4,11 +4,11 @@
       "name": "Action::SessionCreated appends a fresh SessionContext and focuses it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "44-62",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 130,
                 131,
@@ -63,11 +63,11 @@
       "name": "Successive SessionCreated dispatches accumulate in creation order",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "65-89",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 130,
                 131,
@@ -122,11 +122,11 @@
       "name": "Action::SessionPrev decrements current_session_index without wrap when not at zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "92-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 282,
                 283,
@@ -148,11 +148,11 @@
       "name": "Action::SessionPrev wraps around from index 0 to len-1; SessionNext wraps back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "113-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 17,
                 18,
@@ -192,11 +192,11 @@
       "name": "SessionPrev and SessionNext are self-loops when only one session is open",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "139-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 17,
                 18,
@@ -236,11 +236,11 @@
       "name": "Switching sessions saves the outgoing draft and restores the incoming draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "158-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 17,
                 18,
@@ -280,11 +280,11 @@
       "name": "Each session retains its own scrollback across cycling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "188-225",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 34,
                 35,
@@ -308,11 +308,11 @@
       "name": "A StreamChunk for a non-current session lands in that session's scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "228-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 34,
                 35,
@@ -336,11 +336,11 @@
       "name": "Action::ChunkReceived for an unknown session id is dropped silently",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc024.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc024.rs",
           "lines": "261-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 34,
                 35,
@@ -366,11 +366,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_dispatch_rpc024.rs"
+      "rust/fspec-tui/tests/app_dispatch_rpc024.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs"
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs"
     ],
     "totalLinesCovered": 654
   }

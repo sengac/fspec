@@ -2,7 +2,7 @@
 @RPC-270
 Feature: Port remove-command-from-foundation command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_command_from_foundation.rs — Rust parity port of
+  Core impl at rust/fspec-core/src/commands/remove_command_from_foundation.rs — Rust parity port of
   src/commands/remove-command-from-foundation.ts. Soft-deletes (sets deleted=true) a `command` Event
   Storm item in spec/foundation.json's eventStorm.items array; the item is NOT spliced out. Loads
   foundation.json via io::ensure::ensure_foundation_file, mutates a round-tripped serde_json::Value to

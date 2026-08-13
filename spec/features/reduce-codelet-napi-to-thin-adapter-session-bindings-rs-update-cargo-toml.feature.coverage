@@ -4,11 +4,11 @@
       "name": "codelet-napi/src/session_manager.rs no longer exists after the move",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "136-153",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_bindings.rs",
+              "file": "rust/napi/src/session_bindings.rs",
               "lines": [
                 1,
                 2,
@@ -70,11 +70,11 @@
       "name": "codelet-napi/src/ gains the seven new sibling modules",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "155-186",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -186,11 +186,11 @@
       "name": "lib.rs declares each new sibling module under the noop feature gate",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "188-274",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -534,11 +534,11 @@
       "name": "agent_loop.rs owns the agent loop and its StreamOutput sinks",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "365-438",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_loop.rs",
+              "file": "rust/napi/src/agent_loop.rs",
               "lines": [
                 1,
                 2,
@@ -2319,11 +2319,11 @@
       "name": "session_hooks.rs owns the NapiSessionManagerHooks impl and the install helper",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "440-518",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_hooks.rs",
+              "file": "rust/napi/src/session_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -2409,11 +2409,11 @@
       "name": "persist.rs owns the five persist_* helpers as pub(crate) functions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "520-560",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persist.rs",
+              "file": "rust/napi/src/persist.rs",
               "lines": [
                 1,
                 2,
@@ -2717,11 +2717,11 @@
       "name": "footer_poller.rs owns the FOOTER_POLLER_TOKENS static and the spawn/stop helpers",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "562-602",
           "implMappings": [
             {
-              "file": "codelet/napi/src/footer_poller.rs",
+              "file": "rust/napi/src/footer_poller.rs",
               "lines": [
                 1,
                 2,
@@ -2897,11 +2897,11 @@
       "name": "bridges.rs owns the bridge init helpers and the handler registration helpers",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "604-650",
           "implMappings": [
             {
-              "file": "codelet/napi/src/bridges.rs",
+              "file": "rust/napi/src/bridges.rs",
               "lines": [
                 1,
                 2,
@@ -3924,11 +3924,11 @@
       "name": "interjection.rs owns the parse_interjection function and the Interjection struct",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "652-689",
           "implMappings": [
             {
-              "file": "codelet/napi/src/interjection.rs",
+              "file": "rust/napi/src/interjection.rs",
               "lines": [
                 1,
                 2,
@@ -4059,11 +4059,11 @@
       "name": "pre-existing #[cfg(test)] modules migrate to their owning sibling modules without losing assertions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "785-866",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_bindings.rs",
+              "file": "rust/napi/src/session_bindings.rs",
               "lines": [
                 1,
                 2,
@@ -7606,11 +7606,11 @@
       "name": "codelet-napi builds with default features",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "868-896",
           "implMappings": [
             {
-              "file": "codelet/napi/Cargo.toml",
+              "file": "rust/napi/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -7782,11 +7782,11 @@
       "name": "codelet-napi builds with the noop feature",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "898-950",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -8127,14 +8127,14 @@
       ]
     },
     {
-      "name": "codelet/napi/index.d.ts is byte-identical to the pre-RPC-043 baseline",
+      "name": "rust/napi/index.d.ts is byte-identical to the pre-RPC-043 baseline",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "952-1096",
           "implMappings": [
             {
-              "file": "codelet/napi/index.d.ts",
+              "file": "rust/napi/index.d.ts",
               "lines": [
                 1,
                 2,
@@ -11235,11 +11235,11 @@
       "name": "cargo test -p codelet-napi passes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "1098-1145",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -11576,7 +11576,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/scheduler/mod.rs",
+              "file": "rust/napi/src/scheduler/mod.rs",
               "lines": [
                 17,
                 18,
@@ -11586,7 +11586,7 @@
               ]
             },
             {
-              "file": "codelet/napi/tests/scheduler_engine_test.rs",
+              "file": "rust/napi/tests/scheduler_engine_test.rs",
               "lines": [
                 356,
                 357,
@@ -11601,11 +11601,11 @@
       "name": "cargo test -p codelet-sessions continues to pass",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "1135-1173",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 61,
                 62,
@@ -11631,11 +11631,11 @@
       "name": "A new shape test enforces the static structural contract",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "691-720",
           "implMappings": [
             {
-              "file": "codelet/napi/tests/session_bindings_shape.rs",
+              "file": "rust/napi/tests/session_bindings_shape.rs",
               "lines": [
                 1,
                 2,
@@ -13220,14 +13220,14 @@
       ]
     },
     {
-      "name": "codelet/napi/Cargo.toml carries inline RPC-043 comments naming consumer modules",
+      "name": "rust/napi/Cargo.toml carries inline RPC-043 comments naming consumer modules",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "722-783",
           "implMappings": [
             {
-              "file": "codelet/napi/Cargo.toml",
+              "file": "rust/napi/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -13396,11 +13396,11 @@
       "name": "session_bindings.rs holds 66 to 68 #[napi] free functions and the 12 #[napi(object)] shapes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "275-358",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_bindings.rs",
+              "file": "rust/napi/src/session_bindings.rs",
               "lines": [
                 1,
                 2,
@@ -16943,11 +16943,11 @@
       "name": "Dependent shape tests retarget to session_bindings.rs after session_manager.rs deletion",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "1190-1428",
           "implMappings": [
             {
-              "file": "codelet/sessions/tests/background_session_shape.rs",
+              "file": "rust/sessions/tests/background_session_shape.rs",
               "lines": [
                 37,
                 38,
@@ -16982,7 +16982,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/tests/session_manager_shape.rs",
+              "file": "rust/sessions/tests/session_manager_shape.rs",
               "lines": [
                 60,
                 61,
@@ -17036,24 +17036,24 @@
     "coveredScenarios": 19,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/session_bindings_shape.rs"
+      "rust/napi/tests/session_bindings_shape.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_bindings.rs",
-      "codelet/napi/src/lib.rs",
-      "codelet/napi/src/agent_loop.rs",
-      "codelet/napi/src/session_hooks.rs",
-      "codelet/napi/src/persist.rs",
-      "codelet/napi/src/footer_poller.rs",
-      "codelet/napi/src/bridges.rs",
-      "codelet/napi/src/interjection.rs",
-      "codelet/napi/Cargo.toml",
-      "codelet/napi/index.d.ts",
-      "codelet/napi/src/scheduler/mod.rs",
-      "codelet/napi/tests/scheduler_engine_test.rs",
-      "codelet/napi/tests/session_bindings_shape.rs",
-      "codelet/sessions/tests/background_session_shape.rs",
-      "codelet/sessions/tests/session_manager_shape.rs"
+      "rust/napi/src/session_bindings.rs",
+      "rust/napi/src/lib.rs",
+      "rust/napi/src/agent_loop.rs",
+      "rust/napi/src/session_hooks.rs",
+      "rust/napi/src/persist.rs",
+      "rust/napi/src/footer_poller.rs",
+      "rust/napi/src/bridges.rs",
+      "rust/napi/src/interjection.rs",
+      "rust/napi/Cargo.toml",
+      "rust/napi/index.d.ts",
+      "rust/napi/src/scheduler/mod.rs",
+      "rust/napi/tests/scheduler_engine_test.rs",
+      "rust/napi/tests/session_bindings_shape.rs",
+      "rust/sessions/tests/background_session_shape.rs",
+      "rust/sessions/tests/session_manager_shape.rs"
     ],
     "totalLinesCovered": 17979
   }

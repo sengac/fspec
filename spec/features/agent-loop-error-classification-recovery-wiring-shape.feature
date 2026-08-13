@@ -11,7 +11,7 @@ Feature: Agent loop: error classification + retry (recovery_network/compaction/t
   """
   Regression-shape coverage card following the established
   RPC-149/150/151/152/153/155/156 pattern. Implementation pre-exists in
-  codelet/cli/src/interactive/ (1922 LoC across recovery_*.rs +
+  rust/cli/src/interactive/ (1922 LoC across recovery_*.rs +
   error_classifiers.rs + stream_loop.rs invocations). Tests assert
   source-string substrings + direct invocation of public surface API.
 
@@ -27,7 +27,7 @@ Feature: Agent loop: error classification + retry (recovery_network/compaction/t
     So that no one can silently drop the classifier or recovery_* call sites that keep transient errors recoverable instead of fatal
 
   Scenario: interactive/mod.rs declares all six recovery modules and the error_classifiers module
-    Given the source file codelet/cli/src/interactive/mod.rs
+    Given the source file rust/cli/src/interactive/mod.rs
     When I read the file as a string
     Then the body contains the substring "mod error_classifiers;"
     And the body contains the substring "mod recovery_compaction;"
@@ -38,7 +38,7 @@ Feature: Agent loop: error classification + retry (recovery_network/compaction/t
     And the body contains the substring "mod recovery_truncation;"
 
   Scenario: interactive crate re-exports the recovery + classifier public surface
-    Given the source file codelet/cli/src/interactive/mod.rs
+    Given the source file rust/cli/src/interactive/mod.rs
     When I read the file as a string
     Then the body contains the substring "pub use error_classifiers::{"
     And the body contains the substring "is_transient_network_error"
@@ -84,10 +84,10 @@ Feature: Agent loop: error classification + retry (recovery_network/compaction/t
     And the re-exported constant codelet_cli::interactive::STALL_TIMEOUT_ERROR_PREFIX
     When I call the predicate with the constant value
     Then it returns true
-    And the source file codelet/cli/src/interactive/error_classifiers.rs body contains the substring "super::recovery_stall::STALL_TIMEOUT_ERROR_PREFIX"
+    And the source file rust/cli/src/interactive/error_classifiers.rs body contains the substring "super::recovery_stall::STALL_TIMEOUT_ERROR_PREFIX"
 
   Scenario: stream_loop.rs wires every classifier predicate and has at least one call site each
-    Given the source file codelet/cli/src/interactive/stream_loop.rs
+    Given the source file rust/cli/src/interactive/stream_loop.rs
     When I read the file as a string
     Then the body contains the substring "use super::error_classifiers::{"
     And the body contains the substring "is_stall_timeout_error("
@@ -98,14 +98,14 @@ Feature: Agent loop: error classification + retry (recovery_network/compaction/t
     And the body contains the substring "classify_compaction_branch("
 
   Scenario: stream_loop.rs guards retry with MAX_NETWORK_RETRIES and uses network_retry_delay
-    Given the source file codelet/cli/src/interactive/stream_loop.rs
+    Given the source file rust/cli/src/interactive/stream_loop.rs
     When I read the file as a string
     Then the body contains the substring "use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}"
     And the body contains the substring "network_retry_count <= MAX_NETWORK_RETRIES"
     And the body contains the substring "network_retry_delay(network_retry_count)"
 
   Scenario: stream_loop.rs sanitises image content after classifying an image-content rejection
-    Given the source file codelet/cli/src/interactive/stream_loop.rs
+    Given the source file rust/cli/src/interactive/stream_loop.rs
     When I read the file as a string
     Then the body contains the substring "sanitize_image_content(&mut session.messages)"
     And the body contains the substring "is_image_content_error(&error_str)"

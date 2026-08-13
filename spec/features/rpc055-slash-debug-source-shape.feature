@@ -24,22 +24,22 @@ Feature: /debug RPC surface source shape
     So that no future refactor can collapse the dual-transport boundary
 
   Scenario: SessionManagerHandle declares set_debug_directory
-    Given the file codelet/core/src/session_manager_handle.rs is compiled
+    Given the file rust/core/src/session_manager_handle.rs is compiled
     Then it declares a trait method named "set_debug_directory" that takes a PathBuf and returns Result<(), String>
 
   Scenario: FspecService declares set_debug_directory
-    Given the file codelet/rpc/src/lib.rs is compiled
+    Given the file rust/rpc/src/lib.rs is compiled
     Then it declares an async fn named "set_debug_directory" with parameter type String and return type Result<(), String>
 
   Scenario: FspecBackend declares set_debug_directory
-    Given the file codelet/fspec-tui/src/transport/mod.rs is compiled
+    Given the file rust/fspec-tui/src/transport/mod.rs is compiled
     Then it declares an async fn named "set_debug_directory" on the FspecBackend trait
 
   Scenario: Both transports implement set_debug_directory
-    Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
+    Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
     Then each file contains an impl of "set_debug_directory" that calls the corresponding tarpc client method
 
   Scenario: /debug slash command wiring lives in dispatch_slash_debug.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_slash_debug.rs exists
+    Given the file rust/fspec-tui/src/app/dispatch_slash_debug.rs exists
     Then it declares a method named "handle_slash_debug"
     And it declares a method named "try_dispatch_slash_debug"

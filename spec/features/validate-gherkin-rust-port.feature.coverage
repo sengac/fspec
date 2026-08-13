@@ -4,11 +4,11 @@
       "name": "Validates all feature files and reports an all-valid summary",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate.rs",
+          "file": "rust/fspec-core/tests/validate.rs",
           "lines": "64-97",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate.rs",
+              "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
                 77,
                 78,
@@ -106,11 +106,11 @@
       "name": "Validates a single valid file with no summary line",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate.rs",
+          "file": "rust/fspec-core/tests/validate.rs",
           "lines": "98-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate.rs",
+              "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
                 163,
                 164,
@@ -184,11 +184,11 @@
       "name": "Marks a syntactically broken file and reports a mixed summary",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate.rs",
+          "file": "rust/fspec-core/tests/validate.rs",
           "lines": "130-165",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate.rs",
+              "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
                 163,
                 164,
@@ -262,11 +262,11 @@
       "name": "Reports no feature files found when spec/features is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate.rs",
+          "file": "rust/fspec-core/tests/validate.rs",
           "lines": "166-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate.rs",
+              "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
                 77,
                 78,
@@ -364,11 +364,11 @@
       "name": "Flags excessive consecutive blank lines via the content heuristic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate.rs",
+          "file": "rust/fspec-core/tests/validate.rs",
           "lines": "197-227",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate.rs",
+              "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
                 236,
                 237,
@@ -448,10 +448,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/validate.rs"
+      "rust/fspec-core/tests/validate.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/validate.rs"
+      "rust/fspec-core/src/commands/validate.rs"
     ],
     "totalLinesCovered": 526
   }

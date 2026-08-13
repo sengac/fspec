@@ -4,11 +4,11 @@
       "name": "Updating projectName on final foundation.json sets the nested field and regenerates FOUNDATION.md",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "80-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 107,
                 108,
@@ -72,11 +72,11 @@
       "name": "Updating problemImpact with an invalid enum value fails fast and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "113-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 264,
                 265,
@@ -104,11 +104,11 @@
       "name": "Updating projectType with a value longer than 30 characters fails fast",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "143-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 244,
                 245,
@@ -139,11 +139,11 @@
       "name": "When a draft exists the draft is the write target and no FOUNDATION.md regeneration occurs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "171-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 137,
                 138,
@@ -169,11 +169,11 @@
       "name": "An unknown section name is rejected and the foundation file is left unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "198-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 126,
                 127,
@@ -195,11 +195,11 @@
       "name": "An empty section name is rejected before any file IO",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "226-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 69,
                 70,
@@ -218,11 +218,11 @@
       "name": "Empty content for a normal section is rejected with the generic content error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "file": "rust/fspec-core/tests/update_foundation.rs",
           "lines": "254-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
                 99,
                 100,
@@ -243,10 +243,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_foundation.rs"
+      "rust/fspec-core/tests/update_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_foundation.rs"
+      "rust/fspec-core/src/commands/update_foundation.rs"
     ],
     "totalLinesCovered": 320
   }

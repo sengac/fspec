@@ -4,11 +4,11 @@
       "name": "Creates feature file and coverage sidecar from a capability name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "42-70",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 38,
                 39,
@@ -92,11 +92,11 @@
       "name": "Generated content matches the canonical template verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "77-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 115,
                 116,
@@ -131,11 +131,11 @@
       "name": "Coverage sidecar carries one empty scenario mapping with zeroed stats",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "111-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 172,
                 173,
@@ -195,11 +195,11 @@
       "name": "Prefill detection reports placeholders in the template",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "144-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 247,
                 248,
@@ -263,11 +263,11 @@
       "name": "Capability-style name emits no file-naming reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "173-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 416,
                 417,
@@ -297,11 +297,11 @@
       "name": "Task-style name emits a file-naming anti-pattern reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "195-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 388,
                 389,
@@ -340,11 +340,11 @@
       "name": "Creating an existing feature file fails without overwriting",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_feature.rs",
+          "file": "rust/fspec-core/tests/create_feature.rs",
           "lines": "225-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_feature.rs",
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
                 51,
                 52,
@@ -367,10 +367,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/create_feature.rs"
+      "rust/fspec-core/tests/create_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/create_feature.rs"
+      "rust/fspec-core/src/commands/create_feature.rs"
     ],
     "totalLinesCovered": 423
   }

@@ -36,7 +36,7 @@ Feature: Replace tautological compaction tests with real integration coverage
     So that each CMPCT-023..029 fix has a regression test that will actually fail if the implementation regresses
 
   Scenario: Gemini continuation uses the unified classify_compaction_branch helper on stream error
-    Given the source file codelet/cli/src/interactive/gemini_continuation.rs is readable
+    Given the source file rust/cli/src/interactive/gemini_continuation.rs is readable
     When the source is scanned for a classify_compaction_branch call
     Then the call is present and the source does NOT reimplement a bespoke string-match on the error
 

@@ -4,11 +4,11 @@
       "name": "Isolated session completion leaves worktree for review",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "78-130",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 25,
                 26,
@@ -94,11 +94,11 @@
       "name": "Session without changes transitions to Clean status on completion",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "120-192",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 178,
                 179,
@@ -175,11 +175,11 @@
       "name": "Session with changes transitions to PendingMerge status on completion",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "171-251",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 178,
                 179,
@@ -256,11 +256,11 @@
       "name": "Active session returns Active status regardless of changes",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "224-305",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 178,
                 179,
@@ -313,11 +313,11 @@
       "name": "Worktree with no manifest returns Orphaned status",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "276-342",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 178,
                 179,
@@ -394,11 +394,11 @@
       "name": "Worktree with terminated manifest returns Orphaned status",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "311-391",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 178,
                 179,
@@ -475,11 +475,11 @@
       "name": "Session completion updates manifest with completed_at timestamp",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_status_tests.rs",
+          "file": "rust/git/tests/session_status_tests.rs",
           "lines": "355-438",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 245,
                 246,
@@ -515,10 +515,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/session_status_tests.rs"
+      "rust/git/tests/session_status_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/session_status.rs"
+      "rust/git/src/session_status.rs"
     ],
     "totalLinesCovered": 918
   }

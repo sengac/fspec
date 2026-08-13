@@ -4,11 +4,11 @@
       "name": "Mouse wheel up over the scrollback area scrolls the chat history up",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "101-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 73,
                 74,
@@ -51,11 +51,11 @@
       "name": "A fast flick of the wheel accelerates 1x to 5x within 150ms",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "140-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 73,
                 74,
@@ -98,11 +98,11 @@
       "name": "Wheel velocity resets to 1x after a 150ms gap",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "171-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/scroll_viewport.rs",
+              "file": "rust/fspec-tui/src/components/scroll_viewport.rs",
               "lines": [
                 91,
                 92,
@@ -152,11 +152,11 @@
       "name": "Scrolling back down to the tail re-engages stick-to-bottom",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "203-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 175,
                 176,
@@ -179,11 +179,11 @@
       "name": "Up arrow with an empty input scrolls the scrollback up by one line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "251-291",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 200,
                 201,
@@ -243,11 +243,11 @@
       "name": "Up arrow with the cursor mid-buffer stays inside the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "293-327",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 157,
                 158,
@@ -270,11 +270,11 @@
       "name": "Mouse wheel inside a popup does not scroll the scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "329-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 100,
                 101,
@@ -302,11 +302,11 @@
       "name": "Mouse wheel over the input area does not scroll the scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "364-394",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 73,
                 74,
@@ -349,11 +349,11 @@
       "name": "Scrollbar gutter appears when content exceeds the viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "396-440",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 247,
                 248,
@@ -380,11 +380,11 @@
       "name": "Scrollbar gutter is hidden when content fits the viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "442-469",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 247,
                 248,
@@ -411,11 +411,11 @@
       "name": "Home jumps the scrollback to the very first message",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "471-498",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 193,
                 194,
@@ -432,11 +432,11 @@
       "name": "Source shape — every touched module stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs",
+          "file": "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs",
           "lines": "500-552",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_mode_views.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_mode_views.rs",
               "lines": [
                 1,
                 2,
@@ -516,15 +516,15 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/scrollback_scroll_rpc094.rs"
+      "rust/fspec-tui/tests/scrollback_scroll_rpc094.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
-      "codelet/fspec-tui/src/components/scroll_viewport.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch_mode_views.rs"
+      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
+      "rust/fspec-tui/src/components/scroll_viewport.rs",
+      "rust/fspec-tui/src/views/agent/scrollback.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_mode_views.rs"
     ],
     "totalLinesCovered": 759
   }

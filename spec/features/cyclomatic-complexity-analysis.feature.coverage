@@ -4,11 +4,11 @@
       "name": "Find top N most complex functions in a codebase",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_complexity_test.rs",
+          "file": "rust/napi/tests/ast_complexity_test.rs",
           "lines": "57-95",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_complexity.rs",
+              "file": "rust/napi/src/graph/ast_complexity.rs",
               "lines": [
                 119,
                 120,
@@ -111,11 +111,11 @@
       "name": "Query complexity of a specific function",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_complexity_test.rs",
+          "file": "rust/napi/tests/ast_complexity_test.rs",
           "lines": "148-181",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_complexity.rs",
+              "file": "rust/napi/src/graph/ast_complexity.rs",
               "lines": [
                 56,
                 57,
@@ -185,11 +185,11 @@
       "name": "Simple function has complexity 1",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_complexity_test.rs",
+          "file": "rust/napi/tests/ast_complexity_test.rs",
           "lines": "186-195",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/complexity.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/complexity.rs",
               "lines": [
                 20,
                 21,
@@ -207,11 +207,11 @@
       "name": "Function with multiple branches has correct complexity",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_complexity_test.rs",
+          "file": "rust/napi/tests/ast_complexity_test.rs",
           "lines": "200-225",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/complexity.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/complexity.rs",
               "lines": [
                 20,
                 21,
@@ -229,11 +229,11 @@
       "name": "Complexity is populated during ast_index",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_complexity_test.rs",
+          "file": "rust/napi/tests/ast_complexity_test.rs",
           "lines": "230-291",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/helpers.rs",
               "lines": [
                 43,
                 44,
@@ -274,11 +274,11 @@
       "name": "Non-existent function returns error",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_complexity_test.rs",
+          "file": "rust/napi/tests/ast_complexity_test.rs",
           "lines": "296-334",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_complexity.rs",
+              "file": "rust/napi/src/graph/ast_complexity.rs",
               "lines": [
                 56,
                 57,
@@ -319,12 +319,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_complexity_test.rs"
+      "rust/napi/tests/ast_complexity_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_complexity.rs",
-      "codelet/napi/src/graph/ast_pipeline/complexity.rs",
-      "codelet/napi/src/graph/ast_pipeline/helpers.rs"
+      "rust/napi/src/graph/ast_complexity.rs",
+      "rust/napi/src/graph/ast_pipeline/complexity.rs",
+      "rust/napi/src/graph/ast_pipeline/helpers.rs"
     ],
     "totalLinesCovered": 427
   }

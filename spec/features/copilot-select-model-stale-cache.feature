@@ -9,7 +9,7 @@ Feature: Copilot select_model re-detects credentials after login
   writes copilot_auth.json, select_model must call
   ProviderCredentials::detect() AGAIN before the has_credentials check
   so the freshly-written credential is honoured without a process
-  restart. Lives in codelet/providers/src/manager.rs and is exercised
+  restart. Lives in rust/providers/src/manager.rs and is exercised
   end-to-end by copilot_select_model_stale_cache_test.rs.
   """
 

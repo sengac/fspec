@@ -240,7 +240,7 @@
           "lines": "415-441",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 119,
                 120,
@@ -309,7 +309,7 @@
       "src/tui/components/SessionHeader.tsx",
       "src/tui/components/AgentView.tsx",
       "src/tui/utils/sessionHeaderUtils.ts",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 391
   }

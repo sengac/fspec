@@ -4,11 +4,11 @@
       "name": "Single-restore happy path clears the deleted flag and removes deletedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "97-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 99,
                 100,
@@ -162,11 +162,11 @@
       "name": "Idempotent single re-restore returns success without writing to disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "138-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 207,
                 208,
@@ -186,11 +186,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "177-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 106,
                 107,
@@ -211,11 +211,11 @@
       "name": "Status guard rejects restore-rule when work unit is not in specifying",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "201-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 116,
                 117,
@@ -243,11 +243,11 @@
       "name": "Missing rules array reports 'has no rules'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "233-255",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 133,
                 134,
@@ -273,11 +273,11 @@
       "name": "Unknown single rule id reports 'Rule with ID <n> not found'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "257-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 196,
                 197,
@@ -298,11 +298,11 @@
       "name": "Bulk-restore happy path restores all listed deleted rules in one atomic write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "279-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 242,
                 243,
@@ -416,11 +416,11 @@
       "name": "Bulk-restore silently skips already-active items",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "319-357",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 320,
                 321,
@@ -443,11 +443,11 @@
       "name": "Bulk-restore fails atomically on unknown id without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "359-386",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 261,
                 262,
@@ -504,11 +504,11 @@
       "name": "Bulk-restore with all-already-active still bumps updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "388-420",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 309,
                 310,
@@ -555,11 +555,11 @@
       "name": "ids takes precedence over index when both are provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_rule.rs",
+          "file": "rust/fspec-core/tests/restore_rule.rs",
           "lines": "422-453",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_rule.rs",
+              "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
                 148,
                 149,
@@ -582,10 +582,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/restore_rule.rs"
+      "rust/fspec-core/tests/restore_rule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/restore_rule.rs"
+      "rust/fspec-core/src/commands/restore_rule.rs"
     ],
     "totalLinesCovered": 747
   }

@@ -4,11 +4,11 @@
       "name": "App bootstrap calls backend.list_work_units() and seeds the left pane",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "41-60",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 213,
                 214,
@@ -36,11 +36,11 @@
       "name": "App bootstrap calls backend.create_session(None) and seeds the active session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "62-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 213,
                 214,
@@ -68,11 +68,11 @@
       "name": "App bootstrap spawns three subscriber tasks via tokio::spawn on the host runtime",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "79-109",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 233,
                 234,
@@ -149,11 +149,11 @@
       "name": "work_units broadcast event becomes an Action::WorkUnitsLoaded on the action bus",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "111-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 234,
                 235,
@@ -186,11 +186,11 @@
       "name": "chunks broadcast events for the active session become Action::ChunkReceived",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "140-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 256,
                 257,
@@ -225,11 +225,11 @@
       "name": "chunks broadcast events for an OTHER session do NOT become Action::ChunkReceived",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "158-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 256,
                 257,
@@ -264,11 +264,11 @@
       "name": "Action::InputSubmitted dispatches backend.send_input and is forwarded to compositor.update",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "174-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 302,
                 303,
@@ -309,11 +309,11 @@
       "name": "Action::Interrupt dispatches backend.interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "195-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 302,
                 303,
@@ -354,11 +354,11 @@
       "name": "Action::FocusNext mutates RootView's focused_pane field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "215-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/root.rs",
+              "file": "rust/fspec-tui/src/views/root.rs",
               "lines": [
                 87,
                 88,
@@ -393,11 +393,11 @@
       "name": "Subscriber tasks honour RecvError::Lagged by logging at debug and continuing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "233-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 233,
                 234,
@@ -474,11 +474,11 @@
       "name": "Action enum gains seven new variants while existing variants are preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
           "lines": "265-293",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 84,
                 85,
@@ -528,12 +528,12 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_bootstrap_rpc009.rs"
+      "rust/fspec-tui/tests/app_bootstrap_rpc009.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app.rs",
-      "codelet/fspec-tui/src/views/root.rs",
-      "codelet/fspec-tui/src/components/mod.rs"
+      "rust/fspec-tui/src/app.rs",
+      "rust/fspec-tui/src/views/root.rs",
+      "rust/fspec-tui/src/components/mod.rs"
     ],
     "totalLinesCovered": 589
   }

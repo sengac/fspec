@@ -4,11 +4,11 @@
       "name": "Dispatcher deletes an existing leaf work unit with no dependencies",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "56-86",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -205,11 +205,11 @@
       "name": "Dispatcher rejects deletion of a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "88-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -406,11 +406,11 @@
       "name": "Dispatcher refuses to delete a work unit that has children",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "114-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -607,11 +607,11 @@
       "name": "Dispatcher refuses to delete a work unit with dependencies without cascade",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "156-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -808,11 +808,11 @@
       "name": "Dispatcher cascades blocks references and emits a blocks warning",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "198-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -1009,11 +1009,11 @@
       "name": "Dispatcher does NOT cascade dependsOn references",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "261-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -1210,11 +1210,11 @@
       "name": "Dispatcher removes the unit from its parent's children array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "314-363",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -1411,11 +1411,11 @@
       "name": "Dispatcher removes the unit from its state index array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "365-401",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -1612,11 +1612,11 @@
       "name": "Dispatcher fails fast when required args are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_work_unit.rs",
+          "file": "rust/fspec-core/tests/delete_work_unit.rs",
           "lines": "403-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/delete_work_unit.rs",
               "lines": [
                 71,
                 72,
@@ -1758,10 +1758,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_work_unit.rs"
+      "rust/fspec-core/tests/delete_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_work_unit.rs"
+      "rust/fspec-core/src/commands/delete_work_unit.rs"
     ],
     "totalLinesCovered": 1966
   }

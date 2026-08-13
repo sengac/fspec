@@ -1,7 +1,7 @@
 @KGRAPH-006
 Feature: Graph Merge & Upsert Logic
   """
-  Pure Rust module at codelet/napi/src/graph/merge.rs. Converts Vec<GraphEntity> to JSONL, loads via nanograph merge mode with @key. For increment/min/max merge semantics, implements read-before-write pattern. Watermark in ~/.fspec/graph/index-state.json written atomically.
+  Pure Rust module at rust/napi/src/graph/merge.rs. Converts Vec<GraphEntity> to JSONL, loads via nanograph merge mode with @key. For increment/min/max merge semantics, implements read-before-write pattern. Watermark in ~/.fspec/graph/index-state.json written atomically.
   """
 
   # ========================================

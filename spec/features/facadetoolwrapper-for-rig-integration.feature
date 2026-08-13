@@ -6,7 +6,7 @@
 @rig
 Feature: FacadeToolWrapper for Rig Integration
   """
-  FacadeToolWrapper in codelet/tools/src/facade/wrapper.rs implements rig::tool::Tool trait. Overrides name() and definition() to return facade-specific values. call() maps params via facade then executes base tool.
+  FacadeToolWrapper in rust/tools/src/facade/wrapper.rs implements rig::tool::Tool trait. Overrides name() and definition() to return facade-specific values. call() maps params via facade then executes base tool.
   """
 
   # ========================================

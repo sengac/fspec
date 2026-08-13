@@ -4,11 +4,11 @@
       "name": "CLI record-iteration always fails per Framing A broken-CLI parity",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_record_iteration.rs",
+          "file": "rust/fspec/tests/cli_record_iteration.rs",
           "lines": "65-92",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/record_iteration.rs",
+              "file": "rust/fspec/src/record_iteration.rs",
               "lines": [
                 48,
                 49,
@@ -44,11 +44,11 @@
       "name": "CLI record-iteration --help matches the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_record_iteration.rs",
+          "file": "rust/fspec/tests/cli_record_iteration.rs",
           "lines": "94-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/record_iteration.rs",
+              "file": "rust/fspec-core/src/help/configs/record_iteration.rs",
               "lines": [
                 35,
                 36,
@@ -78,11 +78,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_record_iteration.rs"
+      "rust/fspec/tests/cli_record_iteration.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/record_iteration.rs",
-      "codelet/fspec-core/src/help/configs/record_iteration.rs"
+      "rust/fspec/src/record_iteration.rs",
+      "rust/fspec-core/src/help/configs/record_iteration.rs"
     ],
     "totalLinesCovered": 90
   }

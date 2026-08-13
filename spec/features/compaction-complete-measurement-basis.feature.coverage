@@ -4,11 +4,11 @@
       "name": "compacted_tokens reflects the real post-injection context, not the summary alone",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct038_measurement_basis_test.rs",
+          "file": "rust/napi/tests/cmpct038_measurement_basis_test.rs",
           "lines": "120-177",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/inject_summary_handler.rs",
+              "file": "rust/agent-loop/src/inject_summary_handler.rs",
               "lines": [
                 103,
                 104,
@@ -64,7 +64,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 112,
                 113,
@@ -142,11 +142,11 @@
       "name": "A real ~60 percent reduction is reported as ~60, never ~99",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct038_measurement_basis_test.rs",
+          "file": "rust/napi/tests/cmpct038_measurement_basis_test.rs",
           "lines": "179-235",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 684,
                 685,
@@ -201,7 +201,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/agent_loop.rs",
+              "file": "rust/napi/src/agent_loop.rs",
               "lines": [
                 745,
                 746,
@@ -263,11 +263,11 @@
       "name": "compression_ratio is clamped to zero when the post-injection context exceeds the original",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct038_measurement_basis_test.rs",
+          "file": "rust/napi/tests/cmpct038_measurement_basis_test.rs",
           "lines": "237-310",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/inject_summary_handler.rs",
+              "file": "rust/agent-loop/src/inject_summary_handler.rs",
               "lines": [
                 103,
                 104,
@@ -292,7 +292,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 112,
                 113,
@@ -334,11 +334,11 @@
       "name": "Running is emitted before CompactionComplete at the apply site",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct038_measurement_basis_test.rs",
+          "file": "rust/napi/tests/cmpct038_measurement_basis_test.rs",
           "lines": "312-356",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/inject_summary_handler.rs",
+              "file": "rust/agent-loop/src/inject_summary_handler.rs",
               "lines": [
                 302,
                 303,
@@ -374,7 +374,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 346,
                 347,
@@ -422,11 +422,11 @@
       "name": "Applying with no pending DAG emits nothing",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct038_measurement_basis_test.rs",
+          "file": "rust/napi/tests/cmpct038_measurement_basis_test.rs",
           "lines": "358-386",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/inject_summary_handler.rs",
+              "file": "rust/agent-loop/src/inject_summary_handler.rs",
               "lines": [
                 319,
                 320,
@@ -445,7 +445,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 369,
                 370,
@@ -470,11 +470,11 @@
       "name": "The agent-loop and NAPI twins produce identical CompactionResult values",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct038_measurement_basis_test.rs",
+          "file": "rust/napi/tests/cmpct038_measurement_basis_test.rs",
           "lines": "388-431",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/inject_summary_handler.rs",
+              "file": "rust/agent-loop/src/inject_summary_handler.rs",
               "lines": [
                 302,
                 303,
@@ -510,7 +510,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 346,
                 347,
@@ -560,13 +560,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/cmpct038_measurement_basis_test.rs"
+      "rust/napi/tests/cmpct038_measurement_basis_test.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/inject_summary_handler.rs",
-      "codelet/napi/src/inject_summary_handler.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/napi/src/agent_loop.rs"
+      "rust/agent-loop/src/inject_summary_handler.rs",
+      "rust/napi/src/inject_summary_handler.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/napi/src/agent_loop.rs"
     ],
     "totalLinesCovered": 735
   }

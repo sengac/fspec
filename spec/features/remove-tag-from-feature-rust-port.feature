@@ -2,7 +2,7 @@
 @RPC-281
 Feature: Port remove-tag-from-feature command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_tag_from_feature.rs reuses crate::io::gherkin::parse_feature_lenient for the existence pre-check and a TS-parity whole-line filter for the actual removal pass.
+  Core impl at rust/fspec-core/src/commands/remove_tag_from_feature.rs reuses crate::io::gherkin::parse_feature_lenient for the existence pre-check and a TS-parity whole-line filter for the actual removal pass.
   No registry validation. No system reminders. Strict parity with TS removeTagFromFeature which returns {success, valid, message?, error?}.
   Two-front-doors: bridge marshals positional <file> + variadic <tags> into JSON {file, tags} only; NO domain logic.
   """

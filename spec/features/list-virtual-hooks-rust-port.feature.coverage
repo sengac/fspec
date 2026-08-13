@@ -4,11 +4,11 @@
       "name": "Returns error when the requested work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "105-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 81,
                 82,
@@ -90,11 +90,11 @@
       "name": "Returns error when spec/work-units.json is auto-created and the requested id is not in the empty store",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "130-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 81,
                 82,
@@ -176,11 +176,11 @@
       "name": "Returns empty hooks and empty hooksByEvent when work unit has no virtualHooks field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "161-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 81,
                 82,
@@ -262,11 +262,11 @@
       "name": "Returns empty hooks and empty hooksByEvent when virtualHooks is an empty array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "198-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 81,
                 82,
@@ -348,11 +348,11 @@
       "name": "Groups hooks by event preserving insertion order across and within events",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "235-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 81,
                 82,
@@ -434,11 +434,11 @@
       "name": "Each VirtualHook entry includes name, event, command, blocking and optional gitContext",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "303-338",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 55,
                 56,
@@ -460,11 +460,11 @@
       "name": "JSON format emits two-space indented payload",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "340-367",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 141,
                 142,
@@ -484,11 +484,11 @@
       "name": "Text format renders the empty sentinel including the work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "369-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 159,
                 160,
@@ -532,11 +532,11 @@
       "name": "Text format renders the populated case with header, event sections, and badges",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "394-474",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 159,
                 160,
@@ -580,11 +580,11 @@
       "name": "Default format (no format key supplied) is text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "476-499",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 141,
                 142,
@@ -605,11 +605,11 @@
       "name": "Missing workUnitId argument is rejected as InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
           "lines": "501-525",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
                 81,
                 82,
@@ -630,10 +630,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_virtual_hooks.rs"
+      "rust/fspec-core/tests/list_virtual_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_virtual_hooks.rs"
+      "rust/fspec-core/src/commands/list_virtual_hooks.rs"
     ],
     "totalLinesCovered": 859
   }

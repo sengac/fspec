@@ -4,11 +4,11 @@
       "name": "Shell renders a view with a title count and no overlay",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "95-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 33,
                 34,
@@ -50,11 +50,11 @@
       "name": "Shell paints an optional ConfirmDialog overlay over the full area",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "126-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 33,
                 34,
@@ -96,11 +96,11 @@
       "name": "Shell skips the overlay slot when no overlay is supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "158-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 33,
                 34,
@@ -142,11 +142,11 @@
       "name": "Shell reports body height to the body renderer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "182-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 33,
                 34,
@@ -188,11 +188,11 @@
       "name": "Shell collapses the body gracefully on a tiny area",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "209-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 33,
                 34,
@@ -236,10 +236,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/full_screen_shell.rs"
+      "rust/fspec-tui/src/views/full_screen_shell.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/full_screen_shell.rs"
+      "rust/fspec-tui/src/views/full_screen_shell.rs"
     ],
     "totalLinesCovered": 288
   }

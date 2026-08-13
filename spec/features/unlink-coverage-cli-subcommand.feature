@@ -5,8 +5,8 @@
 @RPC-311
 Feature: Port unlink-coverage command to Rust
   """
-  Core impl: codelet/fspec-core/src/commands/unlink_coverage.rs rewrites stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/TestMapping/ImplMapping/CoverageStats). Reads sidecar via std::fs::read_to_string + serde_json; mutates in memory; LOCAL update_stats (NOT shared calculate_stats — totalLinesCovered must sum test ranges + impl line counts). Writes back via io::locked_file::write_json_atomic (no trailing newline). extra-flatten preserves unknown fields.
-  Two-front-doors: dispatcher and clap CLI both call unlink_coverage::run. CLI bridge codelet/fspec/src/unlink_coverage.rs marshals positional feature-name + --scenario/--test-file/--impl-file/--all into JSON only. Help config codelet/fspec-core/src/help/configs/unlink_coverage.rs (unlink-coverage-help.ts rich help exists; help-config common_errors use CommonError type) + intercept arm + Mode::UnlinkCoverage variant wired by supervisor. SHARED-FILE REQUEST: dispatch arm must pass project_root (signature changes from run(args_json) to run(args_json, project_root)).
+  Core impl: rust/fspec-core/src/commands/unlink_coverage.rs rewrites stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/TestMapping/ImplMapping/CoverageStats). Reads sidecar via std::fs::read_to_string + serde_json; mutates in memory; LOCAL update_stats (NOT shared calculate_stats — totalLinesCovered must sum test ranges + impl line counts). Writes back via io::locked_file::write_json_atomic (no trailing newline). extra-flatten preserves unknown fields.
+  Two-front-doors: dispatcher and clap CLI both call unlink_coverage::run. CLI bridge rust/fspec/src/unlink_coverage.rs marshals positional feature-name + --scenario/--test-file/--impl-file/--all into JSON only. Help config rust/fspec-core/src/help/configs/unlink_coverage.rs (unlink-coverage-help.ts rich help exists; help-config common_errors use CommonError type) + intercept arm + Mode::UnlinkCoverage variant wired by supervisor. SHARED-FILE REQUEST: dispatch arm must pass project_root (signature changes from run(args_json) to run(args_json, project_root)).
   """
 
   # ========================================
@@ -33,46 +33,46 @@ Feature: Port unlink-coverage command to Rust
     So that I can correct or reset coverage as code evolves without manual JSON editing or launching Node
 
   Scenario: Clap exposes unlink-coverage as a subcommand and prints flag help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec unlink-coverage --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec unlink-coverage --help` from a shell
     Then the command exits 0
     And stdout contains the substring 'unlink-coverage'
     And stdout contains the substring '--scenario'
 
   Scenario: CLI --all empties the scenario mappings and prints the success message
     Given a temp workspace has a coverage sidecar where scenario "Login" has one test mapping
-    When I run `./codelet/target/release/fspec unlink-coverage user-login --scenario Login --all` from that workspace
+    When I run `./rust/target/release/fspec unlink-coverage user-login --scenario Login --all` from that workspace
     Then the command exits 0
     And stdout contains the substring 'Removed all coverage mappings for scenario "Login"'
 
   Scenario: CLI without --all or --test-file exits 1
     Given a temp workspace has a coverage sidecar with scenario "Login"
-    When I run `./codelet/target/release/fspec unlink-coverage user-login --scenario Login` from that workspace
+    When I run `./rust/target/release/fspec unlink-coverage user-login --scenario Login` from that workspace
     Then the command exits with a non-zero status
     And stderr contains the substring 'Error:'
 
   Scenario: CLI exits 1 when the coverage file is missing
     Given an empty directory with no coverage sidecar is the current working directory
-    When I run `./codelet/target/release/fspec unlink-coverage user-login --scenario Login --all` from that directory
+    When I run `./rust/target/release/fspec unlink-coverage user-login --scenario Login --all` from that directory
     Then the command exits with a non-zero status
     And stderr contains the substring 'Error:'
 
   Scenario: unlink-coverage --help is byte-for-byte identical to the TS formatCommandHelp reference
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec unlink-coverage --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec unlink-coverage --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/unlink-coverage.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/unlink-coverage.txt
     And stdout starts with a blank line followed by 'UNLINK-COVERAGE'
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has unlink-coverage registered as a clap subcommand alongside other ported subcommands
-    When I run `./codelet/target/release/fspec --help`
+    When I run `./rust/target/release/fspec --help`
     Then the help output lists unlink-coverage as an available subcommand
     And the long-about description still documents that running fspec with no subcommand enters combined TUI mode
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a temp workspace has a coverage sidecar where scenario "Login" has one test mapping
     When I dispatch unlink-coverage through fspec_core::dispatch::dispatch_command for feature "user-login" with scenario='Login' and all=true against that workspace
-    And I run `./codelet/target/release/fspec unlink-coverage user-login --scenario Login --all` against an identical workspace
+    And I run `./rust/target/release/fspec unlink-coverage user-login --scenario Login --all` against an identical workspace
     Then both invocations report success
-    And the CLI bridge module codelet/fspec/src/unlink_coverage.rs contains NO inline mutation or rendering logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/unlink_coverage.rs contains NO inline mutation or rendering logic — its only computation is JSON arg marshalling

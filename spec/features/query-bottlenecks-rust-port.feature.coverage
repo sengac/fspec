@@ -4,11 +4,11 @@
       "name": "Returns empty bottlenecks array when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "95-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -374,11 +374,11 @@
       "name": "Excludes work units in done status even when they have blocks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "119-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -744,11 +744,11 @@
       "name": "Excludes work units in blocked status even when they have blocks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "148-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -1114,11 +1114,11 @@
       "name": "Excludes work units whose blocks array is empty or missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "176-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -1484,11 +1484,11 @@
       "name": "Single direct block does not meet threshold of 2",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "196-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -1854,11 +1854,11 @@
       "name": "Two direct blocks with one transitive yields score 3 and qualifies",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "216-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -2224,11 +2224,11 @@
       "name": "Cycle A blocks B and B blocks A yields score 2 for A",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "262-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -2594,11 +2594,11 @@
       "name": "Two qualifying bottlenecks are ranked by descending score",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "306-344",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -2964,11 +2964,11 @@
       "name": "JSON field declaration order is preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "346-385",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -3334,11 +3334,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "387-407",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_bottlenecks.rs",
+              "file": "rust/fspec-core/src/commands/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -3706,10 +3706,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_bottlenecks.rs"
+      "rust/fspec/tests/cli_query_bottlenecks.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/query_bottlenecks.rs"
+      "rust/fspec-core/src/commands/query_bottlenecks.rs"
     ],
     "totalLinesCovered": 4148
   }

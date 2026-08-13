@@ -4,11 +4,11 @@
       "name": "list-foundation-sections --help is byte-for-byte identical to TS Commander.js reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_foundation_sections.rs",
+          "file": "rust/fspec/tests/cli_list_foundation_sections.rs",
           "lines": "37-89",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 316,
                 317,
@@ -75,10 +75,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_foundation_sections.rs"
+      "rust/fspec/tests/cli_list_foundation_sections.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/main.rs"
+      "rust/fspec/src/main.rs"
     ],
     "totalLinesCovered": 106
   }

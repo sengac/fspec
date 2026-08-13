@@ -41,7 +41,7 @@ Builds `fspec` for the current platform (macOS or Linux).
 ```
 
 **Output:**
-- Binary: `codelet/target/release-slim/fspec` (~150 MB)
+- Binary: `rust/target/release-slim/fspec` (~150 MB)
 - Archive: `dist/fspec-<arch>-<platform>.tar.gz` (~50 MB)
 
 ### `scripts/build-cross.sh` — Cross-Compile Windows & Linux
@@ -131,7 +131,7 @@ source ~/.zshrc
 
 ## Release Profiles
 
-`codelet/Cargo.toml` defines **two** optimised profiles. They share the
+`rust/Cargo.toml` defines **two** optimised profiles. They share the
 same `opt-level`, `lto = "fat"` and `codegen-units = 1` — the only
 difference is debug-info retention.
 
@@ -270,7 +270,7 @@ cargo build --profile release-slim -p codelet-fspec \
   --target x86_64-apple-darwin
 ```
 
-Artifacts land at `codelet/target/<triple>/release-slim/fspec[.exe]`.
+Artifacts land at `rust/target/<triple>/release-slim/fspec[.exe]`.
 
 ---
 
@@ -371,5 +371,5 @@ ls -lh target/release-slim/fspec
   `--profile release-slim` instead.
 
 If you only need a slim Linux binary right now without rebuilding,
-`strip -s codelet/target/release/fspec` produces the same ~150 MB
+`strip -s rust/target/release/fspec` produces the same ~150 MB
 output, but `--profile release-slim` is the supported path.

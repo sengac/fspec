@@ -5,10 +5,10 @@
 @RPC-284
 Feature: Port repair-work-units command to Rust
   """
-  Core impl signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> in codelet/fspec-core/src/commands/repair_work_units.rs (replaces NotYetPorted stub).
+  Core impl signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> in rust/fspec-core/src/commands/repair_work_units.rs (replaces NotYetPorted stub).
   Args struct (camelCase, serde default): dryRun: Option<bool> (accepted but ignored — file always written, matching TS bug). Loads via ensure_work_units_file; writes via write_json_atomic on the whole WorkUnitsData.
   States rebuilt into a fresh WorkUnitStates (fixed field order). blocks/blockedBy/relatesTo read from WorkUnit.extra as Value arrays. Borrow-checker: collect a mutation plan (target_id, field, source_id, message) in source-insertion order first, then apply to targets' extra arrays, to avoid simultaneous &mut over the IndexMap.
-  Dispatcher returns pretty JSON { success, repairs, repaired }. CLI bridge codelet/fspec/src/repair_work_units.rs marshals {dryRun?} only and prints '✓ Repaired <repaired> issues' on success (exit 0), '✗ Failed to repair work units: <msg>' on error (exit 1). The buggy result.details loop is omitted since details is always undefined in TS.
+  Dispatcher returns pretty JSON { success, repairs, repaired }. CLI bridge rust/fspec/src/repair_work_units.rs marshals {dryRun?} only and prints '✓ Repaired <repaired> issues' on success (exit 0), '✗ Failed to repair work units: <msg>' on error (exit 1). The buggy result.details loop is omitted since details is always undefined in TS.
   """
 
   # ========================================
@@ -62,7 +62,7 @@ Feature: Port repair-work-units command to Rust
     Then the result reports repaired 0 with an empty repairs array
 
   Scenario: CLI delegates to the same fspec_core function as the dispatcher
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/repair_work_units.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/repair_work_units.rs
     Then the source references the shared io helpers
     Then the source is no longer a NotYetPorted stub

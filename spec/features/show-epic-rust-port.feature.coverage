@@ -4,11 +4,11 @@
       "name": "Returns Epic not found error when spec/epics.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "74-105",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -317,11 +317,11 @@
       "name": "Returns Epic not found error when epicId is not registered in epics.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "106-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -630,11 +630,11 @@
       "name": "Escalates malformed epics.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "126-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -943,11 +943,11 @@
       "name": "Aggregates work-unit completion progress for the requested epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "146-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -1256,11 +1256,11 @@
       "name": "Treats missing work-units.json as zero counts without throwing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "184-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -1569,11 +1569,11 @@
       "name": "Treats malformed work-units.json as zero counts without throwing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "209-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -1882,11 +1882,11 @@
       "name": "completionPercentage rounds 1/3 to 33.33 with 2-decimal precision",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "237-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -2195,11 +2195,11 @@
       "name": "completionPercentage rounds 2/3 to 66.67 with 2-decimal precision",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "270-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -2508,11 +2508,11 @@
       "name": "completionPercentage returns 100 when every work unit is done",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "303-328",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -2821,11 +2821,11 @@
       "name": "Text format renders the Epic header Title Description and Progress block",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "329-404",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -3134,11 +3134,11 @@
       "name": "Text format omits the Description line when description is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "405-441",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -3447,11 +3447,11 @@
       "name": "Text format renders Title N/A when epic title is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "442-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -3760,11 +3760,11 @@
       "name": "Default format is text when format flag is not supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "465-496",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -4073,11 +4073,11 @@
       "name": "JSON format emits two-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "497-537",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -4386,11 +4386,11 @@
       "name": "Missing epicId argument surfaces a structured InvalidArgs error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "538-557",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -4699,11 +4699,11 @@
       "name": "Shared infrastructure modules already exist for reuse",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_epic.rs",
+          "file": "rust/fspec-core/tests/show_epic.rs",
           "lines": "558-609",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_epic.rs",
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -5014,10 +5014,10 @@
     "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/show_epic.rs"
+      "rust/fspec-core/tests/show_epic.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/show_epic.rs"
+      "rust/fspec-core/src/commands/show_epic.rs"
     ],
     "totalLinesCovered": 5865
   }

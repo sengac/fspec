@@ -2,7 +2,7 @@
 @RPC-222
 Feature: Port delete-tag command to Rust
   """
-  Files: codelet/fspec-core/src/commands/delete_tag.rs (replace stub); codelet/fspec-core/src/help/configs/delete_tag.rs (NEW); codelet/fspec/src/delete_tag.rs (NEW bridge); codelet/fspec-core/tests/delete_tag.rs (NEW dispatcher tests); codelet/fspec/tests/cli_delete_tag.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/delete-tag.txt (NEW captured fixture)
+  Files: rust/fspec-core/src/commands/delete_tag.rs (replace stub); rust/fspec-core/src/help/configs/delete_tag.rs (NEW); rust/fspec/src/delete_tag.rs (NEW bridge); rust/fspec-core/tests/delete_tag.rs (NEW dispatcher tests); rust/fspec/tests/cli_delete_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/delete-tag.txt (NEW captured fixture)
   Reuses shared infra: types::tags::{TagsData, TagCategory, Tag} (with #[serde(flatten)] extra preserving aux fields), io::locked_file::write_json_atomic (atomic write). NO io::ensure helper — tags.json must already exist (no auto-create, opposite of register-tag)
   Feature-file usage scan: hand-rolled recursion via std::fs::read_dir over spec/features matching *.feature; substring test contents.contains(tag) mirrors TS fileContent.includes(tag). Glob/IO failures are swallowed (best-effort) to mirror TS catch{} blocks. Kept inside the command module (no new shared dep on walkdir / glob crates)
   Inline minimal generate_tags_md helper duplicated from register_tag.rs / update_tag.rs (same shape: warning header, Tag Categories tables, optional _Last updated_ line). All three duplicates will be promoted to a shared generators module in a follow-up; intentional duplication for parallel-safe ports in Batch 7

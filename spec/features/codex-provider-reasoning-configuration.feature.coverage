@@ -4,11 +4,11 @@
       "name": "get_thinking_config returns reasoning config for codex provider at High level",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "21-54",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 42,
                 43,
@@ -37,11 +37,11 @@
       "name": "get_thinking_config returns reasoning config for codex model name at Medium level",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "56-90",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 42,
                 43,
@@ -70,11 +70,11 @@
       "name": "get_thinking_config returns reasoning config for codex at Low level",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "92-126",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 42,
                 43,
@@ -103,11 +103,11 @@
       "name": "get_thinking_config returns empty config for codex at Off level",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "128-145",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 42,
                 43,
@@ -136,11 +136,11 @@
       "name": "get_thinking_config recognizes gpt-5.1-codex as a codex model",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "147-174",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 42,
                 43,
@@ -169,11 +169,11 @@
       "name": "create_rig_agent uses thinking_config to populate reasoning in additional_params",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "199-247",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 248,
                 249,
@@ -231,11 +231,11 @@
       "name": "create_rig_agent applies default reasoning when no thinking_config is provided",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "249-290",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 248,
                 249,
@@ -293,11 +293,11 @@
       "name": "complete_with_tools includes reasoning config in additional_params",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "292-348",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 248,
                 249,
@@ -355,11 +355,11 @@
       "name": "Responses API request body matches codex-rs format",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_reasoning_config_test.rs",
+          "file": "rust/napi/tests/codex_reasoning_config_test.rs",
           "lines": "350-406",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 248,
                 249,
@@ -419,11 +419,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/codex_reasoning_config_test.rs"
+      "rust/napi/tests/codex_reasoning_config_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/thinking_config.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/napi/src/thinking_config.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 624
   }

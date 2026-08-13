@@ -4,11 +4,11 @@
       "name": "Setting a goal arms Goal mode even when auto-continue is off",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "40-81",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 150,
                 151,
@@ -32,11 +32,11 @@
       "name": "Bare /goal shows the contract state",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "87-135",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 130,
                 131,
@@ -84,11 +84,11 @@
       "name": "Bare /goal without an active goal reports no goal set",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "141-157",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 143,
                 144,
@@ -105,11 +105,11 @@
       "name": "/goal verify attaches a verify command to the active goal",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "163-200",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 166,
                 167,
@@ -137,11 +137,11 @@
       "name": "/goal verify without an active goal is an error",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "206-231",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 167,
                 168,
@@ -159,11 +159,11 @@
       "name": "/goal clear drops the goal and prints the fallback state",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "237-263",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 182,
                 183,
@@ -194,11 +194,11 @@
       "name": "/goal clear without an active goal reports no goal set",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "269-292",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 183,
                 184,
@@ -215,11 +215,11 @@
       "name": "/goal with replacement text replaces the goal and resets counters",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "298-334",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/mod.rs",
+              "file": "rust/cli/src/session/mod.rs",
               "lines": [
                 220,
                 221,
@@ -241,11 +241,11 @@
       "name": "/continue off is refused while a goal is active",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "340-363",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 236,
                 237,
@@ -273,11 +273,11 @@
       "name": "/continue off works normally when no goal is active",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "369-382",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 252,
                 253,
@@ -313,11 +313,11 @@
       "name": "Status indicator shows the goal marker while a goal is active",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_command_surface_test.rs",
+          "file": "rust/cli/tests/goal_command_surface_test.rs",
           "lines": "388-417",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 206,
                 207,
@@ -348,12 +348,12 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/goal_command_surface_test.rs"
+      "rust/cli/tests/goal_command_surface_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/goal.rs",
-      "codelet/cli/src/session/mod.rs",
-      "codelet/cli/src/interactive/auto_continue.rs"
+      "rust/cli/src/interactive/goal.rs",
+      "rust/cli/src/session/mod.rs",
+      "rust/cli/src/interactive/auto_continue.rs"
     ],
     "totalLinesCovered": 494
   }

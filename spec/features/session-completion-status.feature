@@ -5,9 +5,9 @@
 @GIT-022
 Feature: Session Completion and Status Derivation
   """
-  Add SessionStatus enum to codelet/git/src/session_manager.rs with Active, PendingMerge, Clean, Orphaned variants
-  Add derive_session_status(repo_path, session_id, active_sessions) to codelet/git/src/session_manager.rs
-  Modify BackgroundSession::complete() in codelet/napi/src/session_manager.rs to NOT cleanup worktree
+  Add SessionStatus enum to rust/git/src/session_manager.rs with Active, PendingMerge, Clean, Orphaned variants
+  Add derive_session_status(repo_path, session_id, active_sessions) to rust/git/src/session_manager.rs
+  Modify BackgroundSession::complete() in rust/napi/src/session_manager.rs to NOT cleanup worktree
   Session manifest at ~/.fspec/sessions/<session-id>.json stores session metadata for orphan detection
   Uses get_session_diff() from GIT-015 to determine if worktree has changes
   """

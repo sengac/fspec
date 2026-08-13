@@ -4,11 +4,11 @@
       "name": "Returns empty orphans array when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "89-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -301,11 +301,11 @@
       "name": "A work unit with a non-blank epic and no relationships is not orphaned",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "109-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -598,11 +598,11 @@
       "name": "A work unit with no epic but a non-empty blocks array is not orphaned",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "126-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -895,11 +895,11 @@
       "name": "A work unit with no epic and no relationships is orphaned",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "143-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -1192,11 +1192,11 @@
       "name": "A work unit with epic='   ' (whitespace) is treated as no epic and is orphaned",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "172-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -1489,11 +1489,11 @@
       "name": "Empty arrays for all four relationships are treated as no relationships",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "191-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -1786,11 +1786,11 @@
       "name": "--exclude-done skips done orphans while default includes them",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "215-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -2083,11 +2083,11 @@
       "name": "Multiple orphans appear in IndexMap insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "261-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -2380,11 +2380,11 @@
       "name": "JSON field declaration order is preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "285-310",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -2677,11 +2677,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "312-332",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_orphans.rs",
+              "file": "rust/fspec-core/src/commands/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -2976,10 +2976,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_orphans.rs"
+      "rust/fspec/tests/cli_query_orphans.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/query_orphans.rs"
+      "rust/fspec-core/src/commands/query_orphans.rs"
     ],
     "totalLinesCovered": 3280
   }

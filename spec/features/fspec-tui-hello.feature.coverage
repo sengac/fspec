@@ -4,11 +4,11 @@
       "name": "HelloComponent renders a centered static text via Layout vertical and horizontal Min Length Min",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/components/hello.rs",
+          "file": "rust/fspec-tui/src/components/hello.rs",
           "lines": "87-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/hello.rs",
+              "file": "rust/fspec-tui/src/components/hello.rs",
               "lines": [
                 1,
                 2,
@@ -105,10 +105,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/components/hello.rs"
+      "rust/fspec-tui/src/components/hello.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/hello.rs"
+      "rust/fspec-tui/src/components/hello.rs"
     ],
     "totalLinesCovered": 144
   }

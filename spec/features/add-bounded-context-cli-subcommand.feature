@@ -2,7 +2,7 @@
 @RPC-172
 Feature: fspec add-bounded-context CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_bounded_context.rs — clap-derived struct mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/add_bounded_context.rs — clap-derived struct mirroring TS Commander.js
   registration (src/commands/add-bounded-context.ts:72-122). Surface:
   `fspec add-bounded-context <workUnitId> <text> [--description <scope>] [--timestamp <ms>] [--bounded-context <name>]`.
   Stdout (success): '✓ Bounded context added to <workUnitId> (id: <id>)' (TS uses chalk.green; ANSI tolerated via substring match).
@@ -21,7 +21,7 @@ Feature: fspec add-bounded-context CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-bounded-context --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-bounded-context.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-bounded-context.txt
     And stdout starts with a blank line followed by 'ADD-BOUNDED-CONTEXT'
 
   Scenario: CLI successfully appends a bounded context and prints the success line
@@ -54,4 +54,4 @@ Feature: fspec add-bounded-context CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-bounded-context AUTH-001 "C2"` afterwards exits 0
     And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
-    And the CLI bridge module codelet/fspec/src/add_bounded_context.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_bounded_context.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

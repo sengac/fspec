@@ -2,7 +2,7 @@
 @RPC-177
 Feature: fspec add-dependency CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_dependency.rs — clap-derived struct mirroring TS Commander.js registration
+  CLI bridge: rust/fspec/src/add_dependency.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/add-dependency.ts:256-321). Surface: `fspec add-dependency <id> [dependsOnId] [--blocks <id>]
   [--blocked-by <id>] [--depends-on <id>] [--relates-to <id>]`.
 
@@ -26,7 +26,7 @@ Feature: fspec add-dependency CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-dependency --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-dependency.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-dependency.txt
     And stdout starts with a blank line followed by 'ADD-DEPENDENCY'
 
   Scenario: CLI successfully adds shorthand dependsOn and prints the success line
@@ -73,4 +73,4 @@ Feature: fspec add-dependency CLI subcommand
     When I dispatch add-dependency via fspec_core::dispatch::dispatch_command with workUnitId='AUTH-002' dependsOn='AUTH-001'
     Then the dispatcher returns success=true
     And running `fspec add-dependency AUTH-002 AUTH-001` afterwards exits 1 with 'Dependency already exists'
-    And the CLI bridge module codelet/fspec/src/add_dependency.rs contains NO inline edge-add, status guard, cycle, or file-write logic — its only computation is shorthand resolution + conflict pre-check + JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_dependency.rs contains NO inline edge-add, status guard, cycle, or file-write logic — its only computation is shorthand resolution + conflict pre-check + JSON arg marshalling

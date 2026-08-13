@@ -7,9 +7,9 @@
 @RPC-418
 Feature: Rust TUI /compact command lands on a no-op stub - no real compaction performed
   """
-  Fix lives in codelet/sessions/src/handle_impl.rs compact_session (~line 261). Mirror NAPI reference session_compact in codelet/napi/src/session_bindings.rs:3038.
+  Fix lives in rust/sessions/src/handle_impl.rs compact_session (~line 261). Mirror NAPI reference session_compact in rust/napi/src/session_bindings.rs:3038.
   Use execute_compaction from codelet_cli::interactive_helpers with None (manual, no resume prompt). Bridge sync->async with block_in_place + Handle::current().block_on or the existing loop_block_on helper. Drop the inner lock before send_input('Continue').
-  Tests go in codelet/sessions/tests/rpc418_compact_session.rs, following rpc081_restore_session_messages.rs patterns; use #[tokio::test(flavor = 'multi_thread')] because block_in_place panics on single-thread runtime.
+  Tests go in rust/sessions/tests/rpc418_compact_session.rs, following rpc081_restore_session_messages.rs patterns; use #[tokio::test(flavor = 'multi_thread')] because block_in_place panics on single-thread runtime.
   """
 
   # ========================================

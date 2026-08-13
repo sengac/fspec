@@ -4,11 +4,11 @@
       "name": "Clicking an unselected file row selects it and reloads its diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "448-473",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mouse.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
               "lines": [
                 44,
                 45,
@@ -45,11 +45,11 @@
       "name": "Clicking the top visible row selects the file at the scroll offset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "475-507",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mouse.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
               "lines": [
                 44,
                 45,
@@ -86,11 +86,11 @@
       "name": "Clicking the already-selected file row changes nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "509-530",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mouse.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
               "lines": [
                 44,
                 45,
@@ -127,11 +127,11 @@
       "name": "Clicking inside the diff pane focuses it without changing the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "532-558",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mouse.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
               "lines": [
                 44,
                 45,
@@ -168,11 +168,11 @@
       "name": "Clicking empty space below the last file changes nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "560-582",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mouse.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
               "lines": [
                 44,
                 45,
@@ -211,10 +211,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/changed_files/tests.rs"
+      "rust/fspec-tui/src/views/changed_files/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/changed_files/mouse.rs"
+      "rust/fspec-tui/src/views/changed_files/mouse.rs"
     ],
     "totalLinesCovered": 522
   }

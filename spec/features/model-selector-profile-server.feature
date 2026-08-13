@@ -8,7 +8,7 @@ Feature: Model selector profile server data source
 
   # Work unit: RPC-338. Server-side list_providers() population — ports the
   # decision logic of TS profileSectionBuilder.ts (reachability probe +
-  # MODEL-004 custom-models override). codelet/sessions/src/profile_sections.rs.
+  # MODEL-004 custom-models override). rust/sessions/src/profile_sections.rs.
   Background: User Story
     As a codelet TUI user
     I want the server to report local-server profile sections and their reachability

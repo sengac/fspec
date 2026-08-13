@@ -4,11 +4,11 @@
       "name": "Gemini continuation uses the unified classify_compaction_branch helper on stream error",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "94-117",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
                 332,
                 333,
@@ -60,11 +60,11 @@
       "name": "Gemini continuation invokes begin_compaction_recovery with pop_user_prompt=false on Recover",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "124-156",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
                 361,
                 362,
@@ -87,11 +87,11 @@
       "name": "Stream-end-with-compaction-flag path in Gemini continuation selects ResumeFromPartial when partial text was saved",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "163-202",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
                 377,
                 378,
@@ -135,11 +135,11 @@
       "name": "Stream-end-with-compaction-flag path in Gemini continuation selects EmbedInInstruction when no partial text was saved",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "209-239",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
                 377,
                 378,
@@ -183,11 +183,11 @@
       "name": "Tautological gemini_continuation_compaction_test.rs has been deleted from the cli tests directory",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "246-260",
           "implMappings": [
             {
-              "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+              "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
               "lines": [
                 246,
                 247,
@@ -214,11 +214,11 @@
       "name": "convert_messages_to_turns returns an empty slice for a session with only system reminders",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "267-295",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 33,
                 34,
@@ -278,11 +278,11 @@
       "name": "convert_messages_to_turns returns one turn per user-assistant pair",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "302-343",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 33,
                 34,
@@ -342,11 +342,11 @@
       "name": "Tautological empty_turn_compaction_fix_test.rs has been deleted from the cli tests directory",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "350-365",
           "implMappings": [
             {
-              "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+              "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
               "lines": [
                 350,
                 351,
@@ -374,11 +374,11 @@
       "name": "Tautological test_normal_compaction_no_watchdog has been deleted from compaction_convergence_watchdog_test.rs",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
           "lines": "372-391",
           "implMappings": [
             {
-              "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+              "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
               "lines": [
                 48,
                 49,
@@ -402,13 +402,13 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_real_integration_coverage_test.rs"
+      "rust/cli/tests/compaction_real_integration_coverage_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/gemini_continuation.rs",
-      "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/cli/tests/compaction_convergence_watchdog_test.rs"
+      "rust/cli/src/interactive/gemini_continuation.rs",
+      "rust/cli/tests/compaction_real_integration_coverage_test.rs",
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/cli/tests/compaction_convergence_watchdog_test.rs"
     ],
     "totalLinesCovered": 502
   }

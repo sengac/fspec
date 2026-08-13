@@ -4,11 +4,11 @@
       "name": "Dispatcher updates description on an existing prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "138-186",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -97,11 +97,11 @@
       "name": "Dispatcher updates epicId on an existing prefix when the epic exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "188-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -194,11 +194,11 @@
       "name": "Dispatcher rejects unknown prefix and leaves the file untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "220-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -291,11 +291,11 @@
       "name": "Dispatcher rejects unknown epicId and leaves prefixes.json untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "254-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -388,11 +388,11 @@
       "name": "Dispatcher updates both description and epicId in one call",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "291-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -485,11 +485,11 @@
       "name": "Dispatcher no-op bumps updatedAt while preserving description and epicId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "332-359",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -582,11 +582,11 @@
       "name": "Dispatcher preserves insertion order when updating a non-terminal entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "361-393",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -679,11 +679,11 @@
       "name": "Dispatcher escalates malformed prefixes.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "395-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 84,
                 85,
@@ -776,11 +776,11 @@
       "name": "Dispatcher returns the canonical JSON success shape",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "423-449",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 74,
                 75,
@@ -883,11 +883,11 @@
       "name": "Shared infrastructure is reused without duplication",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_prefix.rs",
+          "file": "rust/fspec-core/tests/update_prefix.rs",
           "lines": "451-486",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_prefix.rs",
+              "file": "rust/fspec-core/src/commands/update_prefix.rs",
               "lines": [
                 46,
                 47,
@@ -1020,10 +1020,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_prefix.rs"
+      "rust/fspec-core/tests/update_prefix.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_prefix.rs"
+      "rust/fspec-core/src/commands/update_prefix.rs"
     ],
     "totalLinesCovered": 1194
   }

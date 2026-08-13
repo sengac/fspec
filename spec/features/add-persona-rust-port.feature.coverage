@@ -4,11 +4,11 @@
       "name": "Append a persona to an existing foundation.json with real personas",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "57-89",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -118,11 +118,11 @@
       "name": "Multiple repeated goals are persisted in supplied order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "93-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -232,11 +232,11 @@
       "name": "A persona with no goals is stored with an empty goals array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "123-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -346,11 +346,11 @@
       "name": "Draft precedence routes the write to foundation.json.draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "147-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -460,11 +460,11 @@
       "name": "An all-placeholder personas array is cleared before the real persona is added",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "186-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -574,11 +574,11 @@
       "name": "A real persona alongside a placeholder suppresses placeholder removal",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "220-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -688,11 +688,11 @@
       "name": "Missing foundation file and draft surface the not-found error and create nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "252-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -802,11 +802,11 @@
       "name": "A foundation.json with no personas key initializes the array then appends",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "283-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -916,11 +916,11 @@
       "name": "The written file uses 2-space indentation, a trailing newline, and preserves unknown top-level fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_persona.rs",
+          "file": "rust/fspec-core/tests/add_persona.rs",
           "lines": "313-347",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_persona.rs",
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
               "lines": [
                 94,
                 95,
@@ -1032,10 +1032,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_persona.rs"
+      "rust/fspec-core/tests/add_persona.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_persona.rs"
+      "rust/fspec-core/src/commands/add_persona.rs"
     ],
     "totalLinesCovered": 1170
   }

@@ -4,7 +4,7 @@
 @RPC-179
 Feature: add-domain-event CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_domain_event.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-domain-event.ts). Surface: `fspec add-domain-event <workUnitId> <text> [--timestamp <ms>] [--bounded-context <ctx>]`.
+  CLI bridge: rust/fspec/src/add_domain_event.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-domain-event.ts). Surface: `fspec add-domain-event <workUnitId> <text> [--timestamp <ms>] [--bounded-context <ctx>]`.
   Stdout (success): '✓ Added domain event "<text>" to <workUnitId> (ID: <eventId>)' (chalk.green; ANSI tolerated via substring match).
   Stderr (failure): '✗ Failed to add domain event: <message>'; exit code 1.
   Two-front-doors invariant: bridge marshals positional/option args into JSON and forwards to commands::add_domain_event::run — NO domain logic in the bridge.
@@ -20,7 +20,7 @@ Feature: add-domain-event CLI subcommand
     given the fspec Rust binary is built and on PATH
     when I run `fspec add-domain-event --help`
     then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-domain-event.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-domain-event.txt
 
   Scenario: CLI appends a domain event and prints the success line
     given a project root tempdir with spec/work-units.json containing RPC-179 status=specifying
@@ -43,4 +43,4 @@ Feature: add-domain-event CLI subcommand
     then the dispatcher returns success=true
     And running `fspec add-domain-event RPC-179 "E2"` afterwards exits 0
     And spec/work-units.json on disk shows RPC-179 eventStorm items has length 2
-    And the CLI bridge module codelet/fspec/src/add_domain_event.rs contains NO inline event construction, dedup check, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_domain_event.rs contains NO inline event construction, dedup check, status guard, or file-write logic — its only computation is JSON arg marshalling

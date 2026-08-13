@@ -4,11 +4,11 @@
       "name": "Adds the first attachment, creates the per-work-unit directory, and bumps updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "101-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -229,11 +229,11 @@
       "name": "Description is echoed on a third output line when provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "165-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -454,11 +454,11 @@
       "name": "Description is omitted from output when not provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "195-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -679,11 +679,11 @@
       "name": "Missing work unit surfaces the canonical error and no file copy occurs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "221-257",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -712,11 +712,11 @@
       "name": "Missing source file surfaces the canonical error using the ORIGINAL caller-supplied path",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "259-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -763,11 +763,11 @@
       "name": "Re-adding the same file surfaces the duplicate-attachment error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "291-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -864,11 +864,11 @@
       "name": "BUG-055 dedup unlinks the source when it lives directly in spec/attachments/",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "337-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1089,11 +1089,11 @@
       "name": "Adding a third attachment preserves the existing two and appends in array order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "382-429",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1314,11 +1314,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "431-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1347,11 +1347,11 @@
       "name": "Validates a .mmd attachment and rejects invalid Mermaid before copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "466-500",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1412,11 +1412,11 @@
       "name": "Validates mermaid fences inside a .md attachment and accepts fence-free markdown",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "502-550",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1637,11 +1637,11 @@
       "name": "Register a file that already lives in the work unit attachments directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "564-604",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1827,11 +1827,11 @@
       "name": "Duplicate registration is rejected without touching the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "606-651",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -1928,11 +1928,11 @@
       "name": "File in the attachments root is still moved into the work unit directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "653-692",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -2153,11 +2153,11 @@
       "name": "Symlink alias of the destination file does not truncate it",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "694-739",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -2343,11 +2343,11 @@
       "name": "Register a read-only file already in the attachments directory without attempting a copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "741-810",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -2533,11 +2533,11 @@
       "name": "Duplicate registration from a different source file does not overwrite the registered attachment",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "file": "rust/fspec-core/tests/add_attachment.rs",
           "lines": "812-861",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "file": "rust/fspec-core/src/commands/add_attachment.rs",
               "lines": [
                 97,
                 98,
@@ -2636,10 +2636,10 @@
     "coveredScenarios": 17,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_attachment.rs"
+      "rust/fspec-core/tests/add_attachment.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_attachment.rs"
+      "rust/fspec-core/src/commands/add_attachment.rs"
     ],
     "totalLinesCovered": 3091
   }

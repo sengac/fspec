@@ -4,11 +4,11 @@
       "name": "Identity prefix from Rhai function",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "23-50",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 117,
                 118,
@@ -49,11 +49,11 @@
       "name": "Identity prefix defaults to None",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "52-77",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 117,
                 118,
@@ -94,11 +94,11 @@
       "name": "Default transform_preamble prepends fspec guidance",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "80-117",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 208,
                 209,
@@ -127,11 +127,11 @@
       "name": "Custom transform_preamble overrides default",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "119-144",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 208,
                 209,
@@ -160,11 +160,11 @@
       "name": "Default format_for_api returns plain JSON string",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "146-179",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 226,
                 227,
@@ -194,11 +194,11 @@
       "name": "format_system_prompt returning array produces JSON array with cache_control",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "181-244",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 147,
                 148,
@@ -257,11 +257,11 @@
       "name": "format_system_prompt returning string produces plain JSON string",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "246-272",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 147,
                 148,
@@ -320,11 +320,11 @@
       "name": "Facade reports custom provider name",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "274-300",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 197,
                 198,
@@ -342,11 +342,11 @@
       "name": "Runtime error in format_system_prompt falls back gracefully",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_system_prompts_tests.rs",
+          "file": "rust/providers/tests/custom_system_prompts_tests.rs",
           "lines": "302-337",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/system_prompt.rs",
+              "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
                 93,
                 94,
@@ -383,10 +383,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_system_prompts_tests.rs"
+      "rust/providers/tests/custom_system_prompts_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/system_prompt.rs"
+      "rust/providers/src/custom/system_prompt.rs"
     ],
     "totalLinesCovered": 539
   }

@@ -5,9 +5,9 @@
 @RPC-246
 Feature: List foundation sections CLI subcommand
   """
-  CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The intercept_ts_help() pre-clap routine in main.rs emits Commander.js-default-style help (NOT the rich CommandHelpConfig format used by list-hooks/list-attachments) because the TS reference src/commands/list-foundation-sections.ts uses bare Commander.js without a custom -help.ts file.
+  CLI subcommand is wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The intercept_ts_help() pre-clap routine in main.rs emits Commander.js-default-style help (NOT the rich CommandHelpConfig format used by list-hooks/list-attachments) because the TS reference src/commands/list-foundation-sections.ts uses bare Commander.js without a custom -help.ts file.
 
-  Byte-parity contract: stdout of `./codelet/target/release/fspec list-foundation-sections --help` matches `node dist/index.js list-foundation-sections --help` exactly (5 lines + final newline).
+  Byte-parity contract: stdout of `./rust/target/release/fspec list-foundation-sections --help` matches `node dist/index.js list-foundation-sections --help` exactly (5 lines + final newline).
   """
 
   Background: User Story
@@ -16,8 +16,8 @@ Feature: List foundation sections CLI subcommand
     So that I can discover the --format flag and command description from a script or terminal with byte-for-byte parity
 
   Scenario: list-foundation-sections --help is byte-for-byte identical to TS Commander.js reference output
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-foundation-sections --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec list-foundation-sections --help` piped to non-TTY
     Then the command exits 0
     And the TS reference binary `node dist/index.js list-foundation-sections --help` produces a 6-line block: Usage line, blank, description, blank, Options header, --format and -h lines
     And stdout is byte-for-byte identical to the TS reference output

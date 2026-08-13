@@ -4,11 +4,11 @@
       "name": "Clear command resets AI context completely",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "20-52",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1411,
                 1412,
@@ -54,11 +54,11 @@
       "name": "Token counters reset after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "57-87",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1411,
                 1412,
@@ -104,11 +104,11 @@
       "name": "System reminders preserved after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "92-123",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1411,
                 1412,
@@ -154,11 +154,11 @@
       "name": "Clear implementation uses shared DRY function",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "128-150",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5240,
                 5241,
@@ -184,11 +184,11 @@
       "name": "Provider and debug state preserved across clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "155-173",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1411,
                 1412,
@@ -236,10 +236,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/tui_clear_session_context_test.rs"
+      "rust/napi/tests/tui_clear_session_context_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 288
   }

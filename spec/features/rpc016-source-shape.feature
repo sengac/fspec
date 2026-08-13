@@ -13,18 +13,18 @@ Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.las
   and cross-crate invariants introduced by the BoardView per-column
   scroll port:
 
-  - WorkUnitInfo in codelet/rpc-types/src/lib.rs gains
+  - WorkUnitInfo in rust/rpc-types/src/lib.rs gains
   `pub last_state_change_at: Option<String>` (ISO-8601 UTC).
-  - codelet/core/src/work_units.rs reads `stateHistory[last].timestamp`
+  - rust/core/src/work_units.rs reads `stateHistory[last].timestamp`
   from spec/work-units.json and writes it into
   `WorkUnitInfo.last_state_change_at`.
-  - The Action enum in codelet/fspec-tui/src/components/mod.rs gains
+  - The Action enum in rust/fspec-tui/src/components/mod.rs gains
   four new variants: ScrollFocusedColumnUp, ScrollFocusedColumnDown,
   SelectFirstInFocused, SelectLastInFocused.
-  - The BoardStore in codelet/fspec-tui/src/store/board.rs declares
+  - The BoardStore in rust/fspec-tui/src/store/board.rs declares
   the new `scroll_offsets` field and the matching mutation methods.
   - The new viewport painter module exists under
-  codelet/fspec-tui/src/views/board/ and stays < 300 LoC.
+  rust/fspec-tui/src/views/board/ and stays < 300 LoC.
   - RPC-012 / RPC-013 / RPC-014 / RPC-015 source-shape invariants
   stay green.
   """
@@ -35,18 +35,18 @@ Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.las
     So that future cards cannot silently merge the viewport painter back into board.rs or strip the new fields
 
   Scenario: WorkUnitInfo gains the last_state_change_at field
-    Given codelet/rpc-types/src/lib.rs after RPC-016 lands
+    Given rust/rpc-types/src/lib.rs after RPC-016 lands
     When a developer reads the file source raw
     Then the file contains the substring "pub last_state_change_at: Option<String>"
 
   Scenario: codelet_core::work_units reads stateHistory into last_state_change_at
-    Given codelet/core/src/work_units.rs after RPC-016 lands
+    Given rust/core/src/work_units.rs after RPC-016 lands
     When a developer reads the file source raw
     Then the file contains the substring "stateHistory"
     And the file contains the substring "last_state_change_at"
 
   Scenario: Action enum gains the four new viewport variants
-    Given codelet/fspec-tui/src/components/mod.rs after RPC-016 lands
+    Given rust/fspec-tui/src/components/mod.rs after RPC-016 lands
     When a developer reads the file source raw
     Then the file contains the substring "ScrollFocusedColumnUp"
     And the file contains the substring "ScrollFocusedColumnDown"
@@ -54,7 +54,7 @@ Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.las
     And the file contains the substring "SelectLastInFocused"
 
   Scenario: BoardStore declares the scroll_offsets field and viewport methods
-    Given codelet/fspec-tui/src/store/board.rs after RPC-016 lands
+    Given rust/fspec-tui/src/store/board.rs after RPC-016 lands
     When a developer reads the file source raw
     Then the file contains the substring "scroll_offsets"
     And the file contains the substring "pub fn scroll_offset_for"
@@ -65,19 +65,19 @@ Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.las
     And the file contains the substring "pub fn select_last_in_focused"
 
   Scenario: Viewport painter module exists as a separate file
-    Given the codelet/fspec-tui crate after RPC-016 lands
+    Given the rust/fspec-tui crate after RPC-016 lands
     When a developer scans the views/board/ directory
-    Then the file codelet/fspec-tui/src/views/board/viewport.rs exists
+    Then the file rust/fspec-tui/src/views/board/viewport.rs exists
 
   Scenario: New and modified board modules stay under 300 lines
-    Given the directory codelet/fspec-tui/src/views/board/ plus the views/board.rs orchestrator and store/board.rs
+    Given the directory rust/fspec-tui/src/views/board/ plus the views/board.rs orchestrator and store/board.rs
     When a test counts the line-count of every .rs file in views/board/ plus views/board.rs plus store/board.rs
     Then views/board.rs has fewer than 300 lines
     And store/board.rs has fewer than 300 lines
     And every .rs file under views/board/ has fewer than 300 lines
 
   Scenario: RPC-013 / RPC-014 / RPC-015 invariants preserved
-    Given codelet/fspec-tui/src/views/board.rs after RPC-016 lands
+    Given rust/fspec-tui/src/views/board.rs after RPC-016 lands
     When a developer reads the file source raw
     Then the file contains the substring "Action::EnterWorkUnit"
     And the file contains the substring "Action::FocusNextColumn"
@@ -85,7 +85,7 @@ Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.las
     And the file does NOT contain the identifier "FooterView"
 
   Scenario: Views still avoid encapsulated transport crates and host runtime construction
-    Given the directory codelet/fspec-tui/src/views/ (including views/board/)
+    Given the directory rust/fspec-tui/src/views/ (including views/board/)
     When a test scans every *.rs file
     Then NO file imports `codelet_napi::` or `codelet_core::` or `tarpc::` or `tokio_tungstenite::`
     And NO file contains `tokio::runtime::Builder` or `Runtime::new()`

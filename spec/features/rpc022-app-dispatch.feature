@@ -116,6 +116,6 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
   @line-budget
   @source-shape
   Scenario: dispatch_model_thinking_dialogs.rs stays under 300 lines
-    Given the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs after RPC-022 lands
+    Given the file rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs after RPC-022 lands
     When a test counts the line-count of the file
     Then the file has fewer than 300 lines

@@ -5,12 +5,12 @@
 @RPC-294
 Feature: Port reverse command to Rust
   """
-  File layout: core impl codelet/fspec-core/src/commands/reverse.rs (rewrite stub); new type module codelet/fspec-core/src/types/reverse_session.rs (ReverseSession, GapAnalysis, AnalysisResult); help config codelet/fspec-core/src/help/configs/reverse.rs; CLI bridge codelet/fspec/src/reverse.rs; integration tests codelet/fspec/tests/cli_reverse.rs + core tests codelet/fspec-core/tests/reverse.rs; help fixture codelet/fspec/tests/fixtures/help/reverse.txt. Two feature files: reverse-rust-port.feature (dispatcher contract) + reverse-cli-subcommand.feature (clap surface).
+  File layout: core impl rust/fspec-core/src/commands/reverse.rs (rewrite stub); new type module rust/fspec-core/src/types/reverse_session.rs (ReverseSession, GapAnalysis, AnalysisResult); help config rust/fspec-core/src/help/configs/reverse.rs; CLI bridge rust/fspec/src/reverse.rs; integration tests rust/fspec/tests/cli_reverse.rs + core tests rust/fspec-core/tests/reverse.rs; help fixture rust/fspec/tests/fixtures/help/reverse.txt. Two feature files: reverse-rust-port.feature (dispatcher contract) + reverse-cli-subcommand.feature (clap surface).
   SHARED-FILE CHANGE (supervisor) #1: dispatch.rs reverse arm must change commands::reverse::run(args_json).await to commands::reverse::run(args_json, project_root).await — the ported signature adds project_root (parity: session hash + analysis need the project root, never env::current_dir()).
-  SHARED-FILE CHANGE (supervisor) #2: codelet/fspec-core/Cargo.toml must add a sha2 dependency (sha2 = { workspace = true }) for the session-file hash. No hex crate — we will hex-encode the digest bytes manually with format!("{:02x}").
-  SHARED-FILE CHANGE (supervisor) #3: codelet/fspec-core/src/types/mod.rs must register `pub mod reverse_session;`.
-  SHARED-FILE CHANGE (supervisor) #4: codelet/fspec-core/src/help/configs/mod.rs must register `pub mod reverse;`.
-  SHARED-FILE CHANGE (supervisor) #5: codelet/fspec/src/main.rs must add `mod reverse;`, a Mode::Reverse clap variant (flags --strategy <A|B|C|D>, --continue, --status, --reset, --complete, --dry-run; no positional args), a forward! arm, and a --help intercept arm calling configs::reverse::CONFIG. Also commands/mod.rs is already registered for reverse (stub exists) so no change there.
+  SHARED-FILE CHANGE (supervisor) #2: rust/fspec-core/Cargo.toml must add a sha2 dependency (sha2 = { workspace = true }) for the session-file hash. No hex crate — we will hex-encode the digest bytes manually with format!("{:02x}").
+  SHARED-FILE CHANGE (supervisor) #3: rust/fspec-core/src/types/mod.rs must register `pub mod reverse_session;`.
+  SHARED-FILE CHANGE (supervisor) #4: rust/fspec-core/src/help/configs/mod.rs must register `pub mod reverse;`.
+  SHARED-FILE CHANGE (supervisor) #5: rust/fspec/src/main.rs must add `mod reverse;`, a Mode::Reverse clap variant (flags --strategy <A|B|C|D>, --continue, --status, --reset, --complete, --dry-run; no positional args), a forward! arm, and a --help intercept arm calling configs::reverse::CONFIG. Also commands/mod.rs is already registered for reverse (stub exists) so no change there.
   CONFIRM-WITH-SUPERVISOR #6: implementationContext (Strategy D persona path) has NO clap flag in the TS Commander.js surface — it is dispatcher-JSON-only. Confirm the standalone binary intentionally cannot trigger Strategy-D persona guidance (parity with TS).
   Session persistence reuses crate::io::project_root::find_project_root (markers .git/package.json/.gitignore/Cargo.toml/pyproject.toml, depth 10) — already exists. Session path uses std::env::temp_dir(). Timestamps via chrono formatted '%Y-%m-%dT%H:%M:%S%.3fZ' for ISO parity. All IO is blocking std::fs — no real async — fits poll_sync_future.
   """
@@ -60,7 +60,7 @@ Feature: Port reverse command to Rust
     Given the fspec Rust binary has been compiled
     When I run `fspec reverse --help` piped to non-TTY
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/reverse.txt
+    Then stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/reverse.txt
     Then stdout starts with a blank line followed by "REVERSE"
 
   Scenario: CLI reset deletes the session and prints Session reset

@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
           "lines": "102-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_command_from_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -133,11 +133,11 @@
       "name": "CLI successfully soft-deletes a command and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
           "lines": "129-161",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_command_from_foundation.rs",
+              "file": "rust/fspec/src/remove_command_from_foundation.rs",
               "lines": [
                 44,
                 45,
@@ -178,11 +178,11 @@
       "name": "CLI rejects a missing command with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
           "lines": "163-198",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_command_from_foundation.rs",
+              "file": "rust/fspec/src/remove_command_from_foundation.rs",
               "lines": [
                 66,
                 67,
@@ -200,11 +200,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
           "lines": "200-257",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_command_from_foundation.rs",
+              "file": "rust/fspec/src/remove_command_from_foundation.rs",
               "lines": [
                 53,
                 54,
@@ -231,11 +231,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_command_from_foundation.rs"
+      "rust/fspec/tests/cli_remove_command_from_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/remove_command_from_foundation.rs",
-      "codelet/fspec/src/remove_command_from_foundation.rs"
+      "rust/fspec-core/src/help/configs/remove_command_from_foundation.rs",
+      "rust/fspec/src/remove_command_from_foundation.rs"
     ],
     "totalLinesCovered": 314
   }

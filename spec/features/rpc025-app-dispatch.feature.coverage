@@ -4,11 +4,11 @@
       "name": "First Shift+↑ caches the live draft, loads a fresh snapshot, and replaces input with history[0]",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "184-225",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 36,
                 37,
@@ -63,11 +63,11 @@
       "name": "Subsequent Shift+↑ walks backwards through the cached snapshot and clamps at len-1",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "227-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 80,
                 81,
@@ -95,11 +95,11 @@
       "name": "Shift+↓ walks forwards and exits recall on the final step restoring the cached_draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "282-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 97,
                 98,
@@ -153,11 +153,11 @@
       "name": "Shift+↓ from live-draft mode is a no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "337-355",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 108,
                 109,
@@ -180,11 +180,11 @@
       "name": "Shift+↑ when history is empty is a no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "357-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 140,
                 141,
@@ -213,11 +213,11 @@
       "name": "Each open session keeps an independent recall position across Shift+←/→ cycling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "383-435",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 36,
                 37,
@@ -272,11 +272,11 @@
       "name": "Submitting an input fires persistence_add_history via tokio::spawn and resets the session's history state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "437-491",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 158,
                 159,
@@ -309,11 +309,11 @@
       "name": "persistence_add_history is fire-and-forget — a slow disk write never blocks input submission",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
           "lines": "493-521",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 80,
                 81,
@@ -354,11 +354,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs"
+      "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
+      "rust/fspec-tui/src/app/dispatch_history_recall.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 551
   }

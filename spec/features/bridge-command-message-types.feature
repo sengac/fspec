@@ -1,7 +1,7 @@
 @BRIDGE-016
 Feature: Extend Rust bridge message types for command support
   """
-  Pure type extension in codelet/tools/src/bridge_relay.rs (InboundMessage) and codelet/tools/src/bridge.rs (OutboundMessage). No behavioral changes. Uses serde Optional fields with skip_serializing_if for backward-compatible JSON serialization.
+  Pure type extension in rust/tools/src/bridge_relay.rs (InboundMessage) and rust/tools/src/bridge.rs (OutboundMessage). No behavioral changes. Uses serde Optional fields with skip_serializing_if for backward-compatible JSON serialization.
   """
 
   # ========================================

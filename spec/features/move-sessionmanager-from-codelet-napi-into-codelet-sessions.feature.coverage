@@ -4,11 +4,11 @@
       "name": "codelet-sessions builds standalone with SessionManager, ChainOfCommand, navigation, credentials and the hooks trait at their new home",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "104-171",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 180,
                 181,
@@ -101,11 +101,11 @@
       "name": "codelet-napi still builds against the re-exported SessionManager and ChainOfCommand",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "172-223",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 118,
                 119,
@@ -129,11 +129,11 @@
       "name": "The moved session_manager.rs and chain_of_command.rs have no napi:: references",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "224-260",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/chain_of_command.rs",
+              "file": "rust/sessions/src/chain_of_command.rs",
               "lines": [
                 1,
                 2,
@@ -325,11 +325,11 @@
       "name": "The moved session_manager.rs has no crate references to napi-private modules or free functions",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "261-346",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 84,
                 85,
@@ -418,11 +418,11 @@
       "name": "create_session_with_id is rewritten to a non-NAPI Result type and routes side-effects through the hooks",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "347-412",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 427,
                 428,
@@ -659,11 +659,11 @@
       "name": "create_isolated_session_with_id returns the wire-type IsolatedSessionInfo and the NAPI wrapper converts to IsolatedSessionResult",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "413-475",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 652,
                 653,
@@ -919,11 +919,11 @@
       "name": "SessionManager gains four new fields beyond the original five",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "476-558",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 176,
                 177,
@@ -1020,11 +1020,11 @@
       "name": "codelet-sessions has no transitive dependency on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "559-636",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -1090,11 +1090,11 @@
       "name": "Pre-existing ChainOfCommand unit tests in codelet-napi still pass via the re-export",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "637-698",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/chain_of_command.rs",
+              "file": "rust/sessions/src/chain_of_command.rs",
               "lines": [
                 1,
                 2,
@@ -1286,11 +1286,11 @@
       "name": "codelet-sessions tests assert SessionManager is reachable from its new home and the hooks design is sound",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "699-782",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/lib.rs",
+              "file": "rust/sessions/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -1327,11 +1327,11 @@
       "name": "NAPI TypeScript surface is byte-stable across the move",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "783-858",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4219,
                 4220,
@@ -1392,11 +1392,11 @@
       "name": "The napi side installs its hooks at startup so existing TS behaviour is preserved",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "859-934",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6624,
                 6625,
@@ -1494,14 +1494,14 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/session_manager_shape.rs"
+      "rust/sessions/tests/session_manager_shape.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/sessions/src/chain_of_command.rs",
-      "codelet/sessions/Cargo.toml",
-      "codelet/sessions/src/lib.rs"
+      "rust/sessions/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
+      "rust/sessions/src/chain_of_command.rs",
+      "rust/sessions/Cargo.toml",
+      "rust/sessions/src/lib.rs"
     ],
     "totalLinesCovered": 2127
   }

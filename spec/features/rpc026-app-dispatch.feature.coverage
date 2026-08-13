@@ -4,11 +4,11 @@
       "name": "Slash command /resume opens the full-screen resume view and spawns list_sessions",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_app_dispatch.rs",
+          "file": "rust/fspec-tui/tests/rpc026_app_dispatch.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -183,11 +183,11 @@
       "name": "Enter on a new session appends it and attaches focus",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_app_dispatch.rs",
+          "file": "rust/fspec-tui/tests/rpc026_app_dispatch.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -362,11 +362,11 @@
       "name": "Enter on an already-open session moves focus without duplicating",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_app_dispatch.rs",
+          "file": "rust/fspec-tui/tests/rpc026_app_dispatch.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -541,11 +541,11 @@
       "name": "Esc closes the resume view without changing the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_app_dispatch.rs",
+          "file": "rust/fspec-tui/tests/rpc026_app_dispatch.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -720,11 +720,11 @@
       "name": "Slash command /search opens the full-screen search view empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_app_dispatch.rs",
+          "file": "rust/fspec-tui/tests/rpc026_app_dispatch.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -899,11 +899,11 @@
       "name": "Enter on a highlighted match inserts the text into the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_app_dispatch.rs",
+          "file": "rust/fspec-tui/tests/rpc026_app_dispatch.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -1080,10 +1080,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_app_dispatch.rs"
+      "rust/fspec-tui/tests/rpc026_app_dispatch.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 2178
   }

@@ -4,11 +4,11 @@
       "name": "Empty AgentViewStore paints placeholder header and bare-cwd footer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc018.rs",
           "lines": "51-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header.rs",
+              "file": "rust/fspec-tui/src/views/agent/header.rs",
               "lines": [
                 1,
                 2,
@@ -198,11 +198,11 @@
       "name": "Header paints model badges and thinking level when session has model info",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc018.rs",
           "lines": "80-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header.rs",
+              "file": "rust/fspec-tui/src/views/agent/header.rs",
               "lines": [
                 1,
                 2,
@@ -415,11 +415,11 @@
       "name": "Header right-side reflects TokenUpdate followed by ContextFillUpdate",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc018.rs",
           "lines": "119-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header.rs",
+              "file": "rust/fspec-tui/src/views/agent/header.rs",
               "lines": [
                 1,
                 2,
@@ -632,11 +632,11 @@
       "name": "StreamChunk::TokenUpdate updates AgentViewStore.token_state_by_session for the current session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc018.rs",
           "lines": "238-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 1,
                 2,
@@ -888,11 +888,11 @@
       "name": "StreamChunk::ContextFillUpdate updates context_fill_pct",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc018.rs",
           "lines": "271-303",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 1,
                 2,
@@ -1144,11 +1144,11 @@
       "name": "Non-token StreamChunk variants leave token_state unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc018.rs",
           "lines": "305-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 1,
                 2,
@@ -1414,13 +1414,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 67,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_agent_unit_rpc018.rs"
+      "rust/fspec-tui/tests/view_agent_unit_rpc018.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/header.rs",
-      "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/store/agent_view.rs"
+      "rust/fspec-tui/src/views/agent/header.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/store/agent_view.rs"
     ],
     "totalLinesCovered": 2161
   }

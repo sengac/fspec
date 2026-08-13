@@ -5,7 +5,7 @@
 @CMPCT-042
 Feature: Gemini continuation TokenState double-counts cache — cache-inclusive tracker total combined with non-zero cache fields can trigger compaction early
   """
-  Fix site: codelet/cli/src/interactive/gemini_continuation.rs:126-132. tracker.input_tokens is cache-INCLUSIVE after update_display_only (model.rs:189 uses usage.total_input()). Fix: zero cache_read_input_tokens/cache_creation_input_tokens in the continuation TokenState, mirroring the guarded pattern at stream_loop.rs:398-401 ('Don't double count'). Do NOT touch the nested seed at :310-316 (display-basis, correct) or the StreamingTokenDisplay::new seeds at :158/:343 (pinned by cmpct041_seed_cache_double_count_test.rs).
+  Fix site: rust/cli/src/interactive/gemini_continuation.rs:126-132. tracker.input_tokens is cache-INCLUSIVE after update_display_only (model.rs:189 uses usage.total_input()). Fix: zero cache_read_input_tokens/cache_creation_input_tokens in the continuation TokenState, mirroring the guarded pattern at stream_loop.rs:398-401 ('Don't double count'). Do NOT touch the nested seed at :310-316 (display-basis, correct) or the StreamingTokenDisplay::new seeds at :158/:343 (pinned by cmpct041_seed_cache_double_count_test.rs).
   """
 
   Background: User Story

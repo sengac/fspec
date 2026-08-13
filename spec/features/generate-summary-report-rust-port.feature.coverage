@@ -4,11 +4,11 @@
       "name": "Aggregate a store with completed and pending work units",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "71-99",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 39,
                 40,
@@ -180,11 +180,11 @@
       "name": "Markdown report renders the expected layout",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "100-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 162,
                 163,
@@ -233,11 +233,11 @@
       "name": "JSON report is pretty-printed with two-space indent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "135-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 131,
                 132,
@@ -275,11 +275,11 @@
       "name": "A custom output path is honoured",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "154-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 138,
                 139,
@@ -348,11 +348,11 @@
       "name": "A work unit without a status is counted as unknown",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "177-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 70,
                 71,
@@ -385,11 +385,11 @@
       "name": "A missing work units file fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "194-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 47,
                 48,
@@ -415,11 +415,11 @@
       "name": "Dispatcher and core produce identical report content",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_summary_report.rs",
+          "file": "rust/fspec-core/tests/generate_summary_report.rs",
           "lines": "211-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
                 39,
                 40,
@@ -593,10 +593,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/generate_summary_report.rs"
+      "rust/fspec-core/tests/generate_summary_report.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/generate_summary_report.rs"
+      "rust/fspec-core/src/commands/generate_summary_report.rs"
     ],
     "totalLinesCovered": 637
   }

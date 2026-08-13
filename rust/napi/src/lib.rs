@@ -1,0 +1,332 @@
+//! fspec NAPI-RS Native Module Bindings
+//!
+//! This module exposes rust's Rust AI agent functionality to Node.js via NAPI-RS.
+//! It enables fspec's Ink/React TUI to serve as the frontend for codelet.
+//!
+//! Uses the same streaming infrastructure as codelet-cli but with callbacks
+//! instead of stdout printing.
+
+#![allow(ambiguous_glob_reexports)]
+
+#[cfg_attr(not(feature = "noop"), macro_use)]
+extern crate napi_derive;
+
+// These modules use ThreadsafeFunction and must be excluded in noop mode
+#[cfg(not(feature = "noop"))]
+mod astgrep;
+#[cfg(not(feature = "noop"))]
+mod blocklist;
+#[cfg(not(feature = "noop"))]
+mod claude_oauth;
+#[cfg(not(feature = "noop"))]
+mod codex_oauth;
+#[cfg(not(feature = "noop"))]
+mod copilot_oauth;
+#[cfg(not(feature = "noop"))]
+mod custom_oauth;
+#[cfg(not(feature = "noop"))]
+mod fspec;
+#[cfg(not(feature = "noop"))]
+mod git;
+#[cfg(not(feature = "noop"))]
+mod glob;
+// Models module: core logic always compiled, NAPI bindings conditional
+// (no ThreadsafeFunction dependency - safe for noop)
+pub mod models;
+#[cfg(not(feature = "noop"))]
+pub mod navigation;
+// RPC-043: rust/napi/src/session_manager.rs deleted. Its contents
+// were split into seven sibling modules under the same
+// #[cfg(not(feature = "noop"))] gate that previously protected
+// session_manager.rs:
+//
+//   - session_bindings: the 66+ #[napi] free-function wrappers and the
+//     12 #[napi(object)] result/argument shapes.
+//   - agent_loop: pub(crate) async fn agent_loop, the run_with_provider!
+//     macro, agent_loop_dispatch_supports_provider, the InputWithImages
+//     helper struct, BackgroundOutput + BackgroundProgressEmitter
+//     StreamOutput sinks, and the agent_loop_dispatch_tests module.
+//   - persist: the five persist_* helpers used by agent_loop.rs and a
+//     pair of #[napi] restore wrappers in session_bindings.rs.
+//   - footer_poller: FOOTER_POLLER_TOKENS + spawn/stop helpers invoked
+//     by NapiSessionManagerHooks.
+//   - bridges: init_block_notification_callbacks /
+//     init_bridge_metadata_providers /
+//     init_bridge_session_and_terminal_creators /
+//     emit_block_notification_to_tui / register_deep_search_handler /
+//     register_agent_manager_handler + the four #[cfg(test)] companions
+//     previously embedded in session_manager.rs.
+//   - session_hooks: NapiSessionManagerHooks + install helper.
+//   - interjection: parse_interjection + Interjection struct.
+#[cfg(not(feature = "noop"))]
+pub mod agent_loop;
+#[cfg(not(feature = "noop"))]
+pub mod bridges;
+#[cfg(not(feature = "noop"))]
+pub mod footer_poller;
+#[cfg(not(feature = "noop"))]
+pub mod interjection;
+#[cfg(not(feature = "noop"))]
+pub mod persist;
+#[cfg(not(feature = "noop"))]
+pub mod session_bindings;
+#[cfg(not(feature = "noop"))]
+pub mod session_hooks;
+#[cfg(not(feature = "noop"))]
+mod simple_test;
+#[cfg(not(feature = "noop"))]
+mod thinking_config;
+#[cfg(not(feature = "noop"))]
+mod thinking_level_detection;
+#[cfg(not(feature = "noop"))]
+mod types;
+#[cfg(not(feature = "noop"))]
+mod work_units_watcher;
+
+// AMGR-001: SessionSearch handler bridges tools layer to persistence
+#[cfg(not(feature = "noop"))]
+pub mod session_search_handler;
+
+// inject_summary handler bridges tools layer to session manipulation
+#[cfg(not(feature = "noop"))]
+pub mod inject_summary_handler;
+
+// RLM-001: DeepSearch handler creates ephemeral sub-agents
+#[cfg(not(feature = "noop"))]
+pub mod deep_search_handler;
+
+// AMGR-009: AgentManager handler bridges tools layer to SessionManager
+#[cfg(not(feature = "noop"))]
+pub mod agent_manager_handler;
+
+// SCHED-009: Schedule handler bridges tools layer to schedule persistence
+pub mod schedule_handler;
+
+#[cfg(not(feature = "noop"))]
+pub(crate) mod deep_search_provider_config;
+
+// Persistence module works in both modes (pure Rust with optional NAPI bindings)
+pub mod persistence;
+
+// Credentials module works in both modes (pure Rust with optional NAPI bindings)
+pub mod credentials;
+
+// Test support module for integration tests
+pub mod test_support;
+
+// KGRAPH-002: Graph database module — nanograph integration
+// Works in both modes (pure Rust with optional NAPI bindings)
+pub mod graph;
+pub mod graph_search_handler;
+
+// SCHED-003: Scheduler engine — works in both modes (pure Rust, no NAPI bindings)
+pub mod scheduler;
+
+pub use persistence::*;
+
+#[cfg(not(feature = "noop"))]
+pub use astgrep::*;
+#[cfg(not(feature = "noop"))]
+pub use blocklist::*;
+#[cfg(not(feature = "noop"))]
+pub use claude_oauth::*;
+#[cfg(not(feature = "noop"))]
+pub use codex_oauth::*;
+#[cfg(not(feature = "noop"))]
+pub use copilot_oauth::*;
+#[cfg(not(feature = "noop"))]
+pub use custom_oauth::*;
+#[cfg(not(feature = "noop"))]
+pub use fspec::*;
+#[cfg(not(feature = "noop"))]
+pub use git::*;
+#[cfg(not(feature = "noop"))]
+pub use glob::*;
+#[cfg(not(feature = "noop"))]
+pub use models::*;
+#[cfg(not(feature = "noop"))]
+pub use session_bindings::*;
+#[cfg(not(feature = "noop"))]
+pub use simple_test::*;
+#[cfg(not(feature = "noop"))]
+pub use thinking_config::{
+    extract_thinking_text, get_thinking_config, is_thinking_content, JsThinkingLevel,
+};
+#[cfg(not(feature = "noop"))]
+pub use thinking_level_detection::{
+    napi_compute_effective_thinking_level, napi_detect_thinking_level, napi_has_disable_keywords,
+};
+#[cfg(not(feature = "noop"))]
+pub use types::*;
+#[cfg(not(feature = "noop"))]
+pub use work_units_watcher::*;
+
+// Logging callback infrastructure for routing Rust tracing logs to TypeScript
+#[cfg(not(feature = "noop"))]
+mod logging {
+    use napi::threadsafe_function::{
+        ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,
+    };
+    use napi::{Env, Status};
+    use std::sync::Mutex;
+    use tracing_subscriber::layer::SubscriberExt;
+    use tracing_subscriber::util::SubscriberInitExt;
+    use tracing_subscriber::EnvFilter;
+
+    /// Type alias for log callback - matches NAPI v3 signature
+    /// LOG-004: The 6th parameter (Weak = true) ensures this ThreadsafeFunction doesn't
+    /// keep the Node.js event loop alive, allowing CLI commands to exit normally.
+    type LogCallback = ThreadsafeFunction<String, UnknownReturnValue, String, Status, false, true>;
+
+    lazy_static::lazy_static! {
+        static ref LOG_CALLBACK: Mutex<Option<LogCallback>> = Mutex::new(None);
+        static ref SUBSCRIBER_INITIALIZED: Mutex<bool> = Mutex::new(false);
+    }
+
+    /// Custom tracing layer that sends logs to TypeScript
+    struct TypeScriptLayer;
+
+    impl<S> tracing_subscriber::Layer<S> for TypeScriptLayer
+    where
+        S: tracing::Subscriber,
+    {
+        fn on_event(
+            &self,
+            event: &tracing::Event<'_>,
+            _ctx: tracing_subscriber::layer::Context<'_, S>,
+        ) {
+            // Extract the message from the event
+            let mut visitor = MessageVisitor::default();
+            event.record(&mut visitor);
+
+            let level = match *event.metadata().level() {
+                tracing::Level::ERROR => "ERROR",
+                tracing::Level::WARN => "WARN",
+                tracing::Level::INFO => "INFO",
+                tracing::Level::DEBUG => "DEBUG",
+                tracing::Level::TRACE => "TRACE",
+            };
+
+            let message = visitor.message.unwrap_or_default();
+            let target = event.metadata().target();
+
+            if let Ok(guard) = LOG_CALLBACK.lock() {
+                if let Some(ref callback) = *guard {
+                    let log_msg = format!("[RUST:{}] [{}] {}", level, target, message);
+                    let _ = callback.call(log_msg, ThreadsafeFunctionCallMode::NonBlocking);
+                }
+            }
+        }
+    }
+
+    #[derive(Default)]
+    struct MessageVisitor {
+        message: Option<String>,
+    }
+
+    impl tracing::field::Visit for MessageVisitor {
+        fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+            if field.name() == "message" {
+                self.message = Some(format!("{:?}", value));
+            } else if self.message.is_none() {
+                // Capture first field as message if no explicit message field
+                self.message = Some(format!("{:?}", value));
+            }
+        }
+
+        fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
+            if field.name() == "message" || self.message.is_none() {
+                self.message = Some(value.to_string());
+            }
+        }
+    }
+
+    /// Build the EnvFilter for Rust log levels.
+    ///
+    /// LOG-002: Respects FSPEC_RUST_LOG_LEVEL environment variable for controlling
+    /// which Rust tracing events are forwarded to TypeScript. This prevents
+    /// noisy operational logging from cluttering the user's log file.
+    ///
+    /// Priority order:
+    /// 1. FSPEC_RUST_LOG_LEVEL (fspec-specific, e.g., "info", "debug", "trace")
+    /// 2. RUST_LOG (standard tracing env var, e.g., "info,rig::completions=off")
+    /// 3. Default: "warn" (only WARN and ERROR forwarded - quiet by default)
+    ///
+    /// Examples:
+    /// - FSPEC_RUST_LOG_LEVEL=info   -> enables INFO and above (more verbose)
+    /// - FSPEC_RUST_LOG_LEVEL=debug  -> enables DEBUG and above
+    /// - FSPEC_RUST_LOG_LEVEL=trace  -> enables all levels (verbose API logging)
+    /// - RUST_LOG=debug,rig::completions=off -> debug except API request bodies
+    fn build_env_filter() -> EnvFilter {
+        // Check fspec-specific env var first
+        if let Ok(level) = std::env::var("FSPEC_RUST_LOG_LEVEL") {
+            if let Ok(filter) = EnvFilter::try_new(&level) {
+                return filter;
+            }
+        }
+
+        // Fall back to standard RUST_LOG
+        EnvFilter::try_from_default_env()
+            // Default to WARN level - quiet by default, only log warnings and errors
+            .unwrap_or_else(|_| EnvFilter::new("warn"))
+    }
+
+    /// Set the logging callback from TypeScript and initialize the tracing subscriber.
+    ///
+    /// LOG-002: The subscriber is initialized with an EnvFilter that respects
+    /// FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
+    /// is WARN, which keeps logs quiet unless there are actual problems.
+    ///
+    /// LOG-004: The callback uses Weak=true in its type definition, which automatically
+    /// unrefs the ThreadsafeFunction. This prevents keeping the Node.js event loop alive,
+    /// allowing CLI commands to exit normally after completion.
+    #[napi]
+    pub fn set_rust_log_callback(env: Env, callback: LogCallback) -> napi::Result<()> {
+        // LOG-004: No need to call unref() manually - Weak=true in type handles this
+        let _ = env; // Silence unused warning - env was needed for deprecated unref()
+
+        // Store the callback
+        if let Ok(mut guard) = LOG_CALLBACK.lock() {
+            *guard = Some(callback);
+        }
+
+        // Initialize tracing subscriber only once
+        if let Ok(mut initialized) = SUBSCRIBER_INITIALIZED.lock() {
+            if !*initialized {
+                // LOG-002: Apply EnvFilter to control which log levels are forwarded
+                let filter = build_env_filter();
+
+                let _ = tracing_subscriber::registry()
+                    .with(TypeScriptLayer)
+                    .with(filter)
+                    .try_init();
+
+                // Route panics through tracing instead of stderr.
+                // This ensures panics caught by catch_unwind (e.g. in AST
+                // extraction) are logged via the TypeScript log callback
+                // rather than leaking raw text to the console.
+                std::panic::set_hook(Box::new(|info| {
+                    let msg = if let Some(s) = info.payload().downcast_ref::<String>() {
+                        s.clone()
+                    } else if let Some(s) = info.payload().downcast_ref::<&str>() {
+                        (*s).to_string()
+                    } else {
+                        "unknown panic".to_string()
+                    };
+                    let location = info
+                        .location()
+                        .map(|l| format!(" at {}:{}:{}", l.file(), l.line(), l.column()))
+                        .unwrap_or_default();
+                    tracing::warn!("Rust panic caught{location}: {msg}");
+                }));
+
+                *initialized = true;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "noop"))]
+pub use logging::set_rust_log_callback;

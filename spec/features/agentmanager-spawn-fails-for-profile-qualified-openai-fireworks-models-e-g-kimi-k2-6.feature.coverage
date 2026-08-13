@@ -4,11 +4,11 @@
       "name": "set_model_direct with profile_name emits profile-qualified composite",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2541-2574",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 519,
                 520,
@@ -75,11 +75,11 @@
       "name": "set_model_direct without profile_name emits plain provider/model composite",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2576-2596",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 498,
                 499,
@@ -112,11 +112,11 @@
       "name": "select_model (cloud) does not inject a profile segment",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2618-2640",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 480,
                 481,
@@ -140,11 +140,11 @@
       "name": "AgentManager spawn round-trips profile-qualified Fireworks model",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2646-2700",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 619,
                 620,
@@ -173,10 +173,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 236
   }

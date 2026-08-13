@@ -4,11 +4,11 @@
       "name": "ContinueStateUpdate chunk round-trips and stays out of the transcript",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "156-210",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 868,
                 869,
@@ -58,7 +58,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 144,
                 145,
@@ -84,11 +84,11 @@
       "name": "Engine snapshot reports the effective goal budget",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "213-250",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/continue_state.rs",
+              "file": "rust/cli/src/interactive/continue_state.rs",
               "lines": [
                 1,
                 2,
@@ -159,11 +159,11 @@
       "name": "Accepted done() teardown emits a reset counter state from the shared teardown",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "257-321",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 84,
                 85,
@@ -212,11 +212,11 @@
       "name": "Footer paints the real nudge counter from a live update",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "327-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 171,
                 172,
@@ -251,11 +251,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "327-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 102,
                 103,
@@ -288,11 +288,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "327-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 169,
                 170,
@@ -322,11 +322,11 @@
       "name": "Slash dispatch drops the stale live counter",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "396-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chrome_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chrome_state.rs",
               "lines": [
                 17,
                 18,
@@ -421,11 +421,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "396-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_continue.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_continue.rs",
               "lines": [
                 49,
                 50,
@@ -442,11 +442,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "396-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_goal.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_goal.rs",
               "lines": [
                 57,
                 58,
@@ -465,11 +465,11 @@
       "name": "Emission sites, twin mappings, and chat-print removal are pinned in the sources",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "471-546",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 296,
                 297,
@@ -530,11 +530,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "471-546",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/output.rs",
+              "file": "rust/cli/src/interactive/output.rs",
               "lines": [
                 125,
                 126,
@@ -605,11 +605,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "471-546",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 324,
                 325,
@@ -639,11 +639,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "471-546",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_loop.rs",
+              "file": "rust/napi/src/agent_loop.rs",
               "lines": [
                 1749,
                 1750,
@@ -674,11 +674,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "471-546",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/stream_chunk_json.rs",
+              "file": "rust/agent-loop/src/stream_chunk_json.rs",
               "lines": [
                 215,
                 216,
@@ -697,11 +697,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs",
+          "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
           "lines": "471-546",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 358,
                 359,
@@ -727,25 +727,25 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/cont007_live_continue_status_test.rs"
+      "rust/fspec-tui/tests/cont007_live_continue_status_test.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs",
-      "codelet/cli/src/interactive/continue_state.rs",
-      "codelet/cli/src/interactive/done_early_exit.rs",
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
-      "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
-      "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/store/agent_view/chrome_state.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_continue.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_goal.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/output.rs",
-      "codelet/agent-loop/src/background_output.rs",
-      "codelet/napi/src/agent_loop.rs",
-      "codelet/agent-loop/src/stream_chunk_json.rs",
-      "codelet/napi/src/types.rs"
+      "rust/rpc-types/src/lib.rs",
+      "rust/fspec-tui/src/store/agent_view/session_context.rs",
+      "rust/cli/src/interactive/continue_state.rs",
+      "rust/cli/src/interactive/done_early_exit.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs",
+      "rust/fspec-tui/src/store/agent_view/chrome_state.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_continue.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_goal.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/output.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/napi/src/agent_loop.rs",
+      "rust/agent-loop/src/stream_chunk_json.rs",
+      "rust/napi/src/types.rs"
     ],
     "totalLinesCovered": 1534
   }

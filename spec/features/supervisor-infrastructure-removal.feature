@@ -25,7 +25,7 @@ Feature: Remove old supervisor infrastructure
   # EXAMPLES:
   #   1. cargo build succeeds with zero errors after all removals — no dangling references to removed types/functions
   #   2. cargo test passes — all remaining tests pass, supervisor-specific test modules are gone
-  #   3. grep -r 'supervisor_agent_loop\|ObservationBuffer\|SupervisorInput\|format_evaluation_prompt\|SupervisorRole' codelet/napi/src/ returns zero matches (except comments explaining what was removed)
+  #   3. grep -r 'supervisor_agent_loop\|ObservationBuffer\|SupervisorInput\|format_evaluation_prompt\|SupervisorRole' rust/napi/src/ returns zero matches (except comments explaining what was removed)
   #   4. TUI launches, /supervisor command no longer exists in slash command list, no supervisor template views reachable
   #   5. ChainOfCommand.add_supervisor and ChainOfCommand.get_subordinates still work for ownership tracking — tested via existing unit tests
   #   6. Regular agent_loop sessions (non-supervisor) continue to work identically — creating a normal session, sending a prompt, receiving streaming response all unchanged
@@ -60,11 +60,11 @@ Feature: Remove old supervisor infrastructure
 
   Scenario: No supervisor infrastructure references remain in Rust source
     Given all supervisor infrastructure has been removed from session_manager.rs and types.rs
-    When I search for supervisor_agent_loop in codelet/napi/src/
-    And I search for ObservationBuffer in codelet/napi/src/
-    And I search for SupervisorInput in codelet/napi/src/
-    And I search for format_evaluation_prompt in codelet/napi/src/
-    And I search for SupervisorRole in codelet/napi/src/
+    When I search for supervisor_agent_loop in rust/napi/src/
+    And I search for ObservationBuffer in rust/napi/src/
+    And I search for SupervisorInput in rust/napi/src/
+    And I search for format_evaluation_prompt in rust/napi/src/
+    And I search for SupervisorRole in rust/napi/src/
     Then no matches should be found in production code
 
   Scenario: TUI supervisor command and views removed

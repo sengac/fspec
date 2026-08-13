@@ -4,11 +4,11 @@
       "name": "ApiTokenUsage includes reasoning_tokens field",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_011_api_token_usage.rs",
+          "file": "rust/core/tests/rig_011_api_token_usage.rs",
           "lines": "16-27",
           "implMappings": [
             {
-              "file": "codelet/core/src/token_usage.rs",
+              "file": "rust/core/src/token_usage.rs",
               "lines": [
                 19,
                 20,
@@ -32,11 +32,11 @@
       "name": "ApiTokenUsage updates from rig Usage with reasoning tokens",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_011_api_token_usage.rs",
+          "file": "rust/core/tests/rig_011_api_token_usage.rs",
           "lines": "33-51",
           "implMappings": [
             {
-              "file": "codelet/core/src/token_usage.rs",
+              "file": "rust/core/src/token_usage.rs",
               "lines": [
                 64,
                 65,
@@ -57,11 +57,11 @@
       "name": "ApiTokenUsage updates from rig Usage with None reasoning tokens",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_011_api_token_usage.rs",
+          "file": "rust/core/tests/rig_011_api_token_usage.rs",
           "lines": "57-75",
           "implMappings": [
             {
-              "file": "codelet/core/src/token_usage.rs",
+              "file": "rust/core/src/token_usage.rs",
               "lines": [
                 64,
                 65,
@@ -82,11 +82,11 @@
       "name": "ApiTokenUsage total_context includes reasoning tokens",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_011_api_token_usage.rs",
+          "file": "rust/core/tests/rig_011_api_token_usage.rs",
           "lines": "81-97",
           "implMappings": [
             {
-              "file": "codelet/core/src/token_usage.rs",
+              "file": "rust/core/src/token_usage.rs",
               "lines": [
                 58,
                 59,
@@ -104,11 +104,11 @@
       "name": "ApiTokenUsage total_context without reasoning tokens",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_011_api_token_usage.rs",
+          "file": "rust/core/tests/rig_011_api_token_usage.rs",
           "lines": "103-119",
           "implMappings": [
             {
-              "file": "codelet/core/src/token_usage.rs",
+              "file": "rust/core/src/token_usage.rs",
               "lines": [
                 58,
                 59,
@@ -128,10 +128,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/rig_011_api_token_usage.rs"
+      "rust/core/tests/rig_011_api_token_usage.rs"
     ],
     "implFiles": [
-      "codelet/core/src/token_usage.rs"
+      "rust/core/src/token_usage.rs"
     ],
     "totalLinesCovered": 126
   }

@@ -5,12 +5,12 @@
 @RPC-301
 Feature: Port show-deleted command to Rust
   """
-  File layout: codelet/fspec-core/src/commands/show_deleted.rs (impl) + codelet/fspec-core/src/help/configs/show_deleted.rs (help config) + codelet/fspec-core/tests/show_deleted.rs (dispatcher tests) + codelet/fspec/src/show_deleted.rs (CLI bridge) + codelet/fspec/tests/cli_show_deleted.rs (CLI shell tests) + codelet/fspec/tests/fixtures/help/show-deleted.txt (TS help fixture)
+  File layout: rust/fspec-core/src/commands/show_deleted.rs (impl) + rust/fspec-core/src/help/configs/show_deleted.rs (help config) + rust/fspec-core/tests/show_deleted.rs (dispatcher tests) + rust/fspec/src/show_deleted.rs (CLI bridge) + rust/fspec/tests/cli_show_deleted.rs (CLI shell tests) + rust/fspec/tests/fixtures/help/show-deleted.txt (TS help fixture)
   Reuses existing io::ensure::ensure_work_units_file (load-or-init) — NOT the read-or-empty twin. The TS show-deleted explicitly uses ensureWorkUnitsFile (src/commands/show-deleted.ts:32), so missing spec/work-units.json gets created with the canonical empty initial structure before the work-unit-existence check runs
   WorkUnit.rules/examples/questions/architectureNotes are NOT modelled on the shared types::work_unit::WorkUnit struct — they round-trip through wu.extra: serde_json::Map. show_deleted.rs deserializes them inline using a private struct DeletedItemRaw { id: u64, text: String, #[serde(default)] deleted: bool, #[serde(default, skip_serializing_if='Option::is_none') ] deleted_at: Option<String> }. This keeps the shared WorkUnit type minimal and parallel-port-safe
-  Two-front-doors per RPC-003 §7/§11: shell argv → clap → codelet/fspec/src/show_deleted.rs → codelet_fspec_core::commands::show_deleted::run; LLM tool call JSON → fspec_core::dispatch::dispatch_command → codelet_fspec_core::commands::show_deleted::run. Both call sites pass JSON-encoded args and project_root: &Path. CLI bridge marshals workUnitId into the JSON shape and does NOT exposeing --format (TS doesn't)
+  Two-front-doors per RPC-003 §7/§11: shell argv → clap → rust/fspec/src/show_deleted.rs → codelet_fspec_core::commands::show_deleted::run; LLM tool call JSON → fspec_core::dispatch::dispatch_command → codelet_fspec_core::commands::show_deleted::run. Both call sites pass JSON-encoded args and project_root: &Path. CLI bridge marshals workUnitId into the JSON shape and does NOT exposeing --format (TS doesn't)
   JSON structured shape (dispatcher path with format=json): { success: bool, workUnitId: string, deletedItems: [{id, text, deletedAt?}], totalDeleted: number }. Use #[derive(Serialize)] with declaration-order fields so 2-space-indented JSON.stringify-equivalent is preserved (BTreeMap would alphabetize)
-  Shared-file wiring needed from supervisor AFTER worker impl lands: (1) codelet/fspec-core/src/help/configs/mod.rs add `pub mod show_deleted;`; (2) codelet/fspec-core/src/dispatch.rs move show-deleted from run_stub to run_ported; (3) codelet/fspec-core/src/canonical.rs add show-deleted to is_ported whitelist if such exists; (4) codelet/fspec/src/main.rs add Mode::ShowDeleted clap variant + dispatch arm; (5) codelet/fspec-core/src/commands/mod.rs already declares pub mod show_deleted (stub)
+  Shared-file wiring needed from supervisor AFTER worker impl lands: (1) rust/fspec-core/src/help/configs/mod.rs add `pub mod show_deleted;`; (2) rust/fspec-core/src/dispatch.rs move show-deleted from run_stub to run_ported; (3) rust/fspec-core/src/canonical.rs add show-deleted to is_ported whitelist if such exists; (4) rust/fspec/src/main.rs add Mode::ShowDeleted clap variant + dispatch arm; (5) rust/fspec-core/src/commands/mod.rs already declares pub mod show_deleted (stub)
   """
 
   # ========================================
@@ -32,7 +32,7 @@ Feature: Port show-deleted command to Rust
   #   12. The dispatcher MUST accept an optional format arg ('text' default | 'json') so the LLM tool-call path can request a structured JSON payload (mirrors the list-prefixes pattern); the CLI surface does NOT expose --format because TS Commander.js does not
   #   13. The JSON format MUST emit a 2-space-indented object with fields success (bool), workUnitId (string), deletedItems (array of {id,text,deletedAt?}), and totalDeleted (number) — preserving declaration order via #[derive(Serialize)] with explicit field order
   #   14. The CLI wrapper MUST resolve the project root from current working directory, exit 0 on success, exit 1 on FspecCoreError, and write structured errors to stderr prefixed with 'Error:' (same chalk-equivalent contract as RPC-253 rule [14])
-  #   15. show-deleted --help MUST be byte-for-byte identical to the TS formatCommandHelp output captured in codelet/fspec/tests/fixtures/help/show-deleted.txt (parity with RPC-248 rule [11])
+  #   15. show-deleted --help MUST be byte-for-byte identical to the TS formatCommandHelp output captured in rust/fspec/tests/fixtures/help/show-deleted.txt (parity with RPC-248 rule [11])
   #
   # EXAMPLES:
   #   1. Dispatch show-deleted with workUnitId='AUTH-001' against a tempdir whose spec/work-units.json contains AUTH-001 with one deleted rule and one live example → returns success=true with deletedItems=[{id, text, deletedAt}] of length 1 and totalDeleted=1
@@ -41,11 +41,11 @@ Feature: Port show-deleted command to Rust
   #   4. Dispatch show-deleted for a work unit with 2 deleted rules, 1 deleted example, 1 deleted question, 1 deleted architecture note interleaved with live items → result preserves order rules→examples→questions→architectureNotes (totalDeleted=5)
   #   5. Dispatch show-deleted for a work unit with a deleted rule that has NO deletedAt field → result entry contains id and text but the JSON omits deletedAt; text rendering omits the ' (deleted: ...)' suffix
   #   6. Dispatch show-deleted with workUnitId='AUTH-001' against text format → DispatchResult.data contains '\nDeleted items in AUTH-001 (3 total):\n  [0] First rule (deleted: 2025-01-31T12:00:00.000Z)\n  [1] Second example (deleted: 2025-02-01T08:00:00.000Z)\n  [3] Question text (deleted: 2025-02-02T09:00:00.000Z)\n'
-  #   7. Running './codelet/target/release/fspec show-deleted AUTH-001' against a directory whose spec/work-units.json contains a deleted rule prints the header and item lines to stdout and exits 0
-  #   8. Running './codelet/target/release/fspec show-deleted UNKNOWN-999' against an empty workspace prints 'Error: Work unit \'UNKNOWN-999\' does not exist' to stderr and exits with code 1
-  #   9. Running './codelet/target/release/fspec show-deleted --help' prints clap-generated help with the <workUnitId> positional argument and NO --status / --workspace / --format flags listed
-  #   10. Running './codelet/target/release/fspec show-deleted --help' produces stdout byte-for-byte identical to codelet/fspec/tests/fixtures/help/show-deleted.txt
-  #   11. Both invocation paths produce the SAME structured data: (a) dispatch_command('show-deleted', {workUnitId:'AUTH-001', format:'json'}, project_root) and (b) './codelet/target/release/fspec show-deleted AUTH-001' against the same on-disk state — the only differences are how args are parsed (JSON vs clap positional) and how the result is delivered (DispatchResult.data vs stdout text)
+  #   7. Running './rust/target/release/fspec show-deleted AUTH-001' against a directory whose spec/work-units.json contains a deleted rule prints the header and item lines to stdout and exits 0
+  #   8. Running './rust/target/release/fspec show-deleted UNKNOWN-999' against an empty workspace prints 'Error: Work unit \'UNKNOWN-999\' does not exist' to stderr and exits with code 1
+  #   9. Running './rust/target/release/fspec show-deleted --help' prints clap-generated help with the <workUnitId> positional argument and NO --status / --workspace / --format flags listed
+  #   10. Running './rust/target/release/fspec show-deleted --help' produces stdout byte-for-byte identical to rust/fspec/tests/fixtures/help/show-deleted.txt
+  #   11. Both invocation paths produce the SAME structured data: (a) dispatch_command('show-deleted', {workUnitId:'AUTH-001', format:'json'}, project_root) and (b) './rust/target/release/fspec show-deleted AUTH-001' against the same on-disk state — the only differences are how args are parsed (JSON vs clap positional) and how the result is delivered (DispatchResult.data vs stdout text)
   #
   # ========================================
   Background: User Story
@@ -119,7 +119,7 @@ Feature: Port show-deleted command to Rust
     Then the DispatchResult.data uses 2-space indentation
 
   Scenario: Shared infrastructure delegation
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/show_deleted.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/show_deleted.rs
     Then the file calls io::ensure::ensure_work_units_file rather than embedding its own work-units.json read logic
     Then the file does NOT contain the substring 'FspecCoreError::NotYetPorted'

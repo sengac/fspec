@@ -2,7 +2,7 @@
 @PROV-022
 Feature: Anthropic device auth flow for headless login
   """
-  New file: codelet/providers/src/claude_headless_login.rs — Simple async function that orchestrates: generate PKCE → invoke code-entry callback with authorize URL → validate state → exchange code → persist tokens. ~80-100 lines. No HTTP server, no hyper dependency, no port binding.
+  New file: rust/providers/src/claude_headless_login.rs — Simple async function that orchestrates: generate PKCE → invoke code-entry callback with authorize URL → validate state → exchange code → persist tokens. ~80-100 lines. No HTTP server, no hyper dependency, no port binding.
   ClaudeHeadlessLoginConfig struct mirrors DeviceAuthConfig pattern from Codex PROV-014: token_endpoint_base (wiremock or production), timeout_ms, pkce (optional injection for tests), code_entry_fn (async callback that receives authorize URL and returns code#state string). Tests inject short timeouts and mock callbacks.
   Reuses from PROV-020 (claude_oauth.rs): generate_pkce(), build_authorize_url(), parse_authorization_code(), exchange_authorization_code(), calculate_expiry(). Reuses from PROV-021 (claude_auth.rs): write_claude_auth(), ClaudeAuthJson. No new crate dependencies.
   """

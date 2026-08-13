@@ -4,11 +4,11 @@
       "name": "Clap exposes list-features as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "75-138",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 44,
                 45,
@@ -26,11 +26,11 @@
       "name": "CLI against directory with no spec/ exits 2 with Directory-not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "144-170",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 84,
                 85,
@@ -57,11 +57,11 @@
       "name": "CLI against empty spec/features/ prints sentinel and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "176-196",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 70,
                 71,
@@ -94,11 +94,11 @@
       "name": "CLI text output renders feature listing for the populated case",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "202-249",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 52,
                 53,
@@ -149,11 +149,11 @@
       "name": "CLI --tag filter narrows results and updates summary line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "255-301",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 62,
                 63,
@@ -172,11 +172,11 @@
       "name": "Default combined TUI mode and other subcommands are preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "307-341",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 1,
                 2,
@@ -286,11 +286,11 @@
       "name": "CLI bridge module embeds NO duplicated business logic",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "347-384",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 1,
                 2,
@@ -400,11 +400,11 @@
       "name": "CLI DirectoryNotFound error renders bare message plus indented Suggestion line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "176-217",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_features.rs",
+              "file": "rust/fspec/src/list_features.rs",
               "lines": [
                 84,
                 85,
@@ -441,11 +441,11 @@
       "name": "CLI prints a Warning line to stderr when a feature file cannot be parsed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "225-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 92,
                 93,
@@ -496,11 +496,11 @@
       "name": "list-features --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "file": "rust/fspec/tests/cli_list_features.rs",
           "lines": "478-511",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_features.rs",
+              "file": "rust/fspec-core/src/help/configs/list_features.rs",
               "lines": [
                 1,
                 2,
@@ -588,12 +588,12 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_features.rs"
+      "rust/fspec/tests/cli_list_features.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_features.rs",
-      "codelet/fspec-core/src/commands/list_features.rs",
-      "codelet/fspec-core/src/help/configs/list_features.rs"
+      "rust/fspec/src/list_features.rs",
+      "rust/fspec-core/src/commands/list_features.rs",
+      "rust/fspec-core/src/help/configs/list_features.rs"
     ],
     "totalLinesCovered": 880
   }

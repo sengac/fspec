@@ -2,10 +2,10 @@
 @RPC-236
 Feature: Port generate-tags-md command to Rust
   """
-  Core impl codelet/fspec-core/src/commands/generate_tags_md.rs mirrors generate_foundation_md.rs (RPC-233): exists-check spec/tags.json -> schema-validate -> parse -> render markdown -> mkdir parent -> write -> message 'Generated <out> from spec/tags.json'. Signature pub async fn run(args_json,&Path). NOTE: unlike foundation_md, tags-md.ts renders via sections.join('\n') where the final pushed section is '' so the rendered markdown ENDS WITH a single trailing newline (TS-faithful).
-  New generator codelet/fspec-core/src/generators/tags_md.rs ports src/generators/tags-md.ts. New validator (analogous to foundation_schema.rs) ports tags.schema.json subset. Both require generators/mod.rs wiring (SHARED — supervisor).
+  Core impl rust/fspec-core/src/commands/generate_tags_md.rs mirrors generate_foundation_md.rs (RPC-233): exists-check spec/tags.json -> schema-validate -> parse -> render markdown -> mkdir parent -> write -> message 'Generated <out> from spec/tags.json'. Signature pub async fn run(args_json,&Path). NOTE: unlike foundation_md, tags-md.ts renders via sections.join('\n') where the final pushed section is '' so the rendered markdown ENDS WITH a single trailing newline (TS-faithful).
+  New generator rust/fspec-core/src/generators/tags_md.rs ports src/generators/tags-md.ts. New validator (analogous to foundation_schema.rs) ports tags.schema.json subset. Both require generators/mod.rs wiring (SHARED — supervisor).
   types/tags.rs::TagsData exists with categories+extra catch-all but the generator needs richer typed fields (combinationExamples, usageGuidelines, statistics, validation, references). Plan: render directly off serde_json::Value (like foundation_md renders off Value) to avoid expanding the shared TagsData struct. SHARED-FILE NOTE: types/tags.rs is owned elsewhere; rendering off Value keeps it untouched.
-  CLI bridge codelet/fspec/src/generate_tags_md.rs mirrors generate_foundation_md bridge: marshals {output?} JSON; success prints '✓ <message>' exit 0; error prints 'Error: <msg>' exit 1. Help config help/configs/generate_tags_md.rs uses CommandHelpConfig (CommonError type).
+  CLI bridge rust/fspec/src/generate_tags_md.rs mirrors generate_foundation_md bridge: marshals {output?} JSON; success prints '✓ <message>' exit 0; error prints 'Error: <msg>' exit 1. Help config help/configs/generate_tags_md.rs uses CommandHelpConfig (CommonError type).
   """
 
   # ========================================

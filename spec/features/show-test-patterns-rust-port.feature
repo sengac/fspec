@@ -62,7 +62,7 @@ Feature: Port show-test-patterns command to Rust
     And the data.format equals 'table'
 
   Scenario: Shared infrastructure module is registered for show-test-patterns
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/show_test_patterns.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/show_test_patterns.rs
     Then the module no longer returns FspecCoreError::NotYetPorted
     And the dispatcher routes show-test-patterns to the new run function

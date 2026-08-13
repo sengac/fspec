@@ -8,7 +8,7 @@
           "lines": "76-120",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1424,
                 1425,
@@ -47,7 +47,7 @@
           "lines": "122-153",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1424,
                 1425,
@@ -86,7 +86,7 @@
           "lines": "155-180",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1424,
                 1425,
@@ -125,7 +125,7 @@
           "lines": "182-216",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1424,
                 1425,
@@ -165,7 +165,7 @@
       "src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 230
   }

@@ -6,7 +6,7 @@
 @wip
 Feature: Ghost commits for checkpoint snapshots
   """
-  Implement ghost_commit module in codelet/git crate with create_ghost_commit() and restore_ghost_commit() functions
+  Implement ghost_commit module in rust/git crate with create_ghost_commit() and restore_ghost_commit() functions
   Use gix temporary index (GIT_INDEX_FILE equivalent) via gix::worktree::state API to avoid disturbing staging area
   Ghost commit creation: gix::Object::write_tree() + gix::commit::create() with no ref update
   Keep existing refs/fspec-checkpoints/* ref storage but store ghost commit SHA instead of stash OID

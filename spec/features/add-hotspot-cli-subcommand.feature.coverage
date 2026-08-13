@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hotspot.rs",
+          "file": "rust/fspec/tests/cli_add_hotspot.rs",
           "lines": "84-109",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hotspot.rs",
+              "file": "rust/fspec/src/add_hotspot.rs",
               "lines": [
                 54,
                 55,
@@ -58,11 +58,11 @@
       "name": "CLI appends a hotspot and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hotspot.rs",
+          "file": "rust/fspec/tests/cli_add_hotspot.rs",
           "lines": "111-139",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hotspot.rs",
+              "file": "rust/fspec/src/add_hotspot.rs",
               "lines": [
                 54,
                 55,
@@ -112,11 +112,11 @@
       "name": "CLI rejects a missing work unit with exit 1 and TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hotspot.rs",
+          "file": "rust/fspec/tests/cli_add_hotspot.rs",
           "lines": "141-173",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hotspot.rs",
+              "file": "rust/fspec/src/add_hotspot.rs",
               "lines": [
                 54,
                 55,
@@ -166,11 +166,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hotspot.rs",
+          "file": "rust/fspec/tests/cli_add_hotspot.rs",
           "lines": "175-227",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hotspot.rs",
+              "file": "rust/fspec/src/add_hotspot.rs",
               "lines": [
                 54,
                 55,
@@ -222,10 +222,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_hotspot.rs"
+      "rust/fspec/tests/cli_add_hotspot.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_hotspot.rs"
+      "rust/fspec/src/add_hotspot.rs"
     ],
     "totalLinesCovered": 293
   }

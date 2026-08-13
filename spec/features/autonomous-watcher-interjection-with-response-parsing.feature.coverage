@@ -4,11 +4,11 @@
       "name": "Watcher autonomously injects urgent security warning",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "17-44",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 80,
                 81,
@@ -122,11 +122,11 @@
       "name": "Watcher continues without injection when no issues found",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "46-68",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 80,
                 81,
@@ -240,11 +240,11 @@
       "name": "Non-urgent injection waits for parent turn completion",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "70-94",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 80,
                 81,
@@ -358,11 +358,11 @@
       "name": "Malformed interjection block is treated as continue",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "96-119",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 80,
                 81,
@@ -476,11 +476,11 @@
       "name": "Evaluation prompt includes proper format instructions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "121-141",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 375,
                 376,
@@ -563,11 +563,11 @@
       "name": "Multiline content is preserved in injection",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "143-163",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 80,
                 81,
@@ -681,11 +681,11 @@
       "name": "Auto-inject disabled shows pending injection without injecting",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "165-185",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3277,
                 3278,
@@ -823,11 +823,11 @@
       "name": "Direct user prompts are not parsed for injection",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/watcher_interjection_test.rs",
+          "file": "rust/napi/tests/watcher_interjection_test.rs",
           "lines": "187-212",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3277,
                 3278,
@@ -967,10 +967,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/watcher_interjection_test.rs"
+      "rust/napi/tests/watcher_interjection_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 1022
   }

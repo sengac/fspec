@@ -2,7 +2,7 @@
 @RPC-182
 Feature: Port add-external-system command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_external_system.rs. Reuses the same event-storm
+  Core impl at rust/fspec-core/src/commands/add_external_system.rs. Reuses the same event-storm
   shared-util semantics as the TS addEventStormItem (src/commands/event-storm-utils.ts). Validation
   checks the work-units.json file exists FIRST (missing → "spec/work-units.json not found. Run fspec
   init first." — it does NOT auto-create). The Event Storm items array lives in the work unit's

@@ -4,11 +4,11 @@
       "name": "Successful browser OAuth login via NAPI",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "109-164",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 88,
                 89,
@@ -27,11 +27,11 @@
       "name": "Browser OAuth login times out",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "170-194",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 88,
                 89,
@@ -50,11 +50,11 @@
       "name": "Headless login start returns authorize URL and PKCE verifier",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "200-229",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 149,
                 150,
@@ -75,11 +75,11 @@
       "name": "Headless login complete exchanges code for tokens",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "235-284",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 105,
                 106,
@@ -119,11 +119,11 @@
       "name": "Headless login complete rejects mismatched state as CSRF",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "290-313",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 169,
                 170,
@@ -157,11 +157,11 @@
       "name": "Headless login complete rejects code without hash separator",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "319-340",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 169,
                 170,
@@ -188,11 +188,11 @@
       "name": "Token refresh returns new tokens",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "346-398",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 105,
                 106,
@@ -232,11 +232,11 @@
       "name": "Token refresh fails with invalid refresh token",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "404-428",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 105,
                 106,
@@ -276,11 +276,11 @@
       "name": "Get tokens returns stored tokens from claude_auth.json",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "434-464",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 238,
                 239,
@@ -302,11 +302,11 @@
       "name": "Get tokens returns null when no claude_auth.json exists",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "470-488",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 238,
                 239,
@@ -328,11 +328,11 @@
       "name": "Clear tokens removes stored credentials",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "494-525",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 260,
                 261,
@@ -355,11 +355,11 @@
       "name": "Clear tokens is idempotent when no credentials exist",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
           "lines": "531-558",
           "implMappings": [
             {
-              "file": "codelet/napi/src/claude_oauth.rs",
+              "file": "rust/napi/src/claude_oauth.rs",
               "lines": [
                 260,
                 261,
@@ -384,10 +384,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/claude_oauth_napi_test.rs"
+      "rust/napi/tests/claude_oauth_napi_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/claude_oauth.rs"
+      "rust/napi/src/claude_oauth.rs"
     ],
     "totalLinesCovered": 581
   }

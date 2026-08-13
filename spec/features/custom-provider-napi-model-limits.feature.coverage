@@ -4,11 +4,11 @@
       "name": "NAPI listProviders returns per-model limits for custom providers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
+          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
           "lines": "176-229",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 34,
                 35,
@@ -120,7 +120,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 8510,
                 8511,
@@ -193,11 +193,11 @@
       "name": "default_context_window() default value changes to 200000",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
+          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
           "lines": "233-272",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 40,
                 41,
@@ -220,11 +220,11 @@
       "name": "JSON omits context_window - new default 200k flows through",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
+          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
           "lines": "274-313",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 40,
                 41,
@@ -247,11 +247,11 @@
       "name": "Rhai script get_model_limits still wins over JSON (PROV-095 no-regression)",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
+          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
           "lines": "316-402",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 93,
                 94,
@@ -313,12 +313,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/bug_139_custom_provider_per_model_limits_test.rs"
+      "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/management.rs",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/providers/src/custom/config.rs"
+      "rust/providers/src/custom/management.rs",
+      "rust/napi/src/session_manager.rs",
+      "rust/providers/src/custom/config.rs"
     ],
     "totalLinesCovered": 734
   }

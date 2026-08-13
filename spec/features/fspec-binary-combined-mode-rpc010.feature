@@ -26,11 +26,11 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
   remove_daemon_json → return Ok(()) → tokio::main returns.
 
   Source artifacts:
-  • codelet/fspec/src/combined.rs (NEW)
-  • codelet/fspec/src/common.rs::build_service (NEW)
-  • codelet/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
-  • codelet/fspec-tui/src/transport/embedded.rs::EmbeddedFspecBackend (existing — RPC-008)
-  • codelet/fspec-tui/src/app.rs::App (existing — RPC-008/RPC-009)
+  • rust/fspec/src/combined.rs (NEW)
+  • rust/fspec/src/common.rs::build_service (NEW)
+  • rust/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
+  • rust/fspec-tui/src/transport/embedded.rs::EmbeddedFspecBackend (existing — RPC-008)
+  • rust/fspec-tui/src/app.rs::App (existing — RPC-008/RPC-009)
   """
 
   Background: 
@@ -107,11 +107,11 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     invariant that lets RPC-011's `fspec status` health RPC be a single
     code path across both modes.
     """
-    Given the file `codelet/fspec/src/combined.rs` exists
-    And the file `codelet/fspec/src/daemon.rs` exists
+    Given the file `rust/fspec/src/combined.rs` exists
+    And the file `rust/fspec/src/daemon.rs` exists
     Then `combined.rs` contains exactly one call to `bind_and_serve(`
     And `daemon.rs` contains exactly one call to `bind_and_serve(`
-    And no other file under `codelet/fspec/src/` calls `bind_and_serve(`
+    And no other file under `rust/fspec/src/` calls `bind_and_serve(`
 
   @smoke
   Scenario: Combined mode uses tokio::runtime::Handle::current for the embedded backend
@@ -121,7 +121,7 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     only source of that Handle in combined mode is the host's
     `#[tokio::main]` runtime accessed via `Handle::current()`.
     """
-    Given the file `codelet/fspec/src/combined.rs` exists
+    Given the file `rust/fspec/src/combined.rs` exists
     Then it contains the literal call `tokio::runtime::Handle::current()`
     And it contains no occurrence of `tokio::runtime::Builder`
     And it contains no occurrence of `Runtime::new`
@@ -135,6 +135,6 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     Arc<SharedFspecService> that is shared between bind_and_serve AND
     EmbeddedFspecBackend::new — the same watcher backs both transports.
     """
-    Given the file `codelet/fspec/src/combined.rs` exists
+    Given the file `rust/fspec/src/combined.rs` exists
     Then it calls `common::build_service(` exactly once
     And the returned Arc<SharedFspecService> is passed to both `bind_and_serve` and `EmbeddedFspecBackend::new`

@@ -4,11 +4,11 @@
       "name": "The napi binding mirrors the new provider fields",
       "testMappings": [
         {
-          "file": "codelet/napi/src/models/napi_bindings.rs",
+          "file": "rust/napi/src/models/napi_bindings.rs",
           "lines": "271-289",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "file": "rust/napi/src/models/napi_bindings.rs",
               "lines": [
                 64,
                 65,
@@ -38,10 +38,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/models/napi_bindings.rs"
+      "rust/napi/src/models/napi_bindings.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/models/napi_bindings.rs"
+      "rust/napi/src/models/napi_bindings.rs"
     ],
     "totalLinesCovered": 35
   }

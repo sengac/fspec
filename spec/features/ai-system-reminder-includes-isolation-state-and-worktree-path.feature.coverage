@@ -4,11 +4,11 @@
       "name": "Isolated session environment reminder includes isolation fields",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/environment_isolation_reminder_test.rs",
+          "file": "rust/cli/tests/environment_isolation_reminder_test.rs",
           "lines": "13-48",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 18,
                 19,
@@ -96,11 +96,11 @@
       "name": "Non-isolated session environment reminder excludes isolation fields",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/environment_isolation_reminder_test.rs",
+          "file": "rust/cli/tests/environment_isolation_reminder_test.rs",
           "lines": "51-82",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 18,
                 19,
@@ -188,11 +188,11 @@
       "name": "AI can explain worktree location to user",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/environment_isolation_reminder_test.rs",
+          "file": "rust/cli/tests/environment_isolation_reminder_test.rs",
           "lines": "85-111",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 18,
                 19,
@@ -280,11 +280,11 @@
       "name": "AI can advise user about merge/discard options",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/environment_isolation_reminder_test.rs",
+          "file": "rust/cli/tests/environment_isolation_reminder_test.rs",
           "lines": "114-139",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 18,
                 19,
@@ -374,10 +374,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/environment_isolation_reminder_test.rs"
+      "rust/cli/tests/environment_isolation_reminder_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/session/context_gathering.rs"
+      "rust/cli/src/session/context_gathering.rs"
     ],
     "totalLinesCovered": 425
   }

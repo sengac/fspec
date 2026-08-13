@@ -4,11 +4,11 @@
       "name": "Clap exposes update-work-unit with positional arg and metadata flags in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit.rs",
           "lines": "72-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/update_work_unit.rs",
+              "file": "rust/fspec-core/src/help/configs/update_work_unit.rs",
               "lines": [
                 148,
                 149,
@@ -40,11 +40,11 @@
       "name": "CLI updates a work unit title and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit.rs",
           "lines": "135-157",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit.rs",
+              "file": "rust/fspec/src/update_work_unit.rs",
               "lines": [
                 45,
                 46,
@@ -87,11 +87,11 @@
       "name": "CLI reports failure for a missing work unit on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit.rs",
           "lines": "163-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit.rs",
+              "file": "rust/fspec/src/update_work_unit.rs",
               "lines": [
                 63,
                 64,
@@ -116,11 +116,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_work_unit.rs"
+      "rust/fspec/tests/cli_update_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/update_work_unit.rs",
-      "codelet/fspec/src/update_work_unit.rs"
+      "rust/fspec-core/src/help/configs/update_work_unit.rs",
+      "rust/fspec/src/update_work_unit.rs"
     ],
     "totalLinesCovered": 162
   }

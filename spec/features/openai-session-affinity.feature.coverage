@@ -4,11 +4,11 @@
       "name": "Session affinity header is set when using custom base URL",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/session_affinity_integration_test.rs",
+          "file": "rust/providers/tests/session_affinity_integration_test.rs",
           "lines": "17-39",
           "implMappings": [
             {
-              "file": "codelet/providers/src/cache_optimization.rs",
+              "file": "rust/providers/src/cache_optimization.rs",
               "lines": [
                 16,
                 17,
@@ -107,11 +107,11 @@
       "name": "Session affinity header uses custom value from environment",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/session_affinity_integration_test.rs",
+          "file": "rust/providers/tests/session_affinity_integration_test.rs",
           "lines": "44-71",
           "implMappings": [
             {
-              "file": "codelet/providers/src/cache_optimization.rs",
+              "file": "rust/providers/src/cache_optimization.rs",
               "lines": [
                 16,
                 17,
@@ -210,11 +210,11 @@
       "name": "Session affinity header is sent for any custom base URL endpoint",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/session_affinity_integration_test.rs",
+          "file": "rust/providers/tests/session_affinity_integration_test.rs",
           "lines": "76-98",
           "implMappings": [
             {
-              "file": "codelet/providers/src/cache_optimization.rs",
+              "file": "rust/providers/src/cache_optimization.rs",
               "lines": [
                 16,
                 17,
@@ -313,11 +313,11 @@
       "name": "No session affinity header when using default OpenAI API",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/session_affinity_integration_test.rs",
+          "file": "rust/providers/tests/session_affinity_integration_test.rs",
           "lines": "103-122",
           "implMappings": [
             {
-              "file": "codelet/providers/src/cache_optimization.rs",
+              "file": "rust/providers/src/cache_optimization.rs",
               "lines": [
                 16,
                 17,
@@ -416,11 +416,11 @@
       "name": "get_openai accepts session_id parameter",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/session_affinity_integration_test.rs",
+          "file": "rust/providers/tests/session_affinity_integration_test.rs",
           "lines": "127-169",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 412,
                 413,
@@ -455,11 +455,11 @@
       "name": "Cached tokens from Fireworks response are captured in usage metrics",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/session_affinity_integration_test.rs",
+          "file": "rust/providers/tests/session_affinity_integration_test.rs",
           "lines": "239-262",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 429,
                 430,
@@ -502,12 +502,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/session_affinity_integration_test.rs"
+      "rust/providers/tests/session_affinity_integration_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/cache_optimization.rs",
-      "codelet/providers/src/manager.rs",
-      "codelet/providers/src/openai.rs"
+      "rust/providers/src/cache_optimization.rs",
+      "rust/providers/src/manager.rs",
+      "rust/providers/src/openai.rs"
     ],
     "totalLinesCovered": 561
   }

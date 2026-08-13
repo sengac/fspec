@@ -4,11 +4,11 @@
       "name": "Clap exposes search-scenarios as a subcommand and prints flag help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "75-105",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -53,11 +53,11 @@
       "name": "CLI without --query flag exits non-zero",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "106-121",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -102,11 +102,11 @@
       "name": "CLI default output prints the green summary line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "122-144",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -151,11 +151,11 @@
       "name": "CLI --json prints the 2-space JSON envelope to stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "145-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -200,11 +200,11 @@
       "name": "CLI --regex sets searchMode to regex",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "172-196",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -249,11 +249,11 @@
       "name": "CLI exits non-zero on an invalid regex pattern",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "197-218",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -298,11 +298,11 @@
       "name": "search-scenarios --help is byte-for-byte identical to the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "219-248",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -347,11 +347,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "249-278",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -396,11 +396,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_search_scenarios.rs",
+          "file": "rust/fspec/tests/cli_search_scenarios.rs",
           "lines": "279-320",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/search_scenarios.rs",
+              "file": "rust/fspec/src/search_scenarios.rs",
               "lines": [
                 29,
                 30,
@@ -447,10 +447,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_search_scenarios.rs"
+      "rust/fspec/tests/cli_search_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/search_scenarios.rs"
+      "rust/fspec/src/search_scenarios.rs"
     ],
     "totalLinesCovered": 543
   }

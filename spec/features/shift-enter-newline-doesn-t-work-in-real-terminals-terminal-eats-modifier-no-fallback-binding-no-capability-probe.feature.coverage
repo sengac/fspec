@@ -4,11 +4,11 @@
       "name": "Ctrl+J inserts a newline and grows the input area",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "1-46",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 47,
                 48,
@@ -51,11 +51,11 @@
       "name": "Ctrl+J mid-word splits the line at cursor position",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "48-88",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 27,
                 28,
@@ -79,11 +79,11 @@
       "name": "Plain Enter submits the multi-line buffer and resets the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "90-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 63,
                 64,
@@ -103,11 +103,11 @@
       "name": "Shift+Enter inserts a newline on enhanced terminals",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "132-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 72,
                 73,
@@ -124,11 +124,11 @@
       "name": "Shift+Enter submits on non-enhanced terminals (modifier eaten)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "166-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 63,
                 64,
@@ -148,11 +148,11 @@
       "name": "Alt+Enter inserts a newline as legacy fallback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "202-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 72,
                 73,
@@ -169,11 +169,11 @@
       "name": "Ctrl+J is swallowed while the session is compacting",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "235-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 27,
                 28,
@@ -197,11 +197,11 @@
       "name": "Input placeholder shows Ctrl+J as the primary newline hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
           "lines": "275-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 84,
                 85,
@@ -218,11 +218,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs"
+      "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 369
   }

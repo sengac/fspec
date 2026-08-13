@@ -4,11 +4,11 @@
       "name": "No codelet_napi reference and the 300-LoC ceiling holds",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc050.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
           "lines": "84-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 1,
                 2,
@@ -178,11 +178,11 @@
       "name": "components::Action declares the new RPC-050 variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc050.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
           "lines": "139-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 414,
                 415,
@@ -213,11 +213,11 @@
       "name": "dispatch_work_unit_binding.rs declares the new RPC-050 helpers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc050.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
           "lines": "165-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 21,
                 22,
@@ -369,11 +369,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc050.rs"
+      "rust/fspec-tui/tests/source_shape_rpc050.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
-      "codelet/fspec-tui/src/components/mod.rs"
+      "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+      "rust/fspec-tui/src/components/mod.rs"
     ],
     "totalLinesCovered": 422
   }

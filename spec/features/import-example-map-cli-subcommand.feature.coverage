@@ -4,11 +4,11 @@
       "name": "CLI import-example-map appends data and prints the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_import_example_map.rs",
+          "file": "rust/fspec/tests/cli_import_example_map.rs",
           "lines": "70-105",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/import_example_map.rs",
+              "file": "rust/fspec/src/import_example_map.rs",
               "lines": [
                 39,
                 40,
@@ -34,11 +34,11 @@
       "name": "CLI import-example-map fails for an unknown work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_import_example_map.rs",
+          "file": "rust/fspec/tests/cli_import_example_map.rs",
           "lines": "106-125",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/import_example_map.rs",
+              "file": "rust/fspec/src/import_example_map.rs",
               "lines": [
                 53,
                 54,
@@ -57,11 +57,11 @@
       "name": "CLI import-example-map requires the file argument",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_import_example_map.rs",
+          "file": "rust/fspec/tests/cli_import_example_map.rs",
           "lines": "126-144",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/import_example_map.rs",
+              "file": "rust/fspec/src/import_example_map.rs",
               "lines": [
                 31,
                 32,
@@ -88,11 +88,11 @@
       "name": "CLI import-example-map --help prints the help fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_import_example_map.rs",
+          "file": "rust/fspec/tests/cli_import_example_map.rs",
           "lines": "145-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/import_example_map.rs",
+              "file": "rust/fspec-core/src/help/configs/import_example_map.rs",
               "lines": [
                 1,
                 2,
@@ -151,11 +151,11 @@
       "name": "CLI delegates to the same fspec-core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_import_example_map.rs",
+          "file": "rust/fspec/tests/cli_import_example_map.rs",
           "lines": "169-208",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/import_example_map.rs",
+              "file": "rust/fspec/src/import_example_map.rs",
               "lines": [
                 42,
                 43,
@@ -178,11 +178,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_import_example_map.rs"
+      "rust/fspec/tests/cli_import_example_map.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/import_example_map.rs",
-      "codelet/fspec-core/src/help/configs/import_example_map.rs"
+      "rust/fspec/src/import_example_map.rs",
+      "rust/fspec-core/src/help/configs/import_example_map.rs"
     ],
     "totalLinesCovered": 230
   }

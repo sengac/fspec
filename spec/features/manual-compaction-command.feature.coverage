@@ -52,7 +52,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 129,
                 130,
@@ -182,7 +182,7 @@
     ],
     "implFiles": [
       "src/tui/components/AgentModal.tsx",
-      "codelet/napi/src/session.rs"
+      "rust/napi/src/session.rs"
     ],
     "totalLinesCovered": 247
   }

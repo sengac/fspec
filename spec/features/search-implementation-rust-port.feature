@@ -4,8 +4,8 @@
 @RPC-296
 Feature: Port search-implementation command to Rust
   """
-  Core impl: codelet/fspec-core/src/commands/search_implementation.rs rewrites stub; signature run(args_json, project_root). Reads spec/features/*.feature.coverage via types/coverage.rs CoverageFile (inline dir walk, parity with show_test_patterns); extracts implMappings file paths. Reads each impl file via project_root.join(file). workUnitId = featureName.to_uppercase(). Submits optional shared-file request: add impl-extraction helper to io/coverage_glob.rs.
-  Two-front-doors: dispatcher and clap CLI both call search_implementation::run. CLI bridge codelet/fspec/src/search_implementation.rs marshals --function/--show-work-units/--json into JSON only. Help config codelet/fspec-core/src/help/configs/search_implementation.rs (search-implementation-help.ts exists as rich help) + intercept arm + Mode::SearchImplementation variant wired by supervisor.
+  Core impl: rust/fspec-core/src/commands/search_implementation.rs rewrites stub; signature run(args_json, project_root). Reads spec/features/*.feature.coverage via types/coverage.rs CoverageFile (inline dir walk, parity with show_test_patterns); extracts implMappings file paths. Reads each impl file via project_root.join(file). workUnitId = featureName.to_uppercase(). Submits optional shared-file request: add impl-extraction helper to io/coverage_glob.rs.
+  Two-front-doors: dispatcher and clap CLI both call search_implementation::run. CLI bridge rust/fspec/src/search_implementation.rs marshals --function/--show-work-units/--json into JSON only. Help config rust/fspec-core/src/help/configs/search_implementation.rs (search-implementation-help.ts exists as rich help) + intercept arm + Mode::SearchImplementation variant wired by supervisor.
   """
 
   # ========================================
@@ -63,7 +63,7 @@ Feature: Port search-implementation command to Rust
     And the files array is empty
 
   Scenario: Shared infrastructure module is registered for search-implementation
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/search_implementation.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/search_implementation.rs
     Then the module no longer returns FspecCoreError::NotYetPorted
     And the dispatcher routes search-implementation to the new run function

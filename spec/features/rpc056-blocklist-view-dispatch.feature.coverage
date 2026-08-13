@@ -4,11 +4,11 @@
       "name": "/blocklist dispatches OpenBlocklistView and triggers a blocklist_list fetch",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "106-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_blocklist.rs",
               "lines": [
                 24,
                 25,
@@ -46,11 +46,11 @@
       "name": "BlocklistView renders two configured rules with source tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "149-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 57,
                 58,
@@ -151,11 +151,11 @@
       "name": "Empty blocklist renders the placeholder text",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "176-192",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 169,
                 170,
@@ -193,11 +193,11 @@
       "name": "Down advances the focused row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "206-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 190,
                 191,
@@ -211,11 +211,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "206-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 159,
                 160,
@@ -231,11 +231,11 @@
       "name": "Up retreats the focused row, clamped at 0",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "236-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 197,
                 198,
@@ -249,11 +249,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "236-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 163,
                 164,
@@ -269,11 +269,11 @@
       "name": "Space toggles the focused rule into the session-disabled set",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "256-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 126,
                 127,
@@ -299,11 +299,11 @@
       "name": "Enter behaves identically to Space for toggling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "286-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 126,
                 127,
@@ -329,11 +329,11 @@
       "name": "A disabled rule paints the dimmed glyph and (disabled) suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "304-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 213,
                 214,
@@ -395,11 +395,11 @@
       "name": "Esc closes the view and returns to the Agent view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "339-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_blocklist.rs",
               "lines": [
                 32,
                 33,
@@ -435,11 +435,11 @@
       "name": "Session-disabled set persists across close/reopen of the view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "366-413",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/blocklist_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/blocklist_state.rs",
               "lines": [
                 17,
                 18,
@@ -490,11 +490,11 @@
       "name": "Category column derives \"file_path\" for path-shaped patterns",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "417-428",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 369,
                 370,
@@ -517,11 +517,11 @@
       "name": "Category column derives \"file_path\" for tilde-prefixed patterns",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "430-440",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 369,
                 370,
@@ -544,11 +544,11 @@
       "name": "Category column derives \"bash\" for command-shaped patterns",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "442-455",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 369,
                 370,
@@ -571,11 +571,11 @@
       "name": "derive_category returns deterministic strings",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "file": "rust/fspec-tui/tests/blocklist_view_rpc056.rs",
           "lines": "459-470",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 358,
                 359,
@@ -611,12 +611,12 @@
     "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/blocklist_view_rpc056.rs"
+      "rust/fspec-tui/tests/blocklist_view_rpc056.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
-      "codelet/fspec-tui/src/views/blocklist/mod.rs",
-      "codelet/fspec-tui/src/store/agent_view/blocklist_state.rs"
+      "rust/fspec-tui/src/app/dispatch_blocklist.rs",
+      "rust/fspec-tui/src/views/blocklist/mod.rs",
+      "rust/fspec-tui/src/store/agent_view/blocklist_state.rs"
     ],
     "totalLinesCovered": 727
   }

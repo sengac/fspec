@@ -4,11 +4,11 @@
       "name": "persist_user_message writes a User MessageEnvelope before the LLM stream begins",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "102-138",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 26,
                 27,
@@ -58,11 +58,11 @@
       "name": "persist_assistant_message_internal writes an Assistant envelope with provider and stop_reason",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "140-179",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 66,
                 67,
@@ -138,11 +138,11 @@
       "name": "PROV-039 — stop_reason=None becomes the literal \"unknown\" on disk",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "181-209",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 104,
                 105,
@@ -162,11 +162,11 @@
       "name": "persist_tool_result_internal writes a User envelope tagged with provider \"tool\"",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "211-254",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 132,
                 133,
@@ -234,11 +234,11 @@
       "name": "persist_token_state updates the session manifest's cumulative token totals",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "256-279",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 190,
                 191,
@@ -275,11 +275,11 @@
       "name": "persist_user_message returns Err on a missing manifest without panicking",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "281-303",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 33,
                 34,
@@ -294,11 +294,11 @@
       "name": "Source-shape — agent_loop body invokes persist_user_message before dispatching to the provider",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "321-357",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 299,
                 300,
@@ -319,11 +319,11 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::ToolResult arm persists assistant before tool_result",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "359-395",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 140,
                 141,
@@ -350,11 +350,11 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::Done arm persists assistant then token state",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "397-437",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 260,
                 261,
@@ -388,11 +388,11 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::Error arm flushes accumulated assistant content",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "439-464",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 250,
                 251,
@@ -409,11 +409,11 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::Interrupted arm flushes accumulated assistant content",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "466-491",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 255,
                 256,
@@ -430,11 +430,11 @@
       "name": "Boundary — persistence calls in codelet-agent-loop import from crate::persist (not codelet_napi)",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
           "lines": "493-540",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/persist.rs",
+              "file": "rust/agent-loop/src/persist.rs",
               "lines": [
                 1,
                 2,
@@ -468,12 +468,12 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs"
+      "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/persist.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/agent-loop/src/background_output.rs"
+      "rust/agent-loop/src/persist.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/background_output.rs"
     ],
     "totalLinesCovered": 682
   }

@@ -4,11 +4,11 @@
       "name": "Map Gemini list_directory parameters with path to internal LsArgs format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "668-693",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/ls.rs",
+              "file": "rust/tools/src/facade/ls.rs",
               "lines": [
                 1,
                 2,
@@ -66,11 +66,11 @@
       "name": "Map Gemini list_directory with empty parameters to current directory",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "694-714",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/ls.rs",
+              "file": "rust/tools/src/facade/ls.rs",
               "lines": [
                 41,
                 42,
@@ -87,11 +87,11 @@
       "name": "GeminiListDirectoryFacade provides flat JSON schema",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "715-738",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/ls.rs",
+              "file": "rust/tools/src/facade/ls.rs",
               "lines": [
                 25,
                 26,
@@ -117,11 +117,11 @@
       "name": "LsToolFacadeWrapper integrates with rig Tool trait",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "739-763",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 492,
                 493,
@@ -224,11 +224,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool_facade_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/ls.rs",
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/ls.rs",
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "totalLinesCovered": 250
   }

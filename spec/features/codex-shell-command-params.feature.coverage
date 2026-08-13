@@ -4,11 +4,11 @@
       "name": "CodexShellCommandFacade maps workdir to InternalBashParams cwd",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "365-389",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 75,
                 76,
@@ -45,11 +45,11 @@
       "name": "CodexShellCommandFacade maps timeout_ms to InternalBashParams",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "393-417",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 75,
                 76,
@@ -86,11 +86,11 @@
       "name": "CodexShellCommandFacade maps both workdir and timeout_ms",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "421-442",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 75,
                 76,
@@ -127,11 +127,11 @@
       "name": "CodexShellCommandFacade without optional params defaults to None",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "446-471",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 75,
                 76,
@@ -168,11 +168,11 @@
       "name": "Codex shell_command schema includes Codex-native approval params",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "475-502",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 49,
                 50,
@@ -230,11 +230,11 @@
       "name": "Codex-native approval params are silently ignored in map_params",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "506-531",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 95,
                 96,
@@ -251,11 +251,11 @@
       "name": "Existing facades remain backward compatible with new InternalBashParams fields",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "535-556",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/traits.rs",
+              "file": "rust/tools/src/facade/traits.rs",
               "lines": [
                 119,
                 120,
@@ -283,11 +283,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/tools/src/facade/traits.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/tools/src/facade/traits.rs"
     ],
     "totalLinesCovered": 339
   }

@@ -4,11 +4,11 @@
       "name": "PromptCancelled at site 509 preserves the complete tool_call and tool_result pair in session.messages",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_tool_call_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
           "lines": "85-139",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 338,
                 339,
@@ -140,11 +140,11 @@
           ]
         },
         {
-          "file": "codelet/cli/tests/compaction_tool_call_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
           "lines": "406-455",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 504,
                 505,
@@ -224,11 +224,11 @@
       "name": "PromptCancelled at site 486 closes the dangling tool_call with a synthetic cancelled tool_result",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_tool_call_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
           "lines": "141-217",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 473,
                 474,
@@ -313,11 +313,11 @@
       "name": "Clean conversation passes the orphan detector with no changes",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_tool_call_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
           "lines": "219-268",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 268,
                 269,
@@ -381,11 +381,11 @@
       "name": "execute_compaction refuses to run when orphan tool_calls remain and reports the offending call_ids",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_tool_call_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
           "lines": "341-404",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 578,
                 579,
@@ -416,11 +416,11 @@
       "name": "Reconciliation does not duplicate tool pairs that fspec already holds",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_tool_call_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
           "lines": "270-339",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 338,
                 339,
@@ -559,11 +559,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_tool_call_preservation_test.rs"
+      "rust/cli/tests/compaction_tool_call_preservation_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
     "totalLinesCovered": 828
   }

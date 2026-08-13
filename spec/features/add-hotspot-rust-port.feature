@@ -5,8 +5,8 @@
 @RPC-185
 Feature: Port add-hotspot command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_hotspot.rs. Uses the SHARED addEventStormItem util (event-storm-utils style — NOT inlined, NO dedup), because hotspots may repeat. Reads spec/work-units.json (existsSync check first, NO auto-create), mutates wu.extra['eventStorm'] map, write_json_atomic. Item construction: itemData fields (type 'hotspot', color 'red', text, optional concern/timestamp/boundedContext) first, then id, deleted, createdAt appended.
-  Returns {success, hotspotId} from core; CLI bridge codelet/fspec/src/add_hotspot.rs is a clap-derived struct (workUnitId, text, --concern, --timestamp, --bounded-context) that marshals to dispatch and formats success/failure stdout/stderr lines (no domain logic). Success line: '✓ Hotspot added to <workUnitId> (id: <hotspotId>)'; failure: '✗ Failed to add hotspot: <message>'.
+  Core impl at rust/fspec-core/src/commands/add_hotspot.rs. Uses the SHARED addEventStormItem util (event-storm-utils style — NOT inlined, NO dedup), because hotspots may repeat. Reads spec/work-units.json (existsSync check first, NO auto-create), mutates wu.extra['eventStorm'] map, write_json_atomic. Item construction: itemData fields (type 'hotspot', color 'red', text, optional concern/timestamp/boundedContext) first, then id, deleted, createdAt appended.
+  Returns {success, hotspotId} from core; CLI bridge rust/fspec/src/add_hotspot.rs is a clap-derived struct (workUnitId, text, --concern, --timestamp, --bounded-context) that marshals to dispatch and formats success/failure stdout/stderr lines (no domain logic). Success line: '✓ Hotspot added to <workUnitId> (id: <hotspotId>)'; failure: '✗ Failed to add hotspot: <message>'.
   """
 
   # ========================================

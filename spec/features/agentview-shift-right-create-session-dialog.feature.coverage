@@ -4,11 +4,11 @@
       "name": "Shift+Right with a single open session mounts CreateSessionDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "108-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 39,
                 40,
@@ -38,11 +38,11 @@
       "name": "Shift+Right at the last index of three open sessions mounts CreateSessionDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "134-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 39,
                 40,
@@ -72,11 +72,11 @@
       "name": "Shift+Right with zero open sessions mounts CreateSessionDialog with generic title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "157-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 39,
                 40,
@@ -106,11 +106,11 @@
       "name": "Dialog title and description are work-unit-aware when the current session is bound to a work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "187-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 214,
                 215,
@@ -206,11 +206,11 @@
       "name": "Freshly mounted dialog paints the Yes button blue/white/bold and the other two buttons gray",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "224-325",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 214,
                 215,
@@ -306,11 +306,11 @@
       "name": "Right arrow cycles selection forward with wrap-around",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "329-345",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 129,
                 130,
@@ -335,11 +335,11 @@
       "name": "Left arrow wraps from Yes back to Cancel",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "349-356",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 120,
                 121,
@@ -360,11 +360,11 @@
       "name": "Enter on Yes emits CreateSessionSubmitted with isolated false and dismisses the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "365-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 162,
                 163,
@@ -423,11 +423,11 @@
       "name": "Enter on Yes - Isolated emits CreateSessionSubmitted with isolated true",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "396-422",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 162,
                 163,
@@ -486,11 +486,11 @@
       "name": "Enter on Cancel emits CreateSessionCancelled and leaves the MultiLineInput buffer untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "427-454",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 162,
                 163,
@@ -549,11 +549,11 @@
       "name": "Esc emits CreateSessionCancelled and dismisses the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "458-479",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 162,
                 163,
@@ -612,11 +612,11 @@
       "name": "Typed MultiLineInput draft survives the Shift+Right summon and subsequent Esc",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "484-500",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 31,
                 32,
@@ -665,11 +665,11 @@
       "name": "Shift+Right is idempotent when the dialog is already mounted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "504-534",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 38,
                 39,
@@ -701,11 +701,11 @@
       "name": "Rendered footer uses ASCII pipe separators not box-drawing pipes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "542-582",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 55,
                 56,
@@ -722,11 +722,11 @@
       "name": "Source-shape budget for the refactored CreateSessionDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "586-596",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1035,11 +1035,11 @@
       "name": "CreateSessionDialog renders via dialog_theme::render_dialog (base dialog primitive reused)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "601-626",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1348,11 +1348,11 @@
       "name": "BoardView first Shift+Right with attached session jumps directly into AgentView without dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "757-786",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 16,
                 17,
@@ -1372,11 +1372,11 @@
       "name": "Two Shift+Rights from BoardView with unattached work unit remain idempotent",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "788-829",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 38,
                 39,
@@ -1403,11 +1403,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "776-831",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 38,
                 39,
@@ -1439,11 +1439,11 @@
       "name": "BoardView first Shift+Right with unattached work unit mounts CreateSessionDialog OVER BoardView (no view switch)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "729-771",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 27,
                 28,
@@ -1486,11 +1486,11 @@
       "name": "BoardView Shift+Right then Esc cancels and leaves the user on BoardView",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "835-866",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 147,
                 148,
@@ -1523,11 +1523,11 @@
       "name": "BoardView Shift+Right then Enter on Yes switches to AgentView and submits create-session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "870-911",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 59,
                 60,
@@ -1571,11 +1571,11 @@
       "name": "BoardView Shift+Right with an already-open session resumes that session instead of showing the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "971-1010",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 53,
                 54,
@@ -1614,11 +1614,11 @@
       "name": "BoardView Shift+Right with two open sessions resumes the first one",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "1014-1038",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
               "lines": [
                 85,
                 86,
@@ -1641,11 +1641,11 @@
       "name": "Shift+Left from Agent back to Board then Shift+Right resumes the open session (full round trip)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "1042-1086",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 53,
                 54,
@@ -1684,11 +1684,11 @@
       "name": "BoardView Shift+Right with zero open sessions still mounts CreateSessionDialog (regression guard for reopen #1)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
           "lines": "1090-1112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 53,
                 54,
@@ -1729,14 +1729,14 @@
     "coveredScenarios": 25,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs"
+      "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
-      "codelet/fspec-tui/src/components/create_session_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/store/agent_view/navigation.rs"
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+      "rust/fspec-tui/src/components/create_session_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/store/agent_view/navigation.rs"
     ],
     "totalLinesCovered": 2147
   }

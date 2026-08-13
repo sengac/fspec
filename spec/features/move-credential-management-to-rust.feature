@@ -5,7 +5,7 @@
 @CONFIG-005
 Feature: Move Credential Management to Rust
   """
-  Create codelet/napi/src/credentials/ module with: mod.rs, store.rs, types.rs, resolver.rs, napi_bindings.rs
+  Create rust/napi/src/credentials/ module with: mod.rs, store.rs, types.rs, resolver.rs, napi_bindings.rs
   CredentialStore uses lazy_static global singleton with Mutex, matching persistence module pattern
   NAPI bindings: credentials_resolve(provider_id, project?) and credentials_reload()
   Remove api_key param from sessionManagerCreateWithId - Rust resolves internally

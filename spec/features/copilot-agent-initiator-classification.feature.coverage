@@ -4,11 +4,11 @@
       "name": "First user message uses x-initiator user, tool follow-ups use agent",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "137-185",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 85,
                 86,
@@ -85,11 +85,11 @@
       "name": "DeepSearch sub-agent requests are always agent-initiated",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "117-132",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_provider_config.rs",
+              "file": "rust/napi/src/deep_search_provider_config.rs",
               "lines": [
                 60,
                 61,
@@ -113,11 +113,11 @@
       "name": "Compaction continuation uses agent initiator",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "210-224",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 85,
                 86,
@@ -194,11 +194,11 @@
       "name": "Subordinate agent sessions use agent initiator",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "190-205",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 85,
                 86,
@@ -275,11 +275,11 @@
       "name": "Scheduled job sessions use agent initiator",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "228-240",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 85,
                 86,
@@ -356,11 +356,11 @@
       "name": "metadata.mode agent field flows through classifier to header",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "57-82",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 85,
                 86,
@@ -437,11 +437,11 @@
       "name": "Request without metadata.mode defaults to user initiator",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_agent_initiator_test.rs",
+          "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
           "lines": "87-112",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 85,
                 86,
@@ -520,11 +520,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/copilot_agent_initiator_test.rs"
+      "rust/providers/tests/copilot_agent_initiator_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/classifier.rs",
-      "codelet/napi/src/deep_search_provider_config.rs"
+      "rust/providers/src/copilot/classifier.rs",
+      "rust/napi/src/deep_search_provider_config.rs"
     ],
     "totalLinesCovered": 563
   }

@@ -4,11 +4,11 @@
       "name": "New shared types live in rpc-types",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "50-74",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -807,11 +807,11 @@
       "name": "FspecService trait gains three new RPC methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "77-101",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -1389,11 +1389,11 @@
       "name": "SessionManagerHandle trait gains get_model_info / get_thinking_level with default impls",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "104-126",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1,
                 2,
@@ -1698,11 +1698,11 @@
       "name": "FspecBackend trait declares the three new methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "129-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -1855,11 +1855,11 @@
       "name": "Both transports implement the three new FspecBackend methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "141-161",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 1,
                 2,
@@ -2006,11 +2006,11 @@
       "name": "New agent widget modules exist as separate files",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "164-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header.rs",
+              "file": "rust/fspec-tui/src/views/agent/header.rs",
               "lines": [
                 1,
                 2,
@@ -2223,11 +2223,11 @@
       "name": "New and modified agent modules stay under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "176-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -2520,11 +2520,11 @@
       "name": "Action enum gains three new variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "212-221",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 1,
                 2,
@@ -2798,11 +2798,11 @@
       "name": "NAPI surface exposes additive get_workspace_info export",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "224-237",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 420,
                 421,
@@ -2845,11 +2845,11 @@
       "name": "NAPI surface exposes additive get_model_info export",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "240-262",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 8625,
                 8626,
@@ -2887,7 +2887,7 @@
       "name": "Existing TS AgentView chrome files are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "265-277",
           "implMappings": [
             {
@@ -2904,11 +2904,11 @@
       "name": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc018.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
           "lines": "280-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -3203,19 +3203,19 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc018.rs"
+      "rust/fspec-tui/tests/source_shape_rpc018.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/views/agent/header.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/napi/src/git.rs",
-      "codelet/napi/src/session_manager.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/views/agent/header.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/napi/src/git.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/components/SessionHeader.tsx"
     ],
     "totalLinesCovered": 3240

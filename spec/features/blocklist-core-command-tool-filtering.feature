@@ -3,7 +3,7 @@
 @BLOCK-002
 Feature: Blocklist Core - Command/Tool Filtering
   """
-  Rust Blocklist Module: Create codelet/tools/src/blocklist/ with BlocklistConfig (load/save JSON), BlocklistRule struct, BlocklistMatcher (regex evaluation). FilterMiddleware wraps existing tool execution in FacadeToolWrapper, checks rules before passing to base tool.
+  Rust Blocklist Module: Create rust/tools/src/blocklist/ with BlocklistConfig (load/save JSON), BlocklistRule struct, BlocklistMatcher (regex evaluation). FilterMiddleware wraps existing tool execution in FacadeToolWrapper, checks rules before passing to base tool.
   NAPI Bindings: Wire up blocklist_load, blocklist_save, blocklist_check. Config stored at ~/.fspec/blocklist.json (user) or .fspec/blocklist.json (project), project takes precedence.
   """
 

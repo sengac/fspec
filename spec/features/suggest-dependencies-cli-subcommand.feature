@@ -6,7 +6,7 @@ Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binar
   """
   CLI surface for the `suggest-dependencies` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-  - Shell argv         → clap → codelet/fspec/src/suggest_dependencies.rs → fspec_core::commands::suggest_dependencies::run
+  - Shell argv         → clap → rust/fspec/src/suggest_dependencies.rs → fspec_core::commands::suggest_dependencies::run
   - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::suggest_dependencies::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
@@ -14,7 +14,7 @@ Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binar
   Text format prints a numbered summary; the empty case prints 'No dependency suggestions found.' verbatim.
   JSON format prints the pretty-printed JSON payload returned by fspec_core::commands::suggest_dependencies::run.
   Exit-code contract: 0 on success, 1 on any FspecCoreError with stderr prefixed `Error:`.
-  --help is byte-for-byte identical to the captured TS fixture at codelet/fspec/tests/fixtures/help/suggest-dependencies.txt.
+  --help is byte-for-byte identical to the captured TS fixture at rust/fspec/tests/fixtures/help/suggest-dependencies.txt.
   """
 
   # ========================================
@@ -46,26 +46,26 @@ Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binar
     So that the standalone Rust binary and the daemon share one dependency-suggestion implementation
 
   Scenario: Clap exposes suggest-dependencies as a subcommand and prints --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec suggest-dependencies --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec suggest-dependencies --help` from a shell
     Then the command exits 0
     And stdout contains the substring 'suggest-dependencies'
 
   Scenario: CLI without options prints the empty sentinel against an empty workspace
     Given an empty directory with no spec/ subdirectory is set as the current working directory
-    When I run `./codelet/target/release/fspec suggest-dependencies` from that directory
+    When I run `./rust/target/release/fspec suggest-dependencies` from that directory
     Then the command exits 0
     And stdout contains the substring 'No dependency suggestions found.'
 
   Scenario: CLI with --output=json prints empty suggestions array
     Given an empty directory with no spec/ subdirectory is set as the current working directory
-    When I run `./codelet/target/release/fspec suggest-dependencies --output json` from that directory
+    When I run `./rust/target/release/fspec suggest-dependencies --output json` from that directory
     Then the command exits 0
     And stdout parses as JSON whose root object has suggestions=[]
 
   Scenario: CLI text output lists a sequential suggestion
     Given a workspace whose spec/work-units.json contains AUTH-001 and AUTH-002 with no relationships
-    When I run `./codelet/target/release/fspec suggest-dependencies` from that workspace
+    When I run `./rust/target/release/fspec suggest-dependencies` from that workspace
     Then the command exits 0
     And stdout contains the substring 'Found 1 dependency suggestion(s):'
     And stdout contains the substring 'AUTH-002'
@@ -73,7 +73,7 @@ Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binar
 
   Scenario: CLI exits 1 and writes to stderr when work-units.json is malformed
     Given spec/work-units.json exists in the working directory but contains invalid JSON
-    When I run `./codelet/target/release/fspec suggest-dependencies --output json` from that directory
+    When I run `./rust/target/release/fspec suggest-dependencies --output json` from that directory
     Then the command exits with code 1
     And stderr contains the substring 'Error:'
     And stderr contains the substring 'Failed to parse work-units.json'
@@ -81,13 +81,13 @@ Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binar
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a workspace whose spec/work-units.json contains AUTH-001 and AUTH-002 with no relationships
     When I dispatch suggest-dependencies through fspec_core::dispatch::dispatch_command with output='json' against that workspace
-    And I run `./codelet/target/release/fspec suggest-dependencies --output json` against the same workspace
+    And I run `./rust/target/release/fspec suggest-dependencies --output json` against the same workspace
     Then both invocations produce JSON with a suggestion from='AUTH-002' to='AUTH-001'
-    And the CLI bridge module codelet/fspec/src/suggest_dependencies.rs contains NO inline suggestion logic — its only computation is JSON arg marshalling and stdout printing
+    And the CLI bridge module rust/fspec/src/suggest_dependencies.rs contains NO inline suggestion logic — its only computation is JSON arg marshalling and stdout printing
 
   Scenario: suggest-dependencies --help is byte-for-byte identical to TS reference
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec suggest-dependencies --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec suggest-dependencies --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/suggest-dependencies.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/suggest-dependencies.txt
     And stdout starts with a blank line followed by 'SUGGEST-DEPENDENCIES'

@@ -4,11 +4,11 @@
       "name": "Claude Opus 4.6 compaction threshold uses clamped context window",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "560-590",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 197,
                 198,
@@ -44,11 +44,11 @@
       "name": "Context fill percentage is accurate with clamped threshold",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "592-617",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 96,
                 97,
@@ -81,11 +81,11 @@
       "name": "Compaction fires before API limit with clamped threshold",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "617-645",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction_hook.rs",
+              "file": "rust/core/src/compaction_hook.rs",
               "lines": [
                 148,
                 149,
@@ -174,11 +174,11 @@
       "name": "Gemini 2.5 Pro compaction threshold uses 80 percent of context window",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "645-666",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 159,
                 160,
@@ -217,11 +217,11 @@
       "name": "GPT-4o compaction threshold uses 80 percent of context window",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "666-687",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 159,
                 160,
@@ -260,11 +260,11 @@
       "name": "Sub-agent propagation uses clamped context window",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "766-795",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 840,
                 841,
@@ -302,11 +302,11 @@
       "name": "Summarization budget uses clamped context window",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "687-707",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 63,
                 64,
@@ -327,13 +327,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/src/compaction_threshold.rs"
+      "rust/cli/src/compaction_threshold.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/compaction_threshold.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/core/src/compaction_hook.rs",
-      "codelet/providers/src/manager.rs"
+      "rust/cli/src/compaction_threshold.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/core/src/compaction_hook.rs",
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 390
   }

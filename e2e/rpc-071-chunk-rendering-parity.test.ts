@@ -29,7 +29,7 @@ const rustFspec = join(
   homedir(),
   'projects',
   'fspec',
-  'codelet',
+  'rust',
   'target',
   'debug',
   'fspec'

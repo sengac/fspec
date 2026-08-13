@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "Scheduler engine modules live under codelet/core/src/scheduler/",
+      "name": "Scheduler engine modules live under rust/core/src/scheduler/",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "63-103",
           "implMappings": [
             {
-              "file": "codelet/core/src/scheduler/mod.rs",
+              "file": "rust/core/src/scheduler/mod.rs",
               "lines": [
                 1,
                 2,
@@ -143,11 +143,11 @@
       "name": "codelet-core declares a SchedulerHooks trait",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "106-135",
           "implMappings": [
             {
-              "file": "codelet/core/src/scheduler/mod.rs",
+              "file": "rust/core/src/scheduler/mod.rs",
               "lines": [
                 67,
                 68,
@@ -188,11 +188,11 @@
       "name": "spawn_scheduler accepts an Arc<dyn SchedulerHooks>",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "138-155",
           "implMappings": [
             {
-              "file": "codelet/core/src/scheduler/engine.rs",
+              "file": "rust/core/src/scheduler/engine.rs",
               "lines": [
                 36,
                 37,
@@ -269,11 +269,11 @@
       "name": "The lifted engine has no crate::session_bindings references",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "158-180",
           "implMappings": [
             {
-              "file": "codelet/core/src/scheduler/engine.rs",
+              "file": "rust/core/src/scheduler/engine.rs",
               "lines": [
                 1,
                 2,
@@ -634,14 +634,14 @@
       ]
     },
     {
-      "name": "codelet/napi/src/scheduler/mod.rs is a thin re-export shim",
+      "name": "rust/napi/src/scheduler/mod.rs is a thin re-export shim",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "183-201",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/mod.rs",
+              "file": "rust/napi/src/scheduler/mod.rs",
               "lines": [
                 1,
                 2,
@@ -678,11 +678,11 @@
       "name": "The pure CRUD helpers live in codelet-core::scheduler::crud",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "204-235",
           "implMappings": [
             {
-              "file": "codelet/core/src/scheduler/crud.rs",
+              "file": "rust/core/src/scheduler/crud.rs",
               "lines": [
                 181,
                 182,
@@ -810,11 +810,11 @@
       "name": "codelet-sessions handle_impl wires the five new methods to crud.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "238-269",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1092,
                 1093,
@@ -870,11 +870,11 @@
       "name": "Lifted scheduler engine and cron_utils use captured-identifier format args (RPC-058 retro 2026-05-27)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
+          "file": "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs",
           "lines": "271-398",
           "implMappings": [
             {
-              "file": "codelet/core/src/scheduler/cron_utils.rs",
+              "file": "rust/core/src/scheduler/cron_utils.rs",
               "lines": [
                 36,
                 37,
@@ -895,7 +895,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/scheduler/engine.rs",
+              "file": "rust/core/src/scheduler/engine.rs",
               "lines": [
                 284,
                 285,
@@ -925,15 +925,15 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/scheduler_engine_lift_rpc058.rs"
+      "rust/fspec-tui/tests/scheduler_engine_lift_rpc058.rs"
     ],
     "implFiles": [
-      "codelet/core/src/scheduler/mod.rs",
-      "codelet/core/src/scheduler/engine.rs",
-      "codelet/napi/src/scheduler/mod.rs",
-      "codelet/core/src/scheduler/crud.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/core/src/scheduler/cron_utils.rs"
+      "rust/core/src/scheduler/mod.rs",
+      "rust/core/src/scheduler/engine.rs",
+      "rust/napi/src/scheduler/mod.rs",
+      "rust/core/src/scheduler/crud.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/core/src/scheduler/cron_utils.rs"
     ],
     "totalLinesCovered": 1109
   }

@@ -4,11 +4,11 @@
       "name": "Picking /search from the palette opens the SearchHistoryView empty with no backend call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "87-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 59,
                 60,
@@ -25,11 +25,11 @@
       "name": "Pressing Ctrl+R opens the SearchHistoryView empty with no backend call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "117-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 208,
                 209,
@@ -52,11 +52,11 @@
       "name": "Rapid typing within 150ms fires a single debounced backend call with the final query",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "153-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 179,
                 180,
@@ -95,11 +95,11 @@
       "name": "Typing slower than the debounce window fires one backend call per keystroke",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "215-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 179,
                 180,
@@ -138,11 +138,11 @@
       "name": "Stale results from an older query are discarded",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "277-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 217,
                 218,
@@ -162,11 +162,11 @@
       "name": "Fresh results matching the current query are folded into the view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "322-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 217,
                 218,
@@ -186,11 +186,11 @@
       "name": "Result row highlights the matching substring in bold",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "394-440",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view_render.rs",
               "lines": [
                 100,
                 101,
@@ -234,11 +234,11 @@
       "name": "Result row highlights every case-insensitive occurrence in bold",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "442-504",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view_render.rs",
               "lines": [
                 100,
                 101,
@@ -282,11 +282,11 @@
       "name": "Pressing j moves selection down and k moves it up with wrap-around",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "507-548",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
                 215,
                 216,
@@ -313,11 +313,11 @@
       "name": "Enter on a highlighted match inserts the text and closes the view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "551-603",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 237,
                 238,
@@ -339,11 +339,11 @@
       "name": "Esc closes the view without inserting and leaves the input unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "606-654",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 65,
                 66,
@@ -358,11 +358,11 @@
       "name": "Empty query state renders the placeholder and fires no backend calls",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/search_view_rpc064.rs",
+          "file": "rust/fspec-tui/tests/search_view_rpc064.rs",
           "lines": "657-697",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view_render.rs",
               "lines": [
                 46,
                 47,
@@ -398,13 +398,13 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/search_view_rpc064.rs"
+      "rust/fspec-tui/tests/search_view_rpc064.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch.rs",
-      "codelet/fspec-tui/src/views/agent/search_history_view_render.rs",
-      "codelet/fspec-tui/src/views/agent/search_history_view.rs"
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/views/agent/search_history_view_render.rs",
+      "rust/fspec-tui/src/views/agent/search_history_view.rs"
     ],
     "totalLinesCovered": 762
   }

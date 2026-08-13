@@ -4,11 +4,11 @@
       "name": "Dispatching list-work-units from inside an active tokio runtime returns synchronously without hanging",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "486-514",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/dispatch.rs",
+              "file": "rust/fspec-core/src/dispatch.rs",
               "lines": [
                 142,
                 143,
@@ -39,11 +39,11 @@
       "name": "Dispatching list-work-units from a synchronous test context still works (backwards compatibility)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "553-570",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/dispatch.rs",
+              "file": "rust/fspec-core/src/dispatch.rs",
               "lines": [
                 103,
                 104,
@@ -90,11 +90,11 @@
       "name": "Dispatching a ported command with invalid args from inside a tokio runtime returns a structured error without hanging",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_work_units.rs",
+          "file": "rust/fspec-core/tests/list_work_units.rs",
           "lines": "546-591",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/dispatch.rs",
+              "file": "rust/fspec-core/src/dispatch.rs",
               "lines": [
                 42,
                 43,
@@ -158,7 +158,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-core/src/commands/add_rule.rs",
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
                 67,
                 68,
@@ -179,11 +179,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_work_units.rs"
+      "rust/fspec-core/tests/list_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/dispatch.rs",
-      "codelet/fspec-core/src/commands/add_rule.rs"
+      "rust/fspec-core/src/dispatch.rs",
+      "rust/fspec-core/src/commands/add_rule.rs"
     ],
     "totalLinesCovered": 213
   }

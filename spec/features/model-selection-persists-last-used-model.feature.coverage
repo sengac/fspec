@@ -4,11 +4,11 @@
       "name": "Persisting a model when no config file exists creates it",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov122_model_selection_persistence.rs",
+          "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
           "lines": "46-63",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
                 69,
                 70,
@@ -56,11 +56,11 @@
       "name": "Persisting a model preserves all other config keys",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov122_model_selection_persistence.rs",
+          "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
           "lines": "69-99",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
                 69,
                 70,
@@ -108,11 +108,11 @@
       "name": "Selecting a model with an active session persists the choice",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov122_model_selection_persistence.rs",
+          "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
           "lines": "105-130",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1057,
                 1058,
@@ -135,11 +135,11 @@
       "name": "Selecting a model with no active session writes both stores",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov122_model_selection_persistence.rs",
+          "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
           "lines": "135-170",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 231,
                 232,
@@ -175,11 +175,11 @@
       "name": "An empty model string is never persisted",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov122_model_selection_persistence.rs",
+          "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
           "lines": "176-192",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
                 69,
                 70,
@@ -195,11 +195,11 @@
       "name": "A profile-qualified model selection round-trips",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov122_model_selection_persistence.rs",
+          "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
           "lines": "198-229",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
                 110,
                 111,
@@ -221,12 +221,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov122_model_selection_persistence.rs"
+      "rust/sessions/tests/prov122_model_selection_persistence.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/last_used_model_persistence.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/session_manager.rs"
+      "rust/sessions/src/last_used_model_persistence.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/session_manager.rs"
     ],
     "totalLinesCovered": 279
   }

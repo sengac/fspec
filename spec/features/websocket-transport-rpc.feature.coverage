@@ -4,11 +4,11 @@
       "name": "WebSocket transport returns WorkUnitInfo via the rpc-server binary",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/websocket_transport.rs",
+          "file": "rust/rpc-server/tests/websocket_transport.rs",
           "lines": "117-138",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 33,
                 34,
@@ -87,11 +87,11 @@
       "name": "WebSocket frames are encoded with bincode by default",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/websocket_transport.rs",
+          "file": "rust/rpc-server/tests/websocket_transport.rs",
           "lines": "140-214",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/pump.rs",
+              "file": "rust/rpc-server/src/pump.rs",
               "lines": [
                 65,
                 66,
@@ -156,11 +156,11 @@
       "name": "Reserved envelope variants are rejected by the server",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/websocket_transport.rs",
+          "file": "rust/rpc-server/tests/websocket_transport.rs",
           "lines": "216-266",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/pump.rs",
+              "file": "rust/rpc-server/src/pump.rs",
               "lines": [
                 29,
                 30,
@@ -202,11 +202,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/websocket_transport.rs"
+      "rust/rpc-server/tests/websocket_transport.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/server.rs",
-      "codelet/rpc-server/src/pump.rs"
+      "rust/rpc-server/src/server.rs",
+      "rust/rpc-server/src/pump.rs"
     ],
     "totalLinesCovered": 296
   }

@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "Implement FspecTool struct in codelet/tools/src/fspec.rs",
+      "name": "Implement FspecTool struct in rust/tools/src/fspec.rs",
       "testMappings": [
         {
           "file": "src/test/fspec-tool-napi-integration.test.ts",
           "lines": "12-21",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 1,
                 2,
@@ -104,7 +104,7 @@
           "lines": "24-46",
           "implMappings": [
             {
-              "file": "codelet/napi/src/fspec.rs",
+              "file": "rust/napi/src/fspec.rs",
               "lines": [
                 1,
                 2,
@@ -145,7 +145,7 @@
           "lines": "49-79",
           "implMappings": [
             {
-              "file": "codelet/napi/src/fspec.rs",
+              "file": "rust/napi/src/fspec.rs",
               "lines": [
                 1,
                 2,
@@ -186,7 +186,7 @@
           "lines": "82-104",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 30,
                 31,
@@ -253,7 +253,7 @@
           "lines": "107-159",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 15,
                 16,
@@ -336,8 +336,8 @@
       "src/test/fspec-tool-napi-integration.test.ts"
     ],
     "implFiles": [
-      "codelet/tools/src/fspec.rs",
-      "codelet/napi/src/fspec.rs"
+      "rust/tools/src/fspec.rs",
+      "rust/napi/src/fspec.rs"
     ],
     "totalLinesCovered": 387
   }

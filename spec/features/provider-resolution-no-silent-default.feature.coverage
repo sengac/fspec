@@ -4,11 +4,11 @@
       "name": "provider resolution accepts a single credentialed provider",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov101_provider_resolution.rs",
+          "file": "rust/providers/tests/prov101_provider_resolution.rs",
           "lines": "37-54",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 763,
                 764,
@@ -57,11 +57,11 @@
       "name": "provider resolution rejects an ambiguous multi-provider state",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov101_provider_resolution.rs",
+          "file": "rust/providers/tests/prov101_provider_resolution.rs",
           "lines": "57-83",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 763,
                 764,
@@ -110,11 +110,11 @@
       "name": "provider resolution rejects when no credentials are available",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov101_provider_resolution.rs",
+          "file": "rust/providers/tests/prov101_provider_resolution.rs",
           "lines": "86-101",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 763,
                 764,
@@ -165,10 +165,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/prov101_provider_resolution.rs"
+      "rust/providers/tests/prov101_provider_resolution.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 172
   }

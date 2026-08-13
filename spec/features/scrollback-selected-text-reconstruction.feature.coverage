@@ -4,11 +4,11 @@
       "name": "Reconstruct a single-row partial selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "97-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 31,
                 32,
@@ -36,11 +36,11 @@
       "name": "Reconstruct a multi-row selection joined by newline",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "114-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 31,
                 32,
@@ -86,11 +86,11 @@
       "name": "The scrollbar gutter glyph is excluded from copied text",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "139-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 74,
                 75,
@@ -108,11 +108,11 @@
       "name": "Scroll offset maps viewport rows to visual rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "159-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 31,
                 32,
@@ -158,11 +158,11 @@
       "name": "End column beyond content length is clamped without padding",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "181-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 74,
                 75,
@@ -180,11 +180,11 @@
       "name": "Multi-byte glyphs are sliced on character boundaries",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "198-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 74,
                 75,
@@ -202,11 +202,11 @@
       "name": "An empty selection reconstructs an empty string",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
           "lines": "215-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 31,
                 32,
@@ -236,10 +236,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs"
+      "rust/fspec-tui/src/views/agent/scrollback_copy.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs"
+      "rust/fspec-tui/src/views/agent/scrollback_copy.rs"
     ],
     "totalLinesCovered": 242
   }

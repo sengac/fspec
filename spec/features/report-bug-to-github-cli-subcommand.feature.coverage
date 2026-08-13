@@ -4,11 +4,11 @@
       "name": "CLI prints the gathering banner and exits successfully",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_report_bug_to_github.rs",
+          "file": "rust/fspec/tests/cli_report_bug_to_github.rs",
           "lines": "49-63",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/report_bug_to_github.rs",
+              "file": "rust/fspec/src/report_bug_to_github.rs",
               "lines": [
                 1,
                 2,
@@ -126,11 +126,11 @@
       "name": "CLI output includes the constructed GitHub issue URL",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_report_bug_to_github.rs",
+          "file": "rust/fspec/tests/cli_report_bug_to_github.rs",
           "lines": "64-81",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/report_bug_to_github.rs",
+              "file": "rust/fspec/src/report_bug_to_github.rs",
               "lines": [
                 1,
                 2,
@@ -248,11 +248,11 @@
       "name": "report-bug-to-github --help matches the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_report_bug_to_github.rs",
+          "file": "rust/fspec/tests/cli_report_bug_to_github.rs",
           "lines": "82-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/help/configs/report_bug_to_github.rs",
               "lines": [
                 1,
                 2,
@@ -396,11 +396,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_report_bug_to_github.rs"
+      "rust/fspec/tests/cli_report_bug_to_github.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/report_bug_to_github.rs",
-      "codelet/fspec-core/src/help/configs/report_bug_to_github.rs"
+      "rust/fspec/src/report_bug_to_github.rs",
+      "rust/fspec-core/src/help/configs/report_bug_to_github.rs"
     ],
     "totalLinesCovered": 398
   }

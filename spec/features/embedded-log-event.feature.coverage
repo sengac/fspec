@@ -4,11 +4,11 @@
       "name": "Tracing emissions are observable as LogEvent on both transports",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_log_event.rs",
+          "file": "rust/rpc-embedded/tests/embedded_log_event.rs",
           "lines": "55-88",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/log_layer.rs",
+              "file": "rust/rpc/src/log_layer.rs",
               "lines": [
                 1,
                 2,
@@ -184,10 +184,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/embedded_log_event.rs"
+      "rust/rpc-embedded/tests/embedded_log_event.rs"
     ],
     "implFiles": [
-      "codelet/rpc/src/log_layer.rs"
+      "rust/rpc/src/log_layer.rs"
     ],
     "totalLinesCovered": 196
   }

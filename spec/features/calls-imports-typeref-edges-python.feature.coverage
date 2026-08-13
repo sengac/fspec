@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from Python import statements",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/python_edge_extraction_test.rs",
+          "file": "rust/napi/tests/python_edge_extraction_test.rs",
           "lines": "68-107",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
               "lines": [
                 140,
                 141,
@@ -93,11 +93,11 @@
       "name": "Extract Calls edges from Python function calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/python_edge_extraction_test.rs",
+          "file": "rust/napi/tests/python_edge_extraction_test.rs",
           "lines": "112-135",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
               "lines": [
                 222,
                 223,
@@ -152,10 +152,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/python_edge_extraction_test.rs"
+      "rust/napi/tests/python_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs"
     ],
     "totalLinesCovered": 178
   }

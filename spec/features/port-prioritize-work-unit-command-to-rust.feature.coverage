@@ -4,11 +4,11 @@
       "name": "Position top moves a work unit to the front of its column",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "75-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -188,11 +188,11 @@
       "name": "Numeric position is 1-based",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "101-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -372,11 +372,11 @@
       "name": "Reject numeric position below 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "132-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -556,11 +556,11 @@
       "name": "Detect work unit missing from its own states array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "161-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -740,11 +740,11 @@
       "name": "Reject cross-column relative placement",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "193-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -924,11 +924,11 @@
       "name": "Reject prioritizing a non-existent work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "226-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -1108,11 +1108,11 @@
       "name": "Reject prioritizing a done work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "260-287",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -1292,11 +1292,11 @@
       "name": "Relative placement with before and after",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "289-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -1476,11 +1476,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/prioritize_work_unit.rs",
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
           "lines": "318-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/prioritize_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
               "lines": [
                 96,
                 97,
@@ -1662,10 +1662,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/prioritize_work_unit.rs"
+      "rust/fspec-core/tests/prioritize_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/prioritize_work_unit.rs"
+      "rust/fspec-core/src/commands/prioritize_work_unit.rs"
     ],
     "totalLinesCovered": 1786
   }

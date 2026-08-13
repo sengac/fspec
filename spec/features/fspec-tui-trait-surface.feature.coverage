@@ -4,11 +4,11 @@
       "name": "FspecBackend trait surface exposes 5 RPC methods + 3 broadcast subscriptions",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_trait.rs",
+          "file": "rust/fspec-tui/tests/source_shape_trait.rs",
           "lines": "23-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -82,11 +82,11 @@
       "name": "A transport-agnostic consumer compiles against either backend implementation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_trait.rs",
+          "file": "rust/fspec-tui/tests/source_shape_trait.rs",
           "lines": "94-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -160,11 +160,11 @@
       "name": "Priority enum has the exact #[repr(u32)] discriminants from RPC-002 doc 09",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_trait.rs",
+          "file": "rust/fspec-tui/tests/source_shape_trait.rs",
           "lines": "133-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 1,
                 2,
@@ -297,11 +297,11 @@
       "name": "Component trait surface exposes priority is_active id handle_event update and render with documented defaults",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_trait.rs",
+          "file": "rust/fspec-tui/tests/source_shape_trait.rs",
           "lines": "169-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 1,
                 2,
@@ -436,11 +436,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_trait.rs"
+      "rust/fspec-tui/tests/source_shape_trait.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/components/mod.rs"
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/components/mod.rs"
     ],
     "totalLinesCovered": 570
   }

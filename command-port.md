@@ -1,7 +1,7 @@
 # Command Port Reference (TS → Rust)
 
 Authoritative playbook for porting fspec CLI commands from `src/commands/<name>.ts`
-(TypeScript / Commander.js) to the Rust workspace at `codelet/`. Distilled from
+(TypeScript / Commander.js) to the Rust workspace at `rust/`. Distilled from
 RPC-241..RPC-253 (the 12 `list-*` commands) and the RPC-327 dispatcher bug fix.
 
 **Reference port: `list-prefixes` (RPC-248).** When in doubt, read its files
@@ -13,21 +13,21 @@ top-to-bottom and copy the shape.
 
 | # | Path | Role |
 |---|------|------|
-| 1 | `codelet/fspec-core/src/commands/<snake>.rs` | **Single source of truth.** `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` |
-| 2 | `codelet/fspec/src/<snake>.rs` | **CLI bridge** — thin façade: `pub struct CliArgs { … }` + `pub async fn run(args: CliArgs) -> anyhow::Result<u8>` |
-| 3 | `codelet/fspec/src/main.rs` | **clap variant** in `enum Mode` + match arm in `fn main` using the `forward!` macro |
-| 4 | `codelet/fspec-core/src/help/configs/<snake>.rs` | **Help config** — `pub const CONFIG: CommandHelpConfig = …` |
-| 5 | `codelet/fspec/tests/fixtures/help/<name>.txt` | **Byte-exact help fixture** — captured from `node dist/index.js <cmd> --help` piped to non-TTY |
-| 6 | `codelet/fspec/tests/cli_<snake>.rs` | **Integration test** — one `#[test]` per Gherkin scenario, `@step` comments verbatim |
+| 1 | `rust/fspec-core/src/commands/<snake>.rs` | **Single source of truth.** `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` |
+| 2 | `rust/fspec/src/<snake>.rs` | **CLI bridge** — thin façade: `pub struct CliArgs { … }` + `pub async fn run(args: CliArgs) -> anyhow::Result<u8>` |
+| 3 | `rust/fspec/src/main.rs` | **clap variant** in `enum Mode` + match arm in `fn main` using the `forward!` macro |
+| 4 | `rust/fspec-core/src/help/configs/<snake>.rs` | **Help config** — `pub const CONFIG: CommandHelpConfig = …` |
+| 5 | `rust/fspec/tests/fixtures/help/<name>.txt` | **Byte-exact help fixture** — captured from `node dist/index.js <cmd> --help` piped to non-TTY |
+| 6 | `rust/fspec/tests/cli_<snake>.rs` | **Integration test** — one `#[test]` per Gherkin scenario, `@step` comments verbatim |
 
 Typical sizes — core impl 200–440 LOC, CLI bridge 90–170 LOC, integration test 300–530 LOC.
 
 ---
 
-## 2. Shared infrastructure under `codelet/fspec-core/src/`
+## 2. Shared infrastructure under `rust/fspec-core/src/`
 
 ```
-codelet/fspec-core/src/
+rust/fspec-core/src/
 ├── canonical.rs          # CANONICAL_COMMANDS + PORTED_COMMANDS + is_ported()
 ├── dispatch.rs           # dispatch_command() + run_ported() + run_stub() + poll_sync_future()
 ├── error.rs              # FspecCoreError { InvalidArgs, Io, ParseJson, NotYetPorted, … }
@@ -95,11 +95,11 @@ alphabetize and break parity.
    FRONT DOOR #1 — Shell argv                       FRONT DOOR #2 — LLM tool call
    $ fspec list-prefixes                            {command, args:{...}}
             │                                                           │
-   codelet/fspec/src/main.rs                        codelet/fspec-core/src/
+   rust/fspec/src/main.rs                        rust/fspec-core/src/
    `fn main()` → Cli::parse()                        dispatch::dispatch_command
    → matches Mode::<Name> variant                   → canonical::lookup
             │                                       → canonical::is_ported
-   codelet/fspec/src/<name>.rs::run(CliArgs)        → run_ported() match arm
+   rust/fspec/src/<name>.rs::run(CliArgs)        → run_ported() match arm
    - project_root = env::current_dir()                                  │
    - marshal CliArgs → serde_json::Map               (passes args_json verbatim)
    - call fspec_core::commands::<name>::run(json, root)
@@ -142,7 +142,7 @@ If you must, you need a different dispatch architecture (out of scope for list-*
 
 ## 4. Help text intercept (byte-parity with TS Commander.js)
 
-Help is intercepted in `codelet/fspec/src/main.rs::intercept_ts_help()` **before
+Help is intercepted in `rust/fspec/src/main.rs::intercept_ts_help()` **before
 clap parses argv**. clap's auto-generated `--help` block would diverge from the
 TS Commander.js format — the TS rich `formatCommandHelp(config)` output is the
 contract.
@@ -198,7 +198,7 @@ Description/Options block. Rust hard-codes that as `LIST_FOUNDATION_SECTIONS_HEL
 
 ## 5. The `forward!` macro and clap variant pattern
 
-In `codelet/fspec/src/main.rs::main()` after `Cli::parse()`:
+In `rust/fspec/src/main.rs::main()` after `Cli::parse()`:
 
 ```rust
 macro_rules! forward {
@@ -233,7 +233,7 @@ let res = match cli.cmd {
 
 ---
 
-## 6. Core implementation template (`codelet/fspec-core/src/commands/<snake>.rs`)
+## 6. Core implementation template (`rust/fspec-core/src/commands/<snake>.rs`)
 
 ```rust
 //! `<name>` — Rust port of `src/commands/<name>.ts` (RPC-XXX).
@@ -302,7 +302,7 @@ fn render_text(/* … */) -> String { /* … */ }
 
 ---
 
-## 7. CLI bridge template (`codelet/fspec/src/<snake>.rs`)
+## 7. CLI bridge template (`rust/fspec/src/<snake>.rs`)
 
 ```rust
 //! `<name>` shell-facing CLI bridge (RPC-XXX).
@@ -358,7 +358,7 @@ this by comparing dispatcher JSON to CLI JSON.
 
 ## 8. Test infrastructure
 
-### Shared helpers — `codelet/fspec/tests/common/mod.rs`
+### Shared helpers — `rust/fspec/tests/common/mod.rs`
 
 ```rust
 pub fn fspec_bin() -> &'static str { env!("CARGO_BIN_EXE_fspec") }  // cargo builds binary before tests
@@ -422,7 +422,7 @@ that asserts the binary's `--help` output is byte-for-byte identical to
 `tests/fixtures/help/<name>.txt`. To regenerate the fixture:
 
 ```bash
-node dist/index.js <command-name> --help 2>&1 > codelet/fspec/tests/fixtures/help/<name>.txt
+node dist/index.js <command-name> --help 2>&1 > rust/fspec/tests/fixtures/help/<name>.txt
 ```
 
 Pipe to a file (not a TTY) so chalk wrappers reduce to identity.
@@ -474,10 +474,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
 ### Testing (write failing tests FIRST)
 
-1. Create `codelet/fspec/tests/cli_<snake>.rs` with one `#[test]` per scenario,
+1. Create `rust/fspec/tests/cli_<snake>.rs` with one `#[test]` per scenario,
    `@step` comments verbatim.
-2. Create `codelet/fspec/tests/fixtures/help/<name>.txt` by capturing TS output.
-3. `fspec link-coverage <feature> --scenario "…" --test-file codelet/fspec/tests/cli_<snake>.rs --test-lines <range>`
+2. Create `rust/fspec/tests/fixtures/help/<name>.txt` by capturing TS output.
+3. `fspec link-coverage <feature> --scenario "…" --test-file rust/fspec/tests/cli_<snake>.rs --test-lines <range>`
 4. Run `cargo test -p codelet-fspec --test cli_<snake>` and confirm they FAIL
    for the right reasons (no implementation yet → `NotYetPorted`).
 5. `fspec update-work-unit-status <id> implementing`.
@@ -486,16 +486,16 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
 1. Add `<name>` to `PORTED_COMMANDS` in `canonical.rs`.
 2. Add the dispatch arm in `dispatch.rs::run_ported` AND remove the `run_stub` arm.
-3. Replace the stub at `codelet/fspec-core/src/commands/<snake>.rs` with the real impl.
-4. Extend `codelet/fspec-core/src/io/` and `codelet/fspec-core/src/types/` with
+3. Replace the stub at `rust/fspec-core/src/commands/<snake>.rs` with the real impl.
+4. Extend `rust/fspec-core/src/io/` and `rust/fspec-core/src/types/` with
    any new shared modules. **Prefer extending existing modules over creating new ones**.
-5. Add `codelet/fspec-core/src/help/configs/<snake>.rs` + register in `configs/mod.rs`.
-6. Add `Mode::<Pascal>` variant in `codelet/fspec/src/main.rs::Mode`.
+5. Add `rust/fspec-core/src/help/configs/<snake>.rs` + register in `configs/mod.rs`.
+6. Add `Mode::<Pascal>` variant in `rust/fspec/src/main.rs::Mode`.
 7. Add the match arm calling `forward!`.
 8. Add the intercept arm in `intercept_ts_help()`.
-9. Create `codelet/fspec/src/<snake>.rs` bridge + `mod <snake>;` in main.rs.
+9. Create `rust/fspec/src/<snake>.rs` bridge + `mod <snake>;` in main.rs.
 10. Run tests, iterate until green.
-11. Link impl: `fspec link-coverage <feature> --scenario "…" --test-file … --impl-file codelet/fspec-core/src/commands/<snake>.rs --impl-lines <range>`.
+11. Link impl: `fspec link-coverage <feature> --scenario "…" --test-file … --impl-file rust/fspec-core/src/commands/<snake>.rs --impl-lines <range>`.
 
 ### Validating
 
@@ -576,7 +576,7 @@ fails. The intercept short-circuits via `std::process::exit(0)` semantics
   dependency tree (lance, tantivy, datafusion) — 20+ minutes minimum, and
   worse: with full debug info the 944 test binaries reach 1.4–2 GB EACH.
   On 2026-07-10 a `cargo test --workspace` run grew `target/` to 302 GB and
-  **crashed the machine** (see the incident note in `codelet/Cargo.toml`).
+  **crashed the machine** (see the incident note in `rust/Cargo.toml`).
   Always target: `cargo test -p codelet-fspec --test cli_<name>` or
   `cargo test -p codelet-fspec-core --test <name>`. For multi-crate runs,
   prepend `CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0` and bound
@@ -620,21 +620,21 @@ Async signature is a transport contract; no real `.await` allowed.
 
 | Need | Path |
 |------|------|
-| Add a new ported command name | `codelet/fspec-core/src/canonical.rs::PORTED_COMMANDS` |
-| Wire dispatcher | `codelet/fspec-core/src/dispatch.rs::run_ported` (add arm + remove from `run_stub`) |
-| Core impl | `codelet/fspec-core/src/commands/<snake>.rs` |
-| Register core module | `codelet/fspec-core/src/commands/mod.rs` |
-| Shared IO helpers | `codelet/fspec-core/src/io/{ensure,locked_file,project_root,feature_glob}.rs` |
-| Shared types | `codelet/fspec-core/src/types/{work_unit,prefix,epic,tags}.rs` |
-| Help config | `codelet/fspec-core/src/help/configs/<snake>.rs` |
-| Register help config | `codelet/fspec-core/src/help/configs/mod.rs` |
-| clap variant | `codelet/fspec/src/main.rs::Mode` |
-| clap dispatch arm | `codelet/fspec/src/main.rs::main` (use `forward!` macro) |
-| Help intercept arm | `codelet/fspec/src/main.rs::intercept_ts_help` |
-| CLI bridge | `codelet/fspec/src/<snake>.rs` (+ `mod <snake>;` in main.rs) |
-| Integration tests | `codelet/fspec/tests/cli_<snake>.rs` |
-| Test helpers | `codelet/fspec/tests/common/mod.rs` |
-| Help fixture | `codelet/fspec/tests/fixtures/help/<name>.txt` |
+| Add a new ported command name | `rust/fspec-core/src/canonical.rs::PORTED_COMMANDS` |
+| Wire dispatcher | `rust/fspec-core/src/dispatch.rs::run_ported` (add arm + remove from `run_stub`) |
+| Core impl | `rust/fspec-core/src/commands/<snake>.rs` |
+| Register core module | `rust/fspec-core/src/commands/mod.rs` |
+| Shared IO helpers | `rust/fspec-core/src/io/{ensure,locked_file,project_root,feature_glob}.rs` |
+| Shared types | `rust/fspec-core/src/types/{work_unit,prefix,epic,tags}.rs` |
+| Help config | `rust/fspec-core/src/help/configs/<snake>.rs` |
+| Register help config | `rust/fspec-core/src/help/configs/mod.rs` |
+| clap variant | `rust/fspec/src/main.rs::Mode` |
+| clap dispatch arm | `rust/fspec/src/main.rs::main` (use `forward!` macro) |
+| Help intercept arm | `rust/fspec/src/main.rs::intercept_ts_help` |
+| CLI bridge | `rust/fspec/src/<snake>.rs` (+ `mod <snake>;` in main.rs) |
+| Integration tests | `rust/fspec/tests/cli_<snake>.rs` |
+| Test helpers | `rust/fspec/tests/common/mod.rs` |
+| Help fixture | `rust/fspec/tests/fixtures/help/<name>.txt` |
 | Feature file | `spec/features/<name>-cli-subcommand.feature` + `<name>-rust-port.feature` |
 | TS reference | `src/commands/<name>.ts` + `src/commands/<name>-help.ts` |
 | TS help formatter | `src/utils/help-formatter.ts` |
@@ -712,7 +712,7 @@ running cargo in parallel.
 
 RULES:
 - You are the ONLY agent allowed to run `cargo build`, `cargo test`,
-  `cargo clippy`, `cargo run`, or invoke `./codelet/target/release/fspec`.
+  `cargo clippy`, `cargo run`, or invoke `./rust/target/release/fspec`.
 - Other agents send you requests via AgentManager.message — process them
   one at a time, in arrival order.
 - ALWAYS tee output to a stable filename so the requesting agent can read it:
@@ -740,10 +740,10 @@ CARGO RUNNER AGENT ID: <CARGO_WORKER_ID>
 YOUR WORK UNIT: <RPC-XXX> — Port `<command-name>` to Rust
 
 REFERENCE IMPLEMENTATION (canonical pattern — read these first):
-  - codelet/fspec-core/src/commands/list_prefixes.rs
-  - codelet/fspec-core/tests/list_prefixes.rs
-  - codelet/fspec/src/list_prefixes.rs
-  - codelet/fspec/tests/cli_list_prefixes.rs
+  - rust/fspec-core/src/commands/list_prefixes.rs
+  - rust/fspec-core/tests/list_prefixes.rs
+  - rust/fspec/src/list_prefixes.rs
+  - rust/fspec/tests/cli_list_prefixes.rs
   - spec/features/list-prefixes-rust-port.feature
   - spec/features/list-prefixes-cli-subcommand.feature
   - TS source of truth: src/commands/list-prefixes.ts
@@ -762,23 +762,23 @@ YOU MAY CREATE / EDIT (isolated, parallel-safe):
 - spec/features/<your-cmd-kebab>-cli-subcommand.feature
 - spec/features/<your-cmd-kebab>-*.feature.coverage (auto)
 - spec/attachments/<RPC-ID>/ast-research-<your-cmd-kebab>.md
-- codelet/fspec-core/src/commands/<your_cmd_snake>.rs    (rewrite the stub)
-- codelet/fspec-core/tests/<your_cmd_snake>.rs           (NEW dispatcher test)
-- codelet/fspec-core/src/help/configs/<your_cmd_snake>.rs (NEW help config)
-- codelet/fspec/src/<your_cmd_snake>.rs                  (NEW CLI bridge)
-- codelet/fspec/tests/cli_<your_cmd_snake>.rs            (NEW CLI test)
-- codelet/fspec/tests/fixtures/help/<your-cmd-kebab>.txt (NEW help fixture)
-- NEW type files: codelet/fspec-core/src/types/<your_type>.rs
+- rust/fspec-core/src/commands/<your_cmd_snake>.rs    (rewrite the stub)
+- rust/fspec-core/tests/<your_cmd_snake>.rs           (NEW dispatcher test)
+- rust/fspec-core/src/help/configs/<your_cmd_snake>.rs (NEW help config)
+- rust/fspec/src/<your_cmd_snake>.rs                  (NEW CLI bridge)
+- rust/fspec/tests/cli_<your_cmd_snake>.rs            (NEW CLI test)
+- rust/fspec/tests/fixtures/help/<your-cmd-kebab>.txt (NEW help fixture)
+- NEW type files: rust/fspec-core/src/types/<your_type>.rs
 
 YOU MUST NOT TOUCH (shared — supervisor-only):
-- codelet/fspec-core/src/canonical.rs
-- codelet/fspec-core/src/dispatch.rs
-- codelet/fspec-core/src/commands/mod.rs
-- codelet/fspec-core/src/types/mod.rs
-- codelet/fspec-core/src/help/configs/mod.rs
-- codelet/fspec-core/src/io/ensure.rs       (READ-ONLY; ask supervisor)
-- codelet/fspec/src/main.rs
-- codelet/fspec/tests/cargo_shape.rs
+- rust/fspec-core/src/canonical.rs
+- rust/fspec-core/src/dispatch.rs
+- rust/fspec-core/src/commands/mod.rs
+- rust/fspec-core/src/types/mod.rs
+- rust/fspec-core/src/help/configs/mod.rs
+- rust/fspec-core/src/io/ensure.rs       (READ-ONLY; ask supervisor)
+- rust/fspec/src/main.rs
+- rust/fspec/tests/cargo_shape.rs
 - Cargo.toml files
 - spec/features/list-work-units-*.feature   (canonical reference)
 - spec/features/list-prefixes-*.feature     (canonical reference)
@@ -807,11 +807,11 @@ PHASE A — SPECIFYING:
       rules summary. STOP.
 
 PHASE B — TESTING:
-  1. Write codelet/fspec-core/tests/<your_cmd_snake>.rs — dispatcher test,
+  1. Write rust/fspec-core/tests/<your_cmd_snake>.rs — dispatcher test,
      one fn per Gherkin scenario, `@step` comments verbatim.
-  2. Write codelet/fspec/tests/cli_<your_cmd_snake>.rs — CLI shell test.
+  2. Write rust/fspec/tests/cli_<your_cmd_snake>.rs — CLI shell test.
   3. Capture help fixture: `node dist/index.js <name> --help 2>&1 >
-     codelet/fspec/tests/fixtures/help/<name>.txt`.
+     rust/fspec/tests/fixtures/help/<name>.txt`.
   4. Ask CARGO RUNNER to verify tests FAIL with NotYetPorted:
        cargo test --release -p codelet-fspec-core --test <your_cmd_snake>
        cargo test --release -p codelet-fspec --test cli_<your_cmd_snake>
@@ -820,9 +820,9 @@ PHASE B — TESTING:
      (e.g. "add `read_<x>_or_empty` to io/ensure.rs"). STOP.
 
 PHASE C — IMPLEMENTING:
-  1. Replace stub at codelet/fspec-core/src/commands/<your_cmd_snake>.rs.
-  2. Write codelet/fspec-core/src/help/configs/<your_cmd_snake>.rs.
-  3. Write codelet/fspec/src/<your_cmd_snake>.rs CLI bridge.
+  1. Replace stub at rust/fspec-core/src/commands/<your_cmd_snake>.rs.
+  2. Write rust/fspec-core/src/help/configs/<your_cmd_snake>.rs.
+  3. Write rust/fspec/src/<your_cmd_snake>.rs CLI bridge.
   4. Ask CARGO RUNNER for incremental builds:
        cargo build --release -p codelet-fspec-core
   5. WAIT FOR SUPERVISOR to wire shared files (canonical/dispatch/main/help-configs/mod).
@@ -1069,7 +1069,7 @@ move the rows into the "Completed batches" log at the bottom.
 │  Layer 2  ─ `cargo test -p codelet-fspec-tui`                      │
 │            Drives the `App` reducer in-process with an             │
 │            `Arc<MockBackend>` (the 2876-LoC test double in         │
-│            `codelet/fspec-tui/tests/common/mod.rs`). The Mock      │
+│            `rust/fspec-tui/tests/common/mod.rs`). The Mock      │
 │            here is a *real Rust object* with deterministic         │
 │            counters — NOT a `vi.fn()` interceptor. Same            │
 │            philosophy: redirect, don't intercept.                  │
@@ -1114,7 +1114,7 @@ behaviour.
 
 **File layout** — every tui-test file goes in `e2e/`, named
 `<rpc-id>-<slug>.test.ts`, and the program under test is the *built
-Rust binary at `codelet/target/debug/fspec`*. Never run a node script.
+Rust binary at `rust/target/debug/fspec`*. Never run a node script.
 
 **Canonical skeleton** (mirrors `rpc-068-rust-binary-smoke.test.ts`):
 
@@ -1125,7 +1125,7 @@ import { join } from 'path';
 import { mkdtempSync, writeFileSync } from 'fs';
 
 const rustFspec = join(homedir(), 'projects', 'fspec',
-                       'codelet', 'target', 'debug', 'fspec');
+                       'rust', 'target', 'debug', 'fspec');
 // REAL OS temp dir — no memfs, no in-process redirection.
 const tmpWorkspace = mkdtempSync(join(tmpdir(), '<rpc-id>-'));
 
@@ -1205,14 +1205,14 @@ Layer 2 is appropriate.
 
 ### 14.4 Fixture file conventions (Rust side)
 
-Fixtures live in `codelet/fspec/tests/fixtures/`:
+Fixtures live in `rust/fspec/tests/fixtures/`:
 
 ```
-codelet/fspec/tests/fixtures/
+rust/fspec/tests/fixtures/
 ├── help/
 │   └── <command>.txt           ← byte-for-byte TS Commander.js help output
 │                                 captured via: node dist/index.js <cmd> --help
-│                                 > codelet/fspec/tests/fixtures/help/<cmd>.txt
+│                                 > rust/fspec/tests/fixtures/help/<cmd>.txt
 │                                 (pipe to file — NOT TTY — so chalk reduces
 │                                 to identity)
 └── parity_<command>.txt        ← optional grep-style assertion that the
@@ -1244,13 +1244,13 @@ and silent breakage when a schema field is added — exactly what bit batch 3
 When a worker delivers a port batch, the supervisor will reject the work
 unless every one of these exists:
 
-1. `codelet/fspec-core/src/commands/<snake>.rs` — unit-test module at
+1. `rust/fspec-core/src/commands/<snake>.rs` — unit-test module at
    bottom (Layer 1) using only in-memory JSON.
-2. `codelet/fspec/tests/cli_<snake>.rs` — at least one `#[test] fn
+2. `rust/fspec/tests/cli_<snake>.rs` — at least one `#[test] fn
    scenario_<snake>_<…>()` per Gherkin scenario in the feature file
    (Layer 3) with real `tempfile::TempDir`, real `Command::new(fspec_bin())`,
    real captured stdout/stderr.
-3. `codelet/fspec/tests/fixtures/help/<command>.txt` — the help fixture,
+3. `rust/fspec/tests/fixtures/help/<command>.txt` — the help fixture,
    regenerated from the TS CLI (or marked Framing A in the architecture note
    if the TS CLI is broken — see `## 10`).
 4. Optional `e2e/<rpc-id>-<slug>.test.ts` *only if* the command has TUI

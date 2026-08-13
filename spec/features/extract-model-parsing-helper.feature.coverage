@@ -4,11 +4,11 @@
       "name": "Parse standard provider/model string",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/model_parsing.rs",
+          "file": "rust/sessions/src/model_parsing.rs",
           "lines": "114-131",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_parsing.rs",
+              "file": "rust/sessions/src/model_parsing.rs",
               "lines": [
                 58,
                 59,
@@ -69,11 +69,11 @@
       "name": "Parse profile model string with colon prefix",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/model_parsing.rs",
+          "file": "rust/sessions/src/model_parsing.rs",
           "lines": "135-149",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_parsing.rs",
+              "file": "rust/sessions/src/model_parsing.rs",
               "lines": [
                 58,
                 59,
@@ -134,11 +134,11 @@
       "name": "Parse codex model string",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/model_parsing.rs",
+          "file": "rust/sessions/src/model_parsing.rs",
           "lines": "153-167",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_parsing.rs",
+              "file": "rust/sessions/src/model_parsing.rs",
               "lines": [
                 58,
                 59,
@@ -199,11 +199,11 @@
       "name": "Reject invalid model string without slash",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/model_parsing.rs",
+          "file": "rust/sessions/src/model_parsing.rs",
           "lines": "171-184",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_parsing.rs",
+              "file": "rust/sessions/src/model_parsing.rs",
               "lines": [
                 58,
                 59,
@@ -264,11 +264,11 @@
       "name": "Reject empty model string",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/model_parsing.rs",
+          "file": "rust/sessions/src/model_parsing.rs",
           "lines": "188-200",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_parsing.rs",
+              "file": "rust/sessions/src/model_parsing.rs",
               "lines": [
                 58,
                 59,
@@ -329,11 +329,11 @@
       "name": "All three call sites use the shared helper",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/model_parsing.rs",
+          "file": "rust/sessions/src/model_parsing.rs",
           "lines": "235-275",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 595,
                 596,
@@ -353,11 +353,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/src/model_parsing.rs"
+      "rust/sessions/src/model_parsing.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/model_parsing.rs",
-      "codelet/sessions/src/session_manager.rs"
+      "rust/sessions/src/model_parsing.rs",
+      "rust/sessions/src/session_manager.rs"
     ],
     "totalLinesCovered": 367
   }

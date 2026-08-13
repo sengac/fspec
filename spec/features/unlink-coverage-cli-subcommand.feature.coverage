@@ -4,11 +4,11 @@
       "name": "Clap exposes unlink-coverage as a subcommand and prints flag help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "91-124",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -58,11 +58,11 @@
       "name": "CLI --all empties the scenario mappings and prints the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "125-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -112,11 +112,11 @@
       "name": "CLI without --all or --test-file exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "149-168",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -166,11 +166,11 @@
       "name": "CLI exits 1 when the coverage file is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "169-190",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -220,11 +220,11 @@
       "name": "unlink-coverage --help is byte-for-byte identical to the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "191-220",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -274,11 +274,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "221-250",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -328,11 +328,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_unlink_coverage.rs",
+          "file": "rust/fspec/tests/cli_unlink_coverage.rs",
           "lines": "251-291",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/unlink_coverage.rs",
+              "file": "rust/fspec/src/unlink_coverage.rs",
               "lines": [
                 29,
                 30,
@@ -384,10 +384,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_unlink_coverage.rs"
+      "rust/fspec/tests/cli_unlink_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/unlink_coverage.rs"
+      "rust/fspec/src/unlink_coverage.rs"
     ],
     "totalLinesCovered": 467
   }

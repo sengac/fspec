@@ -4,11 +4,11 @@
       "name": "Detect TaskCompletion anchor after successful test run",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "137-158",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 87,
                 88,
@@ -68,11 +68,11 @@
       "name": "Detect bash milestone anchor for successful npm install",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "184-207",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 149,
                 150,
@@ -123,11 +123,11 @@
       "name": "Reject anchor with confidence below threshold",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "242-269",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 76,
                 77,
@@ -146,11 +146,11 @@
       "name": "Always preserve last 3 conversation turns",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "645-680",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/selector.rs",
+              "file": "rust/core/src/compaction/selector.rs",
               "lines": [
                 43,
                 44,
@@ -217,11 +217,11 @@
       "name": "Detect ErrorResolution anchor after fixing build error",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "160-180",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 106,
                 107,
@@ -247,11 +247,11 @@
       "name": "Detect web search anchor with synthesis",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "209-238",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 189,
                 190,
@@ -301,11 +301,11 @@
       "name": "Create synthetic UserCheckpoint when no natural anchors found",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "682-738",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/compactor.rs",
+              "file": "rust/core/src/compaction/compactor.rs",
               "lines": [
                 116,
                 117,
@@ -333,11 +333,11 @@
       "name": "Extract active files from Edit Write and Read tool calls",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "308-333",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 184,
                 185,
@@ -396,11 +396,11 @@
       "name": "Extract current goals from user messages",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "335-355",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 232,
                 233,
@@ -440,11 +440,11 @@
       "name": "Detect build status as Passing from test output",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "357-388",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 281,
                 282,
@@ -476,11 +476,11 @@
       "name": "Detect build status as Failing from test output",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "390-421",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 281,
                 282,
@@ -512,11 +512,11 @@
       "name": "Extract error states from failed tool results",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "423-439",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 261,
                 262,
@@ -547,11 +547,11 @@
       "name": "Extract last user intent from most recent turn",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "441-461",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 302,
                 303,
@@ -578,11 +578,11 @@
       "name": "Generate summary with dynamic PreservationContext not hardcoded",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "467-498",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/compactor.rs",
+              "file": "rust/core/src/compaction/compactor.rs",
               "lines": [
                 187,
                 188,
@@ -616,11 +616,11 @@
       "name": "PreservationContext format_for_summary produces correct output",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "500-517",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 318,
                 319,
@@ -655,11 +655,11 @@
       "name": "Warn when compression ratio is below 60 percent",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/ctx001_tests.rs",
+          "file": "rust/core/src/compaction/ctx001_tests.rs",
           "lines": "561-597",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/compactor.rs",
+              "file": "rust/core/src/compaction/compactor.rs",
               "lines": [
                 164,
                 165,
@@ -682,13 +682,13 @@
     "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/ctx001_tests.rs"
+      "rust/core/src/compaction/ctx001_tests.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/anchor.rs",
-      "codelet/core/src/compaction/selector.rs",
-      "codelet/core/src/compaction/compactor.rs",
-      "codelet/core/src/compaction/model.rs"
+      "rust/core/src/compaction/anchor.rs",
+      "rust/core/src/compaction/selector.rs",
+      "rust/core/src/compaction/compactor.rs",
+      "rust/core/src/compaction/model.rs"
     ],
     "totalLinesCovered": 874
   }

@@ -91,7 +91,7 @@ Feature: Port show-acceptance-criteria command to Rust
     And the data.message contains the substring 'Showing acceptance criteria for 15 scenarios from 3 features'
 
   Scenario: Shared infrastructure module is registered for show-acceptance-criteria
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/show_acceptance_criteria.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/show_acceptance_criteria.rs
     Then the module no longer returns FspecCoreError::NotYetPorted
     And the dispatcher routes show-acceptance-criteria to the new run function

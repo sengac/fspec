@@ -4,11 +4,11 @@
       "name": "Extract code matching AST pattern to new file",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "12-62",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 1,
                 2,
@@ -70,11 +70,11 @@
       "name": "Error when pattern matches multiple nodes",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "64-122",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 140,
                 141,
@@ -112,11 +112,11 @@
       "name": "Error when pattern matches zero nodes",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "124-171",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 140,
                 141,
@@ -154,11 +154,11 @@
       "name": "Error when invalid language specified",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "173-207",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 75,
                 76,
@@ -186,11 +186,11 @@
       "name": "Blank lines cleaned up after extraction",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "209-256",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 240,
                 241,
@@ -228,11 +228,11 @@
       "name": "Successful refactor returns complete result structure",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "258-301",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 195,
                 196,
@@ -270,11 +270,11 @@
       "name": "Replace matched code in-place with replacement pattern",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "303-351",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 220,
                 221,
@@ -307,11 +307,11 @@
       "name": "Append to existing target file",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/astgrep_refactor_test.rs",
+          "file": "rust/tools/tests/astgrep_refactor_test.rs",
           "lines": "353-405",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 170,
                 171,
@@ -351,10 +351,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/astgrep_refactor_test.rs"
+      "rust/tools/tests/astgrep_refactor_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/astgrep_refactor.rs"
+      "rust/tools/src/astgrep_refactor.rs"
     ],
     "totalLinesCovered": 604
   }

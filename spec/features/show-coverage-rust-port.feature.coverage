@@ -4,11 +4,11 @@
       "name": "Bare feature name resolves to spec/features/<name>.feature.coverage and renders markdown report",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "93-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -726,11 +726,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "93-123",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1453,11 +1453,11 @@
       "name": "Trailing .feature on the bare name is tolerated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "124-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -2175,11 +2175,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "124-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -2902,11 +2902,11 @@
       "name": "Missing coverage file is reported as an Io error with TS-parity message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "145-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -3624,11 +3624,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "145-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -4351,11 +4351,11 @@
       "name": "Invalid JSON in the coverage file is reported as an InvalidArgs error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "173-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -5073,11 +5073,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "173-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -5800,11 +5800,11 @@
       "name": "Markdown summary section is emitted in the exact TS order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "207-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -6522,11 +6522,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "207-250",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -7249,11 +7249,11 @@
       "name": "Per-scenario block uses \u2705 / FULLY COVERED label for scenarios with implMappings",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "251-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -7971,11 +7971,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "251-303",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -8698,11 +8698,11 @@
       "name": "Per-scenario block uses \u26a0\ufe0f / PARTIALLY COVERED label when testMapping has no implMappings",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "304-345",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -9420,11 +9420,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "304-346",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -10147,11 +10147,11 @@
       "name": "Per-scenario block uses \u274c / UNCOVERED label and the file gains a Coverage Gaps section",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "347-397",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -10869,11 +10869,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "347-398",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -11596,11 +11596,11 @@
       "name": "Missing referenced test or impl files are surfaced as Warnings section but command still succeeds",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "399-442",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -12318,11 +12318,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "399-443",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -13045,11 +13045,11 @@
       "name": "Legacy coverage file without a stats key has stats calculated silently from scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "444-473",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -13767,11 +13767,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "444-474",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -14494,11 +14494,11 @@
       "name": "Legacy stats calculation deduplicates test and impl files and rounds coveragePercent with Math.round semantics",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "475-514",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -15216,11 +15216,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "475-515",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -15943,11 +15943,11 @@
       "name": "Line counting accumulates test ranges and both array-and-string impl ranges",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "516-571",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -16665,11 +16665,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "516-572",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -17392,11 +17392,11 @@
       "name": "JSON format for single-file mode emits 2-space-indented object with keys in declaration order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "573-621",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -18114,11 +18114,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "573-622",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -18841,11 +18841,11 @@
       "name": "Single-file JSON omits warnings field when no files are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "623-663",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -19563,11 +19563,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "623-702",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -20290,11 +20290,11 @@
       "name": "Project-wide mode aggregates totals and prints '# Project Coverage Report'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "703-730",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -21012,11 +21012,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "703-731",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -21739,11 +21739,11 @@
       "name": "Project Summary section appears in TS field order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "732-761",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -22461,11 +22461,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "732-762",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -23188,11 +23188,11 @@
       "name": "Features Overview uses \u2705 for 100% coverage features",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "763-797",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -23910,11 +23910,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "763-798",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -24637,11 +24637,11 @@
       "name": "Features Overview uses \u26a0\ufe0f for \u226550% but <100% coverage features",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "799-841",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -25359,11 +25359,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "799-842",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -26086,11 +26086,11 @@
       "name": "Features Overview uses \u274c for <50% coverage features including 0%",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "843-881",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -26808,11 +26808,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "843-882",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -27535,11 +27535,11 @@
       "name": "Project-wide mode emits Detailed Coverage by Feature with per-feature scenario list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "883-935",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -28257,11 +28257,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "883-936",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -28984,11 +28984,11 @@
       "name": "Project-wide mode silently skips coverage files whose JSON fails to parse",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "937-984",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -29706,11 +29706,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "937-985",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -30433,11 +30433,11 @@
       "name": "Project-wide mode errors when spec/features directory does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "986-1012",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -31155,11 +31155,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "986-1013",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -31882,11 +31882,11 @@
       "name": "Project-wide mode errors when spec/features exists but contains no .feature.coverage files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1014-1040",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -32604,11 +32604,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1014-1041",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -33331,11 +33331,11 @@
       "name": "Project-wide mode with zero scenarios across all features renders Overall Coverage 0% without NaN",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1042-1069",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -34053,11 +34053,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1042-1070",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -34780,11 +34780,11 @@
       "name": "Project-wide JSON format emits 2-space-indented object with declaration-order root keys",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1071-1124",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -35502,11 +35502,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1071-1125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -36229,11 +36229,11 @@
       "name": "args_json that fails to parse returns FspecCoreError::InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1126-1150",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -36951,11 +36951,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1126-1151",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -37678,11 +37678,11 @@
       "name": "Coverage sidecar types module is publicly accessible from the crate root",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1152-1201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/types/coverage.rs",
+              "file": "rust/fspec-core/src/types/coverage.rs",
               "lines": [
                 1,
                 2,
@@ -37975,11 +37975,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/show_coverage.rs",
+          "file": "rust/fspec-core/tests/show_coverage.rs",
           "lines": "1152-1201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/types/coverage.rs",
+              "file": "rust/fspec-core/src/types/coverage.rs",
               "lines": [
                 1,
                 2,
@@ -38279,11 +38279,11 @@
     "coveredScenarios": 27,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/show_coverage.rs"
+      "rust/fspec-core/tests/show_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/show_coverage.rs",
-      "codelet/fspec-core/src/types/coverage.rs"
+      "rust/fspec-core/src/commands/show_coverage.rs",
+      "rust/fspec-core/src/types/coverage.rs"
     ],
     "totalLinesCovered": 0
   }

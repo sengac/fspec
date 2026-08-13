@@ -4,11 +4,11 @@
       "name": "Handle command InboundMessage by emitting FspecCommandRequest",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "990-1045",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 352,
                 353,
@@ -125,11 +125,11 @@
       "name": "Handle command InboundMessage without command_emitter configured",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "1047-1075",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 397,
                 398,
@@ -155,11 +155,11 @@
       "name": "Intercept FspecCommandResult chunk and send commandResponse",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "1077-1133",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 459,
                 460,
@@ -266,11 +266,11 @@
       "name": "Skip FspecCommandRequest chunks on broadcast channel",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "1135-1158",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 471,
                 472,
@@ -287,11 +287,11 @@
       "name": "Forward regular text chunks unchanged",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "1160-1196",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 540,
                 541,
@@ -312,11 +312,11 @@
       "name": "Skip FspecCommandResult with unknown tool_call_id",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "1198-1227",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 527,
                 528,
@@ -339,10 +339,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/bridge_relay.rs"
+      "rust/tools/src/bridge_relay.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bridge_relay.rs"
+      "rust/tools/src/bridge_relay.rs"
     ],
     "totalLinesCovered": 470
   }

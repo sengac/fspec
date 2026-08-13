@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "74-102",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -46,11 +46,11 @@
       "name": "CLI removes a persona and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "107-133",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -88,11 +88,11 @@
       "name": "CLI removes from the draft when foundation.json.draft exists",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "138-160",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -130,11 +130,11 @@
       "name": "CLI reports a non-existent persona with exit 1 and the available names",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "165-191",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -172,11 +172,11 @@
       "name": "CLI reports the empty-personas case with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "196-214",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -214,11 +214,11 @@
       "name": "CLI reports the missing-foundation error with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "219-240",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -256,11 +256,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_persona.rs",
+          "file": "rust/fspec/tests/cli_remove_persona.rs",
           "lines": "245-289",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_persona.rs",
+              "file": "rust/fspec/src/remove_persona.rs",
               "lines": [
                 37,
                 38,
@@ -300,10 +300,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_persona.rs"
+      "rust/fspec/tests/cli_remove_persona.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_persona.rs"
+      "rust/fspec/src/remove_persona.rs"
     ],
     "totalLinesCovered": 374
   }

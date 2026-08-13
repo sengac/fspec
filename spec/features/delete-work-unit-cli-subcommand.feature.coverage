@@ -4,11 +4,11 @@
       "name": "Clap exposes delete-work-unit with a positional arg and flags in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_work_unit.rs",
+          "file": "rust/fspec/tests/cli_delete_work_unit.rs",
           "lines": "89-133",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_work_unit.rs",
+              "file": "rust/fspec/src/delete_work_unit.rs",
               "lines": [
                 40,
                 41,
@@ -56,11 +56,11 @@
       "name": "CLI deletes an existing leaf work unit and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_work_unit.rs",
+          "file": "rust/fspec/tests/cli_delete_work_unit.rs",
           "lines": "135-160",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_work_unit.rs",
+              "file": "rust/fspec/src/delete_work_unit.rs",
               "lines": [
                 49,
                 50,
@@ -99,11 +99,11 @@
       "name": "CLI exits 1 when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_work_unit.rs",
+          "file": "rust/fspec/tests/cli_delete_work_unit.rs",
           "lines": "162-189",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_work_unit.rs",
+              "file": "rust/fspec/src/delete_work_unit.rs",
               "lines": [
                 49,
                 50,
@@ -142,11 +142,11 @@
       "name": "CLI cascades dependencies and prints a blocks warning",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_work_unit.rs",
+          "file": "rust/fspec/tests/cli_delete_work_unit.rs",
           "lines": "191-238",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_work_unit.rs",
+              "file": "rust/fspec/src/delete_work_unit.rs",
               "lines": [
                 49,
                 50,
@@ -185,11 +185,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_work_unit.rs",
+          "file": "rust/fspec/tests/cli_delete_work_unit.rs",
           "lines": "240-292",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_work_unit.rs",
+              "file": "rust/fspec/src/delete_work_unit.rs",
               "lines": [
                 49,
                 50,
@@ -228,11 +228,11 @@
       "name": "delete-work-unit --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_work_unit.rs",
+          "file": "rust/fspec/tests/cli_delete_work_unit.rs",
           "lines": "294-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/delete_work_unit.rs",
+              "file": "rust/fspec-core/src/help/configs/delete_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -381,11 +381,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_work_unit.rs"
+      "rust/fspec/tests/cli_delete_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_work_unit.rs",
-      "codelet/fspec-core/src/help/configs/delete_work_unit.rs"
+      "rust/fspec/src/delete_work_unit.rs",
+      "rust/fspec-core/src/help/configs/delete_work_unit.rs"
     ],
     "totalLinesCovered": 504
   }

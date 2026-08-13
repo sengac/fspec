@@ -4,11 +4,11 @@
       "name": "list_providers returns empty Vec when no session manager is attached (embedded)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "82-96",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 178,
                 179,
@@ -24,11 +24,11 @@
       "name": "list_providers crosses tarpc cleanly when no session manager is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "98-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 398,
                 399,
@@ -48,11 +48,11 @@
       "name": "Both transports return identical providers for the same SharedFspecService",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "119-148",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 708,
                 709,
@@ -75,11 +75,11 @@
       "name": "set_session_model returns Ok when no session manager is attached (embedded)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "150-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 183,
                 184,
@@ -103,11 +103,11 @@
       "name": "set_session_model crosses tarpc cleanly when no session manager is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "172-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 407,
                 408,
@@ -135,11 +135,11 @@
       "name": "set_thinking_level returns Ok when no session manager is attached (embedded)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "199-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 196,
                 197,
@@ -161,11 +161,11 @@
       "name": "set_thinking_level crosses tarpc cleanly with safe default",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "217-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 424,
                 425,
@@ -192,11 +192,11 @@
       "name": "get_session_role returns None when no session manager is attached (embedded)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "240-257",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 207,
                 208,
@@ -214,11 +214,11 @@
       "name": "get_session_role crosses tarpc cleanly with safe default",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "259-281",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 440,
                 441,
@@ -240,11 +240,11 @@
       "name": "set_session_role returns Ok when no session manager is attached (embedded)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "283-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 214,
                 215,
@@ -265,11 +265,11 @@
       "name": "set_session_role crosses tarpc cleanly with safe default",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "307-328",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 451,
                 452,
@@ -295,11 +295,11 @@
       "name": "StubSessionManagerHandle inherits the default SessionManagerHandle implementations for the five new RPC methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
           "lines": "330-373",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 124,
                 125,
@@ -370,13 +370,13 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs"
+      "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 453
   }

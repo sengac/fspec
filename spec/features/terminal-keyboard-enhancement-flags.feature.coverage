@@ -4,11 +4,11 @@
       "name": "Terminal without keyboard-enhancement support skips flag push and pop",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/terminal_keyboard_enhancement_rpc402.rs",
+          "file": "rust/fspec-tui/tests/terminal_keyboard_enhancement_rpc402.rs",
           "lines": "29-76",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/terminal.rs",
+              "file": "rust/fspec-tui/src/terminal.rs",
               "lines": [
                 90,
                 91,
@@ -45,11 +45,11 @@
       "name": "Supporting terminal pushes flags on init and pops them before leaving the alternate screen",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/terminal_keyboard_enhancement_rpc402.rs",
+          "file": "rust/fspec-tui/tests/terminal_keyboard_enhancement_rpc402.rs",
           "lines": "83-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/terminal.rs",
+              "file": "rust/fspec-tui/src/terminal.rs",
               "lines": [
                 185,
                 186,
@@ -107,10 +107,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/terminal_keyboard_enhancement_rpc402.rs"
+      "rust/fspec-tui/tests/terminal_keyboard_enhancement_rpc402.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/terminal.rs"
+      "rust/fspec-tui/src/terminal.rs"
     ],
     "totalLinesCovered": 150
   }

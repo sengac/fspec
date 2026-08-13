@@ -4,11 +4,11 @@
       "name": "Credentialed provider lists tool-call models newest-first and drops deprecated ones",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "59-77",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 33,
                 34,
@@ -71,11 +71,11 @@
       "name": "Only tool-call-capable models are listed",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "79-102",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 33,
                 34,
@@ -138,11 +138,11 @@
       "name": "Gemini canonical slug is sourced from the models.dev google entry",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "104-126",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 23,
                 24,
@@ -215,11 +215,11 @@
       "name": "Uncredentialed provider yields no models",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "128-147",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 46,
                 47,
@@ -241,11 +241,11 @@
       "name": "Provider absent from models.dev yields no models without error",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "149-161",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 56,
                 57,
@@ -262,11 +262,11 @@
       "name": "Model entry fields are mapped from the models.dev model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "163-184",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 70,
                 71,
@@ -291,11 +291,11 @@
       "name": "list_providers wires the cloud model catalog into the model selector",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "file": "rust/sessions/tests/rpc073_cloud_model_catalog.rs",
           "lines": "186-207",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 924,
                 925,
@@ -358,11 +358,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc073_cloud_model_catalog.rs"
+      "rust/sessions/tests/rpc073_cloud_model_catalog.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/cloud_models.rs",
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/sessions/src/cloud_models.rs",
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 383
   }

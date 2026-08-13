@@ -4,11 +4,11 @@
       "name": "codelet-graph exists as a workspace member with the expected dependency surface",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "32-92",
           "implMappings": [
             {
-              "file": "codelet/graph/Cargo.toml",
+              "file": "rust/graph/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -75,11 +75,11 @@
       "name": "codelet-graph boundary guard test passes",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "95-110",
           "implMappings": [
             {
-              "file": "codelet/graph/src/lib.rs",
+              "file": "rust/graph/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -117,11 +117,11 @@
       "name": "Lifted graph reset integration tests still prove the reset semantics",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "117-150",
           "implMappings": [
             {
-              "file": "codelet/graph/src/registry.rs",
+              "file": "rust/graph/src/registry.rs",
               "lines": [
                 1,
                 2,
@@ -316,11 +316,11 @@
       "name": "All 24 existing NAPI ast_*_test.rs integration tests still pass through the shim",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "153-180",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph.rs",
+              "file": "rust/napi/src/graph.rs",
               "lines": [
                 1,
                 2,
@@ -341,11 +341,11 @@
       "name": "codelet-agent-loop can depend on codelet-graph without re-introducing a NAPI edge",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "185-220",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/Cargo.toml",
+              "file": "rust/agent-loop/Cargo.toml",
               "lines": [
                 30,
                 31,
@@ -369,11 +369,11 @@
       "name": "Workspace clippy gate is clean after the lift",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "227-260",
           "implMappings": [
             {
-              "file": "codelet/graph/Cargo.toml",
+              "file": "rust/graph/Cargo.toml",
               "lines": [
                 9,
                 10,
@@ -390,7 +390,7 @@
       "name": "Manual graph-index smoke test shows no behavioural drift",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "263-275",
           "implMappings": [
             {
@@ -606,11 +606,11 @@
       "name": "Git blame history is preserved through git mv",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "278-310",
           "implMappings": [
             {
-              "file": "codelet/graph/src/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/graph/src/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -722,7 +722,7 @@
       "name": "RPC-072 is unblocked once RPC-092 is marked done",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "313-322",
           "implMappings": [
             {
@@ -838,7 +838,7 @@
       "name": "Pre-lift baseline checkpoint enables rollback at any phase",
       "testMappings": [
         {
-          "file": "codelet/graph/tests/codelet_graph_crate_lift.rs",
+          "file": "rust/graph/tests/codelet_graph_crate_lift.rs",
           "lines": "325-334",
           "implMappings": [
             {
@@ -1076,16 +1076,16 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/graph/tests/codelet_graph_crate_lift.rs"
+      "rust/graph/tests/codelet_graph_crate_lift.rs"
     ],
     "implFiles": [
-      "codelet/graph/Cargo.toml",
-      "codelet/graph/src/lib.rs",
-      "codelet/graph/src/registry.rs",
-      "codelet/napi/src/graph.rs",
-      "codelet/agent-loop/Cargo.toml",
+      "rust/graph/Cargo.toml",
+      "rust/graph/src/lib.rs",
+      "rust/graph/src/registry.rs",
+      "rust/napi/src/graph.rs",
+      "rust/agent-loop/Cargo.toml",
       "spec/attachments/RPC-092/test-plan.md",
-      "codelet/graph/src/ast_pipeline/ast_ts_extractor.rs",
+      "rust/graph/src/ast_pipeline/ast_ts_extractor.rs",
       "spec/work-units.json",
       "spec/attachments/RPC-092/implementation-plan.md"
     ],

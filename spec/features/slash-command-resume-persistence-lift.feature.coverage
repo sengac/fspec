@@ -4,11 +4,11 @@
       "name": "get_session_message_envelopes for a missing session returns Err",
       "testMappings": [
         {
-          "file": "codelet/core/src/persistence/tests.rs",
+          "file": "rust/core/src/persistence/tests.rs",
           "lines": "2291-2306",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 973,
                 974,
@@ -66,11 +66,11 @@
       "name": "get_session_message_envelopes returns parseable JSON envelopes",
       "testMappings": [
         {
-          "file": "codelet/core/src/persistence/tests.rs",
+          "file": "rust/core/src/persistence/tests.rs",
           "lines": "2340-2365",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 973,
                 974,
@@ -128,11 +128,11 @@
       "name": "codelet-napi binding is reduced to a thin delegate",
       "testMappings": [
         {
-          "file": "codelet/core/src/persistence/tests.rs",
+          "file": "rust/core/src/persistence/tests.rs",
           "lines": "2312-2338",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/napi_bindings.rs",
+              "file": "rust/napi/src/persistence/napi_bindings.rs",
               "lines": [
                 726,
                 727,
@@ -158,11 +158,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/persistence/tests.rs"
+      "rust/core/src/persistence/tests.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/manifest.rs",
-      "codelet/napi/src/persistence/napi_bindings.rs"
+      "rust/core/src/persistence/manifest.rs",
+      "rust/napi/src/persistence/napi_bindings.rs"
     ],
     "totalLinesCovered": 173
   }

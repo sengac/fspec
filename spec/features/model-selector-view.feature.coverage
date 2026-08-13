@@ -4,11 +4,11 @@
       "name": "Open the model selector full-screen via the slash command",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "249-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_selector.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
               "lines": [
                 20,
                 21,
@@ -36,11 +36,11 @@
       "name": "Close the model selector with Esc returns to Agent",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "301-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 118,
                 119,
@@ -69,11 +69,11 @@
       "name": "Navigation skips non-selectable provider headers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "181-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 143,
                 144,
@@ -106,11 +106,11 @@
       "name": "Selecting a model with an active session commits the choice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "203-229",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 224,
                 225,
@@ -188,11 +188,11 @@
       "name": "Selecting a model with no active session still emits the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "230-248",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 224,
                 225,
@@ -270,11 +270,11 @@
       "name": "Filtering narrows the model list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "313-331",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 195,
                 196,
@@ -315,11 +315,11 @@
       "name": "Expanding and collapsing a provider group",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "262-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 165,
                 166,
@@ -361,11 +361,11 @@
       "name": "Overflowing list shows scroll indicators and wheel navigates",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "536-587",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 139,
                 140,
@@ -501,11 +501,11 @@
       "name": "Refreshing the model list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "281-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_selector.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
               "lines": [
                 37,
                 38,
@@ -548,13 +548,13 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_model_selector.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/views/model_selector/mod.rs",
-      "codelet/fspec-tui/src/views/model_selector/rows.rs"
+      "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/model_selector/mod.rs",
+      "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
     "totalLinesCovered": 601
   }

@@ -4,11 +4,11 @@
       "name": "Soft-deletes a question by stable ID",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "78-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 50,
                 51,
@@ -161,11 +161,11 @@
       "name": "Rejects remove-question when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "116-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 63,
                 64,
@@ -183,11 +183,11 @@
       "name": "Rejects remove-question when the work unit is not in specifying status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "141-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 70,
                 71,
@@ -216,11 +216,11 @@
       "name": "Rejects remove-question when the work unit has no questions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "170-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 88,
                 89,
@@ -249,11 +249,11 @@
       "name": "Rejects remove-question when the question ID is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "195-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 106,
                 107,
@@ -279,11 +279,11 @@
       "name": "Returns idempotent success when the question is already deleted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "224-257",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 139,
                 140,
@@ -309,11 +309,11 @@
       "name": "Counts only non-deleted questions in remainingCount",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_question.rs",
+          "file": "rust/fspec-core/tests/remove_question.rs",
           "lines": "259-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_question.rs",
+              "file": "rust/fspec-core/src/commands/remove_question.rs",
               "lines": [
                 155,
                 156,
@@ -363,10 +363,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_question.rs"
+      "rust/fspec-core/tests/remove_question.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_question.rs"
+      "rust/fspec-core/src/commands/remove_question.rs"
     ],
     "totalLinesCovered": 458
   }

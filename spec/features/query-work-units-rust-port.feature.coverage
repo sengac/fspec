@@ -4,11 +4,11 @@
       "name": "Dispatcher returns wrapped error when spec/work-units.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "47-70",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -463,11 +463,11 @@
       "name": "Tag filter returns only work units containing the specified tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "72-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -922,11 +922,11 @@
       "name": "Combined status and prefix filters apply AND semantics",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "118-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1381,11 +1381,11 @@
       "name": "JSON data array defaults featureFilePath to unknown when WU has no featureFile field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "159-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1840,11 +1840,11 @@
       "name": "CSV format strips commas from title and writes header plus rows to output file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "206-266",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -2299,11 +2299,11 @@
       "name": "Cycle-time mode returns per-state hour deltas and total",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "267-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -2758,11 +2758,11 @@
       "name": "Cycle-time mode singularises 'hour' when delta equals 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "313-353",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -3217,11 +3217,11 @@
       "name": "questionsFor filter normalises bare username to @username and matches included mentions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "354-405",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -3676,11 +3676,11 @@
       "name": "Sort by numeric field with descending order produces decreasing values",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "406-449",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -4135,11 +4135,11 @@
       "name": "hasQuestions=true filter keeps only work units with non-empty questions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "450-487",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -4594,11 +4594,11 @@
       "name": "Two front doors \u2014 the same fspec_core::commands::query_work_units::run function serves CLI and dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_work_units.rs",
+          "file": "rust/fspec-core/tests/query_work_units.rs",
           "lines": "488-529",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_work_units.rs",
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -5055,10 +5055,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/query_work_units.rs"
+      "rust/fspec-core/tests/query_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/query_work_units.rs"
+      "rust/fspec-core/src/commands/query_work_units.rs"
     ],
     "totalLinesCovered": 5837
   }

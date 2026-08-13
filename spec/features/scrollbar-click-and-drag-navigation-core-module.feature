@@ -3,7 +3,7 @@ Feature: Scrollbar click-and-drag navigation core module
 
   """
   Architecture notes:
-  - Pure Rust module in codelet/fspec-tui/src/mouse/scrollbar_drag.rs
+  - Pure Rust module in rust/fspec-tui/src/mouse/scrollbar_drag.rs
   - Implements ScrollbarDrag state machine with on_mouse() returning Option<usize> scroll offset
   - Inverts proportional formula: offset = (click_row * total) / area_height
   - No view dependencies — consumer handles hit-testing and state application

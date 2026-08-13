@@ -4,11 +4,11 @@
       "name": "Function found in a linked implementation file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_implementation.rs",
+          "file": "rust/fspec-core/tests/search_implementation.rs",
           "lines": "79-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_implementation.rs",
+              "file": "rust/fspec-core/src/commands/search_implementation.rs",
               "lines": [
                 69,
                 70,
@@ -118,11 +118,11 @@
       "name": "Function found in zero files returns an empty files array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_implementation.rs",
+          "file": "rust/fspec-core/tests/search_implementation.rs",
           "lines": "114-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_implementation.rs",
+              "file": "rust/fspec-core/src/commands/search_implementation.rs",
               "lines": [
                 69,
                 70,
@@ -232,11 +232,11 @@
       "name": "Multiple impl mappings are counted in searchedFiles",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_implementation.rs",
+          "file": "rust/fspec-core/tests/search_implementation.rs",
           "lines": "136-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_implementation.rs",
+              "file": "rust/fspec-core/src/commands/search_implementation.rs",
               "lines": [
                 69,
                 70,
@@ -346,11 +346,11 @@
       "name": "Unreadable implementation files are skipped without error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_implementation.rs",
+          "file": "rust/fspec-core/tests/search_implementation.rs",
           "lines": "182-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_implementation.rs",
+              "file": "rust/fspec-core/src/commands/search_implementation.rs",
               "lines": [
                 69,
                 70,
@@ -460,11 +460,11 @@
       "name": "Missing spec/features directory yields zero searched files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_implementation.rs",
+          "file": "rust/fspec-core/tests/search_implementation.rs",
           "lines": "203-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_implementation.rs",
+              "file": "rust/fspec-core/src/commands/search_implementation.rs",
               "lines": [
                 69,
                 70,
@@ -574,11 +574,11 @@
       "name": "Shared infrastructure module is registered for search-implementation",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_implementation.rs",
+          "file": "rust/fspec-core/tests/search_implementation.rs",
           "lines": "227-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_implementation.rs",
+              "file": "rust/fspec-core/src/commands/search_implementation.rs",
               "lines": [
                 69,
                 70,
@@ -690,10 +690,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/search_implementation.rs"
+      "rust/fspec-core/tests/search_implementation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/search_implementation.rs"
+      "rust/fspec-core/src/commands/search_implementation.rs"
     ],
     "totalLinesCovered": 761
   }

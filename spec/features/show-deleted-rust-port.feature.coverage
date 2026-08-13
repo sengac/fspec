@@ -4,11 +4,11 @@
       "name": "Returns deleted items in canonical concatenation order with only id text and deletedAt fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "80-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 117,
                 118,
@@ -56,11 +56,11 @@
       "name": "Auto-creates work-units.json and fails when the requested work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "143-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 56,
                 57,
@@ -86,11 +86,11 @@
       "name": "Returns empty deletedItems for a work unit that has never had soft-deletes",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "176-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 117,
                 118,
@@ -138,11 +138,11 @@
       "name": "Excludes items whose deleted flag is false or missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "201-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 125,
                 126,
@@ -179,11 +179,11 @@
       "name": "Omits deletedAt from the JSON payload when the field is absent on the source item",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "230-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 103,
                 104,
@@ -203,11 +203,11 @@
       "name": "Text format renders the empty case as 'No deleted items found'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "265-288",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 164,
                 165,
@@ -223,11 +223,11 @@
       "name": "Text format renders the populated case with header item lines and timestamps",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "290-342",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 164,
                 165,
@@ -260,11 +260,11 @@
       "name": "Text format omits the deleted timestamp suffix when deletedAt is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "344-377",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 176,
                 177,
@@ -281,11 +281,11 @@
       "name": "Defaults to text format when the format argument is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "379-399",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 78,
                 79,
@@ -313,11 +313,11 @@
       "name": "Returns a structured error when workUnitId is missing from the args",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "401-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 44,
                 45,
@@ -340,11 +340,11 @@
       "name": "JSON format emits 2-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "423-476",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 78,
                 79,
@@ -369,11 +369,11 @@
       "name": "Shared infrastructure delegation",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "file": "rust/fspec-core/tests/show_deleted.rs",
           "lines": "478-499",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 56,
                 57,
@@ -392,10 +392,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/show_deleted.rs"
+      "rust/fspec-core/tests/show_deleted.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/show_deleted.rs"
+      "rust/fspec-core/src/commands/show_deleted.rs"
     ],
     "totalLinesCovered": 603
   }

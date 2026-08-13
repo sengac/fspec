@@ -4,11 +4,11 @@
       "name": "List recent sessions for discovery",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "25-77",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 70,
                 71,
@@ -64,11 +64,11 @@
       "name": "Recent sessions defaults to 10 when count is not specified",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "80-113",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 70,
                 71,
@@ -124,11 +124,11 @@
       "name": "Search by keyword across all session content",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "430-528",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -284,11 +284,11 @@
       "name": "Search with context turns shows surrounding conversation",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "531-609",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -444,11 +444,11 @@
       "name": "Search defaults to current project only",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "612-679",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -604,11 +604,11 @@
       "name": "Search across all projects with flag",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "682-762",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -764,11 +764,11 @@
       "name": "Search with relative time filter",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "765-829",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -924,11 +924,11 @@
       "name": "Search with absolute time filter",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "832-893",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -1084,11 +1084,11 @@
       "name": "Search uses ripgrep regex matching",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "896-981",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -1244,11 +1244,11 @@
       "name": "Search defaults to limit of 20 matches",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "984-1053",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -1404,11 +1404,11 @@
       "name": "Search with no matches returns empty result",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "116-160",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 115,
                 116,
@@ -1564,11 +1564,11 @@
       "name": "Show current session by default",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1056-1121",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -1671,11 +1671,11 @@
       "name": "Show session with explicit current keyword",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1124-1175",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -1778,11 +1778,11 @@
       "name": "Show specific session by UUID",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1178-1239",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -1885,11 +1885,11 @@
       "name": "Show session resolves blob references",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1242-1292",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -1992,11 +1992,11 @@
       "name": "Show session reassembles streaming chunks",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "255-283",
           "implMappings": [
             {
-              "file": "codelet/tools/src/session_search/reassembly.rs",
+              "file": "rust/tools/src/session_search/reassembly.rs",
               "lines": [
                 1,
                 2,
@@ -2226,11 +2226,11 @@
       "name": "Show session truncates long messages",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1295-1351",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -2333,11 +2333,11 @@
       "name": "Show session with user_only filter",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1354-1416",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -2440,11 +2440,11 @@
       "name": "Show session with max_turns limit",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "1419-1477",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -2547,11 +2547,11 @@
       "name": "Show non-existent session returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "163-199",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 260,
                 261,
@@ -2654,11 +2654,11 @@
       "name": "SessionSearch output is structured JSON",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "202-222",
           "implMappings": [
             {
-              "file": "codelet/tools/src/session_search/mod.rs",
+              "file": "rust/tools/src/session_search/mod.rs",
               "lines": [
                 61,
                 62,
@@ -2762,11 +2762,11 @@
       "name": "SessionSearch uses persistence layer directly",
       "testMappings": [
         {
-          "file": "codelet/tools/src/session_search/tests.rs",
+          "file": "rust/tools/src/session_search/tests.rs",
           "lines": "225-252",
           "implMappings": [
             {
-              "file": "codelet/tools/src/session_search/handler.rs",
+              "file": "rust/tools/src/session_search/handler.rs",
               "lines": [
                 62,
                 63,
@@ -2806,13 +2806,13 @@
     "coveredScenarios": 22,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/session_search/tests.rs"
+      "rust/tools/src/session_search/tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_search_handler.rs",
-      "codelet/tools/src/session_search/reassembly.rs",
-      "codelet/tools/src/session_search/mod.rs",
-      "codelet/tools/src/session_search/handler.rs"
+      "rust/napi/src/session_search_handler.rs",
+      "rust/tools/src/session_search/reassembly.rs",
+      "rust/tools/src/session_search/mod.rs",
+      "rust/tools/src/session_search/handler.rs"
     ],
     "totalLinesCovered": 4982
   }

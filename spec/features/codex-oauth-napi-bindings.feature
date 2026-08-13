@@ -1,7 +1,7 @@
 @PROV-015
 Feature: NAPI Bindings for Codex OAuth Flows
   """
-  New file: codelet/napi/src/codex_oauth.rs — All 4 NAPI functions in one module. Imports browser_oauth_login from codelet_providers::codex::codex_oauth_server, device_auth_login/DeviceAuthConfig from codex_device_auth, refresh_access_token from codex_oauth, and read_codex_auth from codex_auth.
+  New file: rust/napi/src/codex_oauth.rs — All 4 NAPI functions in one module. Imports browser_oauth_login from codelet_providers::codex::codex_oauth_server, device_auth_login/DeviceAuthConfig from codex_device_auth, refresh_access_token from codex_oauth, and read_codex_auth from codex_auth.
   NapiCodexTokens #[napi(object)] struct maps 1:1 to CodexTokens. NapiDeviceAuthStartResult #[napi(object)] struct with user_code: String and verification_url: String — returned synchronously before polling begins. A separate async function handles the polling and returns NapiCodexTokens.
   lib.rs registration: add `mod codex_oauth;` under #[cfg(not(feature = "noop"))] and `pub use codex_oauth::*;` — same pattern as models, git, blocklist modules.
   Device auth two-phase approach: codex_oauth_device_login_start() returns NapiDeviceAuthStartResult (sync, so TUI can display user_code immediately), then codex_oauth_device_login_poll(device_auth_id, interval) is an async NAPI function that polls and returns NapiCodexTokens. This avoids the complexity of returning both a sync result and a promise from a single function.
@@ -19,7 +19,7 @@ Feature: NAPI Bindings for Codex OAuth Flows
   #   5. All NAPI functions convert Rust errors to napi::Error via Error::from_reason() — TypeScript sees rejected promises with descriptive error messages
   #   6. NapiCodexTokens is an #[napi(object)] struct with fields: id_token, access_token, refresh_token, account_id — all strings, matching the Rust CodexTokens struct
   #   7. Device auth NAPI binding needs a two-phase design: first returns user_code and verification_url synchronously (so TUI can display them), then provides a promise that resolves when the polling completes
-  #   8. The NAPI module file is codelet/napi/src/codex_oauth.rs, registered in lib.rs under #[cfg(not(feature = "noop"))]
+  #   8. The NAPI module file is rust/napi/src/codex_oauth.rs, registered in lib.rs under #[cfg(not(feature = "noop"))]
   #
   # EXAMPLES:
   #   1. TUI calls codex_oauth_browser_login(): tokio spawns browser_oauth_login(), browser opens, user authorizes, Promise resolves with NapiCodexTokens containing id_token, access_token, refresh_token, account_id

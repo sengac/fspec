@@ -25,20 +25,20 @@ Before publishing, you MUST verify in this EXACT order:
 
 3. **Verify all versions match:**
    - Read root `package.json` version
-   - Read `codelet/napi/package.json` version
+   - Read `rust/napi/package.json` version
    - Compare both with git tag version
    - If ANY mismatch, ABORT with error:
      ```
      Version mismatch detected!
      Git tag: v{tag-version}
      package.json: {root-version}
-     codelet/napi/package.json: {napi-version}
+     rust/napi/package.json: {napi-version}
 
      All versions must match. Run /release first.
      ```
 
 4. **Verify codelet-napi binaries exist:**
-   - Check that `codelet/napi/*.node` files exist for all 6 platforms:
+   - Check that `rust/napi/*.node` files exist for all 6 platforms:
      - `codelet-napi.darwin-arm64.node`
      - `codelet-napi.darwin-x64.node`
      - `codelet-napi.linux-arm64-gnu.node`
@@ -67,10 +67,10 @@ Before publishing, you MUST verify in this EXACT order:
    - If package not found in registry, treat as first publish
 
 2. **Compare versions:**
-   - If npm registry version equals codelet/napi/package.json version:
+   - If npm registry version equals rust/napi/package.json version:
      - Display: `@sengac/codelet-napi v{version} already published. Skipping.`
    - If versions differ:
-     - Run `cd codelet/napi && npm publish --access public`
+     - Run `cd rust/napi && npm publish --access public`
      - Display success message
 
 ### Post-Publish
@@ -91,11 +91,11 @@ git describe --tags --exact-match  # ABORT if no tag
 
 # 3. Verify all versions match
 # Read package.json version
-# Read codelet/napi/package.json version
+# Read rust/napi/package.json version
 # Compare both with tag version - ABORT if any mismatch
 
 # 4. Verify codelet-napi binaries exist
-ls codelet/napi/*.node  # ABORT if any missing
+ls rust/napi/*.node  # ABORT if any missing
 
 # 5. Publish fspec if needed
 npm view @sengac/fspec version 2>/dev/null || echo ""
@@ -105,7 +105,7 @@ npm publish
 # 6. Publish codelet-napi if needed
 npm view @sengac/codelet-napi version 2>/dev/null || echo ""
 # Skip if already published, otherwise:
-cd codelet/napi && npm publish --access public
+cd rust/napi && npm publish --access public
 
 # 7. Display summary
 ```
@@ -124,7 +124,7 @@ Checking git tag...
 
 Verifying versions...
   package.json: 0.3.1
-  codelet/napi/package.json: 0.3.1
+  rust/napi/package.json: 0.3.1
   ✓ All versions match tag
 
 Checking codelet-napi binaries...
@@ -194,13 +194,13 @@ Checking git tag...
 
 Verifying versions...
   package.json: 0.3.1
-  codelet/napi/package.json: 0.3.0  ← MISMATCH
+  rust/napi/package.json: 0.3.0  ← MISMATCH
 
 ✗ Version mismatch detected!
 
 Git tag: v0.3.1
 package.json: 0.3.1
-codelet/napi/package.json: 0.3.0
+rust/napi/package.json: 0.3.0
 
 All versions must match. Run /release first.
 ```
@@ -255,5 +255,5 @@ Please run `npm login` first, then retry.
 - **Exit successfully (code 0)** when skipping already-published packages (not an error)
 - Check npm registry BEFORE publishing to avoid unnecessary errors
 - Display clear, actionable error messages
-- Verify ALL versions match (tag, root package.json, codelet/napi/package.json)
+- Verify ALL versions match (tag, root package.json, rust/napi/package.json)
 - Both packages should always have the same version number

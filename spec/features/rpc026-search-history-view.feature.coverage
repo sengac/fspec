@@ -4,11 +4,11 @@
       "name": "Typing characters triggers persistence_search_history and folds results",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_search_history_view.rs",
+          "file": "rust/fspec-tui/tests/rpc026_search_history_view.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
                 1,
                 2,
@@ -290,11 +290,11 @@
       "name": "Non-empty query with zero matches renders the no-match placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_search_history_view.rs",
+          "file": "rust/fspec-tui/tests/rpc026_search_history_view.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
                 1,
                 2,
@@ -576,11 +576,11 @@
       "name": "SearchHistoryView scrolls past 10 rows using terminal height",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_search_history_view.rs",
+          "file": "rust/fspec-tui/tests/rpc026_search_history_view.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
                 1,
                 2,
@@ -864,10 +864,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_search_history_view.rs"
+      "rust/fspec-tui/tests/rpc026_search_history_view.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/search_history_view.rs"
+      "rust/fspec-tui/src/views/agent/search_history_view.rs"
     ],
     "totalLinesCovered": 1710
   }

@@ -19,7 +19,7 @@ Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migrat
   """
 
   Background: User Story
-    As a developer maintaining the codelet/fspec-tui Rust ratatui frontend
+    As a developer maintaining the rust/fspec-tui Rust ratatui frontend
     I want HelpDialog DisconnectDialog and ThinkingLevelDialog to render with the canonical theme
     So that they look identical to their TypeScript Ink counterparts
 
@@ -46,7 +46,7 @@ Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migrat
     And the rendered buffer contains "ESC"
 
   Scenario: HelpDialog no longer imports tui_popup
-    Given the source file codelet/fspec-tui/src/components/help_dialog.rs
+    Given the source file rust/fspec-tui/src/components/help_dialog.rs
     Then the source does not contain the substring "tui_popup::Popup"
     And the source does not contain "Popup::new("
     And the source imports dialog_theme::render_dialog

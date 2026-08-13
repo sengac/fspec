@@ -4,11 +4,11 @@
       "name": "Add first hotspot to a work unit with no Event Storm",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hotspot.rs",
+          "file": "rust/fspec-core/tests/add_hotspot.rs",
           "lines": "89-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hotspot.rs",
+              "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
                 70,
                 71,
@@ -156,11 +156,11 @@
       "name": "Add the same hotspot text twice without deduplication",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hotspot.rs",
+          "file": "rust/fspec-core/tests/add_hotspot.rs",
           "lines": "121-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hotspot.rs",
+              "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
                 70,
                 71,
@@ -308,11 +308,11 @@
       "name": "Append optional concern, timestamp and bounded context",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hotspot.rs",
+          "file": "rust/fspec-core/tests/add_hotspot.rs",
           "lines": "164-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hotspot.rs",
+              "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
                 70,
                 71,
@@ -460,11 +460,11 @@
       "name": "Reject add for a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hotspot.rs",
+          "file": "rust/fspec-core/tests/add_hotspot.rs",
           "lines": "191-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hotspot.rs",
+              "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
                 70,
                 71,
@@ -612,11 +612,11 @@
       "name": "Reject add when work units file is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hotspot.rs",
+          "file": "rust/fspec-core/tests/add_hotspot.rs",
           "lines": "215-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hotspot.rs",
+              "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
                 70,
                 71,
@@ -764,11 +764,11 @@
       "name": "Reject add for a work unit in blocked state",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hotspot.rs",
+          "file": "rust/fspec-core/tests/add_hotspot.rs",
           "lines": "242-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hotspot.rs",
+              "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
                 70,
                 71,
@@ -918,10 +918,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_hotspot.rs"
+      "rust/fspec-core/tests/add_hotspot.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_hotspot.rs"
+      "rust/fspec-core/src/commands/add_hotspot.rs"
     ],
     "totalLinesCovered": 986
   }

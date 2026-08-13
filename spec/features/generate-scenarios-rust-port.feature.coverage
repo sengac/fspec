@@ -4,11 +4,11 @@
       "name": "Dispatch creates a context-only feature file for a complete work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "125-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 82,
                 83,
@@ -300,11 +300,11 @@
       "name": "Dispatch fails for a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "164-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 93,
                 94,
@@ -585,11 +585,11 @@
       "name": "Dispatch fails when a question is unanswered",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "186-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 93,
                 94,
@@ -870,11 +870,11 @@
       "name": "Dispatch fails when there is no Example Mapping data",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "211-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 93,
                 94,
@@ -1155,11 +1155,11 @@
       "name": "Dispatch fails when there are no active examples",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "233-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 93,
                 94,
@@ -1440,11 +1440,11 @@
       "name": "Dispatch fails when the target feature file already exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "260-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 633,
                 634,
@@ -1490,11 +1490,11 @@
       "name": "Dispatch blocks on a duplicate scenario without the override flag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "286-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 735,
                 736,
@@ -1900,11 +1900,11 @@
       "name": "Dispatch proceeds past duplicates with ignore-possible-duplicates",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "317-353",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 735,
                 736,
@@ -2310,11 +2310,11 @@
       "name": "Dispatch honours an explicit feature name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "354-377",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 388,
                 389,
@@ -2346,11 +2346,11 @@
       "name": "Background falls back to placeholder tokens without a user story",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "378-412",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 1129,
                 1130,
@@ -2523,11 +2523,11 @@
       "name": "CLI and dispatcher converge on the same fspec_core run function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_scenarios.rs",
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
           "lines": "413-450",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
                 82,
                 83,
@@ -2552,10 +2552,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/generate_scenarios.rs"
+      "rust/fspec-core/tests/generate_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/generate_scenarios.rs"
+      "rust/fspec-core/src/commands/generate_scenarios.rs"
     ],
     "totalLinesCovered": 2696
   }

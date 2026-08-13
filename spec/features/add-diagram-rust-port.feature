@@ -18,7 +18,7 @@ Feature: Port add-diagram command to Rust
   NOT actually regenerate the markdown file. A follow-up RPC will wire generate-foundation-md
   in once RPC-233 lands.
 
-  Core impl at codelet/fspec-core/src/commands/add_diagram.rs uses
+  Core impl at rust/fspec-core/src/commands/add_diagram.rs uses
   crate::io::ensure::ensure_foundation_file to load (or auto-create) spec/foundation.json
   (canonical generic schema v2.0.0). It guarantees architectureDiagrams is an array, finds
   any existing diagram with the same title, and either replaces it in place or appends a

@@ -2,7 +2,7 @@
 @RPC-281
 Feature: remove-tag-from-feature CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/remove_tag_from_feature.rs (NEW CLI bridge); codelet/fspec/tests/cli_remove_tag_from_feature.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/remove-tag-from-feature.txt (captured help fixture from `node dist/index.js remove-tag-from-feature --help`).
+  Files: rust/fspec/src/remove_tag_from_feature.rs (NEW CLI bridge); rust/fspec/tests/cli_remove_tag_from_feature.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/remove-tag-from-feature.txt (captured help fixture from `node dist/index.js remove-tag-from-feature --help`).
   Bridge marshals positional <file> + variadic <tags...> into JSON and delegates to commands::remove_tag_from_feature::run. No logic in bridge — JSON marshalling only.
   Exit codes: 0 on success, 1 on FspecCoreError or {success:false} with 'Error:' prefix to stderr.
   """
@@ -37,11 +37,11 @@ Feature: remove-tag-from-feature CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec remove-tag-from-feature --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/remove-tag-from-feature.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/remove-tag-from-feature.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/login.feature containing '@wip\nFeature: Login\n  Scenario: A\n    Given x\n'
     When I dispatch remove-tag-from-feature through fspec_core::dispatch::dispatch_command with file='spec/features/login.feature' and tags=['@wip']
     Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Removed @wip from spec/features/login.feature'
-    And the CLI bridge module codelet/fspec/src/remove_tag_from_feature.rs contains NO inline gherkin parsing or tag-filter logic
+    And the CLI bridge module rust/fspec/src/remove_tag_from_feature.rs contains NO inline gherkin parsing or tag-filter logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

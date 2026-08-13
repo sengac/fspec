@@ -4,11 +4,11 @@
       "name": "Clap exposes create-prefix as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "61-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/create_prefix.rs",
+              "file": "rust/fspec-core/src/help/configs/create_prefix.rs",
               "lines": [
                 42,
                 43,
@@ -37,11 +37,11 @@
       "name": "CLI against empty directory creates the prefixes file and prints the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "122-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 44,
                 45,
@@ -89,11 +89,11 @@
       "name": "CLI rejects a lowercase prefix with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "161-194",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 73,
                 74,
@@ -116,11 +116,11 @@
       "name": "CLI rejects a duplicate prefix without touching the file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "196-231",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 73,
                 74,
@@ -143,11 +143,11 @@
       "name": "CLI surfaces a malformed prefixes.json parse error to stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "233-260",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 73,
                 74,
@@ -170,11 +170,11 @@
       "name": "CLI missing positional argument fails with a clap usage error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "262-288",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 37,
                 38,
@@ -192,11 +192,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "290-331",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 37,
                 38,
@@ -214,11 +214,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "333-380",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_prefix.rs",
+              "file": "rust/fspec/src/create_prefix.rs",
               "lines": [
                 44,
                 45,
@@ -270,11 +270,11 @@
       "name": "create-prefix --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_prefix.rs",
+          "file": "rust/fspec/tests/cli_create_prefix.rs",
           "lines": "382-410",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/create_prefix.rs",
+              "file": "rust/fspec-core/src/help/configs/create_prefix.rs",
               "lines": [
                 42,
                 43,
@@ -305,11 +305,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_create_prefix.rs"
+      "rust/fspec/tests/cli_create_prefix.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/create_prefix.rs",
-      "codelet/fspec/src/create_prefix.rs"
+      "rust/fspec-core/src/help/configs/create_prefix.rs",
+      "rust/fspec/src/create_prefix.rs"
     ],
     "totalLinesCovered": 497
   }

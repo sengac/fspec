@@ -4,11 +4,11 @@
       "name": "PNG bytes on stdout trigger the image-aware binary guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "86-109",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -102,7 +102,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -126,11 +126,11 @@
       "name": "JPEG bytes on stdout trigger the image-aware binary guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "115-132",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -224,7 +224,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -248,11 +248,11 @@
       "name": "PDF bytes on stdout trigger the document-aware binary guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "138-155",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -346,7 +346,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -370,11 +370,11 @@
       "name": "ELF binary on stdout triggers the generic binary guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "161-182",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -485,7 +485,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -509,11 +509,11 @@
       "name": "Gzip-compressed stdout triggers the generic binary guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "188-205",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -624,7 +624,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -648,11 +648,11 @@
       "name": "Raw NUL bytes in stdout trigger the generic binary guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "211-226",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -763,7 +763,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/bash_streams.rs",
+              "file": "rust/tools/src/bash_streams.rs",
               "lines": [
                 41,
                 42,
@@ -835,11 +835,11 @@
       "name": "Plain text with emoji and high-bit UTF-8 is NOT flagged as binary",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "232-243",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -940,11 +940,11 @@
       "name": "hexdump output of a binary file is text and passes through unchanged",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "249-264",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 52,
                 53,
@@ -1045,11 +1045,11 @@
       "name": "Missing-file failure preserves stderr diagnostic and does NOT trigger the guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "270-293",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -1073,11 +1073,11 @@
       "name": "Text prefix followed by PNG payload is intercepted by the guard",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "299-318",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_binary_guard.rs",
+              "file": "rust/tools/src/bash_binary_guard.rs",
               "lines": [
                 104,
                 105,
@@ -1126,11 +1126,11 @@
       "name": "call_with_streaming replaces the final buffered return value with the guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "324-357",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 181,
                 182,
@@ -1157,11 +1157,11 @@
       "name": "Binary payload combined with a non-zero exit status still returns the guard error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_binary_output_guard_test.rs",
+          "file": "rust/tools/tests/bash_binary_output_guard_test.rs",
           "lines": "363-382",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 285,
                 286,
@@ -1187,12 +1187,12 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/bash_binary_output_guard_test.rs"
+      "rust/tools/tests/bash_binary_output_guard_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bash_binary_guard.rs",
-      "codelet/tools/src/bash.rs",
-      "codelet/tools/src/bash_streams.rs"
+      "rust/tools/src/bash_binary_guard.rs",
+      "rust/tools/src/bash.rs",
+      "rust/tools/src/bash_streams.rs"
     ],
     "totalLinesCovered": 1201
   }

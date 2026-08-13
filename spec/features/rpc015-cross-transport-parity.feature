@@ -17,7 +17,7 @@ Feature: RPC-015 cross-transport parity for FspecBackend::checkpoint_counts
   the existing TS `countCheckpoints` helper can converge on the shared Rust
   implementation at its own pace.
 
-  Test pair: codelet/fspec-tui/tests/checkpoint_counts_rpc015.rs.
+  Test pair: rust/fspec-tui/tests/checkpoint_counts_rpc015.rs.
   """
 
   Background: User Story
@@ -38,7 +38,7 @@ Feature: RPC-015 cross-transport parity for FspecBackend::checkpoint_counts
     Then the awaited result is Ok(CheckpointCounts { manual: 1, auto: 1 })
 
   Scenario: napi::count_checkpoints is wired through the same git helper
-    Given codelet/napi/src/git.rs after RPC-015 lands
+    Given rust/napi/src/git.rs after RPC-015 lands
     When a developer reads the file source raw
     Then the file contains the substring "pub fn count_checkpoints"
     And the function body contains the substring "codelet_git::ghost_commit::count_checkpoints"

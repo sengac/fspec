@@ -4,11 +4,11 @@
       "name": "Load a complete custom provider config JSON",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "37-65",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 229,
                 230,
@@ -33,11 +33,11 @@
       "name": "Reject config JSON missing the required name field",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "71-92",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 229,
                 230,
@@ -62,11 +62,11 @@
       "name": "Reject provider name that collides with a built-in provider",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "98-123",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 245,
                 246,
@@ -131,11 +131,11 @@
       "name": "Reject provider name with invalid characters",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "129-150",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 245,
                 246,
@@ -200,11 +200,11 @@
       "name": "Reject config when referenced script file does not exist",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "156-177",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 245,
                 246,
@@ -269,11 +269,11 @@
       "name": "Reject config when default model is not present in models map",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "183-210",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 245,
                 246,
@@ -338,11 +338,11 @@
       "name": "Project-local config overrides global config with same name",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "217-276",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/discovery.rs",
+              "file": "rust/providers/src/custom/discovery.rs",
               "lines": [
                 26,
                 27,
@@ -394,11 +394,11 @@
       "name": "Return empty result when no providers directories exist",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "283-297",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/discovery.rs",
+              "file": "rust/providers/src/custom/discovery.rs",
               "lines": [
                 26,
                 27,
@@ -486,11 +486,11 @@
       "name": "ScriptLoader caches AST for unchanged script",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "303-319",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/script_loader.rs",
+              "file": "rust/providers/src/custom/script_loader.rs",
               "lines": [
                 85,
                 86,
@@ -570,11 +570,11 @@
       "name": "ScriptLoader re-parses script when mtime changes",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "325-349",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/script_loader.rs",
+              "file": "rust/providers/src/custom/script_loader.rs",
               "lines": [
                 85,
                 86,
@@ -654,11 +654,11 @@
       "name": "Report Rhai syntax errors with file path line and column",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "355-381",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/script_loader.rs",
+              "file": "rust/providers/src/custom/script_loader.rs",
               "lines": [
                 85,
                 86,
@@ -738,11 +738,11 @@
       "name": "Reject script missing a required function",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "387-410",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/script_loader.rs",
+              "file": "rust/providers/src/custom/script_loader.rs",
               "lines": [
                 156,
                 157,
@@ -779,11 +779,11 @@
       "name": "Compiled script can call registered PROV-060 building blocks",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "416-442",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/script_loader.rs",
+              "file": "rust/providers/src/custom/script_loader.rs",
               "lines": [
                 64,
                 65,
@@ -812,11 +812,11 @@
       "name": "Bearer auth config deserializes with default token prefix",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "448-477",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 84,
                 85,
@@ -891,11 +891,11 @@
       "name": "OAuth device code auth config deserializes with all fields",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_config_and_loader_tests.rs",
+          "file": "rust/providers/tests/custom_config_and_loader_tests.rs",
           "lines": "483-523",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [
                 84,
                 85,
@@ -972,12 +972,12 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_config_and_loader_tests.rs"
+      "rust/providers/tests/custom_config_and_loader_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/config.rs",
-      "codelet/providers/src/custom/discovery.rs",
-      "codelet/providers/src/custom/script_loader.rs"
+      "rust/providers/src/custom/config.rs",
+      "rust/providers/src/custom/discovery.rs",
+      "rust/providers/src/custom/script_loader.rs"
     ],
     "totalLinesCovered": 1141
   }

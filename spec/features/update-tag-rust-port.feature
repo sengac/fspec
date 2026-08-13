@@ -2,7 +2,7 @@
 @RPC-316
 Feature: Port update-tag command to Rust
   """
-  Files: codelet/fspec-core/src/commands/update_tag.rs (replace stub); codelet/fspec-core/src/help/configs/update_tag.rs (NEW help config); codelet/fspec/src/update_tag.rs (NEW CLI bridge); codelet/fspec-core/tests/update_tag.rs (NEW dispatcher tests); codelet/fspec/tests/cli_update_tag.rs (NEW CLI shell tests); codelet/fspec/tests/fixtures/help/update-tag.txt (NEW captured fixture)
+  Files: rust/fspec-core/src/commands/update_tag.rs (replace stub); rust/fspec-core/src/help/configs/update_tag.rs (NEW help config); rust/fspec/src/update_tag.rs (NEW CLI bridge); rust/fspec-core/tests/update_tag.rs (NEW dispatcher tests); rust/fspec/tests/cli_update_tag.rs (NEW CLI shell tests); rust/fspec/tests/fixtures/help/update-tag.txt (NEW captured fixture)
   Reuses shared infrastructure: io::ensure (READ only — load tags.json via direct fs::read; NO auto-create), io::locked_file::write_json_atomic for atomic write, types::tags::{TagsData, TagCategory, Tag} with #[serde(flatten)] extra preserving aux fields
   TAGS.md regeneration: inline minimal generate_tags_md helper duplicated from register_tag.rs (same shape: warning header, ## Tag Categories with per-category tables, optional _Last updated_ line). Will be promoted to shared generators module when delete_tag lands (also Batch 7).
   Divergences from TS (documented in code): (1) Ajv schema validation omitted — upstream gates enforce schema invariants; (2) outer try/catch flattened to direct FspecCoreError returns; (3) statistics.lastUpdated explicitly NOT bumped (matches TS behavior — only register-tag bumps it).

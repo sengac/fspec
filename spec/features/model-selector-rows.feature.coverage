@@ -4,11 +4,11 @@
       "name": "Model rows display capability badges",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
           "lines": "105-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 45,
                 46,
@@ -111,11 +111,11 @@
       "name": "The active session model shows a current marker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
           "lines": "231-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 214,
                 215,
@@ -176,11 +176,11 @@
       "name": "The body renders the capability legend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
           "lines": "129-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 139,
                 140,
@@ -266,11 +266,11 @@
       "name": "Providers still loading shows a placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
           "lines": "154-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 139,
                 140,
@@ -358,10 +358,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows.rs"
+      "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows.rs"
+      "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
     "totalLinesCovered": 407
   }

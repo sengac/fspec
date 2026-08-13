@@ -4,11 +4,11 @@
       "name": "Renaming a profile writes the new name and removes the old name",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_persistence_tests.rs",
+          "file": "rust/sessions/src/profile_persistence_tests.rs",
           "lines": "140-168",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 231,
                 232,
@@ -64,11 +64,11 @@
       "name": "Saving with an unchanged name overwrites the same profile",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_persistence_tests.rs",
+          "file": "rust/sessions/src/profile_persistence_tests.rs",
           "lines": "170-204",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 231,
                 232,
@@ -124,11 +124,11 @@
       "name": "Renaming onto an existing profile name is rejected",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_persistence_tests.rs",
+          "file": "rust/sessions/src/profile_persistence_tests.rs",
           "lines": "206-243",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 231,
                 232,
@@ -184,11 +184,11 @@
       "name": "Renaming preserves the profile custom models",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_persistence_tests.rs",
+          "file": "rust/sessions/src/profile_persistence_tests.rs",
           "lines": "245-276",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_persistence.rs",
+              "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
                 231,
                 232,
@@ -246,10 +246,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/src/profile_persistence_tests.rs"
+      "rust/sessions/src/profile_persistence_tests.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/profile_persistence.rs"
+      "rust/sessions/src/profile_persistence.rs"
     ],
     "totalLinesCovered": 310
   }

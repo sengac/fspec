@@ -1,7 +1,7 @@
 @EXT-016
 Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 only validated byte size, not pixel dimension limit
   """
-  Create a shared image_dimensions module in codelet/tools/src/ with functions: extract_png_dimensions(bytes) -> Option<(u32,u32)> and extract_jpeg_dimensions(bytes) -> Option<(u32,u32)> — reusable by both Read tool and parse_tool_result_content
+  Create a shared image_dimensions module in rust/tools/src/ with functions: extract_png_dimensions(bytes) -> Option<(u32,u32)> and extract_jpeg_dimensions(bytes) -> Option<(u32,u32)> — reusable by both Read tool and parse_tool_result_content
   For parse_tool_result_content in rig-core patch: decode first 32 bytes of base64 (about 24 raw bytes), enough to read PNG IHDR or detect JPEG SOI marker — then scan for SOF if JPEG. This minimal decode avoids decoding the entire image.
   Three validation layers (defense-in-depth): Layer 1: Read tool (has raw bytes, most informative error). Layer 2: parse_tool_result_content (has base64, safety net for all tools). Layer 3: stream_loop user images (has base64 from bridge).
   Provider pixel limits (verified from official docs):

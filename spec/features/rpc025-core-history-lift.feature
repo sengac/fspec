@@ -6,8 +6,8 @@
 Feature: RPC-025 HistoryStore lifted from codelet_napi into codelet_core
   """
   RPC-025 (core history lift slice) — Move the HistoryStore +
-  HistoryEntry surface from codelet/napi/src/persistence/{history.rs,
-  types.rs} into codelet/core/src/persistence/{history.rs, mod.rs} so
+  HistoryEntry surface from rust/napi/src/persistence/{history.rs,
+  types.rs} into rust/core/src/persistence/{history.rs, mod.rs} so
   codelet_rpc can delegate to it without re-introducing a rpc → napi
   dep. Make the existing NAPI helpers (add_history_entry, get_history,
   search_history) and the #[napi] exports (persistence_add_history,
@@ -20,7 +20,7 @@ Feature: RPC-025 HistoryStore lifted from codelet_napi into codelet_core
   new RPC methods landing in this card) read from and write to this
   same file.
 
-  Tests: codelet/fspec-tui/tests/core_history_lift_rpc025.rs (uses a
+  Tests: rust/fspec-tui/tests/core_history_lift_rpc025.rs (uses a
   temp HOME via std::env::set_var to redirect get_data_dir without
   touching the user's real history).
   """
@@ -56,18 +56,18 @@ Feature: RPC-025 HistoryStore lifted from codelet_napi into codelet_core
     When codelet_core::persistence::history::search("missing", None) is called
     Then the returned Vec is empty
 
-  Scenario: codelet/napi/src/persistence/mod.rs::add_history_entry is now a one-line delegate to codelet_core::persistence::history::add
+  Scenario: rust/napi/src/persistence/mod.rs::add_history_entry is now a one-line delegate to codelet_core::persistence::history::add
     Given a temporary data directory configured for the test process
     When codelet_napi::persistence::add_history_entry is called with a HistoryEntry whose display is "hello napi"
     Then codelet_core::persistence::history::get(None, Some(1)) returns a Vec whose first display is "hello napi"
     And the on-disk <data_dir>/history.jsonl contains exactly one line whose display is "hello napi"
 
-  Scenario: codelet/napi/src/persistence/mod.rs::get_history is now a one-line delegate to codelet_core::persistence::history::get
+  Scenario: rust/napi/src/persistence/mod.rs::get_history is now a one-line delegate to codelet_core::persistence::history::get
     Given a temporary data directory containing two HistoryEntries written via codelet_core::persistence::history::add
     When codelet_napi::persistence::get_history(None, Some(2)) is called
     Then the returned Vec<HistoryEntry> is identical (same displays in the same order) to codelet_core::persistence::history::get(None, Some(2))
 
-  Scenario: codelet/napi/src/persistence/mod.rs::search_history is now a one-line delegate to codelet_core::persistence::history::search
+  Scenario: rust/napi/src/persistence/mod.rs::search_history is now a one-line delegate to codelet_core::persistence::history::search
     Given a temporary data directory containing HistoryEntries via codelet_core::persistence::history::add
     When codelet_napi::persistence::search_history("query", None) is called
     Then the returned Vec<HistoryEntry> is identical to codelet_core::persistence::history::search("query", None)

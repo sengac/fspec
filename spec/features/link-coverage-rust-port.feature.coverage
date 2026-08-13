@@ -4,11 +4,11 @@
       "name": "test-only mode appends a test mapping and recalculates stats",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "109-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 148,
                 149,
@@ -37,11 +37,11 @@
       "name": "impl-only mode adds an implementation mapping to an existing test mapping",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "155-229",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 158,
                 159,
@@ -101,11 +101,11 @@
       "name": "both mode appends a test mapping carrying its implementation mapping",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "231-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 152,
                 153,
@@ -136,11 +136,11 @@
       "name": "impl-file without test-file surfaces a flag-combination error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "274-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 187,
                 188,
@@ -164,11 +164,11 @@
       "name": "test-file without test-lines surfaces a flag-combination error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "303-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 199,
                 200,
@@ -193,11 +193,11 @@
       "name": "A missing test file without skip-validation errors",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "332-360",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 224,
                 225,
@@ -249,11 +249,11 @@
       "name": "skip-validation downgrades a missing file to a warning",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "362-404",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 238,
                 239,
@@ -278,11 +278,11 @@
       "name": "A missing coverage sidecar errors with a generate-coverage suggestion",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "406-443",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 103,
                 104,
@@ -318,11 +318,11 @@
       "name": "A scenario absent from the sidecar errors with available scenarios listed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "445-483",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 288,
                 289,
@@ -371,11 +371,11 @@
       "name": "Step validation fails when a required step comment is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "485-525",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 129,
                 130,
@@ -397,11 +397,11 @@
       "name": "skip-step-validation is rejected for a story work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "527-573",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 117,
                 118,
@@ -433,11 +433,11 @@
       "name": "Written sidecar preserves unknown top-level fields and is atomic 2-space JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "file": "rust/fspec-core/tests/link_coverage.rs",
           "lines": "575-622",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
               "lines": [
                 166,
                 167,
@@ -561,10 +561,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/link_coverage.rs"
+      "rust/fspec-core/tests/link_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/link_coverage.rs"
+      "rust/fspec-core/src/commands/link_coverage.rs"
     ],
     "totalLinesCovered": 866
   }

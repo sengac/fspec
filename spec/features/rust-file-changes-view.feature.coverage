@@ -4,11 +4,11 @@
       "name": "Pressing F on the board opens the Changed Files view with the changed file and its diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "147-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 174,
                 175,
@@ -20,11 +20,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "147-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 140,
                 141,
@@ -37,11 +37,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "147-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_changed_files.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_changed_files.rs",
               "lines": [
                 55,
                 56,
@@ -54,11 +54,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "147-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 97,
                 98,
@@ -108,11 +108,11 @@
       "name": "Pressing Esc in the Changed Files view returns to the board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "190-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
                 144,
                 145,
@@ -137,11 +137,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "190-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 143,
                 144,
@@ -156,11 +156,11 @@
       "name": "Opening the Changed Files view in a clean repo shows an empty state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "220-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 71,
                 72,
@@ -174,11 +174,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
           "lines": "220-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 152,
                 153,
@@ -195,15 +195,15 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/file_changes_view_rpc354.rs"
+      "rust/fspec-tui/tests/file_changes_view_rpc354.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/app/dispatch_changed_files.rs",
-      "codelet/fspec-tui/src/views/changed_files/mod.rs",
-      "codelet/fspec-tui/src/views/navigator_events.rs",
-      "codelet/fspec-tui/src/views/changed_files/render.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/app/dispatch_changed_files.rs",
+      "rust/fspec-tui/src/views/changed_files/mod.rs",
+      "rust/fspec-tui/src/views/navigator_events.rs",
+      "rust/fspec-tui/src/views/changed_files/render.rs"
     ],
     "totalLinesCovered": 388
   }

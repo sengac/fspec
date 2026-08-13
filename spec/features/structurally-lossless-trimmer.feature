@@ -1,8 +1,8 @@
 @CMPCT-006
 Feature: Layer 0 — Structurally Lossless Trimmer Module
   """
-  Trimmer struct lives in codelet/core/src/compaction/trimmer.rs. Input type is StoredMessage from codelet/napi/src/persistence/types.rs with fields: role (String), content (String), metadata (HashMap<String, Value>). Tool information is in metadata. Output is transformed content String.
-  Trimmer must be re-exported via codelet/core/src/compaction/mod.rs with pub mod trimmer and pub use trimmer::Trimmer. Consumed by CMPCT-010 SessionSearch trimming integration.
+  Trimmer struct lives in rust/core/src/compaction/trimmer.rs. Input type is StoredMessage from rust/napi/src/persistence/types.rs with fields: role (String), content (String), metadata (HashMap<String, Value>). Tool information is in metadata. Output is transformed content String.
+  Trimmer must be re-exported via rust/core/src/compaction/mod.rs with pub mod trimmer and pub use trimmer::Trimmer. Consumed by CMPCT-010 SessionSearch trimming integration.
   Tool detection uses metadata HashMap keys — tool calls from AssistantContent::ToolUse are serialized with tool name and input parameters in the metadata. Common patterns: metadata contains 'tool_name' or structured tool use blocks that include the tool name (Read, Write, Edit, Bash, Grep, AstGrep, Glob, Ls, etc.).
   """
 

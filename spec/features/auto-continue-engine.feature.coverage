@@ -4,11 +4,11 @@
       "name": "Session auto-continue state defaults and per-user-turn reset",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "34-66",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/mod.rs",
+              "file": "rust/cli/src/session/mod.rs",
               "lines": [
                 63,
                 64,
@@ -75,7 +75,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 96,
                 97,
@@ -96,11 +96,11 @@
       "name": "Off mode finishes exactly as today when the model stops",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "73-86",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 49,
                 50,
@@ -146,11 +146,11 @@
       "name": "Armed stop without done() produces a counted nudge",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "93-119",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 25,
                 26,
@@ -213,7 +213,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1439,
                 1440,
@@ -344,11 +344,11 @@
       "name": "Accepted done() finishes the turn and surfaces the summary",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "126-144",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 49,
                 50,
@@ -394,11 +394,11 @@
       "name": "Budget exhaustion finishes with a visible warning",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "151-174",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 49,
                 50,
@@ -466,11 +466,11 @@
       "name": "User interrupt always wins over nudging",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "181-196",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 49,
                 50,
@@ -516,11 +516,11 @@
       "name": "Truncation recovery takes precedence over auto-continue",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "203-223",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 49,
                 50,
@@ -566,11 +566,11 @@
       "name": "A nudge followed by tool activity is refunded",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "230-249",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 84,
                 85,
@@ -585,7 +585,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 920,
                 921,
@@ -604,11 +604,11 @@
       "name": "done() tool records a session-scoped Tier-0 acceptance",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "307-366",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 20,
                 21,
@@ -779,11 +779,11 @@
       "name": "done() is registered only while auto-continue is armed",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "390-436",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 557,
                 558,
@@ -793,7 +793,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 26,
                 27,
@@ -850,11 +850,11 @@
       "name": "Stream loop nudges only at the clean FinalResponse settle point",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/auto_continue_engine_test.rs",
+          "file": "rust/cli/tests/auto_continue_engine_test.rs",
           "lines": "256-297",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1439,
                 1440,
@@ -987,14 +987,14 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/auto_continue_engine_test.rs"
+      "rust/cli/tests/auto_continue_engine_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/session/mod.rs",
-      "codelet/cli/src/interactive/auto_continue.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/tools/src/done.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/cli/src/session/mod.rs",
+      "rust/cli/src/interactive/auto_continue.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/tools/src/done.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 1108
   }

@@ -4,11 +4,11 @@
       "name": "Deletes a tag and regenerates TAGS.md when no feature files reference it",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "93-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -148,11 +148,11 @@
       "name": "Blocks deletion when the tag is referenced by feature files and --force is not set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "131-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -292,11 +292,11 @@
       "name": "Forces deletion with a warning prefix when --force is set and the tag is still in use",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "177-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -436,11 +436,11 @@
       "name": "Dry-run reports the intended deletion without mutating disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "222-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -580,11 +580,11 @@
       "name": "Rejects request when spec/tags.json does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "260-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -724,11 +724,11 @@
       "name": "Rejects request when the tag is not found in any category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "288-314",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -868,11 +868,11 @@
       "name": "Preserves auxiliary top-level fields and does NOT bump statistics.lastUpdated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "316-373",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -1012,11 +1012,11 @@
       "name": "Escalates malformed tags.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "375-400",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 67,
                 68,
@@ -1156,11 +1156,11 @@
       "name": "Suppresses 'Updated:' and 'Regenerated:' lines when dry-run succeeds",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "402-430",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 240,
                 241,
@@ -1189,11 +1189,11 @@
       "name": "Renders multi-line success block on a non-dry-run delete",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_tag.rs",
+          "file": "rust/fspec-core/tests/delete_tag.rs",
           "lines": "432-460",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_tag.rs",
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
               "lines": [
                 240,
                 241,
@@ -1224,10 +1224,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_tag.rs"
+      "rust/fspec-core/tests/delete_tag.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_tag.rs"
+      "rust/fspec-core/src/commands/delete_tag.rs"
     ],
     "totalLinesCovered": 1417
   }

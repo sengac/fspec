@@ -4,11 +4,11 @@
       "name": "Title shows nav item count for all collapsed providers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "121-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 125,
                 126,
@@ -28,11 +28,11 @@
       "name": "Title count grows when a provider is expanded",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "143-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 125,
                 126,
@@ -52,11 +52,11 @@
       "name": "Title count shrinks when a filter is applied",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "162-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 140,
                 141,
@@ -101,11 +101,11 @@
       "name": "Title count reflects both filter and expansion",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "180-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 140,
                 141,
@@ -150,11 +150,11 @@
       "name": "Title text never contains the substring \"configured\"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "193-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 125,
                 126,
@@ -174,11 +174,11 @@
       "name": "Title uses nav_items length not configured count",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "214-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 125,
                 126,
@@ -198,11 +198,11 @@
       "name": "Backspacing a filter character grows the title count back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "277-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 158,
                 159,
@@ -221,11 +221,11 @@
       "name": "Clearing the filter via Esc restores the full count",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "298-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 142,
                 143,
@@ -248,11 +248,11 @@
       "name": "configured_count method is removed",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
           "lines": "324-347",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 125,
                 126,
@@ -274,11 +274,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_header_count_rpc105.rs"
+      "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/mod.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 343
   }

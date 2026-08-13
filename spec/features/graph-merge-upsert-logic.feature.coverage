@@ -4,11 +4,11 @@
       "name": "GraphEntity nodes are converted to JSONL and loaded into nanograph",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/merge.rs",
+          "file": "rust/napi/src/graph/merge.rs",
           "lines": "280-312",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/merge.rs",
+              "file": "rust/napi/src/graph/merge.rs",
               "lines": [
                 38,
                 39,
@@ -59,11 +59,11 @@
       "name": "Duplicate concept slug merges with increment semantics",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/merge.rs",
+          "file": "rust/napi/src/graph/merge.rs",
           "lines": "317-381",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/merge.rs",
+              "file": "rust/napi/src/graph/merge.rs",
               "lines": [
                 98,
                 99,
@@ -181,11 +181,11 @@
       "name": "Confidence is promoted on merge",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/merge.rs",
+          "file": "rust/napi/src/graph/merge.rs",
           "lines": "386-420",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/merge.rs",
+              "file": "rust/napi/src/graph/merge.rs",
               "lines": [
                 78,
                 79,
@@ -216,11 +216,11 @@
       "name": "Confidence is not demoted on merge",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/merge.rs",
+          "file": "rust/napi/src/graph/merge.rs",
           "lines": "425-459",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/merge.rs",
+              "file": "rust/napi/src/graph/merge.rs",
               "lines": [
                 78,
                 79,
@@ -251,11 +251,11 @@
       "name": "Watermark state updated after successful upsert",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/merge.rs",
+          "file": "rust/napi/src/graph/merge.rs",
           "lines": "464-492",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/merge.rs",
+              "file": "rust/napi/src/graph/merge.rs",
               "lines": [
                 223,
                 224,
@@ -307,11 +307,11 @@
       "name": "RelatesTo edge co-occurrence count and strength are updated on merge",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/merge.rs",
+          "file": "rust/napi/src/graph/merge.rs",
           "lines": "497-553",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/merge.rs",
+              "file": "rust/napi/src/graph/merge.rs",
               "lines": [
                 205,
                 206,
@@ -343,10 +343,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/merge.rs"
+      "rust/napi/src/graph/merge.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/merge.rs"
+      "rust/napi/src/graph/merge.rs"
     ],
     "totalLinesCovered": 495
   }

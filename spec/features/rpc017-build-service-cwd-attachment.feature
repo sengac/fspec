@@ -13,8 +13,8 @@ Feature: RPC-017 production fspec binary build_service cwd attachment
 
   Splitting this scenario into its own feature satisfies the 1:1
   feature-to-test-file rule (VAL-005): this feature maps to the inline
-  test in `codelet/fspec/src/common.rs`, while
-  rpc017-cross-transport-parity maps to `codelet/fspec-tui/tests/move_work_unit_rpc017.rs`.
+  test in `rust/fspec/src/common.rs`, while
+  rpc017-cross-transport-parity maps to `rust/fspec-tui/tests/move_work_unit_rpc017.rs`.
   """
 
   Background: User Story
@@ -26,4 +26,4 @@ Feature: RPC-017 production fspec binary build_service cwd attachment
     Given the codelet-fspec binary crate after RPC-017 lands
     When common::build_service(workspace) is invoked against a temp workspace path
     Then the returned Arc<SharedFspecService>::cwd() returns Some equal to that workspace path
-    And codelet/fspec/src/common.rs contains the substring ".with_cwd(workspace.to_path_buf())"
+    And rust/fspec/src/common.rs contains the substring ".with_cwd(workspace.to_path_buf())"

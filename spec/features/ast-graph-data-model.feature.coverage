@@ -4,11 +4,11 @@
       "name": "Initialize AST graph database with schema",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_graph_data_model_test.rs",
+          "file": "rust/napi/tests/ast_graph_data_model_test.rs",
           "lines": "68-130",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 1,
                 2,
@@ -288,11 +288,11 @@
       "name": "Load batch of File and Function nodes via JSONL",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_graph_data_model_test.rs",
+          "file": "rust/napi/tests/ast_graph_data_model_test.rs",
           "lines": "135-214",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 92,
                 93,
@@ -332,11 +332,11 @@
       "name": "Load structural edges and traverse neighbors",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_graph_data_model_test.rs",
+          "file": "rust/napi/tests/ast_graph_data_model_test.rs",
           "lines": "219-323",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 122,
                 123,
@@ -386,11 +386,11 @@
       "name": "Reusable GraphDatabase abstraction supports multiple instances",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_graph_data_model_test.rs",
+          "file": "rust/napi/tests/ast_graph_data_model_test.rs",
           "lines": "328-419",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/registry.rs",
+              "file": "rust/napi/src/graph/registry.rs",
               "lines": [
                 37,
                 38,
@@ -510,11 +510,11 @@
       "name": "Re-open existing AST graph database",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_graph_data_model_test.rs",
+          "file": "rust/napi/tests/ast_graph_data_model_test.rs",
           "lines": "424-506",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 1,
                 2,
@@ -796,11 +796,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_graph_data_model_test.rs"
+      "rust/napi/tests/ast_graph_data_model_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/database.rs",
-      "codelet/napi/src/graph/registry.rs"
+      "rust/napi/src/graph/database.rs",
+      "rust/napi/src/graph/registry.rs"
     ],
     "totalLinesCovered": 1133
   }

@@ -4,11 +4,11 @@
       "name": "Embedded and WebSocket loop_add both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
           "lines": "80-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 667,
                 668,
@@ -31,11 +31,11 @@
       "name": "Embedded and WebSocket loop_cancel both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
           "lines": "115-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 679,
                 680,
@@ -53,11 +53,11 @@
       "name": "Embedded and WebSocket loop_list both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
           "lines": "151-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 686,
                 687,
@@ -74,10 +74,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/transport/embedded.rs"
     ],
     "totalLinesCovered": 134
   }

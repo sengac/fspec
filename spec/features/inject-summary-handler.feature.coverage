@@ -4,11 +4,11 @@
       "name": "Partition, clear, restore, and inject DAG into session messages",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "103-149",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 39,
                 40,
@@ -75,11 +75,11 @@
       "name": "DAG content is wrapped in system-reminder compaction-dag markers",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "155-202",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 96,
                 97,
@@ -103,11 +103,11 @@
       "name": "Returns accurate injected_tokens and remaining_budget",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "208-259",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 76,
                 77,
@@ -137,11 +137,11 @@
       "name": "Concurrent sessions have isolated handler execution",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "265-302",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 39,
                 40,
@@ -208,11 +208,11 @@
       "name": "Turns and token tracker are reset after injection",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "308-374",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 72,
                 73,
@@ -240,11 +240,11 @@
       "name": "Handler is registered alongside SessionSearch handler in agent loop setup",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "380-413",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5370,
                 5371,
@@ -268,11 +268,11 @@
       "name": "Handler is cleaned up on session teardown",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "419-445",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5593
               ]
@@ -285,11 +285,11 @@
       "name": "create_handler returns correct InjectSummaryHandler type",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/inject_summary_handler_test.rs",
+          "file": "rust/napi/tests/inject_summary_handler_test.rs",
           "lines": "451-464",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 39,
                 40,
@@ -311,11 +311,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/inject_summary_handler_test.rs"
+      "rust/napi/tests/inject_summary_handler_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/inject_summary_handler.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/inject_summary_handler.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 504
   }

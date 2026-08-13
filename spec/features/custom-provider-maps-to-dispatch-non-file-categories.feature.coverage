@@ -4,11 +4,11 @@
       "name": "Dispatch bash maps_to to InternalBashParams::Execute",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "23-39",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 94,
                 95,
@@ -35,11 +35,11 @@
       "name": "Dispatch search:grep maps_to to InternalSearchParams::Grep",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "43-61",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 110,
                 111,
@@ -70,11 +70,11 @@
       "name": "Dispatch search:glob maps_to to InternalSearchParams::Glob",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "64-81",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 130,
                 131,
@@ -100,11 +100,11 @@
       "name": "Dispatch ls maps_to to InternalLsParams::List",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "84-101",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 145,
                 146,
@@ -136,11 +136,11 @@
       "name": "Dispatch web_search:search maps_to to InternalWebSearchParams::Search",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "104-122",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 166,
                 167,
@@ -160,11 +160,11 @@
       "name": "Dispatch fspec maps_to to InternalFspecParams",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "125-147",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 183,
                 184,
@@ -191,11 +191,11 @@
       "name": "Dispatch bridge maps_to to InternalBridgeParams::List",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "150-165",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 199,
                 200,
@@ -238,11 +238,11 @@
       "name": "Dispatch exec:run maps_to to InternalExecParams::Run",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "168-184",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 231,
                 232,
@@ -280,11 +280,11 @@
       "name": "Dispatch hitl maps_to to InternalHitlParams::Request",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "187-214",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 258,
                 259,
@@ -305,11 +305,11 @@
       "name": "Unknown maps_to value returns error listing valid identifiers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "file": "rust/providers/tests/custom_maps_to_dispatch_tests.rs",
           "lines": "217-238",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "file": "rust/providers/src/custom/tool_dispatch.rs",
               "lines": [
                 76,
                 77,
@@ -330,10 +330,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_maps_to_dispatch_tests.rs"
+      "rust/providers/tests/custom_maps_to_dispatch_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/tool_dispatch.rs"
+      "rust/providers/src/custom/tool_dispatch.rs"
     ],
     "totalLinesCovered": 361
   }

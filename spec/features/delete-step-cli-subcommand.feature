@@ -4,7 +4,7 @@
 @RPC-221
 Feature: Port delete-step command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/delete_step.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate; gherkin-0.16 Step.keyword includes a trailing space and Step.value is the text, so full step text = keyword + value; Step.position.line (1-based) locates the removed line. Line-based split('\n')/join('\n') edit.
+  Core impl at rust/fspec-core/src/commands/delete_step.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate; gherkin-0.16 Step.keyword includes a trailing space and Step.value is the text, so full step text = keyword + value; Step.position.line (1-based) locates the removed line. Line-based split('\n')/join('\n') edit.
   Recoverable failures returned as inner JSON envelope {success:false,error}; success {success:true,message}. CLI bridge prints '✓ <message>' / 'Error: <error>' to stderr + exit 1. Two-front-doors: bridge marshals positional <feature> <scenario> <step> into {feature, scenario, step} JSON only; no domain logic.
   """
 
@@ -52,7 +52,7 @@ Feature: Port delete-step command to Rust
     Given the standalone fspec Rust binary is built
     When I run 'fspec delete-step --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-step.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/delete-step.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/login.feature whose scenario 'Login' has steps Given/When/Then

@@ -4,7 +4,7 @@
 @RPC-326
 Feature: workflow-automation CLI subcommand (Rust binary)
   """
-  Front door #1 (shell argv): codelet/fspec/src/workflow_automation.rs is the thin clap bridge for the
+  Front door #1 (shell argv): rust/fspec/src/workflow_automation.rs is the thin clap bridge for the
   `workflow-automation <action> <work-unit-id>` subcommand with --event / --from-state flags. It marshals
   the positional action + work-unit-id and the two optional flags into the JSON args shape and delegates to
   fspec_core::commands::workflow_automation::run. On success it prints nothing (parity with the TS shell,
@@ -28,7 +28,7 @@ Feature: workflow-automation CLI subcommand (Rust binary)
   # ========================================
   Background: User Story
     Given the fspec Rust binary exposes workflow-automation as a clap subcommand
-    And the bridge codelet/fspec/src/workflow_automation.rs delegates to fspec_core::commands::workflow_automation::run
+    And the bridge rust/fspec/src/workflow_automation.rs delegates to fspec_core::commands::workflow_automation::run
 
   Scenario: Shell record-iteration increments the counter and exits 0
     Given a working directory whose spec/work-units.json contains AUTH-001
@@ -52,10 +52,10 @@ Feature: workflow-automation CLI subcommand (Rust binary)
     Given the fspec Rust binary has been compiled
     When I run `fspec workflow-automation --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/workflow-automation.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/workflow-automation.txt
 
   Scenario: CLI bridge delegates to the same fspec_core function as the dispatcher
-    Given the CLI bridge module codelet/fspec/src/workflow_automation.rs
+    Given the CLI bridge module rust/fspec/src/workflow_automation.rs
     When I inspect its source
     Then it contains no inline action-dispatch, transition, or work-units mutation logic
     And its only computation is JSON arg marshalling before delegating to fspec_core::commands::workflow_automation::run

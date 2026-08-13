@@ -7,7 +7,7 @@
 Feature: Model selector profile napi binding
 
   # Work unit: RPC-338. NapiProviderModels mirrors the new wire fields so the
-  # JS surface stays in sync (codelet/napi/src/models/napi_bindings.rs).
+  # JS surface stays in sync (rust/napi/src/models/napi_bindings.rs).
   Background: User Story
     As a codelet TUI user
     I want the napi provider binding to mirror profile and reachability fields

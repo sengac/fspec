@@ -8,7 +8,7 @@ Feature: Git Change Type Derivation
 
   Background: User Story
     As a Rust TUI developer
-    I want to derive A/M/D change types for staged and unstaged files in codelet/git
+    I want to derive A/M/D change types for staged and unstaged files in rust/git
     So that the transport can report each changed file with a correct single-letter status
 
   Scenario: Staged tracked-but-modified file is reported as change type M

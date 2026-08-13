@@ -4,11 +4,11 @@
       "name": "Dispatcher creates a minimal bug and writes spec/work-units.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "72-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 76,
                 77,
@@ -215,11 +215,11 @@
       "name": "Dispatcher writes the new bug with the canonical on-disk key order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "110-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 145,
                 146,
@@ -334,11 +334,11 @@
       "name": "Dispatcher fails when spec/foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "144-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 83,
                 84,
@@ -354,11 +354,11 @@
       "name": "Dispatcher rejects an empty title",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "172-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 88,
                 89,
@@ -377,11 +377,11 @@
       "name": "Dispatcher rejects an unregistered prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "192-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 96,
                 97,
@@ -404,11 +404,11 @@
       "name": "Dispatcher rejects a missing parent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "214-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 111,
                 112,
@@ -428,11 +428,11 @@
       "name": "Dispatcher rejects exceeding the maximum nesting depth",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "237-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 119,
                 120,
@@ -451,11 +451,11 @@
       "name": "Dispatcher rejects a missing epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "273-295",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 128,
                 129,
@@ -478,11 +478,11 @@
       "name": "Dispatcher nests a bug under a parent and links it to an epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "296-347",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 215,
                 216,
@@ -547,11 +547,11 @@
       "name": "Dispatcher generates the next id from the high-water-mark",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "348-379",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 340,
                 341,
@@ -586,11 +586,11 @@
       "name": "Dispatcher response emits the verbatim bug research-guidance system-reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_bug.rs",
+          "file": "rust/fspec-core/tests/create_bug.rs",
           "lines": "381-408",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_bug.rs",
+              "file": "rust/fspec-core/src/commands/create_bug.rs",
               "lines": [
                 276,
                 277,
@@ -667,10 +667,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/create_bug.rs"
+      "rust/fspec-core/tests/create_bug.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/create_bug.rs"
+      "rust/fspec-core/src/commands/create_bug.rs"
     ],
     "totalLinesCovered": 822
   }

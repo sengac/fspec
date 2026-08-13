@@ -4,11 +4,11 @@
       "name": "Discard session without applying changes",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_discard_tests.rs",
+          "file": "rust/git/tests/session_discard_tests.rs",
           "lines": "31-93",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 528,
                 529,
@@ -103,11 +103,11 @@
       "name": "Discard clean session without confirmation",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_discard_tests.rs",
+          "file": "rust/git/tests/session_discard_tests.rs",
           "lines": "100-135",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 528,
                 529,
@@ -202,11 +202,11 @@
       "name": "Discard session fails for non-existent session",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_discard_tests.rs",
+          "file": "rust/git/tests/session_discard_tests.rs",
           "lines": "142-162",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 528,
                 529,
@@ -301,11 +301,11 @@
       "name": "Discard orphaned session removes worktree",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_discard_tests.rs",
+          "file": "rust/git/tests/session_discard_tests.rs",
           "lines": "169-203",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 528,
                 529,
@@ -400,11 +400,11 @@
       "name": "Discard session cleans up manifest",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_discard_tests.rs",
+          "file": "rust/git/tests/session_discard_tests.rs",
           "lines": "210-254",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 528,
                 529,
@@ -501,10 +501,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/session_discard_tests.rs"
+      "rust/git/tests/session_discard_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/session_status.rs"
+      "rust/git/src/session_status.rs"
     ],
     "totalLinesCovered": 615
   }

@@ -4,11 +4,11 @@
       "name": "CLI updates the description of an existing prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "73-105",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 52,
                 53,
@@ -60,11 +60,11 @@
       "name": "CLI no-op call bumps only updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "106-138",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 52,
                 53,
@@ -116,11 +116,11 @@
       "name": "CLI rejects an unknown prefix with a wrapped error and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "139-170",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 52,
                 53,
@@ -172,11 +172,11 @@
       "name": "CLI surface does NOT expose --epic-id",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "171-199",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 43,
                 44,
@@ -193,11 +193,11 @@
       "name": "CLI requires the prefix positional argument",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "200-219",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 43,
                 44,
@@ -214,11 +214,11 @@
       "name": "CLI help surface matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "220-245",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/update_prefix.rs",
+              "file": "rust/fspec-core/src/help/configs/update_prefix.rs",
               "lines": [
                 1,
                 2,
@@ -273,11 +273,11 @@
       "name": "Clap exposes update-prefix as a top-level subcommand",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "246-270",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 32,
                 33,
@@ -349,11 +349,11 @@
       "name": "CLI delegates to the same fspec_core function the dispatcher uses",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "271-302",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 52,
                 53,
@@ -405,11 +405,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is given",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "file": "rust/fspec/tests/cli_update_prefix.rs",
           "lines": "303-325",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
                 32,
                 33,
@@ -483,11 +483,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_prefix.rs"
+      "rust/fspec/tests/cli_update_prefix.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/update_prefix.rs",
-      "codelet/fspec-core/src/help/configs/update_prefix.rs"
+      "rust/fspec/src/update_prefix.rs",
+      "rust/fspec-core/src/help/configs/update_prefix.rs"
     ],
     "totalLinesCovered": 586
   }

@@ -4,7 +4,7 @@
 @RPC-312
 Feature: fspec update-foundation CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/update_foundation.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/update_foundation.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/update-foundation.ts:323-329). Surface:
   `fspec update-foundation <section> <content>` (both required positional arguments).
   The bridge marshals args into JSON {section, content} and forwards to
@@ -29,7 +29,7 @@ Feature: fspec update-foundation CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec update-foundation --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/update-foundation.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/update-foundation.txt
 
   Scenario: CLI updates a final foundation field and prints the success lines
     Given a project root tempdir with an existing spec/foundation.json and no foundation.json.draft
@@ -60,4 +60,4 @@ Feature: fspec update-foundation CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec update-foundation projectVision "Via CLI"` afterwards exits 0
     And spec/foundation.json on disk shows project.name='Via Dispatcher' and project.vision='Via CLI'
-    And the CLI bridge module codelet/fspec/src/update_foundation.rs contains NO inline field mapping, validation, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/update_foundation.rs contains NO inline field mapping, validation, or file-write logic — its only computation is JSON arg marshalling

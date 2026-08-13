@@ -5,7 +5,7 @@
 @RPC-214
 Feature: Port create-story command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/create_story.rs ports src/commands/create-story.ts. It (1)
+  Core impl at rust/fspec-core/src/commands/create_story.rs ports src/commands/create-story.ts. It (1)
   requires spec/foundation.json to exist (checkFoundationExists at src/commands/create-story.ts:38-42; when
   missing it throws the foundation-missing user message + <system-reminder>); (2) validates a non-empty title
   (src/commands/create-story.ts:45-47); (3) loads spec/prefixes.json via ensurePrefixesFile and rejects an
@@ -23,7 +23,7 @@ Feature: Port create-story command to Rust
   number. When --epic is given the epic's workUnits array in spec/epics.json gets the id appended
   (src/commands/create-story.ts:129-140). Dispatcher success result text contains '✓ Created story <id>',
   '  Title: <title>', and optional Description/Epic/Parent lines plus the Example-Mapping <system-reminder>.
-  Reference codelet/fspec-core/src/commands/create_epic.rs for the read→merge→write_json_atomic pattern.
+  Reference rust/fspec-core/src/commands/create_epic.rs for the read→merge→write_json_atomic pattern.
   Two-front-doors: clap CLI and LLM dispatcher both call commands::create_story::run(args_json, project_root).
   """
 

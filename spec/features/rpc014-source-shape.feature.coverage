@@ -4,11 +4,11 @@
       "name": "Grid helpers and details_strip modules exist as separate files",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "38-54",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -70,11 +70,11 @@
       "name": "New and modified board modules stay under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "56-79",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -136,11 +136,11 @@
       "name": "WorkUnitInfo gains the attachments field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "81-91",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 37,
                 38,
@@ -168,11 +168,11 @@
       "name": "Core work_units parser reads attachments with serde default",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "93-119",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units.rs",
+              "file": "rust/core/src/work_units.rs",
               "lines": [
                 52,
                 53,
@@ -228,11 +228,11 @@
       "name": "RPC-013 invariants preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "121-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 98,
                 99,
@@ -262,11 +262,11 @@
       "name": "BoardView still emits Action variants and renders the RPC-013 footer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "141-161",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 70,
                 71,
@@ -329,11 +329,11 @@
       "name": "Views still avoid encapsulated transport crates and host runtime construction",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
           "lines": "163-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 23,
                 24,
@@ -370,13 +370,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc014.rs"
+      "rust/fspec-tui/tests/source_shape_rpc014.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/core/src/work_units.rs",
-      "codelet/fspec-tui/src/views/navigator.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/core/src/work_units.rs",
+      "rust/fspec-tui/src/views/navigator.rs"
     ],
     "totalLinesCovered": 403
   }

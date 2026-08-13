@@ -5,7 +5,7 @@
 @BUG-104
 Feature: DeepSearch Codex sub-agent still fails because Responses API requires stream=true
   """
-  DeepSearch currently runs through codelet/napi/src/deep_search_handler.rs using RigAgent::prompt(), while Codex Responses API forces request.stream = Some(true) only in codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs.
+  DeepSearch currently runs through rust/napi/src/deep_search_handler.rs using RigAgent::prompt(), while Codex Responses API forces request.stream = Some(true) only in rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs.
   Low-risk implementation should preserve BUG-102 provider/model inheritance and provider-specific request shaping, while collecting any Codex-required streaming execution internally and still returning a final String result.
   """
 

@@ -12,8 +12,8 @@ Feature: Embedded session REPL push channel
   send_input, interrupt, get_session_status) and a sibling chunks_rx() method
   that returns the StreamChunk broadcast subscription DIRECTLY (no envelope
   encoding, zero-cost path). Backed by Arc<dyn SessionManagerHandle> from
-  codelet/core (trait+handle pattern; concrete SessionManager remains in
-  codelet/napi). Tests use the StubProvider behind the test-support feature
+  rust/core (trait+handle pattern; concrete SessionManager remains in
+  rust/napi). Tests use the StubProvider behind the test-support feature
   emitting deterministic [Text("hi back"), Done].
   """
 

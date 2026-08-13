@@ -4,7 +4,7 @@
 @RPC-249
 Feature: Port list-scenario-tags command to Rust
   """
-  New impl file at codelet/fspec-core/src/commands/list_scenario_tags.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run. Args struct deserializes `{file: string, scenario: string, showCategories?: boolean, format?: 'text'|'json'}` with `#[serde(default)]` on optional fields.
+  New impl file at rust/fspec-core/src/commands/list_scenario_tags.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run. Args struct deserializes `{file: string, scenario: string, showCategories?: boolean, format?: 'text'|'json'}` with `#[serde(default)]` on optional fields.
   Feature parsing follows the inline-scanner approach established by list_features.rs (RPC-245) rather than depending on the upstream `gherkin` crate (which is NOT in the workspace today and would also require re-prepending the '@' prefix per gherkin-porting-guide.md §3). The inline scanner extracts (a) the Feature block presence, (b) each top-level Scenario header line text, and (c) the most-recently-accumulated `@tag` block immediately preceding that Scenario header. Background/Examples/Rule:Scenario children are ignored (parity with TS `child.scenario.keyword === 'Scenario'` filter).
   Error semantics (parity with src/commands/list-scenario-tags.ts:30-86):
   - ENOENT on the feature file → success=false with error 'File not found: <path>'

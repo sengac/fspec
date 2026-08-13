@@ -4,11 +4,11 @@
       "name": "Clap exposes restore-question with two positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "70-104",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_question.rs",
+              "file": "rust/fspec/src/restore_question.rs",
               "lines": [
                 29,
                 30,
@@ -25,11 +25,11 @@
       "name": "CLI restores a question and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "110-134",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_question.rs",
+              "file": "rust/fspec/src/restore_question.rs",
               "lines": [
                 35,
                 36,
@@ -75,11 +75,11 @@
       "name": "CLI prints idempotent success message when already active",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "136-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_question.rs",
+              "file": "rust/fspec/src/restore_question.rs",
               "lines": [
                 44,
                 45,
@@ -110,11 +110,11 @@
       "name": "CLI rejects unknown question ID with exit 1 and stderr Failed prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "168-192",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_question.rs",
+              "file": "rust/fspec/src/restore_question.rs",
               "lines": [
                 63,
                 64,
@@ -130,11 +130,11 @@
       "name": "CLI rejects unknown work unit with exit 1 and stderr Failed prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "194-215",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_question.rs",
+              "file": "rust/fspec/src/restore_question.rs",
               "lines": [
                 63,
                 64,
@@ -150,11 +150,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "217-280",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_question.rs",
+              "file": "rust/fspec/src/restore_question.rs",
               "lines": [
                 35,
                 36,
@@ -176,11 +176,11 @@
       "name": "restore-question --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_question.rs",
+          "file": "rust/fspec/tests/cli_restore_question.rs",
           "lines": "282-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/restore_question.rs",
+              "file": "rust/fspec-core/src/help/configs/restore_question.rs",
               "lines": [
                 1,
                 2,
@@ -266,11 +266,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_restore_question.rs"
+      "rust/fspec/tests/cli_restore_question.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/restore_question.rs",
-      "codelet/fspec-core/src/help/configs/restore_question.rs"
+      "rust/fspec/src/restore_question.rs",
+      "rust/fspec-core/src/help/configs/restore_question.rs"
     ],
     "totalLinesCovered": 377
   }

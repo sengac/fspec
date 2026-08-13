@@ -29,10 +29,10 @@ Feature: Agent Modal Model Selection
 
   FILE STRUCTURE:
   - src/tui/components/AgentModal.tsx - Main modal component, selector overlay
-  - codelet/napi/src/session.rs - BackgroundSession with newWithModel(), selectModel()
-  - codelet/napi/src/models.rs - modelsListAll(), modelsListForProvider(), modelsGetInfo()
-  - codelet/providers/src/manager.rs - ProviderManager.select_model(), selected_model_string()
-  - codelet/providers/src/models/registry.rs - ModelRegistry validation
+  - rust/napi/src/session.rs - BackgroundSession with newWithModel(), selectModel()
+  - rust/napi/src/models.rs - modelsListAll(), modelsListForProvider(), modelsGetInfo()
+  - rust/providers/src/manager.rs - ProviderManager.select_model(), selected_model_string()
+  - rust/providers/src/models/registry.rs - ModelRegistry validation
 
   CRITICAL IMPLEMENTATION REQUIREMENTS:
   - MUST use BackgroundSession.newWithModel() for session creation (not basic constructor)

@@ -14,7 +14,7 @@ Feature: /resume cross-transport parity
   WebSocketFspecBackend against the SAME StubSessionManagerHandle.
 
   Mirrors the RPC-037 cross-transport parity pattern in
-  `codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs`.
+  `rust/fspec-tui/tests/rpc037_cross_transport_parity.rs`.
 
   The StubSessionManagerHandle's `resume_session_calls()` accessor is
   used to assert byte-equal call counts (one per transport).

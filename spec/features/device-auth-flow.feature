@@ -3,7 +3,7 @@
 @PROV-014
 Feature: Device Auth Flow for Headless Environments
   """
-  New file: codelet/providers/src/codex/codex_device_auth.rs - Implements the device authorization flow. Three new API functions: request_device_code() POSTs to usercode endpoint, poll_device_token() polls the token endpoint, and device_auth_login() orchestrates the full flow (request code → display → poll → exchange → persist). Returns Result<CodexTokens>.
+  New file: rust/providers/src/codex/codex_device_auth.rs - Implements the device authorization flow. Three new API functions: request_device_code() POSTs to usercode endpoint, poll_device_token() polls the token endpoint, and device_auth_login() orchestrates the full flow (request code → display → poll → exchange → persist). Returns Result<CodexTokens>.
   Reuses extract_account_id() from codex_oauth.rs for JWT parsing, write_codex_auth() from codex_auth.rs for persistence, and CodexTokens/CodexAuthJson structs. CANNOT reuse exchange_authorization_code() because it requires redirect_uri — needs a new exchange_device_code() function or pub(crate) post_to_token_endpoint().
   DeviceAuthConfig struct for testability (same pattern as OAuthServerConfig in codex_oauth_server.rs): issuer_url (test vs production), timeout_ms (short for tests), display callback (for TUI integration later). Tests use wiremock for the HTTP endpoints.
   """

@@ -8,7 +8,7 @@
           "lines": "152-242",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 1,
                 2,
@@ -74,7 +74,7 @@
           "lines": "245-286",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 51,
                 52,
@@ -140,7 +140,7 @@
           "lines": "289-340",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 101,
                 102,
@@ -206,7 +206,7 @@
           "lines": "343-380",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 151,
                 152,
@@ -272,7 +272,7 @@
           "lines": "383-458",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 201,
                 202,
@@ -338,7 +338,7 @@
           "lines": "455-508",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 814,
                 815,
@@ -358,8 +358,8 @@
       "src/tui/__tests__/session-management-napi.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/git.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/git.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 606
   }

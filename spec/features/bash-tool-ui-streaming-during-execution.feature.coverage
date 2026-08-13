@@ -4,11 +4,11 @@
       "name": "Stream command output to UI in real-time",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "59-96",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 54,
                 55,
@@ -149,7 +149,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/tool_progress.rs",
+              "file": "rust/tools/src/tool_progress.rs",
               "lines": [
                 1,
                 2,
@@ -216,11 +216,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "50-82",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 225,
                 226,
@@ -356,11 +356,11 @@
       "name": "Buffer complete output for LLM response",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "99-134",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 54,
                 55,
@@ -503,11 +503,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "84-121",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 225,
                 226,
@@ -643,11 +643,11 @@
       "name": "Truncate large output for LLM while streaming full output to UI",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "137-175",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 54,
                 55,
@@ -790,11 +790,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "123-166",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 225,
                 226,
@@ -930,11 +930,11 @@
       "name": "Handle timeout with partial streamed output",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "178-217",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 54,
                 55,
@@ -1077,11 +1077,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "168-214",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 225,
                 226,
@@ -1217,11 +1217,11 @@
       "name": "Emit progress through StreamOutput trait",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "220-256",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 54,
                 55,
@@ -1362,7 +1362,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/output.rs",
+              "file": "rust/cli/src/interactive/output.rs",
               "lines": [
                 54,
                 55,
@@ -1409,11 +1409,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_streaming_test.rs",
+          "file": "rust/tools/tests/bash_streaming_test.rs",
           "lines": "216-260",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 225,
                 226,
@@ -1551,12 +1551,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/bash_streaming_test.rs"
+      "rust/tools/tests/bash_streaming_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bash.rs",
-      "codelet/tools/src/tool_progress.rs",
-      "codelet/cli/src/interactive/output.rs"
+      "rust/tools/src/bash.rs",
+      "rust/tools/src/tool_progress.rs",
+      "rust/cli/src/interactive/output.rs"
     ],
     "totalLinesCovered": 1797
   }

@@ -6,7 +6,7 @@
 @gemini
 Feature: File Operation Facades
   """
-  Create GeminiReadFileFacade, GeminiWriteFileFacade, GeminiReplaceFacade in codelet/tools/src/facade/file_ops.rs. Each implements ToolFacade trait. Add InternalFileParams enum to traits.rs. Wrap with FacadeToolWrapper and add to GeminiProvider.create_rig_agent(). Follow pattern from web_search.rs facades.
+  Create GeminiReadFileFacade, GeminiWriteFileFacade, GeminiReplaceFacade in rust/tools/src/facade/file_ops.rs. Each implements ToolFacade trait. Add InternalFileParams enum to traits.rs. Wrap with FacadeToolWrapper and add to GeminiProvider.create_rig_agent(). Follow pattern from web_search.rs facades.
   """
 
   # ========================================

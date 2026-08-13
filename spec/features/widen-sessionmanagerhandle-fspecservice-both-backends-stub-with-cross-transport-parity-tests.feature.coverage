@@ -4,11 +4,11 @@
       "name": "send_input_with_thinking is added as a sibling of send_input with backward-compatible default forwarding",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "837-892",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 215,
                 216,
@@ -26,11 +26,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "995-1059",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 215,
                 216,
@@ -51,11 +51,11 @@
       "name": "get_session_tokens / get_session_model / get_compaction_progress return safe defaults via the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "86-151",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 226,
                 227,
@@ -95,11 +95,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "86-147",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 742,
                 743,
@@ -146,11 +146,11 @@
       "name": "compact_session returns the canned CompactionResult and emits CompactionComplete",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "176-208",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 266,
                 267,
@@ -169,11 +169,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "210-258",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 793,
                 794,
@@ -199,11 +199,11 @@
       "name": "restore_session_messages and restore_session_token_state are wired through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "209-247",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 278,
                 279,
@@ -230,11 +230,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "282-319",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 808,
                 809,
@@ -261,11 +261,11 @@
       "name": "work-unit context get/set round-trips through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "248-287",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 298,
                 299,
@@ -288,11 +288,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "321-358",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 824,
                 825,
@@ -328,11 +328,11 @@
       "name": "pending_input draft text round-trips through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "288-322",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 314,
                 315,
@@ -350,11 +350,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "361-393",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 849,
                 850,
@@ -385,11 +385,11 @@
       "name": "active session tracking get/set/clear round-trips",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "323-365",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 325,
                 326,
@@ -409,11 +409,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "396-437",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 869,
                 870,
@@ -440,11 +440,11 @@
       "name": "get_effective_cwd / get_supervisors return safe defaults via the stub on both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "366-400",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 338,
                 339,
@@ -463,11 +463,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "439-475",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 885,
                 886,
@@ -486,11 +486,11 @@
       "name": "debug capture toggle is wired through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "401-443",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 350,
                 351,
@@ -518,11 +518,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "477-526",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 906,
                 907,
@@ -547,11 +547,11 @@
       "name": "pause_confirm / pause_triple / pause_resume update pause state and emit SessionStateChange",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "444-534",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 371,
                 372,
@@ -600,11 +600,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "550-669",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 920,
                 921,
@@ -644,11 +644,11 @@
       "name": "HITL request/response round-trips through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "535-595",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 397,
                 398,
@@ -677,11 +677,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "694-753",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 949,
                 950,
@@ -717,11 +717,11 @@
       "name": "send_fspec_result round-trips through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "596-623",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 419,
                 420,
@@ -738,11 +738,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "755-781",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 974,
                 975,
@@ -761,11 +761,11 @@
       "name": "create_isolated_session returns IsolatedSessionInfo and the session is listed",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "624-663",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 429,
                 430,
@@ -785,11 +785,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "783-821",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 982,
                 983,
@@ -823,11 +823,11 @@
       "name": "set_thinking_level_default closes the tarpc-side gap and round-trips through both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "664-685",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1218,
                 1219,
@@ -845,11 +845,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "823-843",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1240,
                 1241,
@@ -872,11 +872,11 @@
       "name": "status_changes_rx is push-driven on both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "724-783",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 280,
                 281,
@@ -914,11 +914,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "883-941",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 180,
                 181,
@@ -983,11 +983,11 @@
       "name": "destroy_session removes the session from list_sessions on both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "686-723",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 442,
                 443,
@@ -1018,11 +1018,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "845-881",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1013,
                 1014,
@@ -1067,11 +1067,11 @@
       "name": "every new method has a tarpc service peer and a FspecBackend trait peer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "952-1078",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 232,
                 233,
@@ -1236,11 +1236,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "1111-1238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 232,
                 233,
@@ -1410,11 +1410,11 @@
       "name": "cross-transport byte-identical parity for the happy-path scenario",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "784-835",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 180,
                 181,
@@ -1552,11 +1552,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "943-993",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 322,
                 323,
@@ -1597,11 +1597,11 @@
       "name": "cargo build and clippy stay green",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "1080-1108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -1997,11 +1997,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "1240-1273",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -2043,11 +2043,11 @@
       "name": "clear_history emits a SessionStateChange chunk and returns Ok",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs",
           "lines": "149-187",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1653,
                 1654,
@@ -2076,13 +2076,13 @@
     "coveredScenarios": 20,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/rpc-server/src/server.rs",
-      "codelet/fspec-tui/src/transport/mod.rs"
+      "rust/core/src/session_manager_handle.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/rpc-server/src/server.rs",
+      "rust/fspec-tui/src/transport/mod.rs"
     ],
     "totalLinesCovered": 3508
   }

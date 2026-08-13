@@ -2,7 +2,7 @@
 @RPC-174
 Feature: fspec add-command CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_command.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/add_command.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-command.ts:149-185). Surface:
   `fspec add-command <workUnitId> <text> [--actor <actor>] [--timestamp <ms>]
   [--bounded-context <context>]`.
@@ -24,7 +24,7 @@ Feature: fspec add-command CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-command --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-command.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-command.txt
     And stdout starts with a blank line followed by 'ADD-COMMAND'
 
   Scenario: CLI successfully appends a command and prints the success line
@@ -50,4 +50,4 @@ Feature: fspec add-command CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-command AUTH-001 "C2"` afterwards exits 0
     And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
-    And the CLI bridge module codelet/fspec/src/add_command.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_command.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

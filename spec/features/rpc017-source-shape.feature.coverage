@@ -4,11 +4,11 @@
       "name": "codelet_common::file_lock is lifted out of schedule_handler.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "31-82",
           "implMappings": [
             {
-              "file": "codelet/common/src/file_lock.rs",
+              "file": "rust/common/src/file_lock.rs",
               "lines": [
                 1,
                 2,
@@ -150,11 +150,11 @@
       "name": "codelet_core::work_units_write module exists and stays under 300 LoC",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "83-136",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 1,
                 2,
@@ -296,11 +296,11 @@
       "name": "FspecService trait gains the move_work_unit_up / _down RPC methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "137-162",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 90,
                 91,
@@ -321,11 +321,11 @@
       "name": "FspecBackend trait gains the move_work_unit_up / _down methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "163-192",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 99,
                 100,
@@ -351,11 +351,11 @@
       "name": "Both transports implement the new FspecBackend methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "193-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 104,
                 105,
@@ -383,11 +383,11 @@
       "name": "Action::ReorderUp / ReorderDown handlers are no longer no-ops",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "227-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 190,
                 191,
@@ -426,11 +426,11 @@
       "name": "NAPI exports for move_work_unit_up / _down delegate to the shared helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "254-282",
           "implMappings": [
             {
-              "file": "codelet/napi/src/work_units_watcher.rs",
+              "file": "rust/napi/src/work_units_watcher.rs",
               "lines": [
                 193,
                 194,
@@ -464,7 +464,7 @@
       "name": "Existing TS prioritize-work-unit code path is untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "283-330",
           "implMappings": [
             {
@@ -530,11 +530,11 @@
       "name": "Views do not directly import codelet_core / napi / tarpc",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc017.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
           "lines": "331-368",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -578,18 +578,18 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc017.rs"
+      "rust/fspec-tui/tests/source_shape_rpc017.rs"
     ],
     "implFiles": [
-      "codelet/common/src/file_lock.rs",
-      "codelet/core/src/work_units_write.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/napi/src/work_units_watcher.rs",
+      "rust/common/src/file_lock.rs",
+      "rust/core/src/work_units_write.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/napi/src/work_units_watcher.rs",
       "src/commands/prioritize-work-unit.ts",
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 766
   }

@@ -4,11 +4,11 @@
       "name": "Message with specific turn references resolves content inline",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1375-1491",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 271,
                 272,
@@ -339,11 +339,11 @@
       "name": "Message with turn range reference resolves consecutive turns",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1508-1599",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 271,
                 272,
@@ -674,11 +674,11 @@
       "name": "Message with search query reference resolves matching turns",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1601-1680",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 271,
                 272,
@@ -1009,11 +1009,11 @@
       "name": "Context reference to non-existent session degrades gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1682-1750",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 393,
                 394,
@@ -1058,11 +1058,11 @@
       "name": "Search query with zero matches degrades gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1752-1816",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 453,
                 454,
@@ -1140,11 +1140,11 @@
       "name": "Mixed context array resolves multiple references",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1818-1893",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 353,
                 354,
@@ -1193,11 +1193,11 @@
       "name": "Message without context behaves as plain text delivery",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1895-1948",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 295,
                 296,
@@ -1225,11 +1225,11 @@
       "name": "Out-of-range turn indices are silently skipped",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1950-1990",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 427,
                 428,
@@ -1265,11 +1265,11 @@
       "name": "Context reference type is dispatched through ContextReference enum",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1992-2055",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 44,
                 45,
@@ -1322,11 +1322,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/agent_manager/tests.rs"
+      "rust/tools/src/agent_manager/tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/agent_manager_handler.rs",
-      "codelet/tools/src/agent_manager/types.rs"
+      "rust/napi/src/agent_manager_handler.rs",
+      "rust/tools/src/agent_manager/types.rs"
     ],
     "totalLinesCovered": 1830
   }

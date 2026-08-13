@@ -4,11 +4,11 @@
       "name": "A local-server profile section precedes cloud sections and provides the default model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov130_section_ordering.rs",
+          "file": "rust/sessions/tests/prov130_section_ordering.rs",
           "lines": "122-186",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 958,
                 959,
@@ -113,11 +113,11 @@
       "name": "With no profiles or custom providers the default comes from the first cloud section",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov130_section_ordering.rs",
+          "file": "rust/sessions/tests/prov130_section_ordering.rs",
           "lines": "187-240",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 958,
                 959,
@@ -222,11 +222,11 @@
       "name": "The synthesized Codex section leads the cloud group",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov130_section_ordering.rs",
+          "file": "rust/sessions/tests/prov130_section_ordering.rs",
           "lines": "241-287",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 203,
                 204,
@@ -276,11 +276,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov130_section_ordering.rs"
+      "rust/sessions/tests/prov130_section_ordering.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/cloud_models.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/cloud_models.rs"
     ],
     "totalLinesCovered": 388
   }

@@ -4,11 +4,11 @@
       "name": "Soft-deletes a rule by stable id and bumps remainingCount",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "75-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 49,
                 50,
@@ -142,11 +142,11 @@
       "name": "Already-deleted rule is idempotent and does not write to disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "122-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 120,
                 121,
@@ -179,11 +179,11 @@
       "name": "Stable-id semantics — id 1 is removed regardless of array position",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "155-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 97,
                 98,
@@ -214,11 +214,11 @@
       "name": "Unknown rule id surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "189-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 100,
                 101,
@@ -246,11 +246,11 @@
       "name": "Empty rules array surfaces the canonical 'no rules' error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "218-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 82,
                 83,
@@ -275,11 +275,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "245-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 57,
                 58,
@@ -301,11 +301,11 @@
       "name": "Non-specifying status is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_rule.rs",
+          "file": "rust/fspec-core/tests/remove_rule.rs",
           "lines": "264-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_rule.rs",
+              "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
                 68,
                 69,
@@ -332,10 +332,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_rule.rs"
+      "rust/fspec-core/tests/remove_rule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_rule.rs"
+      "rust/fspec-core/src/commands/remove_rule.rs"
     ],
     "totalLinesCovered": 420
   }

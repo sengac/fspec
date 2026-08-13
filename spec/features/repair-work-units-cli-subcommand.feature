@@ -5,7 +5,7 @@
 @RPC-284
 Feature: fspec repair-work-units CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/repair_work_units.rs — clap-derived struct mirroring TS
+  CLI bridge: rust/fspec/src/repair_work_units.rs — clap-derived struct mirroring TS
   Commander.js registration (src/commands/repair-work-units.ts:128-151). Surface:
   `fspec repair-work-units [--dry-run]`.
 
@@ -41,13 +41,13 @@ Feature: fspec repair-work-units CLI subcommand
     And stdout contains "✓ Repaired 1 issues"
 
   Scenario: CLI delegates to the same fspec_core function as the dispatcher
-    Given the codelet/fspec crate is built
-    When I inspect codelet/fspec/src/repair_work_units.rs
+    Given the rust/fspec crate is built
+    When I inspect rust/fspec/src/repair_work_units.rs
     Then the source declares it calls codelet_fspec_core::commands::repair_work_units::run
     And the source does NOT perform any file IO directly on spec/work-units.json
 
   Scenario: CLI help surface matches the captured TS fixture
-    Given the TS help fixture at codelet/fspec/tests/fixtures/help/repair-work-units.txt
+    Given the TS help fixture at rust/fspec/tests/fixtures/help/repair-work-units.txt
     When I run `fspec repair-work-units --help`
     Then the process exits with code 0
     And stdout matches the captured TS fixture byte-for-byte

@@ -4,11 +4,11 @@
       "name": "Find class hierarchy with parents and children",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "file": "rust/napi/tests/ast_hierarchy_test.rs",
           "lines": "80-118",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "file": "rust/napi/src/graph/ast_hierarchy.rs",
               "lines": [
                 38,
                 39,
@@ -80,11 +80,11 @@
       "name": "Multi-level hierarchy traversal",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "file": "rust/napi/tests/ast_hierarchy_test.rs",
           "lines": "124-163",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "file": "rust/napi/src/graph/ast_hierarchy.rs",
               "lines": [
                 115,
                 116,
@@ -145,11 +145,11 @@
       "name": "Standalone type with no inheritance",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "file": "rust/napi/tests/ast_hierarchy_test.rs",
           "lines": "169-202",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "file": "rust/napi/src/graph/ast_hierarchy.rs",
               "lines": [
                 38,
                 39,
@@ -221,11 +221,11 @@
       "name": "Non-existent type returns error",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "file": "rust/napi/tests/ast_hierarchy_test.rs",
           "lines": "208-232",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "file": "rust/napi/src/graph/ast_hierarchy.rs",
               "lines": [
                 38,
                 39,
@@ -257,10 +257,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_hierarchy_test.rs"
+      "rust/napi/tests/ast_hierarchy_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_hierarchy.rs"
+      "rust/napi/src/graph/ast_hierarchy.rs"
     ],
     "totalLinesCovered": 325
   }

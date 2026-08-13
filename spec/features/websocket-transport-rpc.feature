@@ -12,7 +12,7 @@ Feature: WebSocket transport daemon for the FspecService tarpc surface
   """
   Architecture
 
-  codelet/rpc-server is a minimal WebSocket daemon binary using tokio-tungstenite. It binds 127.0.0.1:0, reports its ephemeral port on stdout, traces to stderr, and shuts down on ctrl_c. The same shared FspecService implementation hosted by codelet/rpc-embedded is reached over the network via an Envelope codec.
+  rust/rpc-server is a minimal WebSocket daemon binary using tokio-tungstenite. It binds 127.0.0.1:0, reports its ephemeral port on stdout, traces to stderr, and shuts down on ctrl_c. The same shared FspecService implementation hosted by rust/rpc-embedded is reached over the network via an Envelope codec.
 
   Wire format: bincode is the default; the Envelope enum carries Rpc | Event | LogEvent | WorkUnitsUpdate | CmdReq | CmdRes variants but only Rpc is implemented in this card. All other variants are reserved-but-rejected (server logs a warning and refuses to dispatch).
 

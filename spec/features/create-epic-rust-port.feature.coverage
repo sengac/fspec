@@ -4,11 +4,11 @@
       "name": "Dispatcher creates a minimal epic and writes spec/epics.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "44-82",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 94,
                 95,
@@ -117,11 +117,11 @@
       "name": "Dispatcher creates an epic with a description",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "84-123",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 94,
                 95,
@@ -230,11 +230,11 @@
       "name": "Dispatcher preserves pre-existing epics when adding a new one",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "125-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 94,
                 95,
@@ -343,11 +343,11 @@
       "name": "Dispatcher rejects an invalid epicId with the canonical regex error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "162-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 67,
                 68,
@@ -411,11 +411,11 @@
       "name": "Dispatcher rejects creating an epic that already exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "198-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 120,
                 121,
@@ -438,11 +438,11 @@
       "name": "Dispatcher auto-creates the spec directory when missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "246-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 160,
                 161,
@@ -475,11 +475,11 @@
       "name": "Dispatcher tolerates malformed spec/epics.json by treating it as empty (TS bare-catch parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "269-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 115,
                 116,
@@ -497,11 +497,11 @@
       "name": "Dispatcher fails fast when required args are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "296-314",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 97,
                 98,
@@ -522,11 +522,11 @@
       "name": "Dispatcher response text renders the canonical success block without description",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "316-350",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 192,
                 193,
@@ -552,11 +552,11 @@
       "name": "Dispatcher response text includes the Description line when provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_epic.rs",
+          "file": "rust/fspec-core/tests/create_epic.rs",
           "lines": "352-393",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_epic.rs",
+              "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
                 192,
                 193,
@@ -584,10 +584,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/create_epic.rs"
+      "rust/fspec-core/tests/create_epic.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/create_epic.rs"
+      "rust/fspec-core/src/commands/create_epic.rs"
     ],
     "totalLinesCovered": 759
   }

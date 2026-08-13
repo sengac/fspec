@@ -5,7 +5,7 @@
 @RPC-199
 Feature: Port board command to Rust
   """
-  Core impl: rewrite codelet/fspec-core/src/commands/board.rs to `pub async fn run(args_json, project_root)`; reuse io::ensure::{check_foundation_exists, ensure_work_units_file} and types::work_unit::{WorkUnitsData, WorkUnitStates}. WorkUnit.estimate is read from the `extra` map (no typed estimate field exists).
+  Core impl: rewrite rust/fspec-core/src/commands/board.rs to `pub async fn run(args_json, project_root)`; reuse io::ensure::{check_foundation_exists, ensure_work_units_file} and types::work_unit::{WorkUnitsData, WorkUnitStates}. WorkUnit.estimate is read from the `extra` map (no typed estimate field exists).
   columns/board are JSON objects keyed by status; emit in WorkUnitStates declaration order (backlog, specifying, testing, implementing, validating, done, blocked) to match TS Object.entries(states) on canonical files. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::Board{format,limit} + intercept + mod, help configs/mod.rs. OPEN QUESTION for supervisor: confirm headless text-mode rendering string OR make CLI default json (TS text mode is an Ink TUI with no stable fixture).
   """
 

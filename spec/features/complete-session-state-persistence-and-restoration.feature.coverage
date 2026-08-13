@@ -4,11 +4,11 @@
       "name": "Message UUID preserved for identity",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "165-191",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -38,11 +38,11 @@
       "name": "Parent UUID preserved for message threading",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "195-245",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -80,11 +80,11 @@
       "name": "Message timestamp preserved for ordering",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "250-286",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -122,11 +122,11 @@
       "name": "Model identifier preserved per message",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "291-325",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -164,11 +164,11 @@
       "name": "Mixed model session preserved correctly",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1188-1245",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -206,11 +206,11 @@
       "name": "Provider type preserved per message",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "330-357",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -248,11 +248,11 @@
       "name": "Mixed provider session preserved correctly",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1247-1319",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -290,11 +290,11 @@
       "name": "API request ID preserved for debugging",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "362-392",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -332,11 +332,11 @@
       "name": "Stop reason preserved for response analysis",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "397-428",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -374,11 +374,11 @@
       "name": "Max tokens stop reason indicates truncation",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1127-1147",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -416,11 +416,11 @@
       "name": "Text content persisted and restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "443-462",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 25,
                 26,
@@ -458,11 +458,11 @@
       "name": "Assistant message ID preserved",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "467-486",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -575,11 +575,11 @@
       "name": "Tool use content persisted and restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "488-513",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 120,
                 121,
@@ -607,11 +607,11 @@
       "name": "Tool result content persisted and restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "515-546",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 67,
                 68,
@@ -649,11 +649,11 @@
       "name": "Tool error result persisted with error flag",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "548-573",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -766,11 +766,11 @@
       "name": "Tool result raw output metadata preserved",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "575-610",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -883,11 +883,11 @@
       "name": "Thinking content with signature persisted and restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "612-634",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 136,
                 137,
@@ -909,11 +909,11 @@
       "name": "Thinking content without signature persisted",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "636-659",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1026,11 +1026,11 @@
       "name": "Base64 image content persisted and restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "661-693",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 167,
                 168,
@@ -1054,11 +1054,11 @@
       "name": "URL image reference persisted inline",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "695-723",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1171,11 +1171,11 @@
       "name": "Base64 document content persisted and restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "725-765",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 180,
                 181,
@@ -1202,11 +1202,11 @@
       "name": "URL document reference persisted inline",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1149-1177",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1319,11 +1319,11 @@
       "name": "Multi-part assistant message preserves structure and order",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "775-838",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1436,11 +1436,11 @@
       "name": "Parallel tool uses in single message preserved",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "840-919",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1553,11 +1553,11 @@
       "name": "Message sequence preserved across multiple turns",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1330-1394",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1670,11 +1670,11 @@
       "name": "Content above 10KB threshold stored in blob",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1501-1521",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/blob.rs",
+              "file": "rust/napi/src/persistence/blob.rs",
               "lines": [
                 149,
                 150,
@@ -1692,11 +1692,11 @@
       "name": "Content at exactly 10KB threshold stored inline",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1523-1538",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 50,
                 51,
@@ -1809,11 +1809,11 @@
       "name": "Duplicate large content deduplicated by hash",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1540-1556",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -2025,11 +2025,11 @@
       "name": "Blob content retrieved on restore",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1558-1577",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -2241,11 +2241,11 @@
       "name": "Aggregate token tracker state restored",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1606-1632",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -2457,11 +2457,11 @@
       "name": "Per-message token usage preserved",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "930-959",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 147,
                 148,
@@ -2485,11 +2485,11 @@
       "name": "Turn boundaries reconstructed from message sequence",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1635-1705",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -2701,11 +2701,11 @@
       "name": "Compaction operates correctly on restored session",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1707-1847",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -2917,11 +2917,11 @@
       "name": "Restored session indistinguishable from continuous session",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1718-1812",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -3133,11 +3133,11 @@
       "name": "Restored session enables context-aware follow-up",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1815-1931",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -3349,11 +3349,11 @@
       "name": "Session with only text messages (no tools)",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "970-1018",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -3565,11 +3565,11 @@
       "name": "Session with single user message",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1086-1125",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -3781,11 +3781,11 @@
       "name": "Session with many turns restores completely",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1396-1474",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -3997,11 +3997,11 @@
       "name": "Assistant message without ID handled gracefully",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1020-1047",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -4213,11 +4213,11 @@
       "name": "Interrupted tool execution preserved",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "file": "rust/napi/tests/session_persistence_test.rs",
           "lines": "1049-1085",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -4431,11 +4431,11 @@
     "coveredScenarios": 40,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/session_persistence_test.rs"
+      "rust/napi/tests/session_persistence_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/message_envelope.rs",
-      "codelet/napi/src/persistence/blob.rs"
+      "rust/napi/src/persistence/message_envelope.rs",
+      "rust/napi/src/persistence/blob.rs"
     ],
     "totalLinesCovered": 5514
   }

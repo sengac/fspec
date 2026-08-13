@@ -4,11 +4,11 @@
       "name": "Action::ReorderUp dispatches backend.move_work_unit_up against the selected work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
           "lines": "55-85",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 190,
                 191,
@@ -35,11 +35,11 @@
       "name": "Action::ReorderDown dispatches backend.move_work_unit_down against the selected work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
           "lines": "86-118",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 205,
                 206,
@@ -63,11 +63,11 @@
       "name": "Action::ReorderUp is a no-op when the focused column is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
           "lines": "119-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 190,
                 191,
@@ -106,11 +106,11 @@
       "name": "BoardStore::replace_work_units re-anchors per-column selection to the previously-selected work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
           "lines": "144-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board.rs",
+              "file": "rust/fspec-tui/src/store/board.rs",
               "lines": [
                 62,
                 63,
@@ -194,11 +194,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_dispatch_reorder_rpc017.rs"
+      "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/fspec-tui/src/store/board.rs"
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/store/board.rs"
     ],
     "totalLinesCovered": 249
   }

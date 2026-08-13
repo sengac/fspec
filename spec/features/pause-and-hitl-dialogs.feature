@@ -20,10 +20,10 @@ Feature: Pause / HITL UI (chunk-driven trigger + inline HITL slot end-to-end)
   spec/features/inline-hitl-prompt.feature). This file retains the chunk-driven
   trigger contract, the Esc-cancel wire correctness, and error tolerance.
   Action variants in components/mod.rs: Action::HitlPromptFetched{session_id, request} (replaces the deleted Action::OpenHitlDialog — stores the fetched HitlRequest into the AgentViewStore per-session HITL slot), Action::PauseConfirmed{session_id, accept: bool}, Action::PauseTriple{session_id, choice: ApprovalChoice}, Action::PauseResumed{session_id} (kept for non-prompt callers; unreachable from the inline pause prompt), Action::HitlSubmitted{session_id, response: HitlResponse}, Action::HitlCancelled{session_id} (Esc outside Other mode — sends {cancelled:true, answers:[]} then clears the slot), Action::PauseCleared{session_id} (sent by chunk dispatcher on Running/Idle to clear the per-session pause AND HITL slots), Action::PauseStateFetched{session_id, state} (RPC-406 — stores the fetched PauseState into the AgentViewStore per-session slot)
-  codelet/fspec-tui/src/app/dispatch_pause_hitl.rs hosts impl App methods: handle_pause_chunk(session_id) — fired from dispatch_stream_chunks SessionStateChange{Paused} arm, spawns parallel backend.get_pause_state + get_hitl_request and dispatches PauseStateFetched OR HitlPromptFetched (HITL wins on tie); handle_pause_confirmed/handle_pause_triple/handle_pause_resumed — fire-and-forget backend writes (the first two also clear the per-session pause slot); handle_hitl_submitted — fire-and-forget backend.send_hitl_response, clears the HITL slot (submit AND cancel both route here); handle_pause_cleared — clear the pause slot and the HITL slot for the session. RPC-411 reducers live in app/dispatch_hitl_prompt.rs.
+  rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts impl App methods: handle_pause_chunk(session_id) — fired from dispatch_stream_chunks SessionStateChange{Paused} arm, spawns parallel backend.get_pause_state + get_hitl_request and dispatches PauseStateFetched OR HitlPromptFetched (HITL wins on tie); handle_pause_confirmed/handle_pause_triple/handle_pause_resumed — fire-and-forget backend writes (the first two also clear the per-session pause slot); handle_hitl_submitted — fire-and-forget backend.send_hitl_response, clears the HITL slot (submit AND cancel both route here); handle_pause_cleared — clear the pause slot and the HITL slot for the session. RPC-411 reducers live in app/dispatch_hitl_prompt.rs.
   Wire into dispatch_stream_chunks::handle_stream_chunk_state_updates: branch SessionStateChange{state} on Running/Idle to dispatch Action::PauseCleared, AND on Paused to dispatch Action::PauseChunkReceived(session_id) which routes through handle_pause_chunk (the parallel get_pause_state/get_hitl_request fetcher). Route both actions via the try_dispatch_pause_hitl catch-all helper.
   MockBackend in tests/common/mod.rs carries: pause_state scripted Mutex<Option<PauseState>>, hitl_request scripted Mutex<Option<HitlRequest>>, per-call counters + last-call captures for pause_resume, pause_confirm, pause_triple, send_hitl_response, get_pause_state, get_hitl_request, plus error-injection helpers.
-  Integration test file: codelet/fspec-tui/tests/pause_hitl_rpc053.rs with @step comments mapped 1:1 to feature scenarios.
+  Integration test file: rust/fspec-tui/tests/pause_hitl_rpc053.rs with @step comments mapped 1:1 to feature scenarios.
   """
 
   # ========================================
@@ -140,10 +140,10 @@ Feature: Pause / HITL UI (chunk-driven trigger + inline HITL slot end-to-end)
   # ─────────────────────────────────────────────────────────────────────
   # Source shape
   # ─────────────────────────────────────────────────────────────────────
-  Scenario: codelet/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers
-    Given the file codelet/fspec-tui/src/app/dispatch_pause_hitl.rs exists
+  Scenario: rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers
+    Given the file rust/fspec-tui/src/app/dispatch_pause_hitl.rs exists
     When the file is compiled as part of codelet-fspec-tui
     Then it must declare impl App methods named handle_pause_chunk, handle_pause_confirmed, handle_pause_triple, handle_pause_resumed, handle_hitl_submitted, and handle_pause_cleared
-    And codelet/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pause_hitl and pub mod dispatch_hitl_prompt
-    And codelet/fspec-tui/src/components/mod.rs must declare no pub mod hitl_dialog and no pub mod pause_dialog
-    And codelet/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines
+    And rust/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pause_hitl and pub mod dispatch_hitl_prompt
+    And rust/fspec-tui/src/components/mod.rs must declare no pub mod hitl_dialog and no pub mod pause_dialog
+    And rust/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines

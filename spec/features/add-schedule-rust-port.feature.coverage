@@ -4,11 +4,11 @@
       "name": "Add an agent schedule writes the entry with status active",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "61-101",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -205,11 +205,11 @@
       "name": "Add a shell schedule writes the entry with default skip overlap policy",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "104-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -406,11 +406,11 @@
       "name": "spec/schedules.json is auto-created when missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "136-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -607,11 +607,11 @@
       "name": "Invalid schedule name is rejected without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "174-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -808,11 +808,11 @@
       "name": "Cron expression with fewer than five fields is rejected without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "208-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -1009,11 +1009,11 @@
       "name": "Invalid timezone is rejected without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "242-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -1210,11 +1210,11 @@
       "name": "Invalid jobType is rejected without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "276-307",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -1411,11 +1411,11 @@
       "name": "Agent schedule missing role and prompt is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "310-340",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -1612,11 +1612,11 @@
       "name": "Shell schedule missing command is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "343-373",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -1813,11 +1813,11 @@
       "name": "Duplicate schedule name is rejected and existing entry is preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_schedule.rs",
+          "file": "rust/fspec-core/tests/add_schedule.rs",
           "lines": "376-432",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_schedule.rs",
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
               "lines": [
                 95,
                 96,
@@ -2016,10 +2016,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_schedule.rs"
+      "rust/fspec-core/tests/add_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_schedule.rs"
+      "rust/fspec-core/src/commands/add_schedule.rs"
     ],
     "totalLinesCovered": 2204
   }

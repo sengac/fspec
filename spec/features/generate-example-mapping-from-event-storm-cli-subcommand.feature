@@ -4,7 +4,7 @@
 @RPC-232
 Feature: generate-example-mapping-from-event-storm clap subcommand on the standalone fspec Rust binary
   """
-  File layout: core impl codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs (rewrite stub); CLI bridge codelet/fspec/src/generate_example_mapping_from_event_storm.rs; help config codelet/fspec-core/src/help/configs/generate_example_mapping_from_event_storm.rs; help fixture codelet/fspec/tests/fixtures/help/generate-example-mapping-from-event-storm.txt; core test codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs; CLI test codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs. Module already registered as a stub in commands/mod.rs (do not edit).
+  File layout: core impl rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs (rewrite stub); CLI bridge rust/fspec/src/generate_example_mapping_from_event_storm.rs; help config rust/fspec-core/src/help/configs/generate_example_mapping_from_event_storm.rs; help fixture rust/fspec/tests/fixtures/help/generate-example-mapping-from-event-storm.txt; core test rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs; CLI test rust/fspec/tests/cli_generate_example_mapping_from_event_storm.rs. Module already registered as a stub in commands/mod.rs (do not edit).
   Shared types reused: crate::types::work_unit::WorkUnitsData (rules/examples/questions/nextXId all read+written via WorkUnit.extra, same pattern as add_rule.rs / add_example.rs / add_question.rs); eventStorm.items walked via WorkUnit.extra.get('eventStorm') (same as show_event_storm.rs). Meta.last_updated is a typed field on WorkUnitsData::meta (Meta::last_updated). Reuses crate::io::locked_file::write_json_atomic and crate::io::time::iso8601_now. Missing-file Option B (inline path.exists()).
   SHARED-FN REQUEST (supervisor): pascalCaseToSentence (src/utils/text-formatting.ts) — inserts a space before each uppercase letter, trims, lowercases. No Rust equivalent exists in fspec-core. Need a shared crate::text_format::pascal_case_to_sentence (also reused by future event-storm transforms). Will ASK before inlining. Also note: TS question object writes answer:undefined which JSON.stringify omits, so on-disk question shape is { id, text, deleted, createdAt } (no answer key) — matches add_question.rs output.
   """
@@ -38,15 +38,15 @@ Feature: generate-example-mapping-from-event-storm clap subcommand on the standa
     So that Event Storm artifacts are transformed into Example Mapping by one shared implementation across the daemon and the standalone Rust binary
 
   Scenario: Clap exposes the subcommand and prints flag-free --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec generate-example-mapping-from-event-storm --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec generate-example-mapping-from-event-storm --help` from a shell
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the captured TS fixture at codelet/fspec/tests/fixtures/help/generate-example-mapping-from-event-storm.txt
+    Then stdout is byte-for-byte identical to the captured TS fixture at rust/fspec/tests/fixtures/help/generate-example-mapping-from-event-storm.txt
     Then stdout advertises the required positional <work-unit-id> argument
 
   Scenario: CLI transforms Event Storm artifacts and prints the summary on success
     Given spec/work-units.json contains AUTH-001 with an eventStorm of 1 policy and 1 hotspot in the current working directory
-    When I run `./codelet/target/release/fspec generate-example-mapping-from-event-storm AUTH-001` from that directory
+    When I run `./rust/target/release/fspec generate-example-mapping-from-event-storm AUTH-001` from that directory
     Then the command exits with code 0
     Then stdout contains 'Rules added: 1'
     Then stdout contains 'Examples added: 0'
@@ -54,13 +54,13 @@ Feature: generate-example-mapping-from-event-storm clap subcommand on the standa
 
   Scenario: CLI against empty workspace exits 1 with missing-file error
     Given an empty directory with no spec/ subdirectory is set as the current working directory
-    When I run `./codelet/target/release/fspec generate-example-mapping-from-event-storm AUTH-001` from that directory
+    When I run `./rust/target/release/fspec generate-example-mapping-from-event-storm AUTH-001` from that directory
     Then the command exits with code 1
     Then stderr contains the substring 'Error:'
     Then stderr contains the substring 'spec/work-units.json not found. Run fspec init first.'
 
   Scenario: CLI exits 1 when the unit has no Event Storm data
     Given spec/work-units.json contains AUTH-001 with no eventStorm field in the current working directory
-    When I run `./codelet/target/release/fspec generate-example-mapping-from-event-storm AUTH-001` from that directory
+    When I run `./rust/target/release/fspec generate-example-mapping-from-event-storm AUTH-001` from that directory
     Then the command exits with code 1
     Then stderr contains the substring 'has no Event Storm data'

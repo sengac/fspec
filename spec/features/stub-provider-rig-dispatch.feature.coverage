@@ -4,11 +4,11 @@
       "name": "send_input(\"hello\") yields the canned [Text, Done] stream",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "139-198",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 966,
                 967,
@@ -110,7 +110,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/stub_model.rs",
+              "file": "rust/providers/src/stub_model.rs",
               "lines": [
                 1,
                 2,
@@ -267,7 +267,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/stub_provider.rs",
+              "file": "rust/providers/src/stub_provider.rs",
               "lines": [
                 44,
                 45,
@@ -340,11 +340,11 @@
       "name": "fspec daemon boots over a stub-backed workspace and emits a port",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "57-80",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 966,
                 967,
@@ -453,11 +453,11 @@
       "name": "scripted run's normalised chunk stream matches the pinned golden",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "368-470",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 966,
                 967,
@@ -566,11 +566,11 @@
       "name": "stub-backed daemon yields canned chunks even when network egress is denied",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "645-708",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 966,
                 967,
@@ -679,11 +679,11 @@
       "name": "agent_loop_dispatch_supports_provider includes the stub arm under test-support",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "755-794",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 108,
                 109,
@@ -730,13 +730,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cross_frontend_parity.rs"
+      "rust/fspec/tests/cross_frontend_parity.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/providers/src/stub_model.rs",
-      "codelet/providers/src/stub_provider.rs",
-      "codelet/agent-loop/src/dispatch.rs"
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/providers/src/stub_model.rs",
+      "rust/providers/src/stub_provider.rs",
+      "rust/agent-loop/src/dispatch.rs"
     ],
     "totalLinesCovered": 925
   }

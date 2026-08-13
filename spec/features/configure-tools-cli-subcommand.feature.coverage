@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_configure_tools.rs",
+          "file": "rust/fspec/tests/cli_configure_tools.rs",
           "lines": "52-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/configure_tools.rs",
+              "file": "rust/fspec-core/src/help/configs/configure_tools.rs",
               "lines": [
                 1,
                 2,
@@ -138,11 +138,11 @@
       "name": "CLI saves the test command and prints the confirmation line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_configure_tools.rs",
+          "file": "rust/fspec/tests/cli_configure_tools.rs",
           "lines": "79-104",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/configure_tools.rs",
+              "file": "rust/fspec/src/configure_tools.rs",
               "lines": [
                 60,
                 61,
@@ -165,11 +165,11 @@
       "name": "CLI forwards multi-value quality commands into the persisted array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_configure_tools.rs",
+          "file": "rust/fspec/tests/cli_configure_tools.rs",
           "lines": "106-137",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/configure_tools.rs",
+              "file": "rust/fspec/src/configure_tools.rs",
               "lines": [
                 44,
                 45,
@@ -196,11 +196,11 @@
       "name": "CLI --reconfigure does not write the config file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_configure_tools.rs",
+          "file": "rust/fspec/tests/cli_configure_tools.rs",
           "lines": "139-176",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/configure_tools.rs",
+              "file": "rust/fspec/src/configure_tools.rs",
               "lines": [
                 60,
                 61,
@@ -223,11 +223,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_configure_tools.rs",
+          "file": "rust/fspec/tests/cli_configure_tools.rs",
           "lines": "178-228",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/configure_tools.rs",
+              "file": "rust/fspec/src/configure_tools.rs",
               "lines": [
                 42,
                 43,
@@ -277,11 +277,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_configure_tools.rs"
+      "rust/fspec/tests/cli_configure_tools.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/configure_tools.rs",
-      "codelet/fspec/src/configure_tools.rs"
+      "rust/fspec-core/src/help/configs/configure_tools.rs",
+      "rust/fspec/src/configure_tools.rs"
     ],
     "totalLinesCovered": 364
   }

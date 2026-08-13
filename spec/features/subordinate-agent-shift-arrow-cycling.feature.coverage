@@ -4,11 +4,11 @@
       "name": "Empty session manager produces an empty navigation list",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "441-455",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 47,
                 48,
@@ -26,11 +26,11 @@
       "name": "Single subordinate appears once in the navigation list",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "459-478",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 47,
                 48,
@@ -48,11 +48,11 @@
       "name": "Five subordinates appear once each in spawn order",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "482-513",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 47,
                 48,
@@ -70,11 +70,11 @@
       "name": "Shift+Right from the board cycles through every session exactly once",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "517-559",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 47,
                 48,
@@ -151,11 +151,11 @@
       "name": "Shift+Left from the last subordinate cycles back to the board exactly once per session",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "564-607",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 47,
                 48,
@@ -273,11 +273,11 @@
       "name": "Two subordinates do not loop on the first subordinate (regression)",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "611-652",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 47,
                 48,
@@ -354,11 +354,11 @@
       "name": "Shift+Right from the last session shows the create-session dialog",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "656-681",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 77,
                 78,
@@ -405,11 +405,11 @@
       "name": "Shift+Left from the first session returns to the board",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/navigation_hierarchy_test.rs",
+          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
           "lines": "685-710",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 119,
                 120,
@@ -457,10 +457,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/navigation_hierarchy_test.rs"
+      "rust/napi/tests/navigation_hierarchy_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/navigation.rs"
+      "rust/napi/src/navigation.rs"
     ],
     "totalLinesCovered": 571
   }

@@ -8,10 +8,10 @@
 Feature: /detach and work-unit binding source-shape invariants
   """
   Source-shape regression pins for the RPC-050 wiring:
-  * No file under `codelet/fspec-tui/src/` matches "codelet_napi" (post-RPC-002 invariant).
-  * Every file under `codelet/fspec-tui/src/app/`, `codelet/fspec-tui/src/views/agent/`, and `codelet/fspec-tui/src/store/agent_view/` is strictly less than 300 lines of code.
-  * `codelet/fspec-tui/src/app/dispatch.rs` is strictly less than 300 lines of code.
-  * `codelet/fspec-tui/src/app/dispatch_slash_commands.rs` is strictly less than 300 lines of code.
+  * No file under `rust/fspec-tui/src/` matches "codelet_napi" (post-RPC-002 invariant).
+  * Every file under `rust/fspec-tui/src/app/`, `rust/fspec-tui/src/views/agent/`, and `rust/fspec-tui/src/store/agent_view/` is strictly less than 300 lines of code.
+  * `rust/fspec-tui/src/app/dispatch.rs` is strictly less than 300 lines of code.
+  * `rust/fspec-tui/src/app/dispatch_slash_commands.rs` is strictly less than 300 lines of code.
   * The new dispatch_work_unit_binding.rs file exists and declares the three RPC-050 helpers.
   * The components::Action enum declares the three new variants.
   """
@@ -32,20 +32,20 @@ Feature: /detach and work-unit binding source-shape invariants
     So that the dependency-rule regression tests continue to pass through the rest of the RPC-030 roadmap
 
   Scenario: No codelet_napi reference and the 300-LoC ceiling holds
-    Given the codelet/fspec-tui/src/ tree after the RPC-050 changes
-    Then no file under codelet/fspec-tui/src/ matches "codelet_napi"
-    And every file under codelet/fspec-tui/src/app/, codelet/fspec-tui/src/views/agent/, and codelet/fspec-tui/src/store/agent_view/ is strictly less than 300 lines of code
-    And codelet/fspec-tui/src/app/dispatch.rs is strictly less than 300 lines of code
-    And codelet/fspec-tui/src/app/dispatch_slash_commands.rs is strictly less than 300 lines of code
+    Given the rust/fspec-tui/src/ tree after the RPC-050 changes
+    Then no file under rust/fspec-tui/src/ matches "codelet_napi"
+    And every file under rust/fspec-tui/src/app/, rust/fspec-tui/src/views/agent/, and rust/fspec-tui/src/store/agent_view/ is strictly less than 300 lines of code
+    And rust/fspec-tui/src/app/dispatch.rs is strictly less than 300 lines of code
+    And rust/fspec-tui/src/app/dispatch_slash_commands.rs is strictly less than 300 lines of code
 
   Scenario: components::Action declares the new RPC-050 variants
-    Given codelet/fspec-tui/src/components/mod.rs after RPC-050 lands
+    Given rust/fspec-tui/src/components/mod.rs after RPC-050 lands
     Then the file declares "AttachWorkUnitToSession(" as an Action variant
     And the file declares "WorkUnitAttached(" as an Action variant
     And the file declares "WorkUnitDetached(" as an Action variant
 
   Scenario: dispatch_work_unit_binding.rs declares the new RPC-050 helpers
-    Given codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
+    Given rust/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
     Then the file declares "handle_attach_work_unit_to_session"
     And the file declares "handle_work_unit_attached"
     And the file declares "handle_work_unit_detached"

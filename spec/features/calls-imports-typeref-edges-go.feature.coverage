@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from Go import statements with external filtering",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/go_edge_extraction_test.rs",
+          "file": "rust/napi/tests/go_edge_extraction_test.rs",
           "lines": "54-89",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 152,
                 153,
@@ -86,11 +86,11 @@
       "name": "Extract Calls edges from Go function calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/go_edge_extraction_test.rs",
+          "file": "rust/napi/tests/go_edge_extraction_test.rs",
           "lines": "94-118",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 224,
                 225,
@@ -151,10 +151,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/go_edge_extraction_test.rs"
+      "rust/napi/tests/go_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs"
     ],
     "totalLinesCovered": 174
   }

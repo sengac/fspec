@@ -16,7 +16,7 @@ Feature: Add /debug slash command to fspec TUI agent
   #
   # BUSINESS RULES:
   #   1. Typing /debug in the input toggles debug capture mode on/off
-  #   2. Debug events are written to .codelet/debug-capture-*.json files (same as CLI)
+  #   2. Debug events are written to .rust/debug-capture-*.json files (same as CLI)
   #   3. Debug mode captures compaction.check, compaction.triggered, token.update, and api.* events
   #   4. A visual indicator shows when debug mode is active (e.g., in header)
   #   5. NAPI session must expose toggleDebug() method that calls handle_debug_command() and sets session metadata
@@ -26,7 +26,7 @@ Feature: Add /debug slash command to fspec TUI agent
   # EXAMPLES:
   #   1. User types /debug, sees 'Debug capture enabled' message, header shows DEBUG indicator
   #   2. User types /debug again, sees 'Debug capture disabled' message, DEBUG indicator disappears
-  #   3. With debug enabled, user sends prompt, .codelet/debug-capture-*.json is created with api.request, api.response.start, compaction.check events
+  #   3. With debug enabled, user sends prompt, .rust/debug-capture-*.json is created with api.request, api.response.start, compaction.check events
   #   4. When context approaches 180k tokens with debug on, compaction.triggered event is captured showing threshold exceeded
   #
   # ========================================
@@ -39,7 +39,7 @@ Feature: Add /debug slash command to fspec TUI agent
   Scenario: Enable debug capture mode
     Given I have the fspec TUI agent modal open
     When I type "/debug" in the input and submit
-    Then I should see a message "Debug capture started. Writing to: ~/.codelet/debug/session-*.jsonl"
+    Then I should see a message "Debug capture started. Writing to: ~/.rust/debug/session-*.jsonl"
     And the header should show a DEBUG indicator
     And session metadata should be set on the debug capture manager
 
@@ -48,7 +48,7 @@ Feature: Add /debug slash command to fspec TUI agent
     Given I have the fspec TUI agent modal open
     And debug capture mode is enabled
     When I type "/debug" in the input and submit
-    Then I should see a message "Debug capture stopped. Session saved to: ~/.codelet/debug/session-*.jsonl"
+    Then I should see a message "Debug capture stopped. Session saved to: ~/.rust/debug/session-*.jsonl"
     And the DEBUG indicator should disappear from the header
 
   @integration

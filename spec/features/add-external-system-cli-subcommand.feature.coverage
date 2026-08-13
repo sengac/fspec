@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_external_system.rs",
+          "file": "rust/fspec/tests/cli_add_external_system.rs",
           "lines": "82-106",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_external_system.rs",
+              "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
                 51,
                 52,
@@ -23,11 +23,11 @@
       "name": "CLI successfully appends an external system and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_external_system.rs",
+          "file": "rust/fspec/tests/cli_add_external_system.rs",
           "lines": "112-147",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_external_system.rs",
+              "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
                 79,
                 80,
@@ -49,11 +49,11 @@
       "name": "CLI forwards the type flag into the integrationType item field",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_external_system.rs",
+          "file": "rust/fspec/tests/cli_add_external_system.rs",
           "lines": "149-175",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_external_system.rs",
+              "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
                 59,
                 60,
@@ -78,11 +78,11 @@
       "name": "CLI rejects a done-state work unit with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_external_system.rs",
+          "file": "rust/fspec/tests/cli_add_external_system.rs",
           "lines": "177-209",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_external_system.rs",
+              "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
                 89,
                 90,
@@ -100,11 +100,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_external_system.rs",
+          "file": "rust/fspec/tests/cli_add_external_system.rs",
           "lines": "211-230",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_external_system.rs",
+              "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
                 73,
                 74,
@@ -123,10 +123,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_external_system.rs"
+      "rust/fspec/tests/cli_add_external_system.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_external_system.rs"
+      "rust/fspec/src/add_external_system.rs"
     ],
     "totalLinesCovered": 178
   }

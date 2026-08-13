@@ -4,11 +4,11 @@
       "name": "create_rig_agent returns a real rig::agent::Agent specialised over RhaiCustomProviderModel",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "218-252",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/custom_provider.rs",
+              "file": "rust/providers/src/custom/custom_provider.rs",
               "lines": [
                 95,
                 96,
@@ -88,11 +88,11 @@
       "name": "RhaiCustomProviderModel::completion bridges rig CompletionRequest through the Rhai contract",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "253-304",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/rig_model.rs",
+              "file": "rust/providers/src/custom/rig_model.rs",
               "lines": [
                 168,
                 169,
@@ -171,11 +171,11 @@
       "name": "RhaiCustomProviderModel::stream converts StreamChunk into rig RawStreamingChoice",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "305-386",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/rig_model.rs",
+              "file": "rust/providers/src/custom/rig_model.rs",
               "lines": [
                 236,
                 237,
@@ -262,11 +262,11 @@
       "name": "thinking_config supplied to create_rig_agent reaches Rhai build_request via request.thinking_config",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "387-455",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/rig_model.rs",
+              "file": "rust/providers/src/custom/rig_model.rs",
               "lines": [
                 115,
                 116,
@@ -283,11 +283,11 @@
       "name": "RhaiToolWrapper exposes Rhai-defined tool names and dispatches through default_to_internal",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "456-547",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/rig_tool.rs",
+              "file": "rust/providers/src/custom/rig_tool.rs",
               "lines": [
                 78,
                 79,
@@ -339,11 +339,11 @@
       "name": "System prompt facade transform_preamble is wired in as the agent preamble",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "548-586",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/custom_provider.rs",
+              "file": "rust/providers/src/custom/custom_provider.rs",
               "lines": [
                 171,
                 172,
@@ -371,11 +371,11 @@
       "name": "agent_loop dispatch for a custom provider routes through CustomProvider::create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs",
+          "file": "rust/providers/tests/rhai_rig_agent_keystone_tests.rs",
           "lines": "587-622",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5440,
                 5441,
@@ -478,13 +478,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/rhai_rig_agent_keystone_tests.rs"
+      "rust/providers/tests/rhai_rig_agent_keystone_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/custom_provider.rs",
-      "codelet/providers/src/custom/rig_model.rs",
-      "codelet/providers/src/custom/rig_tool.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/providers/src/custom/custom_provider.rs",
+      "rust/providers/src/custom/rig_model.rs",
+      "rust/providers/src/custom/rig_tool.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 765
   }

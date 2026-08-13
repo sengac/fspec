@@ -4,11 +4,11 @@
       "name": "Returns Work unit not found error when spec/work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "270-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "Returns Work unit not found error when workUnitId is not a key in workUnits",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "291-314",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "Returns no Event Storm data error when the unit has no eventStorm field",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "316-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Returns no Event Storm data error when eventStorm exists but has no items array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "341-364",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "Returns the active items as a pretty-printed JSON array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "366-404",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "Filters out soft-deleted items",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "406-440",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "Treats missing deleted field as retained",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "442-466",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "Returns an empty array when eventStorm.items is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "468-492",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "Preserves every field on every retained item",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "494-524",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -139,11 +139,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "526-541",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -154,11 +154,11 @@
       "name": "Missing workUnitId argument surfaces a structured InvalidArgs error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "543-567",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/show_event_storm.rs",
               "lines": "1-134"
             }
           ]
@@ -171,7 +171,7 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_event_storm.rs"
+      "rust/fspec/tests/cli_show_event_storm.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 288

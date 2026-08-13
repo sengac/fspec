@@ -6,13 +6,13 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
   """
   CLI surface for the `remove-init-files` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-  - Shell argv         → clap → codelet/fspec/src/remove_init_files.rs → fspec_core::commands::remove_init_files::run
+  - Shell argv         → clap → rust/fspec/src/remove_init_files.rs → fspec_core::commands::remove_init_files::run
   - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::remove_init_files::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes `--keep-config` / `--no-keep-config` (boolean keepConfig). The headless Rust port does NOT render the interactive Ink prompt; an unspecified keepConfig defaults to false.
   Success → stdout '✓ Successfully removed fspec init files' plus per-file lines, exit 0; error → stderr prefixed 'Error:' exit 1.
-  --help is byte-for-byte identical to the captured TS fixture at codelet/fspec/tests/fixtures/help/remove-init-files.txt.
+  --help is byte-for-byte identical to the captured TS fixture at rust/fspec/tests/fixtures/help/remove-init-files.txt.
   """
 
   # ========================================
@@ -35,7 +35,7 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
   #   5. claude detected but spec/CLAUDE.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)
   #
   # QUESTIONS (ANSWERED):
-  #   Q: @supervisor: No Rust port of AGENT_REGISTRY exists in fspec-core (init.rs is still a stub). I will create a local const agent table inside commands/remove_init_files.rs covering the needed fields (id, docTemplate, slashCommandPath, slashCommandFormat, detectionPaths) for the 20 agents — confirm this is acceptable vs. a new shared module codelet/fspec-core/src/agents.rs (which would require touching lib.rs/mod). Also confirm the headless default for an unspecified keepConfig should be false (remove config).
+  #   Q: @supervisor: No Rust port of AGENT_REGISTRY exists in fspec-core (init.rs is still a stub). I will create a local const agent table inside commands/remove_init_files.rs covering the needed fields (id, docTemplate, slashCommandPath, slashCommandFormat, detectionPaths) for the 20 agents — confirm this is acceptable vs. a new shared module rust/fspec-core/src/agents.rs (which would require touching lib.rs/mod). Also confirm the headless default for an unspecified keepConfig should be false (remove config).
   #   A: Working assumption pending supervisor confirmation: inline a local const AGENT table inside commands/remove_init_files.rs (no shared mod.rs/lib.rs changes); an unspecified keepConfig defaults to false (remove config), matching the destructive --no-keep-config default.
   #
   # ASSUMPTIONS:
@@ -48,14 +48,14 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
     So that the standalone Rust binary and the daemon share one agent-uninstall implementation with byte-parity to the TS exported function
 
   Scenario: Clap exposes remove-init-files as a subcommand and prints --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec remove-init-files --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec remove-init-files --help` from a shell
     Then the command exits 0
     And stdout contains the substring 'remove-init-files'
 
   Scenario: CLI removes claude agent files and prints the success summary
     Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
-    When I run `./codelet/target/release/fspec remove-init-files --no-keep-config` from that workspace
+    When I run `./rust/target/release/fspec remove-init-files --no-keep-config` from that workspace
     Then the command exits 0
     And stdout contains the substring '✓ Successfully removed fspec init files'
     And stdout contains the substring 'spec/CLAUDE.md'
@@ -63,13 +63,13 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
 
   Scenario: CLI --keep-config preserves spec/fspec-config.json
     Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
-    When I run `./codelet/target/release/fspec remove-init-files --keep-config` from that workspace
+    When I run `./rust/target/release/fspec remove-init-files --keep-config` from that workspace
     Then the command exits 0
     And spec/fspec-config.json still exists
 
   Scenario: CLI exits 1 when no agent installation is detected
     Given a workspace with no spec/fspec-config.json and no agent detection directories
-    When I run `./codelet/target/release/fspec remove-init-files --no-keep-config` from that workspace
+    When I run `./rust/target/release/fspec remove-init-files --no-keep-config` from that workspace
     Then the command exits with code 1
     And stderr contains the substring 'No fspec agent installation detected. Nothing to remove.'
 
@@ -77,11 +77,11 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
     Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
     When I dispatch remove-init-files through fspec_core::dispatch::dispatch_command with keepConfig=true against that workspace
     Then the dispatcher returns JSON whose filesRemoved includes 'spec/CLAUDE.md'
-    And the CLI bridge module codelet/fspec/src/remove_init_files.rs contains NO inline detection or deletion logic — its only computation is JSON arg marshalling and stdout printing
+    And the CLI bridge module rust/fspec/src/remove_init_files.rs contains NO inline detection or deletion logic — its only computation is JSON arg marshalling and stdout printing
 
   Scenario: remove-init-files --help is byte-for-byte identical to TS reference
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec remove-init-files --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec remove-init-files --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/remove-init-files.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/remove-init-files.txt
     And stdout starts with a blank line followed by 'REMOVE-INIT-FILES'

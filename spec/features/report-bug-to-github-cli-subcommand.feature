@@ -5,7 +5,7 @@
 @RPC-285
 Feature: Report-bug-to-github CLI subcommand
   """
-  CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003
+  CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003
   §7/§11. The action arm delegates to codelet_fspec_core::commands::report_bug_to_github::run(args_json, &cwd)
   so the gather/format/URL business logic is not duplicated between the LLM-facing dispatcher and the
   shell-facing CLI.

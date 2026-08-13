@@ -6,7 +6,7 @@ Feature: Agent Job Execution
   """
   Add default_model: RwLock<Option<String>> to SessionManager, set from NAPI on app init so scheduler can resolve model at fire time
   trigger_agent_job needs SessionManager access to call create_session_with_id — use the lazy_static SESSION_MANAGER global from crate::lib
-  Replace trigger_agent_job stub with real implementation in new file codelet/napi/src/scheduler/agent_job.rs
+  Replace trigger_agent_job stub with real implementation in new file rust/napi/src/scheduler/agent_job.rs
   Add schedule_triggered: AtomicBool and schedule_name: RwLock<Option<String>> to BackgroundSession for TUI identification
   Add spawn_scheduled_session method on SessionManager that wraps create_session_with_id + set role + mark schedule flags + send initial prompt
   """

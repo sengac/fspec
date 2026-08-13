@@ -1,7 +1,7 @@
 @AMGR-009
 Feature: Core AgentManager tool — spawn, list, get_status, close
   """
-  Tool module at codelet/tools/src/agent_manager/ with mod.rs (AgentManagerTool struct + Tool impl), handler.rs (static HashMap + set/execute), types.rs (serde-tagged AgentManagerAction enum + result types)
+  Tool module at rust/tools/src/agent_manager/ with mod.rs (AgentManagerTool struct + Tool impl), handler.rs (static HashMap + set/execute), types.rs (serde-tagged AgentManagerAction enum + result types)
   Handler closure created in codelet-napi/src/agent_manager_handler.rs with access to SessionManager for session creation, destruction, ChainOfCommand, and status queries. Registered/deregistered in agent_loop() like session_search_handler.
   spawn handler calls SessionManager::create_session_with_id() to create the subordinate, then add_supervisor() on ChainOfCommand. The spawned session inherits the spawner's provider_id and model_id. The handler needs Arc<SessionManager> reference.
   close handler calls SessionManager::destroy_session() which already handles ChainOfCommand cleanup (cleanup_subordinate + remove_supervisor). Permission check: handler reads ChainOfCommand to verify the calling session is the spawner.

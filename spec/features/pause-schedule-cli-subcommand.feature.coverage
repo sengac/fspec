@@ -4,11 +4,11 @@
       "name": "CLI pauses an active schedule and prints a success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_pause_schedule.rs",
+          "file": "rust/fspec/tests/cli_pause_schedule.rs",
           "lines": "83-115",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/pause_schedule.rs",
+              "file": "rust/fspec/src/pause_schedule.rs",
               "lines": [
                 52,
                 53,
@@ -41,11 +41,11 @@
       "name": "CLI reports an error and exits 1 when the schedule does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_pause_schedule.rs",
+          "file": "rust/fspec/tests/cli_pause_schedule.rs",
           "lines": "117-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/pause_schedule.rs",
+              "file": "rust/fspec/src/pause_schedule.rs",
               "lines": [
                 52,
                 53,
@@ -78,11 +78,11 @@
       "name": "pause-schedule --help is byte-for-byte identical to TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_pause_schedule.rs",
+          "file": "rust/fspec/tests/cli_pause_schedule.rs",
           "lines": "152-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/pause_schedule.rs",
+              "file": "rust/fspec-core/src/help/configs/pause_schedule.rs",
               "lines": [
                 59,
                 60,
@@ -110,11 +110,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_pause_schedule.rs",
+          "file": "rust/fspec/tests/cli_pause_schedule.rs",
           "lines": "205-264",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/pause_schedule.rs",
+              "file": "rust/fspec/src/pause_schedule.rs",
               "lines": [
                 52,
                 53,
@@ -149,11 +149,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_pause_schedule.rs"
+      "rust/fspec/tests/cli_pause_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/pause_schedule.rs",
-      "codelet/fspec-core/src/help/configs/pause_schedule.rs"
+      "rust/fspec/src/pause_schedule.rs",
+      "rust/fspec-core/src/help/configs/pause_schedule.rs"
     ],
     "totalLinesCovered": 258
   }

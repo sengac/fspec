@@ -4,11 +4,11 @@
       "name": "Cargo workspace recognises the new codelet-sessions crate",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/skeleton_invariants.rs",
+          "file": "rust/sessions/tests/skeleton_invariants.rs",
           "lines": "32-78",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 2,
                 3,
@@ -39,11 +39,11 @@
       "name": "codelet-sessions builds standalone against the empty modules",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/skeleton_invariants.rs",
+          "file": "rust/sessions/tests/skeleton_invariants.rs",
           "lines": "80-113",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -109,11 +109,11 @@
       "name": "codelet-sessions has no transitive dependency on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/skeleton_invariants.rs",
+          "file": "rust/sessions/tests/skeleton_invariants.rs",
           "lines": "115-234",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 12,
                 13,
@@ -143,11 +143,11 @@
       "name": "Smoke test runs and passes",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/skeleton_invariants.rs",
+          "file": "rust/sessions/tests/skeleton_invariants.rs",
           "lines": "236-282",
           "implMappings": [
             {
-              "file": "codelet/sessions/tests/smoke.rs",
+              "file": "rust/sessions/tests/smoke.rs",
               "lines": [
                 1,
                 2,
@@ -173,11 +173,11 @@
       "name": "lib.rs declares the placeholder modules for later RPC cards",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/skeleton_invariants.rs",
+          "file": "rust/sessions/tests/skeleton_invariants.rs",
           "lines": "284-333",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/lib.rs",
+              "file": "rust/sessions/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -208,11 +208,11 @@
       "name": "Workspace lints are inherited and clippy passes",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/skeleton_invariants.rs",
+          "file": "rust/sessions/tests/skeleton_invariants.rs",
           "lines": "335-372",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 9,
                 10
@@ -228,13 +228,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/skeleton_invariants.rs"
+      "rust/sessions/tests/skeleton_invariants.rs"
     ],
     "implFiles": [
-      "codelet/Cargo.toml",
-      "codelet/sessions/Cargo.toml",
-      "codelet/sessions/tests/smoke.rs",
-      "codelet/sessions/src/lib.rs"
+      "rust/Cargo.toml",
+      "rust/sessions/Cargo.toml",
+      "rust/sessions/tests/smoke.rs",
+      "rust/sessions/src/lib.rs"
     ],
     "totalLinesCovered": 462
   }

@@ -4,11 +4,11 @@
       "name": "Dispatcher creates a minimal task and writes spec/work-units.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "72-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 76,
                 77,
@@ -215,11 +215,11 @@
       "name": "Dispatcher writes the new task with the canonical on-disk key order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "110-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 145,
                 146,
@@ -334,11 +334,11 @@
       "name": "Dispatcher fails when spec/foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "144-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 83,
                 84,
@@ -354,11 +354,11 @@
       "name": "Dispatcher rejects an empty title",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "172-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 88,
                 89,
@@ -377,11 +377,11 @@
       "name": "Dispatcher rejects an unregistered prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "192-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 96,
                 97,
@@ -404,11 +404,11 @@
       "name": "Dispatcher rejects a missing parent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "214-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 111,
                 112,
@@ -428,11 +428,11 @@
       "name": "Dispatcher rejects exceeding the maximum nesting depth",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "237-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 119,
                 120,
@@ -451,11 +451,11 @@
       "name": "Dispatcher rejects a missing epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "273-295",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 128,
                 129,
@@ -478,11 +478,11 @@
       "name": "Dispatcher nests a task under a parent and links it to an epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "296-347",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 215,
                 216,
@@ -547,11 +547,11 @@
       "name": "Dispatcher generates the next id from the high-water-mark",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "348-379",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 322,
                 323,
@@ -586,11 +586,11 @@
       "name": "Dispatcher response emits the verbatim task minimal-requirements system-reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_task.rs",
+          "file": "rust/fspec-core/tests/create_task.rs",
           "lines": "381-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_task.rs",
+              "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
                 276,
                 277,
@@ -649,10 +649,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/create_task.rs"
+      "rust/fspec-core/tests/create_task.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/create_task.rs"
+      "rust/fspec-core/src/commands/create_task.rs"
     ],
     "totalLinesCovered": 805
   }

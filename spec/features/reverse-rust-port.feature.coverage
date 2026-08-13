@@ -4,11 +4,11 @@
       "name": "Reset deletes the session and returns Session reset",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "125-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -941,11 +941,11 @@
       "name": "Status with no session reports no active session",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "151-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -1878,11 +1878,11 @@
       "name": "Complete with no session fails with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "207-227",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -2815,11 +2815,11 @@
       "name": "Complete on an unfinished session is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "229-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -3752,11 +3752,11 @@
       "name": "Complete on a finished session deletes it and returns success",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "254-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -4689,11 +4689,11 @@
       "name": "Continue with no session fails with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "286-306",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -5626,11 +5626,11 @@
       "name": "Continue advances the step and emits next-file guidance",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "308-346",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -6563,11 +6563,11 @@
       "name": "Continue into the final step instructs the agent to run complete",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "348-375",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -7500,11 +7500,11 @@
       "name": "Strategy with no session fails with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "377-397",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -8437,11 +8437,11 @@
       "name": "Strategy A on a gap-detection session moves it to executing at step 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "399-439",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -9374,11 +9374,11 @@
       "name": "Strategy D with implementationContext returns persona-driven guidance without a session",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "441-486",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -10311,11 +10311,11 @@
       "name": "Existing session detected blocks a new analysis",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "488-518",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -11248,11 +11248,11 @@
       "name": "Corrupt session file is reported as corrupted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "520-540",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -12185,11 +12185,11 @@
       "name": "Initial analysis with tests and no features suggests Strategy A and creates a session",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "542-583",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -13122,11 +13122,11 @@
       "name": "Dry-run previews analysis without writing a session",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "585-617",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -14059,11 +14059,11 @@
       "name": "Flag priority resets before evaluating status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "619-643",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/reverse.rs",
+              "file": "rust/fspec-core/src/commands/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -14996,11 +14996,11 @@
       "name": "CLI and dispatcher converge on the same fspec_core run function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/reverse.rs",
+          "file": "rust/fspec-core/tests/reverse.rs",
           "lines": "645-682",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -15137,11 +15137,11 @@
     "coveredScenarios": 17,
     "coveragePercent": 94,
     "testFiles": [
-      "codelet/fspec-core/tests/reverse.rs"
+      "rust/fspec-core/tests/reverse.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/reverse.rs",
-      "codelet/fspec/src/reverse.rs"
+      "rust/fspec-core/src/commands/reverse.rs",
+      "rust/fspec/src/reverse.rs"
     ],
     "totalLinesCovered": 16317
   }

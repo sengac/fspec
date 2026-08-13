@@ -4,7 +4,7 @@
 @RPC-238
 Feature: import-example-map CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/import_example_map.rs (CliArgs { work_unit_id, file }). clap variant Mode::ImportExampleMap with two required positionals <workUnitId> <file>. Resolves project_root from CWD (parity with TS process.cwd()). Success: println! the returned "✓ Imported <total> items: ..." message and exit 0; Error: eprintln! "✗ Failed to import example map: <msg>" and exit 1. Help intercept renders help/configs/import_example_map.rs; fixture codelet/fspec/tests/fixtures/help/import-example-map.txt.
+  CLI bridge: rust/fspec/src/import_example_map.rs (CliArgs { work_unit_id, file }). clap variant Mode::ImportExampleMap with two required positionals <workUnitId> <file>. Resolves project_root from CWD (parity with TS process.cwd()). Success: println! the returned "✓ Imported <total> items: ..." message and exit 0; Error: eprintln! "✗ Failed to import example map: <msg>" and exit 1. Help intercept renders help/configs/import_example_map.rs; fixture rust/fspec/tests/fixtures/help/import-example-map.txt.
   """
 
   # ========================================

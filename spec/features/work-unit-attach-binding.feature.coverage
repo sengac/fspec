@@ -4,11 +4,11 @@
       "name": "AttachWorkUnitToSession with a current session calls the backend and folds the context into AgentViewStore",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/work_unit_binding_rpc050.rs",
+          "file": "rust/fspec-tui/tests/work_unit_binding_rpc050.rs",
           "lines": "80-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 21,
                 22,
@@ -77,11 +77,11 @@
       "name": "AttachWorkUnitToSession with NO current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/work_unit_binding_rpc050.rs",
+          "file": "rust/fspec-tui/tests/work_unit_binding_rpc050.rs",
           "lines": "131-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 30,
                 31,
@@ -97,11 +97,11 @@
       "name": "SessionHeader renders the work-unit chip from per-session context",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/work_unit_binding_rpc050.rs",
+          "file": "rust/fspec-tui/tests/work_unit_binding_rpc050.rs",
           "lines": "169-207",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 242,
                 243,
@@ -127,11 +127,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/work_unit_binding_rpc050.rs"
+      "rust/fspec-tui/tests/work_unit_binding_rpc050.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 180
   }

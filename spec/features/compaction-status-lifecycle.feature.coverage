@@ -4,11 +4,11 @@
       "name": "Post-loop compaction keeps status active through DAG construction",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "file": "rust/napi/tests/compaction_status_lifecycle_test.rs",
           "lines": "121-174",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5630,
                 5631,
@@ -47,11 +47,11 @@
       "name": "Pre-prompt compaction keeps status active through DAG construction",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "file": "rust/napi/tests/compaction_status_lifecycle_test.rs",
           "lines": "206-250",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 507,
                 508,
@@ -76,11 +76,11 @@
       "name": "Normal response without compaction does not emit CompactionComplete from agent_loop",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "file": "rust/napi/tests/compaction_status_lifecycle_test.rs",
           "lines": "178-203",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5630,
                 5631,
@@ -119,11 +119,11 @@
       "name": "CompactionContinuing sets status to Running instead of being a no-op",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "file": "rust/napi/tests/compaction_status_lifecycle_test.rs",
           "lines": "91-115",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6074,
                 6075,
@@ -143,11 +143,11 @@
       "name": "CompactionComplete is not emitted prematurely from stream_loop",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "file": "rust/napi/tests/compaction_status_lifecycle_test.rs",
           "lines": "62-83",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 507,
                 508,
@@ -174,11 +174,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/compaction_status_lifecycle_test.rs"
+      "rust/napi/tests/compaction_status_lifecycle_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 260
   }

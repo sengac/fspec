@@ -4,11 +4,11 @@
       "name": "agent_loop.rs imports all four loop-side hook runners by name",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "60-97",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 30,
                 31,
@@ -23,11 +23,11 @@
       "name": "run_session_start fires with the literal phase string \"startup\"",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "103-116",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 89,
                 90,
@@ -63,11 +63,11 @@
       "name": "run_session_end fires with the literal phase string \"exit\" before break",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "122-141",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 144,
                 145,
@@ -88,11 +88,11 @@
       "name": "run_user_prompt is guarded by !hooks.user_prompt_submit.is_empty()",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "147-170",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 265,
                 266,
@@ -113,11 +113,11 @@
       "name": "user_prompt_submit block path emits ordered Idle / done / continue tokens",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "176-226",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 275,
                 276,
@@ -140,11 +140,11 @@
       "name": "session_start invocation precedes the main loop opening",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "232-255",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 89,
                 90,
@@ -182,11 +182,11 @@
       "name": "background_output.rs imports run_post_tool from codelet_core::lifecycle_hooks",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "261-274",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 22
               ]
@@ -199,11 +199,11 @@
       "name": "run_post_tool is invoked inside a tokio::spawn closure with five arguments",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "280-317",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 176,
                 177,
@@ -244,11 +244,11 @@
       "name": "post_tool_use uses last_tool_call captured during StreamEvent::ToolCall",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs",
+          "file": "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs",
           "lines": "323-346",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 47,
                 48,
@@ -420,11 +420,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc090_lifecycle_hooks.rs"
+      "rust/agent-loop/tests/rpc090_lifecycle_hooks.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/agent-loop/src/background_output.rs"
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/background_output.rs"
     ],
     "totalLinesCovered": 517
   }

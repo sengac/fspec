@@ -4,11 +4,11 @@
       "name": "CLI validates a single valid file and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate.rs",
+          "file": "rust/fspec/tests/cli_validate.rs",
           "lines": "56-76",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate.rs",
+              "file": "rust/fspec/src/validate.rs",
               "lines": [
                 52,
                 53,
@@ -49,11 +49,11 @@
       "name": "CLI exits 1 against a syntactically broken file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate.rs",
+          "file": "rust/fspec/tests/cli_validate.rs",
           "lines": "77-103",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate.rs",
+              "file": "rust/fspec/src/validate.rs",
               "lines": [
                 52,
                 53,
@@ -94,11 +94,11 @@
       "name": "CLI exits 2 when no feature files are found",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate.rs",
+          "file": "rust/fspec/tests/cli_validate.rs",
           "lines": "104-124",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate.rs",
+              "file": "rust/fspec/src/validate.rs",
               "lines": [
                 52,
                 53,
@@ -139,11 +139,11 @@
       "name": "Clap exposes validate as a subcommand and prints help byte-identical to the TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate.rs",
+          "file": "rust/fspec/tests/cli_validate.rs",
           "lines": "125-161",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate.rs",
+              "file": "rust/fspec/src/validate.rs",
               "lines": [
                 52,
                 53,
@@ -186,10 +186,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_validate.rs"
+      "rust/fspec/tests/cli_validate.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/validate.rs"
+      "rust/fspec/src/validate.rs"
     ],
     "totalLinesCovered": 222
   }

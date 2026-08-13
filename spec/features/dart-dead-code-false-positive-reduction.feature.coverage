@@ -4,11 +4,11 @@
       "name": "Exclude test file functions from dead code results",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "32-122",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 476,
                 477,
@@ -175,11 +175,11 @@
       "name": "Exclude generated .g.dart and .freezed.dart files from dead code",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "127-228",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 476,
                 477,
@@ -346,11 +346,11 @@
       "name": "Exclude Flutter platform directories from dead code for Flutter projects",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "233-347",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 476,
                 477,
@@ -547,11 +547,11 @@
       "name": "Do not flag main.dart entry point as orphan file",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "352-420",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 527,
                 528,
@@ -567,11 +567,11 @@
       "name": "Exclude Dart extension declarations from unreferenced types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "425-513",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 38,
                 39,
@@ -592,11 +592,11 @@
       "name": "Resolve qualified static method calls as Calls edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "518-571",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 560,
                 561,
@@ -709,11 +709,11 @@
       "name": "Recognize constructor invocations as TypeRef edges in function bodies",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "576-600",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 661,
                 662,
@@ -795,11 +795,11 @@
       "name": "Recognize StatefulWidget State classes as used by parent widget",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "605-674",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 463,
                 464,
@@ -859,11 +859,11 @@
       "name": "Genuinely dead code is still reported after false positive fixes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_dead_code_false_positive_test.rs",
+          "file": "rust/napi/tests/dart_dead_code_false_positive_test.rs",
           "lines": "679-740",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 476,
                 477,
@@ -1032,11 +1032,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/dart_dead_code_false_positive_test.rs"
+      "rust/napi/tests/dart_dead_code_false_positive_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_dispatch.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs"
+      "rust/napi/src/graph/ast_dispatch.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs"
     ],
     "totalLinesCovered": 1559
   }

@@ -4,11 +4,11 @@
       "name": "App::dispatch routes Action::SupervisorsLoaded into the AgentViewStore",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "85-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -120,7 +120,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/supervisor_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/supervisor_state.rs",
               "lines": [
                 1,
                 2,
@@ -209,11 +209,11 @@
       "name": "Action::SendToSubordinate spawns backend.receive_incoming_message exactly once",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "110-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -332,11 +332,11 @@
       "name": "Action::SendToSubordinate Err path emits EmitSessionNotice into the originating session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "149-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -455,11 +455,11 @@
       "name": "Action::SendToSubordinate Err path is a silent no-op without an open session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "184-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -578,11 +578,11 @@
       "name": "StreamChunk::SupervisorPendingInjection bumps per-session pending count to 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "216-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 115,
                 116,
@@ -610,11 +610,11 @@
       "name": "Two consecutive SupervisorPendingInjection chunks bump count to 2",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "247-265",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/supervisor_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/supervisor_state.rs",
               "lines": [
                 65,
                 66,
@@ -639,11 +639,11 @@
       "name": "Action::SessionCreated triggers spawn_load_supervisors and SupervisorsLoaded",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "274-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -762,11 +762,11 @@
       "name": "A session with no supervisors shows no subordinate badge",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "332-345",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 113,
                 114,
@@ -790,11 +790,11 @@
       "name": "Multi-supervisor session renders subordinate badge with +N count",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "351-361",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 113,
                 114,
@@ -818,11 +818,11 @@
       "name": "Supervisor pending chip suppresses the compaction chip",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "375-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 53,
                 54,
@@ -869,11 +869,11 @@
       "name": "AttachToSession triggers spawn_load_supervisors and SupervisorsLoaded",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/supervisor_links_rpc061.rs",
+          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
           "lines": "415-442",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 91,
                 92,
@@ -897,15 +897,15 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/supervisor_links_rpc061.rs"
+      "rust/fspec-tui/tests/supervisor_links_rpc061.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
-      "codelet/fspec-tui/src/store/agent_view/supervisor_state.rs",
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
-      "codelet/fspec-tui/src/views/agent/header_build.rs",
-      "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
+      "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
+      "rust/fspec-tui/src/store/agent_view/supervisor_state.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs",
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 982
   }

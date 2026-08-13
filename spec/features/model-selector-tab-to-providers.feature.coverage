@@ -4,11 +4,11 @@
       "name": "Tab in non-filter mode emits SwitchToProviders",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1095-1106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 311,
                 312,
@@ -22,11 +22,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1399-1411",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 505,
                 506,
@@ -44,11 +44,11 @@
       "name": "SwitchToProviders switches the active view to Provider Settings",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1139-1171",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
                 76,
                 77,
@@ -72,11 +72,11 @@
       "name": "Tab while filtering does not navigate away",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1108-1123",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 264,
                 265,
@@ -119,11 +119,11 @@
       "name": "Esc still closes the selector after the Tab arm is added",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1125-1137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 299,
                 300,
@@ -199,11 +199,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs",
-      "codelet/fspec-tui/src/views/navigator_events.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs",
+      "rust/fspec-tui/src/views/navigator_events.rs"
     ],
     "totalLinesCovered": 205
   }

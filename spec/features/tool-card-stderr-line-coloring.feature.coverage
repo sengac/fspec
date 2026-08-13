@@ -4,11 +4,11 @@
       "name": "Settled stderr line renders red with the marker stripped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "118-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 160,
                 161,
@@ -39,11 +39,11 @@
       "name": "A successful command shows only its stderr lines red",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "166-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 160,
                 161,
@@ -74,11 +74,11 @@
       "name": "A failed command renders the whole body red with no marker visible",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "221-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 160,
                 161,
@@ -109,11 +109,11 @@
       "name": "Live stderr progress is prefixed with the marker so it renders red",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "269-327",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 201,
                 202,
@@ -152,11 +152,11 @@
       "name": "Live non-stderr progress is folded verbatim in the normal color",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "329-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 201,
                 202,
@@ -195,11 +195,11 @@
       "name": "The content modal shows stderr lines red with the marker stripped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "382-441",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/stderr.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/stderr.rs",
               "lines": [
                 56,
                 57,
@@ -265,11 +265,11 @@
       "name": "Diff cards bypass stderr detection entirely",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
+          "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
           "lines": "443-490",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 147,
                 148,
@@ -292,12 +292,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs"
+      "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-      "codelet/fspec-tui/src/store/agent_view/stderr.rs"
+      "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "rust/fspec-tui/src/store/agent_view/stderr.rs"
     ],
     "totalLinesCovered": 541
   }

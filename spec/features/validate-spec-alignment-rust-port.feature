@@ -4,9 +4,9 @@
 @RPC-323
 Feature: Port validate-spec-alignment command to Rust
   """
-  Core impl codelet/fspec-core/src/commands/validate_spec_alignment.rs: Args {work_unit_id: Option<String>, fix: Option<bool>} (camelCase workUnitId). work_unit_id None -> InvalidArgs. Reads spec/work-units.json directly as serde_json::Value (NOT ensure_*) so only .get('workUnits').get(id) is needed; ENOENT/parse wrap into 'Failed to validate spec alignment:' message.
+  Core impl rust/fspec-core/src/commands/validate_spec_alignment.rs: Args {work_unit_id: Option<String>, fix: Option<bool>} (camelCase workUnitId). work_unit_id None -> InvalidArgs. Reads spec/work-units.json directly as serde_json::Value (NOT ensure_*) so only .get('workUnits').get(id) is needed; ENOENT/parse wrap into 'Failed to validate spec alignment:' message.
   Feature globbing: reuse crate::io::feature_glob::glob_feature_files but map FspecCoreError::DirectoryNotFound to an empty Vec locally (TS glob returns [] when spec/features absent). Tag scan: for each file split lines, line.trim().contains('@<id>') && next.trim().starts_with('Scenario:') increments count.
-  Result envelope {valid:bool, warnings?:Vec<String>} as JSON string. CLI bridge codelet/fspec/src/validate_spec_alignment.rs: valid -> stdout '✓ ...' exit 0; invalid -> warnings to stderr exit 1; error -> stderr 'Error:' exit 1. Help config codelet/fspec-core/src/help/configs/validate_spec_alignment.rs. Two-front-doors; dispatcher passes args_json verbatim.
+  Result envelope {valid:bool, warnings?:Vec<String>} as JSON string. CLI bridge rust/fspec/src/validate_spec_alignment.rs: valid -> stdout '✓ ...' exit 0; invalid -> warnings to stderr exit 1; error -> stderr 'Error:' exit 1. Help config rust/fspec-core/src/help/configs/validate_spec_alignment.rs. Two-front-doors; dispatcher passes args_json verbatim.
   """
 
   # ========================================

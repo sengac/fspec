@@ -4,11 +4,11 @@
       "name": "Embedded App smoke — mutate spec/work-units.json on disk and observe the rendered left pane reflects the new state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cross_transport_app_parity_rpc009.rs",
+          "file": "rust/fspec-tui/tests/cross_transport_app_parity_rpc009.rs",
           "lines": "69-99",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 213,
                 214,
@@ -105,11 +105,11 @@
       "name": "WS App smoke — spawn rpc-server and observe the rendered left pane reflects the new state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cross_transport_app_parity_rpc009.rs",
+          "file": "rust/fspec-tui/tests/cross_transport_app_parity_rpc009.rs",
           "lines": "101-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 213,
                 214,
@@ -206,11 +206,11 @@
       "name": "Cross-transport parity — both Apps' rendered left panes are semantically identical post-mutation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cross_transport_app_parity_rpc009.rs",
+          "file": "rust/fspec-tui/tests/cross_transport_app_parity_rpc009.rs",
           "lines": "138-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 213,
                 214,
@@ -309,10 +309,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/cross_transport_app_parity_rpc009.rs"
+      "rust/fspec-tui/tests/cross_transport_app_parity_rpc009.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app.rs"
+      "rust/fspec-tui/src/app.rs"
     ],
     "totalLinesCovered": 376
   }

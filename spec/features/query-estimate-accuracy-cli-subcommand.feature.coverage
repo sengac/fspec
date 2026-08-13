@@ -4,11 +4,11 @@
       "name": "Clap exposes query-estimate-accuracy as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "60-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 49,
                 50,
@@ -69,11 +69,11 @@
       "name": "CLI against an empty workspace prints the empty-report header and does not auto-create files",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "110-152",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 58,
                 59,
@@ -125,11 +125,11 @@
       "name": "CLI text output renders the populated By Story Points section",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "154-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 58,
                 59,
@@ -181,11 +181,11 @@
       "name": "CLI --format=json prints pretty-printed JSON to stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "212-248",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 58,
                 59,
@@ -237,11 +237,11 @@
       "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "250-286",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 75,
                 76,
@@ -274,11 +274,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "288-320",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 49,
                 50,
@@ -300,11 +300,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "322-387",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "file": "rust/fspec/src/query_estimate_accuracy.rs",
               "lines": [
                 58,
                 59,
@@ -356,11 +356,11 @@
       "name": "query-estimate-accuracy --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "389-415",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/query_estimate_accuracy.rs",
+              "file": "rust/fspec-core/src/help/configs/query_estimate_accuracy.rs",
               "lines": [
                 1,
                 2,
@@ -433,11 +433,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_estimate_accuracy.rs"
+      "rust/fspec/tests/cli_query_estimate_accuracy.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/query_estimate_accuracy.rs",
-      "codelet/fspec-core/src/help/configs/query_estimate_accuracy.rs"
+      "rust/fspec/src/query_estimate_accuracy.rs",
+      "rust/fspec-core/src/help/configs/query_estimate_accuracy.rs"
     ],
     "totalLinesCovered": 997
   }

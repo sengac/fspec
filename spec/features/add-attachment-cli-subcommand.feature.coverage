@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "107-155",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -95,11 +95,11 @@
       "name": "CLI successfully adds an attachment and prints the canonical success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "157-206",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -186,11 +186,11 @@
       "name": "CLI passes --description through to the rendered output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "208-231",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -277,11 +277,11 @@
       "name": "CLI exits 1 when the workUnitId positional argument is missing (Commander usage-error parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "233-255",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -368,11 +368,11 @@
       "name": "CLI exits 1 when the filePath positional argument is missing (Commander usage-error parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "257-279",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -459,11 +459,11 @@
       "name": "CLI exits 1 with stderr prefix when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "281-312",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -550,11 +550,11 @@
       "name": "CLI exits 1 when the source file does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "314-337",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -641,11 +641,11 @@
       "name": "CLI exits 1 on duplicate attachment with byte-equality on the JSON file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "339-381",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -732,11 +732,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "383-408",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -823,11 +823,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_attachment.rs",
+          "file": "rust/fspec/tests/cli_add_attachment.rs",
           "lines": "410-452",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_attachment.rs",
+              "file": "rust/fspec/src/add_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -916,10 +916,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_attachment.rs"
+      "rust/fspec/tests/cli_add_attachment.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_attachment.rs"
+      "rust/fspec/src/add_attachment.rs"
     ],
     "totalLinesCovered": 1087
   }

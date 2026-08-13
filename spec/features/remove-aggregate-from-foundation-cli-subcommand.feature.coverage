@@ -4,11 +4,11 @@
       "name": "Clap exposes remove-aggregate-from-foundation with positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_aggregate_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs",
           "lines": "94-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -129,11 +129,11 @@
       "name": "CLI soft-deletes an aggregate and prints the success message on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_aggregate_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs",
           "lines": "135-165",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_aggregate_from_foundation.rs",
+              "file": "rust/fspec/src/remove_aggregate_from_foundation.rs",
               "lines": [
                 38,
                 39,
@@ -164,11 +164,11 @@
       "name": "CLI rejects an unknown aggregate with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_aggregate_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs",
           "lines": "166-195",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_aggregate_from_foundation.rs",
+              "file": "rust/fspec/src/remove_aggregate_from_foundation.rs",
               "lines": [
                 57,
                 58,
@@ -184,11 +184,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_aggregate_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs",
           "lines": "196-257",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_aggregate_from_foundation.rs",
+              "file": "rust/fspec/src/remove_aggregate_from_foundation.rs",
               "lines": [
                 47,
                 48,
@@ -209,11 +209,11 @@
       "name": "remove-aggregate-from-foundation --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_aggregate_from_foundation.rs",
+          "file": "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs",
           "lines": "258-279",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -336,11 +336,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_aggregate_from_foundation.rs"
+      "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
-      "codelet/fspec/src/remove_aggregate_from_foundation.rs"
+      "rust/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
+      "rust/fspec/src/remove_aggregate_from_foundation.rs"
     ],
     "totalLinesCovered": 436
   }

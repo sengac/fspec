@@ -39,7 +39,7 @@ Feature: RPC-018 AgentView chrome — SessionHeader + SessionFooter widgets
   existing SessionHeader.tsx / SessionFooter.tsx / tokenStateUtils.ts /
   modelStore.ts implementations.
 
-  Pair: render tests live in codelet/fspec-tui/tests/view_agent_unit_rpc018.rs.
+  Pair: render tests live in rust/fspec-tui/tests/view_agent_unit_rpc018.rs.
   """
 
   Background: User Story

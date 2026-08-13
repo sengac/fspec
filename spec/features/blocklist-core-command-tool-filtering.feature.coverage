@@ -4,11 +4,11 @@
       "name": "Block dangerous command with guidance",
       "testMappings": [
         {
-          "file": "codelet/tools/src/blocklist/mod.rs",
+          "file": "rust/tools/src/blocklist/mod.rs",
           "lines": "33-65",
           "implMappings": [
             {
-              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "file": "rust/tools/src/blocklist/middleware.rs",
               "lines": [
                 79,
                 80,
@@ -42,11 +42,11 @@
       "name": "Block Bash usage for file reading with tool guidance",
       "testMappings": [
         {
-          "file": "codelet/tools/src/blocklist/mod.rs",
+          "file": "rust/tools/src/blocklist/mod.rs",
           "lines": "67-101",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 497,
                 498,
@@ -95,11 +95,11 @@
       "name": "Project config overrides system config",
       "testMappings": [
         {
-          "file": "codelet/tools/src/blocklist/mod.rs",
+          "file": "rust/tools/src/blocklist/mod.rs",
           "lines": "103-150",
           "implMappings": [
             {
-              "file": "codelet/tools/src/blocklist/config.rs",
+              "file": "rust/tools/src/blocklist/config.rs",
               "lines": [
                 53,
                 54,
@@ -139,13 +139,13 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/blocklist/mod.rs",
+      "rust/tools/src/blocklist/mod.rs",
       "src/__tests__/blocklist-napi-integration.test.ts"
     ],
     "implFiles": [
-      "codelet/tools/src/blocklist/middleware.rs",
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/blocklist/config.rs"
+      "rust/tools/src/blocklist/middleware.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/blocklist/config.rs"
     ],
     "totalLinesCovered": 313
   }

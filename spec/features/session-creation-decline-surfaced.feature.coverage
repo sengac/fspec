@@ -4,11 +4,11 @@
       "name": "A declined session creation maps to an explicit decline action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
           "lines": "48-62",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/session_creation.rs",
+              "file": "rust/fspec-tui/src/app/session_creation.rs",
               "lines": [
                 23,
                 24,
@@ -36,11 +36,11 @@
       "name": "A successful session creation maps to a session-created action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
           "lines": "66-80",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/session_creation.rs",
+              "file": "rust/fspec-tui/src/app/session_creation.rs",
               "lines": [
                 23,
                 24,
@@ -68,11 +68,11 @@
       "name": "The TUI surfaces a declined session creation as an explicit error",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
           "lines": "85-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 124,
                 125,
@@ -100,11 +100,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov101_session_creation_decline.rs"
+      "rust/fspec-tui/tests/prov101_session_creation_decline.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/session_creation.rs",
-      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs"
+      "rust/fspec-tui/src/app/session_creation.rs",
+      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs"
     ],
     "totalLinesCovered": 98
   }

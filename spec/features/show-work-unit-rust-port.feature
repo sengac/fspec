@@ -4,9 +4,9 @@
 @querying
 Feature: Port show-work-unit command to Rust
   """
-  File layout: codelet/fspec-core/src/commands/show_work_unit.rs (impl, replaces stub) + codelet/fspec-core/src/help/configs/show_work_unit.rs (help config) + codelet/fspec-core/tests/show_work_unit.rs (dispatcher tests) + codelet/fspec/src/show_work_unit.rs (CLI bridge) + codelet/fspec/tests/cli_show_work_unit.rs (CLI shell tests) + codelet/fspec/tests/fixtures/help/show-work-unit.txt (TS help fixture)
+  File layout: rust/fspec-core/src/commands/show_work_unit.rs (impl, replaces stub) + rust/fspec-core/src/help/configs/show_work_unit.rs (help config) + rust/fspec-core/tests/show_work_unit.rs (dispatcher tests) + rust/fspec/src/show_work_unit.rs (CLI bridge) + rust/fspec/tests/cli_show_work_unit.rs (CLI shell tests) + rust/fspec/tests/fixtures/help/show-work-unit.txt (TS help fixture)
   Reuses shared modules: gherkin crate (already in fspec-core Cargo.toml) for parsing feature files; io::feature_glob::glob_feature_files for walking spec/features/ (errors silently swallowed to match TS); does NOT use ensure_work_units_file because TS uses bare readFile that escalates ENOENT. WorkUnit.rules/examples/questions/architectureNotes are read inline from wu.extra (parity with show_deleted) so the shared WorkUnit type stays minimal and parallel-port-safe
-  Two-front-doors per RPC-003 §7/§11: shell argv → clap → codelet/fspec/src/show_work_unit.rs → codelet_fspec_core::commands::show_work_unit::run; LLM tool call JSON → fspec_core::dispatch::dispatch_command → codelet_fspec_core::commands::show_work_unit::run. Both call sites pass JSON-encoded args and project_root: &Path. CLI bridge marshals workUnitId + optional --format into the JSON shape and emits NO business logic
+  Two-front-doors per RPC-003 §7/§11: shell argv → clap → rust/fspec/src/show_work_unit.rs → codelet_fspec_core::commands::show_work_unit::run; LLM tool call JSON → fspec_core::dispatch::dispatch_command → codelet_fspec_core::commands::show_work_unit::run. Both call sites pass JSON-encoded args and project_root: &Path. CLI bridge marshals workUnitId + optional --format into the JSON shape and emits NO business logic
   JSON structured shape (dispatcher path with format=json): declaration-order fields { id, title, type, status, description?, estimate?, epic?, parent?, children?, blocks?, blockedBy?, dependsOn?, relatesTo?, rules?, deletedRules?, examples?, questions?, assumptions?, architectureNotes?, attachments?, virtualHooks?, createdAt, updatedAt, linkedFeatures, systemReminders?, systemReminder? }. Use #[derive(Serialize)] with explicit #[serde(skip_serializing_if='Option::is_none')] on optional fields
   System-reminder generation: helper module within show_work_unit.rs mirrors the five reminder functions from src/utils/system-reminder.ts (getMissingEstimateReminder, getEmptyExampleMappingReminder, getLongDurationReminder, getLargeEstimateReminder, soft-delete count notice). The FSPEC_DISABLE_REMINDERS=1 environment gate is honoured. consolidateReminders strips <system-reminder> wrappers and re-wraps a single block
   linkedFeatures implementation mirrors show_feature::extract_work_unit_tags() but ALWAYS returns an empty array on any error (missing spec/features/, gherkin parse failure, I/O)
@@ -152,7 +152,7 @@ Feature: Port show-work-unit command to Rust
     Then the error message describes the missing workUnitId argument
 
   Scenario: Shared infrastructure delegation
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/show_work_unit.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/show_work_unit.rs
     Then the file does NOT contain the substring "FspecCoreError::NotYetPorted"
     Then the file uses the shared gherkin crate to parse feature files (mirroring show_feature.rs)

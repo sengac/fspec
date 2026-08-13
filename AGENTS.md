@@ -10,7 +10,7 @@ This document provides guidelines for AI assistants working on the **fspec codeb
 
 - **Repository**: https://github.com/sengac/fspec
 - **License**: MIT
-- **Language**: Rust (Cargo workspace in `codelet/`)
+- **Language**: Rust (Cargo workspace in `rust/`)
 
 For complete project context:
 - **Project foundation**: [spec/FOUNDATION.md](spec/FOUNDATION.md)
@@ -135,13 +135,13 @@ This function is called by **both**:
 
 - **Prefer integration tests** that use real filesystems (temp dirs), real stores
 - **Redirect, don't intercept** — control inputs via temp directories rather than mocking code paths
-- **Reuse shared helpers** from `codelet/test-helpers/` — never duplicate filesystem setup logic
+- **Reuse shared helpers** from `rust/test-helpers/` — never duplicate filesystem setup logic
 
 ### Test File Requirements
 
 - ✅ **ALWAYS** create `tests/*.rs` integration test files or inline `#[cfg(test)]` modules
 - ✅ **ALWAYS** run tests through `cargo test -p <crate> --test <name>`
-- ✅ **ALWAYS** use helpers from `codelet/test-helpers/` for temp dirs and fixtures
+- ✅ **ALWAYS** use helpers from `rust/test-helpers/` for temp dirs and fixtures
 
 ### Test Naming Convention
 
@@ -171,7 +171,7 @@ async fn scenario_agent_loop_saves_turns_to_disk() {
 ### Build System
 
 - **Cargo**: Rust package manager and build system
-- **Cargo workspace**: 25 crates in `codelet/`
+- **Cargo workspace**: 25 crates in `rust/`
 - **rustup**: Rust toolchain manager
 
 ### Key Technologies

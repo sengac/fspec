@@ -4,11 +4,11 @@
       "name": "Click on scrollbar track above thumb jumps to that position",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
           "lines": "33-66",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 110,
                 111,
@@ -76,11 +76,11 @@
       "name": "Click on scrollbar track below thumb jumps down",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
           "lines": "75-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 110,
                 111,
@@ -148,11 +148,11 @@
       "name": "Drag on scrollbar thumb continuously scrolls content",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
           "lines": "113-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 110,
                 111,
@@ -220,11 +220,11 @@
       "name": "Quick click on thumb scrolls one viewport height",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
           "lines": "157-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 110,
                 111,
@@ -292,11 +292,11 @@
       "name": "No scrollbar interaction when content fits in viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs",
           "lines": "196-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 110,
                 111,
@@ -366,10 +366,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/agent/mouse_dispatch_tests.rs"
+      "rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs"
+      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs"
     ],
     "totalLinesCovered": 444
   }

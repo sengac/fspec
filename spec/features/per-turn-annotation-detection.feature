@@ -2,7 +2,7 @@
 @CMPCT-011
 Feature: Per-Turn Structural Annotation Detection
   """
-  annotation_detector module in codelet/core/src/compaction/annotation_detector.rs provides
+  annotation_detector module in rust/core/src/compaction/annotation_detector.rs provides
   zero-cost inline detection of structural annotations from per-turn tool call metadata.
   Uses StructuralAnnotation from CMPCT-007. Called after each completed turn in stream_loop.rs.
   Annotations piggyback on existing data flow — no LLM calls, no external processes.

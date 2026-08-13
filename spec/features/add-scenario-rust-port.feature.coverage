@@ -4,11 +4,11 @@
       "name": "Appends a scenario with placeholder steps to a feature",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_scenario.rs",
+          "file": "rust/fspec-core/tests/add_scenario.rs",
           "lines": "48-76",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
                 101,
                 102,
@@ -68,11 +68,11 @@
       "name": "Resolves a bare identifier to spec/features/<id>.feature",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_scenario.rs",
+          "file": "rust/fspec-core/tests/add_scenario.rs",
           "lines": "83-105",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
                 150,
                 151,
@@ -97,11 +97,11 @@
       "name": "Inserts the new scenario before an existing Scenario Outline",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_scenario.rs",
+          "file": "rust/fspec-core/tests/add_scenario.rs",
           "lines": "112-132",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
                 107,
                 108,
@@ -129,11 +129,11 @@
       "name": "Duplicate scenario name succeeds with a warning",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_scenario.rs",
+          "file": "rust/fspec-core/tests/add_scenario.rs",
           "lines": "139-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
                 90,
                 91,
@@ -156,11 +156,11 @@
       "name": "Missing feature file surfaces the not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_scenario.rs",
+          "file": "rust/fspec-core/tests/add_scenario.rs",
           "lines": "167-192",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
                 48,
                 49,
@@ -191,11 +191,11 @@
       "name": "Dry run does not write the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_scenario.rs",
+          "file": "rust/fspec-core/tests/add_scenario.rs",
           "lines": "199-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
                 126,
                 127,
@@ -232,10 +232,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_scenario.rs"
+      "rust/fspec-core/tests/add_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_scenario.rs"
+      "rust/fspec-core/src/commands/add_scenario.rs"
     ],
     "totalLinesCovered": 271
   }

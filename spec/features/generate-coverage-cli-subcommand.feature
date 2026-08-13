@@ -5,7 +5,7 @@
 @RPC-231
 Feature: fspec generate-coverage CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/generate_coverage.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/generate_coverage.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/generate-coverage.ts:198-208). Surface:
   `fspec generate-coverage [--dry-run]`.
   Stdout (success): the full rendered report (counts line + system-reminder) printed verbatim; exit 0.
@@ -25,7 +25,7 @@ Feature: fspec generate-coverage CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec generate-coverage --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/generate-coverage.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/generate-coverage.txt
 
   Scenario: CLI creates a missing sidecar and prints the success report
     Given a project root tempdir with a feature file "user-login.feature" and no coverage sidecar
@@ -57,4 +57,4 @@ Feature: fspec generate-coverage CLI subcommand
     When I dispatch generate-coverage through fspec_core::dispatch::dispatch_command against that workspace
     And I run `fspec generate-coverage` against an identical workspace
     Then both invocations create the coverage sidecar
-    And the CLI bridge module codelet/fspec/src/generate_coverage.rs contains NO inline scanning or rendering logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/generate_coverage.rs contains NO inline scanning or rendering logic — its only computation is JSON arg marshalling

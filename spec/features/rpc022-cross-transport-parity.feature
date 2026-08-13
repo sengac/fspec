@@ -25,7 +25,7 @@ Feature: RPC-022 cross-transport parity for list_providers, set_session_model, s
   - set_session_model / set_thinking_level / set_session_role: Ok(()) — silent no-ops, idempotent
   - get_session_role: None
 
-  The concrete codelet/napi SessionManager override is in scope of this
+  The concrete rust/napi SessionManager override is in scope of this
   card (additive NAPI exports) but the parity scenarios pin the default
   contract.
   """

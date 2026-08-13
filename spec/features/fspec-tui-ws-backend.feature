@@ -28,9 +28,9 @@ Feature: WebSocketFspecBackend smoke + connect-shape
     Then the initial WorkUnitsUpdate snapshot frame from RPC-006 is observed within 5 seconds
 
   Scenario: WebSocketFspecBackend.connect uses tokio_tungstenite::connect_async directly
-    Given codelet/fspec-tui/src/transport/websocket.rs exists
+    Given rust/fspec-tui/src/transport/websocket.rs exists
     When I inspect the body of `WebSocketFspecBackend::connect`
     Then it calls `tokio_tungstenite::connect_async(url)` directly
     And it hands the resulting WebSocketStream to `codelet_rpc_server::ws_client_connect()`
     And it stores the resulting FspecWsClient on the struct
-    And no envelope, bincode, or framing code lives in codelet/fspec-tui/src/transport/
+    And no envelope, bincode, or framing code lives in rust/fspec-tui/src/transport/

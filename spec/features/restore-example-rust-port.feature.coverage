@@ -4,11 +4,11 @@
       "name": "Happy-path restore clears the deleted flag and removes deletedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "81-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 104,
                 105,
@@ -147,11 +147,11 @@
       "name": "Idempotent re-restore returns success without writing to disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "137-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 191,
                 192,
@@ -176,11 +176,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "179-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 111,
                 112,
@@ -201,11 +201,11 @@
       "name": "Status guard rejects restore-example when work unit is not in specifying",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "203-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 121,
                 122,
@@ -233,11 +233,11 @@
       "name": "Missing examples array reports 'has no examples'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "237-266",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 138,
                 139,
@@ -266,11 +266,11 @@
       "name": "Unknown example id reports 'Example with ID <n> not found'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "268-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 156,
                 157,
@@ -316,11 +316,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_example.rs",
+          "file": "rust/fspec-core/tests/restore_example.rs",
           "lines": "303-332",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_example.rs",
+              "file": "rust/fspec-core/src/commands/restore_example.rs",
               "lines": [
                 104,
                 105,
@@ -350,10 +350,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/restore_example.rs"
+      "rust/fspec-core/tests/restore_example.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/restore_example.rs"
+      "rust/fspec-core/src/commands/restore_example.rs"
     ],
     "totalLinesCovered": 478
   }

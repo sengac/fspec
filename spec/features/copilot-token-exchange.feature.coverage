@@ -4,11 +4,11 @@
       "name": "GitHub OAuth token is exchanged for a short-lived Copilot token before any API call",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/token_exchange_tests.rs",
+          "file": "rust/providers/src/copilot/token_exchange_tests.rs",
           "lines": "43-100",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/token_exchange.rs",
+              "file": "rust/providers/src/copilot/token_exchange.rs",
               "lines": [
                 119,
                 120,
@@ -106,10 +106,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/copilot/token_exchange_tests.rs"
+      "rust/providers/src/copilot/token_exchange_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/token_exchange.rs"
+      "rust/providers/src/copilot/token_exchange.rs"
     ],
     "totalLinesCovered": 142
   }

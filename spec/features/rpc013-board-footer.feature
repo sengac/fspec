@@ -12,7 +12,7 @@ Feature: RPC-013 BoardView footer — literal port of TS UnifiedBoardLayout foot
   bottom of its render area. The string is the literal port of
   src/tui/components/UnifiedBoardLayout.tsx:504-511.
 
-  Pair: tests live in codelet/fspec-tui/tests/view_board_unit_rpc013.rs.
+  Pair: tests live in rust/fspec-tui/tests/view_board_unit_rpc013.rs.
   """
 
   Background: User Story

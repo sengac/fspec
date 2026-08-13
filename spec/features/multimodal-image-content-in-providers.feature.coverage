@@ -4,11 +4,11 @@
       "name": "Serialize an Image ContentPart with a URL source",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "210-231",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 51,
                 52,
@@ -57,11 +57,11 @@
       "name": "Serialize an Image ContentPart with a Base64 source",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "233-257",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 51,
                 52,
@@ -110,11 +110,11 @@
       "name": "Round-trip an Image ContentPart through JSON",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "259-283",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 51,
                 52,
@@ -163,11 +163,11 @@
       "name": "extract_text_from_content skips Image parts",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "24-47",
           "implMappings": [
             {
-              "file": "codelet/providers/src/adapter.rs",
+              "file": "rust/providers/src/adapter.rs",
               "lines": [
                 65,
                 66,
@@ -210,11 +210,11 @@
       "name": "messages_to_rhai preserves a URL image part verbatim",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "71-121",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "file": "rust/providers/src/custom/request_bridge.rs",
               "lines": [
                 36,
                 37,
@@ -241,11 +241,11 @@
       "name": "messages_to_rhai preserves a base64 image part verbatim",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "126-166",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "file": "rust/providers/src/custom/request_bridge.rs",
               "lines": [
                 36,
                 37,
@@ -272,11 +272,11 @@
       "name": "convert_assistant_content still rejects assistant-side images",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "285-313",
           "implMappings": [
             {
-              "file": "codelet/providers/src/adapter.rs",
+              "file": "rust/providers/src/adapter.rs",
               "lines": [
                 135,
                 136,
@@ -322,11 +322,11 @@
       "name": "response_bridge rejects image parts from parse_response",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "file": "rust/providers/tests/multimodal_image_content_tests.rs",
           "lines": "171-202",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "file": "rust/providers/src/custom/response_bridge.rs",
               "lines": [
                 40,
                 41,
@@ -376,13 +376,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/multimodal_image_content_tests.rs"
+      "rust/providers/tests/multimodal_image_content_tests.rs"
     ],
     "implFiles": [
-      "codelet/common/src/types.rs",
-      "codelet/providers/src/adapter.rs",
-      "codelet/providers/src/custom/request_bridge.rs",
-      "codelet/providers/src/custom/response_bridge.rs"
+      "rust/common/src/types.rs",
+      "rust/providers/src/adapter.rs",
+      "rust/providers/src/custom/request_bridge.rs",
+      "rust/providers/src/custom/response_bridge.rs"
     ],
     "totalLinesCovered": 491
   }

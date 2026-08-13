@@ -4,11 +4,11 @@
       "name": "Shift+Enter mid-word splits the line and grows the input to 2 rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
           "lines": "48-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 29,
                 30,
@@ -46,11 +46,11 @@
       "name": "Alt+Enter inserts a newline instead of submitting",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
           "lines": "93-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 29,
                 30,
@@ -88,11 +88,11 @@
       "name": "Plain Enter submits the full multi-line buffer and resets the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
           "lines": "231-270",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 29,
                 30,
@@ -130,11 +130,11 @@
       "name": "Key release events are ignored by the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
           "lines": "276-324",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 71,
                 72,
@@ -156,11 +156,11 @@
       "name": "Shift+Enter is swallowed while the session is compacting",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
           "lines": "358-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 29,
                 30,
@@ -200,11 +200,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs"
+      "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs"
     ],
     "totalLinesCovered": 314
   }

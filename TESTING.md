@@ -57,7 +57,7 @@ Our tests follow four guiding principles:
 
 ## ⚠️ Workspace Testing Rules — Read Before Running
 
-> **NEVER run `cargo test --workspace` (or a bare `cargo test`) from `codelet/`.**
+> **NEVER run `cargo test --workspace` (or a bare `cargo test`) from `rust/`.**
 >
 > **Incident 2026-07-10:** a plain `cargo test --workspace` compiled all 944
 > integration-test binaries in the workspace with full DWARF debug info —
@@ -85,7 +85,7 @@ Rules of thumb:
    different slice of the output.
 4. The disk-bloat background, the `ci-test` profile, and
    `incremental = false` on `[profile.test]` are documented in
-   `codelet/Cargo.toml` (RPC-043 + the 2026-07-10 incident note).
+   `rust/Cargo.toml` (RPC-043 + the 2026-07-10 incident note).
 5. These rules are enforced at runtime by `~/.fspec/blocklist.json`
    (`cargo-test-workspace-block` blocks `--workspace`/`--all`;
    `cargo-test-unscoped-prompt` prompts on a bare `cargo test`).
@@ -111,7 +111,7 @@ Rules of thumb:
 │ Unit Tests  (#[cfg(test)] modules)               │  Pure logic, builder fixtures,
 │ Fast, isolated, typed                             │  in-memory data structures
 ├──────────────────────────────────────────────────┤
-│ Shared Helpers  (codelet/test-helpers/)           │  Composable, lifecycle-managed,
+│ Shared Helpers  (rust/test-helpers/)           │  Composable, lifecycle-managed,
 │ Temp dirs, fixture builders                       │  auto-cleanup
 └──────────────────────────────────────────────────┘
 ```
@@ -120,7 +120,7 @@ Rules of thumb:
 
 ## Test Helpers & Fixtures
 
-All test helpers live in `codelet/test-helpers/` and are consumed under
+All test helpers live in `rust/test-helpers/` and are consumed under
 `[dev-dependencies]` by workspace crates.
 
 ### Temp Directories

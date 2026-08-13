@@ -1,7 +1,7 @@
 @KGRAPH-009
 Feature: DeepSearch Graph Integration
   """
-  Modifies DeepSearch sub-agent builder in codelet/tools to conditionally add GraphSearch tool. Injects graph context into system prompt before spawning sub-agent. All integration is opt-in — zero behavior change when graph is absent.
+  Modifies DeepSearch sub-agent builder in rust/tools to conditionally add GraphSearch tool. Injects graph context into system prompt before spawning sub-agent. All integration is opt-in — zero behavior change when graph is absent.
   """
 
   # ========================================

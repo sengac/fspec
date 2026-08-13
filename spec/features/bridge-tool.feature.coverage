@@ -4,11 +4,11 @@
       "name": "Connect to a valid WebSocket endpoint",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "54-100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 139,
                 140,
@@ -88,11 +88,11 @@
       "name": "Fail to connect to invalid endpoint",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "103-141",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 139,
                 140,
@@ -172,11 +172,11 @@
       "name": "Disconnect from a connected endpoint",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "144-196",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 208,
                 209,
@@ -210,11 +210,11 @@
       "name": "List active bridge connections",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "199-235",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 231,
                 232,
@@ -256,11 +256,11 @@
       "name": "List connections during reconnect",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "503-555",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 231,
                 232,
@@ -302,11 +302,11 @@
       "name": "Connect to multiple endpoints simultaneously",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "238-298",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_handler.rs",
+              "file": "rust/tools/src/bridge_handler.rs",
               "lines": [
                 139,
                 140,
@@ -386,11 +386,11 @@
       "name": "Relay StreamChunks to connected endpoint as JSON",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "304-366",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 60,
                 61,
@@ -566,11 +566,11 @@
       "name": "Receive input from endpoint and inject into session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "369-410",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 226,
                 227,
@@ -610,11 +610,11 @@
       "name": "Auto-reconnect and deliver buffered messages",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "413-500",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 60,
                 61,
@@ -675,11 +675,11 @@
       "name": "Drop connection when buffer exceeds 1GB",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_integration_tests.rs",
+          "file": "rust/tools/src/bridge_integration_tests.rs",
           "lines": "557-609",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 96,
                 97,
@@ -723,12 +723,12 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/bridge_integration_tests.rs"
+      "rust/tools/src/bridge_integration_tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bridge_handler.rs",
-      "codelet/tools/src/bridge_relay.rs",
-      "codelet/tools/src/bridge.rs"
+      "rust/tools/src/bridge_handler.rs",
+      "rust/tools/src/bridge_relay.rs",
+      "rust/tools/src/bridge.rs"
     ],
     "totalLinesCovered": 1093
   }

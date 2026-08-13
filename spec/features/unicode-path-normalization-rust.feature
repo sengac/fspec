@@ -7,7 +7,7 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   Glob, Ls, AstGrep) pass file paths through validate_and_resolve_path() in
   wrapper.rs and require_file_exists() in validation.rs — these must normalize
   Unicode whitespace and perform directory-scan fallback. The Rust normalization
-  lives in codelet/tools/src/unicode_path.rs. AST research confirms 21 call sites
+  lives in rust/tools/src/unicode_path.rs. AST research confirms 21 call sites
   for validate_and_resolve_path across all tool files.
   """
 

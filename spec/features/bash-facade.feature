@@ -6,7 +6,7 @@
 @gemini
 Feature: Bash Facade
   """
-  GeminiRunShellCommandFacade in codelet/tools/src/facade/bash.rs implements ToolFacade trait.
+  GeminiRunShellCommandFacade in rust/tools/src/facade/bash.rs implements ToolFacade trait.
   Uses tool name 'run_shell_command' and maps {command} to BashArgs.
   Wrapped with BashToolFacadeWrapper and added to GeminiProvider.create_rig_agent().
   """

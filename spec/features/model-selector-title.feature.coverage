@@ -4,11 +4,11 @@
       "name": "Model browse-list title renders count in dim two-span style",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/model_selector_title_two_span_model008.rs",
+          "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
           "lines": "132-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
                 76,
                 77,
@@ -63,11 +63,11 @@
       "name": "Single model renders singular noun in dim count span",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/model_selector_title_two_span_model008.rs",
+          "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
           "lines": "164-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
                 76,
                 77,
@@ -122,11 +122,11 @@
       "name": "Custom-model overlay title is unaffected by the two-span title change",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/model_selector_title_two_span_model008.rs",
+          "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
           "lines": "187-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
                 16,
                 17,
@@ -198,11 +198,11 @@
       "name": "Refreshing state renders the refresh suffix in the dim count span",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/model_selector_title_two_span_model008.rs",
+          "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
           "lines": "239-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/state.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/state.rs",
               "lines": [
                 181,
                 182,
@@ -243,11 +243,11 @@
       "name": "Browse-list title uses the two-span style, not the shared blue-bold title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/model_selector_title_two_span_model008.rs",
+          "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
           "lines": "284-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
                 76,
                 77,
@@ -284,11 +284,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/model_selector_title_two_span_model008.rs"
+      "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/render.rs",
-      "codelet/fspec-tui/src/views/model_selector/state.rs"
+      "rust/fspec-tui/src/views/model_selector/render.rs",
+      "rust/fspec-tui/src/views/model_selector/state.rs"
     ],
     "totalLinesCovered": 361
   }

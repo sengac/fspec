@@ -4,11 +4,11 @@
       "name": "Header widget modules exist as separate files",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "41-53",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/header.rs",
+              "file": "rust/fspec-tui/src/views/board/header.rs",
               "lines": [
                 1,
                 2,
@@ -74,11 +74,11 @@
       "name": "New and modified board modules stay under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "56-99",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -351,11 +351,11 @@
       "name": "CheckpointCounts shared type lives in rpc-types",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "102-122",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 59,
                 60,
@@ -379,11 +379,11 @@
       "name": "FspecService trait gains the checkpoint_counts RPC method",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "125-135",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 83,
                 84,
@@ -399,11 +399,11 @@
       "name": "FspecBackend trait gains the checkpoint_counts method",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "138-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 88,
                 89,
@@ -421,11 +421,11 @@
       "name": "Action enum gains CheckpointCountsLoaded variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "156-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 170,
                 171,
@@ -448,11 +448,11 @@
       "name": "NAPI surface exposes the additive count_checkpoints export",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "170-185",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 419,
                 420,
@@ -473,11 +473,11 @@
       "name": "RPC-013 / RPC-014 invariants preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "188-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -750,11 +750,11 @@
       "name": "Views still avoid encapsulated transport crates and host runtime construction",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc015.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
           "lines": "219-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -1029,16 +1029,16 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc015.rs"
+      "rust/fspec-tui/tests/source_shape_rpc015.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/header.rs",
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/napi/src/git.rs"
+      "rust/fspec-tui/src/views/board/header.rs",
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/napi/src/git.rs"
     ],
     "totalLinesCovered": 1072
   }

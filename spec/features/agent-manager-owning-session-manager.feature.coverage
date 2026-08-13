@@ -4,11 +4,11 @@
       "name": "Spawn creates the subordinate in the owning manager, not the global singleton",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "127-175",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
                 39,
                 40,
@@ -40,11 +40,11 @@
       "name": "Spawn fires the owning manager's session_created broadcast",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "180-219",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 709
               ]
@@ -57,11 +57,11 @@
       "name": "A subordinate spawned into a manager with real hooks runs its agent loop",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "237-324",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 693,
                 694
@@ -75,11 +75,11 @@
       "name": "Spawner can list, get status, and close the subordinate on the owning manager",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "330-413",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
                 39,
                 40,
@@ -111,11 +111,11 @@
       "name": "NAPI path falls back to the global singleton when no owning manager is set",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "424-488",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
                 49,
                 50,
@@ -137,11 +137,11 @@
       "name": "await_idle resolves the subordinate on the owning manager",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "501-561",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
                 839,
                 840,
@@ -255,11 +255,11 @@
       "name": "set_role and message resolve the subordinate on the owning manager",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
           "lines": "566-717",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
                 73,
                 74,
@@ -290,11 +290,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc386_owning_session_manager.rs"
+      "rust/agent-loop/tests/rpc386_owning_session_manager.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/agent_manager_handler.rs",
-      "codelet/sessions/src/session_manager.rs"
+      "rust/agent-loop/src/agent_manager_handler.rs",
+      "rust/sessions/src/session_manager.rs"
     ],
     "totalLinesCovered": 711
   }

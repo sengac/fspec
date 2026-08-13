@@ -4,11 +4,11 @@
       "name": "handle_list_key contains exactly two clear_test_result call sites",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
           "lines": "133-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 65,
                 66,
@@ -43,11 +43,11 @@
       "name": "KeyCode::Up arm clears test_result only on actual movement",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
           "lines": "154-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 65,
                 66,
@@ -72,11 +72,11 @@
       "name": "KeyCode::Down arm clears test_result only on actual movement",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
           "lines": "193-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 78,
                 79,
@@ -98,11 +98,11 @@
       "name": "Non-arrow arms must NOT clear test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs",
           "lines": "232-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 37,
                 38,
@@ -237,10 +237,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs"
+      "rust/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 294
   }

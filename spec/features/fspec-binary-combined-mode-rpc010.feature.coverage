@@ -4,11 +4,11 @@
       "name": "Combined mode boots the TUI and starts the WS server in one process",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "48-92",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -120,11 +120,11 @@
       "name": "Combined mode emits the PORT=<n> banner on STDERR (not stdout)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "94-138",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -236,11 +236,11 @@
       "name": "Combined mode does not corrupt the alt-screen TUI canvas",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "140-179",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -352,11 +352,11 @@
       "name": "External WS client can attach to combined mode and call list_work_units",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "181-222",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -468,11 +468,11 @@
       "name": "Combined mode writes daemon.json on bootstrap and removes it on clean exit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "426-522",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 1,
                 2,
@@ -729,11 +729,11 @@
       "name": "Combined mode shutdown aborts the WS server JoinHandle before removing daemon.json",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "224-312",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -845,11 +845,11 @@
       "name": "Combined mode and daemon mode share the SAME bind_and_serve function",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "369-424",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -961,11 +961,11 @@
       "name": "Combined mode uses tokio::runtime::Handle::current for the embedded backend",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "314-346",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -1077,11 +1077,11 @@
       "name": "Combined mode bootstraps with build_service constructed exactly once",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/combined_smoke.rs",
+          "file": "rust/fspec/tests/combined_smoke.rs",
           "lines": "348-367",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/combined.rs",
+              "file": "rust/fspec/src/combined.rs",
               "lines": [
                 1,
                 2,
@@ -1195,11 +1195,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/combined_smoke.rs"
+      "rust/fspec/tests/combined_smoke.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/combined.rs",
-      "codelet/fspec/src/common.rs"
+      "rust/fspec/src/combined.rs",
+      "rust/fspec/src/common.rs"
     ],
     "totalLinesCovered": 1512
   }

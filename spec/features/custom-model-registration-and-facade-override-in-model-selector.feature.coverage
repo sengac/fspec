@@ -704,7 +704,7 @@
           "lines": "627-653",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6485,
                 6486,
@@ -1504,7 +1504,7 @@
       "src/utils/provider-config.ts",
       "src/tui/services/modelInitializationService.ts",
       "src/tui/services/modelSelectionService.ts",
-      "codelet/napi/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/components/ModelSelectorView.tsx",
       "src/tui/components/ModelSelectorScreen.tsx"
     ],

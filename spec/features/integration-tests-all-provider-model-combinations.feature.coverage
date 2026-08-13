@@ -4,11 +4,11 @@
       "name": "Claude Sonnet 4 resolves context window to 200k and max output to 8192",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "694-717",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -44,11 +44,11 @@
       "name": "Claude Opus 4.6 clamps 1M registry to 200k and 128k output to 8192",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "719-743",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -84,11 +84,11 @@
       "name": "OpenAI gpt-4o trusts registry values without clamping",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "745-773",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -158,11 +158,11 @@
       "name": "Gemini 2.5 Pro trusts 1M registry value and uses 80% threshold",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "775-795",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -232,11 +232,11 @@
       "name": "Codex falls back to 272k default context window with no registry",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "797-819",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -306,11 +306,11 @@
       "name": "Z.AI resolves 128k context window and 8192 max output",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "821-841",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -380,11 +380,11 @@
       "name": "Copilot falls back to 200k default context and 4096 max output",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "843-867",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -454,11 +454,11 @@
       "name": "User override exceeding provider max is clamped",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "869-890",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 77,
                 78,
@@ -494,11 +494,11 @@
       "name": "ProviderManager full chain resolves clamped values for all providers",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "892-957",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 800,
                 801,
@@ -577,11 +577,11 @@
       "name": "Sub-agent propagation returns clamped values for Claude",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "959-980",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 847,
                 848,
@@ -614,11 +614,11 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/model_limits.rs"
+      "rust/providers/src/model_limits.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/model_limits.rs",
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/model_limits.rs",
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 726
   }

@@ -4,11 +4,11 @@
       "name": "Source-shape — agent_loop body never constructs a single-element user-only history vec",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc081_inner_messages_threading.rs",
+          "file": "rust/agent-loop/tests/rpc081_inner_messages_threading.rs",
           "lines": "44-67",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 867,
                 868,
@@ -173,11 +173,11 @@
       "name": "Source-shape — agent_loop body threads &mut inner_session into run_agent_stream_with_images",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc081_inner_messages_threading.rs",
+          "file": "rust/agent-loop/tests/rpc081_inner_messages_threading.rs",
           "lines": "74-134",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 867,
                 868,
@@ -344,10 +344,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc081_inner_messages_threading.rs"
+      "rust/agent-loop/tests/rpc081_inner_messages_threading.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/agent_loop.rs"
+      "rust/agent-loop/src/agent_loop.rs"
     ],
     "totalLinesCovered": 391
   }

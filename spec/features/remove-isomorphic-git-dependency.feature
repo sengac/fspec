@@ -1,7 +1,7 @@
 @GIT-039
 Feature: isomorphic-git not fully removed - still used in production and test code
   """
-  Replaces isomorphic-git with gitoxide NAPI-RS bindings from @sengac/codelet-napi. Adds resolveRef, gitInit, gitAdd, gitCommit, gitSetConfig to codelet/git Rust crate and codelet/napi NAPI bindings. Removes obsolete stash loading from fspecStore.ts (ghost commits replaced stashes). Updates CheckpointViewer.tsx to use NAPI resolveRef. Migrates universal-test-setup.ts to NAPI bindings for git repo initialization.
+  Replaces isomorphic-git with gitoxide NAPI-RS bindings from @sengac/codelet-napi. Adds resolveRef, gitInit, gitAdd, gitCommit, gitSetConfig to rust/git Rust crate and rust/napi NAPI bindings. Removes obsolete stash loading from fspecStore.ts (ghost commits replaced stashes). Updates CheckpointViewer.tsx to use NAPI resolveRef. Migrates universal-test-setup.ts to NAPI bindings for git repo initialization.
   """
 
   # ========================================
@@ -11,7 +11,7 @@ Feature: isomorphic-git not fully removed - still used in production and test co
   # BUSINESS RULES:
   #   1. ALL git operations MUST use gitoxide NAPI-RS bindings (@sengac/codelet-napi) - no isomorphic-git imports anywhere
   #   2. isomorphic-git MUST be removed from package.json dependencies and build script externals
-  #   3. Missing NAPI bindings (resolveRef, init, add, commit, setConfig) MUST be added to codelet/git and codelet/napi before removing isomorphic-git
+  #   3. Missing NAPI bindings (resolveRef, init, add, commit, setConfig) MUST be added to rust/git and rust/napi before removing isomorphic-git
   #   4. Test infrastructure (universal-test-setup.ts) MUST use NAPI bindings for git repo setup - no isomorphic-git in tests
   #   5. Documentation and feature files MUST be updated to reference gitoxide/NAPI-RS instead of isomorphic-git
   #   6. The stash loading in fspecStore.ts (git.log refs/stash) is obsolete since checkpoints now use ghost commits - should be removed or replaced with ghost checkpoint listing

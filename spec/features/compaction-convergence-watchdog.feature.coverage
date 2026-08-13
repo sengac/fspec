@@ -4,11 +4,11 @@
       "name": "Normal compaction succeeds without watchdog intervention",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "52-79",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4568,
                 4569,
@@ -123,11 +123,11 @@
       "name": "Escalation triggers after first failed attempt",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "85-126",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4568,
                 4569,
@@ -242,11 +242,11 @@
       "name": "Force-inject with partial dag-nodes after two failed attempts",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "208-248",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 451,
                 452,
@@ -349,11 +349,11 @@
       "name": "Force-inject with minimal fallback DAG when no partial nodes exist",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "254-296",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 506,
                 507,
@@ -401,11 +401,11 @@
       "name": "Escalation message content is directive",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "52-75",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 438,
                 439,
@@ -429,11 +429,11 @@
       "name": "force_inject_fallback_dag resets session state correctly",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "81-142",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 506,
                 507,
@@ -481,11 +481,11 @@
       "name": "extract_partial_dag_nodes finds dag-node blocks in messages",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "148-179",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 451,
                 452,
@@ -551,11 +551,11 @@
       "name": "extract_partial_dag_nodes returns empty when no blocks exist",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+          "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
           "lines": "185-202",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 451,
                 452,
@@ -623,11 +623,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_convergence_watchdog_test.rs"
+      "rust/cli/tests/compaction_convergence_watchdog_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/cli/src/interactive_helpers.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/cli/src/interactive_helpers.rs"
     ],
     "totalLinesCovered": 779
   }

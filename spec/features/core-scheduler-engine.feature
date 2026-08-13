@@ -4,10 +4,10 @@
 @SCHED-003
 Feature: Core Scheduler Engine
   """
-  Scheduler lives in codelet/napi/src/scheduler/ module with engine.rs and types.rs
+  Scheduler lives in rust/napi/src/scheduler/ module with engine.rs and types.rs
   SessionManager stores scheduler_handle: RwLock<Option<JoinHandle<()>>> for graceful shutdown
   Uses croner crate for 5-field cron + timezone-aware scheduling, chrono-tz for IANA timezones
-  Follow reaper pattern from codelet/napi/src/unified_exec/reaper.rs for tokio::spawn + interval
+  Follow reaper pattern from rust/napi/src/unified_exec/reaper.rs for tokio::spawn + interval
   Job execution stubs (trigger_agent_job, trigger_shell_job) return Ok(()) for now — implemented in SCHED-004/005
   """
 

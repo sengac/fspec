@@ -4,11 +4,11 @@
       "name": "Up arrow at the first nav item is a clamped no-op (no wrap-around)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "82-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 210,
                 211,
@@ -26,11 +26,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "82-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 52,
                 53,
@@ -46,11 +46,11 @@
       "name": "Down arrow at the last nav item is a clamped no-op (no wrap-around)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "106-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 210,
                 211,
@@ -68,11 +68,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "106-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 56,
                 57,
@@ -88,11 +88,11 @@
       "name": "PageDown is silently ignored in list mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "131-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -161,11 +161,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "131-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 96,
                 97
@@ -179,11 +179,11 @@
       "name": "PageUp is silently ignored in list mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "160-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -252,11 +252,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "160-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 96,
                 97
@@ -270,11 +270,11 @@
       "name": "Home is silently ignored in list mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "186-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -343,11 +343,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "186-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 96,
                 97
@@ -361,11 +361,11 @@
       "name": "End is silently ignored in list mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "211-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -434,11 +434,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "211-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 96,
                 97
@@ -452,11 +452,11 @@
       "name": "Lowercase \"r\" is silently ignored in list mode (no RefreshProviderModels)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "236-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -525,11 +525,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "236-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 96,
                 97
@@ -543,11 +543,11 @@
       "name": "Uppercase \"R\" is silently ignored in list mode (no RefreshProviderModels)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "263-288",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -616,11 +616,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "263-288",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 96,
                 97
@@ -634,11 +634,11 @@
       "name": "Preserved TS-canonical keybinds continue to behave per the existing contract",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "290-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 36,
                 37,
@@ -707,11 +707,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
           "lines": "290-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 29,
                 30,
@@ -795,11 +795,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs"
+      "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/mod.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 1054
   }

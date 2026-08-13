@@ -4,11 +4,11 @@
       "name": "Clap exposes the subcommand and prints flag-free --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
           "lines": "95-127",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec/src/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -90,11 +90,11 @@
       "name": "CLI transforms Event Storm artifacts and prints the summary on success",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
           "lines": "128-165",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec/src/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -176,11 +176,11 @@
       "name": "CLI against empty workspace exits 1 with missing-file error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
           "lines": "166-191",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec/src/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -262,11 +262,11 @@
       "name": "CLI exits 1 when the unit has no Event Storm data",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec/tests/cli_generate_example_mapping_from_event_storm.rs",
           "lines": "192-209",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec/src/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -350,10 +350,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs"
+      "rust/fspec/tests/cli_generate_example_mapping_from_event_storm.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/generate_example_mapping_from_event_storm.rs"
+      "rust/fspec/src/generate_example_mapping_from_event_storm.rs"
     ],
     "totalLinesCovered": 395
   }

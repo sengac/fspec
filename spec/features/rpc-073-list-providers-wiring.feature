@@ -6,7 +6,7 @@
 Feature: RPC-073 List Providers Wiring
   """
   Bug 3: SessionManager::list_providers in
-  codelet/sessions/src/handle_impl.rs:709-715 unconditionally returns
+  rust/sessions/src/handle_impl.rs:709-715 unconditionally returns
   Vec::new(), so the model selector dialog opens empty.
 
   Fix: delegate to codelet_providers::custom::list_providers_info()
@@ -23,7 +23,7 @@ Feature: RPC-073 List Providers Wiring
 
   PROV-127 (drop-empty cloud sections, TS parity): built-in cloud providers
   are populated from the models.dev registry gated on configured credentials
-  (codelet/sessions/src/cloud_models.rs). After the cloud map is built,
+  (rust/sessions/src/cloud_models.rs). After the cloud map is built,
   handle_impl.rs::list_providers applies
   profile_sections::retain_populated_cloud_sections() so a built-in cloud
   provider appears ONLY when it exposes at least one model (credentialed +
@@ -70,7 +70,7 @@ Feature: RPC-073 List Providers Wiring
     Then a tracing::error event with target 'handle_impl' and the underlying error is emitted
 
   Scenario: Source-shape regression: handle_impl.rs list_providers body calls list_providers_info and no longer returns the empty Vec::new() stub
-    Given the file codelet/sessions/src/handle_impl.rs
+    Given the file rust/sessions/src/handle_impl.rs
     When the test reads the source bytes and extracts the body of fn list_providers
     Then the body contains the substring 'list_providers_info'
     Then the body does not match the deprecated stub pattern of bare 'Vec::new()' as the sole expression

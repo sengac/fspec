@@ -4,11 +4,11 @@
       "name": "codelet-sessions has no transitive codelet-napi dependency and no codelet_napi imports",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/no_napi_dependency.rs",
+          "file": "rust/sessions/tests/no_napi_dependency.rs",
           "lines": "74-185",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 12,
                 13,
@@ -41,10 +41,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/no_napi_dependency.rs"
+      "rust/sessions/tests/no_napi_dependency.rs"
     ],
     "implFiles": [
-      "codelet/sessions/Cargo.toml"
+      "rust/sessions/Cargo.toml"
     ],
     "totalLinesCovered": 131
   }

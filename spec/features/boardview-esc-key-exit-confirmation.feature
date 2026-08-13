@@ -8,8 +8,8 @@
 Feature: BoardView Esc key incorrectly bound to 'q' for exit
   """
   Mirrors the TS BoardView ConfirmationDialog with message 'Exit fspec?' and description 'Are you sure you want to exit?'
-  Fix is in codelet/fspec-tui/src/app/events.rs: replace KeyCode::Char('q') at line 130 with KeyCode::Esc that pushes a board exit confirmation dialog onto the compositor (guarded by compositor.contains() to prevent double-push)
-  New BoardExitConfirmationDialog component lives in codelet/fspec-tui/src/components/board_exit_confirmation_dialog.rs and emits Action::QuitApp on confirm; the App dispatch sets should_quit=true
+  Fix is in rust/fspec-tui/src/app/events.rs: replace KeyCode::Char('q') at line 130 with KeyCode::Esc that pushes a board exit confirmation dialog onto the compositor (guarded by compositor.contains() to prevent double-push)
+  New BoardExitConfirmationDialog component lives in rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs and emits Action::QuitApp on confirm; the App dispatch sets should_quit=true
   DisconnectDialog 'q'/'r' bindings (events.rs lines 101-122) and Ctrl+D (lines 134-139) are preserved unchanged
   """
 

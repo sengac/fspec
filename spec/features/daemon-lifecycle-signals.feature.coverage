@@ -4,11 +4,11 @@
       "name": "SIGTERM triggers graceful drain with going_away Close frame",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_lifecycle_rpc011.rs",
+          "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
           "lines": "33-118",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 84,
                 85,
@@ -34,11 +34,11 @@
       "name": "SIGHUP rebuilds the workspace watcher without exiting",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_lifecycle_rpc011.rs",
+          "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
           "lines": "120-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 65,
                 66,
@@ -69,11 +69,11 @@
       "name": "SIGINT continues to trigger immediate shutdown",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_lifecycle_rpc011.rs",
+          "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
           "lines": "168-197",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 84,
                 85,
@@ -99,11 +99,11 @@
       "name": "ConnectedClientGuard increments and decrements on each connection",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_lifecycle_rpc011.rs",
+          "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
           "lines": "199-291",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 36,
                 37,
@@ -135,11 +135,11 @@
       "name": "daemon.json schema upgrade carries pid + started_at + version",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_lifecycle_rpc011.rs",
+          "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
           "lines": "293-367",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 180,
                 181,
@@ -199,11 +199,11 @@
       "name": "daemon.json is removed on every clean shutdown path (SIGINT, SIGTERM)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_lifecycle_rpc011.rs",
+          "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
           "lines": "380-440",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 60,
                 61,
@@ -258,12 +258,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/daemon_lifecycle_rpc011.rs"
+      "rust/fspec/tests/daemon_lifecycle_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/daemon.rs",
-      "codelet/rpc-server/src/server.rs",
-      "codelet/fspec/src/common.rs"
+      "rust/fspec/src/daemon.rs",
+      "rust/rpc-server/src/server.rs",
+      "rust/fspec/src/common.rs"
     ],
     "totalLinesCovered": 548
   }

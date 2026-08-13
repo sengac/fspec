@@ -6,7 +6,7 @@
 Feature: Port Edit/Write diff generation and [R]-/[A]+ marker encoding (Rust TUI)
   """
   Port targets: src/git/diff-parser.ts (computeLineDiff, changesToDiffLines) + src/tui/components/AgentView.tsx (formatEditDiff:623, formatWriteDiff:644, formatDiffForDisplay:670, formatWithTreeConnectors:551, calculateStartLine:781)
-  New pure module codelet/fspec-tui/src/store/agent_view/diff_format.rs; add similar='2' to fspec-tui Cargo.toml (workspace-pinned, already used by codelet/git). No rendering/wire-up here (RPC-391).
+  New pure module rust/fspec-tui/src/store/agent_view/diff_format.rs; add similar='2' to fspec-tui Cargo.toml (workspace-pinned, already used by rust/git). No rendering/wire-up here (RPC-391).
   """
 
   # ========================================

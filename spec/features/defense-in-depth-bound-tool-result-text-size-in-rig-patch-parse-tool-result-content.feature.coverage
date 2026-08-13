@@ -4,11 +4,11 @@
       "name": "A 200 KiB text tool result is replaced by a truncation marker",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
           "lines": "996-1052",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 34,
                 35,
@@ -105,11 +105,11 @@
       "name": "A 32 KiB text tool result is stored verbatim without a truncation marker",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
           "lines": "1054-1080",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 34,
                 35,
@@ -206,11 +206,11 @@
       "name": "A text payload exactly at the bound is stored verbatim",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
           "lines": "1082-1110",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 34,
                 35,
@@ -307,11 +307,11 @@
       "name": "An oversized image is still rejected by the existing image size check",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
           "lines": "1112-1161",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 34,
                 35,
@@ -408,11 +408,11 @@
       "name": "The truncation marker is valid UTF-8 JSON that the model can reason about",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
           "lines": "1163-1204",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 34,
                 35,
@@ -509,11 +509,11 @@
       "name": "Running a verbose tool no longer cascades into PromptCancelled",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
           "lines": "1206-1247",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 34,
                 35,
@@ -742,10 +742,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
     "implFiles": [
-      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
     "totalLinesCovered": 887
   }

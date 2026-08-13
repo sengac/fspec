@@ -4,11 +4,11 @@
       "name": "Request with valid token injects Bearer header without refresh",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "149-203",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 1,
                 2,
@@ -318,11 +318,11 @@
       "name": "Expired token is automatically refreshed before request",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "205-270",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 120,
                 121,
@@ -390,11 +390,11 @@
       "name": "Token refresh failure propagates error without sending request",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "272-326",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 120,
                 121,
@@ -444,11 +444,11 @@
       "name": "Streaming request with expired token refreshes before streaming",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "328-392",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 262,
                 263,
@@ -497,11 +497,11 @@
       "name": "API key mode passes requests through unchanged",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "394-440",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 63,
                 64,
@@ -523,11 +523,11 @@
       "name": "Token refresh within expiry buffer triggers proactive refresh",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "442-469",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 108,
                 109,
@@ -550,11 +550,11 @@
       "name": "Existing Authorization header is replaced with current token",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "471-519",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 195,
                 196,
@@ -585,11 +585,11 @@
       "name": "Static headers are preserved and not modified",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "521-577",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 195,
                 196,
@@ -620,11 +620,11 @@
       "name": "ClaudeProvider uses RefreshingClaudeClient for OAuth mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "579-617",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 76,
                 77,
@@ -660,11 +660,11 @@
           ]
         },
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "579-617",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 148,
                 149,
@@ -683,11 +683,11 @@
       "name": "Tokens loaded from disk trigger immediate refresh via Some(0)",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "619-681",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 76,
                 77,
@@ -722,11 +722,11 @@
       "name": "Token persistence is best-effort and does not fail requests",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "683-735",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 184,
                 185,
@@ -749,11 +749,11 @@
       "name": "Claude auth persistence writes correct JSON structure",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_refreshing_client_test.rs",
+          "file": "rust/providers/tests/claude_refreshing_client_test.rs",
           "lines": "737-793",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 177,
                 178,
@@ -785,11 +785,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_refreshing_client_test.rs"
+      "rust/providers/tests/claude_refreshing_client_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude_refreshing_client.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/providers/src/claude_refreshing_client.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 1249
   }

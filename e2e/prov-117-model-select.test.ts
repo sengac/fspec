@@ -43,11 +43,11 @@ import { join } from 'path';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
 
 // The runner (scripts/run-tui-test.sh / run-prov104-e2e.sh) stashes the huge
-// codelet/target tree out of CWD and points us at the built binary via
+// rust/target tree out of CWD and points us at the built binary via
 // FSPEC_BIN. The binary MUST be built with --features test-stub-provider.
 const rustFspec =
   process.env.FSPEC_BIN ??
-  join(homedir(), 'projects', 'fspec', 'codelet', 'target', 'debug', 'fspec');
+  join(homedir(), 'projects', 'fspec', 'rust', 'target', 'debug', 'fspec');
 const realWorkspace = join(homedir(), 'projects', 'fspec');
 
 // Build a throwaway HOME with a local-server profile carrying custom models.

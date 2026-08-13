@@ -4,11 +4,11 @@
       "name": "Two clients attached simultaneously see the same chunk stream",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
+          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
           "lines": "36-131",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 79,
                 80,
@@ -64,11 +64,11 @@
       "name": "Broadcast capacities are explicit and tuned",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
+          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
           "lines": "133-168",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -130,11 +130,11 @@
       "name": "Tracing spans carry client_id on per-connection handler tasks",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
+          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
           "lines": "182-322",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 102,
                 103,
@@ -180,11 +180,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/multi_client_and_tracing_rpc011.rs"
+      "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/server.rs",
-      "codelet/rpc/src/lib.rs"
+      "rust/rpc-server/src/server.rs",
+      "rust/rpc/src/lib.rs"
     ],
     "totalLinesCovered": 399
   }

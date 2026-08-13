@@ -4,11 +4,11 @@
       "name": "Successful test result renders as green \"✓ ok (Nms)\" appended to the focused provider row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "126-151",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 1,
                 2,
@@ -89,7 +89,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -161,11 +161,11 @@
       "name": "Failed test result renders as red \"✗ <message>\" appended to the focused provider row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "154-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 1,
                 2,
@@ -246,7 +246,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -318,11 +318,11 @@
       "name": "In-flight test renders as cyan \"Testing…\" appended to the focused provider row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "187-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 1,
                 2,
@@ -403,7 +403,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -475,11 +475,11 @@
       "name": "Test result decoration is scoped to the matching provider_id only",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "215-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -551,11 +551,11 @@
       "name": "No decoration is rendered when test_result is None",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "239-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -627,11 +627,11 @@
       "name": "Decoration renders on the provider header row only, never on its expanded children",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "261-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -703,11 +703,11 @@
       "name": "clear_test_result removes the inline decoration on the next render",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "289-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 1,
                 2,
@@ -795,11 +795,11 @@
       "name": "Unknown provider_id is a silent no-op — no decoration anywhere, no panic",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "315-337",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -871,11 +871,11 @@
       "name": "set_test_result is last-write-wins — a second call overrides the prior status",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "337-358",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 1,
                 2,
@@ -963,11 +963,11 @@
       "name": "A newly-constructed ProviderSettingsView has test_result None",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "360-369",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 82,
                 83,
@@ -1002,11 +1002,11 @@
       "name": "set_test_result does not mutate selected_index, scroll_offset, filter, or filter_mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "372-396",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 59,
                 60,
@@ -1026,11 +1026,11 @@
       "name": "clear_test_result does not mutate selected_index or scroll_offset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs",
           "lines": "398-417",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/test_result.rs",
               "lines": [
                 73,
                 74,
@@ -1047,12 +1047,12 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs"
+      "rust/fspec-tui/tests/provider_settings_test_result_inline_rpc158.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/test_result.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+      "rust/fspec-tui/src/views/provider_settings/test_result.rs",
+      "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
     "totalLinesCovered": 1109
   }

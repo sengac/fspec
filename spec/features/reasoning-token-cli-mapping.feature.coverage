@@ -4,11 +4,11 @@
       "name": "TokenInfo maps reasoning tokens from TokenDisplayUpdate",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/rig_012_token_info_reasoning_test.rs",
+          "file": "rust/cli/tests/rig_012_token_info_reasoning_test.rs",
           "lines": "17-35",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/output.rs",
+              "file": "rust/cli/src/interactive/output.rs",
               "lines": [
                 45,
                 46,
@@ -39,11 +39,11 @@
       "name": "TokenInfo from_usage maps reasoning tokens from ApiTokenUsage",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/rig_012_token_info_reasoning_test.rs",
+          "file": "rust/cli/tests/rig_012_token_info_reasoning_test.rs",
           "lines": "52-63",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/output.rs",
+              "file": "rust/cli/src/interactive/output.rs",
               "lines": [
                 31,
                 32,
@@ -71,10 +71,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/rig_012_token_info_reasoning_test.rs"
+      "rust/cli/tests/rig_012_token_info_reasoning_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/output.rs"
+      "rust/cli/src/interactive/output.rs"
     ],
     "totalLinesCovered": 64
   }

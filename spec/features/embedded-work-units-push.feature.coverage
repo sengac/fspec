@@ -4,11 +4,11 @@
       "name": "list_work_units returns a live snapshot from the real WorkUnitsWatcher",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_push.rs",
+          "file": "rust/rpc-embedded/tests/embedded_push.rs",
           "lines": "52-87",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -112,11 +112,11 @@
       "name": "Embedded transport exposes the watcher's broadcast subscription directly",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_push.rs",
+          "file": "rust/rpc-embedded/tests/embedded_push.rs",
           "lines": "89-122",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -222,10 +222,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/embedded_push.rs"
+      "rust/rpc-embedded/tests/embedded_push.rs"
     ],
     "implFiles": [
-      "codelet/rpc-embedded/src/lib.rs"
+      "rust/rpc-embedded/src/lib.rs"
     ],
     "totalLinesCovered": 254
   }

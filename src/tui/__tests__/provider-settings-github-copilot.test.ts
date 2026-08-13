@@ -5,7 +5,7 @@
  * PROV-054 GitHub Copilot OAuth device flow & token storage.
  *
  * Scope (TUI wiring scenarios only — Rust-side scenarios live in
- * codelet/providers/tests/copilot_oauth_device_flow_test.rs):
+ * rust/providers/tests/copilot_oauth_device_flow_test.rs):
  *
  * - GitHub Copilot appears in the TUI providers list after provider registration
  * - Expanding GitHub Copilot row reveals the device-flow login option only

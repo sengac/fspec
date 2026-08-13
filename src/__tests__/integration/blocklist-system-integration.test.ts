@@ -26,8 +26,8 @@ import {
   blocklistAllowSession,
   blocklistIsSessionAllowed,
   blocklistClearSessionAllowances,
-} from '../../../codelet/napi';
-import type { JsBlocklistConfig, JsCheckResult } from '../../../codelet/napi';
+} from '../../../rust/napi';
+import type { JsBlocklistConfig, JsCheckResult } from '../../../rust/napi';
 
 // Mock TUI components for integration testing (we test logic, not rendering)
 vi.mock('../../tui/components/BlocklistListView', () => ({

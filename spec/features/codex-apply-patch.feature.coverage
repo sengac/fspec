@@ -4,11 +4,11 @@
       "name": "Add a new file via apply_patch",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "18-57",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 111,
                 112,
@@ -38,11 +38,11 @@
       "name": "Update an existing file via apply_patch",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "75-118",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 130,
                 131,
@@ -83,11 +83,11 @@
       "name": "Delete a file via apply_patch",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "124-151",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 160,
                 161,
@@ -117,11 +117,11 @@
       "name": "Multi-file patch with mixed operations",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "157-208",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
                 106,
                 107,
@@ -211,11 +211,11 @@
       "name": "Malformed patch missing Begin Patch marker",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "214-229",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/parser.rs",
+              "file": "rust/tools/src/apply_patch/parser.rs",
               "lines": [
                 40,
                 41,
@@ -238,11 +238,11 @@
       "name": "Update File with non-matching context lines",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "244-278",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch/hunk.rs",
+              "file": "rust/tools/src/apply_patch/hunk.rs",
               "lines": [
                 43,
                 44,
@@ -292,11 +292,11 @@
       "name": "apply_patch tool is registered in Codex agent",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "file": "rust/tools/tests/apply_patch_tool_test.rs",
           "lines": "284-301",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 357,
                 358,
@@ -316,13 +316,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/apply_patch_tool_test.rs"
+      "rust/tools/tests/apply_patch_tool_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/apply_patch/mod.rs",
-      "codelet/tools/src/apply_patch/parser.rs",
-      "codelet/tools/src/apply_patch/hunk.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/tools/src/apply_patch/mod.rs",
+      "rust/tools/src/apply_patch/parser.rs",
+      "rust/tools/src/apply_patch/hunk.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 431
   }

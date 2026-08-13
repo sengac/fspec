@@ -4,11 +4,11 @@
       "name": "BackgroundOutput translates StreamEvent::Tokens into session updates and a StreamChunk::TokenUpdate",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc086_token_tracking.rs",
+          "file": "rust/agent-loop/tests/rpc086_token_tracking.rs",
           "lines": "102-177",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 226,
                 227,
@@ -38,11 +38,11 @@
       "name": "BackgroundOutput translates StreamEvent::ContextFill into a StreamChunk::ContextFillUpdate",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc086_token_tracking.rs",
+          "file": "rust/agent-loop/tests/rpc086_token_tracking.rs",
           "lines": "179-225",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 244,
                 245,
@@ -60,11 +60,11 @@
       "name": "BackgroundSession exposes the cached token API expected by BackgroundOutput",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc086_token_tracking.rs",
+          "file": "rust/agent-loop/tests/rpc086_token_tracking.rs",
           "lines": "227-309",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 701,
                 702,
@@ -95,11 +95,11 @@
       "name": "codelet_rpc_types::StreamChunk declares TokenUpdate and ContextFillUpdate with matching constructors",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc086_token_tracking.rs",
+          "file": "rust/agent-loop/tests/rpc086_token_tracking.rs",
           "lines": "311-387",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1056,
                 1057,
@@ -239,11 +239,11 @@
       "name": "TokenInfo and ContextFillInfo source types carry the fields BackgroundOutput consumes",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc086_token_tracking.rs",
+          "file": "rust/agent-loop/tests/rpc086_token_tracking.rs",
           "lines": "389-448",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/output.rs",
+              "file": "rust/cli/src/interactive/output.rs",
               "lines": [
                 21,
                 22,
@@ -414,13 +414,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc086_token_tracking.rs"
+      "rust/agent-loop/tests/rpc086_token_tracking.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/background_output.rs",
-      "codelet/sessions/src/background_session.rs",
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/cli/src/interactive/output.rs"
+      "rust/agent-loop/src/background_output.rs",
+      "rust/sessions/src/background_session.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/cli/src/interactive/output.rs"
     ],
     "totalLinesCovered": 671
   }

@@ -4,11 +4,11 @@
       "name": "Log agent job triggered event",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "49-79",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/job_log.rs",
+              "file": "rust/napi/src/scheduler/job_log.rs",
               "lines": [
                 1,
                 2,
@@ -127,11 +127,11 @@
       "name": "Log agent job completed event",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "81-109",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/job_log.rs",
+              "file": "rust/napi/src/scheduler/job_log.rs",
               "lines": [
                 1,
                 2,
@@ -250,11 +250,11 @@
       "name": "Log shell job failed event",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "111-141",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/job_log.rs",
+              "file": "rust/napi/src/scheduler/job_log.rs",
               "lines": [
                 1,
                 2,
@@ -373,11 +373,11 @@
       "name": "Log skipped event on overlap",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "143-175",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 115,
                 116,
@@ -423,11 +423,11 @@
       "name": "Log deferred event on session limit",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "177-209",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 157,
                 158,
@@ -458,11 +458,11 @@
       "name": "Log queued event on overlap queue policy",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "211-237",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 130,
                 131,
@@ -493,11 +493,11 @@
       "name": "Log rotation truncates to 1000 entries",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "239-265",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/job_log.rs",
+              "file": "rust/napi/src/scheduler/job_log.rs",
               "lines": [
                 90,
                 91,
@@ -527,11 +527,11 @@
       "name": "Graceful handling of log write failure",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/job_log_test.rs",
+          "file": "rust/napi/tests/job_log_test.rs",
           "lines": "267-295",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/job_log.rs",
+              "file": "rust/napi/src/scheduler/job_log.rs",
               "lines": [
                 45,
                 46,
@@ -587,11 +587,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/job_log_test.rs"
+      "rust/napi/tests/job_log_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/scheduler/job_log.rs",
-      "codelet/napi/src/scheduler/engine.rs"
+      "rust/napi/src/scheduler/job_log.rs",
+      "rust/napi/src/scheduler/engine.rs"
     ],
     "totalLinesCovered": 693
   }

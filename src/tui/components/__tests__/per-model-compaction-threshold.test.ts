@@ -5,7 +5,7 @@
  * The core threshold logic lives in Rust (compaction_threshold.rs / manager.rs).
  * These tests verify the NAPI boundary exposure and TUI consumption pattern.
  *
- * Rust-side tests live in codelet/cli/src/compaction_threshold.rs (unit tests for
+ * Rust-side tests live in rust/cli/src/compaction_threshold.rs (unit tests for
  * CompactionThresholdConfig, builtin defaults, resolve(), and priority chain).
  */
 

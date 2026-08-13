@@ -2,7 +2,7 @@
 @RPC-175
 Feature: fspec add-command-to-foundation CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_command_to_foundation.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/add_command_to_foundation.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-command-to-foundation.ts:138-156). Surface:
   `fspec add-command-to-foundation <context-name> <command-name> [--description <text>]`.
   Stdout (success): '✓ Added command "<command-name>" to "<context-name>" bounded context' (TS uses
@@ -23,7 +23,7 @@ Feature: fspec add-command-to-foundation CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-command-to-foundation --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-command-to-foundation.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-command-to-foundation.txt
 
   Scenario: CLI successfully appends a command and prints the success line
     Given a project root tempdir with spec/foundation.json whose eventStorm has a bounded_context text='Work Management' id=0 and nextItemId=1
@@ -52,4 +52,4 @@ Feature: fspec add-command-to-foundation CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-command-to-foundation "Work Management" "C2"` afterwards exits 0
     And spec/foundation.json on disk shows eventStorm.items contains both command items 'C1' and 'C2'
-    And the CLI bridge module codelet/fspec/src/add_command_to_foundation.rs contains NO inline item construction, context lookup, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_command_to_foundation.rs contains NO inline item construction, context lookup, or file-write logic — its only computation is JSON arg marshalling

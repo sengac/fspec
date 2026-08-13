@@ -4,11 +4,11 @@
       "name": "The lifted history module lives under codelet_core with the right file shape",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "52-83",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/mod.rs",
+              "file": "rust/core/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -70,11 +70,11 @@
       "name": "codelet_core::persistence re-exports the public history surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "85-121",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/mod.rs",
+              "file": "rust/core/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -136,11 +136,11 @@
       "name": "HistoryNavState lives in its own sub-module under the 100-LoC ceiling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "123-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/history_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/history_state.rs",
               "lines": [
                 1,
                 2,
@@ -169,11 +169,11 @@
       "name": "AgentViewStore stays under 300 LoC after the per-session history fields are added",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "157-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 1,
                 2,
@@ -468,11 +468,11 @@
       "name": "The NAPI persistence surface becomes a thin delegate layer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "196-246",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/history.rs",
+              "file": "rust/napi/src/persistence/history.rs",
               "lines": [
                 1,
                 2,
@@ -511,14 +511,14 @@
       ]
     },
     {
-      "name": "HistoryMatch is declared in codelet/rpc-types with the expected fields",
+      "name": "HistoryMatch is declared in rust/rpc-types with the expected fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "248-296",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -980,11 +980,11 @@
       "name": "No view file imports forbidden crates",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc025.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc025.rs",
           "lines": "298-329",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 1,
                 2,
@@ -1281,15 +1281,15 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc025.rs",
-      "codelet/fspec/src/common.rs"
+      "rust/fspec-tui/tests/source_shape_rpc025.rs",
+      "rust/fspec/src/common.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/mod.rs",
-      "codelet/fspec-tui/src/store/agent_view/history_state.rs",
-      "codelet/fspec-tui/src/store/agent_view.rs",
-      "codelet/napi/src/persistence/history.rs",
-      "codelet/rpc-types/src/lib.rs"
+      "rust/core/src/persistence/mod.rs",
+      "rust/fspec-tui/src/store/agent_view/history_state.rs",
+      "rust/fspec-tui/src/store/agent_view.rs",
+      "rust/napi/src/persistence/history.rs",
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 1477
   }

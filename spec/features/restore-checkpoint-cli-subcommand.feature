@@ -6,13 +6,13 @@ Feature: restore-checkpoint CLI subcommand on the standalone fspec Rust binary
   Two-front-doors invariant (RPC-003 §7/§11): the clap subcommand
   `fspec restore-checkpoint <work-unit-id> <checkpoint-name>` and the LLM-facing dispatcher both
   route through codelet_fspec_core::commands::restore_checkpoint::run. The CLI bridge
-  (codelet/fspec/src/restore_checkpoint.rs) only marshals the two positionals into JSON and
+  (rust/fspec/src/restore_checkpoint.rs) only marshals the two positionals into JSON and
   resolves project_root from the current working directory. The clap surface carries NO --force
   or --user-choice flags (parity with the TS Commander.js registration). No dirty-check,
   conflict-detection, restore, or rendering logic is duplicated in the bridge.
 
   Help parity: `fspec restore-checkpoint --help` (NO_COLOR, non-TTY) is byte-for-byte identical to
-  codelet/fspec/tests/fixtures/help/restore-checkpoint.txt.
+  rust/fspec/tests/fixtures/help/restore-checkpoint.txt.
   """
 
   Background: User Story
@@ -54,11 +54,11 @@ Feature: restore-checkpoint CLI subcommand on the standalone fspec Rust binary
     Given a git repository with a checkpoint "baseline" for "AUTH-001" and a clean working tree
     When I dispatch restore-checkpoint through fspec_core::dispatch::dispatch_command with format "json"
     Then the dispatcher result succeeds and reports conflictsDetected
-    And the CLI bridge module codelet/fspec/src/restore_checkpoint.rs contains NO inline dirty-check, conflict-detection, restore, or rendering logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/restore_checkpoint.rs contains NO inline dirty-check, conflict-detection, restore, or rendering logic — its only computation is JSON arg marshalling
 
   Scenario: restore-checkpoint --help is byte-for-byte identical to TS
     Given the fspec Rust binary has been compiled
     When I run "fspec restore-checkpoint --help" piped to non-TTY with NO_COLOR set
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/restore-checkpoint.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/restore-checkpoint.txt
     And stdout starts with a blank line followed by "RESTORE-CHECKPOINT"

@@ -25,7 +25,7 @@ Feature: /clear emits TS-divergent scrollback notice — match TypeScript contra
   #   2. Given a focused session and a backend whose clear_history returns Err('boom'), when /clear is dispatched, then no '[error] /clear failed: boom' line appears in scrollback — the error is only emitted via tracing::error!
   #   3. Given a subscriber on backend.chunks_rx(), when backend.clear_history(sid).await is called on either transport against the StubSessionManagerHandle, then within 1 second a StreamChunk::SessionStateChange { state: Cleared } arrives for sid — and NO StreamChunk::UserNotification with message 'history cleared' is observed
   #   4. Given the real fspec binary running under tui-test, when the user opens a Work Agent and types '/clear' followed by Enter, then the rendered scrollback after the keystroke does NOT contain '[notice] /clear:' or '[error] /clear failed:' anywhere
-  #   5. Source-shape check: a grep for 'history cleared' in codelet/fspec-tui/src/app/dispatch_slash_clear.rs and codelet/core/src/session_manager_handle.rs returns zero matches
+  #   5. Source-shape check: a grep for 'history cleared' in rust/fspec-tui/src/app/dispatch_slash_clear.rs and rust/core/src/session_manager_handle.rs returns zero matches
   #
   # ========================================
   Background: User Story

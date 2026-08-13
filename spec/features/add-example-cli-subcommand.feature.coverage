@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_example.rs",
+          "file": "rust/fspec/tests/cli_add_example.rs",
           "lines": "94-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_example.rs",
+              "file": "rust/fspec-core/src/help/configs/add_example.rs",
               "lines": [
                 1,
                 2,
@@ -67,11 +67,11 @@
       "name": "Happy-path invocation marshals positional args and writes the example",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_example.rs",
+          "file": "rust/fspec/tests/cli_add_example.rs",
           "lines": "116-144",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_example.rs",
+              "file": "rust/fspec/src/add_example.rs",
               "lines": [
                 37,
                 38,
@@ -110,11 +110,11 @@
       "name": "Missing work unit exits 1 with the canonical error on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_example.rs",
+          "file": "rust/fspec/tests/cli_add_example.rs",
           "lines": "145-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_example.rs",
+              "file": "rust/fspec/src/add_example.rs",
               "lines": [
                 56,
                 57,
@@ -133,11 +133,11 @@
       "name": "Status guard exits 1 with the phase-guard message on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_example.rs",
+          "file": "rust/fspec/tests/cli_add_example.rs",
           "lines": "167-185",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_example.rs",
+              "file": "rust/fspec/src/add_example.rs",
               "lines": [
                 56,
                 57,
@@ -156,11 +156,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_example.rs",
+          "file": "rust/fspec/tests/cli_add_example.rs",
           "lines": "186-220",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_example.rs",
+              "file": "rust/fspec/src/add_example.rs",
               "lines": [
                 37,
                 38,
@@ -201,11 +201,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_example.rs"
+      "rust/fspec/tests/cli_add_example.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_example.rs",
-      "codelet/fspec/src/add_example.rs"
+      "rust/fspec-core/src/help/configs/add_example.rs",
+      "rust/fspec/src/add_example.rs"
     ],
     "totalLinesCovered": 241
   }

@@ -4,11 +4,11 @@
       "name": "Java imported class used in constructor produces TypeRef not crash",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_class_import_crash_test.rs",
+          "file": "rust/napi/tests/ast_class_import_crash_test.rs",
           "lines": "221-272",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/edge_helpers.rs",
               "lines": [
                 255,
                 256,
@@ -62,11 +62,11 @@
       "name": "Python mixed imports — function gets Calls edge, class gets TypeRef edge",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_class_import_crash_test.rs",
+          "file": "rust/napi/tests/ast_class_import_crash_test.rs",
           "lines": "278-327",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/edge_helpers.rs",
               "lines": [
                 255,
                 256,
@@ -120,11 +120,11 @@
       "name": "Python stdlib import does not create edges or crash",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_class_import_crash_test.rs",
+          "file": "rust/napi/tests/ast_class_import_crash_test.rs",
           "lines": "388-414",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/edge_helpers.rs",
               "lines": [
                 255,
                 256,
@@ -178,11 +178,11 @@
       "name": "Python underscore-prefixed class imported and called as constructor produces TypeRef",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_class_import_crash_test.rs",
+          "file": "rust/napi/tests/ast_class_import_crash_test.rs",
           "lines": "92-152",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/edge_helpers.rs",
               "lines": [
                 255,
                 256,
@@ -236,11 +236,11 @@
       "name": "Java class with comment containing keyword before declaration extracts correct name",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_class_import_crash_test.rs",
+          "file": "rust/napi/tests/ast_class_import_crash_test.rs",
           "lines": "159-215",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/helpers.rs",
               "lines": [
                 222,
                 223,
@@ -314,11 +314,11 @@
       "name": "Deduplicate prunes Calls edge targeting a Type-only slug",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_class_import_crash_test.rs",
+          "file": "rust/napi/tests/ast_class_import_crash_test.rs",
           "lines": "333-382",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 259,
                 260,
@@ -460,12 +460,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_class_import_crash_test.rs"
+      "rust/napi/tests/ast_class_import_crash_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs",
-      "codelet/napi/src/graph/ast_pipeline/helpers.rs",
-      "codelet/napi/src/graph/ast_pipeline/mod.rs"
+      "rust/napi/src/graph/ast_pipeline/edge_helpers.rs",
+      "rust/napi/src/graph/ast_pipeline/helpers.rs",
+      "rust/napi/src/graph/ast_pipeline/mod.rs"
     ],
     "totalLinesCovered": 655
   }

@@ -4,11 +4,11 @@
       "name": "Extract Python functions and classes from .py files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "23-115",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -143,11 +143,11 @@
       "name": "Extract Python dependencies from requirements.txt and pyproject.toml",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "769-840",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/pip_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/pip_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -284,11 +284,11 @@
       "name": "Extract Go functions and types from .go files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "116-200",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -437,11 +437,11 @@
       "name": "Extract Go dependencies from go.mod",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "810-853",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/gomod_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/gomod_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -528,11 +528,11 @@
       "name": "Extract Java methods and types from .java files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "202-254",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -696,11 +696,11 @@
       "name": "Extract Java dependencies from pom.xml and build.gradle",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "832-900",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/java_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/java_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -849,11 +849,11 @@
       "name": "Extract C functions and types from .c and .h files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "256-332",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -1017,11 +1017,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "271-347",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -1238,11 +1238,11 @@
       "name": "Extract C++ functions and types from .cpp files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "334-425",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -1481,11 +1481,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "353-411",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -1710,11 +1710,11 @@
       "name": "Disambiguate .h files between C and C++",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "391-425",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 70,
                 71,
@@ -1757,11 +1757,11 @@
       "name": "Extract C# methods and types from .cs files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "428-487",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -1986,11 +1986,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "454-513",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2201,11 +2201,11 @@
       "name": "Extract C# dependencies from .csproj files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "954-995",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/csproj_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/csproj_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2291,11 +2291,11 @@
       "name": "Extract Ruby methods and types from .rb files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "489-570",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2447,11 +2447,11 @@
       "name": "Extract Ruby dependencies from Gemfile",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "907-950",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/gemfile_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/gemfile_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2544,11 +2544,11 @@
       "name": "Extract Kotlin functions and types from .kt files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "551-660",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_kotlin_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_kotlin_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2700,11 +2700,11 @@
       "name": "Extract Swift functions and types from .swift files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "610-660",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_swift_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_swift_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2850,11 +2850,11 @@
       "name": "Extract Swift dependencies from Package.swift",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "929-970",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/swift_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/swift_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -2944,11 +2944,11 @@
       "name": "Extract Scala functions and types from .scala files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "662-710",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_scala_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_scala_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -3098,11 +3098,11 @@
       "name": "Extract Scala dependencies from build.sbt",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "974-997",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/sbt_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/sbt_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -3202,11 +3202,11 @@
       "name": "Extract PHP functions and types from .php files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "712-767",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -3350,11 +3350,11 @@
       "name": "Extract PHP dependencies from composer.json",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "885-925",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/composer_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/composer_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -3419,11 +3419,11 @@
       "name": "Walk project discovers all supported language files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "1017-1098",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 1,
                 2,
@@ -3760,11 +3760,11 @@
       "name": "Missing dependency files return empty results",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_multi_language_extraction_test.rs",
+          "file": "rust/napi/tests/ast_multi_language_extraction_test.rs",
           "lines": "999-1015",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 1,
                 2,
@@ -4103,29 +4103,29 @@
     "coveredScenarios": 22,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_multi_language_extraction_test.rs"
+      "rust/napi/tests/ast_multi_language_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/pip_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/gomod_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/java_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/mod.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/csproj_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/gemfile_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_kotlin_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_swift_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/swift_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_scala_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/sbt_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/composer_dep_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/pip_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/gomod_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/java_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/mod.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/csproj_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_ruby_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/gemfile_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_kotlin_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_swift_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/swift_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_scala_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/sbt_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/composer_dep_extractor.rs"
     ],
     "totalLinesCovered": 5228
   }

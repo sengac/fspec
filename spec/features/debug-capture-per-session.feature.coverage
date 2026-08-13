@@ -4,11 +4,11 @@
       "name": "Debug capture for one session does not leak into another session's log file",
       "testMappings": [
         {
-          "file": "codelet/common/src/debug_capture/mod.rs",
+          "file": "rust/common/src/debug_capture/mod.rs",
           "lines": "307-367",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 7570,
                 7571,
@@ -106,11 +106,11 @@
       "name": "Each session writes to its own session-specific debug file path",
       "testMappings": [
         {
-          "file": "codelet/common/src/debug_capture/mod.rs",
+          "file": "rust/common/src/debug_capture/mod.rs",
           "lines": "268-305",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 7586,
                 7587,
@@ -137,11 +137,11 @@
       "name": "Toggling debug off in one session does not affect another session's capture",
       "testMappings": [
         {
-          "file": "codelet/common/src/debug_capture/mod.rs",
+          "file": "rust/common/src/debug_capture/mod.rs",
           "lines": "369-417",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 7570,
                 7571,
@@ -239,11 +239,11 @@
       "name": "Toggling debug emits a DebugStateChange stream event scoped to that session",
       "testMappings": [
         {
-          "file": "codelet/common/src/debug_capture/mod.rs",
+          "file": "rust/common/src/debug_capture/mod.rs",
           "lines": "530-579",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 387,
                 388,
@@ -263,11 +263,11 @@
       "name": "latest.jsonl symlink points to the most recently activated session's debug file",
       "testMappings": [
         {
-          "file": "codelet/common/src/debug_capture/mod.rs",
+          "file": "rust/common/src/debug_capture/mod.rs",
           "lines": "419-488",
           "implMappings": [
             {
-              "file": "codelet/common/src/debug_capture/session_lifecycle.rs",
+              "file": "rust/common/src/debug_capture/session_lifecycle.rs",
               "lines": [
                 13,
                 14,
@@ -298,11 +298,11 @@
       "name": "DebugCaptureManager is owned by BackgroundSession not a global singleton",
       "testMappings": [
         {
-          "file": "codelet/common/src/debug_capture/mod.rs",
+          "file": "rust/common/src/debug_capture/mod.rs",
           "lines": "212-265",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 528,
                 529,
@@ -336,12 +336,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/common/src/debug_capture/mod.rs"
+      "rust/common/src/debug_capture/mod.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/napi/src/types.rs",
-      "codelet/common/src/debug_capture/session_lifecycle.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/napi/src/types.rs",
+      "rust/common/src/debug_capture/session_lifecycle.rs"
     ],
     "totalLinesCovered": 556
   }

@@ -4,11 +4,11 @@
       "name": "Returns error when the requested feature file does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "52-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 132,
                 133,
@@ -49,11 +49,11 @@
       "name": "Returns feature-level tags in declaration order when feature has tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "96-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 222,
                 223,
@@ -110,11 +110,11 @@
       "name": "Returns empty tags with sentinel message when feature has no tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "141-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 175,
                 176,
@@ -137,11 +137,11 @@
       "name": "Excludes scenario-level tags from the returned tag list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "181-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 240,
                 241,
@@ -174,11 +174,11 @@
       "name": "Returns error when file does not contain a valid Feature header",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "216-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 163,
                 164,
@@ -202,11 +202,11 @@
       "name": "Pairs each tag with its category when showCategories=true and tags are registered",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "264-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 276,
                 277,
@@ -246,11 +246,11 @@
       "name": "Maps unregistered tags to category 'Unknown' when showCategories=true",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "318-370",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 294,
                 295,
@@ -271,11 +271,11 @@
       "name": "Silently degrades to plain tags when showCategories=true but tags.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "372-420",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 186,
                 187,
@@ -311,11 +311,11 @@
       "name": "JSON format emits two-space indented payload",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "422-453",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 115,
                 116,
@@ -337,11 +337,11 @@
       "name": "Text format renders the populated case as a bullet list under a header",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "455-491",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 322,
                 323,
@@ -374,11 +374,11 @@
       "name": "Text format prints sentinel message when feature has no tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "493-515",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 326,
                 327,
@@ -394,11 +394,11 @@
       "name": "Default format (no format key supplied) is text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_feature_tags.rs",
+          "file": "rust/fspec-core/tests/list_feature_tags.rs",
           "lines": "517-548",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_feature_tags.rs",
               "lines": [
                 118,
                 119,
@@ -418,10 +418,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_feature_tags.rs"
+      "rust/fspec-core/tests/list_feature_tags.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_feature_tags.rs"
+      "rust/fspec-core/src/commands/list_feature_tags.rs"
     ],
     "totalLinesCovered": 706
   }

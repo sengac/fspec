@@ -4,11 +4,11 @@
       "name": "No codelet_napi reference and the 300-LoC ceiling holds",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc049.rs",
           "lines": "57-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 289,
                 290,
@@ -26,11 +26,11 @@
       "name": "components::Action declares the SessionResumeComplete variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc049.rs",
           "lines": "96-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 401,
                 402,
@@ -52,11 +52,11 @@
       "name": "dispatch_resume_search_views declares the handle_session_resume_complete helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc049.rs",
           "lines": "109-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 130,
                 131,
@@ -90,12 +90,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc049.rs"
+      "rust/fspec-tui/tests/source_shape_rpc049.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 95
   }

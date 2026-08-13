@@ -4,11 +4,11 @@
       "name": "Deserialize command InboundMessage with all fields populated",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "886-906",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 75,
                 76,
@@ -43,11 +43,11 @@
       "name": "Backward compatible deserialization of input message without command fields",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "909-925",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 75,
                 76,
@@ -82,11 +82,11 @@
       "name": "Serialize OutboundMessage with request_id for commandResponse",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "928-949",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 58,
                 59,
@@ -110,11 +110,11 @@
       "name": "Serialize OutboundMessage without request_id for regular chunks",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "952-968",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 58,
                 59,
@@ -140,11 +140,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/bridge_relay.rs"
+      "rust/tools/src/bridge_relay.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bridge_relay.rs",
-      "codelet/tools/src/bridge.rs"
+      "rust/tools/src/bridge_relay.rs",
+      "rust/tools/src/bridge.rs"
     ],
     "totalLinesCovered": 147
   }

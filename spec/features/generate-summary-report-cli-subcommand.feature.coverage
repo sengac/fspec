@@ -4,11 +4,11 @@
       "name": "CLI generate-summary-report writes the report and prints the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "file": "rust/fspec/tests/cli_generate_summary_report.rs",
           "lines": "65-90",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "file": "rust/fspec/src/generate_summary_report.rs",
               "lines": [
                 46,
                 47,
@@ -43,11 +43,11 @@
       "name": "CLI generate-summary-report --format json writes the json report",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "file": "rust/fspec/tests/cli_generate_summary_report.rs",
           "lines": "91-113",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "file": "rust/fspec/src/generate_summary_report.rs",
               "lines": [
                 46,
                 47,
@@ -82,11 +82,11 @@
       "name": "CLI generate-summary-report fails when the work units file is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "file": "rust/fspec/tests/cli_generate_summary_report.rs",
           "lines": "114-131",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "file": "rust/fspec/src/generate_summary_report.rs",
               "lines": [
                 62,
                 63,
@@ -103,11 +103,11 @@
       "name": "CLI generate-summary-report --help prints the help fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "file": "rust/fspec/tests/cli_generate_summary_report.rs",
           "lines": "132-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/generate_summary_report.rs",
+              "file": "rust/fspec-core/src/help/configs/generate_summary_report.rs",
               "lines": [
                 28,
                 29,
@@ -137,11 +137,11 @@
       "name": "CLI delegates to the same fspec-core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "file": "rust/fspec/tests/cli_generate_summary_report.rs",
           "lines": "156-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "file": "rust/fspec/src/generate_summary_report.rs",
               "lines": [
                 46,
                 47,
@@ -178,11 +178,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_generate_summary_report.rs"
+      "rust/fspec/tests/cli_generate_summary_report.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/generate_summary_report.rs",
-      "codelet/fspec-core/src/help/configs/generate_summary_report.rs"
+      "rust/fspec/src/generate_summary_report.rs",
+      "rust/fspec-core/src/help/configs/generate_summary_report.rs"
     ],
     "totalLinesCovered": 209
   }

@@ -4,11 +4,11 @@
       "name": "A cloud provider with no models is dropped from the provider list",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "627-639",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 34,
                 35,
@@ -37,11 +37,11 @@
       "name": "A cloud provider with one or more models is kept unchanged",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "643-658",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 34,
                 35,
@@ -70,11 +70,11 @@
       "name": "Local profile sections are not affected by the empty-cloud filter",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "662-680",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 34,
                 35,
@@ -105,10 +105,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections.rs"
     ],
     "totalLinesCovered": 99
   }

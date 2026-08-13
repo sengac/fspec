@@ -4,11 +4,11 @@
       "name": "Dispatcher derives rules from policies and questions from hotspots",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "138-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -238,11 +238,11 @@
       "name": "Dispatcher returns missing-file error in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "170-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -472,11 +472,11 @@
       "name": "Dispatcher returns Work unit not found when id absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "194-211",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -706,11 +706,11 @@
       "name": "Dispatcher returns no Event Storm data error when the unit lacks eventStorm.items",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "212-229",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -940,11 +940,11 @@
       "name": "Policy is converted to a rule using pascalCaseToSentence WHEN/THEN pattern",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "230-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -1174,11 +1174,11 @@
       "name": "Hotspot concern is converted to an at-human question with a trailing question mark added",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "257-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -1408,11 +1408,11 @@
       "name": "Hotspot concern already ending in a question mark is preserved unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "278-298",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -1642,11 +1642,11 @@
       "name": "Soft-deleted eventStorm items are skipped",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "299-319",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -1876,11 +1876,11 @@
       "name": "Successful run bumps timestamps and persists atomically",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
           "lines": "320-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
                 82,
                 83,
@@ -2112,10 +2112,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs"
+      "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs"
+      "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs"
     ],
     "totalLinesCovered": 2176
   }

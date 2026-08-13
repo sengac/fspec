@@ -5,7 +5,7 @@
 @RPC-255
 Feature: fspec prioritize-work-unit CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/prioritize_work_unit.rs — clap-derived struct mirroring TS
+  CLI bridge: rust/fspec/src/prioritize_work_unit.rs — clap-derived struct mirroring TS
   Commander.js registration (src/commands/prioritize-work-unit.ts:133-172). Surface:
   `fspec prioritize-work-unit <workUnitId> [--position <position>] [--before <id>] [--after <id>]`.
 
@@ -77,13 +77,13 @@ Feature: fspec prioritize-work-unit CLI subcommand
     And the implementing order becomes AUTH-001, AUTH-002
 
   Scenario: CLI delegates to the same fspec_core function as the dispatcher
-    Given the codelet/fspec crate is built
-    When I inspect codelet/fspec/src/prioritize_work_unit.rs
+    Given the rust/fspec crate is built
+    When I inspect rust/fspec/src/prioritize_work_unit.rs
     Then the source declares it calls codelet_fspec_core::commands::prioritize_work_unit::run
     And the source does NOT perform any file IO directly on spec/work-units.json
 
   Scenario: CLI help surface matches the captured TS fixture
-    Given the TS help fixture at codelet/fspec/tests/fixtures/help/prioritize-work-unit.txt
+    Given the TS help fixture at rust/fspec/tests/fixtures/help/prioritize-work-unit.txt
     When I run `fspec prioritize-work-unit --help`
     Then the process exits with code 0
     And stdout matches the captured TS fixture byte-for-byte

@@ -4,11 +4,11 @@
       "name": "New create-profile form seeds Streaming to enabled",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov139_streaming_form.rs",
+          "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
           "lines": "82-95",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 62,
                 63,
@@ -38,11 +38,11 @@
       "name": "Space toggles the Streaming field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov139_streaming_form.rs",
+          "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
           "lines": "96-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
               "lines": [
                 1,
                 2,
@@ -109,11 +109,11 @@
       "name": "Typing a printable character does not mutate the Streaming field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov139_streaming_form.rs",
+          "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
           "lines": "113-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
               "lines": [
                 1,
                 2,
@@ -180,11 +180,11 @@
       "name": "Editing a profile seeds Streaming from the stored definition",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov139_streaming_form.rs",
+          "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
           "lines": "140-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 81,
                 82,
@@ -212,11 +212,11 @@
       "name": "build_definition emits the current toggle value",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov139_streaming_form.rs",
+          "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
           "lines": "161-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 170,
                 171,
@@ -246,11 +246,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov139_streaming_form.rs"
+      "rust/fspec-tui/tests/prov139_streaming_form.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
-      "codelet/fspec-tui/src/views/provider_settings/profile_form_streaming.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs"
     ],
     "totalLinesCovered": 252
   }

@@ -4,11 +4,11 @@
       "name": "Shell paints a view through the title-renderer closure variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "334-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 64,
                 65,
@@ -49,11 +49,11 @@
       "name": "Count-title wrapper preserves the title-count format",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+          "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
           "lines": "363-384",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/full_screen_shell.rs",
+              "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
                 32,
                 33,
@@ -90,10 +90,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/full_screen_shell.rs"
+      "rust/fspec-tui/src/views/full_screen_shell.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/full_screen_shell.rs"
+      "rust/fspec-tui/src/views/full_screen_shell.rs"
     ],
     "totalLinesCovered": 103
   }

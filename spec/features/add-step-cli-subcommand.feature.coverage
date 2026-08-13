@@ -4,11 +4,11 @@
       "name": "CLI adds a step and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_step.rs",
+          "file": "rust/fspec/tests/cli_add_step.rs",
           "lines": "53-79",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_step.rs",
+              "file": "rust/fspec/src/add_step.rs",
               "lines": [
                 42,
                 43,
@@ -42,11 +42,11 @@
       "name": "CLI rejects an invalid step type with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_step.rs",
+          "file": "rust/fspec/tests/cli_add_step.rs",
           "lines": "86-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_step.rs",
+              "file": "rust/fspec/src/add_step.rs",
               "lines": [
                 64,
                 65,
@@ -66,11 +66,11 @@
       "name": "CLI rejects an unknown scenario with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_step.rs",
+          "file": "rust/fspec/tests/cli_add_step.rs",
           "lines": "115-137",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_step.rs",
+              "file": "rust/fspec/src/add_step.rs",
               "lines": [
                 56,
                 57,
@@ -98,11 +98,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_step.rs",
+          "file": "rust/fspec/tests/cli_add_step.rs",
           "lines": "144-164",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_step.rs",
+              "file": "rust/fspec/src/add_step.rs",
               "lines": [
                 42,
                 43,
@@ -128,11 +128,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_step.rs",
+          "file": "rust/fspec/tests/cli_add_step.rs",
           "lines": "171-213",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_step.rs",
+              "file": "rust/fspec/src/add_step.rs",
               "lines": [
                 56,
                 57,
@@ -154,10 +154,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_step.rs"
+      "rust/fspec/tests/cli_add_step.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_step.rs"
+      "rust/fspec/src/add_step.rs"
     ],
     "totalLinesCovered": 205
   }

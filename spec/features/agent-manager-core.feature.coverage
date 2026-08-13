@@ -4,11 +4,11 @@
       "name": "Spawn subordinate session without role",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "78-108",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/mod.rs",
+              "file": "rust/tools/src/agent_manager/mod.rs",
               "lines": [
                 1,
                 2,
@@ -121,11 +121,11 @@
       "name": "Spawn subordinate session with role",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "115-156",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 1,
                 2,
@@ -258,11 +258,11 @@
       "name": "List all sessions with relationships",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "163-219",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 1,
                 2,
@@ -524,11 +524,11 @@
       "name": "Get status of an existing session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "226-265",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 160,
                 161,
@@ -586,11 +586,11 @@
       "name": "Get status of a nonexistent session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "272-298",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 160,
                 161,
@@ -648,11 +648,11 @@
       "name": "Close subordinate session as spawner",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "305-341",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 208,
                 209,
@@ -707,11 +707,11 @@
       "name": "Close session without spawner permission",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "348-385",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 208,
                 209,
@@ -766,11 +766,11 @@
       "name": "Spawn multiple subordinates and list them",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "392-425",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 1,
                 2,
@@ -877,11 +877,11 @@
       "name": "Call with invalid action",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "432-445",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 12,
                 13,
@@ -919,11 +919,11 @@
       "name": "Handler lifecycle in agent loop",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "452-490",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 37,
                 38,
@@ -994,11 +994,11 @@
       "name": "Tool is registered in all providers",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "497-536",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 533,
                 534
@@ -1014,14 +1014,14 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/agent_manager/tests.rs"
+      "rust/tools/src/agent_manager/tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/agent_manager/mod.rs",
-      "codelet/tools/src/agent_manager/types.rs",
-      "codelet/napi/src/agent_manager_handler.rs",
-      "codelet/tools/src/agent_manager/handler.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/tools/src/agent_manager/mod.rs",
+      "rust/tools/src/agent_manager/types.rs",
+      "rust/napi/src/agent_manager_handler.rs",
+      "rust/tools/src/agent_manager/handler.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 1231
   }

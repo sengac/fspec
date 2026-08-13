@@ -4,11 +4,11 @@
       "name": "Literal query matches a scenario by name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "46-84",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -143,11 +143,11 @@
       "name": "Regex query matches multiple scenarios case-insensitively",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "85-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -282,11 +282,11 @@
       "name": "No match returns an empty scenarios array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "113-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -421,11 +421,11 @@
       "name": "Feature-name match returns all of that feature's scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "144-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -560,11 +560,11 @@
       "name": "workUnitId falls back to unknown when feature has no work-unit tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "169-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -699,11 +699,11 @@
       "name": "Invalid regex pattern surfaces a structured error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "199-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -838,11 +838,11 @@
       "name": "Missing spec/features directory yields zero searched files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "232-255",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -977,11 +977,11 @@
       "name": "json format flag sets the format field to json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "256-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -1116,11 +1116,11 @@
       "name": "Shared infrastructure module is registered for search-scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/search_scenarios.rs",
+          "file": "rust/fspec-core/tests/search_scenarios.rs",
           "lines": "281-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/search_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/search_scenarios.rs",
               "lines": [
                 65,
                 66,
@@ -1257,10 +1257,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/search_scenarios.rs"
+      "rust/fspec-core/tests/search_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/search_scenarios.rs"
+      "rust/fspec-core/src/commands/search_scenarios.rs"
     ],
     "totalLinesCovered": 1370
   }

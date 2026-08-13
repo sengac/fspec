@@ -4,11 +4,11 @@
       "name": "Load agent lifecycle hooks from project-level fspec-hooks.json",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "37-60",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 33,
                 34,
@@ -71,11 +71,11 @@
       "name": "Load agent lifecycle hooks from user-level fspec-hooks.json",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "63-86",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 33,
                 34,
@@ -138,11 +138,11 @@
       "name": "Concatenate user-level and project-level hooks for the same event",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "89-126",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 143,
                 144,
@@ -178,11 +178,11 @@
       "name": "Coexistence of agent lifecycle events and fspec CLI events in same config",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "129-156",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/config.rs",
+              "file": "rust/core/src/lifecycle_hooks/config.rs",
               "lines": [
                 86,
                 87,
@@ -206,11 +206,11 @@
       "name": "No agent lifecycle events configured returns None engine",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "159-185",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 75,
                 76,
@@ -231,11 +231,11 @@
       "name": "Invalid regex matcher prevents engine creation",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "188-216",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 191,
                 192,
@@ -267,11 +267,11 @@
       "name": "Respect global timeout setting from config",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "219-244",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 93,
                 94,
@@ -303,11 +303,11 @@
       "name": "Config is compiled once at session creation not hot-reloaded",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "247-283",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/compiled.rs",
+              "file": "rust/core/src/lifecycle_hooks/compiled.rs",
               "lines": [
                 1,
                 2,
@@ -364,11 +364,11 @@
       "name": "pre_tool_use hook group with regex matcher filters by tool name",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "287-320",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/compiled.rs",
+              "file": "rust/core/src/lifecycle_hooks/compiled.rs",
               "lines": [
                 76,
                 77,
@@ -389,11 +389,11 @@
       "name": "pre_tool_use hook group with empty matcher matches all tools",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "323-355",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/compiled.rs",
+              "file": "rust/core/src/lifecycle_hooks/compiled.rs",
               "lines": [
                 76,
                 77,
@@ -414,11 +414,11 @@
       "name": "Matcher regex is anchored with full-match semantics",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "358-386",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/loader.rs",
+              "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
                 196,
                 197,
@@ -437,11 +437,11 @@
       "name": "session_start hooks use HookDefinition format",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "390-413",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/config.rs",
+              "file": "rust/core/src/lifecycle_hooks/config.rs",
               "lines": [
                 37,
                 38,
@@ -472,11 +472,11 @@
       "name": "user_prompt_submit hooks use HookDefinition format",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_config_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
           "lines": "416-441",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/config.rs",
+              "file": "rust/core/src/lifecycle_hooks/config.rs",
               "lines": [
                 37,
                 38,
@@ -507,11 +507,11 @@
       "name": "Hook command receives JSON payload on stdin",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "145-169",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/executor.rs",
+              "file": "rust/core/src/lifecycle_hooks/executor.rs",
               "lines": [
                 25,
                 26,
@@ -599,11 +599,11 @@
       "name": "Hook command receives environment variables",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "172-213",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/executor.rs",
+              "file": "rust/core/src/lifecycle_hooks/executor.rs",
               "lines": [
                 35,
                 36,
@@ -631,11 +631,11 @@
       "name": "SessionStart payload includes session source",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "216-247",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 33,
                 34,
@@ -690,11 +690,11 @@
       "name": "PostToolUse payload includes tool response",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "250-276",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 259,
                 260,
@@ -773,11 +773,11 @@
       "name": "SessionEnd payload includes termination reason",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "279-299",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 77,
                 78,
@@ -830,11 +830,11 @@
       "name": "Hook command killed on timeout",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "303-324",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/executor.rs",
+              "file": "rust/core/src/lifecycle_hooks/executor.rs",
               "lines": [
                 72,
                 73,
@@ -875,11 +875,11 @@
       "name": "pre_tool_use timeout is treated as Deny for safety",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "327-349",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 219,
                 220,
@@ -913,11 +913,11 @@
       "name": "post_tool_use timeout is treated as Warning",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "352-374",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 298,
                 299,
@@ -940,11 +940,11 @@
       "name": "Exit code 0 means success",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "378-393",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 55,
                 56,
@@ -1022,11 +1022,11 @@
       "name": "Exit code 2 with stderr means deny",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "396-416",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 88,
                 89,
@@ -1050,11 +1050,11 @@
       "name": "Exit code 2 without stderr means warning",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "419-439",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 93,
                 94,
@@ -1075,11 +1075,11 @@
       "name": "Non-zero exit code other than 2 is a non-blocking warning",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "442-464",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 103,
                 104,
@@ -1104,11 +1104,11 @@
       "name": "pre_tool_use hook returns JSON with permissionDecision allow",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "468-483",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 62,
                 63,
@@ -1131,11 +1131,11 @@
       "name": "pre_tool_use hook returns JSON with permissionDecision deny",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "486-507",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 62,
                 63,
@@ -1158,11 +1158,11 @@
       "name": "pre_tool_use hook returns JSON with permissionDecision ask",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "510-524",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 62,
                 63,
@@ -1185,11 +1185,11 @@
       "name": "pre_tool_use hook returns JSON with continue false",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "527-547",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/response.rs",
+              "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
                 75,
                 76,
@@ -1205,11 +1205,11 @@
       "name": "Hook injects additional context as system message",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "550-570",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 416,
                 417,
@@ -1236,11 +1236,11 @@
       "name": "session_start hook injects context via plain text stdout",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "573-590",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 423,
                 424,
@@ -1260,11 +1260,11 @@
       "name": "post_tool_use hook injects additional context",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_engine_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "593-614",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 308,
                 309,
@@ -1285,11 +1285,11 @@
       "name": "pre_tool_use short-circuits on Allow decision",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_tool_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "86-115",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 202,
                 203,
@@ -1372,11 +1372,11 @@
       "name": "pre_tool_use short-circuits on Deny decision",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_tool_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "119-148",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 202,
                 203,
@@ -1459,11 +1459,11 @@
       "name": "pre_tool_use Continue does not short-circuit",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_tool_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "152-186",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 202,
                 203,
@@ -1546,11 +1546,11 @@
       "name": "user_prompt_submit hook blocks forbidden prompt",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_session_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "95-123",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 122,
                 123,
@@ -1642,11 +1642,11 @@
       "name": "user_prompt_submit hook blocks via JSON continue false",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_session_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "126-152",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 162,
                 163,
@@ -1667,11 +1667,11 @@
       "name": "user_prompt_submit hook allows and injects context",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_session_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "155-179",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 170,
                 171,
@@ -1696,11 +1696,11 @@
       "name": "session_end hook receives termination reason and executes",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_session_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "183-216",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 78,
                 79,
@@ -1754,11 +1754,11 @@
       "name": "notification hook fires via global engine",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_session_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "220-252",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 338,
                 339,
@@ -1816,11 +1816,11 @@
       "name": "Multiple commands in a hook group execute sequentially",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_session_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "256-297",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 222,
                 223,
@@ -1876,11 +1876,11 @@
       "name": "pre_tool_use all groups return Continue falls through",
       "testMappings": [
         {
-          "file": "codelet/core/tests/lifecycle_hooks_tool_test.rs",
+          "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "200-260",
           "implMappings": [
             {
-              "file": "codelet/core/src/lifecycle_hooks/engine.rs",
+              "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
                 202,
                 203,
@@ -2021,18 +2021,18 @@
     "coveredScenarios": 42,
     "coveragePercent": 75,
     "testFiles": [
-      "codelet/core/tests/lifecycle_hooks_config_test.rs",
-      "codelet/core/tests/lifecycle_hooks_engine_test.rs",
-      "codelet/core/tests/lifecycle_hooks_tool_test.rs",
-      "codelet/core/tests/lifecycle_hooks_session_test.rs"
+      "rust/core/tests/lifecycle_hooks_config_test.rs",
+      "rust/core/tests/lifecycle_hooks_engine_test.rs",
+      "rust/core/tests/lifecycle_hooks_tool_test.rs",
+      "rust/core/tests/lifecycle_hooks_session_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/lifecycle_hooks/loader.rs",
-      "codelet/core/src/lifecycle_hooks/config.rs",
-      "codelet/core/src/lifecycle_hooks/compiled.rs",
-      "codelet/core/src/lifecycle_hooks/executor.rs",
-      "codelet/core/src/lifecycle_hooks/engine.rs",
-      "codelet/core/src/lifecycle_hooks/response.rs"
+      "rust/core/src/lifecycle_hooks/loader.rs",
+      "rust/core/src/lifecycle_hooks/config.rs",
+      "rust/core/src/lifecycle_hooks/compiled.rs",
+      "rust/core/src/lifecycle_hooks/executor.rs",
+      "rust/core/src/lifecycle_hooks/engine.rs",
+      "rust/core/src/lifecycle_hooks/response.rs"
     ],
     "totalLinesCovered": 2443
   }

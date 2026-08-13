@@ -8,7 +8,7 @@
           "lines": "76-98",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 117,
                 118,
@@ -42,7 +42,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 679,
                 680,
@@ -888,7 +888,7 @@
           "lines": "269-305",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 603,
                 604,
@@ -1030,8 +1030,8 @@
       "src/tui/components/__tests__/cross-pane-correlation.test.tsx"
     ],
     "implFiles": [
-      "codelet/napi/src/types.rs",
-      "codelet/napi/src/session_manager.rs",
+      "rust/napi/src/types.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/components/SplitSessionView.tsx",
       "src/tui/utils/correlationMapping.ts",
       "src/tui/components/AgentView.tsx"

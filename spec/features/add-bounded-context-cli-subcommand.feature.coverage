@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
           "lines": "82-106",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_bounded_context.rs",
+              "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
                 48,
                 49,
@@ -23,11 +23,11 @@
       "name": "CLI successfully appends a bounded context and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
           "lines": "112-144",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_bounded_context.rs",
+              "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
                 76,
                 77,
@@ -49,11 +49,11 @@
       "name": "CLI forwards the description and bounded-context flags into the persisted item",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
           "lines": "146-172",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_bounded_context.rs",
+              "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
                 56,
                 57,
@@ -78,11 +78,11 @@
       "name": "CLI rejects a done-state work unit with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
           "lines": "174-206",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_bounded_context.rs",
+              "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
                 86,
                 87,
@@ -101,11 +101,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
           "lines": "208-227",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_bounded_context.rs",
+              "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
                 70,
                 71,
@@ -124,10 +124,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_bounded_context.rs"
+      "rust/fspec/tests/cli_add_bounded_context.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_bounded_context.rs"
+      "rust/fspec/src/add_bounded_context.rs"
     ],
     "totalLinesCovered": 176
   }

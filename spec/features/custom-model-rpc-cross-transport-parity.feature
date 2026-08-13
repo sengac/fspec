@@ -9,7 +9,7 @@ Feature: Custom-model RPC write surface cross-transport parity
   the EmbeddedFspecBackend and WebSocketFspecBackend, both built against the
   SAME StubSessionManagerHandle, and that they are silent no-ops when no
   SessionManagerHandle is attached. Mirrors the RPC-037 parity pattern. Test:
-  codelet/fspec-tui/tests/rpc347_cross_transport_parity.rs
+  rust/fspec-tui/tests/rpc347_cross_transport_parity.rs
   """
 
   Background: User Story

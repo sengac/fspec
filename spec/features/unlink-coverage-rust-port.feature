@@ -5,8 +5,8 @@
 @RPC-311
 Feature: Port unlink-coverage command to Rust
   """
-  Core impl: codelet/fspec-core/src/commands/unlink_coverage.rs rewrites stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/TestMapping/ImplMapping/CoverageStats). Reads sidecar via std::fs::read_to_string + serde_json; mutates in memory; LOCAL update_stats (NOT shared calculate_stats — totalLinesCovered must sum test ranges + impl line counts). Writes back via io::locked_file::write_json_atomic (no trailing newline). extra-flatten preserves unknown fields.
-  Two-front-doors: dispatcher and clap CLI both call unlink_coverage::run. CLI bridge codelet/fspec/src/unlink_coverage.rs marshals positional feature-name + --scenario/--test-file/--impl-file/--all into JSON only. Help config codelet/fspec-core/src/help/configs/unlink_coverage.rs (unlink-coverage-help.ts rich help exists; help-config common_errors use CommonError type) + intercept arm + Mode::UnlinkCoverage variant wired by supervisor. SHARED-FILE REQUEST: dispatch arm must pass project_root (signature changes from run(args_json) to run(args_json, project_root)).
+  Core impl: rust/fspec-core/src/commands/unlink_coverage.rs rewrites stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/TestMapping/ImplMapping/CoverageStats). Reads sidecar via std::fs::read_to_string + serde_json; mutates in memory; LOCAL update_stats (NOT shared calculate_stats — totalLinesCovered must sum test ranges + impl line counts). Writes back via io::locked_file::write_json_atomic (no trailing newline). extra-flatten preserves unknown fields.
+  Two-front-doors: dispatcher and clap CLI both call unlink_coverage::run. CLI bridge rust/fspec/src/unlink_coverage.rs marshals positional feature-name + --scenario/--test-file/--impl-file/--all into JSON only. Help config rust/fspec-core/src/help/configs/unlink_coverage.rs (unlink-coverage-help.ts rich help exists; help-config common_errors use CommonError type) + intercept arm + Mode::UnlinkCoverage variant wired by supervisor. SHARED-FILE REQUEST: dispatch arm must pass project_root (signature changes from run(args_json) to run(args_json, project_root)).
   """
 
   # ========================================
@@ -89,7 +89,7 @@ Feature: Port unlink-coverage command to Rust
     And the written sidecar still contains the unknown top-level field
 
   Scenario: Shared infrastructure module is registered for unlink-coverage
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/unlink_coverage.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/unlink_coverage.rs
     Then the module no longer returns FspecCoreError::NotYetPorted
     And the dispatcher routes unlink-coverage to the new run function

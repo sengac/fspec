@@ -4,11 +4,11 @@
       "name": "Small image within size limit is returned normally",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "file": "rust/tools/tests/read_image_size_validation_test.rs",
           "lines": "34-58",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 199,
                 200,
@@ -37,11 +37,11 @@
       "name": "Oversized image returns a validation error instead of image data",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "file": "rust/tools/tests/read_image_size_validation_test.rs",
           "lines": "60-104",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 199,
                 200,
@@ -82,11 +82,11 @@
       "name": "Image at exactly the size limit is accepted",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "file": "rust/tools/tests/read_image_size_validation_test.rs",
           "lines": "106-130",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 199,
                 200,
@@ -127,11 +127,11 @@
       "name": "SVG files are treated as text and bypass image size validation",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "file": "rust/tools/tests/read_image_size_validation_test.rs",
           "lines": "132-183",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 184,
                 185,
@@ -158,11 +158,11 @@
       "name": "Agent loop continues after oversized image error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "file": "rust/tools/tests/read_image_size_validation_test.rs",
           "lines": "185-232",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 199,
                 200,
@@ -205,10 +205,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/read_image_size_validation_test.rs"
+      "rust/tools/tests/read_image_size_validation_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/read.rs"
+      "rust/tools/src/read.rs"
     ],
     "totalLinesCovered": 314
   }

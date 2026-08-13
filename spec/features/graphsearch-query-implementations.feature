@@ -1,7 +1,7 @@
 @KGRAPH-007
 Feature: GraphSearch Query Implementations
   """
-  Pure Rust module at codelet/napi/src/graph/queries.rs. Each GraphSearch action maps to formatting and filtering functions that build results as JSON. Handler in graph_search_handler.rs dispatches to these functions. Depends on KGRAPH-003 handler map for action dispatch.
+  Pure Rust module at rust/napi/src/graph/queries.rs. Each GraphSearch action maps to formatting and filtering functions that build results as JSON. Handler in graph_search_handler.rs dispatches to these functions. Depends on KGRAPH-003 handler map for action dispatch.
   """
 
   # ========================================

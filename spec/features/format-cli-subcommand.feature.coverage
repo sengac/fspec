@@ -4,11 +4,11 @@
       "name": "CLI formats all feature files and prints the green summary",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_format.rs",
+          "file": "rust/fspec/tests/cli_format.rs",
           "lines": "62-80",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/format.rs",
+              "file": "rust/fspec/src/format.rs",
               "lines": [
                 47,
                 48,
@@ -36,11 +36,11 @@
       "name": "CLI formats a single supplied file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_format.rs",
+          "file": "rust/fspec/tests/cli_format.rs",
           "lines": "86-103",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/format.rs",
+              "file": "rust/fspec/src/format.rs",
               "lines": [
                 41,
                 42,
@@ -71,11 +71,11 @@
       "name": "CLI prints a no-files message when none are found",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_format.rs",
+          "file": "rust/fspec/tests/cli_format.rs",
           "lines": "109-125",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/format.rs",
+              "file": "rust/fspec/src/format.rs",
               "lines": [
                 56,
                 57
@@ -89,11 +89,11 @@
       "name": "CLI errors when a supplied file is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_format.rs",
+          "file": "rust/fspec/tests/cli_format.rs",
           "lines": "131-147",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/format.rs",
+              "file": "rust/fspec/src/format.rs",
               "lines": [
                 65,
                 66,
@@ -109,11 +109,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_format.rs",
+          "file": "rust/fspec/tests/cli_format.rs",
           "lines": "153-178",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/format.rs",
+              "file": "rust/fspec/src/format.rs",
               "lines": [
                 47,
                 48,
@@ -129,11 +129,11 @@
       "name": "format --help is byte-for-byte identical to the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_format.rs",
+          "file": "rust/fspec/tests/cli_format.rs",
           "lines": "184-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/format.rs",
+              "file": "rust/fspec-core/src/help/configs/format.rs",
               "lines": [
                 1,
                 2,
@@ -205,11 +205,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_format.rs"
+      "rust/fspec/tests/cli_format.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/format.rs",
-      "codelet/fspec-core/src/help/configs/format.rs"
+      "rust/fspec/src/format.rs",
+      "rust/fspec-core/src/help/configs/format.rs"
     ],
     "totalLinesCovered": 222
   }

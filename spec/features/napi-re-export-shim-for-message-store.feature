@@ -8,7 +8,7 @@
 @refactor
 Feature: NAPI Re-Export Shim For Message Store
   """
-  The NAPI persistence module retains its existing public surface (codelet_napi::persistence::*) after RPC-032's MessageStore + message_index lift. The shim in codelet/napi/src/persistence/storage.rs becomes `pub use codelet_core::persistence::messages::{MessageStore, compute_hash};` (SessionStore + the SessionStore-only helpers stay in storage.rs until RPC-033). codelet/napi/src/persistence/types.rs additionally re-exports StoredMessage, MessageSource, and MessageRef from codelet-core. codelet/napi/src/persistence/message_index.rs is deleted outright (the `mod message_index;` declaration is removed from persistence/mod.rs). All internal NAPI modules (session_manager.rs, session_search_handler.rs, persistence/mod.rs, persistence/napi_bindings.rs, persistence/tests.rs, persistence/lazy_init_tests.rs) continue to use `crate::persistence::{MessageStore, StoredMessage, MessageSource, MessageRef, compute_hash}` paths unchanged. Lift precedent: matches RPC-025 (history.rs), RPC-026 (sessions.rs delete_session), and RPC-031 (message_envelope.rs).
+  The NAPI persistence module retains its existing public surface (codelet_napi::persistence::*) after RPC-032's MessageStore + message_index lift. The shim in rust/napi/src/persistence/storage.rs becomes `pub use codelet_core::persistence::messages::{MessageStore, compute_hash};` (SessionStore + the SessionStore-only helpers stay in storage.rs until RPC-033). rust/napi/src/persistence/types.rs additionally re-exports StoredMessage, MessageSource, and MessageRef from codelet-core. rust/napi/src/persistence/message_index.rs is deleted outright (the `mod message_index;` declaration is removed from persistence/mod.rs). All internal NAPI modules (session_manager.rs, session_search_handler.rs, persistence/mod.rs, persistence/napi_bindings.rs, persistence/tests.rs, persistence/lazy_init_tests.rs) continue to use `crate::persistence::{MessageStore, StoredMessage, MessageSource, MessageRef, compute_hash}` paths unchanged. Lift precedent: matches RPC-025 (history.rs), RPC-026 (sessions.rs delete_session), and RPC-031 (message_envelope.rs).
   """
 
   Background: User Story
@@ -17,8 +17,8 @@ Feature: NAPI Re-Export Shim For Message Store
     So that every existing crate::persistence::* import in codelet-napi continues to compile and the on-disk JSONL/idx wire format remains byte-identical after the lift
 
   Scenario: NAPI re-export shim preserves existing crate::persistence imports
-    Given codelet/napi/src/persistence/storage.rs re-exports MessageStore and compute_hash from codelet_core::persistence::messages
-    And codelet/napi/src/persistence/types.rs re-exports StoredMessage, MessageSource, and MessageRef from codelet_core::persistence::messages
+    Given rust/napi/src/persistence/storage.rs re-exports MessageStore and compute_hash from codelet_core::persistence::messages
+    And rust/napi/src/persistence/types.rs re-exports StoredMessage, MessageSource, and MessageRef from codelet_core::persistence::messages
     When internal NAPI modules continue to write `use crate::persistence::{MessageStore, StoredMessage, MessageSource, MessageRef, compute_hash}` unchanged
     Then the imports resolve to the codelet-core types
     And `cargo build -p codelet-napi` succeeds without modification of those importing modules

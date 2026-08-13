@@ -4,11 +4,11 @@
       "name": "CompactionComplete percent value renders directly in the badge and the notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "163-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 136,
                 137,
@@ -29,11 +29,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "163-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 283,
                 284,
@@ -65,11 +65,11 @@
       "name": "Regression — a 99.0 percent wire value renders COMPACTED 99% and never 9800%",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "210-246",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 136,
                 137,
@@ -90,11 +90,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "210-246",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 160,
                 161,
@@ -113,11 +113,11 @@
       "name": "The 0.0 sentinel renders as a zero-percent reduction",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "248-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 283,
                 284,
@@ -144,11 +144,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "248-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 463,
                 464,
@@ -174,11 +174,11 @@
       "name": "Stub parity — the canned CompactionResult round-trips as 50.0 percent on both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "292-343",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1669,
                 1670,
@@ -212,11 +212,11 @@
       "name": "Producer formula feeds the display pipeline end-to-end",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "345-388",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 136,
                 137,
@@ -237,11 +237,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
           "lines": "345-388",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 172,
                 173,
@@ -269,15 +269,15 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs"
+      "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "codelet/fspec-tui/src/views/agent/header_build.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/cli/src/interactive_helpers.rs"
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/cli/src/interactive_helpers.rs"
     ],
     "totalLinesCovered": 531
   }

@@ -4,11 +4,11 @@
       "name": "Export mermaid for a store with all dependency kinds",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "71-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 107,
                 108,
@@ -71,11 +71,11 @@
       "name": "Export json for a store maps every work unit to dependency arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "118-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 163,
                 164,
@@ -100,11 +100,11 @@
       "name": "Export dot format produces the same JSON content as json format",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "161-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 58,
                 59,
@@ -121,11 +121,11 @@
       "name": "Export mermaid marks done and blocked nodes",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "190-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 112,
                 113,
@@ -149,11 +149,11 @@
       "name": "Export mermaid dedupes bidirectional relatesTo edges",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "227-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 141,
                 142,
@@ -174,11 +174,11 @@
       "name": "Export to a nested output path creates parent directories",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "252-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 64,
                 65,
@@ -203,11 +203,11 @@
       "name": "Export with a malformed work units file escalates a parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "279-299",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 54,
                 55,
@@ -222,11 +222,11 @@
       "name": "Dispatcher and core produce identical file content",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_dependencies.rs",
+          "file": "rust/fspec-core/tests/export_dependencies.rs",
           "lines": "300-328",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/export_dependencies.rs",
               "lines": [
                 41,
                 42,
@@ -279,10 +279,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/export_dependencies.rs"
+      "rust/fspec-core/tests/export_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/export_dependencies.rs"
+      "rust/fspec-core/src/commands/export_dependencies.rs"
     ],
     "totalLinesCovered": 403
   }

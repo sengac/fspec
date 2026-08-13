@@ -5,7 +5,7 @@
 @RPC-234
 Feature: Port generate-scenarios command to Rust
   """
-  File layout: core impl codelet/fspec-core/src/commands/generate_scenarios.rs (rewrite stub, signature gains project_root); help config codelet/fspec-core/src/help/configs/generate_scenarios.rs; CLI bridge codelet/fspec/src/generate_scenarios.rs; core tests codelet/fspec-core/tests/generate_scenarios.rs; CLI tests codelet/fspec/tests/cli_generate_scenarios.rs; help fixture codelet/fspec/tests/fixtures/help/generate-scenarios.txt. Two feature files: generate-scenarios-rust-port.feature (dispatcher contract) + generate-scenarios-cli-subcommand.feature (clap surface).
+  File layout: core impl rust/fspec-core/src/commands/generate_scenarios.rs (rewrite stub, signature gains project_root); help config rust/fspec-core/src/help/configs/generate_scenarios.rs; CLI bridge rust/fspec/src/generate_scenarios.rs; core tests rust/fspec-core/tests/generate_scenarios.rs; CLI tests rust/fspec/tests/cli_generate_scenarios.rs; help fixture rust/fspec/tests/fixtures/help/generate-scenarios.txt. Two feature files: generate-scenarios-rust-port.feature (dispatcher contract) + generate-scenarios-cli-subcommand.feature (clap surface).
   Reuse existing shared modules: io::ensure (ensureWorkUnitsFile parity), io::feature_glob::glob_feature_files, io::gherkin::parse_feature_lenient. Example-mapping fields (userStory, rules, examples, questions, assumptions, architectureNotes) are read out of WorkUnit.extra as serde_json::Value, mirroring TS untyped access — no new shared type module.
   NEW helper logic (step-extraction heuristics, the 5-algorithm hybrid similarity matcher ~430 LOC, prefill detection, and the verbatim system-reminder strings) is ported as PRIVATE modules inside the owned command file(s) to avoid touching shared types/mod.rs or new shared dirs.
   Async assessment: NONE. Pure blocking std::fs + glob + in-process gherkin parsing + regex/string CPU. No network, no child process, no real tokio .await — fully compatible with poll_sync_future. Only divergence: TS output.log warnings in the --ignore-possible-duplicates branch are folded into the returned String rather than written to stdout separately.
@@ -55,7 +55,7 @@ Feature: Port generate-scenarios command to Rust
     Given the fspec Rust binary has been compiled
     When I run `fspec generate-scenarios --help` piped to non-TTY
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/generate-scenarios.txt
+    Then stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/generate-scenarios.txt
     Then stdout starts with a blank line followed by "GENERATE-SCENARIOS"
 
   Scenario: CLI creates a context-only feature file and exits 0

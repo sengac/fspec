@@ -4,11 +4,11 @@
       "name": "A three-question internal request surfaces all questions over the wire in order",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "142-175",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/hitl_mapping.rs",
+              "file": "rust/sessions/src/hitl_mapping.rs",
               "lines": [
                 16,
                 17,
@@ -45,11 +45,11 @@
       "name": "A question without options surfaces an empty options array on the wire",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "182-211",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/hitl_mapping.rs",
+              "file": "rust/sessions/src/hitl_mapping.rs",
               "lines": [
                 16,
                 17,
@@ -86,11 +86,11 @@
       "name": "A cancelled wire response reaches the blocked tool as Cancelled",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "217-251",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/hitl_mapping.rs",
+              "file": "rust/sessions/src/hitl_mapping.rs",
               "lines": [
                 42,
                 43,
@@ -128,11 +128,11 @@
       "name": "A structured multi-answer wire response maps pass-through to Answered keyed by answer id",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "258-318",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/hitl_mapping.rs",
+              "file": "rust/sessions/src/hitl_mapping.rs",
               "lines": [
                 42,
                 43,
@@ -170,11 +170,11 @@
       "name": "Freeform text identical to an option label stays in other",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "324-369",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/hitl_mapping.rs",
+              "file": "rust/sessions/src/hitl_mapping.rs",
               "lines": [
                 42,
                 43,
@@ -212,11 +212,11 @@
       "name": "The send path contains no option-label comparison",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "375-415",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 748,
                 749,
@@ -267,11 +267,11 @@
       "name": "New wire shapes round-trip through serde_json",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs",
           "lines": "437-495",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1089,
                 1090,
@@ -343,12 +343,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc410_hitl_wire_protocol_parity.rs"
+      "rust/sessions/tests/rpc410_hitl_wire_protocol_parity.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/hitl_mapping.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/rpc-types/src/lib.rs"
+      "rust/sessions/src/hitl_mapping.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 531
   }

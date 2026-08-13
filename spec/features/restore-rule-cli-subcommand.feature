@@ -2,7 +2,7 @@
 @RPC-291
 Feature: fspec restore-rule CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/restore_rule.rs — clap variant mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/restore_rule.rs — clap variant mirroring TS Commander.js
   at src/commands/restore-rule.ts:122-142. Surface: `fspec restore-rule <workUnitId> <index>`.
   Stdout (success): '✓ Restored rule: "<text>"' (with optional '  Item ID <n> already active'
   second line for idempotent path).
@@ -23,7 +23,7 @@ Feature: fspec restore-rule CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec restore-rule --help`
     Then the exit code is 0
-    And stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/restore-rule.txt
+    And stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/restore-rule.txt
 
   Scenario: Happy-path single restore via CLI
     Given a project root tempdir with spec/work-units.json where AUTH-001 status=specifying has one rule id=0 'r0' deleted=true with a deletedAt timestamp

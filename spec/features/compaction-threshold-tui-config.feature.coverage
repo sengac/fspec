@@ -544,7 +544,7 @@
           "lines": "364-390",
           "implMappings": [
             {
-              "file": "codelet/napi/index.d.ts",
+              "file": "rust/napi/index.d.ts",
               "lines": [
                 2164,
                 2165,
@@ -587,7 +587,7 @@
       "src/tui/types/provider.ts",
       "src/tui/services/modelSelectionService.ts",
       "src/tui/utils/custom-model-utils.ts",
-      "codelet/napi/index.d.ts"
+      "rust/napi/index.d.ts"
     ],
     "totalLinesCovered": 673
   }

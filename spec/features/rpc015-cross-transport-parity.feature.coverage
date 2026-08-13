@@ -4,11 +4,11 @@
       "name": "EmbeddedFspecBackend::checkpoint_counts delegates through the shared service",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_counts_rpc015.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs",
           "lines": "63-75",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 97,
                 98,
@@ -26,11 +26,11 @@
       "name": "WebSocketFspecBackend::checkpoint_counts crosses tarpc cleanly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_counts_rpc015.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs",
           "lines": "78-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 270,
                 271,
@@ -49,11 +49,11 @@
       "name": "napi::count_checkpoints is wired through the same git helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_counts_rpc015.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs",
           "lines": "96-117",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 419,
                 420,
@@ -76,12 +76,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/checkpoint_counts_rpc015.rs"
+      "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/napi/src/git.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/napi/src/git.rs"
     ],
     "totalLinesCovered": 74
   }

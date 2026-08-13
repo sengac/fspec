@@ -2,7 +2,7 @@
 @RPC-204
 Feature: fspec clear-dependencies CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/clear_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/clear-dependencies.ts:101-123).
+  CLI bridge: rust/fspec/src/clear_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/clear-dependencies.ts:101-123).
   Surface: `fspec clear-dependencies <workUnitId> --confirm`.
   Stdout (success): chalk.green '✓ All dependencies cleared from <workUnitId>' (ANSI tolerated by tests via substring match).
   Stderr (failure): '✗ Failed to clear dependencies: <message>' prefixed line; exit code 1.
@@ -19,7 +19,7 @@ Feature: fspec clear-dependencies CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec clear-dependencies --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/clear-dependencies.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/clear-dependencies.txt
 
   Scenario: Invocation with --confirm wipes every dependency edge and reports success
     Given a project root tempdir with AUTH-001 having blocks=['AUTH-002'] dependsOn=['API-001'] relatesTo=['UI-001'], AUTH-002.blockedBy=['AUTH-001'], API-001, UI-001.relatesTo=['AUTH-001']

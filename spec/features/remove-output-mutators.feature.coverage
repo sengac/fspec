@@ -4,11 +4,11 @@
       "name": "Output mutator source files are removed",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "27-65",
           "implMappings": [
             {
-              "file": "codelet/cli/src/lib.rs",
+              "file": "rust/cli/src/lib.rs",
               "lines": [
                 5,
                 6,
@@ -26,11 +26,11 @@
       "name": "Interactive mode displays tool results without colored formatting",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "70-108",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive.rs",
+              "file": "rust/cli/src/interactive.rs",
               "lines": [
                 6,
                 7,
@@ -47,11 +47,11 @@
       "name": "Edit tool returns simplified plain text output",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "107-137",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 125,
                 126,
@@ -69,11 +69,11 @@
       "name": "Write tool returns simplified plain text output",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "139-169",
           "implMappings": [
             {
-              "file": "codelet/tools/src/write.rs",
+              "file": "rust/tools/src/write.rs",
               "lines": [
                 95,
                 96,
@@ -93,11 +93,11 @@
       "name": "Tree-sitter dependencies are removed from Cargo.toml",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "175-218",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 76,
                 77,
@@ -118,11 +118,11 @@
       "name": "Project builds successfully without output mutator modules",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "216-264",
           "implMappings": [
             {
-              "file": "codelet/cli/src/lib.rs",
+              "file": "rust/cli/src/lib.rs",
               "lines": [
                 5,
                 6,
@@ -142,14 +142,14 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/remove_output_mutators_test.rs"
+      "rust/cli/tests/remove_output_mutators_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/lib.rs",
-      "codelet/cli/src/interactive.rs",
-      "codelet/tools/src/edit.rs",
-      "codelet/tools/src/write.rs",
-      "codelet/Cargo.toml"
+      "rust/cli/src/lib.rs",
+      "rust/cli/src/interactive.rs",
+      "rust/tools/src/edit.rs",
+      "rust/tools/src/write.rs",
+      "rust/Cargo.toml"
     ],
     "totalLinesCovered": 273
   }

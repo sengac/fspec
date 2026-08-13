@@ -4,7 +4,7 @@
       "name": "AI has no memory of prior conversation after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "20-43",
           "implMappings": [
             {
@@ -40,11 +40,11 @@
       "name": "System reminders preserved after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "51-81",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1424,
                 1425,
@@ -76,11 +76,11 @@
       "name": "Token counters reset after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "file": "rust/napi/tests/tui_clear_session_context_test.rs",
           "lines": "88-112",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1424,
                 1425,
@@ -114,11 +114,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/tui_clear_session_context_test.rs"
+      "rust/napi/tests/tui_clear_session_context_test.rs"
     ],
     "implFiles": [
       "src/tui/components/AgentView.tsx",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 140
   }

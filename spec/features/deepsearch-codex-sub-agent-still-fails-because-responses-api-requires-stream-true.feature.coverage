@@ -4,11 +4,11 @@
       "name": "Codex DeepSearch uses a streaming-compatible execution path",
       "testMappings": [
         {
-          "file": "codelet/napi/src/deep_search_handler/tests.rs",
+          "file": "rust/napi/src/deep_search_handler/tests.rs",
           "lines": "13-23",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 126,
                 127,
@@ -50,11 +50,11 @@
       "name": "Streaming collection returns only the final DeepSearch answer contract",
       "testMappings": [
         {
-          "file": "codelet/napi/src/deep_search_handler/tests.rs",
+          "file": "rust/napi/src/deep_search_handler/tests.rs",
           "lines": "41-64",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 136,
                 137,
@@ -93,11 +93,11 @@
       "name": "Non-Codex providers keep the existing non-streaming execution path",
       "testMappings": [
         {
-          "file": "codelet/napi/src/deep_search_handler/tests.rs",
+          "file": "rust/napi/src/deep_search_handler/tests.rs",
           "lines": "25-38",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 129,
                 130,
@@ -117,10 +117,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/deep_search_handler/tests.rs"
+      "rust/napi/src/deep_search_handler/tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/deep_search_handler.rs"
+      "rust/napi/src/deep_search_handler.rs"
     ],
     "totalLinesCovered": 112
   }

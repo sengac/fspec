@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from C# using statements",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/csharp_edge_extraction_test.rs",
+          "file": "rust/napi/tests/csharp_edge_extraction_test.rs",
           "lines": "17-60",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
               "lines": [
                 130,
                 131,
@@ -61,11 +61,11 @@
       "name": "Extract Calls edges from C# method calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/csharp_edge_extraction_test.rs",
+          "file": "rust/napi/tests/csharp_edge_extraction_test.rs",
           "lines": "65-91",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
               "lines": [
                 175,
                 176,
@@ -101,11 +101,11 @@
       "name": "Extract TypeRef edges from C# type annotations",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/csharp_edge_extraction_test.rs",
+          "file": "rust/napi/tests/csharp_edge_extraction_test.rs",
           "lines": "96-130",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs",
               "lines": [
                 200,
                 201,
@@ -150,10 +150,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/csharp_edge_extraction_test.rs"
+      "rust/napi/tests/csharp_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_csharp_extractor.rs"
     ],
     "totalLinesCovered": 202
   }

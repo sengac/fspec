@@ -4,11 +4,11 @@
       "name": "SessionManager satisfies the codelet-core SessionManagerHandle trait object",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "44-68",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 44,
                 45,
@@ -43,11 +43,11 @@
       "name": "Every per-session method returns the safe trait-default for an unknown SessionId",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "73-236",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 67,
                 68,
@@ -641,11 +641,11 @@
       "name": "Broadcast accessors round-trip chunks, logs, and status updates",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "241-297",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 121,
                 122,
@@ -683,11 +683,11 @@
       "name": "Active session tracking is manager-scoped and works without a real session row",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "303-321",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 316,
                 317,
@@ -713,11 +713,11 @@
       "name": "The impl block exists with explicit overrides for every trait method",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "501-592",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 44,
                 45,
@@ -1334,11 +1334,11 @@
       "name": "The conversions module bridges tool_pause and rpc-types pause families",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "598-639",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/conversions.rs",
+              "file": "rust/sessions/src/conversions.rs",
               "lines": [
                 1,
                 2,
@@ -1476,11 +1476,11 @@
       "name": "Conversion helpers map every variant of tool_pause to its rpc-types peer",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "327-399",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/conversions.rs",
+              "file": "rust/sessions/src/conversions.rs",
               "lines": [
                 50,
                 51,
@@ -1536,11 +1536,11 @@
       "name": "All build and dependency-rule invariants remain green",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/handle_impl.rs",
+          "file": "rust/sessions/tests/handle_impl.rs",
           "lines": "644-776",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/lib.rs",
+              "file": "rust/sessions/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -1581,12 +1581,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/handle_impl.rs"
+      "rust/sessions/tests/handle_impl.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/conversions.rs",
-      "codelet/sessions/src/lib.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/conversions.rs",
+      "rust/sessions/src/lib.rs"
     ],
     "totalLinesCovered": 2052
   }

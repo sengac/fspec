@@ -8,7 +8,7 @@
           "lines": "120-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/model_selector_dialog_rows.rs",
+              "file": "rust/fspec-tui/src/components/model_selector_dialog_rows.rs",
               "lines": [
                 60,
                 61,
@@ -50,7 +50,7 @@
           "lines": "195-227",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 16,
                 17,
@@ -106,7 +106,7 @@
           "lines": "160-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 16,
                 17,
@@ -163,8 +163,8 @@
       "e2e/prov-104-model-nav.test.ts"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/model_selector_dialog_rows.rs",
-      "codelet/fspec-tui/src/views/model_selector/navigation.rs"
+      "rust/fspec-tui/src/components/model_selector_dialog_rows.rs",
+      "rust/fspec-tui/src/views/model_selector/navigation.rs"
     ],
     "totalLinesCovered": 212
   }

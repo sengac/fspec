@@ -4,11 +4,11 @@
       "name": "Clap exposes check with -v/--verbose and prints byte-parity help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_check.rs",
+          "file": "rust/fspec/tests/cli_check.rs",
           "lines": "76-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/check.rs",
+              "file": "rust/fspec-core/src/help/configs/check.rs",
               "lines": [
                 1,
                 2,
@@ -78,11 +78,11 @@
       "name": "CLI passes and exits 0 for valid registered feature files",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_check.rs",
+          "file": "rust/fspec/tests/cli_check.rs",
           "lines": "106-128",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/check.rs",
+              "file": "rust/fspec/src/check.rs",
               "lines": [
                 41,
                 42,
@@ -165,11 +165,11 @@
       "name": "CLI exits 1 when a feature file has invalid Gherkin syntax",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_check.rs",
+          "file": "rust/fspec/tests/cli_check.rs",
           "lines": "134-152",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/check.rs",
+              "file": "rust/fspec/src/check.rs",
               "lines": [
                 48,
                 49,
@@ -195,11 +195,11 @@
       "name": "CLI reports the no-files case and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_check.rs",
+          "file": "rust/fspec/tests/cli_check.rs",
           "lines": "158-168",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/check.rs",
+              "file": "rust/fspec/src/check.rs",
               "lines": [
                 41,
                 42,
@@ -282,11 +282,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_check.rs",
+          "file": "rust/fspec/tests/cli_check.rs",
           "lines": "174-218",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/check.rs",
+              "file": "rust/fspec/src/check.rs",
               "lines": [
                 41,
                 42,
@@ -321,11 +321,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_check.rs"
+      "rust/fspec/tests/cli_check.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/check.rs",
-      "codelet/fspec/src/check.rs"
+      "rust/fspec-core/src/help/configs/check.rs",
+      "rust/fspec/src/check.rs"
     ],
     "totalLinesCovered": 358
   }

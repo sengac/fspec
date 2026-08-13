@@ -302,7 +302,7 @@
           "lines": "196-224",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1116,
                 1117,
@@ -312,7 +312,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/output.rs",
+              "file": "rust/napi/src/output.rs",
               "lines": [
                 221,
                 222,
@@ -352,7 +352,7 @@
           "lines": "241-270",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1036,
                 1037,
@@ -377,8 +377,8 @@
       "src/tui/components/MultiLineInput.tsx",
       "src/tui/components/InputTransition.tsx",
       "src/tui/components/AgentView.tsx",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/napi/src/output.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/napi/src/output.rs"
     ],
     "totalLinesCovered": 575
   }

@@ -6,7 +6,7 @@
 Feature: Port tag-stats command to Rust
   """
   Two-front-doors pattern: dispatcher (LLM tool-call JSON) and clap CLI subcommand BOTH call the single fspec_core::commands::tag_stats::run function. CLI bridge only marshals empty args JSON; never duplicates counting/projection/rendering logic.
-  Reuse codelet/fspec-core/src/io/feature_glob::glob_feature_files for spec/features/**/*.feature enumeration. When that helper returns FspecCoreError::DirectoryNotFound, tag-stats MUST catch it locally and treat it as an empty list (matching tinyglobby's empty-array-on-missing-dir behaviour). No shared-file change required.
+  Reuse rust/fspec-core/src/io/feature_glob::glob_feature_files for spec/features/**/*.feature enumeration. When that helper returns FspecCoreError::DirectoryNotFound, tag-stats MUST catch it locally and treat it as an empty list (matching tinyglobby's empty-array-on-missing-dir behaviour). No shared-file change required.
   tags.json loading: DO NOT use ensure_tags_file (which auto-creates AND escalates parse errors). Read inline with std::fs::read_to_string + serde_json::from_str::<TagsData>. ANY failure (ENOENT, malformed JSON) → tagsFileFound=false and tagsData=None (mirrors TS bare catch at tag-stats.ts:42-49).
   Feature-tag extraction: reuse the inline gherkin scanner pattern from list_feature_tags::parse_feature_tags (private helper, copied into tag_stats.rs to keep the change parallel-safe). Returns Option<Vec<String>> — None means 'no Feature: header found' → file added to invalidFiles.
   Output struct: typed `TagStatsResult` with `#[derive(Serialize)]` and explicit `#[serde(rename_all = "camelCase")]` to preserve declaration order: success → totalFiles → uniqueTags → totalOccurrences → categories → unusedTags → tagsFileFound → invalidFiles.
@@ -49,10 +49,10 @@ Feature: Port tag-stats command to Rust
   #   10. Dispatcher with format='text' against tempdir without tags.json prints header 'Tag Usage Statistics', counters, then `⚠ Warning: spec/tags.json not found`
   #   11. Dispatcher text format with one bad gherkin file prints '⚠ Warning: 1 file(s) with invalid syntax skipped:' followed by '  - spec/features/bad.feature'
   #   12. Dispatcher text format with tags.json containing unused tags prints 'Unused Registered Tags' section then 'N registered tag(s) not used in any feature file:' then '  @tag' lines alphabetically
-  #   13. Running `./codelet/target/release/fspec tag-stats` in an empty directory exits 0 with stdout containing 'Total feature files: 0' and `⚠ Warning: spec/tags.json not found`
-  #   14. Running `./codelet/target/release/fspec tag-stats --help` exits 0 and stdout is byte-for-byte identical to codelet/fspec/tests/fixtures/help/tag-stats.txt
-  #   15. Running `./codelet/target/release/fspec tag-stats --help` exits 0 with stdout NOT containing '--category', '--format', '--workspace' or '--status' flags
-  #   16. Both invocation paths produce equivalent data: (a) dispatch_command('tag-stats', '{"format":"json"}', project_root) and (b) `./codelet/target/release/fspec tag-stats` against the same on-disk state — CLI bridge file contains NO counting/projection/rendering logic
+  #   13. Running `./rust/target/release/fspec tag-stats` in an empty directory exits 0 with stdout containing 'Total feature files: 0' and `⚠ Warning: spec/tags.json not found`
+  #   14. Running `./rust/target/release/fspec tag-stats --help` exits 0 and stdout is byte-for-byte identical to rust/fspec/tests/fixtures/help/tag-stats.txt
+  #   15. Running `./rust/target/release/fspec tag-stats --help` exits 0 with stdout NOT containing '--category', '--format', '--workspace' or '--status' flags
+  #   16. Both invocation paths produce equivalent data: (a) dispatch_command('tag-stats', '{"format":"json"}', project_root) and (b) `./rust/target/release/fspec tag-stats` against the same on-disk state — CLI bridge file contains NO counting/projection/rendering logic
   #
   # ========================================
   Background: User Story
@@ -160,9 +160,9 @@ Feature: Port tag-stats command to Rust
     Then the DispatchResult.data contains the exact line '  @low'
     Then in the unused list section '@high' appears before '@low'
 
-  Scenario: Shared infrastructure modules exist under codelet/fspec-core for reuse
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+  Scenario: Shared infrastructure modules exist under rust/fspec-core for reuse
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the function io::feature_glob::glob_feature_files exists and is reused by tag_stats
     Then commands/tag_stats.rs delegates to io::feature_glob and inline tags.json reading
     Then commands/tag_stats.rs no longer returns FspecCoreError::NotYetPorted

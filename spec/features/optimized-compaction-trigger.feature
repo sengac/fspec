@@ -10,13 +10,13 @@ Feature: Optimized Compaction Window Limit Trigger
   - Short-circuit evaluation: disable flag → zero context → calculation (in that order)
 
   Dependencies and integrations:
-  - codelet/core/src/compaction_hook.rs - Replace calculate_effective_tokens() with simple sum
-  - codelet/cli/src/compaction_threshold.rs - Add SESSION_OUTPUT_TOKEN_MAX constant and should_trigger_compaction()
-  - codelet/cli/src/compaction_threshold.rs - Deprecate calculate_compaction_threshold() (keep for backwards compat)
-  - codelet/providers/src/lib.rs - Add max_output_tokens() to Provider trait
-  - codelet/providers/src/claude.rs - Return model-specific max_output (varies by model variant)
-  - codelet/providers/src/openai.rs - Return model-specific max_output (varies by model variant)
-  - codelet/providers/src/gemini.rs - Return model-specific max_output (varies by model variant)
+  - rust/core/src/compaction_hook.rs - Replace calculate_effective_tokens() with simple sum
+  - rust/cli/src/compaction_threshold.rs - Add SESSION_OUTPUT_TOKEN_MAX constant and should_trigger_compaction()
+  - rust/cli/src/compaction_threshold.rs - Deprecate calculate_compaction_threshold() (keep for backwards compat)
+  - rust/providers/src/lib.rs - Add max_output_tokens() to Provider trait
+  - rust/providers/src/claude.rs - Return model-specific max_output (varies by model variant)
+  - rust/providers/src/openai.rs - Return model-specific max_output (varies by model variant)
+  - rust/providers/src/gemini.rs - Return model-specific max_output (varies by model variant)
 
   Algorithm (must follow this exact order):
   1. If disable_autocompact flag is set → return false (no compaction)

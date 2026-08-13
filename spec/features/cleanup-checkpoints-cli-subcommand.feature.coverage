@@ -4,11 +4,11 @@
       "name": "Clap exposes cleanup-checkpoints with a required --keep-last flag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "100-127",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -94,11 +94,11 @@
       "name": "CLI cleans up and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "129-147",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -184,11 +184,11 @@
       "name": "CLI rejects a non-positive --keep-last",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "149-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -274,11 +274,11 @@
       "name": "CLI rejects a non-numeric --keep-last",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "168-185",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -364,11 +364,11 @@
       "name": "Default combined TUI mode is preserved after adding cleanup-checkpoints",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "187-206",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -454,11 +454,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "208-251",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -539,11 +539,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "208-251",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/cleanup_checkpoints.rs",
+              "file": "rust/fspec/src/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -629,11 +629,11 @@
       "name": "cleanup-checkpoints --help is byte-for-byte identical to TS",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_cleanup_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
           "lines": "253-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/help/configs/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -687,11 +687,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_cleanup_checkpoints.rs"
+      "rust/fspec/tests/cli_cleanup_checkpoints.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/cleanup_checkpoints.rs",
-      "codelet/fspec-core/src/help/configs/cleanup_checkpoints.rs"
+      "rust/fspec/src/cleanup_checkpoints.rs",
+      "rust/fspec-core/src/help/configs/cleanup_checkpoints.rs"
     ],
     "totalLinesCovered": 779
   }

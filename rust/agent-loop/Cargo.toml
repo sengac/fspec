@@ -1,0 +1,67 @@
+[package]
+name = "codelet-agent-loop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# RPC-072: NAPI-free home for the FspecAgentHooks impl + the agent loop
+# that drains input_rx and dispatches to the session's selected LlmProvider.
+# This crate MUST NOT depend on codelet-napi — the
+# tests/no_napi_dependency.rs binary enforces that contract.
+
+[dependencies]
+tokio = { workspace = true }
+tracing.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+uuid = { version = "1", features = ["v4"] }
+chrono = { workspace = true }
+serde_json = { workspace = true }
+once_cell = { workspace = true }
+regex = { workspace = true }
+rig-core = { workspace = true }
+anyhow = { workspace = true }
+croner = { workspace = true }
+chrono-tz = { workspace = true }
+grep-matcher = { workspace = true }
+grep-regex = { workspace = true }
+futures = { workspace = true }
+
+codelet-common.workspace = true
+codelet-core.workspace = true
+# TOOL-019: Pure-Rust dispatcher for fspec commands. Used as the fallback
+# when the NAPI chunk callback is not registered (i.e. the standalone
+# fspec Rust binary), so the agent loop returns clean per-command
+# "not yet ported" errors instead of hanging on a non-existent JS
+# callback.
+codelet-fspec-core.workspace = true
+# RPC-092: codelet-graph hosts the lifted KGraph DB + AST pipeline +
+# Learnings extraction code (was rust/napi/src/graph/). The agent loop
+# body (RPC-072 Phase B) will register graph_search_handler + the
+# deep_search_handler against this crate.
+codelet-graph.workspace = true
+codelet-rpc-types.workspace = true
+codelet-sessions.workspace = true
+codelet-providers.workspace = true
+codelet-tools.workspace = true
+codelet-cli.workspace = true
+
+[features]
+# Compile-in the deterministic stub LlmProvider lookup path. Mirrors
+# the `test-stub-provider` feature on `codelet-fspec`. When this feature
+# is OFF the Custom("stub") branch of the agent loop returns an
+# AgentLoopError::ProviderUnavailable; when ON, it consults
+# `codelet_providers::stub_provider::get_stub_provider`.
+test-support = ["codelet-providers/test-support"]
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
+codelet-test-helpers.workspace = true
+serde_json = { workspace = true }
+# RPC-080: persistence tests reach for the process-global data directory
+# + MESSAGE_STORE/SESSION_STORE singletons. Tests must serialise.
+serial_test.workspace = true
+# Stub LlmProvider used by the integration test; only compiled at test time.
+codelet-providers = { workspace = true, features = ["test-support"] }

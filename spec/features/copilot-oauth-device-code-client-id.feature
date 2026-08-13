@@ -6,7 +6,7 @@ Feature: Copilot OAuth device flow uses the well-known Copilot client_id
   """
   PROV-057 L1: The device-code OAuth request must use the well-known
   Copilot client_id (Iv1.b507a08c87ecfe98) rather than opencode's
-  Ov23li8tweQw6odWQebz. Lives in codelet/providers/src/copilot/oauth_types.rs
+  Ov23li8tweQw6odWQebz. Lives in rust/providers/src/copilot/oauth_types.rs
   and is exercised by oauth_device_code.rs.
   """
 

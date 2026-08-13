@@ -4,11 +4,11 @@
       "name": "Dispatcher exports all work units to a JSON file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "file": "rust/fspec-core/tests/export_work_units.rs",
           "lines": "72-105",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "file": "rust/fspec-core/src/commands/export_work_units.rs",
               "lines": [
                 85,
                 86,
@@ -71,11 +71,11 @@
       "name": "Dispatcher rejects an unsupported format",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "file": "rust/fspec-core/tests/export_work_units.rs",
           "lines": "107-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "file": "rust/fspec-core/src/commands/export_work_units.rs",
               "lines": [
                 85,
                 86,
@@ -138,11 +138,11 @@
       "name": "Dispatcher ignores the status filter and exports every unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "file": "rust/fspec-core/tests/export_work_units.rs",
           "lines": "129-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "file": "rust/fspec-core/src/commands/export_work_units.rs",
               "lines": [
                 85,
                 86,
@@ -205,11 +205,11 @@
       "name": "Dispatcher preserves work-unit insertion order in the export",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "file": "rust/fspec-core/tests/export_work_units.rs",
           "lines": "159-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "file": "rust/fspec-core/src/commands/export_work_units.rs",
               "lines": [
                 85,
                 86,
@@ -272,11 +272,11 @@
       "name": "CLI and dispatcher converge on the same fspec-core function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "file": "rust/fspec-core/tests/export_work_units.rs",
           "lines": "185-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "file": "rust/fspec-core/src/commands/export_work_units.rs",
               "lines": [
                 85,
                 86,
@@ -341,10 +341,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/export_work_units.rs"
+      "rust/fspec-core/tests/export_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/export_work_units.rs"
+      "rust/fspec-core/src/commands/export_work_units.rs"
     ],
     "totalLinesCovered": 415
   }

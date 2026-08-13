@@ -1,7 +1,7 @@
 // TOOL-010: Dynamic Thinking Level Detection via Keywords
 // BRIDGE-006: Unified Thinking Level Detection (DRY)
 //
-// Single source of truth: Rust (codelet/napi/src/thinking_level_detection.rs)
+// Single source of truth: Rust (rust/napi/src/thinking_level_detection.rs)
 // This TypeScript module now wraps the Rust NAPI functions for UI display purposes.
 //
 // The detection logic lives in Rust and is applied in agent_loop for ALL input paths:

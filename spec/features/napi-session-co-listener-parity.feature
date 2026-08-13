@@ -6,11 +6,11 @@
 @RPC-007
 Feature: NAPI session co-listener parity after StreamChunk lift
   """
-  After lifting StreamChunk into codelet/rpc-types and introducing
-  SessionManagerHandle in codelet/core, codelet/napi becomes ONE listener
+  After lifting StreamChunk into rust/rpc-types and introducing
+  SessionManagerHandle in rust/core, rust/napi becomes ONE listener
   on the same broadcast::Sender housed in SharedFspecService — not the
   only listener. The existing GLOBAL_CHUNK_CALLBACK + GlobalChunkCallback
-  pattern at codelet/napi/src/session_manager.rs:55-87 is preserved: it
+  pattern at rust/napi/src/session_manager.rs:55-87 is preserved: it
   reads from the SAME broadcast and forwards each (session_id, chunk)
   tuple into the existing ThreadsafeFunction so the TS shape stays
   byte-equal. A Vitest smoke test confirms the global chunk callback

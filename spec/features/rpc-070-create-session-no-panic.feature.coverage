@@ -4,11 +4,11 @@
       "name": "create_session does not panic when invoked from a multi-thread tokio runtime worker",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "file": "rust/fspec/tests/rpc070_create_session_no_panic.rs",
           "lines": "120-170",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 76,
                 77,
@@ -48,11 +48,11 @@
       "name": "create_session over the live tarpc embedded transport returns without panicking",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "file": "rust/fspec/tests/rpc070_create_session_no_panic.rs",
           "lines": "173-225",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 76,
                 77,
@@ -92,11 +92,11 @@
       "name": "Every Handle::current().block_on call inside handle_impl.rs is wrapped in tokio::task::block_in_place",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "file": "rust/fspec/tests/rpc070_create_session_no_panic.rs",
           "lines": "228-300",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1320,
                 1321,
@@ -121,11 +121,11 @@
       "name": "test_provider_connection no longer constructs its own runtime",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "file": "rust/fspec/tests/rpc070_create_session_no_panic.rs",
           "lines": "303-325",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 877,
                 878,
@@ -162,11 +162,11 @@
       "name": "Pre-existing SessionManagerHandle shape tests still pass",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "file": "rust/fspec/tests/rpc070_create_session_no_panic.rs",
           "lines": "328-372",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 60,
                 61,
@@ -193,10 +193,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/rpc070_create_session_no_panic.rs"
+      "rust/fspec/tests/rpc070_create_session_no_panic.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 352
   }

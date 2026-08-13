@@ -1,7 +1,7 @@
 {
   "scenarios": [
     {
-      "name": "Authorized user message is forwarded to codelet",
+      "name": "Authorized user message is forwarded to rust",
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",

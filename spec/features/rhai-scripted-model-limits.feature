@@ -9,8 +9,8 @@
 Feature: Allow Rhai custom provider scripts to set model context window and max output tokens
   """
   Uses the new optional Rhai function `get_model_limits(config) -> Map` with shape `#{ context_window?: i64, max_output_tokens?: i64, compaction_threshold?: #{ type: "tokens"|"percentage", value: i64 } }`.
-  Implemented in codelet/providers/src/custom/provider.rs (RhaiCustomProvider::new invokes the script) and codelet/providers/src/custom/rhai_call.rs or similar. Missing function is detected via rhai::Engine::call_fn returning FunctionNotFound — treated as 'no-op, use JSON defaults'.
-  New accessor `RhaiCustomProvider::script_compaction_threshold() -> Option<(String, u64)>` exposes the parsed threshold so the NAPI session-creation path (codelet/napi/src/session_manager.rs) can call `ProviderManager::set_compaction_threshold_override` at the same moment it calls `override_model_limits`.
+  Implemented in rust/providers/src/custom/provider.rs (RhaiCustomProvider::new invokes the script) and rust/providers/src/custom/rhai_call.rs or similar. Missing function is detected via rhai::Engine::call_fn returning FunctionNotFound — treated as 'no-op, use JSON defaults'.
+  New accessor `RhaiCustomProvider::script_compaction_threshold() -> Option<(String, u64)>` exposes the parsed threshold so the NAPI session-creation path (rust/napi/src/session_manager.rs) can call `ProviderManager::set_compaction_threshold_override` at the same moment it calls `override_model_limits`.
   """
 
   # ========================================

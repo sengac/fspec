@@ -4,11 +4,11 @@
       "name": "BoardStore seeds work units grouped into 7 columns with focus at backlog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_unit_rpc012.rs",
+          "file": "rust/fspec-tui/tests/store_board_unit_rpc012.rs",
           "lines": "27-53",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board.rs",
+              "file": "rust/fspec-tui/src/store/board.rs",
               "lines": [
                 47,
                 48,
@@ -66,11 +66,11 @@
       "name": "BoardStore re-grouping preserves focus and clamps selection when columns shrink",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_unit_rpc012.rs",
+          "file": "rust/fspec-tui/tests/store_board_unit_rpc012.rs",
           "lines": "57-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board.rs",
+              "file": "rust/fspec-tui/src/store/board.rs",
               "lines": [
                 47,
                 48,
@@ -130,10 +130,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/store_board_unit_rpc012.rs"
+      "rust/fspec-tui/tests/store_board_unit_rpc012.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/board.rs"
+      "rust/fspec-tui/src/store/board.rs"
     ],
     "totalLinesCovered": 150
   }

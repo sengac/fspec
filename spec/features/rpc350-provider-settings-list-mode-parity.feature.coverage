@@ -4,11 +4,11 @@
       "name": "Title renders the name in bold yellow and the item count in dim gray",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "129-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 41,
                 42,
@@ -46,11 +46,11 @@
       "name": "Expanded OpenAI provider with profiles shows a dim pluralized profile badge",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "182-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 176,
                 177,
@@ -107,11 +107,11 @@
       "name": "Add-profile row label reads \"Create new profile\"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "240-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 132,
                 133,
@@ -127,11 +127,11 @@
       "name": "Configured unselected provider row paints per-color status segments",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "275-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/row_segments.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/row_segments.rs",
               "lines": [
                 26,
                 27,
@@ -257,11 +257,11 @@
       "name": "Unconfigured rows use gray empty-state text with distinct provider and api-key wording",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "336-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 150,
                 151,
@@ -344,11 +344,11 @@
       "name": "Selected configured provider row flips all segments to black over the colour band",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "393-450",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/row_segments.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/row_segments.rs",
               "lines": [
                 38,
                 39,
@@ -461,11 +461,11 @@
       "name": "Non-provider full-screen views keep their existing title styling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
           "lines": "451-494",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 18,
                 19,
@@ -492,12 +492,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs"
+      "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
-      "codelet/fspec-tui/src/views/provider_settings/row_segments.rs"
+      "rust/fspec-tui/src/views/agent/mode_view_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/row_segments.rs"
     ],
     "totalLinesCovered": 740
   }

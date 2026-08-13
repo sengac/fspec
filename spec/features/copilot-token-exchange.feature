@@ -7,7 +7,7 @@ Feature: Copilot GitHub OAuth to Copilot API token exchange
   PROV-057 L2 (exchange half): After OAuth completes, the long-lived gho_*
   token must be exchanged at GET /copilot_internal/v2/token for a
   short-lived (~25 min) Copilot API token before any request is sent to
-  api.githubcopilot.com. Lives in codelet/providers/src/copilot/token_exchange.rs
+  api.githubcopilot.com. Lives in rust/providers/src/copilot/token_exchange.rs
   and is exercised by token_exchange_tests.rs.
 
   Request shape (critical details):

@@ -95,12 +95,12 @@ Feature: RoleDialog component — Priority::Foreground modal for editing the ses
 
   @source-shape
   Scenario: RoleDialog file stays under 300 lines
-    Given the file codelet/fspec-tui/src/components/role_dialog.rs after RPC-063 lands
+    Given the file rust/fspec-tui/src/components/role_dialog.rs after RPC-063 lands
     When a test counts the line-count of the file
     Then the file has fewer than 300 lines
 
   @source-shape
   Scenario: The dispatch helper file for RPC-063 stays under 300 lines
-    Given the file codelet/fspec-tui/src/app/dispatch_role_dialog.rs after RPC-063 lands
+    Given the file rust/fspec-tui/src/app/dispatch_role_dialog.rs after RPC-063 lands
     When a test counts the line-count of the file
     Then the file has fewer than 300 lines

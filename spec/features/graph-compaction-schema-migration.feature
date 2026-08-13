@@ -1,7 +1,7 @@
 @KGRAPH-010
 Feature: Graph Compaction & Schema Migration
   """
-  Pure Rust module at codelet/napi/src/graph/compaction.rs. Turn pruning builds cutoff date and filters. Schema migration compares SHA256 hashes. Retention config in index-state.json. No DB writes for migration — delegates to nanograph migrate.
+  Pure Rust module at rust/napi/src/graph/compaction.rs. Turn pruning builds cutoff date and filters. Schema migration compares SHA256 hashes. Retention config in index-state.json. No DB writes for migration — delegates to nanograph migrate.
   """
 
   # ========================================

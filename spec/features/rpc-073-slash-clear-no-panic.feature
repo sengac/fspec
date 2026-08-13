@@ -6,7 +6,7 @@
 Feature: RPC-073 Slash Clear No Panic
   """
   Bug 1: typing /clear in a Work Agent on the Rust fspec binary panicked
-  the tokio-rt-worker at codelet/sessions/src/background_session.rs:1156:36
+  the tokio-rt-worker at rust/sessions/src/background_session.rs:1156:36
   with 'Cannot block the current thread from within a runtime'.
 
   Root cause: BackgroundSession::clear_history calls self.inner.blocking_lock()
@@ -15,7 +15,7 @@ Feature: RPC-073 Slash Clear No Panic
   The TS path was safe because NAPI dispatched it on a libuv worker (not Tokio).
 
   Fix: wrap session.clear_history() in tokio::task::block_in_place inside
-  codelet/sessions/src/handle_impl.rs::clear_history (the same pattern already
+  rust/sessions/src/handle_impl.rs::clear_history (the same pattern already
   used for create_session, create_isolated_session, test_provider_connection).
   Extend the RPC-070 source-shape scan to also flag .blocking_lock( / .blocking_read(
   / .blocking_write( in any sync trait method body so future siblings are caught.
@@ -43,7 +43,7 @@ Feature: RPC-073 Slash Clear No Panic
     Then no worker thread emits a 'Cannot block the current thread' panic
 
   Scenario: Source-shape regression: every sync trait method in handle_impl.rs whose body contains .blocking_lock or .blocking_read or .blocking_write is wrapped in tokio::task::block_in_place
-    Given the file codelet/sessions/src/handle_impl.rs
+    Given the file rust/sessions/src/handle_impl.rs
     When the test reads the source bytes and strips line and block comments
     Then for every match of .blocking_lock( or .blocking_read( or .blocking_write( inside an fn body, the same fn body also contains tokio::task::block_in_place
     Then the test fails if any future change removes the wrapper from clear_history

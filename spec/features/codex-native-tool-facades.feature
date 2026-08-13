@@ -7,7 +7,7 @@
 @provider-abstraction
 Feature: Codex-Native Tool Facades - Map Tools to Codex CLI Tool Schemas
   """
-  Create codelet/tools/src/facade/codex.rs with CodexShellCommandFacade, CodexReadFileFacade,
+  Create rust/tools/src/facade/codex.rs with CodexShellCommandFacade, CodexReadFileFacade,
   CodexListDirFacade, and CodexGrepFilesFacade. Follow existing pattern from zai.rs and file_ops.rs.
   Update CodexProvider::create_rig_agent() to use FacadeToolWrapper for these tools while
   keeping AstGrep, AstGrepRefactor as direct tool registrations.

@@ -4,11 +4,11 @@
       "name": "DeepSearch sub-agents can use github-copilot as their provider",
       "testMappings": [
         {
-          "file": "codelet/napi/src/deep_search_provider_config.rs",
+          "file": "rust/napi/src/deep_search_provider_config.rs",
           "lines": "225-292",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_provider_config.rs",
+              "file": "rust/napi/src/deep_search_provider_config.rs",
               "lines": [
                 13,
                 14,
@@ -96,10 +96,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/deep_search_provider_config.rs"
+      "rust/napi/src/deep_search_provider_config.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/deep_search_provider_config.rs"
+      "rust/napi/src/deep_search_provider_config.rs"
     ],
     "totalLinesCovered": 142
   }

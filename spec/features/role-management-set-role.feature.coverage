@@ -4,11 +4,11 @@
       "name": "set_role on own session with no session_id specified",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2176-2191",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 42,
                 43,
@@ -32,11 +32,11 @@
       "name": "set_role on a specific session by ID",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2197-2210",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 273,
                 274,
@@ -84,11 +84,11 @@
       "name": "Clear role with empty string",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2216-2227",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 273,
                 274,
@@ -136,11 +136,11 @@
       "name": "set_role on non-existent session returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2233-2240",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 273,
                 274,
@@ -188,11 +188,11 @@
       "name": "Role appears in get_status response",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2256-2270",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 195,
                 196,
@@ -240,11 +240,11 @@
       "name": "Role appears in list response",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2276-2289",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 152,
                 153,
@@ -299,11 +299,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/agent_manager/tests.rs"
+      "rust/tools/src/agent_manager/tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/agent_manager/types.rs",
-      "codelet/napi/src/agent_manager_handler.rs"
+      "rust/tools/src/agent_manager/types.rs",
+      "rust/napi/src/agent_manager_handler.rs"
     ],
     "totalLinesCovered": 276
   }

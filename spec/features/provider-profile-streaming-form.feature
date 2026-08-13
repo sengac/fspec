@@ -7,13 +7,13 @@
 Feature: OpenAI profile streaming toggle in the Provider Settings form
   """
   The Rust ratatui /provider Provider Settings profile create/edit form
-  (codelet/fspec-tui/src/views/provider_settings/profile_form.rs) exposes a
+  (rust/fspec-tui/src/views/provider_settings/profile_form.rs) exposes a
   sixth field "Streaming" as a boolean toggle. A new profile seeds Streaming to
   enabled; editing seeds it from the stored definition via streaming_enabled().
   Space (and Left/Right) flips the value while the field is focused; printable
   characters do NOT mutate it. build_definition() emits streaming: Some(<bool>).
   The boolean-field logic is extracted to a sibling module to keep the file
-  under 300 LoC. Verified by codelet/fspec-tui/tests/prov139_streaming_form.rs.
+  under 300 LoC. Verified by rust/fspec-tui/tests/prov139_streaming_form.rs.
   """
 
   Background: User Story

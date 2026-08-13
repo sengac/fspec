@@ -10,7 +10,7 @@ Generated from parallel review agents for **RPC-424** (model parsing helper) and
 
 **Work Unit:** RPC-424  
 **Severity:** 🔴 Critical  
-**Files:** `codelet/sessions/src/model_resolution.rs` (lines 32–63), `codelet/sessions/src/model_parsing.rs` (lines 58–106)
+**Files:** `rust/sessions/src/model_resolution.rs` (lines 32–63), `rust/sessions/src/model_parsing.rs` (lines 58–106)
 
 **Problem:**  
 The `apply_model_selection` function in `model_resolution.rs` contains an almost identical copy of the model string parsing logic that `parse_model_string` in `model_parsing.rs` already provides. Both files independently implement:
@@ -53,7 +53,7 @@ let is_custom_model = parsed.is_custom_model;
 
 **Work Unit:** RPC-424  
 **Severity:** 🔴 Critical  
-**Files:** `codelet/sessions/src/model_resolution.rs` (line 49), `codelet/sessions/src/model_parsing.rs` (line 79)
+**Files:** `rust/sessions/src/model_resolution.rs` (line 49), `rust/sessions/src/model_parsing.rs` (line 79)
 
 **Problem:**  
 For profile models, the two parsers extract `registry_provider` differently:
@@ -70,7 +70,7 @@ Once Fix #1 is applied (using `parse_model_string`), this divergence is automati
 
 **Work Unit:** RPC-425  
 **Severity:** 🔴 Critical  
-**Files:** `codelet/sessions/src/session_manager.rs` (lines 678–722 vs 842–876)
+**Files:** `rust/sessions/src/session_manager.rs` (lines 678–722 vs 842–876)
 
 **Problem:**  
 After calling `create_background_session_inner`, both `create_session_with_id` and `create_session_from_manifest` have ~40 lines of nearly identical post-processing code:
@@ -121,7 +121,7 @@ Both callers would then call this single method after `create_background_session
 
 **Work Unit:** RPC-425  
 **Severity:** 🔴 Critical  
-**Files:** `codelet/sessions/src/session_manager.rs`
+**Files:** `rust/sessions/src/session_manager.rs`
 
 **Problem:**  
 `create_session_from_manifest` calls `session.set_owning_manager(...)` at line 840, but `create_session_with_id` does NOT. This means sessions created via `create_session_with_id` won't have the owning-manager back-reference, while sessions resumed from manifest will. This is a behavioral bug that could cause AgentManager handler binding to fall back to the singleton incorrectly for newly-created sessions.
@@ -134,8 +134,8 @@ Once Fix #3 is applied (shared post-processing method), `set_owning_manager` is 
 **Work Unit:** RPC-424 & RPC-425  
 **Severity:** 🔴 Critical  
 **Files:** 
-- `codelet/sessions/src/model_parsing.rs` (lines 236–278)
-- `codelet/sessions/tests/rpc425_session_creation_refactor.rs`
+- `rust/sessions/src/model_parsing.rs` (lines 236–278)
+- `rust/sessions/tests/rpc425_session_creation_refactor.rs`
 
 **Problem:**  
 The "integration" tests in both work units read source files as strings and check for substring presence:
@@ -179,7 +179,7 @@ async fn helper_creates_background_session_with_correct_fields() {
 
 **Work Unit:** RPC-425  
 **Severity:** 🟡 Warning  
-**Files:** `codelet/sessions/src/session_manager.rs` (lines 1001–1119)
+**Files:** `rust/sessions/src/session_manager.rs` (lines 1001–1119)
 
 **Problem:**  
 `create_isolated_session_with_id` has its own inline session creation logic that duplicates:
@@ -221,7 +221,7 @@ let result = create_background_session_inner(params, provider_manager).await?;
 
 **Work Unit:** RPC-425  
 **Severity:** 🟡 Warning  
-**Files:** `spec/features/extract-shared-session-creation.feature`, `codelet/sessions/src/session_creation_helper.rs`
+**Files:** `spec/features/extract-shared-session-creation.feature`, `rust/sessions/src/session_creation_helper.rs`
 
 **Problem:**  
 The example map Rule [2] states: "The helper must accept a callback or strategy for manifest handling (save vs skip-save)." The current implementation does NOT use a callback or strategy pattern — it simply places `save_session` in one call site and omits it in the other. The helper has no knowledge of manifest handling at all.
@@ -237,13 +237,13 @@ Option (b) is recommended since manifest saving is a caller concern, not a sessi
 
 **Work Unit:** RPC-425  
 **Severity:** 🟡 Warning  
-**Files:** `codelet/sessions/src/session_creation_helper.rs`
+**Files:** `rust/sessions/src/session_creation_helper.rs`
 
 **Problem:**  
 The file is 359 lines (including inline tests). The coding standards require files under 300 lines. The inline `#[cfg(test)]` module adds ~78 lines; removing it brings the production code to ~281 lines, which is acceptable.
 
 **Fix:**  
-Move inline tests to `codelet/sessions/tests/session_creation_helper_tests.rs` and remove the `#[cfg(test)]` module from the source file.
+Move inline tests to `rust/sessions/tests/session_creation_helper_tests.rs` and remove the `#[cfg(test)]` module from the source file.
 
 ### 9. Coverage Implementation Line Ranges Are Overly Broad
 
@@ -263,7 +263,7 @@ Narrow coverage line ranges:
 
 **Work Unit:** RPC-425  
 **Severity:** 🟡 Warning  
-**Files:** `codelet/sessions/src/session_creation_helper.rs` (lines 280–359), `codelet/sessions/tests/rpc425_session_creation_refactor.rs`
+**Files:** `rust/sessions/src/session_creation_helper.rs` (lines 280–359), `rust/sessions/tests/rpc425_session_creation_refactor.rs`
 
 **Problem:**  
 `session_creation_helper.rs` contains inline `#[cfg(test)]` tests that duplicate tests already in `rpc425_session_creation_refactor.rs`. Specifically, `shared_helper_preserves_session_behavior` and `model_limits_and_thinking_level_are_set` appear in both locations with nearly identical assertions.
@@ -275,7 +275,7 @@ Remove inline tests from `session_creation_helper.rs` (also fixes issue #8). Kee
 
 **Work Unit:** RPC-424  
 **Severity:** 🟡 Warning  
-**Files:** `codelet/sessions/src/model_parsing.rs` (lines 204–232)
+**Files:** `rust/sessions/src/model_parsing.rs` (lines 204–232)
 
 **Problem:**  
 The tests `reject_model_string_with_empty_provider` (line 205) and `reject_model_string_with_empty_model_part` (line 221) have `/// Feature:` doc comments referencing the feature file, but there are no matching scenarios in `extract-model-parsing-helper.feature`.
@@ -303,7 +303,7 @@ Update coverage to lines 236–278.
 
 **Work Unit:** RPC-424 & RPC-425  
 **Severity:** 🟡 Warning  
-**Files:** `codelet/sessions/src/session_manager.rs`
+**Files:** `rust/sessions/src/session_manager.rs`
 
 **Problem:**  
 The file is 1,291 lines — well beyond the 300-line project guideline. This is a pre-existing condition, but the extraction work (RPC-424, RPC-425) should have been paired with a reduction of the caller sites.
@@ -318,7 +318,7 @@ After applying fixes #1, #3, and #6, the three session creation functions will b
 
 **Work Unit:** RPC-424  
 **Severity:** 🟡 Warning  
-**Files:** `codelet/sessions/src/model_parsing.rs` (line 84)
+**Files:** `rust/sessions/src/model_parsing.rs` (line 84)
 
 **Problem:**  
 `parts.get(1).copied().unwrap_or("")` silently defaults to empty string when there's no second part. The `splitn(2, '/')` call already guarantees exactly 2 parts when `'/'` exists (validated on line 60), so `parts[1]` would never panic. The `unwrap_or("")` is unnecessary and masks the invariant.

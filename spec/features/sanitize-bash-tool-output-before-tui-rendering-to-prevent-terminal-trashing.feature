@@ -3,7 +3,7 @@
 Feature: Sanitize bash tool output before TUI rendering to prevent terminal trashing
 
   """
-  Create a new module `sanitize.rs` in `codelet/fspec-tui/src/store/agent_view/` with a `sanitize_for_terminal(text: &str) -> String` function that mirrors TypeScript's `sanitizeForTerminal()` from `stringWidth.ts`. Uses regex for ANSI stripping and char filtering for control characters.
+  Create a new module `sanitize.rs` in `rust/fspec-tui/src/store/agent_view/` with a `sanitize_for_terminal(text: &str) -> String` function that mirrors TypeScript's `sanitizeForTerminal()` from `stringWidth.ts`. Uses regex for ANSI stripping and char filtering for control characters.
   """
 
   # ========================================
@@ -16,7 +16,7 @@ Feature: Sanitize bash tool output before TUI rendering to prevent terminal tras
   #   3. Sanitization must replace tab characters with two spaces for consistent width
   #   4. Sanitization must remove carriage return characters (\r) to prevent line overwriting
   #   5. Sanitization must remove control characters (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F, 0x7F) except newlines (0x0A) which are preserved
-  #   6. Sanitization must be applied at the TUI display layer (fspec-tui chunk processor), NOT at the bash tool layer (codelet/tools), so the LLM still receives raw output
+  #   6. Sanitization must be applied at the TUI display layer (fspec-tui chunk processor), NOT at the bash tool layer (rust/tools), so the LLM still receives raw output
   #   7. Sanitization must be applied to both ToolResult content and ToolProgress output chunks before they are stored in the scrollback buffer
   #
   # EXAMPLES:

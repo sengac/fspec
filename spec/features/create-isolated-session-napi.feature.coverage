@@ -8,7 +8,7 @@
           "lines": "68-98",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5655,
                 5656,
@@ -63,7 +63,7 @@
           "lines": "100-125",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5655,
                 5656,
@@ -118,7 +118,7 @@
           "lines": "127-152",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5655,
                 5656,
@@ -173,7 +173,7 @@
           "lines": "154-180",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5655,
                 5656,
@@ -228,7 +228,7 @@
           "lines": "182-205",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5655,
                 5656,
@@ -284,7 +284,7 @@
       "src/tui/__tests__/isolated-session-napi.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 329
   }

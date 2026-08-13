@@ -12,9 +12,9 @@ Feature: Complete Anchor-Based Context Compaction
   - Supports multiple anchor types: ErrorResolution (0.9), TaskCompletion (0.8), FeatureMilestone (0.75), UserCheckpoint (0.7)
 
   Dependencies and integrations:
-  - codelet/core/src/compaction/model.rs - PreservationContext, BuildStatus, ConversationTurn
-  - codelet/core/src/compaction/anchor.rs - Anchor detection logic
-  - codelet/core/src/compaction/compactor.rs - Summary generation using PreservationContext
+  - rust/core/src/compaction/model.rs - PreservationContext, BuildStatus, ConversationTurn
+  - rust/core/src/compaction/anchor.rs - Anchor detection logic
+  - rust/core/src/compaction/compactor.rs - Summary generation using PreservationContext
 
   Critical implementation requirements:
   - PreservationContext MUST contain: active_files, current_goals, error_states, build_status, last_user_intent

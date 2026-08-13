@@ -4,11 +4,11 @@
       "name": "Higher priority intercepts events first",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "121-140",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 124,
                 125,
@@ -50,11 +50,11 @@
       "name": "Ignored events propagate to the next handler",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "143-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 124,
                 125,
@@ -96,11 +96,11 @@
       "name": "is_active=false skips a handler without consuming",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "166-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 124,
                 125,
@@ -142,11 +142,11 @@
       "name": "FIFO tiebreak at equal priority — newer registrations win",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "192-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 45,
                 46,
@@ -167,11 +167,11 @@
       "name": "Callback inside Consumed runs after event handling completes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "215-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 124,
                 125,
@@ -213,11 +213,11 @@
       "name": "A Critical-priority modal pushed on top intercepts subsequent keystrokes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "242-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 45,
                 46,
@@ -338,11 +338,11 @@
       "name": "pop() removes the most recently pushed layer regardless of priority",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "267-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 57,
                 58,
@@ -364,11 +364,11 @@
       "name": "remove(id) removes the layer with the matching id",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "287-303",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 70,
                 71,
@@ -384,11 +384,11 @@
       "name": "Empty compositor returns Ignored from handle_event",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "306-319",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 124,
                 125,
@@ -430,11 +430,11 @@
       "name": "All-inactive compositor returns Ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "322-346",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 124,
                 125,
@@ -476,11 +476,11 @@
       "name": "Render order is bottom-up so highest priority paints last",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "349-377",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 171,
                 172,
@@ -500,11 +500,11 @@
       "name": "Action propagation in update fans out across all layers top-down",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "file": "rust/fspec-tui/src/compositor_tests.rs",
           "lines": "380-402",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/compositor.rs",
+              "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
                 158,
                 159,
@@ -528,10 +528,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/compositor_tests.rs"
+      "rust/fspec-tui/src/compositor_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/compositor.rs"
+      "rust/fspec-tui/src/compositor.rs"
     ],
     "totalLinesCovered": 590
   }

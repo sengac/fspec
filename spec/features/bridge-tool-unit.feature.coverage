@@ -4,11 +4,11 @@
       "name": "Bridge tool requires session context",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "784-802",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 300,
                 301,
@@ -30,11 +30,11 @@
       "name": "Connect to a valid WebSocket endpoint",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "330-364",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 44,
                 45,
@@ -123,11 +123,11 @@
           ]
         },
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "330-364",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 44,
                 45,
@@ -221,11 +221,11 @@
       "name": "Fail to connect to invalid endpoint",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "368-395",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 44,
                 45,
@@ -319,11 +319,11 @@
       "name": "Disconnect from a connected endpoint",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "402-432",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 152,
                 153,
@@ -349,11 +349,11 @@
       "name": "List active bridge connections",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "440-469",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 156,
                 157,
@@ -375,11 +375,11 @@
       "name": "List connections during reconnect",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "473-510",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 156,
                 157,
@@ -401,11 +401,11 @@
       "name": "Connect to multiple endpoints simultaneously",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "518-557",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 44,
                 45,
@@ -539,11 +539,11 @@
       "name": "Relay StreamChunks to connected endpoint as JSON",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "565-601",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 56,
                 57,
@@ -573,11 +573,11 @@
       "name": "Receive input from endpoint and inject into session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "609-632",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 66,
                 67,
@@ -597,11 +597,11 @@
       "name": "Auto-reconnect and deliver buffered messages",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "639-711",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 96,
                 97,
@@ -642,11 +642,11 @@
       "name": "Drop connection when buffer exceeds 1GB",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "715-757",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 96,
                 97,
@@ -681,11 +681,11 @@
       "name": "Bridge tool definition",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge.rs",
+          "file": "rust/tools/src/bridge.rs",
           "lines": "765-780",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge.rs",
+              "file": "rust/tools/src/bridge.rs",
               "lines": [
                 241,
                 242,
@@ -761,10 +761,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 92,
     "testFiles": [
-      "codelet/tools/src/bridge.rs"
+      "rust/tools/src/bridge.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bridge.rs"
+      "rust/tools/src/bridge.rs"
     ],
     "totalLinesCovered": 997
   }

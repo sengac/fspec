@@ -4,11 +4,11 @@
       "name": "Clap exposes discover-event-storm as a subcommand and prints flag-free --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_discover_event_storm.rs",
+          "file": "rust/fspec/tests/cli_discover_event_storm.rs",
           "lines": "79-111",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/discover_event_storm.rs",
+              "file": "rust/fspec/src/discover_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -80,11 +80,11 @@
       "name": "CLI emits guidance for a work unit in specifying status and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_discover_event_storm.rs",
+          "file": "rust/fspec/tests/cli_discover_event_storm.rs",
           "lines": "112-140",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/discover_event_storm.rs",
+              "file": "rust/fspec/src/discover_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -156,11 +156,11 @@
       "name": "CLI against empty workspace exits 1 with missing-file error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_discover_event_storm.rs",
+          "file": "rust/fspec/tests/cli_discover_event_storm.rs",
           "lines": "141-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/discover_event_storm.rs",
+              "file": "rust/fspec/src/discover_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -232,11 +232,11 @@
       "name": "CLI exits 1 when the work unit is not in specifying status",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_discover_event_storm.rs",
+          "file": "rust/fspec/tests/cli_discover_event_storm.rs",
           "lines": "167-184",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/discover_event_storm.rs",
+              "file": "rust/fspec/src/discover_event_storm.rs",
               "lines": [
                 1,
                 2,
@@ -310,10 +310,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_discover_event_storm.rs"
+      "rust/fspec/tests/cli_discover_event_storm.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/discover_event_storm.rs"
+      "rust/fspec/src/discover_event_storm.rs"
     ],
     "totalLinesCovered": 346
   }

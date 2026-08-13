@@ -1018,7 +1018,7 @@
           "lines": "328-354",
           "implMappings": [
             {
-              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "file": "rust/tools/src/blocklist/middleware.rs",
               "lines": [
                 162,
                 163,
@@ -1062,7 +1062,7 @@
           "lines": "87-109",
           "implMappings": [
             {
-              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "file": "rust/tools/src/blocklist/middleware.rs",
               "lines": [
                 162,
                 163,
@@ -1114,7 +1114,7 @@
     ],
     "implFiles": [
       "src/components/ConfirmationDialog.tsx",
-      "codelet/tools/src/blocklist/middleware.rs"
+      "rust/tools/src/blocklist/middleware.rs"
     ],
     "totalLinesCovered": 1205
   }

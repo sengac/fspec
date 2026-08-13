@@ -4,11 +4,11 @@
       "name": "Capture viewport screenshot with default settings",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "file": "rust/tools/tests/screenshot_capture_test.rs",
           "lines": "18-57",
           "implMappings": [
             {
-              "file": "codelet/tools/src/chrome_browser.rs",
+              "file": "rust/tools/src/chrome_browser.rs",
               "lines": [
                 217,
                 218,
@@ -62,11 +62,11 @@
       "name": "Capture full-page screenshot of scrollable content",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "file": "rust/tools/tests/screenshot_capture_test.rs",
           "lines": "63-111",
           "implMappings": [
             {
-              "file": "codelet/tools/src/chrome_browser.rs",
+              "file": "rust/tools/src/chrome_browser.rs",
               "lines": [
                 217,
                 218,
@@ -120,11 +120,11 @@
       "name": "Capture screenshot to custom output path",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "file": "rust/tools/tests/screenshot_capture_test.rs",
           "lines": "117-147",
           "implMappings": [
             {
-              "file": "codelet/tools/src/chrome_browser.rs",
+              "file": "rust/tools/src/chrome_browser.rs",
               "lines": [
                 217,
                 218,
@@ -178,11 +178,11 @@
       "name": "View captured screenshot using Read tool",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "file": "rust/tools/tests/screenshot_capture_test.rs",
           "lines": "153-189",
           "implMappings": [
             {
-              "file": "codelet/tools/src/chrome_browser.rs",
+              "file": "rust/tools/src/chrome_browser.rs",
               "lines": [
                 217,
                 218,
@@ -238,10 +238,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/screenshot_capture_test.rs"
+      "rust/tools/tests/screenshot_capture_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/chrome_browser.rs"
+      "rust/tools/src/chrome_browser.rs"
     ],
     "totalLinesCovered": 325
   }

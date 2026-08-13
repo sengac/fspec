@@ -4,11 +4,11 @@
       "name": "Inserts a doc string after the Feature line when none exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "45-90",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 45,
                 46,
@@ -210,11 +210,11 @@
       "name": "Inserts a multi-line doc string preserving each line",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "92-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 136,
                 137,
@@ -325,11 +325,11 @@
       "name": "Empty text is rejected and the file is left untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "122-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 52,
                 53,
@@ -348,11 +348,11 @@
       "name": "Whitespace-only text is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "154-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 52,
                 53,
@@ -371,11 +371,11 @@
       "name": "Missing feature file surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "181-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 60,
                 61,
@@ -397,11 +397,11 @@
       "name": "Bare feature name resolves by basename glob over spec/features",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "208-245",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 122,
                 123,
@@ -437,11 +437,11 @@
       "name": "Replaces an existing Feature-line doc string in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "247-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 136,
                 137,
@@ -552,11 +552,11 @@
       "name": "A file with no Feature line is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_architecture.rs",
+          "file": "rust/fspec-core/tests/add_architecture.rs",
           "lines": "285-307",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_architecture.rs",
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
                 77,
                 78,
@@ -596,10 +596,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_architecture.rs"
+      "rust/fspec-core/tests/add_architecture.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_architecture.rs"
+      "rust/fspec-core/src/commands/add_architecture.rs"
     ],
     "totalLinesCovered": 718
   }

@@ -4,11 +4,11 @@
       "name": "Adds a question with @human mention to a specifying work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "73-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 59,
                 60,
@@ -142,11 +142,11 @@
       "name": "Rejects add-question when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "119-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 85,
                 86,
@@ -165,11 +165,11 @@
       "name": "Rejects add-question when the work unit is not in specifying status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "144-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 93,
                 94,
@@ -197,11 +197,11 @@
       "name": "Honors existing nextQuestionId by reusing it and bumping by one",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "171-225",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 118,
                 119,
@@ -256,11 +256,11 @@
       "name": "Omits mentionedPeople when no @mention is present in the question",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "227-250",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 164,
                 165,
@@ -289,11 +289,11 @@
       "name": "Preserves auxiliary work unit fields on round-trip write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "252-310",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 162,
                 163,
@@ -311,11 +311,11 @@
       "name": "Initializes missing nextQuestionId to 0 for backward compatibility",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_question.rs",
+          "file": "rust/fspec-core/tests/add_question.rs",
           "lines": "312-342",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_question.rs",
+              "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 117,
                 118,
@@ -373,10 +373,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_question.rs"
+      "rust/fspec-core/tests/add_question.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_question.rs"
+      "rust/fspec-core/src/commands/add_question.rs"
     ],
     "totalLinesCovered": 519
   }

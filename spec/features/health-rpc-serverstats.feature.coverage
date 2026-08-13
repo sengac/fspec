@@ -4,11 +4,11 @@
       "name": "FspecService.health returns HealthInfo via tarpc",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
+          "file": "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
           "lines": "36-72",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -70,11 +70,11 @@
       "name": "HealthInfo is a lifted type with cfg-gated napi(object)",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
+          "file": "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
           "lines": "74-111",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -186,11 +186,11 @@
       "name": "FspecBackend trait gains health on both transports",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
+          "file": "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
           "lines": "125-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 232,
                 233,
@@ -211,11 +211,11 @@
       "name": "ServerStats lag counters fire when broadcast subscribers lag",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
+          "file": "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
           "lines": "158-211",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 252,
                 253,
@@ -279,11 +279,11 @@
       "name": "ServerStats.last_watcher_event_at updates on each watcher snapshot",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
+          "file": "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
           "lines": "213-259",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 221,
                 222,
@@ -326,13 +326,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/health_rpc_serverstats_rpc011.rs"
+      "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/rpc/src/lib.rs",
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/rpc-server/src/server.rs"
+      "rust/rpc/src/lib.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/rpc-server/src/server.rs"
     ],
     "totalLinesCovered": 448
   }

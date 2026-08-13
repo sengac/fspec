@@ -4,11 +4,11 @@
       "name": "NAPI re-export shim preserves existing crate::persistence imports for session types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/session_store_lift_shim_test.rs",
           "lines": "112-138",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -200,11 +200,11 @@
       "name": "All NAPI persistence test suites continue to pass after the session store lift",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/session_store_lift_shim_test.rs",
           "lines": "144-181",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -396,11 +396,11 @@
       "name": "set_data_directory in codelet-napi resets credentials graph blob and core persistence singletons",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/session_store_lift_shim_test.rs",
           "lines": "187-244",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 60,
                 61,
@@ -447,10 +447,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/session_store_lift_shim_test.rs"
+      "rust/napi/tests/session_store_lift_shim_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/mod.rs"
+      "rust/napi/src/persistence/mod.rs"
     ],
     "totalLinesCovered": 516
   }

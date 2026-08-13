@@ -4,11 +4,11 @@
       "name": "index.d.ts exports required NAPI symbols without consulting git",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_bindings_shape.rs",
+          "file": "rust/napi/tests/session_bindings_shape.rs",
           "lines": "948-980",
           "implMappings": [
             {
-              "file": "codelet/napi/tests/session_bindings_shape.rs",
+              "file": "rust/napi/tests/session_bindings_shape.rs",
               "lines": [
                 948,
                 949,
@@ -55,10 +55,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/session_bindings_shape.rs"
+      "rust/napi/tests/session_bindings_shape.rs"
     ],
     "implFiles": [
-      "codelet/napi/tests/session_bindings_shape.rs"
+      "rust/napi/tests/session_bindings_shape.rs"
     ],
     "totalLinesCovered": 66
   }

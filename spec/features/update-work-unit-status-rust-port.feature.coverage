@@ -4,11 +4,11 @@
       "name": "Valid forward transition records a state-history entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "100-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 70,
                 71,
@@ -181,11 +181,11 @@
       "name": "Invalid transition is rejected with an allowed-transitions message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "137-165",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 104,
                 105,
@@ -212,11 +212,11 @@
       "name": "Unknown work unit id is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "166-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 90,
                 91,
@@ -239,11 +239,11 @@
       "name": "Moving to blocked requires a blockedReason",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "192-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 120,
                 121,
@@ -262,11 +262,11 @@
       "name": "specifying to testing is blocked by prefill placeholders",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "245-281",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 284,
                 285,
@@ -293,11 +293,11 @@
       "name": "specifying to testing is blocked when the feature has no scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "282-333",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 299,
                 300,
@@ -324,11 +324,11 @@
       "name": "validating transition is blocked when coverage is incomplete",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "334-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 314,
                 315,
@@ -425,11 +425,11 @@
       "name": "Temporal validation blocks a forward transition unless skipped",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "381-431",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 399,
                 400,
@@ -537,11 +537,11 @@
       "name": "A dirty working directory creates an automatic checkpoint before the transition",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "508-540",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 495,
                 496,
@@ -591,11 +591,11 @@
       "name": "Transitioning to backlog does not create an automatic checkpoint",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "542-572",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 152,
                 153,
@@ -614,11 +614,11 @@
       "name": "Transitioning to done compacts the work unit and cleans auto-checkpoints",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "574-647",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 591,
                 592,
@@ -655,11 +655,11 @@
       "name": "A blocking pre-hook failure prevents the transition",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "649-704",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 616,
                 617,
@@ -703,11 +703,11 @@
       "name": "IPC notification is a no-op in the Rust port",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_status.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
           "lines": "706-728",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
                 70,
                 71,
@@ -882,10 +882,10 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_work_unit_status.rs"
+      "rust/fspec-core/tests/update_work_unit_status.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_work_unit_status.rs"
+      "rust/fspec-core/src/commands/update_work_unit_status.rs"
     ],
     "totalLinesCovered": 1217
   }

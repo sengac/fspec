@@ -3,7 +3,7 @@
 @BLOCK-003
 Feature: Stage Permissions - ACDD File Write Enforcement
   """
-  Stage Permissions Module: Create codelet/tools/src/stage_permissions/ with StagePermissionsConfig (load/save JSON), FileCategory struct (name + glob patterns), StagePermissions (map stage names to writable categories). Integrates with work unit context from session to determine current stage. Loaded from ~/.fspec/stage-permissions.json (user) or .fspec/stage-permissions.json (project).
+  Stage Permissions Module: Create rust/tools/src/stage_permissions/ with StagePermissionsConfig (load/save JSON), FileCategory struct (name + glob patterns), StagePermissions (map stage names to writable categories). Integrates with work unit context from session to determine current stage. Loaded from ~/.fspec/stage-permissions.json (user) or .fspec/stage-permissions.json (project).
   """
 
   # ========================================

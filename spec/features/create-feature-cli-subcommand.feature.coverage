@@ -4,11 +4,11 @@
       "name": "CLI creates a feature file and prints the success lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "file": "rust/fspec/tests/cli_create_feature.rs",
           "lines": "50-78",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_feature.rs",
+              "file": "rust/fspec/src/create_feature.rs",
               "lines": [
                 40,
                 41,
@@ -71,11 +71,11 @@
       "name": "CLI prints the prefill system-reminder on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "file": "rust/fspec/tests/cli_create_feature.rs",
           "lines": "85-104",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_feature.rs",
+              "file": "rust/fspec/src/create_feature.rs",
               "lines": [
                 74,
                 75,
@@ -95,11 +95,11 @@
       "name": "CLI fails with exit 1 and Error prefix when the file already exists",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "file": "rust/fspec/tests/cli_create_feature.rs",
           "lines": "111-135",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_feature.rs",
+              "file": "rust/fspec/src/create_feature.rs",
               "lines": [
                 85,
                 86,
@@ -116,11 +116,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "file": "rust/fspec/tests/cli_create_feature.rs",
           "lines": "142-162",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_feature.rs",
+              "file": "rust/fspec/src/create_feature.rs",
               "lines": [
                 40,
                 41,
@@ -151,11 +151,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "file": "rust/fspec/tests/cli_create_feature.rs",
           "lines": "169-211",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_feature.rs",
+              "file": "rust/fspec/src/create_feature.rs",
               "lines": [
                 47,
                 48,
@@ -181,10 +181,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_create_feature.rs"
+      "rust/fspec/tests/cli_create_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/create_feature.rs"
+      "rust/fspec/src/create_feature.rs"
     ],
     "totalLinesCovered": 233
   }

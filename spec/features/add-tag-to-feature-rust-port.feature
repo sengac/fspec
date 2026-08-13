@@ -2,7 +2,7 @@
 @RPC-193
 Feature: Port add-tag-to-feature command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_tag_to_feature.rs reuses crate::io::gherkin::parse_feature_lenient for parsing and a TS-parity line-based insertion (NOT AST round-trip).
+  Core impl at rust/fspec-core/src/commands/add_tag_to_feature.rs reuses crate::io::gherkin::parse_feature_lenient for parsing and a TS-parity line-based insertion (NOT AST round-trip).
   Registry validation reuses crate::types::tags::TagsData (already public) — flat tag set is built from categories[].tags[].name.
   System reminders are emitted into the dispatcher's JSON response under systemReminders + consolidated systemReminder fields, matching the TS shape; CLI bridge prints the consolidated block after the success line.
   Two-front-doors: bridge marshals positional <file> + variadic <tags> + optional --validate-registry into JSON {file, tags, validateRegistry?} only; NO domain logic in the bridge.

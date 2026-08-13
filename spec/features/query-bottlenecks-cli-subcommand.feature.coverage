@@ -4,11 +4,11 @@
       "name": "Clap exposes query-bottlenecks as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "409-432",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -68,11 +68,11 @@
       "name": "CLI without options prints '✓ No bottlenecks found' against an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "434-451",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -132,11 +132,11 @@
       "name": "CLI with --output=json prints empty bottlenecks array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "453-469",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -196,11 +196,11 @@
       "name": "CLI text output lists each qualifying bottleneck with its score",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "471-499",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -260,11 +260,11 @@
       "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "501-518",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -324,11 +324,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "520-568",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -388,11 +388,11 @@
       "name": "query-bottlenecks --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_bottlenecks.rs",
+          "file": "rust/fspec/tests/cli_query_bottlenecks.rs",
           "lines": "570-594",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_bottlenecks.rs",
+              "file": "rust/fspec/src/query_bottlenecks.rs",
               "lines": [
                 1,
                 2,
@@ -454,10 +454,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_bottlenecks.rs"
+      "rust/fspec/tests/cli_query_bottlenecks.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/query_bottlenecks.rs"
+      "rust/fspec/src/query_bottlenecks.rs"
     ],
     "totalLinesCovered": 672
   }

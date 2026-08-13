@@ -3,7 +3,7 @@ Feature: AST Graph Data Model & Nanograph Schema
   """
   Uses nanograph PG schema format for the AST graph schema definition
   Refactors existing graph/mod.rs singleton pattern into a reusable GraphDatabase struct that wraps nanograph::Database with init/open/close/load/query methods
-  AST schema stored at codelet/napi/schemas/ast-code.pg, bundled via include_str! like the existing agent-memory schema
+  AST schema stored at rust/napi/schemas/ast-code.pg, bundled via include_str! like the existing agent-memory schema
   """
 
   # ========================================

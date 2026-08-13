@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_retag.rs",
+          "file": "rust/fspec/tests/cli_retag.rs",
           "lines": "64-85",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/retag.rs",
+              "file": "rust/fspec/src/retag.rs",
               "lines": [
                 1,
                 2,
@@ -125,11 +125,11 @@
       "name": "CLI renames a tag and prints the success summary",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_retag.rs",
+          "file": "rust/fspec/tests/cli_retag.rs",
           "lines": "91-117",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/retag.rs",
+              "file": "rust/fspec/src/retag.rs",
               "lines": [
                 1,
                 2,
@@ -246,11 +246,11 @@
       "name": "CLI dry run prints the preview and modifies nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_retag.rs",
+          "file": "rust/fspec/tests/cli_retag.rs",
           "lines": "123-156",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/retag.rs",
+              "file": "rust/fspec/src/retag.rs",
               "lines": [
                 1,
                 2,
@@ -367,11 +367,11 @@
       "name": "CLI reports a not-found tag with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_retag.rs",
+          "file": "rust/fspec/tests/cli_retag.rs",
           "lines": "162-189",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/retag.rs",
+              "file": "rust/fspec/src/retag.rs",
               "lines": [
                 1,
                 2,
@@ -488,11 +488,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_retag.rs",
+          "file": "rust/fspec/tests/cli_retag.rs",
           "lines": "195-236",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/retag.rs",
+              "file": "rust/fspec/src/retag.rs",
               "lines": [
                 1,
                 2,
@@ -611,10 +611,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_retag.rs"
+      "rust/fspec/tests/cli_retag.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/retag.rs"
+      "rust/fspec/src/retag.rs"
     ],
     "totalLinesCovered": 678
   }

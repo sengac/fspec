@@ -1,9 +1,9 @@
 @KGRAPH-057
 Feature: Add Dart language support to GraphSearch AST index and dead code detection
   """
-  The Dart extractor must use DartLang (from codelet/tools) for KindMatcher, not pattern matching, since Dart splits function_signature and function_body as sibling nodes at top level
-  tree-sitter-dart must be added as a dependency to codelet/napi/Cargo.toml (it's already in codelet/tools from KGRAPH-056)
-  The DartLang struct from codelet/tools/src/dart_lang.rs can be reused via codelet-tools dependency — or duplicated locally in codelet/napi as a simple struct implementing Language+LanguageExt. Since codelet-tools is already a dependency, reuse via pub import is preferred.
+  The Dart extractor must use DartLang (from rust/tools) for KindMatcher, not pattern matching, since Dart splits function_signature and function_body as sibling nodes at top level
+  tree-sitter-dart must be added as a dependency to rust/napi/Cargo.toml (it's already in rust/tools from KGRAPH-056)
+  The DartLang struct from rust/tools/src/dart_lang.rs can be reused via codelet-tools dependency — or duplicated locally in rust/napi as a simple struct implementing Language+LanguageExt. Since codelet-tools is already a dependency, reuse via pub import is preferred.
   """
 
   # ========================================
@@ -20,7 +20,7 @@ Feature: Add Dart language support to GraphSearch AST index and dead code detect
   #   7. pubspec_dep_extractor.rs must parse dependencies and dev_dependencies from pubspec.yaml and emit Dependency nodes + DependsOn edges
   #   8. The .dart extension must be added to SUPPORTED_EXTENSIONS and the extract_file dispatch in mod.rs
   #   9. pubspec.yaml dependency extraction must be wired into ast_dispatch.rs dispatch_ast_index alongside other dep extractors
-  #   10. Dart uses $ for string interpolation but $ IS valid in Dart identifiers, so DartLang from codelet/tools does NOT use expando_char — the AST extractor must use DartLang directly rather than SupportLang (since Dart is not in ast-grep's SupportLang enum)
+  #   10. Dart uses $ for string interpolation but $ IS valid in Dart identifiers, so DartLang from rust/tools does NOT use expando_char — the AST extractor must use DartLang directly rather than SupportLang (since Dart is not in ast-grep's SupportLang enum)
   #
   # EXAMPLES:
   #   1. Indexing a Dart project with classes, functions, enums, and mixins produces correct File, Function, Type nodes with proper Contains/ContainsType edges

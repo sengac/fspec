@@ -103,7 +103,7 @@ the specific assertion proved:
 
 ```rust
 /// Invariant: cumulative_billed_input is monotonically non-decreasing.
-/// Proved by: codelet/core/spec/compaction/token_tracker.als
+/// Proved by: rust/core/spec/compaction/token_tracker.als
 ///   assertion: CumulativeBilledMonotonic
 fn record_api_response(&mut self, usage: &ApiTokenUsage) { ... }
 ```
@@ -160,7 +160,7 @@ them in PRs.
 Per-subsystem Alloy models live alongside the code they verify:
 
 ```
-codelet/core/
+rust/core/
 ├── src/compaction/             # Rust source
 │   ├── trimmer.rs
 │   ├── model.rs
@@ -179,7 +179,7 @@ different purposes:
 | Directory                        | Purpose                              |
 |----------------------------------|--------------------------------------|
 | `spec/features/*.feature`        | Acceptance criteria (Gherkin)        |
-| `codelet/<crate>/spec/<mod>/*.als` | Formal models (Alloy)              |
+| `rust/<crate>/spec/<mod>/*.als` | Formal models (Alloy)              |
 
 ---
 
@@ -187,7 +187,7 @@ different purposes:
 
 Properties surfaced during verification that are NOT bugs but represent
 unenforced contracts in the implementation. Each is pinned by a test under
-`codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs` so any
+`rust/core/src/compaction/__tests__/dag_node_proptest.test.rs` so any
 future change tightening the contract will surface visibly.
 
 | ID        | Severity | Source        | Description                                                  |
@@ -208,9 +208,9 @@ files involved.
 
 | Proof ID    | Subsystem            | Alloy        | proptest     | Model file                                          |
 |-------------|----------------------|--------------|--------------|-----------------------------------------------------|
-| FV-001      | Compaction trimmer   | ✅ Proved    | 📝 Planned   | `codelet/core/spec/compaction/trimmer.als`          |
-| FV-002      | Token tracker        | ✅ Proved    | ✅ Cross-checked | `codelet/core/spec/compaction/token_tracker.als` |
-| FV-003      | DAG compaction       | ✅ Proved    | ✅ Cross-checked | `codelet/core/spec/compaction/dag_compaction.als`   |
+| FV-001      | Compaction trimmer   | ✅ Proved    | 📝 Planned   | `rust/core/spec/compaction/trimmer.als`          |
+| FV-002      | Token tracker        | ✅ Proved    | ✅ Cross-checked | `rust/core/spec/compaction/token_tracker.als` |
+| FV-003      | DAG compaction       | ✅ Proved    | ✅ Cross-checked | `rust/core/spec/compaction/dag_compaction.als`   |
 
 **Status legend:**
 - 📝 Planned — invariants identified, model not yet written
@@ -226,17 +226,17 @@ files involved.
 compaction).
 
 **Source files verified:**
-- `codelet/core/src/compaction/trimmer.rs`
-- `codelet/core/src/compaction/trimmer_base64.rs`
-- `codelet/core/src/compaction/trimmer_metadata.rs`
-- `codelet/core/src/compaction/mod.rs`
+- `rust/core/src/compaction/trimmer.rs`
+- `rust/core/src/compaction/trimmer_base64.rs`
+- `rust/core/src/compaction/trimmer_metadata.rs`
+- `rust/core/src/compaction/mod.rs`
 
 **Existing tests (regression coverage):**
-- `codelet/core/src/compaction/__tests__/trimmer.test.rs`
-- `codelet/core/src/compaction/__tests__/structural_annotation.test.rs`
-- `codelet/core/src/compaction/__tests__/annotation_detector.test.rs`
+- `rust/core/src/compaction/__tests__/trimmer.test.rs`
+- `rust/core/src/compaction/__tests__/structural_annotation.test.rs`
+- `rust/core/src/compaction/__tests__/annotation_detector.test.rs`
 
-**Model file:** `codelet/core/spec/compaction/trimmer.als` *(to be created)*
+**Model file:** `rust/core/spec/compaction/trimmer.als` *(to be created)*
 
 **Invariants to prove:**
 
@@ -264,17 +264,17 @@ compaction).
 `TokenState`).
 
 **Source files verified:**
-- `codelet/core/src/compaction/model.rs` (TokenTracker, lines documenting
+- `rust/core/src/compaction/model.rs` (TokenTracker, lines documenting
   CTX-003)
-- `codelet/core/src/token_usage.rs` (ApiTokenUsage)
-- `codelet/core/src/compaction_hook.rs` (TokenState, threshold logic)
+- `rust/core/src/token_usage.rs` (ApiTokenUsage)
+- `rust/core/src/compaction_hook.rs` (TokenState, threshold logic)
 
 **Existing tests (regression coverage):**
-- `codelet/core/tests/token_tracker_update_test.rs`
-- `codelet/core/tests/cache_token_extraction_test.rs`
-- `codelet/core/tests/rig_012_reasoning_token_propagation_test.rs`
+- `rust/core/tests/token_tracker_update_test.rs`
+- `rust/core/tests/cache_token_extraction_test.rs`
+- `rust/core/tests/rig_012_reasoning_token_propagation_test.rs`
 
-**Model file:** `codelet/core/spec/compaction/token_tracker.als` *(to be created)*
+**Model file:** `rust/core/spec/compaction/token_tracker.als` *(to be created)*
 
 **Invariants to prove (from `model.rs` doc comment):**
 
@@ -302,17 +302,17 @@ compaction).
 construction.
 
 **Source files verified:**
-- `codelet/core/src/compaction/model.rs` (`ConversationTurn`, `DagDepth`,
+- `rust/core/src/compaction/model.rs` (`ConversationTurn`, `DagDepth`,
   `DagNodeMeta`, `parse_dag_nodes`, `wrap_dag_content`)
-- `codelet/core/src/compaction_hook.rs`
-- `codelet/core/src/compaction/annotation_detector.rs`
-- `codelet/tools/src/inject_summary.rs`
+- `rust/core/src/compaction_hook.rs`
+- `rust/core/src/compaction/annotation_detector.rs`
+- `rust/tools/src/inject_summary.rs`
 
 **Existing tests (regression coverage):**
-- `codelet/core/src/compaction/__tests__/dag_node_parsing.test.rs`
-- `codelet/core/tests/legacy_compaction_cleanup_test.rs`
+- `rust/core/src/compaction/__tests__/dag_node_parsing.test.rs`
+- `rust/core/tests/legacy_compaction_cleanup_test.rs`
 
-**Model file:** `codelet/core/spec/compaction/dag_compaction.als` *(to be created)*
+**Model file:** `rust/core/spec/compaction/dag_compaction.als` *(to be created)*
 
 **Invariants to prove:**
 

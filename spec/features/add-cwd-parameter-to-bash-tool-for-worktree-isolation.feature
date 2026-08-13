@@ -4,7 +4,7 @@
 @TOOL-013
 Feature: Add cwd parameter to Bash tool for worktree isolation
   """
-  Modifies codelet/tools/src/bash.rs. Add optional cwd: Option<String> to BashArgs struct. Modify spawn_command() to call .current_dir(cwd) when provided. Validate directory exists before spawning command.
+  Modifies rust/tools/src/bash.rs. Add optional cwd: Option<String> to BashArgs struct. Modify spawn_command() to call .current_dir(cwd) when provided. Validate directory exists before spawning command.
   """
 
   # ========================================

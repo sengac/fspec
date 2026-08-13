@@ -2,7 +2,7 @@
 @RPC-316
 Feature: update-tag-cli-subcommand
   """
-  Files: codelet/fspec/src/update_tag.rs (NEW CLI bridge); codelet/fspec/tests/cli_update_tag.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/update-tag.txt (captured help fixture from `node dist/index.js update-tag --help`).
+  Files: rust/fspec/src/update_tag.rs (NEW CLI bridge); rust/fspec/tests/cli_update_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/update-tag.txt (captured help fixture from `node dist/index.js update-tag --help`).
   Bridge marshals positional <tag> + --category + --description into JSON and delegates to commands::update_tag::run. No logic in bridge — JSON marshalling only.
   Exit codes: 0 on success, 1 on FspecCoreError with 'Error:' prefix to stderr.
   """
@@ -38,4 +38,4 @@ Feature: update-tag-cli-subcommand
     Given the standalone fspec Rust binary is built
     When I run 'fspec update-tag --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/update-tag.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/update-tag.txt

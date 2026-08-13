@@ -14,7 +14,7 @@ Feature: Agent loop honours Esc and emits StreamChunk::Interrupted
 
   After the RPC-072/RPC-080/RPC-081/RPC-082 ports the implementation
   already lives in the NAPI-free `codelet-agent-loop` crate and
-  `codelet/cli/src/interactive/stream_loop.rs`. RPC-088 pins the
+  `rust/cli/src/interactive/stream_loop.rs`. RPC-088 pins the
   contract via structural source-string assertions plus a small
   integration check against a real BackgroundSession, mirroring the
   RPC-082/083/084/086 coverage pattern.
@@ -26,7 +26,7 @@ Feature: Agent loop honours Esc and emits StreamChunk::Interrupted
     So that I can recover from a runaway response without restarting the session
 
   Scenario: BackgroundSession owns the AtomicBool + Notify interrupt handles
-    Given the source of `codelet/sessions/src/background_session.rs`
+    Given the source of `rust/sessions/src/background_session.rs`
     When I inspect the `BackgroundSession` struct
     Then it declares a `pub is_interrupted: Arc<AtomicBool>` field
     And it declares a `pub interrupt_notify: Arc<Notify>` field
@@ -40,31 +40,31 @@ Feature: Agent loop honours Esc and emits StreamChunk::Interrupted
     And calling `session.reset_interrupt()` flips `session.is_interrupted.load(Ordering::Acquire)` back to `false`
 
   Scenario: Agent loop calls reset_interrupt() at the start of each turn
-    Given the source of `codelet/agent-loop/src/agent_loop.rs`
+    Given the source of `rust/agent-loop/src/agent_loop.rs`
     When I locate the pre-turn setup block
     Then the body contains `session.reset_interrupt();` immediately after `session.set_status(SessionStatus::Running);`
 
   Scenario: run_with_provider! macro forwards both interrupt handles to run_agent_stream_with_images
-    Given the source of `codelet/agent-loop/src/dispatch.rs`
+    Given the source of `rust/agent-loop/src/dispatch.rs`
     When I locate the `run_with_provider!` macro body
     Then the body's call to `codelet_cli::interactive::run_agent_stream_with_images` passes `$session.is_interrupted.clone()` as positional arg 5
     And the call passes `$session.interrupt_notify.clone()` as positional arg 7
 
   Scenario: OpenAI inlined arm and custom-provider fallthrough forward both interrupt handles
-    Given the source of `codelet/agent-loop/src/agent_loop.rs`
+    Given the source of `rust/agent-loop/src/agent_loop.rs`
     When I locate the inlined `"openai" =>` match arm
     Then the body's `run_agent_stream_with_images` call passes `session.is_interrupted.clone()` and `session.interrupt_notify.clone()`
     When I locate the `_ =>` custom-provider fallthrough arm
     Then the body's `run_agent_stream_with_images` call also passes `session.is_interrupted.clone()` and `session.interrupt_notify.clone()`
 
   Scenario: BackgroundOutput translates StreamEvent::Interrupted into StreamChunk::interrupted
-    Given the source of `codelet/agent-loop/src/background_output.rs`
+    Given the source of `rust/agent-loop/src/background_output.rs`
     When I locate the `StreamEvent::Interrupted(queued)` arm of `BackgroundOutput::emit`
     Then the arm body calls `self.persist_assistant_message()`
     And the arm body returns `StreamChunk::interrupted(queued)`
 
   Scenario: codelet_rpc_types::StreamChunk declares Interrupted variant + constructor
-    Given the source of `codelet/rpc-types/src/lib.rs`
+    Given the source of `rust/rpc-types/src/lib.rs`
     When I inspect the `StreamChunk` enum
     Then the enum declares a `Interrupted { queued_inputs: Vec<String> }` variant
     And the impl block defines a `pub fn interrupted(queued_inputs: Vec<String>) -> Self` constructor returning `Self::Interrupted { queued_inputs }`

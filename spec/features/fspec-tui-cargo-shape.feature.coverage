@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "codelet/fspec-tui is a fifth RPC-family workspace member with no binary entry point",
+      "name": "rust/fspec-tui is a fifth RPC-family workspace member with no binary entry point",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_cargo.rs",
+          "file": "rust/fspec-tui/tests/source_shape_cargo.rs",
           "lines": "26-67",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -261,14 +261,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui production dependencies include only RPC seam crates plus ratatui dependencies",
+      "name": "rust/fspec-tui production dependencies include only RPC seam crates plus ratatui dependencies",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_cargo.rs",
+          "file": "rust/fspec-tui/tests/source_shape_cargo.rs",
           "lines": "68-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -328,14 +328,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui dev-dependencies allow codelet-core for fixtures but never codelet-napi",
+      "name": "rust/fspec-tui dev-dependencies allow codelet-core for fixtures but never codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_cargo.rs",
+          "file": "rust/fspec-tui/tests/source_shape_cargo.rs",
           "lines": "123-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -395,14 +395,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui contains no own-runtime construction calls",
+      "name": "rust/fspec-tui contains no own-runtime construction calls",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_cargo.rs",
+          "file": "rust/fspec-tui/tests/source_shape_cargo.rs",
           "lines": "161-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/lib.rs",
+              "file": "rust/fspec-tui/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -455,11 +455,11 @@
       "name": "The existing scenario_7_* test in rpc-embedded is widened to scan fspec-tui",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_cargo.rs",
+          "file": "rust/fspec-tui/tests/source_shape_cargo.rs",
           "lines": "202-237",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+              "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
               "lines": [
                 1,
                 2,
@@ -749,13 +749,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_cargo.rs"
+      "rust/fspec-tui/tests/source_shape_cargo.rs"
     ],
     "implFiles": [
-      "codelet/Cargo.toml",
-      "codelet/fspec-tui/Cargo.toml",
-      "codelet/fspec-tui/src/lib.rs",
-      "codelet/rpc-embedded/tests/architecture_invariants.rs"
+      "rust/Cargo.toml",
+      "rust/fspec-tui/Cargo.toml",
+      "rust/fspec-tui/src/lib.rs",
+      "rust/rpc-embedded/tests/architecture_invariants.rs"
     ],
     "totalLinesCovered": 875
   }

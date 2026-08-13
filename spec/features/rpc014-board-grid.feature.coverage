@@ -4,11 +4,11 @@
       "name": "No work unit selected paints the centered placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "96-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_strip.rs",
+              "file": "rust/fspec-tui/src/views/board/details_strip.rs",
               "lines": [
                 75,
                 76,
@@ -36,11 +36,11 @@
       "name": "Selected work unit paints title and metadata rows of the details strip",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "110-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_strip.rs",
+              "file": "rust/fspec-tui/src/views/board/details_strip.rs",
               "lines": [
                 32,
                 33,
@@ -94,11 +94,11 @@
       "name": "Attachments row renders comma-joined basenames with the \"A\" key hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "147-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_strip.rs",
+              "file": "rust/fspec-tui/src/views/board/details_strip.rs",
               "lines": [
                 126,
                 127,
@@ -141,11 +141,11 @@
       "name": "Box-drawing borders and inner junctions are painted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "178-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 127,
                 128,
@@ -218,11 +218,11 @@
       "name": "Focused column header is cyan+bold and other columns are dim",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "215-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/columns.rs",
+              "file": "rust/fspec-tui/src/views/board/columns.rs",
               "lines": [
                 19,
                 20,
@@ -265,11 +265,11 @@
       "name": "Bug cells render red and the focused selected cell flips to bg=green fg=black bold",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "243-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/columns.rs",
+              "file": "rust/fspec-tui/src/views/board/columns.rs",
               "lines": [
                 57,
                 58,
@@ -335,11 +335,11 @@
       "name": "Task cells render blue with the [estimate] suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "270-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/columns.rs",
+              "file": "rust/fspec-tui/src/views/board/columns.rs",
               "lines": [
                 57,
                 58,
@@ -405,11 +405,11 @@
       "name": "Footer string and footer separator are still painted at the bottom",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc014.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
           "lines": "291-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 172,
                 173,
@@ -499,12 +499,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_board_unit_rpc014.rs"
+      "rust/fspec-tui/tests/view_board_unit_rpc014.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/details_strip.rs",
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/views/board/columns.rs"
+      "rust/fspec-tui/src/views/board/details_strip.rs",
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/board/columns.rs"
     ],
     "totalLinesCovered": 581
   }

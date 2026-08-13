@@ -4,7 +4,7 @@
 @PROV-001
 Feature: Optimize Prompt Caching for Multi-Turn Conversations
   """
-  This feature modifies transform_user_message_cache_control in codelet/providers/src/caching_client.rs to apply cache_control to the FINAL message instead of just the first user message. Per Anthropic's documentation: "During each turn, we mark the final block of the final message with cache_control so the conversation can be incrementally cached." This enables Anthropic to cache the entire conversation prefix on each turn.
+  This feature modifies transform_user_message_cache_control in rust/providers/src/caching_client.rs to apply cache_control to the FINAL message instead of just the first user message. Per Anthropic's documentation: "During each turn, we mark the final block of the final message with cache_control so the conversation can be incrementally cached." This enables Anthropic to cache the entire conversation prefix on each turn.
   """
 
   # ========================================

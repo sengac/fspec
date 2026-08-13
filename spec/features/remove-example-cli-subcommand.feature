@@ -2,7 +2,7 @@
 @RPC-273
 Feature: fspec remove-example CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_example.rs — clap variant mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/remove_example.rs — clap variant mirroring TS Commander.js
   at src/commands/remove-example.ts:88-107. Surface: `fspec remove-example <workUnitId> <index>`.
   Stdout (success): '✓ Removed example: "<text>"' OR 'Item ID <n> already deleted'.
   Stderr (failure): '✗ Failed to remove example: <message>' with exit code 1.
@@ -20,7 +20,7 @@ Feature: fspec remove-example CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-example --help`
     Then the exit code is 0
-    And stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-example.txt
+    And stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-example.txt
 
   Scenario: Happy-path soft-delete via CLI
     Given a project root tempdir with spec/work-units.json where AUTH-001 status=specifying has one example id=0 'hello'

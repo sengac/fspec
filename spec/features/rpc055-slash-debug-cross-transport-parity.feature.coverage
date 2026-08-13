@@ -4,11 +4,11 @@
       "name": "Embedded and WebSocket set_debug_directory both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc055_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc055_cross_transport_parity.rs",
           "lines": "69-100",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1117,
                 1118,
@@ -25,11 +25,11 @@
       "name": "Embedded and WebSocket toggle_debug both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc055_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc055_cross_transport_parity.rs",
           "lines": "106-141",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1106,
                 1107,
@@ -54,10 +54,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc055_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc055_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 84
   }

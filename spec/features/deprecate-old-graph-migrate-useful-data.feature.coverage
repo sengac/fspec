@@ -4,11 +4,11 @@
       "name": "GraphSearchAction enum only contains AST and Learnings variants after migration",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/deprecate_old_graph_test.rs",
+          "file": "rust/napi/tests/deprecate_old_graph_test.rs",
           "lines": "15-75",
           "implMappings": [
             {
-              "file": "codelet/tools/src/graph_search/types.rs",
+              "file": "rust/tools/src/graph_search/types.rs",
               "lines": [
                 1,
                 2,
@@ -83,11 +83,11 @@
       "name": "Graph registry only contains AST and Learnings graph instances",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/deprecate_old_graph_test.rs",
+          "file": "rust/napi/tests/deprecate_old_graph_test.rs",
           "lines": "78-111",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/registry.rs",
+              "file": "rust/napi/src/graph/registry.rs",
               "lines": [
                 1,
                 2,
@@ -243,11 +243,11 @@
       "name": "DeepSearch uses Learnings graph context instead of agent-memory",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/deprecate_old_graph_test.rs",
+          "file": "rust/napi/tests/deprecate_old_graph_test.rs",
           "lines": "114-133",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 172,
                 173,
@@ -314,11 +314,11 @@
       "name": "Graph module exports only dual-graph infrastructure",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/deprecate_old_graph_test.rs",
+          "file": "rust/napi/tests/deprecate_old_graph_test.rs",
           "lines": "136-200",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/mod.rs",
+              "file": "rust/napi/src/graph/mod.rs",
               "lines": [
                 1,
                 2,
@@ -366,11 +366,11 @@
       "name": "All existing AST and Learnings tests pass after migration",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/deprecate_old_graph_test.rs",
+          "file": "rust/napi/tests/deprecate_old_graph_test.rs",
           "lines": "203-237",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph_search_handler.rs",
+              "file": "rust/napi/src/graph_search_handler.rs",
               "lines": [
                 1,
                 2,
@@ -498,14 +498,14 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/deprecate_old_graph_test.rs"
+      "rust/napi/tests/deprecate_old_graph_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/graph_search/types.rs",
-      "codelet/napi/src/graph/registry.rs",
-      "codelet/napi/src/deep_search_handler.rs",
-      "codelet/napi/src/graph/mod.rs",
-      "codelet/napi/src/graph_search_handler.rs"
+      "rust/tools/src/graph_search/types.rs",
+      "rust/napi/src/graph/registry.rs",
+      "rust/napi/src/deep_search_handler.rs",
+      "rust/napi/src/graph/mod.rs",
+      "rust/napi/src/graph_search_handler.rs"
     ],
     "totalLinesCovered": 627
   }

@@ -4,11 +4,11 @@
       "name": "First GraphSearch call auto-initializes the database",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_lifecycle_test.rs",
+          "file": "rust/napi/tests/graph_lifecycle_test.rs",
           "lines": "39-81",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/mod.rs",
+              "file": "rust/napi/src/graph/mod.rs",
               "lines": [
                 44,
                 45,
@@ -64,11 +64,11 @@
       "name": "Subsequent process opens existing database",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_lifecycle_test.rs",
+          "file": "rust/napi/tests/graph_lifecycle_test.rs",
           "lines": "87-116",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/mod.rs",
+              "file": "rust/napi/src/graph/mod.rs",
               "lines": [
                 44,
                 45,
@@ -124,11 +124,11 @@
       "name": "Data directory change resets graph singleton",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_lifecycle_test.rs",
+          "file": "rust/napi/tests/graph_lifecycle_test.rs",
           "lines": "121-155",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/mod.rs",
+              "file": "rust/napi/src/graph/mod.rs",
               "lines": [
                 90,
                 91,
@@ -164,11 +164,11 @@
       "name": "Empty graph returns zero stats without error",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_lifecycle_test.rs",
+          "file": "rust/napi/tests/graph_lifecycle_test.rs",
           "lines": "160-184",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/mod.rs",
+              "file": "rust/napi/src/graph/mod.rs",
               "lines": [
                 118,
                 119,
@@ -206,11 +206,11 @@
       "name": "Schema contains all required node and edge types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_lifecycle_test.rs",
+          "file": "rust/napi/tests/graph_lifecycle_test.rs",
           "lines": "189-235",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/mod.rs",
+              "file": "rust/napi/src/graph/mod.rs",
               "lines": [
                 149,
                 150,
@@ -251,10 +251,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/graph_lifecycle_test.rs"
+      "rust/napi/tests/graph_lifecycle_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/mod.rs"
+      "rust/napi/src/graph/mod.rs"
     ],
     "totalLinesCovered": 345
   }

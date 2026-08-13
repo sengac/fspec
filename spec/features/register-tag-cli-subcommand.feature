@@ -2,7 +2,7 @@
 @RPC-265
 Feature: register-tag CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/register_tag.rs (NEW CLI bridge); codelet/fspec/tests/cli_register_tag.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/register-tag.txt (captured help fixture from `node dist/index.js register-tag --help`)
+  Files: rust/fspec/src/register_tag.rs (NEW CLI bridge); rust/fspec/tests/cli_register_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/register-tag.txt (captured help fixture from `node dist/index.js register-tag --help`)
   Bridge marshals positional <tag> <category> <description> args to JSON and delegates to commands::register_tag::run. No logic in bridge — JSON marshalling only.
   Exit codes: 0 on success, 1 on FspecCoreError with 'Error:' prefix to stderr.
   """
@@ -40,4 +40,4 @@ Feature: register-tag CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec register-tag --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/register-tag.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/register-tag.txt

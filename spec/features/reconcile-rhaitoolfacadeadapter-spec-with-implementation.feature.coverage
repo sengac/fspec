@@ -4,11 +4,11 @@
       "name": "Adapter name getter returns the Rhai-supplied tool name",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "71-83",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "file": "rust/providers/src/custom/tool_facade.rs",
               "lines": [
                 74,
                 75,
@@ -24,11 +24,11 @@
       "name": "Adapter parameters_schema getter returns the Rhai-supplied schema",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "88-108",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "file": "rust/providers/src/custom/tool_facade.rs",
               "lines": [
                 79,
                 80,
@@ -44,11 +44,11 @@
       "name": "Adapter maps_to getter exposes the routing identifier",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "113-122",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "file": "rust/providers/src/custom/tool_facade.rs",
               "lines": [
                 84,
                 85,
@@ -64,7 +64,7 @@
       "name": "PROV-066 Rule 0 describes getters-only adapter design",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "127-147",
           "implMappings": [
             {
@@ -81,7 +81,7 @@
       "name": "PROV-066 architecture note 0 describes getters-only adapter design",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "152-172",
           "implMappings": [
             {
@@ -98,7 +98,7 @@
       "name": "PROV-061 architecture note 1 describes getters-only adapter design",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "177-197",
           "implMappings": [
             {
@@ -115,7 +115,7 @@
       "name": "PROV-066 feature file no longer references rig::Tool semantics",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
+          "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
           "lines": "202-223",
           "implMappings": [
             {
@@ -239,10 +239,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/rhai_tool_facade_spec_alignment_tests.rs"
+      "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/tool_facade.rs",
+      "rust/providers/src/custom/tool_facade.rs",
       "spec/work-units.json",
       "spec/features/custom-provider-rhai-scriptable-tool-facades.feature"
     ],

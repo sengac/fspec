@@ -4,11 +4,11 @@
       "name": "Absent streaming flag is treated as enabled",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/prov139_streaming_flag.rs",
+          "file": "rust/rpc-types/tests/prov139_streaming_flag.rs",
           "lines": "15-32",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 449,
                 450,
@@ -44,11 +44,11 @@
       "name": "An explicit streaming flag is echoed by the helper",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/prov139_streaming_flag.rs",
+          "file": "rust/rpc-types/tests/prov139_streaming_flag.rs",
           "lines": "33-47",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 449,
                 450,
@@ -86,10 +86,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-types/tests/prov139_streaming_flag.rs"
+      "rust/rpc-types/tests/prov139_streaming_flag.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 81
   }

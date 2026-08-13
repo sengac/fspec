@@ -4,11 +4,11 @@
       "name": "Clap exposes show-epic as a subcommand and prints epicId-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "87-154",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -124,11 +124,11 @@
       "name": "CLI against empty workspace exits 1 with Epic not found error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "155-198",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -244,11 +244,11 @@
       "name": "CLI text output renders epic header and progress for the populated case",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "199-263",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -364,11 +364,11 @@
       "name": "CLI exits 1 and writes to stderr when epics.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "264-295",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -484,11 +484,11 @@
       "name": "CLI exits 1 when epicId is not registered",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "296-327",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -604,11 +604,11 @@
       "name": "CLI exits 0 with text output when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "328-368",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -724,11 +724,11 @@
       "name": "CLI --format json emits JSON to stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "369-405",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -844,11 +844,11 @@
       "name": "CLI -f json short flag matches the long form",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "406-433",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -964,11 +964,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "434-477",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -1084,11 +1084,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "478-540",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_epic.rs",
+              "file": "rust/fspec/src/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -1204,11 +1204,11 @@
       "name": "show-epic --help is byte-for-byte identical to the TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_epic.rs",
+          "file": "rust/fspec/tests/cli_show_epic.rs",
           "lines": "541-565",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/show_epic.rs",
+              "file": "rust/fspec-core/src/help/configs/show_epic.rs",
               "lines": [
                 1,
                 2,
@@ -1276,11 +1276,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_epic.rs"
+      "rust/fspec/tests/cli_show_epic.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/show_epic.rs",
-      "codelet/fspec-core/src/help/configs/show_epic.rs"
+      "rust/fspec/src/show_epic.rs",
+      "rust/fspec-core/src/help/configs/show_epic.rs"
     ],
     "totalLinesCovered": 2052
   }

@@ -1,7 +1,7 @@
 /**
  * AST Research Tool
  *
- * Code analysis using AST-based pattern matching via codelet's native ast-grep implementation.
+ * Code analysis using AST-based pattern matching via rust's native ast-grep implementation.
  * Uses ast-grep pattern syntax for structural code search and refactoring.
  */
 

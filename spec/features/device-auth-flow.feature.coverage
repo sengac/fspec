@@ -4,11 +4,11 @@
       "name": "Successful device auth login completes end-to-end",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "33-145",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 1,
                 2,
@@ -250,11 +250,11 @@
       "name": "Polling continues on authorization_pending status",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "151-217",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 105,
                 106,
@@ -334,11 +334,11 @@
       "name": "Polling backs off on slow_down response",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "223-292",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 105,
                 106,
@@ -418,11 +418,11 @@
       "name": "Polling stops on expired_token error",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "298-342",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 105,
                 106,
@@ -502,11 +502,11 @@
       "name": "Polling stops on access_denied error",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "348-392",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 105,
                 106,
@@ -586,11 +586,11 @@
       "name": "Device auth flow times out",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "398-451",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 175,
                 176,
@@ -658,11 +658,11 @@
       "name": "Usercode endpoint network failure",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "457-484",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 76,
                 77,
@@ -700,11 +700,11 @@
       "name": "Token exchange uses correct parameters without redirect_uri",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "490-572",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 175,
                 176,
@@ -772,11 +772,11 @@
       "name": "Device auth produces same CodexTokens output as browser OAuth",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_device_auth_test.rs",
+          "file": "rust/providers/tests/codex_device_auth_test.rs",
           "lines": "578-655",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_device_auth.rs",
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
               "lines": [
                 175,
                 176,
@@ -846,10 +846,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/codex_device_auth_test.rs"
+      "rust/providers/tests/codex_device_auth_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/codex/codex_device_auth.rs"
+      "rust/providers/src/codex/codex_device_auth.rs"
     ],
     "totalLinesCovered": 1863
   }

@@ -8,7 +8,7 @@
 @PROV-069
 Feature: Extend custom provider maps_to dispatch to non-file categories
   """
-  Extends the existing default_to_internal_file pattern in codelet/providers/src/custom/tool_facade.rs. A new tool_dispatch module adds default_to_internal_<category> functions for bash, search:grep, search:glob, ls, web_search:search, fspec, bridge, exec:run, and hitl. A top-level default_to_internal(maps_to, params) enum-returning dispatcher routes to each category function. Conversion errors surface as CustomProviderError::RhaiRuntimeError. Routes map onto Internal*Params structs already exported from codelet_tools::facade.
+  Extends the existing default_to_internal_file pattern in rust/providers/src/custom/tool_facade.rs. A new tool_dispatch module adds default_to_internal_<category> functions for bash, search:grep, search:glob, ls, web_search:search, fspec, bridge, exec:run, and hitl. A top-level default_to_internal(maps_to, params) enum-returning dispatcher routes to each category function. Conversion errors surface as CustomProviderError::RhaiRuntimeError. Routes map onto Internal*Params structs already exported from codelet_tools::facade.
   """
 
   # ========================================

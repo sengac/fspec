@@ -4,7 +4,7 @@
 @RPC-219
 Feature: Port delete-scenario command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/delete_scenario.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate, and gherkin-0.16 Scenario.position.line / Step.position.line (1-based) to compute the removal span; line-based split('\n')/join('\n') edit.
+  Core impl at rust/fspec-core/src/commands/delete_scenario.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate, and gherkin-0.16 Scenario.position.line / Step.position.line (1-based) to compute the removal span; line-based split('\n')/join('\n') edit.
   Coverage sidecar update reuses crate::types::coverage::{CoverageFile, CoverageScenario}; only totalScenarios/coveredScenarios/coveragePercent are recomputed (Math.round half-up), other stats fields preserved via serde flatten extra — matching the TS spread of ...coverage.stats.
   Recoverable failures returned as inner JSON envelope {success:false,error} (NOT FspecCoreError) like list_scenario_tags; CLI bridge prints '✓ <message>' on success / 'Error: <error>' to stderr + exit 1. Two-front-doors: bridge marshals positional <feature> <scenario> into {feature, scenario} JSON only.
   """
@@ -56,7 +56,7 @@ Feature: Port delete-scenario command to Rust
     Given the standalone fspec Rust binary is built
     When I run 'fspec delete-scenario --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-scenario.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/delete-scenario.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/login.feature containing scenarios 'Old' and 'Keep'

@@ -4,11 +4,11 @@
       "name": "Progress reaches a callback registered under the same session id the tool emits with",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_progress_session_key_rpc398.rs",
+          "file": "rust/tools/tests/tool_progress_session_key_rpc398.rs",
           "lines": "79-115",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 465,
                 466,
@@ -34,11 +34,11 @@
       "name": "Session isolation - a callback does not receive another session's progress",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_progress_session_key_rpc398.rs",
+          "file": "rust/tools/tests/tool_progress_session_key_rpc398.rs",
           "lines": "122-153",
           "implMappings": [
             {
-              "file": "codelet/tools/src/session_registry.rs",
+              "file": "rust/tools/src/session_registry.rs",
               "lines": [
                 95,
                 96,
@@ -56,11 +56,11 @@
       "name": "Incremental progress is delivered while the command is still running",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_progress_session_key_rpc398.rs",
+          "file": "rust/tools/tests/tool_progress_session_key_rpc398.rs",
           "lines": "160-191",
           "implMappings": [
             {
-              "file": "codelet/tools/src/tool_progress.rs",
+              "file": "rust/tools/src/tool_progress.rs",
               "lines": [
                 67,
                 68,
@@ -77,11 +77,11 @@
       "name": "Clearing the callback removes the registration for that session id",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_progress_session_key_rpc398.rs",
+          "file": "rust/tools/tests/tool_progress_session_key_rpc398.rs",
           "lines": "197-218",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1884,
                 1885,
@@ -101,12 +101,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/tool_progress_session_key_rpc398.rs"
+      "rust/tools/tests/tool_progress_session_key_rpc398.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/tools/src/session_registry.rs",
-      "codelet/tools/src/tool_progress.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/tools/src/session_registry.rs",
+      "rust/tools/src/tool_progress.rs"
     ],
     "totalLinesCovered": 154
   }

@@ -4,11 +4,11 @@
       "name": "Wheel down moves the selection down",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "529-554",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mouse.rs",
               "lines": [
                 17,
                 18,
@@ -44,11 +44,11 @@
       "name": "Wheel down clamps at the last rule",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "556-571",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mouse.rs",
               "lines": [
                 17,
                 18,
@@ -84,11 +84,11 @@
       "name": "Wheel up clamps at the first rule",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "573-588",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mouse.rs",
               "lines": [
                 17,
                 18,
@@ -124,11 +124,11 @@
       "name": "Non-wheel mouse events are ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "590-610",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mouse.rs",
               "lines": [
                 17,
                 18,
@@ -164,11 +164,11 @@
       "name": "The navigator routes wheel events to the view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "612-641",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
                 149,
                 150,
@@ -190,11 +190,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/blocklist/tests.rs"
+      "rust/fspec-tui/src/views/blocklist/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/blocklist/mouse.rs",
-      "codelet/fspec-tui/src/views/navigator_events.rs"
+      "rust/fspec-tui/src/views/blocklist/mouse.rs",
+      "rust/fspec-tui/src/views/navigator_events.rs"
     ],
     "totalLinesCovered": 213
   }

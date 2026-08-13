@@ -2,7 +2,7 @@
 @RPC-193
 Feature: add-tag-to-feature CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/add_tag_to_feature.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_tag_to_feature.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-tag-to-feature.txt (captured help fixture from `node dist/index.js add-tag-to-feature --help`).
+  Files: rust/fspec/src/add_tag_to_feature.rs (NEW CLI bridge); rust/fspec/tests/cli_add_tag_to_feature.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/add-tag-to-feature.txt (captured help fixture from `node dist/index.js add-tag-to-feature --help`).
   Bridge marshals positional <file> + variadic <tags...> + optional --validate-registry into JSON and delegates to commands::add_tag_to_feature::run. No logic in bridge — JSON marshalling only.
   Exit codes: 0 on success, 1 on FspecCoreError or {success:false} with 'Error:' prefix to stderr.
   """
@@ -46,11 +46,11 @@ Feature: add-tag-to-feature CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec add-tag-to-feature --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/add-tag-to-feature.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/add-tag-to-feature.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     When I dispatch add-tag-to-feature through fspec_core::dispatch::dispatch_command with file='spec/features/login.feature' and tags=['@cli']
     Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Added @cli to spec/features/login.feature'
-    And the CLI bridge module codelet/fspec/src/add_tag_to_feature.rs contains NO inline gherkin parsing, tag-validation regex, or insertion logic
+    And the CLI bridge module rust/fspec/src/add_tag_to_feature.rs contains NO inline gherkin parsing, tag-validation regex, or insertion logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

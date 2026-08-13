@@ -4,11 +4,11 @@
       "name": "Delete legacy compaction source files from core module",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "17-34",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -57,11 +57,11 @@
       "name": "Delete legacy LLM anchor detection test file",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "40-48",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -110,11 +110,11 @@
       "name": "Update mod.rs to remove deleted module declarations and re-exports",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "54-110",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -163,11 +163,11 @@
       "name": "Preserved modules remain intact and functional",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "116-186",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -216,11 +216,11 @@
       "name": "Remove execute_compaction_legacy from interactive_helpers.rs",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "192-201",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 1,
                 2,
@@ -248,11 +248,11 @@
       "name": "Remove compact_messages from Session",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "207-214",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/mod.rs",
+              "file": "rust/cli/src/session/mod.rs",
               "lines": [
                 160,
                 161,
@@ -270,11 +270,11 @@
       "name": "Remove dead anchor infrastructure from NAPI layer",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "220-233",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 16
               ]
@@ -287,11 +287,11 @@
       "name": "PersistedAnchorPoint remains for backward compatibility",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "320-333",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/types.rs",
+              "file": "rust/napi/src/persistence/types.rs",
               "lines": [
                 1,
                 2,
@@ -353,11 +353,11 @@
       "name": "Delete downstream test files that exclusively test deleted code",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "239-252",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -406,11 +406,11 @@
       "name": "Update test files that reference deleted types",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "258-269",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+              "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
               "lines": [
                 1,
                 2,
@@ -432,11 +432,11 @@
       "name": "cargo build succeeds with zero warnings from deleted modules",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "275-282",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -485,11 +485,11 @@
       "name": "Full project test suite passes with no regressions",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "288-294",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -538,11 +538,11 @@
       "name": "Zero references to deleted types remain in source files",
       "testMappings": [
         {
-          "file": "codelet/core/tests/legacy_compaction_cleanup_test.rs",
+          "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "300-314",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 1,
                 2,
@@ -593,15 +593,15 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/legacy_compaction_cleanup_test.rs"
+      "rust/core/tests/legacy_compaction_cleanup_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/mod.rs",
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/cli/src/session/mod.rs",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/napi/src/persistence/types.rs",
-      "codelet/core/src/compaction/__tests__/structural_annotation.test.rs"
+      "rust/core/src/compaction/mod.rs",
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/cli/src/session/mod.rs",
+      "rust/napi/src/session_manager.rs",
+      "rust/napi/src/persistence/types.rs",
+      "rust/core/src/compaction/__tests__/structural_annotation.test.rs"
     ],
     "totalLinesCovered": 636
   }

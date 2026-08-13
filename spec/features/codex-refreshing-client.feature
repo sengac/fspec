@@ -4,7 +4,7 @@
 @PROV-016
 Feature: Codex Custom Fetch - Token Refresh and API Rewriting
   """
-  New file: codelet/providers/src/codex/refreshing_client.rs — Implements RefreshingCodexClient struct that wraps reqwest::Client and implements rig's HttpClientExt trait. Contains TokenState struct with access_token, refresh_token, account_id, and expires_at (Instant). Arc<tokio::sync::RwLock<TokenState>> for shared mutable state.
+  New file: rust/providers/src/codex/refreshing_client.rs — Implements RefreshingCodexClient struct that wraps reqwest::Client and implements rig's HttpClientExt trait. Contains TokenState struct with access_token, refresh_token, account_id, and expires_at (Instant). Arc<tokio::sync::RwLock<TokenState>> for shared mutable state.
   CodexProvider struct is UNIFIED: both OAuth and API key modes use RefreshingCodexClient. Fields become CompletionModel<RefreshingCodexClient> and CompletionsClient<RefreshingCodexClient>. RefreshingCodexClient has an internal TokenMode enum: OAuth{token_state, issuer_url} for refresh+rewrite+headers, ApiKey for pass-through to reqwest. No enum wrapper or generics needed on CodexProvider itself.
   refresh_access_token_at() from codex_oauth.rs is the refresh function used — it takes an issuer URL (testable with wiremock) and returns TokenRefreshResponse with expires_in. The RefreshingCodexClient stores the issuer URL for testability.
   The rig CompletionsClient builder accepts the generic H via ClientBuilder<OpenAICompletionsExtBuilder, OpenAIApiKey, H> — we pass RefreshingCodexClient as H. The builder's .api_key() sets a dummy key (RefreshingCodexClient replaces it). No .base_url() needed since RefreshingCodexClient rewrites URLs itself.
@@ -59,7 +59,7 @@ Feature: Codex Custom Fetch - Token Refresh and API Rewriting
     Then the request URL should be rewritten to "https://chatgpt.com/backend-api/codex/responses"
     And the Authorization header should be "Bearer {access_token}"
     And the ChatGPT-Account-Id header should be "acc_12345"
-    And the originator header should be "codelet"
+    And the originator header should be "rust"
     And no token refresh should occur
 
   @happy-path

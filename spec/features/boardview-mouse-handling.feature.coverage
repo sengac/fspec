@@ -4,11 +4,11 @@
       "name": "Wheel-down inside the BACKLOG content area emits SelectNext",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "62-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 53,
                 54,
@@ -39,11 +39,11 @@
       "name": "Wheel-down at the last unit wraps the selection to index 0",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "95-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 33,
                 34,
@@ -70,11 +70,11 @@
       "name": "Wheel-up inside the BACKLOG content area emits SelectPrev",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "125-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 57,
                 58,
@@ -90,11 +90,11 @@
       "name": "Wheel event outside the content area is Ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "151-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 44,
                 45,
@@ -136,11 +136,11 @@
       "name": "Wheel-right inside the content area emits FocusNextColumn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "173-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 65,
                 66,
@@ -156,11 +156,11 @@
       "name": "Wheel-left inside the content area emits FocusPrevColumn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "199-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 61,
                 62,
@@ -176,11 +176,11 @@
       "name": "Left-click on a column header emits SetFocusedColumn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "225-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 75,
                 76,
@@ -222,11 +222,11 @@
       "name": "Left-click on a content row emits SetFocusedColumn and SelectIndexInFocused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "259-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 75,
                 76,
@@ -268,11 +268,11 @@
       "name": "Click on a content row adds scroll_offset to the clicked row index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
           "lines": "303-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 88,
                 89,
@@ -302,11 +302,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/board_mouse_rpc023.rs"
+      "rust/fspec-tui/tests/board_mouse_rpc023.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/mouse.rs",
-      "codelet/fspec-tui/src/store/board_viewport.rs"
+      "rust/fspec-tui/src/views/board/mouse.rs",
+      "rust/fspec-tui/src/store/board_viewport.rs"
     ],
     "totalLinesCovered": 405
   }

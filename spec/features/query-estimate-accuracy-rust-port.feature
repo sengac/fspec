@@ -119,4 +119,4 @@ Feature: Port query-estimate-accuracy command to Rust
     When I dispatch query-estimate-accuracy through fspec_core::dispatch::dispatch_command with format='json'
     Then the dispatcher returns success=true
     And the dispatcher payload contains a byStoryPoints entry for '5' with samples=1
-    And the CLI bridge module codelet/fspec/src/query_estimate_accuracy.rs contains no inline aggregation or rendering logic
+    And the CLI bridge module rust/fspec/src/query_estimate_accuracy.rs contains no inline aggregation or rendering logic

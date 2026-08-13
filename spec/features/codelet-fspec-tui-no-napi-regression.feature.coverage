@@ -4,11 +4,11 @@
       "name": "codelet-fspec-tui has no transitive codelet-napi dependency and no codelet_napi imports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/no_napi_dependency.rs",
+          "file": "rust/fspec-tui/tests/no_napi_dependency.rs",
           "lines": "71-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 12,
                 13,
@@ -54,10 +54,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/no_napi_dependency.rs"
+      "rust/fspec-tui/tests/no_napi_dependency.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/Cargo.toml"
+      "rust/fspec-tui/Cargo.toml"
     ],
     "totalLinesCovered": 144
   }

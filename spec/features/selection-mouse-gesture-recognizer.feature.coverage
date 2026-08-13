@@ -4,11 +4,11 @@
       "name": "Drag begins and extends a selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "file": "rust/fspec-tui/src/mouse/gesture.rs",
           "lines": "133-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 68,
                 69,
@@ -57,11 +57,11 @@
       "name": "A stationary long-press begins a selection at the press cell",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "file": "rust/fspec-tui/src/mouse/gesture.rs",
           "lines": "159-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 106,
                 107,
@@ -83,11 +83,11 @@
       "name": "A quick click produces no selection gesture",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "file": "rust/fspec-tui/src/mouse/gesture.rs",
           "lines": "175-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 68,
                 69,
@@ -136,11 +136,11 @@
       "name": "Releasing an active selection commits it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "file": "rust/fspec-tui/src/mouse/gesture.rs",
           "lines": "194-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 68,
                 69,
@@ -189,11 +189,11 @@
       "name": "Wheel events are ignored during an active selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "file": "rust/fspec-tui/src/mouse/gesture.rs",
           "lines": "215-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 68,
                 69,
@@ -242,11 +242,11 @@
       "name": "Long-press then drag begins, extends, and commits",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "file": "rust/fspec-tui/src/mouse/gesture.rs",
           "lines": "236-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 68,
                 69,
@@ -308,10 +308,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/mouse/gesture.rs"
+      "rust/fspec-tui/src/mouse/gesture.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/mouse/gesture.rs"
+      "rust/fspec-tui/src/mouse/gesture.rs"
     ],
     "totalLinesCovered": 346
   }

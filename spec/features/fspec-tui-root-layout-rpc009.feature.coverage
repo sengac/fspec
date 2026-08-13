@@ -4,11 +4,11 @@
       "name": "RootView is constructed at Priority::Background with id \"root\" replacing HelloComponent",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/root.rs",
+          "file": "rust/fspec-tui/src/views/root.rs",
           "lines": "177-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/root.rs",
+              "file": "rust/fspec-tui/src/views/root.rs",
               "lines": [
                 32,
                 33,
@@ -59,11 +59,11 @@
       "name": "Outer layout reserves a 1-row footer at the bottom and a Length(32) left column for the work-units list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/root.rs",
+          "file": "rust/fspec-tui/src/views/root.rs",
           "lines": "193-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/root.rs",
+              "file": "rust/fspec-tui/src/views/root.rs",
               "lines": [
                 111,
                 112,
@@ -96,11 +96,11 @@
       "name": "Tab at the RootView level emits Action::FocusNext and returns Consumed",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/root.rs",
+          "file": "rust/fspec-tui/src/views/root.rs",
           "lines": "230-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/root.rs",
+              "file": "rust/fspec-tui/src/views/root.rs",
               "lines": [
                 72,
                 73,
@@ -126,11 +126,11 @@
       "name": "Action::FocusNext alternates focused_pane between WorkUnits and Repl",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/root.rs",
+          "file": "rust/fspec-tui/src/views/root.rs",
           "lines": "245-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/root.rs",
+              "file": "rust/fspec-tui/src/views/root.rs",
               "lines": [
                 87,
                 88,
@@ -165,11 +165,11 @@
       "name": "Footer hint bar renders the three keybinding hints on the bottom row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/root.rs",
+          "file": "rust/fspec-tui/src/views/root.rs",
           "lines": "271-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/footer.rs",
+              "file": "rust/fspec-tui/src/views/footer.rs",
               "lines": [
                 1,
                 2,
@@ -242,11 +242,11 @@
       "name": "Non-Tab events are forwarded to the focused sub-pane",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/root.rs",
+          "file": "rust/fspec-tui/src/views/root.rs",
           "lines": "287-328",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/root.rs",
+              "file": "rust/fspec-tui/src/views/root.rs",
               "lines": [
                 72,
                 73,
@@ -274,11 +274,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/root.rs"
+      "rust/fspec-tui/src/views/root.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/root.rs",
-      "codelet/fspec-tui/src/views/footer.rs"
+      "rust/fspec-tui/src/views/root.rs",
+      "rust/fspec-tui/src/views/footer.rs"
     ],
     "totalLinesCovered": 319
   }

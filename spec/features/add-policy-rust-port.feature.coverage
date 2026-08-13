@@ -4,11 +4,11 @@
       "name": "First add seeds the eventStorm sub-object on a clean work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "76-121",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -136,11 +136,11 @@
       "name": "Optional when/then/boundedContext fields are persisted in TS insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "122-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -268,11 +268,11 @@
       "name": "Optional timestamp field is persisted when provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "185-211",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -400,11 +400,11 @@
       "name": "Second add increments nextItemId and preserves insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "212-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -532,11 +532,11 @@
       "name": "Missing work unit surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "257-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -664,11 +664,11 @@
       "name": "Done state is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "290-319",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -796,11 +796,11 @@
       "name": "Blocked state is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "320-349",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -928,11 +928,11 @@
       "name": "Missing spec/work-units.json reports the canonical not-found error without creating the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_policy.rs",
+          "file": "rust/fspec-core/tests/add_policy.rs",
           "lines": "349-375",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_policy.rs",
+              "file": "rust/fspec-core/src/commands/add_policy.rs",
               "lines": [
                 76,
                 77,
@@ -1062,10 +1062,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_policy.rs"
+      "rust/fspec-core/tests/add_policy.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_policy.rs"
+      "rust/fspec-core/src/commands/add_policy.rs"
     ],
     "totalLinesCovered": 1232
   }

@@ -2,7 +2,7 @@
 Feature: Clear context command for session reset
   """
   After clearing session, inject_context_reminders() must be called to restore CLAUDE.md and environment system reminders
-  Fix location: codelet/napi/src/session_manager.rs line 4508-4516, the 'clear' action handler
+  Fix location: rust/napi/src/session_manager.rs line 4508-4516, the 'clear' action handler
   """
 
   # ========================================

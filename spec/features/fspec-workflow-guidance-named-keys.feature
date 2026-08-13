@@ -2,7 +2,7 @@
 Feature: Replace positional `_` args with named keys in fspec tool guidance
 
   """
-  This is a documentation-only change to codelet/tools/src/fspec_workflow_guidance.rs - no Rust code changes needed
+  This is a documentation-only change to rust/tools/src/fspec_workflow_guidance.rs - no Rust code changes needed
   """
 
   # ========================================
@@ -26,7 +26,7 @@ Feature: Replace positional `_` args with named keys in fspec tool guidance
     So that the tool calls work correctly with both Rust dispatch and TypeScript callback paths
 
   Scenario: Guidance uses named keys for update-work-unit-status
-    Given the fspec workflow guidance file exists at codelet/tools/src/fspec_workflow_guidance.rs
+    Given the fspec workflow guidance file exists at rust/tools/src/fspec_workflow_guidance.rs
     When I inspect the update-work-unit-status examples
     Then I should see "workUnitId" as a named key
     And I should NOT see "_": ["AUTH-001", "specifying"] positional pattern

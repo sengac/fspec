@@ -4,11 +4,11 @@
       "name": "Overflow-recovery snapshot in the seed window records the true context total",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
           "lines": "121-155",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 779,
                 780,
@@ -45,11 +45,11 @@
           ]
         },
         {
-          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
           "lines": "121-155",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/background_output.rs",
+              "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
                 276,
                 277,
@@ -71,11 +71,11 @@
       "name": "Auto and manual compaction snapshots agree on the same basis across both twins",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
           "lines": "162-225",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 779,
                 780,
@@ -112,11 +112,11 @@
           ]
         },
         {
-          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
           "lines": "162-225",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_loop.rs",
+              "file": "rust/napi/src/agent_loop.rs",
               "lines": [
                 1692,
                 1693,
@@ -131,11 +131,11 @@
           ]
         },
         {
-          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
           "lines": "162-225",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 294,
                 295,
@@ -147,11 +147,11 @@
           ]
         },
         {
-          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
           "lines": "162-225",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_bindings.rs",
+              "file": "rust/napi/src/session_bindings.rs",
               "lines": [
                 3051,
                 3052,
@@ -171,14 +171,14 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs"
+      "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/background_session.rs",
-      "codelet/agent-loop/src/background_output.rs",
-      "codelet/napi/src/agent_loop.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/napi/src/session_bindings.rs"
+      "rust/sessions/src/background_session.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/napi/src/agent_loop.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/napi/src/session_bindings.rs"
     ],
     "totalLinesCovered": 415
   }

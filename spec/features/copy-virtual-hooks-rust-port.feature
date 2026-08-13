@@ -5,9 +5,9 @@
 @RPC-209
 Feature: Port copy-virtual-hooks command to Rust
   """
-  New impl file at codelet/fspec-core/src/commands/copy_virtual_hooks.rs replaces the NotYetPorted stub. Module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` mirroring the list_virtual_hooks::run signature.
+  New impl file at rust/fspec-core/src/commands/copy_virtual_hooks.rs replaces the NotYetPorted stub. Module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` mirroring the list_virtual_hooks::run signature.
 
-  The shell-facing CLI bridge is delivered alongside this port — see codelet/fspec/src/copy_virtual_hooks.rs and spec/features/copy-virtual-hooks-cli-subcommand.feature. Both front doors (LLM tool-call dispatcher and clap shell subcommand) call the same `copy_virtual_hooks::run` function defined in this port.
+  The shell-facing CLI bridge is delivered alongside this port — see rust/fspec/src/copy_virtual_hooks.rs and spec/features/copy-virtual-hooks-cli-subcommand.feature. Both front doors (LLM tool-call dispatcher and clap shell subcommand) call the same `copy_virtual_hooks::run` function defined in this port.
 
   Args parsed via serde camelCase: `{from: String (default ''), to: String (default ''), hookName: Option<String>}`. `from`/`to` empty after default → CLI bridge emits the friendly "--from option is required" / "--to option is required" error before delegating. The core function ALSO defends both fields and raises the same canonical error strings when invoked over the dispatcher with empty/missing values.
 

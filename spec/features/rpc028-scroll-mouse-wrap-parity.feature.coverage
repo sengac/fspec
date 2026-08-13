@@ -4,11 +4,11 @@
       "name": "SlashCommandPopup scrolls the viewport when the selection moves past visible_rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "26-45",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 141,
                 142,
@@ -28,11 +28,11 @@
       "name": "SlashCommandPopup wraps from the last match back to the first on Down",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "47-60",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 141,
                 142,
@@ -52,11 +52,11 @@
       "name": "SlashCommandPopup wraps from the first match to the last on Up",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "62-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 141,
                 142,
@@ -76,11 +76,11 @@
       "name": "FileSearchPopup mouse-wheel up moves the selection up one row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "208-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 150,
                 151,
@@ -109,11 +109,11 @@
       "name": "FileSearchPopup mouse-wheel up at the first row wraps to the last match",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "178-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 150,
                 151,
@@ -142,11 +142,11 @@
       "name": "ResumeSessionView Home jumps to the first session and scrolls to the top",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "483-508",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
                 215,
                 216,
@@ -195,11 +195,11 @@
       "name": "SearchHistoryView End jumps to the last match and scrolls so it is visible",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "550-572",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
                 150,
                 151,
@@ -297,11 +297,11 @@
       "name": "Left-click on a row in /resume picker selects that row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "510-544",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
                 131,
                 132,
@@ -353,11 +353,11 @@
       "name": "ThinkingLevelDialog mouse-wheel down advances and wraps at the last level",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "605-620",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 160,
                 161,
@@ -382,11 +382,11 @@
       "name": "Mouse-wheel outside the SlashCommandPopup rect is ignored so the scrollback scrolls",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "102-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 163,
                 164,
@@ -420,11 +420,11 @@
       "name": "scroll_viewport::wrap_index wraps in both directions using rem_euclid",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "631-641",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/scroll_viewport.rs",
+              "file": "rust/fspec-tui/src/components/scroll_viewport.rs",
               "lines": [
                 20,
                 21,
@@ -447,11 +447,11 @@
       "name": "scroll_viewport::ensure_visible scrolls down when selected is past the window",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "643-651",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/scroll_viewport.rs",
+              "file": "rust/fspec-tui/src/components/scroll_viewport.rs",
               "lines": [
                 32,
                 33,
@@ -497,11 +497,11 @@
       "name": "WheelVelocity ramps up to 5x within 150ms then resets after the gap",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "file": "rust/fspec-tui/tests/rpc028_popup_scroll.rs",
           "lines": "653-671",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/scroll_viewport.rs",
+              "file": "rust/fspec-tui/src/components/scroll_viewport.rs",
               "lines": [
                 67,
                 68,
@@ -579,16 +579,16 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc028_popup_scroll.rs"
+      "rust/fspec-tui/tests/rpc028_popup_scroll.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
-      "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
-      "codelet/fspec-tui/src/components/model_selector_dialog.rs",
-      "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
-      "codelet/fspec-tui/src/views/agent/search_history_view.rs",
-      "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
-      "codelet/fspec-tui/src/components/scroll_viewport.rs"
+      "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
+      "rust/fspec-tui/src/views/agent/file_search_popup.rs",
+      "rust/fspec-tui/src/components/model_selector_dialog.rs",
+      "rust/fspec-tui/src/views/agent/resume_session_view.rs",
+      "rust/fspec-tui/src/views/agent/search_history_view.rs",
+      "rust/fspec-tui/src/components/thinking_level_dialog.rs",
+      "rust/fspec-tui/src/components/scroll_viewport.rs"
     ],
     "totalLinesCovered": 667
   }

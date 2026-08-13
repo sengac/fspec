@@ -4,11 +4,11 @@
       "name": "Clap exposes review as a subcommand and prints bare --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_review.rs",
+          "file": "rust/fspec/tests/cli_review.rs",
           "lines": "92-118",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/review.rs",
+              "file": "rust/fspec/src/review.rs",
               "lines": [
                 1,
                 2,
@@ -99,11 +99,11 @@
       "name": "CLI reviews an existing work unit and prints the report",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_review.rs",
+          "file": "rust/fspec/tests/cli_review.rs",
           "lines": "120-143",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/review.rs",
+              "file": "rust/fspec/src/review.rs",
               "lines": [
                 55,
                 56,
@@ -132,11 +132,11 @@
       "name": "CLI errors on a work unit id that does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_review.rs",
+          "file": "rust/fspec/tests/cli_review.rs",
           "lines": "145-162",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/review.rs",
+              "file": "rust/fspec/src/review.rs",
               "lines": [
                 72,
                 73,
@@ -156,11 +156,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_review.rs",
+          "file": "rust/fspec/tests/cli_review.rs",
           "lines": "164-211",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/review.rs",
+              "file": "rust/fspec/src/review.rs",
               "lines": [
                 52,
                 53,
@@ -188,10 +188,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_review.rs"
+      "rust/fspec/tests/cli_review.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/review.rs"
+      "rust/fspec/src/review.rs"
     ],
     "totalLinesCovered": 235
   }

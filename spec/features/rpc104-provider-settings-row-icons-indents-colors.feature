@@ -6,7 +6,7 @@
 @RPC-104
 Feature: Provider settings: per-row icons, indents and color coding
   """
-  Test plan: new `codelet/fspec-tui/tests/provider_settings_row_render.rs` integration suite using ratatui `TestBackend` + `Buffer::diff` for cell-level assertions. Eight scenarios (1) yellow selection band on provider, (2) cyan on profile, (3) magenta on oauth-login, (4) green on oauth-status, (5) green on add-profile, (6) 4-space inner indent on every child kind, (7) no inner indent on provider, (8) ▼/▶ glyph flip on `expanded`. Pure widget tests — no NAPI, no async, no real terminal — so they run inside `cargo test -p codelet-fspec-tui` in <100ms.
+  Test plan: new `rust/fspec-tui/tests/provider_settings_row_render.rs` integration suite using ratatui `TestBackend` + `Buffer::diff` for cell-level assertions. Eight scenarios (1) yellow selection band on provider, (2) cyan on profile, (3) magenta on oauth-login, (4) green on oauth-status, (5) green on add-profile, (6) 4-space inner indent on every child kind, (7) no inner indent on provider, (8) ▼/▶ glyph flip on `expanded`. Pure widget tests — no NAPI, no async, no real terminal — so they run inside `cargo test -p codelet-fspec-tui` in <100ms.
   Implementation:
   - extract row painting into a new `row_render.rs` module (≤180 LoC) keyed off a `RowKind` enum (Provider, Profile, OauthLogin, OauthStatus, ApiKey, AddProfile). Each kind owns a `row_style(kind, selected) -> Style` returning the fg/bg pair from the visual matrix. A separate `icons.rs` exposes glyph constants (EXPANDED, COLLAPSED, FOLDER, KEY, PLUS, INDENT, SEL, NOSEL). The existing `list::render_list` loop becomes a `RowKind` dispatch — adding the new file keeps `list.rs` under the 300-LoC ceiling once colours/inline decorations are wired in.
   """

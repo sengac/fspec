@@ -6,7 +6,7 @@
  * and TypeScript polls the state via NAPI getter to render inline UI.
  *
  * Rust-side unit tests for the handler closure and types are in
- * codelet/napi/src/types.rs and codelet/napi/src/session_manager.rs.
+ * rust/napi/src/types.rs and rust/napi/src/session_manager.rs.
  */
 
 import {

@@ -4,11 +4,11 @@
       "name": "Navigating down past the bottom scrolls the viewport to follow the cursor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "623-646",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 181,
                 182,
@@ -31,11 +31,11 @@
       "name": "Navigating back up scrolls the viewport up with the cursor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "648-671",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 114,
                 115,
@@ -64,11 +64,11 @@
       "name": "End jumps to the last row and pins it to the bottom edge",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "673-696",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 114,
                 115,
@@ -97,11 +97,11 @@
       "name": "Mouse-wheel navigation scrolls the viewport like the Down key",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "698-734",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 183,
                 184,
@@ -122,11 +122,11 @@
       "name": "Filtering rebuilds the list and reconciles the scroll offset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "736-757",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 215,
                 216,
@@ -174,11 +174,11 @@
       "name": "A tiny or empty viewport renders gracefully without panic",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "759-773",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 349,
                 350,
@@ -214,11 +214,11 @@
       "name": "Shrinking the terminal re-clamps the scroll offset on the next paint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "775-793",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 349,
                 350,
@@ -254,11 +254,11 @@
       "name": "Returning to the first model reveals the leading provider header",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1034-1070",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 153,
                 154,
@@ -295,10 +295,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "totalLinesCovered": 363
   }

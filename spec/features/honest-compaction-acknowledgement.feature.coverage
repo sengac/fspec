@@ -4,11 +4,11 @@
       "name": "compact_session returns an acknowledgement instead of fabricated reduction numbers",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/rpc421_honest_ack_test.rs",
+          "file": "rust/napi/tests/rpc421_honest_ack_test.rs",
           "lines": "75-122",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 261,
                 262,
@@ -110,11 +110,11 @@
       "name": "NAPI session_compact returns the same acknowledgement shape",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/rpc421_honest_ack_test.rs",
+          "file": "rust/napi/tests/rpc421_honest_ack_test.rs",
           "lines": "132-174",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_bindings.rs",
+              "file": "rust/napi/src/session_bindings.rs",
               "lines": [
                 3038,
                 3039,
@@ -235,11 +235,11 @@
       "name": "Plain-CLI REPL /compact prints no fabricated numbers",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/rpc421_honest_ack_test.rs",
+          "file": "rust/napi/tests/rpc421_honest_ack_test.rs",
           "lines": "183-209",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/repl_loop.rs",
+              "file": "rust/cli/src/interactive/repl_loop.rs",
               "lines": [
                 92,
                 93,
@@ -296,12 +296,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/rpc421_honest_ack_test.rs"
+      "rust/napi/tests/rpc421_honest_ack_test.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/napi/src/session_bindings.rs",
-      "codelet/cli/src/interactive/repl_loop.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/napi/src/session_bindings.rs",
+      "rust/cli/src/interactive/repl_loop.rs"
     ],
     "totalLinesCovered": 360
   }

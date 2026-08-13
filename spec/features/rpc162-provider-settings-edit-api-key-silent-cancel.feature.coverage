@@ -4,11 +4,11 @@
       "name": "Pressing Enter on an empty EditApiKey draft transitions to List mode and emits no Action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "94-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 120,
                 121,
@@ -28,11 +28,11 @@
       "name": "Pressing Enter on an empty EditApiKey draft never writes the legacy \"API key cannot be empty\" status",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "128-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 120,
                 121,
@@ -52,11 +52,11 @@
       "name": "Pressing Enter on a non-empty EditApiKey draft emits SaveProviderCredentials and returns to List mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "153-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 120,
                 121,
@@ -84,11 +84,11 @@
       "name": "Pressing Esc in EditApiKey transitions directly to List mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "188-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 115,
                 116,
@@ -104,11 +104,11 @@
       "name": "Pressing Esc in EditApiKey with an empty draft also returns directly to List mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "222-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 115,
                 116,
@@ -124,11 +124,11 @@
       "name": "Empty-Enter cancel after typing then deleting all characters still produces no validation chrome",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "245-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 120,
                 121,
@@ -148,11 +148,11 @@
       "name": "Empty-Enter clears any pre-existing legacy \"API key cannot be empty\" status",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "277-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 120,
                 121,
@@ -172,11 +172,11 @@
       "name": "Non-empty Enter still consumes the draft into the SaveProviderCredentials payload verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
           "lines": "306-332",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 120,
                 121,
@@ -206,10 +206,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs"
+      "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
     "totalLinesCovered": 276
   }

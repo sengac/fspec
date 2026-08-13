@@ -4,11 +4,11 @@
       "name": "Connect to MCP server via stdio transport",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1173-1232",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 338,
                 339,
@@ -184,11 +184,11 @@
       "name": "Route tool call through cached MCP connection",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1237-1269",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 509,
                 510,
@@ -258,11 +258,11 @@
       "name": "Handle spawn failure with structured error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1271-1308",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 338,
                 339,
@@ -438,11 +438,11 @@
       "name": "Connect to MCP server via HTTP transport",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1310-1345",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 664,
                 665,
@@ -594,11 +594,11 @@
       "name": "Multi-server workflow with independent connections",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1347-1380",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 615,
                 616,
@@ -652,11 +652,11 @@
       "name": "Receive server tool list changed notification",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1382-1443",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 249,
                 250,
@@ -716,11 +716,11 @@
       "name": "Handle server sampling/createMessage request",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1445-1508",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 200,
                 201,
@@ -780,11 +780,11 @@
       "name": "List active MCP connections",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1510-1542",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 643,
                 644,
@@ -810,11 +810,11 @@
       "name": "Disconnect an active MCP connection",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1544-1597",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 569,
                 570,
@@ -855,11 +855,11 @@
       "name": "Handle connection timeout during initialization",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1599-1637",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 338,
                 339,
@@ -1035,11 +1035,11 @@
       "name": "Handle HTTP authentication failure",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1639-1675",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 664,
                 665,
@@ -1191,11 +1191,11 @@
       "name": "Session cleanup kills all MCP connections",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1677-1715",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 842,
                 843,
@@ -1228,11 +1228,11 @@
       "name": "Tool list assembly includes MCP tools alongside built-in tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1717-1753",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 615,
                 616,
@@ -1286,11 +1286,11 @@
       "name": "Tool name collision prevented by double-underscore namespacing",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1755-1783",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 600,
                 601,
@@ -1330,11 +1330,11 @@
       "name": "ConnectMCP with duplicate server name replaces existing connection",
       "testMappings": [
         {
-          "file": "codelet/tools/src/mcp.rs",
+          "file": "rust/tools/src/mcp.rs",
           "lines": "1785-1835",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 338,
                 339,
@@ -1512,10 +1512,10 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/mcp.rs"
+      "rust/tools/src/mcp.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/mcp.rs"
+      "rust/tools/src/mcp.rs"
     ],
     "totalLinesCovered": 2452
   }

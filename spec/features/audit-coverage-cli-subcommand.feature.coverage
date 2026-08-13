@@ -4,11 +4,11 @@
       "name": "Clap exposes audit-coverage as a subcommand requiring a feature-name and printing byte-parity help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_audit_coverage.rs",
+          "file": "rust/fspec/tests/cli_audit_coverage.rs",
           "lines": "60-89",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/audit_coverage.rs",
+              "file": "rust/fspec-core/src/help/configs/audit_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -150,11 +150,11 @@
       "name": "CLI reports all files present and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_audit_coverage.rs",
+          "file": "rust/fspec/tests/cli_audit_coverage.rs",
           "lines": "89-118",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/audit_coverage.rs",
+              "file": "rust/fspec/src/audit_coverage.rs",
               "lines": [
                 51,
                 52,
@@ -188,11 +188,11 @@
       "name": "CLI reports a missing test file and exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_audit_coverage.rs",
+          "file": "rust/fspec/tests/cli_audit_coverage.rs",
           "lines": "124-152",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/audit_coverage.rs",
+              "file": "rust/fspec/src/audit_coverage.rs",
               "lines": [
                 51,
                 52,
@@ -226,11 +226,11 @@
       "name": "CLI reports a missing coverage file and exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_audit_coverage.rs",
+          "file": "rust/fspec/tests/cli_audit_coverage.rs",
           "lines": "158-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/audit_coverage.rs",
+              "file": "rust/fspec/src/audit_coverage.rs",
               "lines": [
                 51,
                 52,
@@ -264,11 +264,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_audit_coverage.rs",
+          "file": "rust/fspec/tests/cli_audit_coverage.rs",
           "lines": "177-234",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/audit_coverage.rs",
+              "file": "rust/fspec/src/audit_coverage.rs",
               "lines": [
                 51,
                 52,
@@ -304,11 +304,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_audit_coverage.rs"
+      "rust/fspec/tests/cli_audit_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/audit_coverage.rs",
-      "codelet/fspec/src/audit_coverage.rs"
+      "rust/fspec-core/src/help/configs/audit_coverage.rs",
+      "rust/fspec/src/audit_coverage.rs"
     ],
     "totalLinesCovered": 379
   }

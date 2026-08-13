@@ -2,7 +2,7 @@
 @RPC-282
 Feature: fspec remove-tag-from-scenario CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_tag_from_scenario.rs — clap-derived struct mirroring the
+  CLI bridge: rust/fspec/src/remove_tag_from_scenario.rs — clap-derived struct mirroring the
   TS Commander.js registration (src/commands/remove-tag-from-scenario.ts:213-226). Surface:
   `fspec remove-tag-from-scenario <file> <scenario> <tags...>`.
   Stdout (success): '✓ <message>' via output.log.
@@ -21,7 +21,7 @@ Feature: fspec remove-tag-from-scenario CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-tag-from-scenario --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-tag-from-scenario.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-tag-from-scenario.txt
     And stdout starts with a blank line followed by 'REMOVE-TAG-FROM-SCENARIO'
 
   Scenario: CLI successfully removes a tag and prints the success line
@@ -58,4 +58,4 @@ Feature: fspec remove-tag-from-scenario CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec remove-tag-from-scenario spec/features/login.feature "Login" @critical` afterwards exits 0
     And spec/features/login.feature on disk shows the Login scenario with no tag lines immediately above it
-    And the CLI bridge module codelet/fspec/src/remove_tag_from_scenario.rs contains NO inline scenario lookup, line-walk filter, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/remove_tag_from_scenario.rs contains NO inline scenario lookup, line-walk filter, or file-write logic — its only computation is JSON arg marshalling

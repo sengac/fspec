@@ -4,11 +4,11 @@
       "name": "fspec daemon boots over a tempworkspace with no work-units and emits a port on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "43-68",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 104,
                 105,
@@ -39,11 +39,11 @@
       "name": "Workspace registers the stub provider through register_stub_provider()",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "71-122",
           "implMappings": [
             {
-              "file": "codelet/providers/src/stub_provider.rs",
+              "file": "rust/providers/src/stub_provider.rs",
               "lines": [
                 1,
                 2,
@@ -208,7 +208,7 @@
               ]
             },
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 104,
                 105,
@@ -239,11 +239,11 @@
       "name": "send_input(\"hello\") yields the canned [Text, Done] stream within 5 seconds",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "124-186",
           "implMappings": [
             {
-              "file": "codelet/providers/src/stub_provider.rs",
+              "file": "rust/providers/src/stub_provider.rs",
               "lines": [
                 44,
                 45,
@@ -316,11 +316,11 @@
       "name": "The full scripted run's normalised chunk stream matches the pinned golden",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "283-408",
           "implMappings": [
             {
-              "file": "codelet/providers/src/stub_provider.rs",
+              "file": "rust/providers/src/stub_provider.rs",
               "lines": [
                 44,
                 45,
@@ -393,11 +393,11 @@
       "name": "normalise_chunk_stream substitutes timestamps, UUIDs, correlation IDs, and tool-call IDs",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "189-271",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+              "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
                 240,
                 241,
@@ -483,11 +483,11 @@
       "name": "FSPEC_RPC_066_REGENERATE=1 re-records the golden file when it is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "410-440",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+              "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
                 283,
                 284,
@@ -625,11 +625,11 @@
       "name": "Missing golden file fails the test with a clear regeneration hint",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "442-471",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+              "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
                 283,
                 284,
@@ -767,11 +767,11 @@
       "name": "Injected regression in BackgroundSession's chunk forwarding fails the parity test",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "473-504",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+              "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
                 283,
                 284,
@@ -909,11 +909,11 @@
       "name": "Full parity test completes in under 60 seconds wall-clock",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "506-533",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+              "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
                 283,
                 284,
@@ -1051,11 +1051,11 @@
       "name": "Stub provider produces canned chunks even when the network is denied",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "535-600",
           "implMappings": [
             {
-              "file": "codelet/providers/src/stub_provider.rs",
+              "file": "rust/providers/src/stub_provider.rs",
               "lines": [
                 44,
                 45,
@@ -1125,14 +1125,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/tests/README.md documents regeneration and the deferred TS-fixture path",
+      "name": "rust/fspec/tests/README.md documents regeneration and the deferred TS-fixture path",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cross_frontend_parity.rs",
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
           "lines": "603-640",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/README.md",
+              "file": "rust/fspec/tests/README.md",
               "lines": [
                 1,
                 2,
@@ -1236,13 +1236,13 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cross_frontend_parity.rs"
+      "rust/fspec/tests/cross_frontend_parity.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/common.rs",
-      "codelet/providers/src/stub_provider.rs",
-      "codelet/fspec/tests/cross_frontend_parity.rs",
-      "codelet/fspec/tests/README.md"
+      "rust/fspec/src/common.rs",
+      "rust/providers/src/stub_provider.rs",
+      "rust/fspec/tests/cross_frontend_parity.rs",
+      "rust/fspec/tests/README.md"
     ],
     "totalLinesCovered": 1624
   }

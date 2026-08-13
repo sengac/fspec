@@ -160,7 +160,7 @@ describe('Feature: Compaction Boundary Index Bug', () => {
   describe('Scenario: The fix', () => {
     it('should document the required code change', () => {
       console.log('\n=== REQUIRED FIX ===');
-      console.log('File: codelet/napi/src/session_manager.rs');
+      console.log('File: rust/napi/src/session_manager.rs');
       console.log('Line: 5482-5483');
       console.log('');
       console.log('CURRENT (BUGGY):');

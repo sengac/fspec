@@ -4,11 +4,11 @@
       "name": "Calculate usable context for Claude Sonnet",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "240-257",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 172,
                 173,
@@ -28,11 +28,11 @@
       "name": "Calculate usable context for GPT-4",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "262-278",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 172,
                 173,
@@ -52,11 +52,11 @@
       "name": "SESSION_OUTPUT_MAX caps high-output models",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "284-300",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 172,
                 173,
@@ -76,11 +76,11 @@
       "name": "Unknown model with zero max_output uses SESSION_OUTPUT_MAX fallback",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "306-323",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 172,
                 173,
@@ -100,11 +100,11 @@
       "name": "Token count includes all three token types",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "329-345",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 150,
                 151,
@@ -123,11 +123,11 @@
       "name": "Token count does not discount cache tokens",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "351-368",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 150,
                 151,
@@ -146,11 +146,11 @@
       "name": "No compaction when under usable context threshold",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "374-394",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 198,
                 199,
@@ -184,11 +184,11 @@
       "name": "Trigger compaction when over usable context threshold",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "400-420",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 198,
                 199,
@@ -222,11 +222,11 @@
       "name": "Compaction triggers later than legacy 90% threshold",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "426-452",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 198,
                 199,
@@ -260,11 +260,11 @@
       "name": "No compaction when token count exactly equals usable context",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "458-485",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 198,
                 199,
@@ -298,11 +298,11 @@
       "name": "No compaction when context_window is zero",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "491-513",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 198,
                 199,
@@ -336,11 +336,11 @@
       "name": "No compaction when disable flag is set",
       "testMappings": [
         {
-          "file": "codelet/cli/src/compaction_threshold.rs",
+          "file": "rust/cli/src/compaction_threshold.rs",
           "lines": "519-550",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 198,
                 199,
@@ -376,10 +376,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/src/compaction_threshold.rs"
+      "rust/cli/src/compaction_threshold.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/compaction_threshold.rs"
+      "rust/cli/src/compaction_threshold.rs"
     ],
     "totalLinesCovered": 435
   }

@@ -6,7 +6,7 @@ Feature: Resume view rich session display
 
   """
   Architecture notes:
-  - Add updated_at_ms: Option<i64> to SessionInfo in codelet/rpc-types/src/lib.rs
+  - Add updated_at_ms: Option<i64> to SessionInfo in rust/rpc-types/src/lib.rs
   - Populate updated_at_ms from SessionManifest.updated_at in list_sessions (session_manager.rs)
   - Populate updated_at_ms from Utc::now() in BackgroundSession::get_info() (background_session.rs)
   - Rewrite render_session_rows to display 2-line format: name line + detail line

@@ -4,11 +4,11 @@
       "name": "CLI successfully removes a tag and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_feature.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_feature.rs",
           "lines": "54-84",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_feature.rs",
+              "file": "rust/fspec/src/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -95,11 +95,11 @@
       "name": "CLI rejects removal of a tag not on the feature with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_feature.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_feature.rs",
           "lines": "91-117",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_feature.rs",
+              "file": "rust/fspec/src/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -186,11 +186,11 @@
       "name": "CLI rejects missing file with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_feature.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_feature.rs",
           "lines": "124-145",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_feature.rs",
+              "file": "rust/fspec/src/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -277,11 +277,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_feature.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_feature.rs",
           "lines": "152-172",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_feature.rs",
+              "file": "rust/fspec/src/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -368,11 +368,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_tag_from_feature.rs",
+          "file": "rust/fspec/tests/cli_remove_tag_from_feature.rs",
           "lines": "179-229",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_tag_from_feature.rs",
+              "file": "rust/fspec/src/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -461,10 +461,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_tag_from_feature.rs"
+      "rust/fspec/tests/cli_remove_tag_from_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_tag_from_feature.rs"
+      "rust/fspec/src/remove_tag_from_feature.rs"
     ],
     "totalLinesCovered": 527
   }

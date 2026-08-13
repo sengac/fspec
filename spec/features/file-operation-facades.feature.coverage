@@ -4,11 +4,11 @@
       "name": "Map Gemini read_file parameters to internal ReadTool format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "214-240",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/file_ops.rs",
+              "file": "rust/tools/src/facade/file_ops.rs",
               "lines": [
                 1,
                 2,
@@ -77,11 +77,11 @@
       "name": "Map Gemini write_file parameters to internal WriteTool format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "242-266",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/file_ops.rs",
+              "file": "rust/tools/src/facade/file_ops.rs",
               "lines": [
                 59,
                 60,
@@ -140,11 +140,11 @@
       "name": "Map Gemini replace parameters to internal EditTool format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "268-294",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/file_ops.rs",
+              "file": "rust/tools/src/facade/file_ops.rs",
               "lines": [
                 107,
                 108,
@@ -215,11 +215,11 @@
       "name": "GeminiProvider registers file operation facades with rig agent builder",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "380-404",
           "implMappings": [
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 87,
                 88,
@@ -290,11 +290,11 @@
       "name": "GeminiReadFileFacade provides flat JSON schema without nested objects",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "296-314",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/file_ops.rs",
+              "file": "rust/tools/src/facade/file_ops.rs",
               "lines": [
                 24,
                 25,
@@ -321,11 +321,11 @@
       "name": "GeminiWriteFileFacade provides flat JSON schema without nested objects",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "316-335",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/file_ops.rs",
+              "file": "rust/tools/src/facade/file_ops.rs",
               "lines": [
                 70,
                 71,
@@ -354,11 +354,11 @@
       "name": "GeminiReplaceFacade provides flat JSON schema without nested objects",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "337-357",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/file_ops.rs",
+              "file": "rust/tools/src/facade/file_ops.rs",
               "lines": [
                 122,
                 123,
@@ -397,12 +397,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 88,
     "testFiles": [
-      "codelet/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool_facade_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/file_ops.rs",
-      "codelet/providers/src/gemini.rs",
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/file_ops.rs",
+      "rust/providers/src/gemini.rs",
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "totalLinesCovered": 600
   }

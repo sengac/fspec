@@ -5,7 +5,7 @@
 @PROV-055
 Feature: GitHub Copilot HTTP middleware, facades & endpoint routing
   """
-  Module layout: codelet/providers/src/copilot/{refreshing_client.rs (CopilotHttpClient middleware), header_facade.rs (CopilotHeaderFacade), classifier.rs (CopilotRequestClassifier), endpoint.rs (CopilotEndpointFacade), behavior_facade.rs (CopilotBehaviorFacade trait + 3 impls + selector)}
+  Module layout: rust/providers/src/copilot/{refreshing_client.rs (CopilotHttpClient middleware), header_facade.rs (CopilotHeaderFacade), classifier.rs (CopilotRequestClassifier), endpoint.rs (CopilotEndpointFacade), behavior_facade.rs (CopilotBehaviorFacade trait + 3 impls + selector)}
   Facade pattern references: CacheOptimizationFacade::build_headers (cache_optimization.rs:96) as template for CopilotHeaderFacade; ThinkingConfigFacade + select_claude_facade(is_oauth) (thinking_config.rs, system_prompt.rs:427) as template for CopilotBehaviorFacade + select_copilot_behavior_facade(model_id); RefreshingClaudeClient / RefreshingCodexClient as template for CopilotHttpClient middleware
   Each facade/middleware gets #[cfg(test)] mod tests with pure unit tests (no HTTP client needed): header building (given-classification-then-headers), classifier (given-body-then-classification), endpoint selection (given-model-id-then-endpoint), behavior selector (given-model-id-then-facade-type)
   Integration test uses wiremock or httpmock to stand up a mock Copilot API server and exercises the full CopilotHttpClient middleware pipeline: sends a real rig request, mock server captures headers + URL, assertion checks headers present and endpoint routing correct — mirrors pattern used in PROV-054 oauth integration tests
@@ -16,9 +16,9 @@ Feature: GitHub Copilot HTTP middleware, facades & endpoint routing
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. CopilotProvider implements the LlmProvider trait and is registered as ProviderType::GitHubCopilot in codelet/providers/src/manager.rs
+  #   1. CopilotProvider implements the LlmProvider trait and is registered as ProviderType::GitHubCopilot in rust/providers/src/manager.rs
   #   2. CopilotHttpClient implements rig::http_client::HttpClientExt as a middleware layer that wraps every outgoing request, mirroring the RefreshingClaudeClient / RefreshingCodexClient pattern
-  #   3. CopilotHeaderFacade injects the required header set on every request: x-initiator (user|agent), User-Agent (codelet/<version>), Authorization (Bearer <access_token>), Openai-Intent (conversation-edits), and conditional Copilot-Vision-Request (true only when vision content is present)
+  #   3. CopilotHeaderFacade injects the required header set on every request: x-initiator (user|agent), User-Agent (rust/<version>), Authorization (Bearer <access_token>), Openai-Intent (conversation-edits), and conditional Copilot-Vision-Request (true only when vision content is present)
   #   4. CopilotRequestClassifier is a pure function fn classify(body: &serde_json::Value) -> RequestClassification that returns { is_vision: bool, is_agent: bool } by inspecting chat/completions, responses, or Anthropic messages body shape — no IO, no state
   #   5. CopilotEndpointFacade::select(model_id) returns Endpoint::Responses when the model is gpt-N where N >= 5 AND the model is not gpt-5-mini; otherwise returns Endpoint::ChatCompletions
   #   6. CopilotBehaviorFacade is a trait analogous to ThinkingConfigFacade that encapsulates model-family-specific behavior (reasoning_effort variants, chat.params mutations, reasoning_opaque round-trip) with three implementations: CopilotGptBehaviorFacade, CopilotClaudeBehaviorFacade, CopilotGeminiBehaviorFacade
@@ -28,7 +28,7 @@ Feature: GitHub Copilot HTTP middleware, facades & endpoint routing
   #   10. The endpoint base URL is api.githubcopilot.com for github.com deployments and copilot-api.<enterprise-domain> for enterprise deployments; CopilotProvider reads the deployment type from the persisted credential file written by PROV-054
   #
   # EXAMPLES:
-  #   1. User selects gpt-4o-copilot in the TUI → CopilotEndpointFacade::select returns ChatCompletions → request is sent to https://api.githubcopilot.com/chat/completions with headers { x-initiator: user, User-Agent: codelet/<version>, Authorization: Bearer <token>, Openai-Intent: conversation-edits } and no Copilot-Vision-Request header
+  #   1. User selects gpt-4o-copilot in the TUI → CopilotEndpointFacade::select returns ChatCompletions → request is sent to https://api.githubcopilot.com/chat/completions with headers { x-initiator: user, User-Agent: rust/<version>, Authorization: Bearer <token>, Openai-Intent: conversation-edits } and no Copilot-Vision-Request header
   #   2. User picks gpt-5 in the TUI model menu → sends a chat message → response streams back from the /responses endpoint and includes a reasoning_opaque blob; follow-up turn echoes that reasoning_opaque so GPT-5 can continue its chain of thought
   #   3. User picks gpt-5-mini for a quick summarization task → request goes to /chat/completions (not /responses) because gpt-5-mini is explicitly excluded from the Responses-API rule → user gets a streamed summary
   #   4. User attaches a screenshot and asks claude-sonnet-4.5 (via Copilot) to describe it → codelet detects image parts in the outgoing request → the Copilot-Vision-Request: true header is added automatically → user receives a description of the image
@@ -48,7 +48,7 @@ Feature: GitHub Copilot HTTP middleware, facades & endpoint routing
     Then CopilotEndpointFacade::select("gpt-4o-copilot") should return Endpoint::ChatCompletions
     And the outgoing request URL should be "https://api.githubcopilot.com/chat/completions"
     And the request should include header "x-initiator: user"
-    And the request should include header "User-Agent" starting with "codelet/"
+    And the request should include header "User-Agent" starting with "rust/"
     And the request should include header "Authorization: Bearer <access_token>"
     And the request should include header "Openai-Intent: conversation-edits"
     And the request should NOT include the "Copilot-Vision-Request" header

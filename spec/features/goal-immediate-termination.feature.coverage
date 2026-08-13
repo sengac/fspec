@@ -4,11 +4,11 @@
       "name": "Accepted goal-mode done() terminates the turn at the ToolResult arm with atomic teardown",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "107-287",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -86,7 +86,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 81,
                 82,
@@ -95,7 +95,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/session/mod.rs",
+              "file": "rust/cli/src/session/mod.rs",
               "lines": [
                 234,
                 235,
@@ -108,7 +108,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 110,
                 111,
@@ -120,7 +120,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1024,
                 1025,
@@ -178,11 +178,11 @@
       "name": "Immediate termination prevents repeat verify runs and acceptance overwrite",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "294-346",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -209,7 +209,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1024,
                 1025,
@@ -267,11 +267,11 @@
       "name": "Tier 1 rejected done() records a rejection and never exits early",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "352-410",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -305,11 +305,11 @@
       "name": "Failing Tier 2 verify rejects done() without early exit",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "416-457",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -343,11 +343,11 @@
       "name": "Settle-point escalation semantics are unchanged",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "463-498",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 103,
                 104,
@@ -407,11 +407,11 @@
       "name": "Stream-loop wiring pins goal-mode early exit and single-teardown invariants",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "505-593",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1024,
                 1025,
@@ -476,7 +476,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 92,
                 93,
@@ -517,11 +517,11 @@
       "name": "Verify command exceeding the timeout rejects done() without early exit",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont006_goal_immediate_termination.rs",
+          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
           "lines": "600-655",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 136,
                 137,
@@ -592,7 +592,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -628,15 +628,15 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/cont006_goal_immediate_termination.rs"
+      "rust/cli/tests/cont006_goal_immediate_termination.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/done_early_exit.rs",
-      "codelet/cli/src/interactive/goal.rs",
-      "codelet/cli/src/session/mod.rs",
-      "codelet/tools/src/done.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/auto_continue.rs"
+      "rust/cli/src/interactive/done_early_exit.rs",
+      "rust/cli/src/interactive/goal.rs",
+      "rust/cli/src/session/mod.rs",
+      "rust/tools/src/done.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/auto_continue.rs"
     ],
     "totalLinesCovered": 991
   }

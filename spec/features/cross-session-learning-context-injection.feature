@@ -1,7 +1,7 @@
 @KGRAPH-022
 Feature: Cross-Session Learning & Periodic Synthesis
   """
-  Implementation uses learnings_context.rs in codelet/napi/src/graph/ for the standalone context building function, integrated via session_start hook in session_manager.rs
+  Implementation uses learnings_context.rs in rust/napi/src/graph/ for the standalone context building function, integrated via session_start hook in session_manager.rs
   Context injection uses existing learnings_dispatch::dispatch_learnings_search and dispatch_learnings_decisions functions — no new nanograph queries needed, only formatting and integration logic
   Post-session extraction hooks into the existing session_end hook (HOOK-013) to trigger learnings extraction from the session's compaction DAG, reusing extract_learnings_from_text from KGRAPH-021
   """

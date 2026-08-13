@@ -4,11 +4,11 @@
       "name": "`fspec client --connect ws://...` opens the WS connection and runs the App",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "287-320",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -147,11 +147,11 @@
       "name": "Plain `fspec client` (no --connect) reads ~/.fspec/daemon.json for autodiscovery",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "68-155",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 1,
                 2,
@@ -408,11 +408,11 @@
       "name": "`fspec client` prefers $XDG_RUNTIME_DIR/fspec/daemon.json when set",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "157-224",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 1,
                 2,
@@ -669,11 +669,11 @@
       "name": "Plain `fspec client` fails fast when no daemon.json exists",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "29-66",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -812,11 +812,11 @@
       "name": "Client mode emits nothing on STDOUT or STDERR under normal operation",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "322-377",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -955,11 +955,11 @@
       "name": "Client mode does not construct a SharedFspecService",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "379-409",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1098,11 +1098,11 @@
       "name": "Client mode does not call ratatui::init directly — App owns the TerminalGuard",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "411-454",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1241,11 +1241,11 @@
       "name": "WS disconnect mid-session surfaces a critical-priority disconnect dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "456-500",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1384,11 +1384,11 @@
       "name": "Pressing `q` in the disconnect dialog quits the App",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "502-550",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1527,11 +1527,11 @@
       "name": "Pressing `r` performs a full reconnect bootstrap (new session, fresh subscribers)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "607-785",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1670,11 +1670,11 @@
       "name": "Reconnect attempt does not loop — single try only in this card",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "552-605",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1813,11 +1813,11 @@
       "name": "Client bootstrap observability — daemon-side counter increments by 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/client_mode.rs",
+          "file": "rust/fspec/tests/client_mode.rs",
           "lines": "226-285",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 1,
                 2,
@@ -1958,11 +1958,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/client_mode.rs"
+      "rust/fspec/tests/client_mode.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/client.rs",
-      "codelet/fspec/src/common.rs"
+      "rust/fspec/src/client.rs",
+      "rust/fspec/src/common.rs"
     ],
     "totalLinesCovered": 2506
   }

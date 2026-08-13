@@ -4,11 +4,11 @@
       "name": "Login to github.com Copilot deployment via OAuth device flow",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "47-92",
           "implMappings": [
             {
-              "file": "codelet/providers/src/credentials.rs",
+              "file": "rust/providers/src/credentials.rs",
               "lines": [
                 32,
                 33,
@@ -36,11 +36,11 @@
       "name": "Login to GitHub Enterprise Copilot deployment with enterprise URL",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "94-122",
           "implMappings": [
             {
-              "file": "codelet/providers/src/credentials.rs",
+              "file": "rust/providers/src/credentials.rs",
               "lines": [
                 32,
                 33,
@@ -68,11 +68,11 @@
       "name": "Chat completion request to gpt-4o-copilot uses /chat/completions endpoint with Copilot headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "124-180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 19,
                 20,
@@ -156,11 +156,11 @@
       "name": "gpt-5 model is routed to the /responses endpoint with reasoning_opaque round-trip",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "182-219",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 19,
                 20,
@@ -244,11 +244,11 @@
       "name": "gpt-5-mini is excluded from the Responses API rule and uses /chat/completions",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "221-241",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 19,
                 20,
@@ -332,11 +332,11 @@
       "name": "Image attachment triggers Copilot-Vision-Request header on claude-sonnet-4.5",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "243-285",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 19,
                 20,
@@ -420,11 +420,11 @@
       "name": "Logout deletes the github-copilot credential file",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "287-318",
           "implMappings": [
             {
-              "file": "codelet/providers/src/credentials.rs",
+              "file": "rust/providers/src/credentials.rs",
               "lines": [
                 32,
                 33,
@@ -452,11 +452,11 @@
       "name": "Model picker fetches the live catalog from /models with no static merge",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
           "lines": "320-380",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/mod.rs",
+              "file": "rust/providers/src/copilot/mod.rs",
               "lines": [
                 32,
                 33,
@@ -489,12 +489,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/copilot_provider_manager_integration_test.rs"
+      "rust/providers/tests/copilot_provider_manager_integration_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/credentials.rs",
-      "codelet/providers/src/manager.rs",
-      "codelet/providers/src/copilot/mod.rs"
+      "rust/providers/src/credentials.rs",
+      "rust/providers/src/manager.rs",
+      "rust/providers/src/copilot/mod.rs"
     ],
     "totalLinesCovered": 682
   }

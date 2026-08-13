@@ -4,11 +4,11 @@
       "name": "Delete the oldest checkpoints beyond the keepLast window",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "110-151",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -318,11 +318,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "110-151",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -637,11 +637,11 @@
       "name": "Render the cleanup summary text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "153-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -956,11 +956,11 @@
       "name": "No deletion when count is within the keepLast window",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "203-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -1275,11 +1275,11 @@
       "name": "Reject a keepLast of zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "239-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -1594,11 +1594,11 @@
       "name": "Reject a missing work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "261-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -1913,11 +1913,11 @@
       "name": "format json emits the structured cleanup payload",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cleanup_checkpoints.rs",
+          "file": "rust/fspec-core/tests/cleanup_checkpoints.rs",
           "lines": "280-338",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/cleanup_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/cleanup_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -2234,10 +2234,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/cleanup_checkpoints.rs"
+      "rust/fspec-core/tests/cleanup_checkpoints.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/cleanup_checkpoints.rs"
+      "rust/fspec-core/src/commands/cleanup_checkpoints.rs"
     ],
     "totalLinesCovered": 2387
   }

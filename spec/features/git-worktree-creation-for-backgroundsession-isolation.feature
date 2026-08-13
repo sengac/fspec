@@ -3,7 +3,7 @@
 @GIT-014
 Feature: Git worktree creation for BackgroundSession isolation
   """
-  Reuse existing data directory patterns (codelet/common/src/data_dir.rs). Follow DRY/SOLID/composable principles. Worktree operations in own file (codelet/git/src/worktree.rs). Auto-create .fspec/worktrees/ if it doesn't exist.
+  Reuse existing data directory patterns (rust/common/src/data_dir.rs). Follow DRY/SOLID/composable principles. Worktree operations in own file (rust/git/src/worktree.rs). Auto-create .fspec/worktrees/ if it doesn't exist.
   """
 
   # ========================================

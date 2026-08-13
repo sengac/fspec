@@ -63,7 +63,7 @@ Feature: Port show-foundation-event-storm command to Rust
     And every returned item has type='aggregate' and boundedContextId=1
 
   Scenario: Shared infrastructure module is registered for show-foundation-event-storm
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/show_foundation_event_storm.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/show_foundation_event_storm.rs
     Then the module no longer returns FspecCoreError::NotYetPorted
     And the dispatcher routes show-foundation-event-storm to the new run function

@@ -8,7 +8,7 @@ Feature: Copilot auth.json schema separates GitHub OAuth and Copilot tokens
   copilot_token, copilot_token_expires_at, and endpoints_api as separate
   fields so the token-exchange layer can cache and refresh the short-lived
   Copilot API token without losing the long-lived GitHub OAuth token.
-  Lives in codelet/providers/src/copilot/auth.rs.
+  Lives in rust/providers/src/copilot/auth.rs.
   """
 
   Background: User Story

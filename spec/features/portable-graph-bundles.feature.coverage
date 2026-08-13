@@ -4,11 +4,11 @@
       "name": "Export creates valid astbundle ZIP archive",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_export_import_test.rs",
+          "file": "rust/napi/tests/ast_export_import_test.rs",
           "lines": "47-89",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/bundle.rs",
+              "file": "rust/napi/src/graph/bundle.rs",
               "lines": [
                 202,
                 203,
@@ -105,11 +105,11 @@
       "name": "Import loads bundle into empty graph with overwrite mode",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_export_import_test.rs",
+          "file": "rust/napi/tests/ast_export_import_test.rs",
           "lines": "95-146",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/bundle.rs",
+              "file": "rust/napi/src/graph/bundle.rs",
               "lines": [
                 288,
                 289,
@@ -255,11 +255,11 @@
       "name": "Import loads bundle with merge mode",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_export_import_test.rs",
+          "file": "rust/napi/tests/ast_export_import_test.rs",
           "lines": "151-207",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/bundle.rs",
+              "file": "rust/napi/src/graph/bundle.rs",
               "lines": [
                 288,
                 289,
@@ -405,11 +405,11 @@
       "name": "Import rejects bundle with incompatible schema",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_export_import_test.rs",
+          "file": "rust/napi/tests/ast_export_import_test.rs",
           "lines": "212-260",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/bundle.rs",
+              "file": "rust/napi/src/graph/bundle.rs",
               "lines": [
                 288,
                 289,
@@ -555,11 +555,11 @@
       "name": "Export and import round-trip preserves all data",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_export_import_test.rs",
+          "file": "rust/napi/tests/ast_export_import_test.rs",
           "lines": "294-330",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/bundle.rs",
+              "file": "rust/napi/src/graph/bundle.rs",
               "lines": [
                 202,
                 203,
@@ -791,11 +791,11 @@
       "name": "JSONL round-trip serializes and deserializes all entity types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_export_import_test.rs",
+          "file": "rust/napi/tests/ast_export_import_test.rs",
           "lines": "335-398",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/graph_entities.rs",
+              "file": "rust/napi/src/graph/graph_entities.rs",
               "lines": [
                 75,
                 76,
@@ -857,11 +857,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_export_import_test.rs"
+      "rust/napi/tests/ast_export_import_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/bundle.rs",
-      "codelet/napi/src/graph/graph_entities.rs"
+      "rust/napi/src/graph/bundle.rs",
+      "rust/napi/src/graph/graph_entities.rs"
     ],
     "totalLinesCovered": 1057
   }

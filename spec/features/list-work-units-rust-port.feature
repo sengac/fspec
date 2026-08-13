@@ -5,7 +5,7 @@
 @RPC-253
 Feature: Port list-work-units command to Rust
   """
-  Shared modules to be created in codelet/fspec-core: src/io/project_root.rs (find_or_create_spec_directory), src/io/locked_file.rs (atomic JSON read/write with file locking via fs2), src/io/ensure.rs (ensure_work_units_file, ensure_prefixes_file), src/types/work_unit.rs (WorkUnit/WorkUnitsData/WorkUnitType + Meta + state map)
+  Shared modules to be created in rust/fspec-core: src/io/project_root.rs (find_or_create_spec_directory), src/io/locked_file.rs (atomic JSON read/write with file locking via fs2), src/io/ensure.rs (ensure_work_units_file, ensure_prefixes_file), src/types/work_unit.rs (WorkUnit/WorkUnitsData/WorkUnitType + Meta + state map)
   DispatchResult.data carries the JSON-encoded result; for text format the data field carries the plain text (with no ANSI), matching the existing dispatcher contract
   """
 
@@ -23,7 +23,7 @@ Feature: Port list-work-units command to Rust
   #   7. Each output item contains id, title, status, and epic (epic only when truthy/non-empty)
   #   8. JSON format wraps results in { workUnits: [...] } with 2-space indent
   #   9. Text format prints 'Work Units (N)' header then each WU as 'ID [status] / title / Epic: name' separated by blank lines; empty result prints 'No work units found'
-  #   10. Shared infrastructure (work-units I/O, project root detection, locked file access, WorkUnit types) MUST live in shared modules under codelet/fspec-core/src/{io,types,output} and NOT inside the command stub
+  #   10. Shared infrastructure (work-units I/O, project root detection, locked file access, WorkUnit types) MUST live in shared modules under rust/fspec-core/src/{io,types,output} and NOT inside the command stub
   #
   # EXAMPLES:
   #   1. Dispatch `list-work-units` against a tempdir that has no spec/ → command succeeds, returns JSON with empty workUnits array, spec/work-units.json is created with all 7 states
@@ -97,8 +97,8 @@ Feature: Port list-work-units command to Rust
     When I dispatch list-work-units against that project root
     Then the dispatcher returns success=false with an error message containing the substring 'Failed to parse work-units.json'
 
-  Scenario: Shared infrastructure modules exist under codelet/fspec-core for reuse by other commands
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+  Scenario: Shared infrastructure modules exist under rust/fspec-core for reuse by other commands
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the modules io::project_root, io::locked_file, io::ensure, and types::work_unit exist and are publicly accessible from the crate root
     Then list_work_units::run delegates to these shared modules rather than embedding its own filesystem logic

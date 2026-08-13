@@ -10,7 +10,7 @@ Feature: Agent loop drains mcp_injection_rx as a normal turn
   RPC-089 (child of RPC-072 family). The outer loop body must use
   tokio::select! between input_rx.recv() and mcp_injection_rx.recv()
   (gated by mcp_channel_open flag) — exactly as
-  codelet/napi/src/agent_loop.rs:323-460 does. The McpInjection channel
+  rust/napi/src/agent_loop.rs:323-460 does. The McpInjection channel
   cannot be discarded.
 
   Originally scenario "MCP injection through mcp_injection_rx is

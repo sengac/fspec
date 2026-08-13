@@ -4,11 +4,11 @@
       "name": "Provider listing filters deprecated and stale models \u2014 only current model returned",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "file": "rust/napi/tests/model_provider_listing_test.rs",
           "lines": "90-135",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "file": "rust/napi/src/models/napi_bindings.rs",
               "lines": [
                 133,
                 134,
@@ -53,11 +53,11 @@
       "name": "Provider listing preserves newest-first ordering",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "file": "rust/napi/tests/model_provider_listing_test.rs",
           "lines": "137-173",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "file": "rust/napi/src/models/napi_bindings.rs",
               "lines": [
                 133,
                 134,
@@ -102,11 +102,11 @@
       "name": "After public refresh behaviour, next listing returns the new model",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "file": "rust/napi/tests/model_provider_listing_test.rs",
           "lines": "175-230",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/mod.rs",
+              "file": "rust/napi/src/models/mod.rs",
               "lines": [
                 96,
                 97,
@@ -149,11 +149,11 @@
       "name": "Two concurrent callers and an invalidation remain race-safe",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "file": "rust/napi/tests/model_provider_listing_test.rs",
           "lines": "232-295",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/mod.rs",
+              "file": "rust/napi/src/models/mod.rs",
               "lines": [
                 47,
                 48,
@@ -205,11 +205,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/model_provider_listing_test.rs"
+      "rust/napi/tests/model_provider_listing_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/models/napi_bindings.rs",
-      "codelet/napi/src/models/mod.rs"
+      "rust/napi/src/models/napi_bindings.rs",
+      "rust/napi/src/models/mod.rs"
     ],
     "totalLinesCovered": 495
   }

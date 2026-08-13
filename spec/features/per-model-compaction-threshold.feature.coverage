@@ -8,7 +8,7 @@
           "lines": "89-115",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 99,
                 100,
@@ -102,7 +102,7 @@
           "lines": "121-147",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 132,
                 133,
@@ -132,7 +132,7 @@
           "lines": "153-178",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 147,
                 148,
@@ -159,7 +159,7 @@
           "lines": "184-215",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 163,
                 164,
@@ -183,7 +183,7 @@
           "lines": "221-247",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 113,
                 114,
@@ -208,7 +208,7 @@
           "lines": "253-283",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 160,
                 161,
@@ -241,7 +241,7 @@
           "lines": "289-320",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 163,
                 164,
@@ -265,7 +265,7 @@
           "lines": "326-360",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 276,
                 277,
@@ -299,7 +299,7 @@
           "lines": "405-431",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 276,
                 277,
@@ -333,7 +333,7 @@
           "lines": "366-399",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 159,
                 160,
@@ -368,8 +368,8 @@
       "src/tui/components/__tests__/per-model-compaction-threshold.test.ts"
     ],
     "implFiles": [
-      "codelet/cli/src/compaction_threshold.rs",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/compaction_threshold.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 497
   }

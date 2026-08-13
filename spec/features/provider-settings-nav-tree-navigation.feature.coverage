@@ -4,11 +4,11 @@
       "name": "Down from an expanded provider lands on its first child row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov103_nav_tree_navigation.rs",
+          "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
           "lines": "99-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 251,
                 252,
@@ -31,11 +31,11 @@
       "name": "Repeated Down reaches every child row and scrolls the highlighted row into view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov103_nav_tree_navigation.rs",
+          "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
           "lines": "143-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 241,
                 242,
@@ -68,11 +68,11 @@
       "name": "Enter on an api-key child row opens the edit-api-key detail",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov103_nav_tree_navigation.rs",
+          "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
           "lines": "197-227",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 86,
                 87,
@@ -115,11 +115,11 @@
       "name": "Navigation is clamped with no wrap at the tree boundaries",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov103_nav_tree_navigation.rs",
+          "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
           "lines": "233-266",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 251,
                 252,
@@ -142,11 +142,11 @@
       "name": "Empty nav tree falls back to provider-count bounds without silent selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov103_nav_tree_navigation.rs",
+          "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
           "lines": "273-309",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
                 54,
                 55,
@@ -172,12 +172,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov103_nav_tree_navigation.rs"
+      "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs",
-      "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
+      "rust/fspec-tui/src/views/provider_settings/mod.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs",
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
     ],
     "totalLinesCovered": 275
   }

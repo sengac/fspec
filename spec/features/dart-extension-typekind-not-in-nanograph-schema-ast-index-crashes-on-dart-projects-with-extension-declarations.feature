@@ -1,7 +1,7 @@
 @KGRAPH-070
 Feature: Dart extension typeKind not in nanograph schema — ast_index crashes on Dart projects with extension declarations
   """
-  Single-line fix: add 'extension' to typeKind enum in codelet/napi/schemas/ast-code.pg. No extractor or dispatch changes needed.
+  Single-line fix: add 'extension' to typeKind enum in rust/napi/schemas/ast-code.pg. No extractor or dispatch changes needed.
   """
 
   # ========================================

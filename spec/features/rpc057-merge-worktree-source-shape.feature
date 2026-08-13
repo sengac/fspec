@@ -17,7 +17,7 @@ Feature: /merge-worktree RPC surface source shape
   - MergeConfirmDialog MUST exist as a public dialog component with the
   documented constructor + render + handle_key surface.
   - All slash-command wiring for /merge-worktree MUST live in
-  codelet/fspec-tui/src/app/dispatch_merge_worktree.rs (mirrors dispatch_blocklist)
+  rust/fspec-tui/src/app/dispatch_merge_worktree.rs (mirrors dispatch_blocklist)
   so the orchestrator dispatch_slash_commands.rs stays under the 300-LoC ceiling.
 
   These tests run against source files at compile time — they catch
@@ -38,8 +38,8 @@ Feature: /merge-worktree RPC surface source shape
   #   4. FspecService (tarpc) MUST declare async fns for all five operations.
   #   5. FspecBackend trait MUST expose async variants of all five methods.
   #   6. EmbeddedFspecBackend AND WebSocketFspecBackend MUST forward each method to the tarpc client.
-  #   7. MergeConfirmDialog MUST live in codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs.
-  #   8. All /merge-worktree wiring MUST live in codelet/fspec-tui/src/app/dispatch_merge_worktree.rs.
+  #   7. MergeConfirmDialog MUST live in rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs.
+  #   8. All /merge-worktree wiring MUST live in rust/fspec-tui/src/app/dispatch_merge_worktree.rs.
   #
   # ========================================
   Background: User Story
@@ -48,7 +48,7 @@ Feature: /merge-worktree RPC surface source shape
     So that no future refactor can collapse the dual-transport boundary or strand the dialog
 
   Scenario: All five merge/worktree wire types are exported from codelet-rpc-types
-    Given the file codelet/rpc-types/src/lib.rs is compiled
+    Given the file rust/rpc-types/src/lib.rs is compiled
     Then it declares a public enum named "MergeStrategy"
     And it declares a public enum named "MergeStatus"
     And it declares a public struct named "MergeOutcome"
@@ -59,7 +59,7 @@ Feature: /merge-worktree RPC surface source shape
     And SessionChangesSummary has fields named files_changed, insertions, deletions, commits
 
   Scenario: SessionManagerHandle declares the five new methods
-    Given the file codelet/core/src/session_manager_handle.rs is compiled
+    Given the file rust/core/src/session_manager_handle.rs is compiled
     Then it declares a trait method named "merge_session_worktree" returning Result<MergeOutcome, String>
     And it declares a trait method named "discard_session_worktree" returning Result<(), String>
     And it declares a trait method named "prune_orphaned_worktrees" returning Result<Vec<String>, String>
@@ -67,7 +67,7 @@ Feature: /merge-worktree RPC surface source shape
     And it declares a trait method named "inspect_session_changes" returning Result<SessionChangesSummary, String>
 
   Scenario: StubSessionManagerHandle exposes per-call counters for all five methods
-    Given the file codelet/core/src/session_manager_handle.rs is compiled
+    Given the file rust/core/src/session_manager_handle.rs is compiled
     Then StubSessionManagerHandle declares a method named "merge_session_worktree_calls" returning u64
     And StubSessionManagerHandle declares a method named "discard_session_worktree_calls" returning u64
     And StubSessionManagerHandle declares a method named "prune_orphaned_worktrees_calls" returning u64
@@ -75,7 +75,7 @@ Feature: /merge-worktree RPC surface source shape
     And StubSessionManagerHandle declares a method named "inspect_session_changes_calls" returning u64
 
   Scenario: FspecService declares the five new RPC methods
-    Given the file codelet/rpc/src/lib.rs is compiled
+    Given the file rust/rpc/src/lib.rs is compiled
     Then it declares an async fn named "merge_session_worktree" with return type Result<MergeOutcome, String>
     And it declares an async fn named "discard_session_worktree" with return type Result<(), String>
     And it declares an async fn named "prune_orphaned_worktrees" with return type Result<Vec<String>, String>
@@ -83,7 +83,7 @@ Feature: /merge-worktree RPC surface source shape
     And it declares an async fn named "inspect_session_changes" with return type Result<SessionChangesSummary, String>
 
   Scenario: FspecBackend declares the five new methods
-    Given the file codelet/fspec-tui/src/transport/mod.rs is compiled
+    Given the file rust/fspec-tui/src/transport/mod.rs is compiled
     Then it declares an async fn named "merge_session_worktree" on the FspecBackend trait returning Result<MergeOutcome>
     And it declares an async fn named "discard_session_worktree" on the FspecBackend trait returning Result<()>
     And it declares an async fn named "prune_orphaned_worktrees" on the FspecBackend trait returning Result<Vec<String>>
@@ -91,7 +91,7 @@ Feature: /merge-worktree RPC surface source shape
     And it declares an async fn named "inspect_session_changes" on the FspecBackend trait returning Result<SessionChangesSummary>
 
   Scenario: Both transports implement the five new methods
-    Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
+    Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
     Then each file contains an impl of "merge_session_worktree" that calls the corresponding tarpc client method
     And each file contains an impl of "discard_session_worktree" that calls the corresponding tarpc client method
     And each file contains an impl of "prune_orphaned_worktrees" that calls the corresponding tarpc client method
@@ -99,7 +99,7 @@ Feature: /merge-worktree RPC surface source shape
     And each file contains an impl of "inspect_session_changes" that calls the corresponding tarpc client method
 
   Scenario: MergeConfirmDialog module exists with the documented entry points
-    Given the file codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs exists
+    Given the file rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs exists
     Then it declares a public struct named "MergeConfirmDialog"
     And it declares an enum named "MergeConfirmDialogOutcome" with variants for Merge, Discard, Cancel
     And MergeConfirmDialog declares a constructor "new" taking a SessionId and a SessionChangesSummary
@@ -107,7 +107,7 @@ Feature: /merge-worktree RPC surface source shape
     And MergeConfirmDialog declares a method named "handle_key" taking (&mut self, KeyCode, KeyModifiers) returning MergeConfirmDialogOutcome
 
   Scenario: /merge-worktree slash command wiring lives in dispatch_merge_worktree.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_merge_worktree.rs exists
+    Given the file rust/fspec-tui/src/app/dispatch_merge_worktree.rs exists
     Then it declares a method named "handle_slash_merge_worktree"
     And it declares a method named "handle_inspect_changes_loaded"
     And it declares a method named "handle_merge_confirmed"
@@ -119,7 +119,7 @@ Feature: /merge-worktree RPC surface source shape
     Given the codelet workspace inherits the lint level `-D warnings` which includes `clippy::derivable_impls`
     When I run `cargo clippy -p codelet-sessions -- -D warnings` against the post-fix worktree
     Then clippy exits with code 0 and emits no `clippy::derivable_impls` errors against MergeStrategy or MergeStatus
-    Given MergeStrategy is declared in codelet/rpc-types/src/lib.rs with FastForward as the conceptual default and MergeStatus is declared with NoChanges as the conceptual default
-    Then the MergeStrategy declaration in codelet/rpc-types/src/lib.rs carries `#[derive(Default)]` on the enum and `#[default]` on the FastForward variant, with no remaining manual `impl Default for MergeStrategy` block
-    Then the MergeStatus declaration in codelet/rpc-types/src/lib.rs carries `#[derive(Default)]` on the enum and `#[default]` on the NoChanges variant, with no remaining manual `impl Default for MergeStatus` block
+    Given MergeStrategy is declared in rust/rpc-types/src/lib.rs with FastForward as the conceptual default and MergeStatus is declared with NoChanges as the conceptual default
+    Then the MergeStrategy declaration in rust/rpc-types/src/lib.rs carries `#[derive(Default)]` on the enum and `#[default]` on the FastForward variant, with no remaining manual `impl Default for MergeStrategy` block
+    Then the MergeStatus declaration in rust/rpc-types/src/lib.rs carries `#[derive(Default)]` on the enum and `#[default]` on the NoChanges variant, with no remaining manual `impl Default for MergeStatus` block
     Then the Default::default() values are byte-identical to the pre-fix manual impls: MergeStrategy::default() == MergeStrategy::FastForward and MergeStatus::default() == MergeStatus::NoChanges

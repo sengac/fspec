@@ -4,11 +4,11 @@
       "name": "Handle interrupt control message",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "561-593",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 285,
                 286,
@@ -85,11 +85,11 @@
       "name": "Handle clear control message",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "595-630",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 285,
                 286,
@@ -166,11 +166,11 @@
       "name": "Handle unknown control action gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "632-667",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 285,
                 286,
@@ -247,11 +247,11 @@
       "name": "Forward input messages to agent (existing behavior)",
       "testMappings": [
         {
-          "file": "codelet/tools/src/bridge_relay.rs",
+          "file": "rust/tools/src/bridge_relay.rs",
           "lines": "669-700",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
                 285,
                 286,
@@ -330,10 +330,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/bridge_relay.rs"
+      "rust/tools/src/bridge_relay.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bridge_relay.rs"
+      "rust/tools/src/bridge_relay.rs"
     ],
     "totalLinesCovered": 397
   }

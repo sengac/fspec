@@ -3,7 +3,7 @@
 Feature: Unicode display width for text measurement in ratatui TUI
 
   """
-  Replace .chars().count() with unicode_width::UnicodeWidthStr::width() in all display-width measurement functions across codelet/fspec-tui/src/. The unicode-width crate is already in the workspace. Text selection/copy, animation, and secret masking intentionally keep .chars().count() since they operate on character counts, not display width.
+  Replace .chars().count() with unicode_width::UnicodeWidthStr::width() in all display-width measurement functions across rust/fspec-tui/src/. The unicode-width crate is already in the workspace. Text selection/copy, animation, and secret masking intentionally keep .chars().count() since they operate on character counts, not display width.
   """
 
   Background:

@@ -1,7 +1,7 @@
 @REFAC-007
 Feature: Migrate session message persistence from TypeScript to Rust
   """
-  Key files: Rust side - codelet/napi/src/session_manager.rs (agent_loop ~line 3538), codelet/napi/src/persistence/. TypeScript side - src/tui/components/AgentView.tsx (remove persistenceStoreMessageEnvelope calls at lines 2638, 2917, 2949, 3391)
+  Key files: Rust side - rust/napi/src/session_manager.rs (agent_loop ~line 3538), rust/napi/src/persistence/. TypeScript side - src/tui/components/AgentView.tsx (remove persistenceStoreMessageEnvelope calls at lines 2638, 2917, 2949, 3391)
 
   NOTE: CLI (stream_loop.rs) and NAPI (session_manager.rs) both use the SAME Rust persistence layer.
   Tests for the persistence layer cover both paths. CLI-specific scenarios are NOT needed.

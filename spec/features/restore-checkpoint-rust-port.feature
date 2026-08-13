@@ -3,10 +3,10 @@
 @wip
 Feature: Port restore-checkpoint command to Rust
   """
-  File layout: core codelet/fspec-core/src/commands/restore_checkpoint.rs is the single source
-  of truth (run(args_json, project_root)); CLI bridge codelet/fspec/src/restore_checkpoint.rs
+  File layout: core rust/fspec-core/src/commands/restore_checkpoint.rs is the single source
+  of truth (run(args_json, project_root)); CLI bridge rust/fspec/src/restore_checkpoint.rs
   marshals the two positionals (force/userChoice are NOT exposed on the clap surface, parity with
-  the TS Commander.js registration); help config codelet/fspec-core/src/help/configs/restore_checkpoint.rs.
+  the TS Commander.js registration); help config rust/fspec-core/src/help/configs/restore_checkpoint.rs.
 
   codelet_git wiring: dirty check via codelet_git::{get_staged_files,get_unstaged_files,
   get_untracked_files} (any error => treated as not dirty); conflict pre-check via

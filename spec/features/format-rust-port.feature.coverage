@@ -4,11 +4,11 @@
       "name": "Dispatcher formats all feature files in a workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/format.rs",
+          "file": "rust/fspec-core/tests/format.rs",
           "lines": "65-85",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/format.rs",
+              "file": "rust/fspec-core/src/commands/format.rs",
               "lines": [
                 56,
                 57,
@@ -60,11 +60,11 @@
       "name": "Dispatcher formats a single supplied file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/format.rs",
+          "file": "rust/fspec-core/tests/format.rs",
           "lines": "91-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/format.rs",
+              "file": "rust/fspec-core/src/commands/format.rs",
               "lines": [
                 46,
                 47,
@@ -86,11 +86,11 @@
       "name": "Dispatcher returns zero when no feature files exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/format.rs",
+          "file": "rust/fspec-core/tests/format.rs",
           "lines": "121-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/format.rs",
+              "file": "rust/fspec-core/src/commands/format.rs",
               "lines": [
                 66,
                 67,
@@ -105,11 +105,11 @@
       "name": "Dispatcher errors when the supplied file does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/format.rs",
+          "file": "rust/fspec-core/tests/format.rs",
           "lines": "139-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/format.rs",
+              "file": "rust/fspec-core/src/commands/format.rs",
               "lines": [
                 48,
                 49,
@@ -128,11 +128,11 @@
       "name": "Dispatcher output is idempotent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/format.rs",
+          "file": "rust/fspec-core/tests/format.rs",
           "lines": "163-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 36,
                 37,
@@ -157,11 +157,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/format.rs"
+      "rust/fspec-core/tests/format.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/format.rs",
-      "codelet/fspec-core/src/io/gherkin_format.rs"
+      "rust/fspec-core/src/commands/format.rs",
+      "rust/fspec-core/src/io/gherkin_format.rs"
     ],
     "totalLinesCovered": 172
   }

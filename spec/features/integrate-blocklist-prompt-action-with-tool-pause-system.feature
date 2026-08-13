@@ -2,10 +2,10 @@
 @BLOCK-007
 Feature: Integrate Blocklist Prompt Action with Tool Pause System
   """
-  Add PauseKind::Triple variant to codelet/tools/src/tool_pause.rs alongside Continue and Confirm
+  Add PauseKind::Triple variant to rust/tools/src/tool_pause.rs alongside Continue and Confirm
   Add PauseResponse::AllowOnce and PauseResponse::AllowSession variants
   Modify check_file_path() and check_bash_command() in middleware.rs: when result.blocked==false && !result.allowed (prompt case), check is_session_allowed(pattern), if false call pause_for_user(Triple), handle response
-  Add session_pause_triple(session_id, choice) NAPI binding in codelet/napi/src/session_manager.rs
+  Add session_pause_triple(session_id, choice) NAPI binding in rust/napi/src/session_manager.rs
   Add 'triple' to PauseKind type in src/tui/types/pause.ts
   Modify InputTransition.tsx to show triple-choice UI inline when pauseInfo.kind === 'triple' - same inline style as continue/confirm pauses, NOT a popup dialog
   Add keyboard handler in AgentView.tsx for triple pause: ←/→ to navigate selection, Enter to select, call sessionPauseTriple(sessionId, choice)

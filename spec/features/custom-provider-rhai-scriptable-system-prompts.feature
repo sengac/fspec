@@ -6,7 +6,7 @@
 @PROV-065
 Feature: Custom provider Rhai-scriptable system prompts
   """
-  RhaiSystemPromptFacade implements SystemPromptFacade trait in codelet/providers/src/custom/system_prompt.rs; uses ScriptLoader+Engine from PROV-062; leaked strings for 'static lifetime; safe fallback defaults when optional Rhai functions are absent
+  RhaiSystemPromptFacade implements SystemPromptFacade trait in rust/providers/src/custom/system_prompt.rs; uses ScriptLoader+Engine from PROV-062; leaked strings for 'static lifetime; safe fallback defaults when optional Rhai functions are absent
   """
 
   # ========================================

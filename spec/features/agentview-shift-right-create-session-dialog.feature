@@ -8,8 +8,8 @@
 @RPC-097
 Feature: AgentView Shift+Right does not open CreateSessionDialog and option styling drifts from TS Ink — dialog flag set but never pushed onto compositor
   """
-  TS canonical source: src/components/CreateSessionDialog.tsx (135 lines). Rust port target: codelet/fspec-tui/src/components/create_session_dialog.rs (rewrite render). Dispatch wiring: codelet/fspec-tui/src/app/dispatch_session_cycle.rs::handle_session_cycle NavTarget::CreateDialog branch.
-  Base dialog primitive (REUSED, not bypassed): codelet/fspec-tui/src/components/dialog_theme.rs — render_dialog + FspecDialog + DialogRow + Accent. CreateSessionDialog::render continues to delegate to render_dialog. Only the DialogRow construction and the FOOTER constant change.
+  TS canonical source: src/components/CreateSessionDialog.tsx (135 lines). Rust port target: rust/fspec-tui/src/components/create_session_dialog.rs (rewrite render). Dispatch wiring: rust/fspec-tui/src/app/dispatch_session_cycle.rs::handle_session_cycle NavTarget::CreateDialog branch.
+  Base dialog primitive (REUSED, not bypassed): rust/fspec-tui/src/components/dialog_theme.rs — render_dialog + FspecDialog + DialogRow + Accent. CreateSessionDialog::render continues to delegate to render_dialog. Only the DialogRow construction and the FOOTER constant change.
   Mount path (single unified entry point): Action::OpenCreateSessionDialog{preselect} → App::handle_open_create_session_dialog (dispatch_create_session_dialog.rs) → compositor.push(CreateSessionDialog::new(preselect, work_unit).with_action_tx(tx)). Already idempotent on CREATE_SESSION_DIALOG_ID. Shift+Right path is rewired to use this same helper instead of the orphan store-flag setter.
   ratatui Style for selected option button: Style::default().bg(Color::Blue).fg(Color::White).add_modifier(Modifier::BOLD). Unselected: Style::default().fg(Color::Gray). These match TS Ink's <Text backgroundColor='blue' color='white' bold> / <Text color='gray'>.
   Action variants involved (already defined in components/mod.rs): Action::SessionNext (emitted by AgentView dispatch on Shift+Right), Action::OpenCreateSessionDialog{preselect: Option<CreateSessionOption>}, Action::CreateSessionSubmitted{isolated: bool}, Action::CreateSessionCancelled. No new Action variants required.
@@ -51,7 +51,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   #   12. Given the user has typed 'pending' into MultiLineInput at the last session index, when Shift+Right mounts the dialog and the user presses Esc, then 'pending' is still in the MultiLineInput buffer
   #   13. Given the dialog is already mounted, when Shift+Right is pressed again, then handle_open_create_session_dialog is idempotent (no second dialog pushed) — guarded by compositor.contains(CREATE_SESSION_DIALOG_ID)
   #   14. Rendered footer row exactly equals '← → Select | Enter Confirm | Esc Cancel' — ASCII pipe verified by reading the buffer back as a String and grepping for '│' (must be absent) and '|' (must appear three times)
-  #   15. After the refactor, codelet/fspec-tui/src/components/create_session_dialog.rs LoC stays under 300 (verified by wc -l in source-shape regression test)
+  #   15. After the refactor, rust/fspec-tui/src/components/create_session_dialog.rs LoC stays under 300 (verified by wc -l in source-shape regression test)
   #
   # ========================================
   Background: User Story
@@ -219,7 +219,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @tui-component
   @source-shape
   Scenario: Source-shape budget for the refactored CreateSessionDialog
-    Given the file codelet/fspec-tui/src/components/create_session_dialog.rs
+    Given the file rust/fspec-tui/src/components/create_session_dialog.rs
     Then it has fewer than 300 lines
 
   @rust
@@ -227,7 +227,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @agent-view
   @tui-component
   Scenario: CreateSessionDialog renders via dialog_theme::render_dialog (base dialog primitive reused)
-    Given the source of codelet/fspec-tui/src/components/create_session_dialog.rs
+    Given the source of rust/fspec-tui/src/components/create_session_dialog.rs
     Then it imports render_dialog from super::dialog_theme
     And it does not call ratatui Block or Paragraph directly inside the render function
 

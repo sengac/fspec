@@ -4,11 +4,11 @@
       "name": "Clap exposes list-prefixes as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "85-146",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 120,
                 121,
@@ -31,11 +31,11 @@
       "name": "CLI against empty directory prints sentinel and does not auto-create files",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "147-184",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_prefixes.rs",
+              "file": "rust/fspec/src/list_prefixes.rs",
               "lines": [
                 30,
                 31,
@@ -88,11 +88,11 @@
       "name": "CLI text output renders prefix progress for the populated case",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "185-243",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_prefixes.rs",
+              "file": "rust/fspec/src/list_prefixes.rs",
               "lines": [
                 30,
                 31,
@@ -145,11 +145,11 @@
       "name": "CLI exits 1 and writes to stderr when prefixes.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "244-275",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_prefixes.rs",
+              "file": "rust/fspec/src/list_prefixes.rs",
               "lines": [
                 55,
                 56,
@@ -176,11 +176,11 @@
       "name": "CLI exits 0 when work-units.json is malformed (work-unit read errors are silently swallowed)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "276-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 98,
                 99,
@@ -208,11 +208,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "318-354",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 120,
                 121,
@@ -235,11 +235,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "355-433",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_prefixes.rs",
+              "file": "rust/fspec/src/list_prefixes.rs",
               "lines": [
                 37,
                 38,
@@ -284,11 +284,11 @@
       "name": "list-prefixes --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "file": "rust/fspec/tests/cli_list_prefixes.rs",
           "lines": "441-468",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_prefixes.rs",
+              "file": "rust/fspec-core/src/help/configs/list_prefixes.rs",
               "lines": [
                 1,
                 2,
@@ -336,13 +336,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_prefixes.rs"
+      "rust/fspec/tests/cli_list_prefixes.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/main.rs",
-      "codelet/fspec/src/list_prefixes.rs",
-      "codelet/fspec-core/src/io/ensure.rs",
-      "codelet/fspec-core/src/help/configs/list_prefixes.rs"
+      "rust/fspec/src/main.rs",
+      "rust/fspec/src/list_prefixes.rs",
+      "rust/fspec-core/src/io/ensure.rs",
+      "rust/fspec-core/src/help/configs/list_prefixes.rs"
     ],
     "totalLinesCovered": 579
   }

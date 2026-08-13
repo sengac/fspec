@@ -4,11 +4,11 @@
       "name": "model-selector does not auto-select the first row when no current model",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1989-2013",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 117,
                 118,
@@ -69,10 +69,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "totalLinesCovered": 72
   }

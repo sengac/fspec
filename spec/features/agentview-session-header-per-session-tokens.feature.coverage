@@ -4,11 +4,11 @@
       "name": "Shift+Right swaps SessionHeader to the new session's full token totals",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
+          "file": "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
           "lines": "121-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
                 16,
                 17,
@@ -63,7 +63,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 48,
                 49,
@@ -98,11 +98,11 @@
       "name": "Background session accumulates token state while not focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
+          "file": "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
           "lines": "196-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
                 16,
                 17,
@@ -164,11 +164,11 @@
       "name": "cache_read_input_tokens and cache_creation_input_tokens are persisted per-session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
+          "file": "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
           "lines": "230-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
                 16,
                 17,
@@ -230,11 +230,11 @@
       "name": "Switching to a never-updated session displays zeros (no carry-over)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
+          "file": "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
           "lines": "287-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 48,
                 49,
@@ -269,11 +269,11 @@
       "name": "Reasoning brain suffix toggles based on the focused session's reasoning_tokens",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
+          "file": "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
           "lines": "328-379",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 48,
                 49,
@@ -310,11 +310,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs"
+      "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/token_state.rs",
-      "codelet/fspec-tui/src/views/agent/chrome_paint.rs"
+      "rust/fspec-tui/src/store/agent_view/token_state.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
     "totalLinesCovered": 474
   }

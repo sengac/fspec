@@ -4,11 +4,11 @@
       "name": "Vim keys do not move the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "254-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 167,
                 168,
@@ -40,11 +40,11 @@
       "name": "Arrow keys move the selection one rule at a time",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "273-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 159,
                 160,
@@ -64,11 +64,11 @@
       "name": "PageDown advances the selection by one viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "292-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 206,
                 207,
@@ -89,11 +89,11 @@
       "name": "PageDown clamps at the last rule",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "318-333",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 206,
                 207,
@@ -114,11 +114,11 @@
       "name": "PageUp retreats the selection by one viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "335-350",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 218,
                 219,
@@ -139,11 +139,11 @@
       "name": "End selects the last rule and Home selects the first rule",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "352-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 229,
                 230,
@@ -174,11 +174,11 @@
       "name": "Space toggles the focused rule",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "382-400",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 183,
                 184,
@@ -211,11 +211,11 @@
       "name": "Footer hint no longer advertises vim keys",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "402-429",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/render.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
                 24,
                 25
@@ -231,11 +231,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/blocklist/tests.rs"
+      "rust/fspec-tui/src/views/blocklist/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/blocklist/mod.rs",
-      "codelet/fspec-tui/src/views/blocklist/render.rs"
+      "rust/fspec-tui/src/views/blocklist/mod.rs",
+      "rust/fspec-tui/src/views/blocklist/render.rs"
     ],
     "totalLinesCovered": 266
   }

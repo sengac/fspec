@@ -4,7 +4,7 @@
 @RPC-192
 Feature: Port add-step command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_step.rs: run(args_json,&Path) args {feature, scenario, type (serde rename), text, dryRun?}. Validation + scenario lookup via crate::io::gherkin::parse_feature_lenient; uses scenario.position.line, step.position.line, step.value (==TS step.text), step.keyword. Indentation from first step line leading whitespace. Placeholder map given/when/then. Line-based replace-or-append using positions, mirroring TS exactly (table/docstring before-insert). Response {success, valid} + type/scenario for CLI msg. Two-front-doors: bridge marshals <feature> <scenario> <type> <text> + optional --dry-run into JSON only.
+  Core impl at rust/fspec-core/src/commands/add_step.rs: run(args_json,&Path) args {feature, scenario, type (serde rename), text, dryRun?}. Validation + scenario lookup via crate::io::gherkin::parse_feature_lenient; uses scenario.position.line, step.position.line, step.value (==TS step.text), step.keyword. Indentation from first step line leading whitespace. Placeholder map given/when/then. Line-based replace-or-append using positions, mirroring TS exactly (table/docstring before-insert). Response {success, valid} + type/scenario for CLI msg. Two-front-doors: bridge marshals <feature> <scenario> <type> <text> + optional --dry-run into JSON only.
   """
 
   # ========================================

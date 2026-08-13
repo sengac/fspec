@@ -4,9 +4,9 @@
 @RPC-309
 Feature: Port suggest-dependencies command to Rust
   """
-  Core impl in codelet/fspec-core/src/commands/suggest_dependencies.rs: Args {output: Option<String>}; reads via ensure_work_units_file(project_root); iterates data.work_units.values() (IndexMap insertion order). Suggestion struct #[derive(Serialize)] #[serde(rename_all=camelCase)] decl order from,to,type(r#type renamed 'type'),reason,confidence.
+  Core impl in rust/fspec-core/src/commands/suggest_dependencies.rs: Args {output: Option<String>}; reads via ensure_work_units_file(project_root); iterates data.work_units.values() (IndexMap insertion order). Suggestion struct #[derive(Serialize)] #[serde(rename_all=camelCase)] decl order from,to,type(r#type renamed 'type'),reason,confidence.
   WorkUnit fields used: id, title (typed); dependsOn/blockedBy read from extra via extra.get(field).and_then(Value::as_array). Do NOT touch shared types/work_unit.rs. Circular tiebreak uses Rust &str < comparison = JS string compare for ASCII ids.
-  Two-front-doors: CLI bridge codelet/fspec/src/suggest_dependencies.rs marshals --output into args_json and renders stdout; dispatcher passes args_json verbatim. Help config codelet/fspec-core/src/help/configs/suggest_dependencies.rs. No new shared helpers required.
+  Two-front-doors: CLI bridge rust/fspec/src/suggest_dependencies.rs marshals --output into args_json and renders stdout; dispatcher passes args_json verbatim. Help config rust/fspec-core/src/help/configs/suggest_dependencies.rs. No new shared helpers required.
   """
 
   # ========================================

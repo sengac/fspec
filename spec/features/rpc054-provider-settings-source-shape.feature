@@ -24,7 +24,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @slash-registry
   @no-alias
   Scenario: SlashCommandAction enum contains no Providers variant
-    Given codelet/fspec-tui/src/views/agent/slash_commands.rs after the 2026-06-01 revision
+    Given rust/fspec-tui/src/views/agent/slash_commands.rs after the 2026-06-01 revision
     When the source is parsed for SlashCommandAction variants
     Then the enum contains "Provider" exactly once
     And the enum does NOT contain a "Providers" variant
@@ -34,7 +34,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @slash-dispatch
   @no-alias
   Scenario: dispatch_slash_commands.rs has no Providers arm
-    Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after the 2026-06-01 revision
+    Given rust/fspec-tui/src/app/dispatch_slash_commands.rs after the 2026-06-01 revision
     When the file is read
     Then it contains exactly one arm matching "SlashCommandAction::Provider =>"
     And it does NOT contain "SlashCommandAction::Providers"
@@ -43,7 +43,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @view-module
   Scenario: The ProviderSettingsView module exists at the expected path
     Given the workspace root
-    When codelet/fspec-tui/src/views/provider_settings/mod.rs is read
+    When rust/fspec-tui/src/views/provider_settings/mod.rs is read
     Then the file exists
     And it declares a pub struct ProviderSettingsView
     And it declares a pub enum ProviderSettingsMode with variants List and Detail
@@ -52,7 +52,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @view-imports
   @rpc-026-parity
   Scenario: ProviderSettingsView imports the canonical full-screen helpers
-    Given codelet/fspec-tui/src/views/provider_settings/mod.rs
+    Given rust/fspec-tui/src/views/provider_settings/mod.rs
     When the use statements are parsed
     And the file imports crate::components::scroll_viewport::ensure_visible
     And the file imports crate::views::agent::confirm_dialog::ConfirmDialog
@@ -61,7 +61,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @view-imports
   @forbidden
   Scenario: ProviderSettingsView does NOT import Block / Borders
-    Given codelet/fspec-tui/src/views/provider_settings/mod.rs
+    Given rust/fspec-tui/src/views/provider_settings/mod.rs
     When the use statements are parsed
     Then the file does NOT import ratatui::widgets::Block
     And the file does NOT import ratatui::widgets::Borders
@@ -69,19 +69,19 @@ Feature: ProviderSettingsView — source-shape invariants
   @view-render
   @rpc-026-parity
   Scenario: render() starts with Clear and uses the 4-constraint Layout
-    Given codelet/fspec-tui/src/views/provider_settings/mod.rs
+    Given rust/fspec-tui/src/views/provider_settings/mod.rs
     When the source of ProviderSettingsView::render is inspected
     Then render delegates to render_full_screen_scaffold (Clear + 4-constraint split owned by the shell)
 
   @file-size
   Scenario: Every file under views/provider_settings/ stays under 300 lines
-    Given codelet/fspec-tui/src/views/provider_settings/
+    Given rust/fspec-tui/src/views/provider_settings/
     When the file sizes are measured
     Then every .rs file under that directory is < 300 lines
 
   @action-bus
   Scenario: components/mod.rs declares the new ConfirmDeleteProviderCredentials action
-    Given codelet/fspec-tui/src/components/mod.rs
+    Given rust/fspec-tui/src/components/mod.rs
     When the Action enum is parsed
     Then it contains a variant ConfirmDeleteProviderCredentials(String)
     And the existing variants OpenProviderSettingsView, CloseProviderSettingsView, ProviderCredentialsLoaded, SaveProviderCredentials, TestProviderConnection, ProviderTestComplete, RefreshProviderModels, ProviderModelsRefreshed, DeleteProviderCredentials, ProviderSettingsStatus all remain
@@ -89,7 +89,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @filter-mode
   @ts-parity
   Scenario: ProviderSettingsView declares filter + filter_mode fields
-    Given codelet/fspec-tui/src/views/provider_settings/mod.rs
+    Given rust/fspec-tui/src/views/provider_settings/mod.rs
     When the ProviderSettingsView struct is parsed
     Then the struct contains a field "filter: String" (or equivalent type holding the filter string)
     And the struct contains a field "filter_mode: bool" (or equivalent flag for whether filter input is active)
@@ -97,7 +97,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @filter-mode
   @ts-parity
   Scenario: List mode key dispatcher routes "/" to enter filter mode
-    Given codelet/fspec-tui/src/views/provider_settings/mod.rs
+    Given rust/fspec-tui/src/views/provider_settings/mod.rs
     When the list mode key handler is inspected
     Then a "/" keypress in List mode (with filter_mode false) sets filter_mode to true
     And does NOT insert the "/" character anywhere
@@ -105,7 +105,7 @@ Feature: ProviderSettingsView — source-shape invariants
   @filter-mode
   @ts-parity
   Scenario: Esc-cascade clears filter before closing the view
-    Given codelet/fspec-tui/src/views/provider_settings/mod.rs
+    Given rust/fspec-tui/src/views/provider_settings/mod.rs
     When the list mode Esc handler is inspected
     Then the Esc handler first checks for filter_mode = true → clears filter and sets filter_mode = false
     And else if filter is non-empty → clears filter and stays in List

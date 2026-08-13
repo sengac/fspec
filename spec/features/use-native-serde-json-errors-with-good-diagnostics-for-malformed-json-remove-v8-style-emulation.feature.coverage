@@ -4,11 +4,11 @@
       "name": "Shared funnel surfaces a caret-pointed diagnostic naming the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
           "lines": "47-81",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/locked_file.rs",
+              "file": "rust/fspec-core/src/io/locked_file.rs",
               "lines": [
                 55,
                 56,
@@ -48,11 +48,11 @@
       "name": "auto-advance keeps its outer wrapper but drops the fabricated V8 prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
           "lines": "83-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/auto_advance.rs",
+              "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
                 145,
                 146,
@@ -72,11 +72,11 @@
       "name": "Single-line input places the caret under the exact error column",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
           "lines": "115-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/json_error.rs",
+              "file": "rust/fspec-core/src/io/json_error.rs",
               "lines": [
                 33,
                 34,
@@ -105,11 +105,11 @@
       "name": "Lenient parse sites stay silent on malformed input",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
           "lines": "138-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 148,
                 149,
@@ -148,11 +148,11 @@
       "name": "A serde error with no location falls back to the bare message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
           "lines": "176-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/json_error.rs",
+              "file": "rust/fspec-core/src/io/json_error.rs",
               "lines": [
                 33,
                 34,
@@ -183,13 +183,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/json_parse_diagnostics.rs"
+      "rust/fspec-core/tests/json_parse_diagnostics.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/io/locked_file.rs",
-      "codelet/fspec-core/src/commands/auto_advance.rs",
-      "codelet/fspec-core/src/io/json_error.rs",
-      "codelet/fspec-core/src/commands/list_hooks.rs"
+      "rust/fspec-core/src/io/locked_file.rs",
+      "rust/fspec-core/src/commands/auto_advance.rs",
+      "rust/fspec-core/src/io/json_error.rs",
+      "rust/fspec-core/src/commands/list_hooks.rs"
     ],
     "totalLinesCovered": 240
   }

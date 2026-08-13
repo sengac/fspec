@@ -4,11 +4,11 @@
       "name": "ReadTool resolves relative path to worktree in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1181-1199",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -129,11 +129,11 @@
       "name": "WriteTool writes to worktree path in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1418-1428",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -254,11 +254,11 @@
       "name": "EditTool edits file in worktree in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1430-1441",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -379,11 +379,11 @@
       "name": "GrepTool searches within worktree in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1443-1453",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -504,11 +504,11 @@
       "name": "GlobTool finds files only within worktree in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1455-1465",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -629,11 +629,11 @@
       "name": "LsTool lists worktree root in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1200-1221",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -754,11 +754,11 @@
       "name": "AstGrepTool searches within worktree in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1467-1476",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -879,11 +879,11 @@
       "name": "AstGrepRefactorTool modifies worktree copy only",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1478-1488",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1004,11 +1004,11 @@
       "name": "BashTool runs in worktree directory in isolated session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1490-1507",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 476,
                 477,
@@ -1041,11 +1041,11 @@
       "name": "ReadTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1252-1274",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1166,11 +1166,11 @@
       "name": "WriteTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1276-1286",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1291,11 +1291,11 @@
       "name": "EditTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1288-1298",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1416,11 +1416,11 @@
       "name": "GrepTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1303-1313",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1541,11 +1541,11 @@
       "name": "GlobTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1315-1325",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1666,11 +1666,11 @@
       "name": "LsTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1327-1337",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1791,11 +1791,11 @@
       "name": "AstGrepTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1339-1349",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -1916,11 +1916,11 @@
       "name": "AstGrepRefactorTool rejects absolute path outside worktree",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1351-1361",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -2041,11 +2041,11 @@
       "name": "Tools operate normally with Uuid::nil() in tests",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1161-1179",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 514,
                 515,
@@ -2166,11 +2166,11 @@
       "name": "ReadTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 38,
                 39,
@@ -2198,11 +2198,11 @@
       "name": "WriteTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/write.rs",
+              "file": "rust/tools/src/write.rs",
               "lines": [
                 14,
                 15,
@@ -2233,11 +2233,11 @@
       "name": "EditTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 15,
                 16,
@@ -2268,11 +2268,11 @@
       "name": "GrepTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/grep.rs",
+              "file": "rust/tools/src/grep.rs",
               "lines": [
                 50,
                 51,
@@ -2301,11 +2301,11 @@
       "name": "GlobTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/glob.rs",
+              "file": "rust/tools/src/glob.rs",
               "lines": [
                 24,
                 25,
@@ -2334,11 +2334,11 @@
       "name": "LsTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/ls.rs",
+              "file": "rust/tools/src/ls.rs",
               "lines": [
                 36,
                 37,
@@ -2367,11 +2367,11 @@
       "name": "AstGrepTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep.rs",
+              "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 27,
                 28,
@@ -2398,11 +2398,11 @@
       "name": "AstGrepRefactorTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
                 130,
                 131,
@@ -2435,11 +2435,11 @@
       "name": "WebSearchTool REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/web_search.rs",
+              "file": "rust/tools/src/web_search.rs",
               "lines": [
                 244,
                 245,
@@ -2548,11 +2548,11 @@
       "name": "SearchToolFacadeWrapper REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 898,
                 899,
@@ -2589,11 +2589,11 @@
       "name": "LsToolFacadeWrapper REQUIRES session_id parameter in constructor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1900-2100",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 1080,
                 1081,
@@ -2628,11 +2628,11 @@
       "name": "Claude provider MUST pass session_id to all tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2100-2180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 319,
                 320,
@@ -2666,11 +2666,11 @@
       "name": "OpenAI provider MUST pass session_id to all tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2100-2180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 133,
                 134,
@@ -2702,11 +2702,11 @@
       "name": "Codex provider MUST pass session_id to all tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2100-2180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 135,
                 136,
@@ -2736,11 +2736,11 @@
       "name": "Gemini provider MUST pass session_id to all tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2100-2180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 117,
                 118,
@@ -2781,11 +2781,11 @@
       "name": "ZAI provider MUST pass session_id to all tools",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2100-2180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "rust/providers/src/zai.rs",
               "lines": [
                 230,
                 231,
@@ -2816,25 +2816,25 @@
     "coveredScenarios": 34,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/bash.rs",
-      "codelet/tools/src/read.rs",
-      "codelet/tools/src/write.rs",
-      "codelet/tools/src/edit.rs",
-      "codelet/tools/src/grep.rs",
-      "codelet/tools/src/glob.rs",
-      "codelet/tools/src/ls.rs",
-      "codelet/tools/src/astgrep.rs",
-      "codelet/tools/src/astgrep_refactor.rs",
-      "codelet/tools/src/web_search.rs",
-      "codelet/providers/src/claude.rs",
-      "codelet/providers/src/openai.rs",
-      "codelet/providers/src/codex/mod.rs",
-      "codelet/providers/src/gemini.rs",
-      "codelet/providers/src/zai.rs"
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/bash.rs",
+      "rust/tools/src/read.rs",
+      "rust/tools/src/write.rs",
+      "rust/tools/src/edit.rs",
+      "rust/tools/src/grep.rs",
+      "rust/tools/src/glob.rs",
+      "rust/tools/src/ls.rs",
+      "rust/tools/src/astgrep.rs",
+      "rust/tools/src/astgrep_refactor.rs",
+      "rust/tools/src/web_search.rs",
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/openai.rs",
+      "rust/providers/src/codex/mod.rs",
+      "rust/providers/src/gemini.rs",
+      "rust/providers/src/zai.rs"
     ],
     "totalLinesCovered": 5126
   }

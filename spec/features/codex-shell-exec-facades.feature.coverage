@@ -4,11 +4,11 @@
       "name": "CodexShellFacade maps shell command array to InternalExecParams::Run",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2020-2062",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 409,
                 410,
@@ -101,11 +101,11 @@
       "name": "CodexShellFacade converts timeout_ms to timeout_secs",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2065-2083",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 409,
                 410,
@@ -198,11 +198,11 @@
       "name": "CodexShellFacade without optional params defaults to None",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2086-2109",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 409,
                 410,
@@ -295,11 +295,11 @@
       "name": "CodexShellFacade validates required command parameter",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2112-2130",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 409,
                 410,
@@ -392,11 +392,11 @@
       "name": "CodexShellFacade schema has additionalProperties false",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2161-2184",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 409,
                 410,
@@ -489,11 +489,11 @@
       "name": "CodexExecCommandFacade maps exec_command with PTY to InternalExecParams::Run",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2192-2227",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 491,
                 492,
@@ -596,11 +596,11 @@
       "name": "CodexExecCommandFacade defaults to tty false when not specified",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2230-2254",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 491,
                 492,
@@ -703,11 +703,11 @@
       "name": "CodexExecCommandFacade maps all optional params",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2257-2290",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 491,
                 492,
@@ -810,11 +810,11 @@
       "name": "CodexExecCommandFacade validates required cmd parameter",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2293-2311",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 491,
                 492,
@@ -917,11 +917,11 @@
       "name": "CodexExecCommandFacade silently ignores Codex-native approval params",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2314-2340",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 491,
                 492,
@@ -1024,11 +1024,11 @@
       "name": "CodexExecCommandFacade schema has additionalProperties false",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2343-2367",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 491,
                 492,
@@ -1131,11 +1131,11 @@
       "name": "Both facades are registered in Codex create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2380-2410",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 347,
                 348,
@@ -1167,11 +1167,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 1295
   }

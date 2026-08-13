@@ -4,11 +4,11 @@
       "name": "Valid skills file is parsed with correct configuration",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "36-80",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/indexing.rs",
+              "file": "rust/napi/src/graph/indexing.rs",
               "lines": [
                 119,
                 120,
@@ -41,11 +41,11 @@
       "name": "Missing config fields fall back to defaults",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "85-127",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/indexing.rs",
+              "file": "rust/napi/src/graph/indexing.rs",
               "lines": [
                 50,
                 51,
@@ -80,11 +80,11 @@
       "name": "Incremental indexing processes only unindexed turns",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "132-144",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/indexing.rs",
+              "file": "rust/napi/src/graph/indexing.rs",
               "lines": [
                 152,
                 153,
@@ -106,11 +106,11 @@
       "name": "Missing skills file does not cause an error",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "149-160",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/indexing.rs",
+              "file": "rust/napi/src/graph/indexing.rs",
               "lines": [
                 119,
                 120,
@@ -143,11 +143,11 @@
       "name": "Index all scans sessions from persistence and extracts structural entities",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "37-105",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/session_scanner.rs",
+              "file": "rust/napi/src/graph/session_scanner.rs",
               "lines": [
                 41,
                 42,
@@ -250,11 +250,11 @@
       "name": "Index all skips fully indexed sessions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "110-138",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/indexing.rs",
+              "file": "rust/napi/src/graph/indexing.rs",
               "lines": [
                 152,
                 153,
@@ -276,11 +276,11 @@
       "name": "Index current only flushes pending entity queue",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "file": "rust/napi/tests/graph_session_indexing_test.rs",
           "lines": "143-179",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch.rs",
+              "file": "rust/napi/src/graph/dispatch.rs",
               "lines": [
                 302,
                 303,
@@ -341,12 +341,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/graph_session_indexing_test.rs"
+      "rust/napi/tests/graph_session_indexing_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/indexing.rs",
-      "codelet/napi/src/graph/session_scanner.rs",
-      "codelet/napi/src/graph/dispatch.rs"
+      "rust/napi/src/graph/indexing.rs",
+      "rust/napi/src/graph/session_scanner.rs",
+      "rust/napi/src/graph/dispatch.rs"
     ],
     "totalLinesCovered": 471
   }

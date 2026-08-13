@@ -4,11 +4,11 @@
       "name": "CodexRequestUserInputFacade maps questions to InternalHitlParams and returns answers",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1856-1926",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 696,
                 697,
@@ -162,11 +162,11 @@
       "name": "Headless mode returns tool error about unavailable session mode",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1927-1964",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 1726,
                 1727,
@@ -299,11 +299,11 @@
       "name": "Cancellation converts to Codex-specific tool error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "1967-2010",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 1826,
                 1827,
@@ -334,11 +334,11 @@
       "name": "Validation rejects invalid questions via execute_hitl",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2013-2052",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 110,
                 111,
@@ -404,11 +404,11 @@
       "name": "Facade schema has additionalProperties false",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2097-2123",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 714,
                 715,
@@ -496,11 +496,11 @@
       "name": "Facade is registered in Codex create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2097-2123",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 354,
                 355,
@@ -547,11 +547,11 @@
       "name": "Freeform-only question without options returns answer",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/wrapper.rs",
+          "file": "rust/tools/src/facade/wrapper.rs",
           "lines": "2055-2110",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 791,
                 792,
@@ -612,13 +612,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/request_user_input.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/request_user_input.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 797
   }

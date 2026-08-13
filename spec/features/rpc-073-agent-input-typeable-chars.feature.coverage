@@ -4,11 +4,11 @@
       "name": "Typing ? while the AgentView input is focused appends ? to the buffer and does not open the HelpDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
           "lines": "57-82",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 30,
                 31,
@@ -91,11 +91,11 @@
       "name": "Typing q while the AgentView input is focused appends q to the buffer and does not quit the app",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
           "lines": "88-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 30,
                 31,
@@ -178,11 +178,11 @@
       "name": "Pressing ? while the BoardView is focused still opens the HelpDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
           "lines": "116-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 30,
                 31,
@@ -265,11 +265,11 @@
       "name": "Pressing q while the BoardView is focused still quits the app",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
           "lines": "139-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 30,
                 31,
@@ -352,11 +352,11 @@
       "name": "Pressing Ctrl+D while the AgentView input is focused still quits the app",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
           "lines": "162-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 168,
                 169,
@@ -381,11 +381,11 @@
       "name": "When the critical DisconnectDialog is topmost, q is intercepted by the DisconnectDialog handler and the Compositor never sees the event",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
           "lines": "191-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 30,
                 31,
@@ -470,11 +470,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs"
+      "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/events.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs"
+      "rust/fspec-tui/src/app/events.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs"
     ],
     "totalLinesCovered": 515
   }

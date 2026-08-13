@@ -1,7 +1,7 @@
 @TOOL-017
 Feature: Request User Input HITL Tool
   """
-  Create codelet/tools/src/request_user_input.rs following the InjectSummaryTool pattern: HitlHandler type alias (Arc<dyn Fn(Uuid, HitlRequest) -> Result<HitlResponse, String> + Send + Sync>), global HITL_HANDLERS: RwLock<HashMap<Uuid, HitlHandler>>, pub fn set_hitl_handler/has_hitl_handler/execute_hitl/clear_all_hitl_handlers, and RequestUserInputTool implementing rig::tool::Tool
+  Create rust/tools/src/request_user_input.rs following the InjectSummaryTool pattern: HitlHandler type alias (Arc<dyn Fn(Uuid, HitlRequest) -> Result<HitlResponse, String> + Send + Sync>), global HITL_HANDLERS: RwLock<HashMap<Uuid, HitlHandler>>, pub fn set_hitl_handler/has_hitl_handler/execute_hitl/clear_all_hitl_handlers, and RequestUserInputTool implementing rig::tool::Tool
   HitlRequest contains: questions: Vec<HitlQuestion>. HitlQuestion contains: id: String, header: String, question: String, options: Option<Vec<HitlOption>>. HitlOption contains: label: String, description: String. HitlResponse is an enum: Answered { answers: HashMap<String, HitlAnswer> } | Cancelled. HitlAnswer contains: selected: Vec<String>, other: Option<String>.
   The tool schema presented to the LLM uses the exact JSON schema from the attachment (questions array with id/header/question/options). The tool is registered as 'request_user_input' for all providers. BUG-116 creates the Codex-specific facade wrapper separately.
   """
@@ -18,7 +18,7 @@ Feature: Request User Input HITL Tool
   #   5. Response MUST return JSON with answers keyed by question id, each containing selected (array of chosen labels) and optional other (freeform text)
   #   6. Cancellation MUST return JSON with cancelled: true instead of answers
   #   7. Validation MUST reject: empty questions array, questions with empty id/header/question, header longer than 12 chars, id not in snake_case, fewer than 2 or more than 3 options per question, more than 3 questions
-  #   8. The tool module MUST live in codelet/tools/src/request_user_input.rs following the established single-file handler pattern (like inject_summary.rs)
+  #   8. The tool module MUST live in rust/tools/src/request_user_input.rs following the established single-file handler pattern (like inject_summary.rs)
   #   9. The tool MUST NOT depend on PauseHandler - it uses its own separate handler type (HitlHandler) to avoid mixing structured question/answer data with the simple continue/confirm pause semantics
   #   10. The tool MUST be registered in lib.rs with pub use exports and in facade/mod.rs for facade support
   #

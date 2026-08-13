@@ -4,11 +4,11 @@
       "name": "Switching model re-resolves the cached limits to the new model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs",
+          "file": "rust/sessions/tests/rpc343_mid_session_model_reresolution.rs",
           "lines": "56-103",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1008,
                 1009,
@@ -77,11 +77,11 @@
       "name": "Switching model updates the inner provider manager's selected model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs",
+          "file": "rust/sessions/tests/rpc343_mid_session_model_reresolution.rs",
           "lines": "105-128",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_resolution.rs",
+              "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
                 27,
                 28,
@@ -151,11 +151,11 @@
       "name": "Switching to an unknown model fails and leaves the prior limits intact",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs",
+          "file": "rust/sessions/tests/rpc343_mid_session_model_reresolution.rs",
           "lines": "130-171",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1008,
                 1009,
@@ -224,11 +224,11 @@
       "name": "Switching the model on an unknown session reports session not found",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs",
+          "file": "rust/sessions/tests/rpc343_mid_session_model_reresolution.rs",
           "lines": "173-189",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1015,
                 1016,
@@ -244,11 +244,11 @@
       "name": "Switching the model while the session is busy is declined",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs",
+          "file": "rust/sessions/tests/rpc343_mid_session_model_reresolution.rs",
           "lines": "191-228",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1002,
                 1003,
@@ -269,11 +269,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs"
+      "rust/sessions/tests/rpc343_mid_session_model_reresolution.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/model_resolution.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/model_resolution.rs"
     ],
     "totalLinesCovered": 352
   }

@@ -4,11 +4,11 @@
       "name": "Setting only the test command writes it under tools.test.command in a fresh project",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "file": "rust/fspec-core/tests/configure_tools.rs",
           "lines": "54-73",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
               "lines": [
                 107,
                 108,
@@ -52,11 +52,11 @@
       "name": "Setting both test command and quality commands persists both arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "file": "rust/fspec-core/tests/configure_tools.rs",
           "lines": "75-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
               "lines": [
                 121,
                 122,
@@ -86,11 +86,11 @@
       "name": "The reconfigure flag short-circuits without writing the config",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "file": "rust/fspec-core/tests/configure_tools.rs",
           "lines": "102-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
               "lines": [
                 79,
                 80,
@@ -114,11 +114,11 @@
       "name": "A second run preserves previously stored quality commands via read-modify-write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "file": "rust/fspec-core/tests/configure_tools.rs",
           "lines": "129-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
               "lines": [
                 92,
                 93,
@@ -179,10 +179,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/configure_tools.rs"
+      "rust/fspec-core/tests/configure_tools.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/configure_tools.rs"
+      "rust/fspec-core/src/commands/configure_tools.rs"
     ],
     "totalLinesCovered": 210
   }

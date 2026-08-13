@@ -4,11 +4,11 @@
       "name": "CLI clap subcommand exposes list-feature-tags with --show-categories",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "29-86",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -79,11 +79,11 @@
       "name": "CLI happy path prints flat alphabetical-declaration tag list and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "93-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -154,11 +154,11 @@
       "name": "CLI bridge module embeds no duplicated business logic",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "222-269",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -229,11 +229,11 @@
       "name": "CLI --show-categories flag emits categorized tag/category pairs",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "156-216",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -304,11 +304,11 @@
       "name": "CLI exits 1 with stderr-routed error when feature file does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "274-313",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -379,11 +379,11 @@
       "name": "CLI exits 1 with stderr-routed error when --show-categories is combined with a missing file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "320-358",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -454,11 +454,11 @@
       "name": "CLI exits 1 with stderr-routed error when the file is not a valid Gherkin feature",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "365-404",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_feature_tags.rs",
+              "file": "rust/fspec/src/list_feature_tags.rs",
               "lines": [
                 70,
                 71,
@@ -529,11 +529,11 @@
       "name": "list-feature-tags --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_feature_tags.rs",
+          "file": "rust/fspec/tests/cli_list_feature_tags.rs",
           "lines": "410-470",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_feature_tags.rs",
+              "file": "rust/fspec-core/src/help/configs/list_feature_tags.rs",
               "lines": [
                 1,
                 2,
@@ -621,11 +621,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_feature_tags.rs"
+      "rust/fspec/tests/cli_list_feature_tags.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_feature_tags.rs",
-      "codelet/fspec-core/src/help/configs/list_feature_tags.rs"
+      "rust/fspec/src/list_feature_tags.rs",
+      "rust/fspec-core/src/help/configs/list_feature_tags.rs"
     ],
     "totalLinesCovered": 892
   }

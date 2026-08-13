@@ -4,11 +4,11 @@
       "name": "Typing past the right edge grows the input to two rows with head and tail visible",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "63-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
               "lines": [
                 37,
                 38,
@@ -75,11 +75,11 @@
       "name": "Recalled multi-line history entry renders fully and shrinks the scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "113-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 105,
                 106,
@@ -108,11 +108,11 @@
       "name": "Buffer wrapping past the cap shows the last six visual rows when the cursor is at the end",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "163-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
               "lines": [
                 98,
                 99,
@@ -199,11 +199,11 @@
       "name": "Moving the cursor to the top scrolls the six-row window up",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "224-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 86,
                 87,
@@ -222,11 +222,11 @@
       "name": "Deleting text shrinks the input back down and the scrollback regains the row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "292-333",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 45,
                 46,
@@ -243,11 +243,11 @@
       "name": "Empty buffer shows the one-row placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "339-359",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 154,
                 155,
@@ -263,11 +263,11 @@
       "name": "Wide CJK characters wrap without being split",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "365-408",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
               "lines": [
                 37,
                 38,
@@ -310,11 +310,11 @@
       "name": "Emoji wraps at the correct display-width boundary",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "414-449",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
               "lines": [
                 37,
                 38,
@@ -357,11 +357,11 @@
       "name": "Pressing Enter mid-wrap submits the entire buffer unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "455-495",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
                 29,
                 30,
@@ -399,11 +399,11 @@
       "name": "Input height derives from the exact renderer body width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
+          "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
           "lines": "501-536",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 222,
                 223
@@ -419,14 +419,14 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs"
+      "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_wrap.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 679
   }

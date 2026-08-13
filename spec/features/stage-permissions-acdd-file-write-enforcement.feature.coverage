@@ -4,11 +4,11 @@
       "name": "Block implementation file write in testing stage",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "79-105",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "file": "rust/tools/src/stage_permissions/matcher.rs",
               "lines": [
                 30,
                 31,
@@ -67,11 +67,11 @@
       "name": "Allow test file write in testing stage",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "108-134",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "file": "rust/tools/src/stage_permissions/matcher.rs",
               "lines": [
                 30,
                 31,
@@ -130,11 +130,11 @@
       "name": "Block code file write in specifying stage",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "137-161",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "file": "rust/tools/src/stage_permissions/matcher.rs",
               "lines": [
                 30,
                 31,
@@ -193,11 +193,11 @@
       "name": "Allow attachment in backlog stage",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "164-182",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "file": "rust/tools/src/stage_permissions/matcher.rs",
               "lines": [
                 30,
                 31,
@@ -256,11 +256,11 @@
       "name": "Block all writes in validating stage",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "185-210",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "file": "rust/tools/src/stage_permissions/matcher.rs",
               "lines": [
                 30,
                 31,
@@ -319,11 +319,11 @@
       "name": "Block all writes in done stage",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "213-238",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "file": "rust/tools/src/stage_permissions/matcher.rs",
               "lines": [
                 30,
                 31,
@@ -382,11 +382,11 @@
       "name": "Allow all writes when no work unit is active",
       "testMappings": [
         {
-          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "file": "rust/tools/src/stage_permissions/matcher.rs",
           "lines": "360-380",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/mod.rs",
+              "file": "rust/tools/src/stage_permissions/mod.rs",
               "lines": [
                 140,
                 141,
@@ -436,11 +436,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/stage_permissions/matcher.rs"
+      "rust/tools/src/stage_permissions/matcher.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/stage_permissions/matcher.rs",
-      "codelet/tools/src/stage_permissions/mod.rs"
+      "rust/tools/src/stage_permissions/matcher.rs",
+      "rust/tools/src/stage_permissions/mod.rs"
     ],
     "totalLinesCovered": 489
   }

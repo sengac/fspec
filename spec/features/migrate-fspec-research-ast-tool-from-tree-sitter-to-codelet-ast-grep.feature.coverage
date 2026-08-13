@@ -8,7 +8,7 @@
           "lines": "21-42",
           "implMappings": [
             {
-              "file": "codelet/napi/src/astgrep.rs",
+              "file": "rust/napi/src/astgrep.rs",
               "lines": [
                 72,
                 73,
@@ -89,7 +89,7 @@
           "lines": "44-75",
           "implMappings": [
             {
-              "file": "codelet/napi/src/astgrep.rs",
+              "file": "rust/napi/src/astgrep.rs",
               "lines": [
                 169,
                 170,
@@ -196,7 +196,7 @@
           "lines": "77-108",
           "implMappings": [
             {
-              "file": "codelet/napi/src/astgrep.rs",
+              "file": "rust/napi/src/astgrep.rs",
               "lines": [
                 220,
                 221,
@@ -233,7 +233,7 @@
           "lines": "110-126",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 14,
                 15,
@@ -268,7 +268,7 @@
           "lines": "128-150",
           "implMappings": [
             {
-              "file": "codelet/napi/src/lib.rs",
+              "file": "rust/napi/src/lib.rs",
               "lines": [
                 14,
                 15,
@@ -346,8 +346,8 @@
       "src/research-tools/__tests__/ast-grep-migration.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/astgrep.rs",
-      "codelet/napi/src/lib.rs",
+      "rust/napi/src/astgrep.rs",
+      "rust/napi/src/lib.rs",
       "package.json"
     ],
     "totalLinesCovered": 379

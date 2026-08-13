@@ -8,7 +8,7 @@ Feature: Completion contract dispatch-site arming across agent-loop twins
   """
   AS-BUILT (CONT-009): the dispatch-site arming block lives in a single shared
   helper, BackgroundSession::sync_completion_contract_for_user_turn
-  (codelet/sessions/src/background_session.rs), owned by codelet-sessions so it
+  (rust/sessions/src/background_session.rs), owned by codelet-sessions so it
   needs zero new dependency edges and cannot violate the no-codelet-agent-loop
   constraint in napi/Cargo.toml. Before each dispatched real user message the
   helper: (1) syncs the /continue chrome state into the inner Session and resets
@@ -21,11 +21,11 @@ Feature: Completion contract dispatch-site arming across agent-loop twins
   continue toggle is on OR a goal is set, and syncs the goal spec into the
   registry (codelet_tools::set_session_goal). BOTH agent-loop twins call the
   helper at their dispatch sites, between inner-lock re-acquisition and
-  BackgroundOutput creation: codelet/agent-loop/src/agent_loop.rs (standalone
-  fspec binary) and codelet/napi/src/agent_loop.rs (production NAPI/TUI
+  BackgroundOutput creation: rust/agent-loop/src/agent_loop.rs (standalone
+  fspec binary) and rust/napi/src/agent_loop.rs (production NAPI/TUI
   surface). Twin parity is pinned by a comment-stripped source-shape test
   (rpc082/083 precedent) in
-  codelet/sessions/tests/cont009_completion_contract_sync.rs, so the twin
+  rust/sessions/tests/cont009_completion_contract_sync.rs, so the twin
   divergence that caused this bug cannot silently recur.
   Historical note: this card originated because the NAPI twin carried no arming
   block at all (auto-continue and /goal were inert on the production surface);

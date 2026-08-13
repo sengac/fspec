@@ -13,7 +13,7 @@ Feature: Port generate-foundation-md command to Rust
   foundation commands wire crate::commands::generate_foundation_md::regenerate
   in AFTER their atomic write.
 
-  Core impl at codelet/fspec-core/src/commands/generate_foundation_md.rs reads
+  Core impl at rust/fspec-core/src/commands/generate_foundation_md.rs reads
   spec/foundation.json (existsSync-equivalent check, no auto-create), runs a
   lightweight Mermaid pre-check over architectureDiagrams, renders markdown via
   crate::generators::generate_foundation_md, and writes spec/FOUNDATION.md (or a

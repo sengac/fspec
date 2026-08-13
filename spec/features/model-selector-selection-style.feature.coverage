@@ -4,11 +4,11 @@
       "name": "A selected model row paints a solid cyan band with a > arrow",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "62-99",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows_render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows_render.rs",
               "lines": [
                 133,
                 134,
@@ -64,11 +64,11 @@
       "name": "The selection band fills the full row width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "101-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/selection_style.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/selection_style.rs",
               "lines": [
                 49,
                 50,
@@ -89,11 +89,11 @@
       "name": "A selected header row prepends the selection marker before the expand icon",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "126-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/header.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/header.rs",
               "lines": [
                 20,
                 21,
@@ -152,11 +152,11 @@
       "name": "An unselected header row prepends padding before the expand icon",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "165-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/header.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/header.rs",
               "lines": [
                 20,
                 21,
@@ -215,11 +215,11 @@
       "name": "A selected model row flips every inline token to black",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "204-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows_render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows_render.rs",
               "lines": [
                 157,
                 158,
@@ -247,11 +247,11 @@
       "name": "A selected profile header flips the folder and unreachable markers to black",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "244-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/header.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/header.rs",
               "lines": [
                 46,
                 47,
@@ -283,11 +283,11 @@
       "name": "An unselected model row is unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs",
           "lines": "277-313",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/selection_style.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/selection_style.rs",
               "lines": [
                 26,
                 27,
@@ -323,12 +323,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs"
+      "rust/fspec-tui/src/views/model_selector/rows_tests_selection_style.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows_render.rs",
-      "codelet/fspec-tui/src/views/model_selector/selection_style.rs",
-      "codelet/fspec-tui/src/views/model_selector/header.rs"
+      "rust/fspec-tui/src/views/model_selector/rows_render.rs",
+      "rust/fspec-tui/src/views/model_selector/selection_style.rs",
+      "rust/fspec-tui/src/views/model_selector/header.rs"
     ],
     "totalLinesCovered": 451
   }

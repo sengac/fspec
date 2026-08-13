@@ -4,11 +4,11 @@
       "name": "Markdown table column width accounts for wide Unicode characters",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "12-25",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
                 50,
                 51,
@@ -101,11 +101,11 @@
       "name": "Dialog title centering accounts for wide Unicode characters",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "27-39",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 70,
                 71,
@@ -138,11 +138,11 @@
       "name": "Text wrapping respects Unicode display width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "48-61",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/text_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
               "lines": [
                 1,
                 2,
@@ -269,11 +269,11 @@
       "name": "Dialog button row centering accounts for wide Unicode characters",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "63-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
               "lines": [
                 260,
                 261,
@@ -301,11 +301,11 @@
       "name": "Text truncation respects Unicode display width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "79-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_strip.rs",
+              "file": "rust/fspec-tui/src/views/board/details_strip.rs",
               "lines": [
                 225,
                 226,
@@ -328,11 +328,11 @@
       "name": "Text selection copy preserves character count not display width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "95-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 140,
                 141,
@@ -355,11 +355,11 @@
       "name": "Secret masking uses character count not display width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "112-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/copy.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/copy.rs",
               "lines": [
                 15,
                 16,
@@ -382,11 +382,11 @@
       "name": "Animation frame counting uses character count not display width",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
           "lines": "128-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_transition.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_transition.rs",
               "lines": [
                 60,
                 61,
@@ -471,17 +471,17 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/unicode_display_width_rpc431.rs"
+      "rust/fspec-tui/tests/unicode_display_width_rpc431.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
-      "codelet/fspec-tui/src/components/dialog_theme.rs",
-      "codelet/fspec-tui/src/views/agent/text_wrap.rs",
-      "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
-      "codelet/fspec-tui/src/views/board/details_strip.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
-      "codelet/fspec-tui/src/views/provider_settings/copy.rs",
-      "codelet/fspec-tui/src/views/agent/input_transition.rs"
+      "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+      "rust/fspec-tui/src/components/dialog_theme.rs",
+      "rust/fspec-tui/src/views/agent/text_wrap.rs",
+      "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
+      "rust/fspec-tui/src/views/board/details_strip.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
+      "rust/fspec-tui/src/views/provider_settings/copy.rs",
+      "rust/fspec-tui/src/views/agent/input_transition.rs"
     ],
     "totalLinesCovered": 454
   }

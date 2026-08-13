@@ -4,11 +4,11 @@
       "name": "record-iteration increments the nested metrics counter",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/workflow_automation.rs",
+          "file": "rust/fspec-core/tests/workflow_automation.rs",
           "lines": "96-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/workflow_automation.rs",
+              "file": "rust/fspec-core/src/commands/workflow_automation.rs",
               "lines": [
                 156,
                 157,
@@ -62,11 +62,11 @@
       "name": "auto-advance action advances a testing unit and records state history",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/workflow_automation.rs",
+          "file": "rust/fspec-core/tests/workflow_automation.rs",
           "lines": "128-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/workflow_automation.rs",
+              "file": "rust/fspec-core/src/commands/workflow_automation.rs",
               "lines": [
                 198,
                 199,
@@ -155,11 +155,11 @@
       "name": "auto-advance action supports the specs-complete transition",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/workflow_automation.rs",
+          "file": "rust/fspec-core/tests/workflow_automation.rs",
           "lines": "171-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/workflow_automation.rs",
+              "file": "rust/fspec-core/src/commands/workflow_automation.rs",
               "lines": [
                 198,
                 199,
@@ -248,11 +248,11 @@
       "name": "validate-alignment counts tagged scenarios without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/workflow_automation.rs",
+          "file": "rust/fspec-core/tests/workflow_automation.rs",
           "lines": "203-248",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/workflow_automation.rs",
+              "file": "rust/fspec-core/src/commands/workflow_automation.rs",
               "lines": [
                 275,
                 276,
@@ -320,11 +320,11 @@
       "name": "Unknown action is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/workflow_automation.rs",
+          "file": "rust/fspec-core/tests/workflow_automation.rs",
           "lines": "251-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/workflow_automation.rs",
+              "file": "rust/fspec-core/src/commands/workflow_automation.rs",
               "lines": [
                 131,
                 132,
@@ -361,11 +361,11 @@
       "name": "auto-advance action rejects a state mismatch",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/workflow_automation.rs",
+          "file": "rust/fspec-core/tests/workflow_automation.rs",
           "lines": "278-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/workflow_automation.rs",
+              "file": "rust/fspec-core/src/commands/workflow_automation.rs",
               "lines": [
                 198,
                 199,
@@ -456,10 +456,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/workflow_automation.rs"
+      "rust/fspec-core/tests/workflow_automation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/workflow_automation.rs"
+      "rust/fspec-core/src/commands/workflow_automation.rs"
     ],
     "totalLinesCovered": 545
   }

@@ -4,11 +4,11 @@
       "name": "WebSocketFspecBackend surfaces WS disconnect as Action::Disconnected",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+          "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
           "lines": "84-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 260,
                 261,
@@ -122,11 +122,11 @@
       "name": "DisconnectDialog is pushed at Priority::Critical when Action::Disconnected fires",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+          "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
           "lines": "155-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/disconnect_dialog.rs",
+              "file": "rust/fspec-tui/src/components/disconnect_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -221,7 +221,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 335,
                 336,
@@ -243,11 +243,11 @@
       "name": "DisconnectDialog swallows navigation keys while topmost",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+          "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
           "lines": "205-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 388,
                 389,
@@ -292,11 +292,11 @@
       "name": "Pressing q in DisconnectDialog exits the client cleanly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+          "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
           "lines": "260-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 395,
                 396,
@@ -315,11 +315,11 @@
       "name": "Pressing r in DisconnectDialog triggers a manual reconnect that resets backoff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+          "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
           "lines": "296-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 402,
                 403,
@@ -334,7 +334,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 215,
                 216,
@@ -364,12 +364,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs"
+      "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/fspec-tui/src/components/disconnect_dialog.rs",
-      "codelet/fspec-tui/src/app.rs"
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/components/disconnect_dialog.rs",
+      "rust/fspec-tui/src/app.rs"
     ],
     "totalLinesCovered": 543
   }

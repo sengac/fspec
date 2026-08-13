@@ -4,11 +4,11 @@
       "name": "Successful headless login with code paste",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "82-147",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 69,
                 70,
@@ -83,11 +83,11 @@
       "name": "Code paste with mismatched state is rejected as CSRF",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "153-201",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 109,
                 110,
@@ -107,11 +107,11 @@
       "name": "Code without state hash separator is rejected",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "207-249",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 100,
                 101,
@@ -132,11 +132,11 @@
       "name": "Headless login times out when callback blocks",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "255-284",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 83,
                 84,
@@ -159,11 +159,11 @@
       "name": "Token exchange failure after valid state validation",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "290-335",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 118,
                 119,
@@ -183,11 +183,11 @@
       "name": "Empty code string is rejected before validation",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "341-379",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 95,
                 96,
@@ -204,11 +204,11 @@
       "name": "Headless login produces same ClaudeAuthJson output as browser OAuth",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_headless_login_test.rs",
+          "file": "rust/providers/tests/claude_headless_login_test.rs",
           "lines": "385-441",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_headless_login.rs",
+              "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
                 126,
                 127,
@@ -228,10 +228,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_headless_login_test.rs"
+      "rust/providers/tests/claude_headless_login_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude_headless_login.rs"
+      "rust/providers/src/claude_headless_login.rs"
     ],
     "totalLinesCovered": 440
   }

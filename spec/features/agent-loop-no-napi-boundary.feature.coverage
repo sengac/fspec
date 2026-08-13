@@ -4,11 +4,11 @@
       "name": "codelet-agent-loop has zero dependency on codelet-napi after the lift",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/no_napi_dependency.rs",
+          "file": "rust/agent-loop/tests/no_napi_dependency.rs",
           "lines": "15-39",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/Cargo.toml",
+              "file": "rust/agent-loop/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -80,10 +80,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/no_napi_dependency.rs"
+      "rust/agent-loop/tests/no_napi_dependency.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/Cargo.toml"
+      "rust/agent-loop/Cargo.toml"
     ],
     "totalLinesCovered": 83
   }

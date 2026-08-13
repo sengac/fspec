@@ -95,7 +95,7 @@ Feature: Legacy Batch LLM Compaction Cleanup
   @cli
   @deletion
   Scenario: Remove compact_messages from Session
-    Given Session in codelet/cli/src/session/mod.rs has a compact_messages() method
+    Given Session in rust/cli/src/session/mod.rs has a compact_messages() method
     And compact_messages() uses ContextCompactor and has zero production callers
     When compact_messages is removed from Session
     Then Session does not have a compact_messages method
@@ -129,13 +129,13 @@ Feature: Legacy Batch LLM Compaction Cleanup
   Scenario: Delete downstream test files that exclusively test deleted code
     Given test files exist that exclusively test deleted legacy code
     When the legacy test files are deleted
-    Then codelet/core/tests/llm_anchor_integration_test.rs no longer exists
-    And codelet/core/tests/retry_llm_summary_test.rs no longer exists
-    And codelet/core/tests/compaction_anchor_detection_test.rs no longer exists
-    And codelet/cli/tests/context_compaction_fix_test.rs no longer exists
-    And codelet/cli/tests/manual_compaction_command_test.rs no longer exists
-    And codelet/napi/tests/compaction_to_anchor_flow_test.rs no longer exists
-    And codelet/napi/tests/anchor_persistence_test.rs no longer exists
+    Then rust/core/tests/llm_anchor_integration_test.rs no longer exists
+    And rust/core/tests/retry_llm_summary_test.rs no longer exists
+    And rust/core/tests/compaction_anchor_detection_test.rs no longer exists
+    And rust/cli/tests/context_compaction_fix_test.rs no longer exists
+    And rust/cli/tests/manual_compaction_command_test.rs no longer exists
+    And rust/napi/tests/compaction_to_anchor_flow_test.rs no longer exists
+    And rust/napi/tests/anchor_persistence_test.rs no longer exists
 
   @test
   @update

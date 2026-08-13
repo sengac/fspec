@@ -4,9 +4,9 @@
 @PROV-037
 Feature: Codex Provider Reasoning Configuration
   """
-  Key files: codelet/providers/src/codex/mod.rs (create_rig_agent + complete_with_tools),
-  codelet/napi/src/thinking_config.rs (get_thinking_config),
-  codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs (AdditionalParameters).
+  Key files: rust/providers/src/codex/mod.rs (create_rig_agent + complete_with_tools),
+  rust/napi/src/thinking_config.rs (get_thinking_config),
+  rust/patches/rig-core/src/providers/openai/responses_api/mod.rs (AdditionalParameters).
 
   Data flow: NAPI thinking_config → create_rig_agent thinking_config param →
   additional_params JSON → rig AdditionalParameters deserialization →

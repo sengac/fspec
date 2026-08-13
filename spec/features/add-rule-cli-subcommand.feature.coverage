@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_rule.rs",
+          "file": "rust/fspec/tests/cli_add_rule.rs",
           "lines": "82-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_rule.rs",
+              "file": "rust/fspec-core/src/help/configs/add_rule.rs",
               "lines": [
                 1,
                 2,
@@ -72,11 +72,11 @@
       "name": "CLI successfully appends a rule and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_rule.rs",
+          "file": "rust/fspec/tests/cli_add_rule.rs",
           "lines": "106-137",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_rule.rs",
+              "file": "rust/fspec/src/add_rule.rs",
               "lines": [
                 44,
                 45,
@@ -114,11 +114,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_rule.rs",
+          "file": "rust/fspec/tests/cli_add_rule.rs",
           "lines": "170-217",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_rule.rs",
+              "file": "rust/fspec/src/add_rule.rs",
               "lines": [
                 44,
                 45,
@@ -162,11 +162,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 75,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_rule.rs"
+      "rust/fspec/tests/cli_add_rule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_rule.rs",
-      "codelet/fspec/src/add_rule.rs"
+      "rust/fspec-core/src/help/configs/add_rule.rs",
+      "rust/fspec/src/add_rule.rs"
     ],
     "totalLinesCovered": 263
   }

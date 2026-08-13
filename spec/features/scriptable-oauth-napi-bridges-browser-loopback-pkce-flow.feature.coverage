@@ -4,11 +4,11 @@
       "name": "User logs in with custom shadow provider using auth_start and auth_exchange",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
           "lines": "99-156",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/script_provider_aliases.rs",
+              "file": "rust/providers/src/oauth/script_provider_aliases.rs",
               "lines": [
                 28,
                 29,
@@ -45,11 +45,11 @@
       "name": "Legacy script using deprecated function aliases still authenticates successfully",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
           "lines": "161-200",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/script_provider_aliases.rs",
+              "file": "rust/providers/src/oauth/script_provider_aliases.rs",
               "lines": [
                 20,
                 21,
@@ -68,11 +68,11 @@
       "name": "Expired tokens are refreshed silently via auth_needs_refresh and auth_refresh",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
           "lines": "205-248",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/script_provider_aliases.rs",
+              "file": "rust/providers/src/oauth/script_provider_aliases.rs",
               "lines": [
                 83,
                 84,
@@ -136,11 +136,11 @@
       "name": "Built-in providers are used unchanged when no shadow script is registered",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
           "lines": "253-266",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/custom_oauth.rs",
+              "file": "rust/providers/src/oauth/custom_oauth.rs",
               "lines": [
                 55,
                 56,
@@ -186,11 +186,11 @@
       "name": "custom_oauth_clear removes stored tokens for a provider",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
           "lines": "271-289",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/custom_oauth.rs",
+              "file": "rust/providers/src/oauth/custom_oauth.rs",
               "lines": [
                 127,
                 128,
@@ -221,11 +221,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/scriptable_oauth_napi_bridges_tests.rs"
+      "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/oauth/script_provider_aliases.rs",
-      "codelet/providers/src/oauth/custom_oauth.rs"
+      "rust/providers/src/oauth/script_provider_aliases.rs",
+      "rust/providers/src/oauth/custom_oauth.rs"
     ],
     "totalLinesCovered": 310
   }

@@ -4,11 +4,11 @@
       "name": "Emit ReasoningDelta chunk for a reasoning_delta kind",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "file": "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs",
           "lines": "101-115",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
                 37,
                 38,
@@ -79,11 +79,11 @@
       "name": "Accept thinking_delta kind as an alias for reasoning_delta",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "file": "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs",
           "lines": "120-134",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
                 37,
                 38,
@@ -154,11 +154,11 @@
       "name": "Skip reasoning_delta with empty text",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "file": "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs",
           "lines": "139-152",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
                 79,
                 80,
@@ -187,11 +187,11 @@
       "name": "Skip reasoning_delta with missing text field",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "file": "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs",
           "lines": "157-170",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
                 79,
                 80,
@@ -220,11 +220,11 @@
       "name": "Preserve wire order for interleaved reasoning and text deltas",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "file": "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs",
           "lines": "175-201",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
                 37,
                 38,
@@ -295,11 +295,11 @@
       "name": "End-to-end stream through complete_with_tools_streaming yields ReasoningDelta",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "file": "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs",
           "lines": "206-297",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/stream.rs",
+              "file": "rust/providers/src/custom/stream.rs",
               "lines": [
                 35,
                 36,
@@ -344,11 +344,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs"
+      "rust/providers/tests/custom_streaming_reasoning_delta_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/stream_convert.rs",
-      "codelet/providers/src/custom/stream.rs"
+      "rust/providers/src/custom/stream_convert.rs",
+      "rust/providers/src/custom/stream.rs"
     ],
     "totalLinesCovered": 419
   }

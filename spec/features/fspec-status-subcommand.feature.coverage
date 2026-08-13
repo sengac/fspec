@@ -4,11 +4,11 @@
       "name": "fspec status against a live daemon prints health and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/status_subcommand_rpc011.rs",
+          "file": "rust/fspec/tests/status_subcommand_rpc011.rs",
           "lines": "66-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/status.rs",
+              "file": "rust/fspec/src/status.rs",
               "lines": [
                 20,
                 21,
@@ -102,11 +102,11 @@
       "name": "fspec status against no daemon prints diagnostic and exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/status_subcommand_rpc011.rs",
+          "file": "rust/fspec/tests/status_subcommand_rpc011.rs",
           "lines": "150-194",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/status.rs",
+              "file": "rust/fspec/src/status.rs",
               "lines": [
                 51,
                 52,
@@ -141,11 +141,11 @@
       "name": "fspec status against stale daemon.json deletes the file and exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/status_subcommand_rpc011.rs",
+          "file": "rust/fspec/tests/status_subcommand_rpc011.rs",
           "lines": "196-241",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/status.rs",
+              "file": "rust/fspec/src/status.rs",
               "lines": [
                 51,
                 52,
@@ -180,11 +180,11 @@
       "name": "fspec status honours --connect override",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/status_subcommand_rpc011.rs",
+          "file": "rust/fspec/tests/status_subcommand_rpc011.rs",
           "lines": "243-288",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/status.rs",
+              "file": "rust/fspec/src/status.rs",
               "lines": [
                 51,
                 52,
@@ -221,10 +221,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/status_subcommand_rpc011.rs"
+      "rust/fspec/tests/status_subcommand_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/status.rs"
+      "rust/fspec/src/status.rs"
     ],
     "totalLinesCovered": 371
   }

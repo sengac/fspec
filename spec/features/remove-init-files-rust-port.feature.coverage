@@ -4,11 +4,11 @@
       "name": "Removes agent files and config when the config names claude",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "63-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 115,
                 116,
@@ -49,11 +49,11 @@
       "name": "Detects a toml agent by its detection directory when no config is present",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "114-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 147,
                 148,
@@ -87,11 +87,11 @@
       "name": "keepConfig=true preserves spec/fspec-config.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "147-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 132,
                 133,
@@ -108,11 +108,11 @@
       "name": "Errors when no agent installation is detected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "186-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 106,
                 107,
@@ -129,11 +129,11 @@
       "name": "Force removal is idempotent when an agent file is already absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "205-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 172,
                 173,
@@ -156,11 +156,11 @@
       "name": "Errors when the config names an unknown agent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "234-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 112,
                 113
@@ -174,11 +174,11 @@
       "name": "Does not touch project files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "file": "rust/fspec-core/tests/remove_init_files.rs",
           "lines": "254-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
                 115,
                 116,
@@ -214,10 +214,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_init_files.rs"
+      "rust/fspec-core/tests/remove_init_files.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_init_files.rs"
+      "rust/fspec-core/src/commands/remove_init_files.rs"
     ],
     "totalLinesCovered": 311
   }

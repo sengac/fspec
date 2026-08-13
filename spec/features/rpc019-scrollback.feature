@@ -31,7 +31,7 @@ Feature: RPC-019 AgentView windowed ScrollbackList (O(1) per frame)
   per-frame work.
 
   Pair: render tests live in
-  codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs.
+  rust/fspec-tui/tests/view_agent_scrollback_rpc019.rs.
   """
 
   Background: User Story

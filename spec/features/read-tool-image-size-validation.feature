@@ -1,7 +1,7 @@
 @EXT-014
 Feature: Oversized images from Read tool crash the agent loop — pre-validate image size before sending to LLM
   """
-  Validation goes in ReadTool::call() in codelet/tools/src/read.rs, in the FileType::Image branch, after base64 encoding but before constructing ReadOutput::Image
+  Validation goes in ReadTool::call() in rust/tools/src/read.rs, in the FileType::Image branch, after base64 encoding but before constructing ReadOutput::Image
   Use a new ToolError::ImageSizeLimit variant (or reuse ToolError::Validation) with a human-readable error message — the error appears as a text tool result, never as image data in the conversation
   Provider-specific limits (Claude: 5MB base64, OpenAI: 20MB base64, Gemini: 20MB inline, Z.AI: 5MB) documented in the code as constants; initial implementation uses the strictest (5MB) as a universal safe default
   """

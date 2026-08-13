@@ -1,7 +1,7 @@
 @CMPCT-019
 Feature: Incremental DAG Condensation
   """
-  Only file modified: codelet/cli/src/interactive_helpers.rs — add detect_existing_dag(), split instruction constants, update execute_compaction()
+  Only file modified: rust/cli/src/interactive_helpers.rs — add detect_existing_dag(), split instruction constants, update execute_compaction()
   Reuses parse_dag_nodes from codelet-core (CMPCT-017) to extract max turn_end from existing DAG
   Tests in inject_summary_handler_test.rs that reference COMPACTION_SYSTEM_INSTRUCTION need updating to use new constant names
   """

@@ -4,11 +4,11 @@
       "name": "Graceful handling when compaction triggered during continuation",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/gemini_continuation_compaction_test.rs",
+          "file": "rust/cli/tests/gemini_continuation_compaction_test.rs",
           "lines": "60-93",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1119,
                 1120,
@@ -66,11 +66,11 @@
       "name": "Session continues after compaction during continuation",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/gemini_continuation_compaction_test.rs",
+          "file": "rust/cli/tests/gemini_continuation_compaction_test.rs",
           "lines": "100-127",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1271,
                 1272,
@@ -173,11 +173,11 @@
       "name": "Partial model output is preserved during compaction",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/gemini_continuation_compaction_test.rs",
+          "file": "rust/cli/tests/gemini_continuation_compaction_test.rs",
           "lines": "134-179",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1136,
                 1137,
@@ -197,10 +197,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/gemini_continuation_compaction_test.rs"
+      "rust/cli/tests/gemini_continuation_compaction_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 251
   }

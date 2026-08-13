@@ -4,11 +4,11 @@
       "name": "Returns zero-totals when no spec directory exists and does not auto-create files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "70-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -438,11 +438,11 @@
       "name": "Groups all tags under 'Unregistered' when tags.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "101-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -872,11 +872,11 @@
       "name": "Projects tags into registered categories sorted descending by count",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "154-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -1306,11 +1306,11 @@
       "name": "Lists registered-but-unused tags alphabetically in unusedTags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "219-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -1740,11 +1740,11 @@
       "name": "Collects unregistered tags into a synthetic 'Unregistered' category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "257-295",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -2174,11 +2174,11 @@
       "name": "Records files with malformed Gherkin in invalidFiles without throwing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "296-324",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -2608,11 +2608,11 @@
       "name": "Counts only feature-level tags, ignoring scenario-level tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "325-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -3042,11 +3042,11 @@
       "name": "Treats malformed tags.json as missing without escalating",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "363-397",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -3476,11 +3476,11 @@
       "name": "JSON format emits two-space indented payload with canonical declaration-order fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "398-456",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -3910,11 +3910,11 @@
       "name": "Text format prints overall counters and missing-tags.json warning",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "457-507",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -4344,11 +4344,11 @@
       "name": "Text format prints invalid-files warning with bulleted file list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "508-533",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -4778,11 +4778,11 @@
       "name": "Text format lists unused registered tags alphabetically",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "534-593",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -5209,14 +5209,14 @@
       ]
     },
     {
-      "name": "Shared infrastructure modules exist under codelet/fspec-core for reuse",
+      "name": "Shared infrastructure modules exist under rust/fspec-core for reuse",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/tag_stats.rs",
+          "file": "rust/fspec-core/tests/tag_stats.rs",
           "lines": "594-629",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/tag_stats.rs",
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -5648,10 +5648,10 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/tag_stats.rs"
+      "rust/fspec-core/tests/tag_stats.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/tag_stats.rs"
+      "rust/fspec-core/src/commands/tag_stats.rs"
     ],
     "totalLinesCovered": 5997
   }

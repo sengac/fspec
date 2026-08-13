@@ -4,11 +4,11 @@
       "name": "Await multiple subordinates that all complete within timeout",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2425-2462",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 21,
                 22,
@@ -86,11 +86,11 @@
       "name": "Await a single session that is already idle",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2467-2495",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 21,
                 22,
@@ -168,11 +168,11 @@
       "name": "Timeout expires before session becomes idle",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2498-2528",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 134,
                 135,
@@ -212,11 +212,11 @@
       "name": "Mixed results when some sessions finish and others timeout",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2531-2563",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 134,
                 135,
@@ -256,11 +256,11 @@
       "name": "Non-existent session ID returns immediate error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2566-2592",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 134,
                 135,
@@ -300,11 +300,11 @@
       "name": "Session destroyed during await resolves as destroyed",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2595-2626",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 134,
                 135,
@@ -344,11 +344,11 @@
       "name": "User interrupt cancels await and returns partial results",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2629-2660",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/handler.rs",
+              "file": "rust/tools/src/agent_manager/handler.rs",
               "lines": [
                 134,
                 135,
@@ -388,11 +388,11 @@
       "name": "Single string session_id works the same as single-element array",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2703-2733",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 21,
                 22,
@@ -425,11 +425,11 @@
       "name": "Pre-tool hooks are checked before await_idle executes",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2736-2750",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/mod.rs",
+              "file": "rust/tools/src/agent_manager/mod.rs",
               "lines": [
                 155,
                 156,
@@ -461,11 +461,11 @@
       "name": "No timeout by default — waits indefinitely when omitted",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "2658-2696",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/mod.rs",
+              "file": "rust/tools/src/agent_manager/mod.rs",
               "lines": [
                 168,
                 169,
@@ -486,12 +486,12 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/agent_manager/tests.rs"
+      "rust/tools/src/agent_manager/tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/agent_manager/types.rs",
-      "codelet/tools/src/agent_manager/handler.rs",
-      "codelet/tools/src/agent_manager/mod.rs"
+      "rust/tools/src/agent_manager/types.rs",
+      "rust/tools/src/agent_manager/handler.rs",
+      "rust/tools/src/agent_manager/mod.rs"
     ],
     "totalLinesCovered": 627
   }

@@ -9,9 +9,9 @@
 @RPC-037
 Feature: Widen SessionManagerHandle + FspecService + both backends + stub with cross-transport parity tests
   """
-  Architecture: send_input on SessionManagerHandle keeps its existing 2-arg signature (session_id, text). A new send_input_with_thinking is added with a default that calls send_input. The codelet/napi SessionManager implementation gets to override either or both; current SessionManagerHandle::send_input default in StubSessionManagerHandle keeps working.
+  Architecture: send_input on SessionManagerHandle keeps its existing 2-arg signature (session_id, text). A new send_input_with_thinking is added with a default that calls send_input. The rust/napi SessionManager implementation gets to override either or both; current SessionManagerHandle::send_input default in StubSessionManagerHandle keeps working.
   Architecture: status_changes broadcast capacity is 256 (same as the existing chunks broadcast in the stub via with_capacity defaults). The default trait impl returns a fresh local channel whose sender is dropped immediately so polling get_session_status remains the fallback path for any handle that hasn't wired push status.
-  Architecture: the FspecBackend trait surface in codelet/fspec-tui/src/transport/mod.rs grows ~30 methods. Each is a one-line tarpc client delegate on EmbeddedFspecBackend; on WebSocketFspecBackend each follows the existing `let guard = self.client.read().await; let client = guard.as_ref().ok_or(BackendError::Disconnected)?; ... client.client().<rpc>(context::current(), args).await?` pattern. async-trait already in scope; no new dependencies.
+  Architecture: the FspecBackend trait surface in rust/fspec-tui/src/transport/mod.rs grows ~30 methods. Each is a one-line tarpc client delegate on EmbeddedFspecBackend; on WebSocketFspecBackend each follows the existing `let guard = self.client.read().await; let client = guard.as_ref().ok_or(BackendError::Disconnected)?; ... client.client().<rpc>(context::current(), args).await?` pattern. async-trait already in scope; no new dependencies.
   Architecture: the FspecBackend trait gains a status_changes_rx() -> broadcast::Receiver<(SessionId, SessionStatus)> method paired with chunks_rx and logs_rx. For the WebSocket backend a new internal broadcast channel is fed by a new Envelope::StatusUpdate variant pushed by the server fanout task — analogous to how chunks/logs/work-units are fanned today. This card adds the variant and the pump/fanout wiring.
   """
 
@@ -22,12 +22,12 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
   # BUSINESS RULES:
   #   1. Every new method declared on the SessionManagerHandle trait MUST carry a default body so existing handles (StubSessionManagerHandle pre-override, any future NAPI/test handles) compile unchanged — defaults return safe sentinels: empty collections, None, Ok(()), SessionTokens::default(), SessionModel::default()-style instances, etc.
   #   2. send_input on SessionManagerHandle keeps its existing 2-arg signature for backward compatibility; a sibling send_input_with_thinking(session_id, text, thinking: Option<ThinkingConfig>) is added. The existing send_input default delegates to send_input_with_thinking(.., None) so implementers only override one method.
-  #   3. Every trait method added to SessionManagerHandle MUST have a peer async method on FspecService (codelet/rpc/src/lib.rs). FspecServiceImpl delegates each call through self.inner.session_manager() returning the same safe defaults when no handle is attached. The pre-existing set_thinking_level_default gap on the tarpc trait is closed in this card.
-  #   4. Every new tarpc method is mirrored on the FspecBackend trait (codelet/fspec-tui/src/transport/mod.rs) and implemented on BOTH EmbeddedFspecBackend (one-line delegate through self.client) and WebSocketFspecBackend (read-lock the client slot, fail with BackendError::Disconnected when None, otherwise one-line delegate).
+  #   3. Every trait method added to SessionManagerHandle MUST have a peer async method on FspecService (rust/rpc/src/lib.rs). FspecServiceImpl delegates each call through self.inner.session_manager() returning the same safe defaults when no handle is attached. The pre-existing set_thinking_level_default gap on the tarpc trait is closed in this card.
+  #   4. Every new tarpc method is mirrored on the FspecBackend trait (rust/fspec-tui/src/transport/mod.rs) and implemented on BOTH EmbeddedFspecBackend (one-line delegate through self.client) and WebSocketFspecBackend (read-lock the client slot, fail with BackendError::Disconnected when None, otherwise one-line delegate).
   #   5. StubSessionManagerHandle MUST override every new trait method with a deterministic, idempotent stub: get_session_tokens returns seeded SessionTokens, clear_history emits a SessionStateChange { state: Cleared } chunk + Ok(()) (RPC-074: was UserNotification, retired for TS parity), compact_session returns canned CompactionResult, pause_* / send_hitl_response set internal flags + emit SessionStateChange, status_changes_tx/rx expose a new internal broadcast::Sender<(SessionId, SessionStatus)>. The stub MUST be deterministic so cross-transport parity tests produce identical output across both transports.
   #   6. A push-driven status_changes broadcast channel of (SessionId, SessionStatus) is introduced on SessionManagerHandle. status_changes_rx() returns a broadcast::Receiver; status_changes_tx() exposes the Sender for the host/co-listener. The Stub owns a real channel; default implementations on the trait return a fresh local channel whose sender is dropped immediately so subscribers observe Closed (safe degenerate behaviour for handles that haven't wired status push yet).
-  #   7. Cross-transport parity tests live in codelet/rpc-embedded/tests/ and codelet/rpc-server/tests/. A scenario runs the same call sequence through EmbeddedFspecBackend AND WebSocketFspecBackend constructed against the same StubSessionManagerHandle, and asserts every method's return value is byte-identical (modulo timestamps and any source-of-truth ID minted inside the stub).
-  #   8. No existing test in codelet/rpc-embedded/tests/ or codelet/rpc-server/tests/ is broken by the additions — every new method has a default impl on the trait so any pre-existing call site keeps compiling. cargo build of codelet-core, codelet-rpc, codelet-rpc-types, codelet-rpc-embedded, codelet-rpc-server, codelet-fspec-tui all pass. cargo clippy -p codelet-core -- -D warnings is clean.
+  #   7. Cross-transport parity tests live in rust/rpc-embedded/tests/ and rust/rpc-server/tests/. A scenario runs the same call sequence through EmbeddedFspecBackend AND WebSocketFspecBackend constructed against the same StubSessionManagerHandle, and asserts every method's return value is byte-identical (modulo timestamps and any source-of-truth ID minted inside the stub).
+  #   8. No existing test in rust/rpc-embedded/tests/ or rust/rpc-server/tests/ is broken by the additions — every new method has a default impl on the trait so any pre-existing call site keeps compiling. cargo build of codelet-core, codelet-rpc, codelet-rpc-types, codelet-rpc-embedded, codelet-rpc-server, codelet-fspec-tui all pass. cargo clippy -p codelet-core -- -D warnings is clean.
   #
   # EXAMPLES:
   #   1. send_input keeps the existing trait shape (session_id, text). A NEW method send_input_with_thinking(session_id, text, thinking: Option<ThinkingConfig>) gets a new peer FspecService::send_input_with_thinking; the trait's send_input default forwards to send_input_with_thinking(.., None). Backend trait gains send_input_with_thinking that defaults to send_input when None thinking is supplied so the WS backend keeps the same wire shape.
@@ -165,7 +165,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
     Given an engineer holds a freshly-created session id
     When the engineer calls backend.set_thinking_level_default(sid, ThinkingLevel::High).await on either transport
     Then the call returns Ok(())
-    And FspecService::set_thinking_level_default exists in codelet/rpc/src/lib.rs as a new tarpc method on the service trait
+    And FspecService::set_thinking_level_default exists in rust/rpc/src/lib.rs as a new tarpc method on the service trait
 
   Scenario: status_changes_rx is push-driven on both transports
     Given an engineer subscribes to backend.status_changes_rx() on either transport before calling send_input
@@ -182,7 +182,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
     And backend.list_sessions().await no longer contains sid
 
   Scenario: every new method has a tarpc service peer and a FspecBackend trait peer
-    Given the engineer opens codelet/core/src/session_manager_handle.rs and codelet/rpc/src/lib.rs and codelet/fspec-tui/src/transport/mod.rs after this card lands
+    Given the engineer opens rust/core/src/session_manager_handle.rs and rust/rpc/src/lib.rs and rust/fspec-tui/src/transport/mod.rs after this card lands
     Then for every method added by this card to SessionManagerHandle there is an async fn of the same name (modulo Context) on the FspecService tarpc trait
     And for every async fn added to FspecService there is an async fn on the FspecBackend trait
     And EmbeddedFspecBackend implements every new FspecBackend method as a one-line delegate through self.client
@@ -193,7 +193,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
     And both EmbeddedFspecBackend and WebSocketFspecBackend are constructed against that service
     When the engineer runs the same happy-path scenario through each backend: create_session(None) → send_input(sid, "hi") → drain chunks_rx until StreamChunk::Done → destroy_session(sid)
     Then bincode::serialize of the captured Vec<StreamChunk> from the embedded path equals the same from the WebSocket path
-    And no existing tarpc / push-channel test in codelet/rpc-embedded/tests/ or codelet/rpc-server/tests/ regresses
+    And no existing tarpc / push-channel test in rust/rpc-embedded/tests/ or rust/rpc-server/tests/ regresses
 
   Scenario: cargo build and clippy stay green
     Given the engineer is at the workspace root /Users/rquast/projects/fspec/codelet

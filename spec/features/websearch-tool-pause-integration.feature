@@ -4,8 +4,8 @@
 Feature: WebSearch Tool Pause Integration
   """
   WebSearchTool integration: Add pause field to OpenPage, FindInPage, CaptureScreenshot
-  variants in codelet/common/src/web_search.rs. Call pause_for_user() in
-  codelet/tools/src/web_search.rs when pause=true.
+  variants in rust/common/src/web_search.rs. Call pause_for_user() in
+  rust/tools/src/web_search.rs when pause=true.
 
   Rule: pause: true auto-implies headless: false (pausing a headless browser is pointless)
     """

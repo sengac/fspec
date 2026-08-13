@@ -4,11 +4,11 @@
       "name": "Capture a dirty working tree and render the success banner",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "81-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 77,
                 78,
@@ -207,11 +207,11 @@
       "name": "Persist the metadata index on successful capture",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "119-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 149,
                 150,
@@ -304,11 +304,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "119-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 149,
                 150,
@@ -406,11 +406,11 @@
       "name": "Clean working tree captures nothing and reports failure",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "173-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 114,
                 115,
@@ -436,11 +436,11 @@
       "name": "Reject an empty checkpoint name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "212-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 94,
                 95,
@@ -461,11 +461,11 @@
       "name": "Reject a missing work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "235-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 84,
                 85,
@@ -486,11 +486,11 @@
       "name": "format json emits the structured payload preserving key order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/checkpoint.rs",
+          "file": "rust/fspec-core/tests/checkpoint.rs",
           "lines": "255-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/checkpoint.rs",
               "lines": [
                 257,
                 258,
@@ -511,10 +511,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/checkpoint.rs"
+      "rust/fspec-core/tests/checkpoint.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/checkpoint.rs"
+      "rust/fspec-core/src/commands/checkpoint.rs"
     ],
     "totalLinesCovered": 671
   }

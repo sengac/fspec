@@ -4,11 +4,11 @@
       "name": "Adding a domain event to an existing bounded context appends the item and increments nextItemId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_domain_event_to_foundation.rs",
           "lines": "87-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -128,11 +128,11 @@
       "name": "The color field is persisted as the JSON string 'orange'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_domain_event_to_foundation.rs",
           "lines": "131-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -252,11 +252,11 @@
       "name": "Optional description is persisted as the trailing field in TS key order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_domain_event_to_foundation.rs",
           "lines": "159-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -376,11 +376,11 @@
       "name": "Adding a domain event to a non-existent bounded context fails and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_domain_event_to_foundation.rs",
           "lines": "218-250",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -500,11 +500,11 @@
       "name": "A domain event links only to the matching context and a second add increments nextItemId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_domain_event_to_foundation.rs",
           "lines": "252-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -624,11 +624,11 @@
       "name": "A foundation with no event storm reports the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_domain_event_to_foundation.rs",
           "lines": "314-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -750,10 +750,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_domain_event_to_foundation.rs"
+      "rust/fspec-core/tests/add_domain_event_to_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs"
+      "rust/fspec-core/src/commands/add_domain_event_to_foundation.rs"
     ],
     "totalLinesCovered": 892
   }

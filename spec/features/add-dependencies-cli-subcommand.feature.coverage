@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_dependencies.rs",
+          "file": "rust/fspec/tests/cli_add_dependencies.rs",
           "lines": "85-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_dependencies.rs",
+              "file": "rust/fspec/src/add_dependencies.rs",
               "lines": [
                 1,
                 2,
@@ -116,11 +116,11 @@
       "name": "Multi-flag invocation marshalls all four arrays into the JSON args",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_dependencies.rs",
+          "file": "rust/fspec/tests/cli_add_dependencies.rs",
           "lines": "110-151",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_dependencies.rs",
+              "file": "rust/fspec/src/add_dependencies.rs",
               "lines": [
                 47,
                 48,
@@ -178,11 +178,11 @@
       "name": "Missing source work unit exits 1 with the canonical error message on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_dependencies.rs",
+          "file": "rust/fspec/tests/cli_add_dependencies.rs",
           "lines": "153-170",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_dependencies.rs",
+              "file": "rust/fspec/src/add_dependencies.rs",
               "lines": [
                 85,
                 86,
@@ -205,11 +205,11 @@
       "name": "Self-dependency exits 1 with canonical message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_dependencies.rs",
+          "file": "rust/fspec/tests/cli_add_dependencies.rs",
           "lines": "172-186",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_dependencies.rs",
+              "file": "rust/fspec/src/add_dependencies.rs",
               "lines": [
                 85,
                 86,
@@ -232,11 +232,11 @@
       "name": "No flags supplied results in zero-added success",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_dependencies.rs",
+          "file": "rust/fspec/tests/cli_add_dependencies.rs",
           "lines": "188-214",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_dependencies.rs",
+              "file": "rust/fspec/src/add_dependencies.rs",
               "lines": [
                 76,
                 77,
@@ -264,10 +264,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_dependencies.rs"
+      "rust/fspec/tests/cli_add_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_dependencies.rs"
+      "rust/fspec/src/add_dependencies.rs"
     ],
     "totalLinesCovered": 304
   }

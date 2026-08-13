@@ -4,9 +4,9 @@
 @cli
 Feature: Add hook CLI subcommand
   """
-  CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::add_hook::run(args_json, &cwd).
+  CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::add_hook::run(args_json, &cwd).
   Positional arguments `<event>` and `<name>`. Required option `--command <path>`. Optional `--blocking` flag (default false). Optional `--timeout <seconds>` integer. No --format flag.
-  Help text intercepted via codelet/fspec-core/src/help/configs/add_hook.rs (CONFIG const) — byte-exact parity with the TS `node dist/index.js add-hook --help` reference fixture.
+  Help text intercepted via rust/fspec-core/src/help/configs/add_hook.rs (CONFIG const) — byte-exact parity with the TS `node dist/index.js add-hook --help` reference fixture.
   """
 
   Background: User Story
@@ -18,7 +18,7 @@ Feature: Add hook CLI subcommand
     Given the fspec Rust binary has been compiled
     When I run `fspec add-hook --help` with NO_COLOR=1
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the captured TS help fixture at codelet/fspec/tests/fixtures/help/add-hook.txt
+    Then stdout is byte-for-byte identical to the captured TS help fixture at rust/fspec/tests/fixtures/help/add-hook.txt
     Then stdout contains the section header "USAGE" followed by "  fspec add-hook <event> <name> --command <path> [options]"
     Then stdout contains the section header "ARGUMENTS"
     Then stdout contains the section header "OPTIONS"
@@ -51,4 +51,4 @@ Feature: Add hook CLI subcommand
     Given a project root whose spec/fspec-hooks.json contains event 'post-implementing' with hooks ['lint']
     When I dispatch add-hook through fspec_core::dispatch::dispatch_command with event='post-implementing' name='test' command='t.sh' blocking=false
     Then the dispatcher returns success=true
-    Then the CLI bridge module codelet/fspec/src/add_hook.rs contains NO inline parsing or write logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/add_hook.rs contains NO inline parsing or write logic — its only computation is JSON arg marshalling

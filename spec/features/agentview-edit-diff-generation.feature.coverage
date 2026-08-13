@@ -4,11 +4,11 @@
       "name": "Single-line replacement produces one removed and one added marker within context",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "21-39",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 45,
                 46,
@@ -45,11 +45,11 @@
       "name": "Pure addition produces only added markers and no removed markers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "40-56",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 45,
                 46,
@@ -86,11 +86,11 @@
       "name": "Write of a three-line file produces three added markers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "57-72",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 71,
                 72,
@@ -114,11 +114,11 @@
       "name": "A mid-file change in a large edit drops the leading region and shows a trailing gap marker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "73-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 164,
                 165,
@@ -188,11 +188,11 @@
       "name": "A diff exceeding the collapse limit ends with an expand indicator",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "113-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 105,
                 106,
@@ -237,11 +237,11 @@
       "name": "calculateStartLine on a missing file returns 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "135-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 247,
                 248,
@@ -282,11 +282,11 @@
       "name": "calculateStartLine finds new_string at line 250 and returns 250",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "150-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 247,
                 248,
@@ -332,11 +332,11 @@
       "name": "Context lines are encoded with a line number and three spaces and no marker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "169-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 182,
                 183,
@@ -388,11 +388,11 @@
       "name": "Line numbers are offset by startLine and left-padded to at least width three",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "191-211",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 235,
                 236,
@@ -415,11 +415,11 @@
       "name": "Tree connectors prefix the first line and indent the rest while empty content yields empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "212-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 84,
                 85,
@@ -451,11 +451,11 @@
       "name": "A representative edit produces a byte-for-byte golden display string",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "231-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 105,
                 106,
@@ -584,11 +584,11 @@
       "name": "Trailing-newline and no-trailing-newline content produce parity diff lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/diff_format_rpc390.rs",
+          "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
           "lines": "267-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
                 45,
                 46,
@@ -624,10 +624,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/diff_format_rpc390.rs"
+      "rust/fspec-tui/tests/diff_format_rpc390.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/diff_format.rs"
+      "rust/fspec-tui/src/store/agent_view/diff_format.rs"
     ],
     "totalLinesCovered": 693
   }

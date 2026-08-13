@@ -4,11 +4,11 @@
       "name": "Direct call chain between two functions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "76-101",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 1,
                 2,
@@ -203,11 +203,11 @@
       "name": "Multi-hop call chain with intermediate functions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "107-136",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 1,
                 2,
@@ -402,11 +402,11 @@
       "name": "No path exists between two unconnected functions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "141-162",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 70,
                 71,
@@ -434,11 +434,11 @@
       "name": "Non-existent source function slug",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "167-184",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 44,
                 45,
@@ -462,11 +462,11 @@
       "name": "Non-existent target function slug",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "189-206",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 44,
                 45,
@@ -499,11 +499,11 @@
       "name": "Max depth limits path discovery",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "211-238",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/bfs.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/bfs.rs",
               "lines": [
                 1,
                 2,
@@ -610,11 +610,11 @@
       "name": "Multiple paths returned ordered by length",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "243-267",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/bfs.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/bfs.rs",
               "lines": [
                 1,
                 2,
@@ -721,11 +721,11 @@
       "name": "Chain results include function metadata and call details per hop",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "272-310",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 139,
                 140,
@@ -782,11 +782,11 @@
       "name": "Successful response includes human-readable summary",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_call_chain_test.rs",
+          "file": "rust/napi/tests/ast_call_chain_test.rs",
           "lines": "313-333",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_call_chain/mod.rs",
+              "file": "rust/napi/src/graph/ast_call_chain/mod.rs",
               "lines": [
                 87,
                 88,
@@ -810,11 +810,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_call_chain_test.rs"
+      "rust/napi/tests/ast_call_chain_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_call_chain/mod.rs",
-      "codelet/napi/src/graph/ast_call_chain/bfs.rs"
+      "rust/napi/src/graph/ast_call_chain/mod.rs",
+      "rust/napi/src/graph/ast_call_chain/bfs.rs"
     ],
     "totalLinesCovered": 887
   }

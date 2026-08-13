@@ -4,11 +4,11 @@
       "name": "Returns empty checkpoints list against an empty tempdir with no git repository",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "113-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 68,
                 69,
@@ -75,11 +75,11 @@
       "name": "Returns text sentinel 'No checkpoints found' for empty results",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "141-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 208,
                 209,
@@ -121,11 +121,11 @@
       "name": "Missing workUnitId field in args JSON fails with InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "165-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 68,
                 69,
@@ -165,11 +165,11 @@
       "name": "Empty workUnitId string fails with InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "186-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 68,
                 69,
@@ -209,11 +209,11 @@
       "name": "Renders a single manual checkpoint with the manual icon and label",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "207-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 136,
                 137,
@@ -327,11 +327,11 @@
       "name": "Renders a single automatic checkpoint with the automatic icon and label",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "254-287",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 136,
                 137,
@@ -445,11 +445,11 @@
       "name": "JSON format sorts checkpoints by timestamp descending",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "289-332",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 95,
                 96,
@@ -491,11 +491,11 @@
       "name": "JSON format emits two-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "334-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 239,
                 240,
@@ -607,11 +607,11 @@
       "name": "Missing index file falls back to a non-empty ISO-8601 timestamp",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "394-429",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 125,
                 126,
@@ -705,11 +705,11 @@
       "name": "Malformed index file is silently swallowed and falls back to a non-empty timestamp",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "431-466",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 125,
                 126,
@@ -800,14 +800,14 @@
       ]
     },
     {
-      "name": "Shared infrastructure modules exist under codelet/fspec-core and codelet-git is wired as a dependency",
+      "name": "Shared infrastructure modules exist under rust/fspec-core and codelet-git is wired as a dependency",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_checkpoints.rs",
+          "file": "rust/fspec-core/tests/list_checkpoints.rs",
           "lines": "468-507",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/commands/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -888,10 +888,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_checkpoints.rs"
+      "rust/fspec-core/tests/list_checkpoints.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_checkpoints.rs"
+      "rust/fspec-core/src/commands/list_checkpoints.rs"
     ],
     "totalLinesCovered": 1091
   }

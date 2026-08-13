@@ -4,11 +4,11 @@
       "name": "/compact calls backend.compact_session for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "133-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 65,
                 66,
@@ -53,11 +53,11 @@
       "name": "/compact emits an error notice into the originating session's scrollback on Err",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "213-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 65,
                 66,
@@ -102,11 +102,11 @@
       "name": "/compact with no current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "240-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 65,
                 66,
@@ -151,11 +151,11 @@
       "name": "/compact only affects the focused session — background sessions are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "274-331",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 65,
                 66,
@@ -200,11 +200,11 @@
       "name": "SessionFooter renders the compaction progress segment when progress is Some",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "346-382",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 39,
                 40,
@@ -331,11 +331,11 @@
       "name": "SessionFooter omits the compaction segment when progress is None",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "388-417",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 39,
                 40,
@@ -401,11 +401,11 @@
       "name": "CompactionComplete chunk clears progress and emits a completion notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "424-474",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 125,
                 126,
@@ -463,11 +463,11 @@
       "name": "/compact Ok emits no success notice until the CompactionComplete chunk arrives",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_compact_rpc047.rs",
+          "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "162-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 65,
                 66,
@@ -514,12 +514,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_compact_rpc047.rs"
+      "rust/fspec-tui/tests/slash_compact_rpc047.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
     ],
     "totalLinesCovered": 673
   }

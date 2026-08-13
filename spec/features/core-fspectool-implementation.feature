@@ -39,7 +39,7 @@ Feature: Core FspecTool Implementation
   #   A: No specific performance measurements required. The goal is simply to eliminate CLI process spawning overhead completely. As long as FspecTool calls TypeScript functions directly via NAPI without spawning processes, the performance improvement is sufficient.
   #
   #   Q: Which specific fspec TypeScript functions need to be called? Should this integrate with the existing commands in src/commands/ like list-work-units.ts, create-story.ts, etc.?
-  #   A: Yes, FspecTool should follow exactly the same architectural patterns as other tools in codelet/tools/src/ for uniformity. Use the same Tool trait implementation pattern, error handling, and code organization as WebSearchTool, BashTool, etc.
+  #   A: Yes, FspecTool should follow exactly the same architectural patterns as other tools in rust/tools/src/ for uniformity. Use the same Tool trait implementation pattern, error handling, and code organization as WebSearchTool, BashTool, etc.
   #
   #   Q: How are system reminders captured from TypeScript function calls? Do the TypeScript functions return them directly, or do they need to be extracted from stderr/output like in CLI?
   #   A: Use NAPI to directly import the TypeScript modules and call the exported functions. Everything should be as direct as possible - no wrapper layers or adapters. FspecTool should directly import and call listWorkUnits(), createStory(), etc. from src/commands/ modules.
@@ -62,8 +62,8 @@ Feature: Core FspecTool Implementation
   #   Q: What are the specific performance requirements? You mentioned eliminating 100-500ms CLI process spawning delays - what should the target execution time be for individual fspec commands?
   #   A: No specific performance measurements required. The goal is simply to eliminate CLI process spawning overhead completely. As long as FspecTool calls TypeScript functions directly via NAPI without spawning processes, the performance improvement is sufficient.
   #
-  #   Q: How should FspecTool integrate with the existing codelet tools architecture? Should it follow the same patterns as other tools in codelet/tools/src/ (like WebSearchTool, etc.)?
-  #   A: Yes, FspecTool should follow exactly the same architectural patterns as other tools in codelet/tools/src/ for uniformity. Use the same Tool trait implementation pattern, error handling, and code organization as WebSearchTool, BashTool, etc.
+  #   Q: How should FspecTool integrate with the existing codelet tools architecture? Should it follow the same patterns as other tools in rust/tools/src/ (like WebSearchTool, etc.)?
+  #   A: Yes, FspecTool should follow exactly the same architectural patterns as other tools in rust/tools/src/ for uniformity. Use the same Tool trait implementation pattern, error handling, and code organization as WebSearchTool, BashTool, etc.
   #
   #   Q: The TypeScript commands export functions like 'listWorkUnits()' - how should the Rust FspecTool import and call these functions? Should it use NAPI to directly import the TypeScript modules, or call wrapper functions in the NAPI bridge?
   #   A: Use NAPI to directly import the TypeScript modules and call the exported functions. Everything should be as direct as possible - no wrapper layers or adapters. FspecTool should directly import and call listWorkUnits(), createStory(), etc. from src/commands/ modules.

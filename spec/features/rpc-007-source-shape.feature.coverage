@@ -4,11 +4,11 @@
       "name": "Source-shape regression: rpc → napi remains forbidden and the five new types are defined exactly once",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_007_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_007_source_shape.rs",
           "lines": "18-126",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -382,10 +382,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/rpc_007_source_shape.rs"
+      "rust/rpc-embedded/tests/rpc_007_source_shape.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 469
   }

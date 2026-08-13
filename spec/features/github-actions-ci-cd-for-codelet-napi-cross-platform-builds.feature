@@ -13,12 +13,12 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   - .github/workflows/build-codelet-napi.yml (main CI/CD workflow)
 
   FILES TO MODIFY:
-  - codelet/napi/package.json:
+  - rust/napi/package.json:
   - Change "name" from "codelet-napi" to "@sengac/codelet-napi"
   - Set "private": false
   - Run "napi prepublish -t npm" to generate optionalDependencies
   - package.json (root fspec):
-  - Change "codelet-napi": "file:codelet/napi" to "@sengac/codelet-napi": "^0.1.0"
+  - Change "codelet-napi": "file:rust/napi" to "@sengac/codelet-napi": "^0.1.0"
 
   NPM PACKAGE STRUCTURE (7 packages total):
   - @sengac/codelet-napi (main package with JS wrapper + optionalDependencies)
@@ -30,7 +30,7 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   - @sengac/codelet-napi-win32-arm64-msvc (Windows ARM64)
 
   WORKFLOW STRUCTURE:
-  - Triggers: push/PR to codelet/**, tags codelet-napi-v*
+  - Triggers: push/PR to rust/**, tags codelet-napi-v*
   - Jobs:
   1. build (matrix: 6 platforms) → uploads .node artifacts
   2. test (matrix: macOS/Linux/Windows) → downloads artifacts, runs smoke test
@@ -47,8 +47,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   | aarch64-pc-windows-msvc    | windows-latest  | Cross-compile       |
 
   CRITICAL REQUIREMENTS:
-  - Must include codelet/patches/rig-core in checkout (patched dependency)
-  - Build from codelet/ directory (Cargo workspace root)
+  - Must include rust/patches/rig-core in checkout (patched dependency)
+  - Build from rust/ directory (Cargo workspace root)
   - Cache Cargo registry/git/target for faster builds
   - Use NAPI-RS v3 (@napi-rs/cli ^3.5.0) for all operations
 
@@ -73,7 +73,7 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   @triggers
   Scenario: Workflow triggers on codelet directory changes
     Given the file .github/workflows/build-codelet-napi.yml exists
-    When a push or PR modifies any file in "codelet/**"
+    When a push or PR modifies any file in "rust/**"
     Then the workflow should trigger
     And build all 6 platform targets
 
@@ -129,8 +129,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   @build
   @workspace
   Scenario: Build includes patched rig-core dependency
-    Given the checkout includes codelet/patches/rig-core
-    And codelet/Cargo.toml has [patch.crates-io] for rig-core
+    Given the checkout includes rust/patches/rig-core
+    And rust/Cargo.toml has [patch.crates-io] for rig-core
     When the build runs for any platform target
     Then it should compile using the patched rig-core
     And the build should succeed

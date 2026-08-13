@@ -17,7 +17,7 @@ Feature: RPC-015 count_checkpoints helper — classify refs/fspec-checkpoints/
   AUTO_CHECKPOINT_PATTERN = '-auto-'
   isAutomaticCheckpoint(name) === name.includes('-auto-')
 
-  Test pair: codelet/git/tests/count_checkpoints_rpc015.rs.
+  Test pair: rust/git/tests/count_checkpoints_rpc015.rs.
   """
 
   Background: User Story

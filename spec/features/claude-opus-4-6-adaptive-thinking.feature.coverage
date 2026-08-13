@@ -4,19 +4,19 @@
       "name": "Opus 4.6 uses adaptive thinking automatically",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "29-55",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -27,19 +27,19 @@
       "name": "Sonnet 4.6 uses adaptive thinking automatically",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "58-84",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -50,19 +50,19 @@
       "name": "User-provided budget_tokens is ignored for Opus 4.6",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "87-118",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -73,19 +73,19 @@
       "name": "User-provided budget_tokens is ignored for Sonnet 4.6",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "121-150",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -96,19 +96,19 @@
       "name": "Opus 4.5 uses budget-based thinking",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "153-184",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227,229-272"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -119,19 +119,19 @@
       "name": "Sonnet 4.5 uses budget-based thinking",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "187-217",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227,229-272"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -142,11 +142,11 @@
       "name": "Opus 4.6 uses correct beta headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "220-254",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": "49-102"
             }
           ]
@@ -157,11 +157,11 @@
       "name": "Sonnet 4.6 uses correct beta headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "257-291",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": "49-102"
             }
           ]
@@ -172,11 +172,11 @@
       "name": "Opus 4.5 uses correct beta headers without 1M context",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "294-328",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": "49-102"
             }
           ]
@@ -187,19 +187,19 @@
       "name": "Thinking level 'high' defaults to adaptive for Opus 4.6",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "450-479",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -210,19 +210,19 @@
       "name": "Thinking level 'low' defaults to adaptive for Sonnet 4.6",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "482-511",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -233,19 +233,19 @@
       "name": "Thinking disabled with 'off' for Opus 4.6",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "514-534",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]
@@ -256,19 +256,19 @@
       "name": "Thinking disabled with 'off' for Sonnet 4.6",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
           "lines": "537-557",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5047-5105"
             },
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
           ]

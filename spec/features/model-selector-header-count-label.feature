@@ -7,7 +7,7 @@
 Feature: Model selector header count pluralization (TS parity)
   """
   PROV-127 pluralization rule. The shared helper
-  codelet/fspec-tui/src/views/model_selector/rows.rs::model_count_label renders
+  rust/fspec-tui/src/views/model_selector/rows.rs::model_count_label renders
   "(1 model)" for a single model and "(N models)" otherwise (including
   "(0 models)"). It is used by the full-screen provider header rows (rows.rs)
   and the selector title (state.rs::title_text) so the singular / plural rule

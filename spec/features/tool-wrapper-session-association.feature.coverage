@@ -4,11 +4,11 @@
       "name": "Fspec tool wrapper stores session_id at construction and uses it at call time",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "43-90",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 354,
                 355,
@@ -43,11 +43,11 @@
       "name": "Fspec tool call succeeds across async boundaries",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "93-136",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 393,
                 394,
@@ -98,11 +98,11 @@
       "name": "Concurrent sessions use their own isolated tool instances",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "139-221",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec_handler.rs",
+              "file": "rust/tools/src/fspec_handler.rs",
               "lines": [
                 197,
                 198,
@@ -165,11 +165,11 @@
       "name": "Rust CLI creates session UUID before building agent",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "224-236",
           "implMappings": [
             {
-              "file": "codelet/cli/src/lib.rs",
+              "file": "rust/cli/src/lib.rs",
               "lines": [
                 125,
                 126,
@@ -227,11 +227,11 @@
       "name": "Watcher session and parent session use separate Fspec tool instances",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "239-314",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/fspec_registration.rs",
+              "file": "rust/tools/src/facade/fspec_registration.rs",
               "lines": [
                 1,
                 2,
@@ -343,11 +343,11 @@
       "name": "Bridge tool wrapper stores session_id at construction",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "316-365",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/bridge_registration.rs",
+              "file": "rust/tools/src/facade/bridge_registration.rs",
               "lines": [
                 1,
                 2,
@@ -429,11 +429,11 @@
       "name": "create_rig_agent accepts session_id as first parameter",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "367-397",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 298,
                 299,
@@ -498,11 +498,11 @@
       "name": "Thread-local current session functions are no longer needed",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_wrapper_session_association_test.rs",
+          "file": "rust/tools/tests/tool_wrapper_session_association_test.rs",
           "lines": "399-437",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec_handler.rs",
+              "file": "rust/tools/src/fspec_handler.rs",
               "lines": [
                 125,
                 126,
@@ -539,15 +539,15 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/tool_wrapper_session_association_test.rs"
+      "rust/tools/tests/tool_wrapper_session_association_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/fspec_handler.rs",
-      "codelet/cli/src/lib.rs",
-      "codelet/tools/src/facade/fspec_registration.rs",
-      "codelet/tools/src/facade/bridge_registration.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/fspec_handler.rs",
+      "rust/cli/src/lib.rs",
+      "rust/tools/src/facade/fspec_registration.rs",
+      "rust/tools/src/facade/bridge_registration.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 789
   }

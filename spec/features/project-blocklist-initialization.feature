@@ -5,7 +5,7 @@
 @RPC-407
 Feature: Project blocklist initialization at service startup
   """
-  Fix seam: codelet/fspec/src/common.rs::build_service (chokepoint for daemon.rs:38 and combined.rs:35; client mode does not call it and inherits the daemon). Call codelet_tools::blocklist::init_blocklist(Some(workspace)) alongside the existing set_data_directory bootstrap.
+  Fix seam: rust/fspec/src/common.rs::build_service (chokepoint for daemon.rs:38 and combined.rs:35; client mode does not call it and inherits the daemon). Call codelet_tools::blocklist::init_blocklist(Some(workspace)) alongside the existing set_data_directory bootstrap.
   Tests: BLOCKLIST_PROJECT_ROOT is process-global, so integration tests use serial_test::serial and restore state via init_blocklist(None) + clear_session_allowances() on exit. codelet-fspec needs serial_test added as a dev-dependency (already a workspace dep used by codelet-tools).
   """
 
@@ -22,7 +22,7 @@ Feature: Project blocklist initialization at service startup
   # EXAMPLES:
   #   1. Workspace contains .fspec/blocklist.json with a block rule pattern sentinel-rpc407; after build_service(workspace), check_bash_command("sentinel-rpc407", uuid) returns Err(BlockedError) with the project rule id
   #   2. Negative control: after re-initializing the blocklist with a different root (no project config), the same sentinel command is allowed — proving the block came from the project config
-  #   3. Source-shape guard: codelet/fspec/src/common.rs build_service contains a literal init_blocklist call so future entry points cannot silently drop it (covers both daemon and combined modes which both call build_service)
+  #   3. Source-shape guard: rust/fspec/src/common.rs build_service contains a literal init_blocklist call so future entry points cannot silently drop it (covers both daemon and combined modes which both call build_service)
   #
   # ========================================
   Background: User Story
@@ -43,6 +43,6 @@ Feature: Project blocklist initialization at service startup
 
   Scenario: Startup seam covers both daemon and combined modes
     Given the codelet-fspec binary crate after RPC-407 lands
-    When I open codelet/fspec/src/common.rs
+    When I open rust/fspec/src/common.rs
     Then the build_service function contains a literal init_blocklist call
     And both daemon.rs and combined.rs reach build_service so neither mode can skip blocklist initialization

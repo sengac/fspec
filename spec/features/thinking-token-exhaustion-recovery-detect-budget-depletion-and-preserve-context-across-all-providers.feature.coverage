@@ -4,11 +4,11 @@
       "name": "Anthropic thinking exhaustion detected and recovered with reduced budget",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "22-68",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 288,
                 289,
@@ -308,11 +308,11 @@
       "name": "OpenAI thinking exhaustion detected and recovered with lower reasoning effort",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "74-110",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 288,
                 289,
@@ -612,11 +612,11 @@
       "name": "Gemini thinking exhaustion detected and recovered with lower thinking level",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "116-153",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 288,
                 289,
@@ -916,11 +916,11 @@
       "name": "Thinking content from exhausted attempt is preserved as context for retry",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "159-195",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 350,
                 351,
@@ -990,11 +990,11 @@
       "name": "Retry budget prevents infinite thinking exhaustion retry loops",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "201-262",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 291,
                 292,
@@ -1078,11 +1078,11 @@
       "name": "Normal completion with thinking is unaffected by exhaustion detection",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "268-319",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 308,
                 309,
@@ -1134,11 +1134,11 @@
       "name": "Context preserved via session archive before retry near context limits",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "325-362",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 308,
                 309,
@@ -1274,11 +1274,11 @@
       "name": "Session-level reasoning effort auto-downgrades on repeated thinking exhaustion across turns",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "368-406",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 302,
                 303,
@@ -1334,11 +1334,11 @@
       "name": "Regular output truncation is not classified as thinking exhaustion",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/thinking_exhaustion_recovery_test.rs",
+          "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
           "lines": "412-440",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 308,
                 309,
@@ -1392,10 +1392,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/thinking_exhaustion_recovery_test.rs"
+      "rust/cli/tests/thinking_exhaustion_recovery_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 1621
   }

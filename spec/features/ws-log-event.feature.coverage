@@ -4,11 +4,11 @@
       "name": "Event and LogEvent ride bincode-encoded Envelope on the WebSocket wire",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/ws_log_event.rs",
+          "file": "rust/rpc-server/tests/ws_log_event.rs",
           "lines": "88-161",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/envelope.rs",
+              "file": "rust/rpc-server/src/envelope.rs",
               "lines": [
                 30,
                 31,
@@ -71,10 +71,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/ws_log_event.rs"
+      "rust/rpc-server/tests/ws_log_event.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/envelope.rs"
+      "rust/rpc-server/src/envelope.rs"
     ],
     "totalLinesCovered": 123
   }

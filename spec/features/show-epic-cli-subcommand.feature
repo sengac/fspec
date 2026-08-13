@@ -4,7 +4,7 @@
 @RPC-302
 Feature: Show epic CLI subcommand
   """
-  CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::show_epic::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
+  CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::show_epic::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
   Unlike list-epics (which is flag-less), show-epic exposes one required positional argument <epicId> AND a `-f, --format <format>` flag defaulting to 'text' — mirroring the TypeScript Commander.js registration at src/commands/show-epic.ts:136-142.
 
@@ -17,8 +17,8 @@ Feature: Show epic CLI subcommand
     So that I can audit a single epic from a script or terminal without going through the LLM tool-call dispatcher
 
   Scenario: Clap exposes show-epic as a subcommand and prints epicId-aware --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec show-epic --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec show-epic --help` from a shell
     Then the command exits 0
     Then stdout contains clap-generated help describing the show-epic subcommand
     Then stdout advertises the required positional <epicId> argument
@@ -30,7 +30,7 @@ Feature: Show epic CLI subcommand
 
   Scenario: CLI against empty workspace exits 1 with Epic not found error
     Given an empty directory with no spec/ subdirectory is set as the current working directory
-    When I run `./codelet/target/release/fspec show-epic auth` from that directory
+    When I run `./rust/target/release/fspec show-epic auth` from that directory
     Then the command exits with code 1
     Then stderr contains the substring 'Error:'
     Then stderr contains the substring 'Epic auth not found'
@@ -40,7 +40,7 @@ Feature: Show epic CLI subcommand
   Scenario: CLI text output renders epic header and progress for the populated case
     Given spec/epics.json contains auth (title 'Authentication', description 'Login features')
     Given spec/work-units.json contains AUTH-001 (epic=auth, status=done) and AUTH-002 (epic=auth, status=backlog)
-    When I run `./codelet/target/release/fspec show-epic auth`
+    When I run `./rust/target/release/fspec show-epic auth`
     Then the command exits 0
     Then stdout contains the line 'Epic: auth'
     Then stdout contains the line 'Title: Authentication'
@@ -52,14 +52,14 @@ Feature: Show epic CLI subcommand
 
   Scenario: CLI exits 1 and writes to stderr when epics.json is malformed
     Given spec/epics.json exists in the working directory but contains invalid JSON
-    When I run `./codelet/target/release/fspec show-epic auth`
+    When I run `./rust/target/release/fspec show-epic auth`
     Then the command exits with code 1
     Then stderr contains the substring 'Error:'
     Then stderr contains the substring 'Failed to parse epics.json'
 
   Scenario: CLI exits 1 when epicId is not registered
     Given spec/epics.json contains auth (title 'Authentication')
-    When I run `./codelet/target/release/fspec show-epic nonexistent`
+    When I run `./rust/target/release/fspec show-epic nonexistent`
     Then the command exits with code 1
     Then stderr contains the substring 'Error:'
     Then stderr contains the substring 'Epic nonexistent not found'
@@ -67,7 +67,7 @@ Feature: Show epic CLI subcommand
   Scenario: CLI exits 0 with text output when work-units.json is malformed
     Given spec/epics.json contains auth (title 'Authentication')
     Given spec/work-units.json exists but contains the malformed bytes '{ not json'
-    When I run `./codelet/target/release/fspec show-epic auth`
+    When I run `./rust/target/release/fspec show-epic auth`
     Then the command exits 0
     Then stdout contains the line 'Epic: auth'
     Then stdout contains the exact line '  Total work units: 0'
@@ -76,7 +76,7 @@ Feature: Show epic CLI subcommand
   Scenario: CLI --format json emits JSON to stdout
     Given spec/epics.json contains auth (title 'Authentication')
     Given spec/work-units.json contains AUTH-001 (epic=auth, status=done) and AUTH-002 (epic=auth, status=backlog)
-    When I run `./codelet/target/release/fspec show-epic auth --format json`
+    When I run `./rust/target/release/fspec show-epic auth --format json`
     Then the command exits 0
     Then stdout parses as JSON whose root object has an 'epic' key
     Then the parsed JSON has totalWorkUnits=2, completedWorkUnits=1, completionPercentage=50
@@ -85,13 +85,13 @@ Feature: Show epic CLI subcommand
   Scenario: CLI -f json short flag matches the long form
     Given spec/epics.json contains auth (title 'Authentication')
     Given spec/work-units.json does NOT exist
-    When I run `./codelet/target/release/fspec show-epic auth -f json`
+    When I run `./rust/target/release/fspec show-epic auth -f json`
     Then the command exits 0
     Then stdout parses as JSON with an 'epic' key
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has show-epic registered as a clap subcommand alongside daemon, client, status, list-work-units, list-prefixes, and list-epics
-    When I run `./codelet/target/release/fspec --help`
+    When I run `./rust/target/release/fspec --help`
     Then the help output lists daemon, client, status, list-work-units, list-prefixes, list-epics, and show-epic as available subcommands
     Then the long-about description still documents that running fspec with no subcommand enters combined TUI mode
 
@@ -100,11 +100,11 @@ Feature: Show epic CLI subcommand
     When I dispatch show-epic through fspec_core::dispatch::dispatch_command with epicId='auth' and format='json'
     Then the dispatcher's DispatchResult.data parses to a structure with totalWorkUnits=2, completedWorkUnits=1, completionPercentage=50
     Then the CLI text output (./fspec show-epic auth) reflects the same '  Completion: 50%' line
-    Then the CLI bridge module codelet/fspec/src/show_epic.rs contains NO inline aggregation, filter, or rendering logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/show_epic.rs contains NO inline aggregation, filter, or rendering logic — its only computation is JSON arg marshalling
 
   Scenario: show-epic --help is byte-for-byte identical to the TS formatCommandHelp reference output
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec show-epic --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec show-epic --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/show-epic.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/show-epic.txt
     And stdout starts with a blank line followed by 'SHOW-EPIC'

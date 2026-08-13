@@ -17,6 +17,6 @@
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "codelet/**/*"],
+  "include": ["src/**/*", "rust/**/*"],
   "exclude": ["node_modules", "dist"]
 }

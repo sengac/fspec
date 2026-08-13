@@ -4,11 +4,11 @@
       "name": "Clap exposes tag-stats as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "60-115",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -103,11 +103,11 @@
       "name": "CLI against empty directory prints zero-totals output and does not auto-create files",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "116-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -202,11 +202,11 @@
       "name": "CLI text output renders category counts for the populated case",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "160-235",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -301,11 +301,11 @@
       "name": "CLI text output prints invalid-files warning when a feature file is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "236-267",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -400,11 +400,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "268-302",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -499,11 +499,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "303-389",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -598,11 +598,11 @@
       "name": "tag-stats --help is byte-for-byte identical to the TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_tag_stats.rs",
+          "file": "rust/fspec/tests/cli_tag_stats.rs",
           "lines": "390-414",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/tag_stats.rs",
+              "file": "rust/fspec/src/tag_stats.rs",
               "lines": [
                 1,
                 2,
@@ -699,10 +699,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_tag_stats.rs"
+      "rust/fspec/tests/cli_tag_stats.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/tag_stats.rs"
+      "rust/fspec/src/tag_stats.rs"
     ],
     "totalLinesCovered": 936
   }

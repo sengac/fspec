@@ -4,11 +4,11 @@
       "name": "Both transports produce semantically identical results for the same call",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/parity.rs",
+          "file": "rust/rpc-server/tests/parity.rs",
           "lines": "20-51",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 78,
                 79,
@@ -25,11 +25,11 @@
       "name": "Both transport calls reach the same shared service implementation",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/parity.rs",
+          "file": "rust/rpc-server/tests/parity.rs",
           "lines": "53-86",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 36,
                 37,
@@ -68,10 +68,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/parity.rs"
+      "rust/rpc-server/tests/parity.rs"
     ],
     "implFiles": [
-      "codelet/rpc/src/lib.rs"
+      "rust/rpc/src/lib.rs"
     ],
     "totalLinesCovered": 96
   }

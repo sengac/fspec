@@ -22,7 +22,7 @@ Feature: RPC-025 App::dispatch wires Shift+↑/↓ history recall and fire-and-f
   so each open session keeps its own recall position even after the
   user cycles between sessions via RPC-024's Shift+←/→.
 
-  Tests: codelet/fspec-tui/tests/app_dispatch_history_rpc025.rs (uses
+  Tests: rust/fspec-tui/tests/app_dispatch_history_rpc025.rs (uses
   a fake FspecBackend with a programmable persistence_get_history
   return).
   """

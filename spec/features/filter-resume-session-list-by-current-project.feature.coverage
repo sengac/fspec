@@ -4,11 +4,11 @@
       "name": "Session list is filtered to current project on /resume",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
+          "file": "rust/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
           "lines": "17-79",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 306,
                 307,
@@ -35,11 +35,11 @@
       "name": "Session list refreshes with project filter after deleting a session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
+          "file": "rust/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
           "lines": "81-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 285,
                 286,
@@ -67,11 +67,11 @@
       "name": "Background sessions are included alongside filtered persisted sessions",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
+          "file": "rust/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
           "lines": "145-203",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 365,
                 366,
@@ -99,11 +99,11 @@
       "name": "Cross-transport parity for both embedded and WebSocket backends",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
+          "file": "rust/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
           "lines": "205-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 71,
                 72
@@ -119,12 +119,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/resume_session_project_filter_rpc427.rs"
+      "rust/fspec-tui/tests/resume_session_project_filter_rpc427.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/fspec-tui/src/transport/mod.rs"
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
+      "rust/sessions/src/session_manager.rs",
+      "rust/fspec-tui/src/transport/mod.rs"
     ],
     "totalLinesCovered": 271
   }

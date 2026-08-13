@@ -4,11 +4,11 @@
       "name": "Tab in List mode with providers emits SwitchToModels",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "70-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 52,
                 53,
@@ -35,11 +35,11 @@
       "name": "Tab in List mode with an empty provider list still emits SwitchToModels",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "103-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 52,
                 53,
@@ -66,11 +66,11 @@
       "name": "Tab in List mode with an active filter preserves filter state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "118-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 52,
                 53,
@@ -97,11 +97,11 @@
       "name": "Tab in filter sub-mode does not trigger SwitchToModels",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "162-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 146,
                 147,
@@ -151,11 +151,11 @@
       "name": "Tab in EditApiKey detail mode is silently Consumed",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "188-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 115,
                 116,
@@ -198,11 +198,11 @@
       "name": "Tab while delete-confirm dialog is open routes to dialog focus cycling",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "216-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 187,
                 188,
@@ -238,11 +238,11 @@
       "name": "Direct unit invocation of Tab on a default List-mode view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "246-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 56,
                 57,
@@ -270,11 +270,11 @@
       "name": "Up then Tab then Down preserves arrow nav contract",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
           "lines": "271-298",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 52,
                 53,
@@ -303,12 +303,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs"
+      "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list.rs",
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs",
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+      "rust/fspec-tui/src/views/provider_settings/list.rs",
+      "rust/fspec-tui/src/views/provider_settings/detail.rs",
+      "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
     "totalLinesCovered": 384
   }

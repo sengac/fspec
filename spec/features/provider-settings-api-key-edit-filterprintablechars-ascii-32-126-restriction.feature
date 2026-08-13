@@ -13,7 +13,7 @@ Feature: Provider settings api-key edit: filterPrintableChars ASCII 32-126 restr
   """
   Pattern mirrors RPC-152 regression-shape coverage: read source as string, use brace-balancing to scope assertions to a function body, and use byte-offset ORDER assertions for sequencing invariants
   Implementation already exists from RPC-161 — this card is coverage-only, structural pinning of the shape so a regression breaks the test before reaching CI
-  Test file: codelet/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs — integration test that reads detail.rs from CARGO_MANIFEST_DIR-relative path
+  Test file: rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs — integration test that reads detail.rs from CARGO_MANIFEST_DIR-relative path
   """
 
   # ========================================
@@ -21,7 +21,7 @@ Feature: Provider settings api-key edit: filterPrintableChars ASCII 32-126 restr
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. A helper named `is_printable_ascii` MUST exist in codelet/fspec-tui/src/views/provider_settings/detail.rs with signature `fn is_printable_ascii(c: char) -> bool`
+  #   1. A helper named `is_printable_ascii` MUST exist in rust/fspec-tui/src/views/provider_settings/detail.rs with signature `fn is_printable_ascii(c: char) -> bool`
   #   2. The body of `is_printable_ascii` MUST evaluate the inclusive range `(32..=126).contains(&code)` — proving the TS filterPrintableChars boundaries are preserved
   #   3. The `handle_edit_key` function body MUST contain a call to `is_printable_ascii(c)` guarding the `draft.push(c)` append on the `KeyCode::Char(c)` arm
   #   4. The `KeyCode::Char(c)` arm of `handle_edit_key` MUST NOT contain any unconditional `draft.push(c)` outside the `is_printable_ascii` guard
@@ -39,23 +39,23 @@ Feature: Provider settings api-key edit: filterPrintableChars ASCII 32-126 restr
     So that a future refactor cannot silently drop the ASCII 32-126 restriction and let control chars or non-ASCII bytes leak into provider credentials
 
   Scenario: is_printable_ascii helper exists in detail.rs with the canonical signature
-    Given I read the source of codelet/fspec-tui/src/views/provider_settings/detail.rs
+    Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
     When I scan the file as a string
     Then the source must contain "fn is_printable_ascii(c: char) -> bool"
 
   Scenario: is_printable_ascii body evaluates the inclusive ASCII 32..=126 range
-    Given I read the source of codelet/fspec-tui/src/views/provider_settings/detail.rs
+    Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
     When I extract the body of the "fn is_printable_ascii(c: char) -> bool" function
     Then the function body must contain "(32..=126).contains(&code)"
 
   Scenario: handle_edit_key body guards draft.push(c) through is_printable_ascii
-    Given I read the source of codelet/fspec-tui/src/views/provider_settings/detail.rs
+    Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
     When I extract the handle_edit_key function body
     Then the function body must contain "is_printable_ascii(c)"
     And the function body must contain "draft.push(c)"
 
   Scenario: is_printable_ascii guard precedes draft.push(c) in handle_edit_key
-    Given I read the source of codelet/fspec-tui/src/views/provider_settings/detail.rs
+    Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
     When I extract the handle_edit_key function body
     Then the function body must contain "is_printable_ascii(c)"
     And the function body must contain "draft.push(c)"

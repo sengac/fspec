@@ -4,11 +4,11 @@
       "name": "Render heading with a single-word title",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "11-22",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
                 59,
                 60,
@@ -77,11 +77,11 @@
       "name": "Render heading with a multi-word title",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "25-43",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/slug.rs",
+              "file": "rust/attachment-viewer/src/markdown/slug.rs",
               "lines": [
                 17,
                 18,
@@ -132,11 +132,11 @@
       "name": "Strip special characters from the slug",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "46-58",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/slug.rs",
+              "file": "rust/attachment-viewer/src/markdown/slug.rs",
               "lines": [
                 33,
                 34,
@@ -171,11 +171,11 @@
       "name": "De-duplicate repeated heading slugs with numeric suffixes",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "61-76",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/slug.rs",
+              "file": "rust/attachment-viewer/src/markdown/slug.rs",
               "lines": [
                 17,
                 18,
@@ -202,11 +202,11 @@
       "name": "Anchor link round-trips to a heading id",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "79-91",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
                 58,
                 59,
@@ -227,11 +227,11 @@
       "name": "Soft line break renders as a hard break",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "94-107",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
                 68,
                 69,
@@ -249,11 +249,11 @@
       "name": "Smart punctuation is not applied",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "104-122",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
                 20,
                 21,
@@ -272,11 +272,11 @@
       "name": "Code and mermaid blocks remain unaffected by heading ids",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
           "lines": "125-141",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
                 128,
                 129,
@@ -306,11 +306,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/attachment-viewer/tests/markdown_heading_anchors.rs"
+      "rust/attachment-viewer/tests/markdown_heading_anchors.rs"
     ],
     "implFiles": [
-      "codelet/attachment-viewer/src/markdown/render.rs",
-      "codelet/attachment-viewer/src/markdown/slug.rs"
+      "rust/attachment-viewer/src/markdown/render.rs",
+      "rust/attachment-viewer/src/markdown/slug.rs"
     ],
     "totalLinesCovered": 295
   }

@@ -4,11 +4,11 @@
       "name": "Mouse wheel scrolls the provider list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
+          "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
           "lines": "123-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
                 24,
                 25,
@@ -25,7 +25,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mouse.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mouse.rs",
               "lines": [
                 22,
                 23,
@@ -54,11 +54,11 @@
       "name": "Mouse wheel scrolls the model list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
+          "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
           "lines": "147-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
                 65,
                 66,
@@ -75,7 +75,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
                 190,
                 191,
@@ -110,11 +110,11 @@
       "name": "Rapid wheel events ramp the scroll velocity",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
+          "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
           "lines": "170-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mouse.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mouse.rs",
               "lines": [
                 22,
                 23,
@@ -143,11 +143,11 @@
       "name": "PageDown and PageUp page the provider list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
+          "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
           "lines": "195-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 53,
                 54,
@@ -196,11 +196,11 @@
       "name": "Home and End jump to the ends of the provider list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
+          "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
           "lines": "222-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 53,
                 54,
@@ -249,11 +249,11 @@
       "name": "Paging keys are inert in provider filter mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
+          "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
           "lines": "245-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 31,
                 32,
@@ -270,13 +270,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/mode_view_scroll_input_rpc353.rs"
+      "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/navigator_events.rs",
-      "codelet/fspec-tui/src/views/provider_settings/mouse.rs",
-      "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/navigator_events.rs",
+      "rust/fspec-tui/src/views/provider_settings/mouse.rs",
+      "rust/fspec-tui/src/views/model_selector/dispatch.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 274
   }

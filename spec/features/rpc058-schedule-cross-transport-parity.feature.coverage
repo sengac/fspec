@@ -4,11 +4,11 @@
       "name": "Embedded and WebSocket schedule_add both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
           "lines": "88-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 631,
                 632,
@@ -19,7 +19,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1011,
                 1012,
@@ -33,7 +33,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1790,
                 1791,
@@ -51,7 +51,7 @@
               ]
             },
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1511,
                 1512,
@@ -73,11 +73,11 @@
       "name": "Embedded and WebSocket schedule_list both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
           "lines": "132-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1021,
                 1022,
@@ -87,7 +87,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 638,
                 639,
@@ -95,7 +95,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1804,
                 1805,
@@ -107,7 +107,7 @@
               ]
             },
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1522,
                 1523,
@@ -125,11 +125,11 @@
       "name": "Embedded and WebSocket schedule_pause both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
           "lines": "177-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 642,
                 643,
@@ -140,7 +140,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1027,
                 1028,
@@ -154,7 +154,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1812,
                 1813,
@@ -180,7 +180,7 @@
               ]
             },
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1529,
                 1530,
@@ -202,11 +202,11 @@
       "name": "Embedded and WebSocket schedule_resume both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
           "lines": "217-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1037,
                 1038,
@@ -220,7 +220,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 649,
                 650,
@@ -231,7 +231,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1834,
                 1835,
@@ -257,7 +257,7 @@
               ]
             },
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1540,
                 1541,
@@ -279,11 +279,11 @@
       "name": "Embedded and WebSocket schedule_remove both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
           "lines": "256-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 656,
                 657,
@@ -293,7 +293,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1047,
                 1048,
@@ -307,7 +307,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1856,
                 1857,
@@ -316,7 +316,7 @@
               ]
             },
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1551,
                 1552,
@@ -336,13 +336,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc058_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/rpc/src/lib.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/rpc/src/lib.rs"
     ],
     "totalLinesCovered": 347
   }

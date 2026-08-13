@@ -4,11 +4,11 @@
       "name": "validate-work-units --help is byte-for-byte identical to the TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "55-84",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_work_units.rs",
+              "file": "rust/fspec/src/validate_work_units.rs",
               "lines": [
                 42,
                 43,
@@ -54,11 +54,11 @@
       "name": "CLI prints success and exits 0 for a clean store",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "85-119",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_work_units.rs",
+              "file": "rust/fspec/src/validate_work_units.rs",
               "lines": [
                 42,
                 43,
@@ -104,11 +104,11 @@
       "name": "CLI prints errors to stderr and exits 1 for a corrupt store",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "120-157",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_work_units.rs",
+              "file": "rust/fspec/src/validate_work_units.rs",
               "lines": [
                 42,
                 43,
@@ -154,11 +154,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "158-218",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_work_units.rs",
+              "file": "rust/fspec/src/validate_work_units.rs",
               "lines": [
                 42,
                 43,
@@ -204,11 +204,11 @@
       "name": "CLI rejects the documented-only --fix flag at runtime",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "226-296",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1606,
                 1607,
@@ -232,11 +232,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_validate_work_units.rs"
+      "rust/fspec/tests/cli_validate_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/validate_work_units.rs",
-      "codelet/fspec/src/main.rs"
+      "rust/fspec/src/validate_work_units.rs",
+      "rust/fspec/src/main.rs"
     ],
     "totalLinesCovered": 381
   }

@@ -4,11 +4,11 @@
       "name": "Clap exposes board with --format and --limit and prints byte-parity help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_board.rs",
+          "file": "rust/fspec/tests/cli_board.rs",
           "lines": "69-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/board.rs",
+              "file": "rust/fspec-core/src/help/configs/board.rs",
               "lines": [
                 1,
                 2,
@@ -134,11 +134,11 @@
       "name": "CLI emits JSON board with story-point summary",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_board.rs",
+          "file": "rust/fspec/tests/cli_board.rs",
           "lines": "99-119",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/board.rs",
+              "file": "rust/fspec/src/board.rs",
               "lines": [
                 51,
                 52,
@@ -179,11 +179,11 @@
       "name": "CLI exits 1 with stderr when foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_board.rs",
+          "file": "rust/fspec/tests/cli_board.rs",
           "lines": "125-141",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/board.rs",
+              "file": "rust/fspec/src/board.rs",
               "lines": [
                 74,
                 75,
@@ -200,11 +200,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_board.rs",
+          "file": "rust/fspec/tests/cli_board.rs",
           "lines": "147-203",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/board.rs",
+              "file": "rust/fspec/src/board.rs",
               "lines": [
                 51,
                 52,
@@ -282,11 +282,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_board.rs"
+      "rust/fspec/tests/cli_board.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/board.rs",
-      "codelet/fspec/src/board.rs"
+      "rust/fspec-core/src/help/configs/board.rs",
+      "rust/fspec/src/board.rs"
     ],
     "totalLinesCovered": 332
   }

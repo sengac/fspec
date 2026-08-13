@@ -4,11 +4,11 @@
       "name": "Turn-start seed emit reports the true cache-inclusive total exactly once",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
           "lines": "82-103",
           "implMappings": [
             {
-              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
                 138,
                 139,
@@ -53,11 +53,11 @@
           ]
         },
         {
-          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
           "lines": "82-103",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 590,
                 591,
@@ -80,11 +80,11 @@
       "name": "Pre-compaction flush in the no-usage-event window preserves tracker and billing integrity",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
           "lines": "183-213",
           "implMappings": [
             {
-              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
                 138,
                 139,
@@ -129,11 +129,11 @@
           ]
         },
         {
-          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
           "lines": "183-213",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 165,
                 166,
@@ -184,11 +184,11 @@
       "name": "Inconsistent stale cache split falls back to the trusted total",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
           "lines": "219-245",
           "implMappings": [
             {
-              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
                 161,
                 162,
@@ -215,11 +215,11 @@
       "name": "Mid-stream Usage self-heal behavior is unchanged",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
           "lines": "251-291",
           "implMappings": [
             {
-              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
                 218,
                 219,
@@ -252,12 +252,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs"
+      "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/streaming_display/streaming_token_display.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/recovery_compaction.rs"
+      "rust/core/src/streaming_display/streaming_token_display.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/recovery_compaction.rs"
     ],
     "totalLinesCovered": 334
   }

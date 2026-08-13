@@ -4,11 +4,11 @@
       "name": "First Down press moves the cursor one row when opened with no matched current model",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
           "lines": "29-58",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 32,
                 33,
@@ -32,11 +32,11 @@
       "name": "First Up press at the top row is a clamped no-move but activates the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
           "lines": "61-86",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 16,
                 17,
@@ -63,11 +63,11 @@
       "name": "First PageDown press moves the selection by a viewport step",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
           "lines": "89-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 45,
                 46,
@@ -98,11 +98,11 @@
       "name": "Enter before any navigation is a no-op on a model row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
           "lines": "142-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 16,
                 17,
@@ -179,11 +179,11 @@
       "name": "Opening on a matched current model seeds the cursor and Enter selects immediately",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
           "lines": "194-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
               "lines": [
                 16,
                 17,
@@ -262,10 +262,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs"
+      "rust/fspec-tui/src/views/model_selector/tests_first_press_nav.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/navigation.rs"
+      "rust/fspec-tui/src/views/model_selector/navigation.rs"
     ],
     "totalLinesCovered": 363
   }

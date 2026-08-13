@@ -4,11 +4,11 @@
       "name": "Resume a paused schedule sets its status to active",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/resume_schedule.rs",
+          "file": "rust/fspec-core/tests/resume_schedule.rs",
           "lines": "76-97",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/resume_schedule.rs",
+              "file": "rust/fspec-core/src/commands/resume_schedule.rs",
               "lines": [
                 75,
                 76,
@@ -81,11 +81,11 @@
       "name": "Resuming a missing schedule reports it does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/resume_schedule.rs",
+          "file": "rust/fspec-core/tests/resume_schedule.rs",
           "lines": "99-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/resume_schedule.rs",
+              "file": "rust/fspec-core/src/commands/resume_schedule.rs",
               "lines": [
                 75,
                 76,
@@ -158,11 +158,11 @@
       "name": "Resuming an already-active schedule reports it is already active",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/resume_schedule.rs",
+          "file": "rust/fspec-core/tests/resume_schedule.rs",
           "lines": "127-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/resume_schedule.rs",
+              "file": "rust/fspec-core/src/commands/resume_schedule.rs",
               "lines": [
                 75,
                 76,
@@ -235,11 +235,11 @@
       "name": "Resuming one of several schedules preserves the others verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/resume_schedule.rs",
+          "file": "rust/fspec-core/tests/resume_schedule.rs",
           "lines": "155-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/resume_schedule.rs",
+              "file": "rust/fspec-core/src/commands/resume_schedule.rs",
               "lines": [
                 75,
                 76,
@@ -314,10 +314,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/resume_schedule.rs"
+      "rust/fspec-core/tests/resume_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/resume_schedule.rs"
+      "rust/fspec-core/src/commands/resume_schedule.rs"
     ],
     "totalLinesCovered": 406
   }

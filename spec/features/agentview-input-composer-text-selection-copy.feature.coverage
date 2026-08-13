@@ -4,11 +4,11 @@
       "name": "Dragging across a wrapped composer row copies its text without the prompt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
           "lines": "61-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
                 72,
                 73,
@@ -114,11 +114,11 @@
       "name": "Long-pressing a composer line selects and copies it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
           "lines": "103-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
                 93,
                 94,
@@ -178,11 +178,11 @@
       "name": "Typing while a selection is active clears it and inserts the character",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
           "lines": "136-161",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 1,
                 2,
@@ -488,11 +488,11 @@
       "name": "Esc clears an active composer selection without copying or submitting",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
           "lines": "164-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
                 44,
                 45,
@@ -521,11 +521,11 @@
       "name": "A quick click in the composer does not select or copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/multiline_input_select_tests.rs",
           "lines": "198-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
                 114,
                 115,
@@ -566,11 +566,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input_select_tests.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input_select_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs"
     ],
     "totalLinesCovered": 632
   }

@@ -4,11 +4,11 @@
       "name": "Opus 4.7 is detected as adaptive thinking model",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "30-38",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 19,
                 20,
@@ -37,11 +37,11 @@
       "name": "Opus 4.7 returns adaptive thinking config for High level",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "44-68",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 210,
                 211,
@@ -72,11 +72,11 @@
       "name": "Opus 4.7 returns adaptive thinking config for Low level",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "74-99",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 210,
                 211,
@@ -107,11 +107,11 @@
       "name": "Opus 4.7 returns empty config when thinking is Off",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "105-118",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 210,
                 211,
@@ -142,11 +142,11 @@
       "name": "Opus 4.7 beta headers exclude interleaved-thinking",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "124-148",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 81,
                 82,
@@ -186,11 +186,11 @@
       "name": "Opus 4.6 adaptive behaviour unchanged after adding 4.7",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "154-175",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 35
               ]
@@ -203,11 +203,11 @@
       "name": "Sonnet 4.6 adaptive behaviour unchanged after adding 4.7",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "181-203",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 35
               ]
@@ -220,11 +220,11 @@
       "name": "NAPI getThinkingConfig returns adaptive for Opus 4.7",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "210-247",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 19,
                 20,
@@ -255,11 +255,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
+      "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/thinking_config.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/tools/src/facade/thinking_config.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 303
   }

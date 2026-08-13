@@ -4,8 +4,8 @@
  * RPC-006 Scenario: NAPI startWorkUnitsWatcher callback continues to fire after the lift.
  *
  * After the watcher lift moves the cross-platform `notify` watcher out of
- * `codelet/napi/src/work_units_watcher.rs` into a pure-Rust module under
- * `codelet/core/src/work_units.rs`, the existing NAPI export
+ * `rust/napi/src/work_units_watcher.rs` into a pure-Rust module under
+ * `rust/core/src/work_units.rs`, the existing NAPI export
  * `startWorkUnitsWatcher` MUST continue to behave identically from the TS
  * side — same call shape, same callback invocations, same `WorkUnitInfo`
  * payload shape — so the existing TUI/Ink frontend keeps working
@@ -19,7 +19,7 @@ import { join } from 'path';
 import {
   startWorkUnitsWatcher,
   stopWorkUnitsWatcher,
-} from '../../codelet/napi/index.js';
+} from '../../rust/napi/index.js';
 
 interface WorkUnitFixture {
   id: string;

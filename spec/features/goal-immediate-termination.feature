@@ -54,7 +54,7 @@ Feature: /goal immediate termination and atomic goal teardown on accepted done()
     And a pending acceptance at the fallback still finishes with the summary before escalation is evaluated
 
   Scenario: Stream-loop wiring pins goal-mode early exit and single-teardown invariants
-    Given the source file codelet/cli/src/interactive/stream_loop.rs
+    Given the source file rust/cli/src/interactive/stream_loop.rs
     Then the ToolResult arm consults the early-exit decision without any goal gate
     And the FinalResponse fallback routes through the same shared teardown helper as the early exit
     And the goal announcement formatting lives only in the goal acceptance helper

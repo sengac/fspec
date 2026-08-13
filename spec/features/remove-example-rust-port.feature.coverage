@@ -4,11 +4,11 @@
       "name": "Happy-path soft-delete sets the deleted flag and deletedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "82-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 53,
                 54,
@@ -138,11 +138,11 @@
       "name": "Idempotent re-delete returns success without writing to disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "138-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 139,
                 140,
@@ -158,11 +158,11 @@
       "name": "Status guard rejects remove-example when work unit is not in specifying",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "174-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 76,
                 77,
@@ -186,11 +186,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "207-229",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 63,
                 64,
@@ -210,11 +210,11 @@
       "name": "Missing examples array reports 'has no examples'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "231-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 94,
                 95,
@@ -238,11 +238,11 @@
       "name": "Empty examples array reports 'has no examples'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "262-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 94,
                 95,
@@ -266,11 +266,11 @@
       "name": "Unknown example id reports 'Example with ID <n> not found'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "file": "rust/fspec-core/tests/remove_example.rs",
           "lines": "286-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
                 107,
                 108,
@@ -312,10 +312,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_example.rs"
+      "rust/fspec-core/tests/remove_example.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_example.rs"
+      "rust/fspec-core/src/commands/remove_example.rs"
     ],
     "totalLinesCovered": 425
   }

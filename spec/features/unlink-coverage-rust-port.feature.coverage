@@ -4,11 +4,11 @@
       "name": "--all empties the scenario testMappings and recalculates stats",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "115-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -177,11 +177,11 @@
       "name": "--test-file removes the whole test mapping including impl mappings",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "156-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -350,11 +350,11 @@
       "name": "--test-file with --impl-file removes only the impl mapping",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "189-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -523,11 +523,11 @@
       "name": "Neither --all nor --test-file surfaces a validation error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "235-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -696,11 +696,11 @@
       "name": "--impl-file without --test-file or --all surfaces the required-flag error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "270-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -869,11 +869,11 @@
       "name": "Missing coverage file surfaces a not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "305-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -1042,11 +1042,11 @@
       "name": "Unknown scenario surfaces a not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "336-370",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -1215,11 +1215,11 @@
       "name": "Unknown test file surfaces a not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "371-405",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -1388,11 +1388,11 @@
       "name": "Atomic write back preserves unknown fields in the sidecar",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "406-458",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -1561,11 +1561,11 @@
       "name": "Shared infrastructure module is registered for unlink-coverage",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/unlink_coverage.rs",
+          "file": "rust/fspec-core/tests/unlink_coverage.rs",
           "lines": "459-489",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/unlink_coverage.rs",
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
               "lines": [
                 58,
                 59,
@@ -1736,10 +1736,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/unlink_coverage.rs"
+      "rust/fspec-core/tests/unlink_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/unlink_coverage.rs"
+      "rust/fspec-core/src/commands/unlink_coverage.rs"
     ],
     "totalLinesCovered": 1945
   }

@@ -4,11 +4,11 @@
       "name": "Inject relevant decisions into session context at session start",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_session_learning_test.rs",
+          "file": "rust/napi/tests/cross_session_learning_test.rs",
           "lines": "29-72",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_context.rs",
+              "file": "rust/napi/src/graph/learnings_context.rs",
               "lines": [
                 52,
                 53,
@@ -44,11 +44,11 @@
       "name": "Surface failed explorations as warnings in session context",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_session_learning_test.rs",
+          "file": "rust/napi/tests/cross_session_learning_test.rs",
           "lines": "75-116",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_context.rs",
+              "file": "rust/napi/src/graph/learnings_context.rs",
               "lines": [
                 95,
                 96,
@@ -78,11 +78,11 @@
       "name": "Graceful fallback when Learnings graph is not initialized",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_session_learning_test.rs",
+          "file": "rust/napi/tests/cross_session_learning_test.rs",
           "lines": "119-133",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_context.rs",
+              "file": "rust/napi/src/graph/learnings_context.rs",
               "lines": [
                 32,
                 33,
@@ -111,11 +111,11 @@
       "name": "Subordinate session receives learnings from supervisor domain",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_session_learning_test.rs",
+          "file": "rust/napi/tests/cross_session_learning_test.rs",
           "lines": "254-284",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_context.rs",
+              "file": "rust/napi/src/graph/learnings_context.rs",
               "lines": [
                 52,
                 53,
@@ -151,11 +151,11 @@
       "name": "Post-session learnings extraction loads entities into graph",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_session_learning_test.rs",
+          "file": "rust/napi/tests/cross_session_learning_test.rs",
           "lines": "183-251",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_extraction.rs",
+              "file": "rust/napi/src/graph/learnings_extraction.rs",
               "lines": [
                 124,
                 125,
@@ -226,11 +226,11 @@
       "name": "Context volume capped at token limit",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_session_learning_test.rs",
+          "file": "rust/napi/tests/cross_session_learning_test.rs",
           "lines": "136-180",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_context.rs",
+              "file": "rust/napi/src/graph/learnings_context.rs",
               "lines": [
                 129,
                 130,
@@ -285,11 +285,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/cross_session_learning_test.rs"
+      "rust/napi/tests/cross_session_learning_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/learnings_context.rs",
-      "codelet/napi/src/graph/learnings_extraction.rs"
+      "rust/napi/src/graph/learnings_context.rs",
+      "rust/napi/src/graph/learnings_extraction.rs"
     ],
     "totalLinesCovered": 429
   }

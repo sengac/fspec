@@ -5,11 +5,11 @@
 @RPC-197
 Feature: Port audit-coverage command to Rust
   """
-  Rewrite the stub at codelet/fspec-core/src/commands/audit_coverage.rs to
+  Rewrite the stub at rust/fspec-core/src/commands/audit_coverage.rs to
   `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.
   Reuse crate::types::coverage::CoverageFile (already exists for show-coverage RPC-300) —
   no new shared type. Core returns a JSON envelope {output, exitCode} (validate.rs pattern).
-  The CLI bridge (codelet/fspec/src/audit_coverage.rs) parses the envelope, prints output,
+  The CLI bridge (rust/fspec/src/audit_coverage.rs) parses the envelope, prints output,
   and returns exitCode.
 
   Framing A divergence: audit-coverage-help.ts documents a --fix flag and per-scenario

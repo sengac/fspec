@@ -4,11 +4,11 @@
       "name": "SessionStateChange{Paused} with hitl_request Some stores a HITL slot",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "124-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 52,
                 53,
@@ -79,11 +79,11 @@
       "name": "SessionStateChange{Paused} with both pause_state Some and hitl_request Some — HITL wins",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "168-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 60,
                 61,
@@ -144,11 +144,11 @@
       "name": "SessionStateChange{Paused} with both returning None sets no slot",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "205-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 60,
                 61,
@@ -209,11 +209,11 @@
       "name": "SessionStateChange{Idle} clears the HITL slot",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "235-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 115,
                 116,
@@ -230,11 +230,11 @@
       "name": "Esc on the inline HITL prompt cancels through the backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "268-295",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
                 149,
                 150,
@@ -251,7 +251,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 224,
                 225,
@@ -283,11 +283,11 @@
       "name": "Backend.get_hitl_request error during the chunk-driven probe sets no slot",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "301-344",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 60,
                 61,
@@ -348,11 +348,11 @@
       "name": "Backend.send_hitl_response error on Esc-cancel still clears the slot and emits no scrollback notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "346-379",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 224,
                 225,
@@ -381,14 +381,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers",
+      "name": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "385-426",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -686,11 +686,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/pause_hitl_rpc053.rs"
+      "rust/fspec-tui/tests/pause_hitl_rpc053.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
-      "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs"
+      "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+      "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs"
     ],
     "totalLinesCovered": 831
   }

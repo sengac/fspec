@@ -29,7 +29,7 @@ Feature: RPC-025 fspec binary persistence bootstrap initialises the global data 
   `build_service` covers both modes that actually own a
   `FspecServiceImpl`.
 
-  Tests: codelet/fspec/src/common.rs::tests.
+  Tests: rust/fspec/src/common.rs::tests.
   """
 
   Background: User Story
@@ -38,8 +38,8 @@ Feature: RPC-025 fspec binary persistence bootstrap initialises the global data 
     So that Shift+↑/↓ history recall actually walks ~/.fspec/history.jsonl in the live binary instead of silently doing nothing
 
   Scenario: build_service initialises the global data directory before exposing persistence RPCs
-    Given the codelet/fspec binary crate after RPC-025 lands
+    Given the rust/fspec binary crate after RPC-025 lands
     When common::build_service is invoked against a tempdir workspace
     Then codelet_common::get_data_dir() returns Ok with a path ending in ".fspec"
-    And codelet/fspec/src/common.rs contains the substring "codelet_common::set_data_directory"
+    And rust/fspec/src/common.rs contains the substring "codelet_common::set_data_directory"
     And the set_data_directory call appears BEFORE the WorkUnitsWatcher::new(workspace) call in build_service

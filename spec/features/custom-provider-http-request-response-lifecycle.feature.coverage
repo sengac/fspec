@@ -4,11 +4,11 @@
       "name": "Build request body from messages",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "48-81",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "file": "rust/providers/src/custom/request_bridge.rs",
               "lines": [
                 38,
                 39,
@@ -63,11 +63,11 @@
       "name": "Build request URL from config",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "86-114",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/provider.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
                 138,
                 139,
@@ -88,11 +88,11 @@
       "name": "Build HTTP headers including auth",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "119-154",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/http.rs",
+              "file": "rust/providers/src/custom/http.rs",
               "lines": [
                 51,
                 52,
@@ -133,11 +133,11 @@
       "name": "Parse plain text response",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "159-205",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "file": "rust/providers/src/custom/response_bridge.rs",
               "lines": [
                 79,
                 80,
@@ -184,11 +184,11 @@
       "name": "Parse tool call response",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "210-281",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "file": "rust/providers/src/custom/response_bridge.rs",
               "lines": [
                 40,
                 41,
@@ -238,11 +238,11 @@
       "name": "Map HTTP 401 to auth error",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "286-337",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/error_mapping.rs",
+              "file": "rust/providers/src/custom/error_mapping.rs",
               "lines": [
                 87,
                 88,
@@ -316,11 +316,11 @@
       "name": "Map HTTP 429 to rate limit error",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "342-385",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/error_mapping.rs",
+              "file": "rust/providers/src/custom/error_mapping.rs",
               "lines": [
                 87,
                 88,
@@ -394,11 +394,11 @@
       "name": "Surface Rhai runtime errors as provider errors",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "390-434",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/error_mapping.rs",
+              "file": "rust/providers/src/custom/error_mapping.rs",
               "lines": [
                 16,
                 17,
@@ -479,11 +479,11 @@
       "name": "Complete end-to-end request against mock server",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "439-499",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/provider.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
                 225,
                 226,
@@ -521,11 +521,11 @@
       "name": "Provider name reflects config",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "504-519",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/provider.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
                 192,
                 193,
@@ -543,11 +543,11 @@
       "name": "Provider context window reflects selected model",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "524-571",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/provider.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
                 55,
                 56,
@@ -591,11 +591,11 @@
       "name": "Request bridge preserves multi-turn message structure",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "576-619",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "file": "rust/providers/src/custom/request_bridge.rs",
               "lines": [
                 38,
                 39,
@@ -615,11 +615,11 @@
       "name": "Response bridge preserves structured tool call input",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
           "lines": "624-666",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "file": "rust/providers/src/custom/response_bridge.rs",
               "lines": [
                 40,
                 41,
@@ -671,14 +671,14 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_http_lifecycle_tests.rs"
+      "rust/providers/tests/custom_http_lifecycle_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/request_bridge.rs",
-      "codelet/providers/src/custom/provider.rs",
-      "codelet/providers/src/custom/http.rs",
-      "codelet/providers/src/custom/response_bridge.rs",
-      "codelet/providers/src/custom/error_mapping.rs"
+      "rust/providers/src/custom/request_bridge.rs",
+      "rust/providers/src/custom/provider.rs",
+      "rust/providers/src/custom/http.rs",
+      "rust/providers/src/custom/response_bridge.rs",
+      "rust/providers/src/custom/error_mapping.rs"
     ],
     "totalLinesCovered": 1028
   }

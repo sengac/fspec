@@ -4,11 +4,11 @@
       "name": "Auto-creates spec/tags.json with the canonical nine-category default when missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "72-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 67,
                 68,
@@ -26,11 +26,11 @@
       "name": "Preserves insertion order of categories on disk (not alphabetical)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "115-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 69,
                 70,
@@ -47,11 +47,11 @@
       "name": "Sorts tags within each category alphabetically by tag name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "143-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 154,
                 155,
@@ -88,11 +88,11 @@
       "name": "Projects only tag and description fields, ignoring auxiliary Tag-interface fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "186-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 137,
                 138,
@@ -136,11 +136,11 @@
       "name": "Restricts output to the matching category when --category is supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "245-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 79,
                 80,
@@ -175,11 +175,11 @@
       "name": "Returns structured error when --category does not match any category exactly",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "276-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 85,
                 86,
@@ -204,11 +204,11 @@
       "name": "Escalates malformed tags.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "303-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 67,
                 68,
@@ -226,11 +226,11 @@
       "name": "Text format renders header line and per-tag lines per category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "323-384",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 194,
                 195,
@@ -265,11 +265,11 @@
       "name": "Text format emits a trailing blank line after the last category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "385-429",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 194,
                 195,
@@ -304,11 +304,11 @@
       "name": "JSON format emits two-space indented payload with categories array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "430-489",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
                 103,
                 104,
@@ -338,14 +338,14 @@
       ]
     },
     {
-      "name": "Shared infrastructure modules exist under codelet/fspec-core for reuse by other tag commands",
+      "name": "Shared infrastructure modules exist under rust/fspec-core for reuse by other tag commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_tags.rs",
+          "file": "rust/fspec-core/tests/list_tags.rs",
           "lines": "490-528",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/types/tags.rs",
+              "file": "rust/fspec-core/src/types/tags.rs",
               "lines": [
                 1,
                 2,
@@ -610,12 +610,12 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_tags.rs"
+      "rust/fspec-core/tests/list_tags.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/io/ensure.rs",
-      "codelet/fspec-core/src/commands/list_tags.rs",
-      "codelet/fspec-core/src/types/tags.rs"
+      "rust/fspec-core/src/io/ensure.rs",
+      "rust/fspec-core/src/commands/list_tags.rs",
+      "rust/fspec-core/src/types/tags.rs"
     ],
     "totalLinesCovered": 888
   }

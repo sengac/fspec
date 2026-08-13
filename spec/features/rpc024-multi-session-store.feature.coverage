@@ -4,11 +4,11 @@
       "name": "An empty AgentViewStore reports zero open sessions and a no-op cycle_session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "32-48",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 67,
                 68,
@@ -172,11 +172,11 @@
       "name": "append_session appends a fresh SessionContext and focuses it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "51-68",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 135,
                 136,
@@ -196,11 +196,11 @@
       "name": "Successive append_session calls accumulate in creation order",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "71-95",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 135,
                 136,
@@ -220,11 +220,11 @@
       "name": "cycle_session(-1) decrements current_session_index without wrap when not at zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "98-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 145,
                 146,
@@ -246,11 +246,11 @@
       "name": "cycle_session(-1) wraps from index 0 to len-1; cycle_session(1) wraps back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "118-140",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 145,
                 146,
@@ -272,11 +272,11 @@
       "name": "cycle_session is a self-loop when only one session is open",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "143-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 145,
                 146,
@@ -298,11 +298,11 @@
       "name": "set_input_draft writes into the indexed SessionContext",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "163-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 159,
                 160,
@@ -319,11 +319,11 @@
       "name": "SessionContext owns its own scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "186-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 25,
                 26,
@@ -405,11 +405,11 @@
       "name": "session_context_mut_for routes chunks by id, not focus",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "216-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 126,
                 127,
@@ -429,11 +429,11 @@
       "name": "session_context_mut_for returns None for unknown ids",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "240-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 126,
                 127,
@@ -453,11 +453,11 @@
       "name": "session_index() is derived from current_session_index + 1 and open_sessions.len()",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
+          "file": "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs",
           "lines": "255-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 227,
                 228,
@@ -479,11 +479,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs"
+      "rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view.rs",
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs"
+      "rust/fspec-tui/src/store/agent_view.rs",
+      "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
     "totalLinesCovered": 733
   }

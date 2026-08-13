@@ -9,7 +9,7 @@
 Feature: ProviderSettingsView — full-screen mode-view keyboard handling
   """
   Isolated view-layer behaviour of ProviderSettingsView
-  (codelet/fspec-tui/src/views/provider_settings/mod.rs).
+  (rust/fspec-tui/src/views/provider_settings/mod.rs).
   Drives the synchronous handle_key surface only — no App, no backend.
   The view follows the canonical full-screen mode-view pattern from
   RPC-026's ResumeSessionView: Clear.render(area, buf) first, then a

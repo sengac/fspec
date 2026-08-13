@@ -4,11 +4,11 @@
       "name": "Clap exposes add-diagram with three positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "65-110",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_diagram.rs",
+              "file": "rust/fspec/src/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -82,11 +82,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "65-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_diagram.rs",
+              "file": "rust/fspec-core/src/help/configs/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -215,11 +215,11 @@
       "name": "CLI adds a new diagram and prints the success block on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "111-156",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_diagram.rs",
+              "file": "rust/fspec/src/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -298,11 +298,11 @@
       "name": "CLI replaces an existing diagram and prints the Updated success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "157-198",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_diagram.rs",
+              "file": "rust/fspec/src/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -381,11 +381,11 @@
       "name": "CLI rejects an empty code argument with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "199-228",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_diagram.rs",
+              "file": "rust/fspec/src/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -464,11 +464,11 @@
       "name": "CLI rejects an invalid mermaid subgraph identifier (merman pre-check)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "229-254",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_diagram.rs",
+              "file": "rust/fspec/src/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -547,11 +547,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "255-313",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_diagram.rs",
+              "file": "rust/fspec/src/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -630,11 +630,11 @@
       "name": "add-diagram --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_diagram.rs",
+          "file": "rust/fspec/tests/cli_add_diagram.rs",
           "lines": "314-335",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_diagram.rs",
+              "file": "rust/fspec-core/src/help/configs/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -765,11 +765,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_diagram.rs"
+      "rust/fspec/tests/cli_add_diagram.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_diagram.rs",
-      "codelet/fspec-core/src/help/configs/add_diagram.rs"
+      "rust/fspec/src/add_diagram.rs",
+      "rust/fspec-core/src/help/configs/add_diagram.rs"
     ],
     "totalLinesCovered": 953
   }

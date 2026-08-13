@@ -4,11 +4,11 @@
       "name": "codelet_core::file_search helper module exists with the documented surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "34-44",
           "implMappings": [
             {
-              "file": "codelet/core/src/file_search.rs",
+              "file": "rust/core/src/file_search.rs",
               "lines": [
                 1,
                 2,
@@ -181,11 +181,11 @@
       "name": "codelet_core::lib re-exports the new file_search module",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "46-51",
           "implMappings": [
             {
-              "file": "codelet/core/src/lib.rs",
+              "file": "rust/core/src/lib.rs",
               "lines": [
                 1
               ]
@@ -198,11 +198,11 @@
       "name": "FspecService trait gains the search_files RPC method",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "58-68",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -805,11 +805,11 @@
       "name": "FspecBackend trait declares the search_files method",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "68-73",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -971,11 +971,11 @@
       "name": "Both transports implement the search_files FspecBackend method",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "77-85",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 1,
                 2,
@@ -1130,11 +1130,11 @@
       "name": "New slash_commands module exists with the documented surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "89-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_commands.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
               "lines": [
                 1,
                 2,
@@ -1391,11 +1391,11 @@
       "name": "New SlashCommandPopup module exists with the documented surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "107-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1670,11 +1670,11 @@
       "name": "New FileSearchPopup module exists with the documented surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "119-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 1,
                 2,
@@ -1928,11 +1928,11 @@
       "name": "AgentView orchestrator owns the new popup fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "131-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -2161,11 +2161,11 @@
       "name": "Action enum gains three new variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "146-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 1,
                 2,
@@ -2468,11 +2468,11 @@
       "name": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "159-180",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -2701,11 +2701,11 @@
       "name": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "184-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -2934,7 +2934,7 @@
       "name": "Existing TS slash + file search components are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "227-240",
           "implMappings": [
             {
@@ -2951,11 +2951,11 @@
       "name": "SlashCommandAction enum contains no Providers variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "241-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_commands.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
               "lines": [
                 20,
                 21,
@@ -3015,11 +3015,11 @@
       "name": "dispatch_slash_commands.rs has no Providers arm",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
           "lines": "278-298",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 103,
                 104,
@@ -3041,21 +3041,21 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc020.rs"
+      "rust/fspec-tui/tests/source_shape_rpc020.rs"
     ],
     "implFiles": [
-      "codelet/core/src/file_search.rs",
-      "codelet/core/src/lib.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/views/agent/slash_commands.rs",
-      "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
-      "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
+      "rust/core/src/file_search.rs",
+      "rust/core/src/lib.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/views/agent/slash_commands.rs",
+      "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
+      "rust/fspec-tui/src/views/agent/file_search_popup.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/components/mod.rs",
       "src/tui/components/SlashCommandPalette.tsx",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 3025
   }

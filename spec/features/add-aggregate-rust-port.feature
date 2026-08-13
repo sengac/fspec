@@ -2,7 +2,7 @@
 @RPC-165
 Feature: Port add-aggregate command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_aggregate.rs. INLINE style: the TS source
+  Core impl at rust/fspec-core/src/commands/add_aggregate.rs. INLINE style: the TS source
   (src/commands/add-aggregate.ts) inlines the Event Storm mutation directly (it does NOT use the
   shared addEventStormItem util). The eventStorm section lives in WorkUnit.extra under key
   "eventStorm" with shape {level, items[], nextItemId}; round-tripped via #[serde(flatten)].

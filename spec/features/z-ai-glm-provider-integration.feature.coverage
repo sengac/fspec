@@ -4,11 +4,11 @@
       "name": "Select Z.AI GLM model with thinking mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/zai_provider_test.rs",
+          "file": "rust/providers/tests/zai_provider_test.rs",
           "lines": "14-38",
           "implMappings": [
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "rust/providers/src/zai.rs",
               "lines": [
                 1,
                 2,
@@ -320,11 +320,11 @@
       "name": "Streaming response with tool calls",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/zai_provider_test.rs",
+          "file": "rust/providers/tests/zai_provider_test.rs",
           "lines": "92-119",
           "implMappings": [
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "rust/providers/src/zai.rs",
               "lines": [
                 200,
                 201,
@@ -405,10 +405,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 33,
     "testFiles": [
-      "codelet/providers/tests/zai_provider_test.rs"
+      "rust/providers/tests/zai_provider_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/zai.rs"
+      "rust/providers/src/zai.rs"
     ],
     "totalLinesCovered": 506
   }

@@ -4,11 +4,11 @@
       "name": "Initialize custom provider definition from openai-compatible template",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "170-204",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 180,
                 181,
@@ -76,11 +76,11 @@
       "name": "List providers shows custom providers with credential status",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "209-242",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 60,
                 61,
@@ -143,11 +143,11 @@
       "name": "Show custom provider returns full definition",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "247-270",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 112,
                 113,
@@ -168,11 +168,11 @@
       "name": "Validate custom provider reports schema violations",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "275-307",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 122,
                 123,
@@ -223,11 +223,11 @@
       "name": "Test custom provider performs connectivity check against baseUrl",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "312-350",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 162,
                 163,
@@ -280,11 +280,11 @@
       "name": "Select custom model routes through openai facade via facade_override",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "355-409",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 384,
                 385,
@@ -326,11 +326,11 @@
       "name": "Agent loop dispatches custom provider via facade_override to existing match arm",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "414-479",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [
                 254,
                 255,
@@ -371,11 +371,11 @@
       "name": "Custom provider is unavailable when required env var is unset",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "483-507",
           "implMappings": [
             {
-              "file": "codelet/providers/src/credentials.rs",
+              "file": "rust/providers/src/credentials.rs",
               "lines": [
                 86,
                 87,
@@ -457,11 +457,11 @@
       "name": "Project-local custom provider definition overrides user-global",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "513-553",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/discovery.rs",
+              "file": "rust/providers/src/custom/discovery.rs",
               "lines": [
                 26,
                 27,
@@ -550,11 +550,11 @@
       "name": "Custom provider without facade uses generic CustomProvider create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "527-594",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/custom_provider.rs",
+              "file": "rust/providers/src/custom/custom_provider.rs",
               "lines": [
                 1,
                 2,
@@ -736,11 +736,11 @@
       "name": "FromStr resolves registered custom provider slug to ProviderType::Custom",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "599-630",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 32,
                 33,
@@ -819,11 +819,11 @@
       "name": "Detect default provider never auto-selects a custom provider",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_provider_manager_integration_test.rs",
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
           "lines": "666-695",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 485,
                 486,
@@ -881,14 +881,14 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_provider_manager_integration_test.rs"
+      "rust/providers/tests/custom_provider_manager_integration_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/management.rs",
-      "codelet/providers/src/manager.rs",
-      "codelet/providers/src/credentials.rs",
-      "codelet/providers/src/custom/discovery.rs",
-      "codelet/providers/src/custom/custom_provider.rs"
+      "rust/providers/src/custom/management.rs",
+      "rust/providers/src/manager.rs",
+      "rust/providers/src/credentials.rs",
+      "rust/providers/src/custom/discovery.rs",
+      "rust/providers/src/custom/custom_provider.rs"
     ],
     "totalLinesCovered": 1165
   }

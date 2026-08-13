@@ -7,9 +7,9 @@
 Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from TS Ink to Rust ratatui via dialog_theme::render_dialog
   """
   TS source files: src/components/ErrorDialog.tsx, src/components/NotificationDialog.tsx, src/components/StatusDialog.tsx (read-only references)
-  Rust port targets: codelet/fspec-tui/src/components/error_dialog.rs, notification_dialog.rs, status_dialog.rs (new). Register in codelet/fspec-tui/src/components/mod.rs.
-  Canonical primitive: codelet/fspec-tui/src/components/dialog_theme.rs::render_dialog. Reuse Accent enum, FspecDialog struct, MARKER_SELECTED/MARKER_UNSELECTED/FOOTER_SEPARATOR constants.
-  Reference pattern for new dialogs: codelet/fspec-tui/src/components/disconnect_dialog.rs — shortest example of Component impl + render_dialog delegation + Callback-based dismissal.
+  Rust port targets: rust/fspec-tui/src/components/error_dialog.rs, notification_dialog.rs, status_dialog.rs (new). Register in rust/fspec-tui/src/components/mod.rs.
+  Canonical primitive: rust/fspec-tui/src/components/dialog_theme.rs::render_dialog. Reuse Accent enum, FspecDialog struct, MARKER_SELECTED/MARKER_UNSELECTED/FOOTER_SEPARATOR constants.
+  Reference pattern for new dialogs: rust/fspec-tui/src/components/disconnect_dialog.rs — shortest example of Component impl + render_dialog delegation + Callback-based dismissal.
   Auto-dismiss timing: use tokio::time::sleep + a oneshot dismissal channel, OR rely on the Action::Tick pattern already used in scrollback (count down on each tick). Follow whichever pattern is established in pause_dialog.rs / model_selector_dialog.rs for consistency.
   """
 
@@ -26,7 +26,7 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
   #   6. Every new dialog implements Component with Priority::Critical, exposes a const ID (e.g. ERROR_DIALOG_ID, NOTIFICATION_DIALOG_ID, STATUS_DIALOG_ID), and emits a Callback that calls compositor.remove(&id) on dismissal
   #   7. ESC key handling: ErrorDialog dismisses; NotificationDialog dismisses (cancels auto-dismiss timer); StatusDialog ESC only active in Complete and Error states, ignored during Restoring
   #   8. All three dialogs ship with insta snapshot tests on an 80x24 buffer + behaviour tests asserting Component::priority(), id(), handle_event(ESC), and state transitions
-  #   9. Every existing inline-FspecDialog consumer in codelet/fspec-tui/ that displays an error / notification / progress modal is refactored to use the new wrappers; no inline FspecDialog struct literals remain for these three semantics after this work unit
+  #   9. Every existing inline-FspecDialog consumer in rust/fspec-tui/ that displays an error / notification / progress modal is refactored to use the new wrappers; no inline FspecDialog struct literals remain for these three semantics after this work unit
   #
   # EXAMPLES:
   #   1. ErrorDialog::new('Disk full') rendered into an 80x24 TestBackend produces a centered red rounded border, bold red 'Error' title, red 'Disk full' body row, dim centered 'Press ESC to dismiss' footer
@@ -114,10 +114,10 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID)
 
   Scenario: No raw FspecDialog struct literals remain in non-test code after the wrappers ship
-    Given the codelet/fspec-tui crate after RPC-079 implementation completes
-    When a grep search for "FspecDialog {" is run across codelet/fspec-tui/src/ excluding the components/ directory and excluding all #[cfg(test)] blocks
+    Given the rust/fspec-tui crate after RPC-079 implementation completes
+    When a grep search for "FspecDialog {" is run across rust/fspec-tui/src/ excluding the components/ directory and excluding all #[cfg(test)] blocks
     Then zero matches are returned
-    When the same search is run inside codelet/fspec-tui/src/components/
+    When the same search is run inside rust/fspec-tui/src/components/
     Then the only matches occur inside render() methods of files that delegate to dialog_theme::render_dialog
 
   Scenario: ErrorDialog is shown when an LLM provider error chunk arrives

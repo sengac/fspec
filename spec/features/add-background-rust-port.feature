@@ -4,9 +4,9 @@
 @RPC-171
 Feature: Port add-background command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_background.rs reuses crate::io::gherkin::parse_feature_lenient for pre/post validation and a TS-parity line-based splice (split('\n')/Vec mutation/join('\n')), NOT AST round-trip.
+  Core impl at rust/fspec-core/src/commands/add_background.rs reuses crate::io::gherkin::parse_feature_lenient for pre/post validation and a TS-parity line-based splice (split('\n')/Vec mutation/join('\n')), NOT AST round-trip.
   Feature path resolution reuses the basename-over-spec/features pattern (ends_with('.feature') direct, else glob_feature_files basename match) mirroring show_feature::resolve_feature_path.
-  Two-front-doors: CLI bridge codelet/fspec/src/add_background.rs marshals positional <feature> + <text> into JSON {feature, text} only; NO domain logic. Dispatcher and CLI call commands::add_background::run.
+  Two-front-doors: CLI bridge rust/fspec/src/add_background.rs marshals positional <feature> + <text> into JSON {feature, text} only; NO domain logic. Dispatcher and CLI call commands::add_background::run.
   """
 
   # ========================================

@@ -4,11 +4,11 @@
       "name": "Enter on the selected turn opens the turn content modal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_rpc382.rs",
           "lines": "44-76",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 38,
                 39,
@@ -24,7 +24,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 49,
                 50,
@@ -43,11 +43,11 @@
       "name": "The modal shows the full content of a collapsed turn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_rpc382.rs",
           "lines": "78-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
                 57,
                 58,
@@ -94,7 +94,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 113,
                 114,
@@ -121,7 +121,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 289,
                 290,
@@ -143,11 +143,11 @@
       "name": "Esc closes the modal but stays in turn-selection mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_rpc382.rs",
           "lines": "119-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 49,
                 50,
@@ -164,7 +164,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 57,
                 58,
@@ -180,11 +180,11 @@
       "name": "A second Esc after closing the modal exits turn-selection mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_rpc382.rs",
           "lines": "156-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 57,
                 58,
@@ -192,7 +192,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 27,
                 28,
@@ -217,11 +217,11 @@
       "name": "Tab while the modal is open closes the modal and exits select mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_rpc382.rs",
           "lines": "189-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 27,
                 28,
@@ -236,7 +236,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 187,
                 188,
@@ -246,7 +246,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 73,
                 74,
@@ -266,11 +266,11 @@
       "name": "Scrollback keys are gated while the modal is open",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_rpc382.rs",
           "lines": "219-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 24,
                 25,
@@ -298,15 +298,15 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/turn_content_modal_rpc382.rs"
+      "rust/fspec-tui/tests/turn_content_modal_rpc382.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
-      "codelet/fspec-tui/src/app/dispatch_scroll.rs",
-      "codelet/fspec-tui/src/views/agent/turn_modal.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch.rs"
+      "rust/fspec-tui/src/views/agent/dispatch_select.rs",
+      "rust/fspec-tui/src/app/dispatch_scroll.rs",
+      "rust/fspec-tui/src/views/agent/turn_modal.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_select.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs"
     ],
     "totalLinesCovered": 356
   }

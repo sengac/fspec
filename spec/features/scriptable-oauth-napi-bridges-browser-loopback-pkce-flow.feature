@@ -4,7 +4,7 @@
 @PROV-087
 Feature: Scriptable OAuth NAPI bridges - browser loopback + PKCE flow
   """
-  New file codelet/napi/src/custom_oauth.rs wraps codelet/providers ScriptedOAuthProvider + callback_server.rs. Exposes custom_oauth_authorize / _exchange / _needs_refresh / _refresh / _clear through NAPI. TypeScript /login dispatcher (in codelet-tui/src/login) routes to custom_oauth_* when a Rhai shadow config is found, else falls back to existing claude_oauth / codex_oauth / copilot_oauth bindings. Tokens round-trip through CredentialStore keyed by provider_name. Script functions are auth_start / auth_exchange / auth_needs_refresh / auth_refresh with the legacy build_authorization_request / exchange_code / needs_refresh / refresh_token kept as deprecated aliases to preserve PROV-060 script compatibility.
+  New file rust/napi/src/custom_oauth.rs wraps rust/providers ScriptedOAuthProvider + callback_server.rs. Exposes custom_oauth_authorize / _exchange / _needs_refresh / _refresh / _clear through NAPI. TypeScript /login dispatcher (in codelet-tui/src/login) routes to custom_oauth_* when a Rhai shadow config is found, else falls back to existing claude_oauth / codex_oauth / copilot_oauth bindings. Tokens round-trip through CredentialStore keyed by provider_name. Script functions are auth_start / auth_exchange / auth_needs_refresh / auth_refresh with the legacy build_authorization_request / exchange_code / needs_refresh / refresh_token kept as deprecated aliases to preserve PROV-060 script compatibility.
   """
 
   # ========================================

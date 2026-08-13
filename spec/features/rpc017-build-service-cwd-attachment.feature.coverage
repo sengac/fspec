@@ -4,11 +4,11 @@
       "name": "Production fspec binary's build_service attaches workspace cwd to SharedFspecService",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/common.rs",
+          "file": "rust/fspec/src/common.rs",
           "lines": "475-511",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 1,
                 2,
@@ -532,10 +532,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/src/common.rs"
+      "rust/fspec/src/common.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/common.rs"
+      "rust/fspec/src/common.rs"
     ],
     "totalLinesCovered": 547
   }

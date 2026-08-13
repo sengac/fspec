@@ -4,11 +4,11 @@
       "name": "Staged tracked-but-modified file is reported as change type M",
       "testMappings": [
         {
-          "file": "codelet/git/tests/changed_files_rpc355.rs",
+          "file": "rust/git/tests/changed_files_rpc355.rs",
           "lines": "19-46",
           "implMappings": [
             {
-              "file": "codelet/git/src/change_type.rs",
+              "file": "rust/git/src/change_type.rs",
               "lines": [
                 54,
                 55,
@@ -56,11 +56,11 @@
       "name": "Unstaged file deleted from the working directory is reported as change type D",
       "testMappings": [
         {
-          "file": "codelet/git/tests/changed_files_rpc355.rs",
+          "file": "rust/git/tests/changed_files_rpc355.rs",
           "lines": "48-69",
           "implMappings": [
             {
-              "file": "codelet/git/src/change_type.rs",
+              "file": "rust/git/src/change_type.rs",
               "lines": [
                 96,
                 97,
@@ -107,11 +107,11 @@
       "name": "Untracked working-tree file appears as change type A and unstaged",
       "testMappings": [
         {
-          "file": "codelet/git/tests/changed_files_rpc355.rs",
+          "file": "rust/git/tests/changed_files_rpc355.rs",
           "lines": "71-91",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/changed_files.rs",
+              "file": "rust/rpc/src/changed_files.rs",
               "lines": [
                 44,
                 45,
@@ -132,11 +132,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/changed_files_rpc355.rs"
+      "rust/git/tests/changed_files_rpc355.rs"
     ],
     "implFiles": [
-      "codelet/git/src/change_type.rs",
-      "codelet/rpc/src/changed_files.rs"
+      "rust/git/src/change_type.rs",
+      "rust/rpc/src/changed_files.rs"
     ],
     "totalLinesCovered": 149
   }

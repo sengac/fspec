@@ -4,11 +4,11 @@
       "name": "Dispatching DeleteCheckpoint calls the transport delete_checkpoint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
           "lines": "41-71",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
               "lines": [
                 21,
                 22,
@@ -45,11 +45,11 @@
       "name": "Dispatching DeleteAllCheckpoints calls the transport delete_all_checkpoints",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
           "lines": "74-97",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
               "lines": [
                 47,
                 48,
@@ -87,10 +87,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs"
+      "rust/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_checkpoint_delete.rs"
+      "rust/fspec-tui/src/app/dispatch_checkpoint_delete.rs"
     ],
     "totalLinesCovered": 104
   }

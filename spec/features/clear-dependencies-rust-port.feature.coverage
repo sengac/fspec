@@ -4,11 +4,11 @@
       "name": "Missing confirm flag fails before any file IO",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "86-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 78,
                 79,
@@ -37,11 +37,11 @@
       "name": "Missing source work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "117-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 96,
                 97,
@@ -63,11 +63,11 @@
       "name": "Mixed blocks and dependsOn are removed with bidirectional cleanup on blocks",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "137-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 107,
                 108,
@@ -113,11 +113,11 @@
       "name": "relatesTo edges are symmetrically dropped from both sides",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "177-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 120,
                 121,
@@ -140,11 +140,11 @@
       "name": "Clearing never changes a blocked work unit's status or state array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "211-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 107,
                 108,
@@ -190,11 +190,11 @@
       "name": "Reverse-edge cleanup is silently skipped when the target is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "241-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 164,
                 165,
@@ -228,11 +228,11 @@
       "name": "No dependency arrays still succeeds and only bumps updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "266-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 131,
                 132,
@@ -254,11 +254,11 @@
       "name": "blockedBy clearing reverse-removes source from each target's blocks array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_dependencies.rs",
+          "file": "rust/fspec-core/tests/clear_dependencies.rs",
           "lines": "291-323",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
                 115,
                 116,
@@ -276,10 +276,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/clear_dependencies.rs"
+      "rust/fspec-core/tests/clear_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/clear_dependencies.rs"
+      "rust/fspec-core/src/commands/clear_dependencies.rs"
     ],
     "totalLinesCovered": 373
   }

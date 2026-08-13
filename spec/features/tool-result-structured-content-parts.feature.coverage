@@ -4,11 +4,11 @@
       "name": "Serialise text-only ToolResult preserves legacy content field",
       "testMappings": [
         {
-          "file": "codelet/common/src/types.rs",
+          "file": "rust/common/src/types.rs",
           "lines": "137-167",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 38,
                 39,
@@ -73,11 +73,11 @@
       "name": "Serialise text-only ToolResult exposes a single text part",
       "testMappings": [
         {
-          "file": "codelet/common/src/types.rs",
+          "file": "rust/common/src/types.rs",
           "lines": "169-191",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 168,
                 169,
@@ -110,11 +110,11 @@
       "name": "Serialise ToolResult with a base64 image part",
       "testMappings": [
         {
-          "file": "codelet/common/src/types.rs",
+          "file": "rust/common/src/types.rs",
           "lines": "193-230",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 190,
                 191,
@@ -157,11 +157,11 @@
       "name": "Round-trip mixed text and image parts through JSON",
       "testMappings": [
         {
-          "file": "codelet/common/src/types.rs",
+          "file": "rust/common/src/types.rs",
           "lines": "232-285",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 92,
                 93,
@@ -217,11 +217,11 @@
       "name": "Deserialize legacy JSON without parts field yields a single text part",
       "testMappings": [
         {
-          "file": "codelet/common/src/types.rs",
+          "file": "rust/common/src/types.rs",
           "lines": "287-315",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 92,
                 93,
@@ -277,11 +277,11 @@
       "name": "ToolResult with URL image part serialises the source verbatim",
       "testMappings": [
         {
-          "file": "codelet/common/src/types.rs",
+          "file": "rust/common/src/types.rs",
           "lines": "317-348",
           "implMappings": [
             {
-              "file": "codelet/common/src/types.rs",
+              "file": "rust/common/src/types.rs",
               "lines": [
                 190,
                 191,
@@ -326,10 +326,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/common/src/types.rs"
+      "rust/common/src/types.rs"
     ],
     "implFiles": [
-      "codelet/common/src/types.rs"
+      "rust/common/src/types.rs"
     ],
     "totalLinesCovered": 431
   }

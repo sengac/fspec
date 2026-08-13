@@ -447,8 +447,8 @@ test.when(
     const prompt =
       'Using the tools available, do these three tasks in order and report what each tool returned: ' +
       '1) WebSearch for "rust programming language wikipedia". ' +
-      '2) LS the directory "codelet/providers/src/custom" (relative to the cwd) so I can see its contents. ' +
-      '3) AstGrep for the pattern `fn $NAME($$$ARGS) -> $RET { $$$BODY }` with language "rust" in path "codelet/providers/src/custom". ' +
+      '2) LS the directory "rust/providers/src/custom" (relative to the cwd) so I can see its contents. ' +
+      '3) AstGrep for the pattern `fn $NAME($$$ARGS) -> $RET { $$$BODY }` with language "rust" in path "rust/providers/src/custom". ' +
       'After each tool call, state in one sentence which tool you used. ' +
       // PROV-100: Explicitly ask for `ultrathink` so the
       // thinking-level detector (see `thinking_level_detection.rs`,
@@ -560,7 +560,7 @@ test.when(
       for (const toolName of expectedTools) {
         // The Rhai stream loop logs each ToolCallComplete with the
         // tool_name inlined into the message (see
-        // `codelet/providers/src/custom/rig_model.rs` — the
+        // `rust/providers/src/custom/rig_model.rs` — the
         // `tool_name={name}` format specifier ensures the NAPI log
         // bridge surfaces it, since tracing's structured fields get
         // stripped on the way to the TS log sink).

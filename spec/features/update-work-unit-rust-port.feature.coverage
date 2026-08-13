@@ -4,11 +4,11 @@
       "name": "Dispatcher updates a work unit title and bumps updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "85-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 89,
                 90,
@@ -262,11 +262,11 @@
       "name": "Dispatcher rejects a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "114-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 101,
                 102,
@@ -285,11 +285,11 @@
       "name": "Dispatcher rejects changing the immutable type field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "141-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 109,
                 110,
@@ -321,11 +321,11 @@
       "name": "Dispatcher rejects a self-referential parent as circular",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "168-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 130,
                 131,
@@ -360,11 +360,11 @@
       "name": "Dispatcher rejects a non-existent parent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "195-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 130,
                 131,
@@ -385,11 +385,11 @@
       "name": "Dispatcher rejects a non-existent epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "222-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 154,
                 155,
@@ -415,11 +415,11 @@
       "name": "Dispatcher moves a work unit between epics updating both workUnits arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "249-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 279,
                 280,
@@ -483,11 +483,11 @@
       "name": "Dispatcher sets a parent and updates the parent children array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "323-370",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 220,
                 221,
@@ -547,11 +547,11 @@
       "name": "CLI delegates to the same fspec-core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit.rs",
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
           "lines": "376-396",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
                 89,
                 90,
@@ -577,10 +577,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_work_unit.rs"
+      "rust/fspec-core/tests/update_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_work_unit.rs"
+      "rust/fspec-core/src/commands/update_work_unit.rs"
     ],
     "totalLinesCovered": 699
   }

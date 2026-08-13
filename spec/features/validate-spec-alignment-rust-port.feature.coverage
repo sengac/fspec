@@ -4,11 +4,11 @@
       "name": "Reports valid when at least one scenario is tagged with the work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "61-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 85,
                 86,
@@ -68,11 +68,11 @@
       "name": "Reports invalid with a warning when no scenario is tagged with the work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "94-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 100,
                 101,
@@ -113,11 +113,11 @@
       "name": "Errors when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "128-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 77,
                 78,
@@ -151,11 +151,11 @@
       "name": "A missing spec/features directory yields zero scenarios and an invalid result",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "148-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 137,
                 138,
@@ -176,11 +176,11 @@
       "name": "A tag substring on a line not followed by Scenario does not count",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "181-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 110,
                 111,
@@ -203,11 +203,11 @@
       "name": "Errors when workUnitId is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "212-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 65,
                 66,
@@ -226,11 +226,11 @@
       "name": "Errors when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_spec_alignment.rs",
+          "file": "rust/fspec-core/tests/validate_spec_alignment.rs",
           "lines": "232-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_spec_alignment.rs",
+              "file": "rust/fspec-core/src/commands/validate_spec_alignment.rs",
               "lines": [
                 85,
                 86,
@@ -249,10 +249,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/validate_spec_alignment.rs"
+      "rust/fspec-core/tests/validate_spec_alignment.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/validate_spec_alignment.rs"
+      "rust/fspec-core/src/commands/validate_spec_alignment.rs"
     ],
     "totalLinesCovered": 317
   }

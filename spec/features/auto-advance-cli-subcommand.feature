@@ -4,7 +4,7 @@
 @RPC-198
 Feature: auto-advance CLI subcommand (Rust binary)
   """
-  Front door #1 (shell argv): codelet/fspec/src/auto_advance.rs is the thin clap bridge for the
+  Front door #1 (shell argv): rust/fspec/src/auto_advance.rs is the thin clap bridge for the
   `auto-advance` subcommand. Per Framing A the TS Commander shell is broken — it calls autoAdvance({dryRun})
   without a workUnitId — so the Rust bridge reproduces that: it marshals an empty args object (ignoring
   --dry-run) and the core surfaces 'Work unit undefined not found', wrapped as
@@ -26,7 +26,7 @@ Feature: auto-advance CLI subcommand (Rust binary)
   # ========================================
   Background: User Story
     Given the fspec Rust binary exposes auto-advance as a clap subcommand
-    And the bridge codelet/fspec/src/auto_advance.rs delegates to fspec_core::commands::auto_advance::run
+    And the bridge rust/fspec/src/auto_advance.rs delegates to fspec_core::commands::auto_advance::run
 
   Scenario: Shell auto-advance reproduces the broken Framing-A failure
     Given a working directory with a valid spec/work-units.json
@@ -45,10 +45,10 @@ Feature: auto-advance CLI subcommand (Rust binary)
     Given the fspec Rust binary has been compiled
     When I run `fspec auto-advance --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/auto-advance.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/auto-advance.txt
 
   Scenario: CLI bridge delegates to the same fspec_core function as the dispatcher
-    Given the CLI bridge module codelet/fspec/src/auto_advance.rs
+    Given the CLI bridge module rust/fspec/src/auto_advance.rs
     When I inspect its source
     Then it contains no inline state-transition or work-units mutation logic
     And its only computation is JSON arg marshalling before delegating to fspec_core::commands::auto_advance::run

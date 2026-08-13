@@ -4,11 +4,11 @@
       "name": "Source-shape regression forbids Mutex/RwLock/atomics in store/",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs",
+          "file": "rust/fspec-tui/tests/source_shape_stores_rpc012.rs",
           "lines": "27-65",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/mod.rs",
+              "file": "rust/fspec-tui/src/store/mod.rs",
               "lines": [
                 1,
                 2,
@@ -36,11 +36,11 @@
       "name": "Source-shape regression forbids transport-layer imports in store/",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs",
+          "file": "rust/fspec-tui/tests/source_shape_stores_rpc012.rs",
           "lines": "68-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/mod.rs",
+              "file": "rust/fspec-tui/src/store/mod.rs",
               "lines": [
                 1,
                 2,
@@ -65,14 +65,14 @@
       ]
     },
     {
-      "name": "Every file under codelet/fspec-tui/src/ is under 300 LoC",
+      "name": "Every file under rust/fspec-tui/src/ is under 300 LoC",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs",
+          "file": "rust/fspec-tui/tests/source_shape_stores_rpc012.rs",
           "lines": "97-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/mod.rs",
+              "file": "rust/fspec-tui/src/store/mod.rs",
               "lines": [
                 1,
                 2,
@@ -102,10 +102,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs"
+      "rust/fspec-tui/tests/source_shape_stores_rpc012.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/mod.rs"
+      "rust/fspec-tui/src/store/mod.rs"
     ],
     "totalLinesCovered": 146
   }

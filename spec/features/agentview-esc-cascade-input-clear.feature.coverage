@@ -4,11 +4,11 @@
       "name": "Esc when idle with non-empty input clears the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "533-552",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -53,11 +53,11 @@
       "name": "Esc when idle with whitespace-only input is treated as empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
           "lines": "557-578",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -104,10 +104,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs"
+      "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs"
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs"
     ],
     "totalLinesCovered": 108
   }

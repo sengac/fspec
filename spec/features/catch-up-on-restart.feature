@@ -2,7 +2,7 @@
 @SCHED-007
 Feature: Catch-Up on Restart
   """
-  Create codelet/napi/src/scheduler/catch_up.rs with run_catch_up function.
+  Create rust/napi/src/scheduler/catch_up.rs with run_catch_up function.
   Wire catch-up into spawn_scheduler: call ONCE before the 30-second tick loop.
   Reuse find_previous_trigger from engine.rs for detection.
   """

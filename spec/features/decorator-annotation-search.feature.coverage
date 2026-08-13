@@ -4,11 +4,11 @@
       "name": "Python decorators extracted during indexing",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "file": "rust/napi/tests/ast_decorator_search_test.rs",
           "lines": "20-37",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 279,
                 280,
@@ -44,11 +44,11 @@
       "name": "Scala annotations extracted as AtSign style",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "file": "rust/napi/tests/ast_decorator_search_test.rs",
           "lines": "43-55",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 279,
                 280,
@@ -84,11 +84,11 @@
       "name": "PHP 8 attributes extracted as HashBracket style",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "file": "rust/napi/tests/ast_decorator_search_test.rs",
           "lines": "61-74",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 279,
                 280,
@@ -124,11 +124,11 @@
       "name": "Rust attributes extracted as HashBracket style",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "file": "rust/napi/tests/ast_decorator_search_test.rs",
           "lines": "80-92",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 279,
                 280,
@@ -164,11 +164,11 @@
       "name": "C# attributes extracted as SquareBracket style",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "file": "rust/napi/tests/ast_decorator_search_test.rs",
           "lines": "98-110",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 279,
                 280,
@@ -204,11 +204,11 @@
       "name": "Languages without decorators produce empty string",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "file": "rust/napi/tests/ast_decorator_search_test.rs",
           "lines": "116-139",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 279,
                 280,
@@ -246,10 +246,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_decorator_search_test.rs"
+      "rust/napi/tests/ast_decorator_search_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/metadata.rs"
+      "rust/napi/src/graph/ast_pipeline/metadata.rs"
     ],
     "totalLinesCovered": 239
   }

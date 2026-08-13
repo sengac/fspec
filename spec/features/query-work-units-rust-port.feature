@@ -5,9 +5,9 @@
 @rust
 Feature: Port query-work-units command to Rust
   """
-  WorkUnit struct in codelet/fspec-core/src/types/work_unit.rs currently exposes id, title, status, type, epic, createdAt, updatedAt + extra; query-work-units needs to read additional fields (tags, questions, stateHistory, featureFile, estimate) via the existing `extra` JSON map rather than extending the typed struct, keeping the worker self-contained and avoiding edits to shared type files
+  WorkUnit struct in rust/fspec-core/src/types/work_unit.rs currently exposes id, title, status, type, epic, createdAt, updatedAt + extra; query-work-units needs to read additional fields (tags, questions, stateHistory, featureFile, estimate) via the existing `extra` JSON map rather than extending the typed struct, keeping the worker self-contained and avoiding edits to shared type files
   Unlike list-work-units, query-work-units does NOT auto-create spec/work-units.json on first run; implementation uses std::fs::read_to_string + serde_json::from_str directly with TS-style error prefix 'Failed to query work units:' (rather than the ensure_work_units_file helper)
-  Two-front-doors invariant: pub async fn run(args_json: &str, project_root: &Path) lives in codelet/fspec-core/src/commands/query_work_units.rs; both the clap CLI bridge (codelet/fspec/src/query_work_units.rs) and the LLM dispatcher delegate to this single function
+  Two-front-doors invariant: pub async fn run(args_json: &str, project_root: &Path) lives in rust/fspec-core/src/commands/query_work_units.rs; both the clap CLI bridge (rust/fspec/src/query_work_units.rs) and the LLM dispatcher delegate to this single function
   The CLI bridge mirrors a TS quirk: --format=json prints JSON to stdout, but --format=text/csv/table prints NOTHING (the Commander.js action only logs when format==='json'); preserving this for byte-for-byte parity
   Output JSON shape is RICHER than list-work-units: { workUnits: [<full WU objects>], format: 'json', data: [{ workUnitId, featureFilePath }, ...] } — featureFilePath defaults to 'unknown' when wu.featureFile is absent in the extra map
   """
@@ -77,7 +77,7 @@ Feature: Port query-work-units command to Rust
     Then the workUnits array contains only AUTH-001
 
   Scenario: Two front doors — the same fspec_core::commands::query_work_units::run function serves CLI and dispatcher
-    Given codelet/fspec-core/src/commands/query_work_units.rs exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`
-    When I inspect codelet/fspec/src/query_work_units.rs
+    Given rust/fspec-core/src/commands/query_work_units.rs exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`
+    When I inspect rust/fspec/src/query_work_units.rs
     Then the CLI bridge module delegates to fspec_core::commands::query_work_units::run with the project_root resolved from std::env::current_dir
     Then no filter or rendering logic is duplicated in the CLI bridge

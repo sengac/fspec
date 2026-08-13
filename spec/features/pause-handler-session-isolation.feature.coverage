@@ -4,11 +4,11 @@
       "name": "Per-session handler isolation — pause dispatches only to the registered session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pause_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/pause_handler_session_isolation_test.rs",
           "lines": "22-59",
           "implMappings": [
             {
-              "file": "codelet/tools/src/tool_pause.rs",
+              "file": "rust/tools/src/tool_pause.rs",
               "lines": [
                 1,
                 2,
@@ -127,11 +127,11 @@
       "name": "Clearing one session's handler does not affect another session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pause_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/pause_handler_session_isolation_test.rs",
           "lines": "65-104",
           "implMappings": [
             {
-              "file": "codelet/tools/src/tool_pause.rs",
+              "file": "rust/tools/src/tool_pause.rs",
               "lines": [
                 1,
                 2,
@@ -250,11 +250,11 @@
       "name": "Pausing for an unregistered session returns Resumed without error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pause_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/pause_handler_session_isolation_test.rs",
           "lines": "110-128",
           "implMappings": [
             {
-              "file": "codelet/tools/src/tool_pause.rs",
+              "file": "rust/tools/src/tool_pause.rs",
               "lines": [
                 1,
                 2,
@@ -373,11 +373,11 @@
       "name": "has_pause_handler checks only the specified session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pause_handler_session_isolation_test.rs",
+          "file": "rust/tools/tests/pause_handler_session_isolation_test.rs",
           "lines": "134-158",
           "implMappings": [
             {
-              "file": "codelet/tools/src/tool_pause.rs",
+              "file": "rust/tools/src/tool_pause.rs",
               "lines": [
                 1,
                 2,
@@ -498,10 +498,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/pause_handler_session_isolation_test.rs"
+      "rust/tools/tests/pause_handler_session_isolation_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/tool_pause.rs"
+      "rust/tools/src/tool_pause.rs"
     ],
     "totalLinesCovered": 550
   }

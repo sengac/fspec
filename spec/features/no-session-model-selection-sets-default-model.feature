@@ -5,7 +5,7 @@
 @PROV-118
 Feature: Selecting a model with no active session does not set or persist a default model
   """
-  Rust port fix. handle_model_selected (codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs) currently returns early when session_id is None. New plumbing: FspecBackend::set_default_model (default no-op), RPC service set_default_model, SessionManagerHandle::set_default_model delegating to SessionManager::set_default_model (sessions/src/session_manager.rs). On None session, spawn backend.set_default_model(provider/model). create_session decline (PROV-101) in sessions/src/handle_impl.rs no longer fires once default is set. PROV-101 no-fallback policy preserved: empty strings ignored, no hardcoded anthropic fallback. TS parity: modelSelectionService gates only the live-session write behind a session check.
+  Rust port fix. handle_model_selected (rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs) currently returns early when session_id is None. New plumbing: FspecBackend::set_default_model (default no-op), RPC service set_default_model, SessionManagerHandle::set_default_model delegating to SessionManager::set_default_model (sessions/src/session_manager.rs). On None session, spawn backend.set_default_model(provider/model). create_session decline (PROV-101) in sessions/src/handle_impl.rs no longer fires once default is set. PROV-101 no-fallback policy preserved: empty strings ignored, no hardcoded anthropic fallback. TS parity: modelSelectionService gates only the live-session write behind a session check.
   """
 
   # ========================================

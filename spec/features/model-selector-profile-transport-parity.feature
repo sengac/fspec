@@ -7,7 +7,7 @@
 Feature: Model selector profile cross-transport parity
 
   # Work unit: RPC-338. Both transports must return identical profile_name and
-  # is_unreachable values (codelet/fspec-tui/tests/rpc338_cross_transport_parity.rs).
+  # is_unreachable values (rust/fspec-tui/tests/rpc338_cross_transport_parity.rs).
   Background: User Story
     As a codelet TUI user
     I want list_providers() to behave identically over both transports

@@ -4,11 +4,11 @@
       "name": "move_work_unit Up swaps the target with its predecessor inside states[<column>]",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "107-127",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 47,
                 48,
@@ -104,11 +104,11 @@
       "name": "move_work_unit Down swaps the target with its successor inside states[<column>]",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "128-144",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 47,
                 48,
@@ -204,11 +204,11 @@
       "name": "move_work_unit Up at the top boundary is a no-op",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "145-161",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 100,
                 101,
@@ -251,11 +251,11 @@
       "name": "move_work_unit Down at the bottom boundary is a no-op",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "162-178",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 100,
                 101,
@@ -298,11 +298,11 @@
       "name": "move_work_unit refuses to reorder a done-column unit",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "179-203",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 66,
                 67,
@@ -379,11 +379,11 @@
       "name": "move_work_unit returns Err for an unknown work unit id",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "204-223",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 66,
                 67,
@@ -460,11 +460,11 @@
       "name": "move_work_unit updates meta.lastUpdated on every persisting write",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "224-245",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units_write.rs",
+              "file": "rust/core/src/work_units_write.rs",
               "lines": [
                 47,
                 48,
@@ -560,11 +560,11 @@
       "name": "Concurrent move_work_unit calls serialize via the inter-process lock",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_write_test.rs",
+          "file": "rust/core/tests/work_units_write_test.rs",
           "lines": "246-282",
           "implMappings": [
             {
-              "file": "codelet/common/src/file_lock.rs",
+              "file": "rust/common/src/file_lock.rs",
               "lines": [
                 61,
                 62,
@@ -648,11 +648,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/work_units_write_test.rs"
+      "rust/core/tests/work_units_write_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/work_units_write.rs",
-      "codelet/common/src/file_lock.rs"
+      "rust/core/src/work_units_write.rs",
+      "rust/common/src/file_lock.rs"
     ],
     "totalLinesCovered": 690
   }

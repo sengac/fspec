@@ -4,11 +4,11 @@
       "name": "Function nodes include metadata after indexing",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "63-111",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 1,
                 2,
@@ -120,11 +120,11 @@
       "name": "Type nodes include line numbers and metadata after indexing",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "116-156",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/helpers.rs",
               "lines": [
                 89,
                 90,
@@ -180,11 +180,11 @@
       "name": "Short function source is stored in full",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "193-206",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 70,
                 71,
@@ -227,11 +227,11 @@
       "name": "Docstring extraction uses language-specific patterns",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "211-245",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 104,
                 105,
@@ -320,11 +320,11 @@
       "name": "Parameter names extracted without types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "250-283",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 280,
                 281,
@@ -437,11 +437,11 @@
       "name": "Decorator extraction uses language-specific patterns",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "288-321",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/metadata.rs",
               "lines": [
                 186,
                 187,
@@ -546,11 +546,11 @@
       "name": "Function with no metadata has empty strings",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
+          "file": "rust/napi/tests/ast_metadata_test.rs",
           "lines": "326-366",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/helpers.rs",
               "lines": [
                 43,
                 44,
@@ -610,11 +610,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 88,
     "testFiles": [
-      "codelet/napi/tests/ast_metadata_test.rs"
+      "rust/napi/tests/ast_metadata_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/metadata.rs",
-      "codelet/napi/src/graph/ast_pipeline/helpers.rs"
+      "rust/napi/src/graph/ast_pipeline/metadata.rs",
+      "rust/napi/src/graph/ast_pipeline/helpers.rs"
     ],
     "totalLinesCovered": 795
   }

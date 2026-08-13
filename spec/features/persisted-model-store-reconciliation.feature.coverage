@@ -4,11 +4,11 @@
       "name": "Persisted model is restored from fspec-config.json tui.lastUsedModel",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov120_startup_model_persistence.rs",
+          "file": "rust/sessions/tests/prov120_startup_model_persistence.rs",
           "lines": "23-45",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
                 1,
                 2,
@@ -70,11 +70,11 @@
       "name": "Legacy default-model.json is read for continuity when fspec-config.json has no tui.lastUsedModel",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov120_startup_model_persistence.rs",
+          "file": "rust/sessions/tests/prov120_startup_model_persistence.rs",
           "lines": "48-70",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
                 1,
                 2,
@@ -138,10 +138,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov120_startup_model_persistence.rs"
+      "rust/sessions/tests/prov120_startup_model_persistence.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/last_used_model_persistence.rs"
+      "rust/sessions/src/last_used_model_persistence.rs"
     ],
     "totalLinesCovered": 146
   }

@@ -2,7 +2,7 @@
 @RPC-189
 Feature: fspec add-rule CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_rule.rs — clap-derived struct mirroring TS Commander.js registration
+  CLI bridge: rust/fspec/src/add_rule.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/add-rule.ts:76-93). Surface: `fspec add-rule <workUnitId> <rule>`.
   Stdout (success): '✓ Rule added successfully' (TS uses chalk.green; ANSI tolerated via substring match).
   Stderr (failure): '✗ Failed to add rule: <message>'; exit code 1. Mirrors TS `output.error('✗ Failed to add rule:', ...)`.
@@ -20,7 +20,7 @@ Feature: fspec add-rule CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-rule --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-rule.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-rule.txt
     And stdout starts with a blank line followed by 'ADD-RULE'
 
   Scenario: CLI successfully appends a rule and prints the success line
@@ -45,4 +45,4 @@ Feature: fspec add-rule CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-rule AUTH-001 "R2"` afterwards exits 0
     And spec/work-units.json on disk shows AUTH-001.rules has length 2
-    And the CLI bridge module codelet/fspec/src/add_rule.rs contains NO inline rule construction, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_rule.rs contains NO inline rule construction, status guard, or file-write logic — its only computation is JSON arg marshalling

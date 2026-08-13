@@ -4,11 +4,11 @@
       "name": "build_service constructs a real SessionManager and passes it via with_session_manager",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/common.rs",
+          "file": "rust/fspec/src/common.rs",
           "lines": "565-668",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 80,
                 81,
@@ -42,14 +42,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi",
+      "name": "rust/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/common.rs",
+          "file": "rust/fspec/src/common.rs",
           "lines": "660-680",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 40,
                 41,
@@ -66,11 +66,11 @@
       "name": "build_service returns a SharedFspecService whose session-manager handle has been attached",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/common.rs",
+          "file": "rust/fspec/src/common.rs",
           "lines": "565-668",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 80,
                 81,
@@ -109,11 +109,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/src/common.rs"
+      "rust/fspec/src/common.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/common.rs",
-      "codelet/fspec/Cargo.toml"
+      "rust/fspec/src/common.rs",
+      "rust/fspec/Cargo.toml"
     ],
     "totalLinesCovered": 284
   }

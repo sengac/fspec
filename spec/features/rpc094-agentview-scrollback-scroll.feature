@@ -7,7 +7,7 @@
 @RPC-094
 Feature: AgentView scrollback mouse wheel + line scroll parity with TS VirtualList
   """
-  Reuse the existing WheelVelocity primitive in codelet/fspec-tui/src/components/scroll_viewport.rs (RPC-028); no new velocity logic
+  Reuse the existing WheelVelocity primitive in rust/fspec-tui/src/components/scroll_viewport.rs (RPC-028); no new velocity logic
   ScrollbackList gains a last_rect: Option<Rect> field so mouse_dispatch.rs can hit-test without leaking layout from agent.rs
   Five new Action variants in components/mod.rs: ScrollbackLineUp, ScrollbackLineDown, ScrollbackHome, ScrollbackMouseWheelUp(u32), ScrollbackMouseWheelDown(u32). u32 carries the velocity multiplier
   Scrollbar uses the ratatui core widget (StatefulWidget with ScrollbarState) — same approach the VirtualList port spec (RPC-002 §8 attachment §3.7) prescribes. No custom glyph painting
@@ -118,6 +118,6 @@ Feature: AgentView scrollback mouse wheel + line scroll parity with TS VirtualLi
   Scenario: Source shape — every touched module stays under 300 lines
     Given the RPC-094 patch has landed
     When source-shape inspection enumerates the touched .rs files
-    Then every file under codelet/fspec-tui/src/views/agent/ has at most 300 lines
-    And codelet/fspec-tui/src/views/agent.rs has at most 300 lines
-    And codelet/fspec-tui/src/components/mod.rs has at most 300 lines per-file-equivalent budget
+    Then every file under rust/fspec-tui/src/views/agent/ has at most 300 lines
+    And rust/fspec-tui/src/views/agent.rs has at most 300 lines
+    And rust/fspec-tui/src/components/mod.rs has at most 300 lines per-file-equivalent budget

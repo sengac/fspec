@@ -4,11 +4,11 @@
       "name": "Embedded backend changed_files returns modified and untracked entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/changed_files_rpc355.rs",
+          "file": "rust/fspec-tui/tests/changed_files_rpc355.rs",
           "lines": "133-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 119,
                 120,
@@ -28,11 +28,11 @@
       "name": "Embedded backend file_diff returns the unified diff for a modified file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/changed_files_rpc355.rs",
+          "file": "rust/fspec-tui/tests/changed_files_rpc355.rs",
           "lines": "181-200",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 916,
                 917,
@@ -56,11 +56,11 @@
       "name": "changed_files returns an empty Vec when no cwd is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/changed_files_rpc355.rs",
+          "file": "rust/fspec-tui/tests/changed_files_rpc355.rs",
           "lines": "202-217",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 908,
                 909,
@@ -79,11 +79,11 @@
       "name": "WebSocket backend changed_files crosses tarpc and matches the embedded backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/changed_files_rpc355.rs",
+          "file": "rust/fspec-tui/tests/changed_files_rpc355.rs",
           "lines": "219-246",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 284,
                 285,
@@ -109,11 +109,11 @@
       "name": "file_diff returns the binary-file sentinel for a binary file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/changed_files_rpc355.rs",
+          "file": "rust/fspec-tui/tests/changed_files_rpc355.rs",
           "lines": "160-179",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 33,
                 34,
@@ -131,13 +131,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/changed_files_rpc355.rs"
+      "rust/fspec-tui/tests/changed_files_rpc355.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/git/src/diff.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/git/src/diff.rs"
     ],
     "totalLinesCovered": 155
   }

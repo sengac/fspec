@@ -4,11 +4,11 @@
       "name": "RoleDialog renders at Priority::Foreground with the canonical id and title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "51-75",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 124,
                 125,
@@ -88,11 +88,11 @@
       "name": "RoleDialog seeded with no role opens with an empty editable buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "77-88",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 49,
                 50,
@@ -127,11 +127,11 @@
       "name": "RoleDialog seeded with existing role pre-fills the editable buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "90-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 49,
                 50,
@@ -166,11 +166,11 @@
       "name": "Enter saves the draft as a non-empty role and removes the dialog from the Compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "106-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 107,
                 108,
@@ -198,11 +198,11 @@
       "name": "Enter on an empty draft clears the role (treated like Ctrl+D)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "146-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 107,
                 108,
@@ -230,11 +230,11 @@
       "name": "Ctrl+D clears the role and removes the dialog from the Compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "178-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 114,
                 115,
@@ -271,11 +271,11 @@
       "name": "Esc cancels the dialog without emitting an Action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "216-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 119,
                 120,
@@ -309,11 +309,11 @@
       "name": "RoleDialog file stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "256-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/role_dialog.rs",
+              "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -537,11 +537,11 @@
       "name": "The dispatch helper file for RPC-063 stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/role_dialog_rpc063.rs",
+          "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
           "lines": "271-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -600,11 +600,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/role_dialog_rpc063.rs"
+      "rust/fspec-tui/tests/role_dialog_rpc063.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/role_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_role_dialog.rs"
+      "rust/fspec-tui/src/components/role_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_role_dialog.rs"
     ],
     "totalLinesCovered": 676
   }

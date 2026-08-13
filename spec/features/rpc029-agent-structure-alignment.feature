@@ -45,7 +45,7 @@ Feature: RPC-029 AgentView structure alignment with TS Ink original
   to None/0).
 
   Pair: render tests live in
-  codelet/fspec-tui/tests/view_agent_unit_rpc029.rs.
+  rust/fspec-tui/tests/view_agent_unit_rpc029.rs.
   """
 
   Background: User Story

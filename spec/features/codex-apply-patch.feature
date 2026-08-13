@@ -1,7 +1,7 @@
 @BUG-105
 Feature: Codex tool-calling facade omits apply_patch and falls back to shell patching
   """
-  The apply_patch tool is implemented as a standalone rig::tool::Tool struct (not through facade traits) since it has no equivalent in other providers. It takes a single 'patch' string parameter, parses the Codex freeform format, then delegates to internal file operations (create, edit, delete). It lives in codelet/tools/src/apply_patch.rs.
+  The apply_patch tool is implemented as a standalone rig::tool::Tool struct (not through facade traits) since it has no equivalent in other providers. It takes a single 'patch' string parameter, parses the Codex freeform format, then delegates to internal file operations (create, edit, delete). It lives in rust/tools/src/apply_patch.rs.
   """
 
   # ========================================

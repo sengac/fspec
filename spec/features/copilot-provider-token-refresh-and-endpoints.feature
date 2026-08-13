@@ -9,7 +9,7 @@ Feature: Copilot provider token refresh and endpoints.api routing
   and honour the endpoints.api URL returned by the token-exchange response
   (so enterprise deployments hit copilot-api.<their-host> instead of a
   hard-coded api.githubcopilot.com). Lives in
-  codelet/providers/src/copilot/provider.rs and is exercised by
+  rust/providers/src/copilot/provider.rs and is exercised by
   provider_tests.rs.
   """
 

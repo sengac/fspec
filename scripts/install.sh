@@ -20,7 +20,7 @@ if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
   REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 else
   # Piped or sourced — try to find repo root from cwd
-  if [[ -d "$(pwd)/codelet" ]]; then
+  if [[ -d "$(pwd)/rust" ]]; then
     REPO_ROOT="$(pwd)"
   else
     # Not in a repo — clone it
@@ -28,7 +28,7 @@ else
   fi
 fi
 
-CODELET_DIR="$REPO_ROOT/codelet"
+CODELET_DIR="$REPO_ROOT/rust"
 
 # ── Color helpers ────────────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -111,11 +111,11 @@ if [[ -z "$REPO_ROOT" ]]; then
   info "Cloning fspec repository..."
   REPO_ROOT="$(mktemp -d)"
   git clone --depth 1 https://github.com/sengac/fspec.git "$REPO_ROOT" >/dev/null 2>&1
-  CODELET_DIR="$REPO_ROOT/codelet"
+  CODELET_DIR="$REPO_ROOT/rust"
 fi
 
 if [[ ! -d "$CODELET_DIR" ]]; then
-  error "codelet/ directory not found at $CODELET_DIR"
+  error "rust/ directory not found at $CODELET_DIR"
   error "This script must be run from within the fspec repository."
   exit 1
 fi

@@ -8,11 +8,11 @@
 @wip
 Feature: Agent loop: conversation history (session.inner.messages round-trip + session_restore_messages parity)
   """
-  Implementation home for restoration: port the body of codelet/napi/src/session_bindings.rs:2401-2567 (session_restore_messages) into codelet/sessions/src/handle_impl.rs::restore_session_messages, replacing the current 5-line stub. The handler walks each envelope's message.content blocks, builds parallel rig::message::Message + StreamChunk vectors, then pushes rig messages into session.inner.lock().await.messages and dispatches StreamChunks via session.handle_output. Skip-rule for system-reminder envelopes (joined text contains both '<system-reminder>' and '<!-- type:') is preserved verbatim from the NAPI source.
+  Implementation home for restoration: port the body of rust/napi/src/session_bindings.rs:2401-2567 (session_restore_messages) into rust/sessions/src/handle_impl.rs::restore_session_messages, replacing the current 5-line stub. The handler walks each envelope's message.content blocks, builds parallel rig::message::Message + StreamChunk vectors, then pushes rig messages into session.inner.lock().await.messages and dispatches StreamChunks via session.handle_output. Skip-rule for system-reminder envelopes (joined text contains both '<system-reminder>' and '<!-- type:') is preserved verbatim from the NAPI source.
 
-  Test strategy: restoration tests live in codelet/sessions/tests/rpc081_restore_session_messages.rs and exercise the SessionManagerHandle impl directly with hand-crafted envelope JSON strings (no NAPI dependency). Agent-loop history threading is pinned with source-shape regression tests in codelet/agent-loop/tests/rpc081_inner_messages_threading.rs that grep-assert the agent_loop body source contains zero literal 'vec![Message { role: MessageRole::User' single-element constructions and DOES contain the canonical '&mut inner_session' threading into run_agent_stream_with_images.
+  Test strategy: restoration tests live in rust/sessions/tests/rpc081_restore_session_messages.rs and exercise the SessionManagerHandle impl directly with hand-crafted envelope JSON strings (no NAPI dependency). Agent-loop history threading is pinned with source-shape regression tests in rust/agent-loop/tests/rpc081_inner_messages_threading.rs that grep-assert the agent_loop body source contains zero literal 'vec![Message { role: MessageRole::User' single-element constructions and DOES contain the canonical '&mut inner_session' threading into run_agent_stream_with_images.
 
-  Call-site contract: agent loop body already passes &mut inner_session into run_with_provider! and into run_agent_stream_with_images (codelet/agent-loop/src/agent_loop.rs:867-1019 + codelet/agent-loop/src/dispatch.rs:38-105). The new RPC-081 coverage pins this with structural tests + the behavioural restoration round-trip. For restoration, the canonical NAPI source is codelet/napi/src/session_bindings.rs:2401-2567; the NAPI-free target lives in the existing trait impl at codelet/sessions/src/handle_impl.rs:274 which currently returns Ok(()) without touching messages.
+  Call-site contract: agent loop body already passes &mut inner_session into run_with_provider! and into run_agent_stream_with_images (rust/agent-loop/src/agent_loop.rs:867-1019 + rust/agent-loop/src/dispatch.rs:38-105). The new RPC-081 coverage pins this with structural tests + the behavioural restoration round-trip. For restoration, the canonical NAPI source is rust/napi/src/session_bindings.rs:2401-2567; the NAPI-free target lives in the existing trait impl at rust/sessions/src/handle_impl.rs:274 which currently returns Ok(()) without touching messages.
   """
 
   Background: User Story
@@ -64,7 +64,7 @@ Feature: Agent loop: conversation history (session.inner.messages round-trip + s
     And session.inner.lock().await.messages.len() still equals 0
 
   Scenario: Boundary — codelet-sessions still has zero dependency on codelet-napi after the restoration port
-    Given the restore_session_messages port has landed in codelet/sessions/src/handle_impl.rs
+    Given the restore_session_messages port has landed in rust/sessions/src/handle_impl.rs
     When cargo metadata is invoked for the codelet-sessions package
     Then the resulting transitive package set does not contain "codelet-napi"
-    And no .rs file under codelet/sessions/src/ contains the substring "codelet_napi"
+    And no .rs file under rust/sessions/src/ contains the substring "codelet_napi"

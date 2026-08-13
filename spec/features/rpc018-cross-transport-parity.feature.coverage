@@ -4,11 +4,11 @@
       "name": "EmbeddedFspecBackend::get_workspace_info delegates through the shared service",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "84-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 1,
                 2,
@@ -155,11 +155,11 @@
       "name": "WebSocketFspecBackend::get_workspace_info crosses tarpc cleanly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "106-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1,
                 2,
@@ -633,11 +633,11 @@
       "name": "Both transports return identical WorkspaceInfo for the same SharedFspecService",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "129-152",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 490,
                 491,
@@ -700,11 +700,11 @@
       "name": "get_workspace_info returns the process cwd with no branch when no cwd was attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "155-170",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 510,
                 511,
@@ -747,11 +747,11 @@
       "name": "get_workspace_info returns git_branch = None when cwd is not a git repository",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "173-196",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 510,
                 511,
@@ -794,11 +794,11 @@
       "name": "get_model_info returns safe defaults when no session manager is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "199-219",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 488,
                 489,
@@ -833,11 +833,11 @@
       "name": "get_thinking_level returns ThinkingLevel::Off when no session manager is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "222-238",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 488,
                 489,
@@ -872,11 +872,11 @@
       "name": "get_model_info / get_thinking_level cross tarpc cleanly with safe defaults",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "241-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 1,
                 2,
@@ -1350,11 +1350,11 @@
       "name": "StubSessionManagerHandle inherits the default SessionManagerHandle implementations",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+          "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
           "lines": "272-306",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1,
                 2,
@@ -1661,13 +1661,13 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agent_chrome_parity_rpc018.rs"
+      "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 1718
   }

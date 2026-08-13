@@ -4,11 +4,11 @@
       "name": "list.rs handle_list_key has no refresh-models r/R keybind arms",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
           "lines": "96-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 30,
                 31,
@@ -150,11 +150,11 @@
       "name": "list.rs handle_list_key has no PageUp/PageDown/Home/End jump-key arms",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
           "lines": "117-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 30,
                 31,
@@ -296,11 +296,11 @@
       "name": "move_clamped clamps at boundary instead of wrapping",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
           "lines": "141-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 244,
                 245,
@@ -323,11 +323,11 @@
       "name": "handle_list_key match arms enumerate exactly the TS contract surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
           "lines": "169-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 30,
                 31,
@@ -471,11 +471,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs"
+      "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list.rs",
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+      "rust/fspec-tui/src/views/provider_settings/list.rs",
+      "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
     "totalLinesCovered": 504
   }

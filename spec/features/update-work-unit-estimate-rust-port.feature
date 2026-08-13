@@ -5,9 +5,9 @@
 @RPC-318
 Feature: Port update-work-unit-estimate command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/update_work_unit_estimate.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Reads work-units via read_work_units_or_empty (ENOENT→empty, mirrors TS fileManager.readJSON default). FIBONACCI = [1,2,3,5,8,13,21]. Writes spec/work-units.json atomically via io::locked_file::write_json_atomic. estimate stored in WorkUnit.extra; updated_at typed.
+  Core impl at rust/fspec-core/src/commands/update_work_unit_estimate.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Reads work-units via read_work_units_or_empty (ENOENT→empty, mirrors TS fileManager.readJSON default). FIBONACCI = [1,2,3,5,8,13,21]. Writes spec/work-units.json atomically via io::locked_file::write_json_atomic. estimate stored in WorkUnit.extra; updated_at typed.
   Prefill detection ported as a PRIVATE helper module inside the command file (NOT added to io/ensure.rs without supervisor approval). Mirrors src/utils/prefill-detection.ts: flat readdir of spec/features/*.feature, hand-rolled tag matcher for (^|\s)@<id>(?:\s|$), and the 9 prefill patterns scanned line-by-line (no regex crate). Returns None when spec/features missing or no tagged file found.
-  The two ACDD-violation system-reminder blocks are byte-exact ports of the TS template literals (trimmed), wrapped by the outer 'Failed to update work unit estimate: ' prefix. CLI bridge at codelet/fspec/src/update_work_unit_estimate.rs marshals positional workUnitId + estimate (number) into JSON; prints '✓ Work unit <id> estimate set to <n>' on success, error to stderr on failure. Help config mirrors update-work-unit-estimate-help.ts.
+  The two ACDD-violation system-reminder blocks are byte-exact ports of the TS template literals (trimmed), wrapped by the outer 'Failed to update work unit estimate: ' prefix. CLI bridge at rust/fspec/src/update_work_unit_estimate.rs marshals positional workUnitId + estimate (number) into JSON; prints '✓ Work unit <id> estimate set to <n>' on success, error to stderr on failure. Help config mirrors update-work-unit-estimate-help.ts.
   """
 
   # ========================================
@@ -87,5 +87,5 @@ Feature: Port update-work-unit-estimate command to Rust
   Scenario: CLI delegates to the same fspec-core function as the dispatcher
     Given spec/work-units.json contains work unit 'TASK-001' of type 'task'
     When I dispatch update-work-unit-estimate via the dispatcher with workUnitId='TASK-001' and estimate=3
-    And I run `./codelet/target/release/fspec update-work-unit-estimate TASK-001 3` in an identical workspace
+    And I run `./rust/target/release/fspec update-work-unit-estimate TASK-001 3` in an identical workspace
     Then both invocations produce the same success result and the same on-disk estimate 3

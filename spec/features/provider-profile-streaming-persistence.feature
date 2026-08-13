@@ -6,12 +6,12 @@
 Feature: OpenAI profile streaming flag persistence
   """
   The streaming flag round-trips through the on-disk ProfileDef
-  (codelet/sessions/src/profile_persistence.rs) and the wire-to-disk bridge
-  profile_def_from_wire (codelet/sessions/src/conversions.rs). save_profile_at
+  (rust/sessions/src/profile_persistence.rs) and the wire-to-disk bridge
+  profile_def_from_wire (rust/sessions/src/conversions.rs). save_profile_at
   writes the camelCase "streaming" key into ~/.fspec/fspec-config.json via a
   read-modify-write that preserves customModels and the compaction-threshold
   fields; a profile with no streaming key loads as enabled. Verified by
-  codelet/sessions/tests/prov139_streaming_persistence.rs.
+  rust/sessions/tests/prov139_streaming_persistence.rs.
   """
 
   Background: User Story

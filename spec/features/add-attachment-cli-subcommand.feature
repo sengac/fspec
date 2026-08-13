@@ -4,7 +4,7 @@
 @RPC-170
 Feature: fspec add-attachment CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_attachment.rs — clap-derived struct mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/add_attachment.rs — clap-derived struct mirroring TS Commander.js
   registration at src/commands/add-attachment.ts:121-152. Surface: `fspec add-attachment <workUnitId>
   <filePath> [-d|--description <text>]`. Bridge owns ONLY: (a) clap arg parsing; (b) JSON
   marshalling; (c) stdout printing of the core's rendered output; (d) stderr printing of
@@ -26,10 +26,10 @@ Feature: fspec add-attachment CLI subcommand
     So that any existing TS-CLI-driven attachment-management script keeps working after the cutover
 
   Scenario: Help output matches the captured TS fixture byte-for-byte
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
     When I run `fspec add-attachment --help` piped to non-TTY (no color codes)
     Then the exit code is 0
-    And stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-attachment.txt
+    And stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-attachment.txt
     And stdout starts with a blank line followed by 'ADD-ATTACHMENT'
     And stdout contains the section header 'USAGE' followed by '  fspec add-attachment <workUnitId> <filePath> [options]'
     And stdout contains the section header 'ARGUMENTS'
@@ -100,4 +100,4 @@ Feature: fspec add-attachment CLI subcommand
     And a source file diagram.png exists
     When I dispatch add-attachment via fspec_core::dispatch::dispatch_command with workUnitId='AUTH-001' filePath='diagram.png'
     Then the dispatcher returns success
-    And the CLI bridge module codelet/fspec/src/add_attachment.rs contains NO file copy, work-unit lookup, or atomic write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_attachment.rs contains NO file copy, work-unit lookup, or atomic write logic — its only computation is JSON arg marshalling

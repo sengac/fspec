@@ -4,11 +4,11 @@
       "name": "Deduplicate File nodes when import target is also walked directly",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "407-475",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 120,
                 121,
@@ -68,11 +68,11 @@
       "name": "Preserve stub File nodes for external import targets",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "480-521",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 120,
                 121,
@@ -132,11 +132,11 @@
       "name": "Multiple files importing same target produce single File node",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "526-605",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 120,
                 121,
@@ -196,11 +196,11 @@
       "name": "Full codebase indexing completes without errors",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "610-698",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 70,
                 71,
@@ -312,10 +312,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_extraction_pipeline_test.rs"
+      "rust/napi/tests/ast_extraction_pipeline_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/mod.rs"
+      "rust/napi/src/graph/ast_pipeline/mod.rs"
     ],
     "totalLinesCovered": 522
   }

@@ -6,7 +6,7 @@
 @COPY-003
 Feature: Mouse gesture recognizer for selection (drag + long-press)
   """
-  New module codelet/fspec-tui/src/mouse/gesture.rs. Type SelectionRecognizer with an internal state enum (Idle, Pressed{cell, at}, Selecting). Public enum SelectionGesture { Begin(Cell), Extend(Cell), Commit, Cancel }. Reuses Cell from selection.rs (COPY-002).
+  New module rust/fspec-tui/src/mouse/gesture.rs. Type SelectionRecognizer with an internal state enum (Idle, Pressed{cell, at}, Selecting). Public enum SelectionGesture { Begin(Cell), Extend(Cell), Commit, Cancel }. Reuses Cell from selection.rs (COPY-002).
   crossterm mapping: Down(Left) records Pressed{cell, at:now}; Drag(Left) transitions Pressed to Selecting and returns Begin(press_cell) on the first drag, else returns Extend(cell); Up(Left) returns Commit when Selecting else clears with no gesture. Non-left buttons and wheel return None.
   Long-press threshold const HOLD = Duration::from_millis(400). tick(now) fires Begin(press_cell) exactly once when state is Pressed and now minus at is greater-or-equal HOLD, transitioning to Selecting. Threshold constant documented and tunable. Mirrors the debounce-timer pattern in mouse/toggle.rs but for press-hold detection.
   Testing: feed a scripted sequence of MouseEvent plus Instant into on_mouse and tick, assert the exact Vec of SelectionGesture. Fake clock is a base Instant plus Duration offsets. No real time, no terminal. Consumer is COPY-006 which maps gestures onto the live Selection and clipboard write.

@@ -4,11 +4,11 @@
       "name": "Returns all-zero stats when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "71-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -484,11 +484,11 @@
       "name": "Aggregates totals across all four dependency arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "108-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -964,11 +964,11 @@
       "name": "Two-unit A-blocks-B graph reports chain depth 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "151-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -1444,11 +1444,11 @@
       "name": "Three-unit linear chain A->B->C reports chain depth 2",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "175-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -1924,11 +1924,11 @@
       "name": "Self-cycle on blocks yields chain depth 1 not infinite recursion",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "200-221",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -2404,11 +2404,11 @@
       "name": "blocks pointing to a missing work unit still contributes +1 to chain depth",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "223-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -2884,11 +2884,11 @@
       "name": "Empty blocks array does not bump workUnitsBlockingOthers",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "244-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -3364,11 +3364,11 @@
       "name": "workUnitsWithDependencies counts each unit only once even with multiple populated arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "271-306",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -3844,11 +3844,11 @@
       "name": "Integer-valued average serializes without a decimal point",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "308-342",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -4324,11 +4324,11 @@
       "name": "Non-integer average serializes as decimal 0.5",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "344-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -4804,11 +4804,11 @@
       "name": "JSON field order matches TS declaration order exactly",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "368-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -5284,11 +5284,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_dependency_stats.rs",
+          "file": "rust/fspec-core/tests/query_dependency_stats.rs",
           "lines": "411-427",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_dependency_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -5766,10 +5766,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/query_dependency_stats.rs"
+      "rust/fspec-core/tests/query_dependency_stats.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/query_dependency_stats.rs"
+      "rust/fspec-core/src/commands/query_dependency_stats.rs"
     ],
     "totalLinesCovered": 6260
   }

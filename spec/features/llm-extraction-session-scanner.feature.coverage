@@ -4,11 +4,11 @@
       "name": "Full content indexing produces Concept and Decision nodes from conversation",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "131-180",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_caller.rs",
+              "file": "rust/napi/src/graph/llm_caller.rs",
               "lines": [
                 76,
                 77,
@@ -155,11 +155,11 @@
       "name": "Conversation turns are batched according to IndexingConfig batch_size",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "90-113",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_caller.rs",
+              "file": "rust/napi/src/graph/llm_caller.rs",
               "lines": [
                 30,
                 31,
@@ -185,11 +185,11 @@
       "name": "Structural and LLM extraction both run in hybrid mode",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "226-267",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/session_scanner.rs",
+              "file": "rust/napi/src/graph/session_scanner.rs",
               "lines": [
                 85,
                 86,
@@ -287,11 +287,11 @@
       "name": "Structural-only mode skips LLM extraction",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "183-198",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/session_scanner.rs",
+              "file": "rust/napi/src/graph/session_scanner.rs",
               "lines": [
                 88,
                 89
@@ -305,11 +305,11 @@
       "name": "LLM extraction failure does not roll back structural entities",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "201-222",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/session_scanner.rs",
+              "file": "rust/napi/src/graph/session_scanner.rs",
               "lines": [
                 139,
                 140,
@@ -338,11 +338,11 @@
       "name": "Watermark updated only after all extraction completes",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "270-293",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/session_scanner.rs",
+              "file": "rust/napi/src/graph/session_scanner.rs",
               "lines": [
                 173,
                 174,
@@ -361,11 +361,11 @@
       "name": "dispatch_index receives provider context from GraphSearch handler",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "310-340",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph_search_handler.rs",
+              "file": "rust/napi/src/graph_search_handler.rs",
               "lines": [
                 20,
                 21,
@@ -400,11 +400,11 @@
       "name": "Only user and assistant messages are sent to LLM extraction",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "116-156",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/llm_extraction.rs",
+              "file": "rust/napi/src/graph/llm_extraction.rs",
               "lines": [
                 62,
                 63,
@@ -425,11 +425,11 @@
       "name": "scope current remains unchanged",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/llm_caller.rs",
+          "file": "rust/napi/src/graph/llm_caller.rs",
           "lines": "296-307",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch.rs",
+              "file": "rust/napi/src/graph/dispatch.rs",
               "lines": [
                 315,
                 316,
@@ -477,14 +477,14 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/llm_caller.rs"
+      "rust/napi/src/graph/llm_caller.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/llm_caller.rs",
-      "codelet/napi/src/graph/session_scanner.rs",
-      "codelet/napi/src/graph_search_handler.rs",
-      "codelet/napi/src/graph/llm_extraction.rs",
-      "codelet/napi/src/graph/dispatch.rs"
+      "rust/napi/src/graph/llm_caller.rs",
+      "rust/napi/src/graph/session_scanner.rs",
+      "rust/napi/src/graph_search_handler.rs",
+      "rust/napi/src/graph/llm_extraction.rs",
+      "rust/napi/src/graph/dispatch.rs"
     ],
     "totalLinesCovered": 589
   }

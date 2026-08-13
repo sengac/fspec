@@ -2,9 +2,9 @@
 @AMGR-016
 Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to return
   """
-  Primary change in codelet/cli/src/interactive/stream_loop.rs — wrap stream.next() in tokio::time::timeout inside the inner streaming loop
-  DeepSearch wall-clock timeout in codelet/napi/src/deep_search_handler.rs — wrap build_and_run_agent() call in tokio::time::timeout
-  Drop guard for agent_loop in codelet/napi/src/session_manager.rs — ensure set_status(Idle) executes even on panic via a struct that implements Drop
+  Primary change in rust/cli/src/interactive/stream_loop.rs — wrap stream.next() in tokio::time::timeout inside the inner streaming loop
+  DeepSearch wall-clock timeout in rust/napi/src/deep_search_handler.rs — wrap build_and_run_agent() call in tokio::time::timeout
+  Drop guard for agent_loop in rust/napi/src/session_manager.rs — ensure set_status(Idle) executes even on panic via a struct that implements Drop
   The stall timeout error should be a distinct error type (not reuse network/truncation errors) so error_classifiers.rs does not accidentally catch and retry it
   The tokio::select! in the stream loop already has an interrupt_notify branch — the timeout can be added as another branch in the same select
   """

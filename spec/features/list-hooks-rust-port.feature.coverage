@@ -4,11 +4,11 @@
       "name": "Returns empty events with 'No hooks are configured' when spec/fspec-hooks.json does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "45-82",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -65,11 +65,11 @@
       "name": "Returns event/hook mapping when spec/fspec-hooks.json is populated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "83-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -126,11 +126,11 @@
       "name": "Treats empty hooks object as no events without a message field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "126-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -187,11 +187,11 @@
       "name": "Swallows invalid JSON as empty result with 'No hooks are configured' message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "158-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -248,11 +248,11 @@
       "name": "Preserves insertion order of events (not alphabetical)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "194-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -309,11 +309,11 @@
       "name": "Emits null for hooks missing the name field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "224-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -370,11 +370,11 @@
       "name": "JSON format emits two-space indented payload for the empty/missing case",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "264-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 108,
                 109,
@@ -407,11 +407,11 @@
       "name": "Text format renders the populated case using the documented help-example layout",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "293-373",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 192,
                 193,
@@ -450,11 +450,11 @@
       "name": "Text format prints 'No hooks are configured' for the empty/missing case",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "374-393",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 192,
                 193,
@@ -470,11 +470,11 @@
       "name": "Default format (no format key supplied) is text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "394-414",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 118,
                 119,
@@ -497,11 +497,11 @@
       "name": "Renders unnamed placeholder when a hook lacks the name field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_hooks.rs",
+          "file": "rust/fspec-core/tests/list_hooks.rs",
           "lines": "416-444",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "file": "rust/fspec-core/src/commands/list_hooks.rs",
               "lines": [
                 215,
                 216,
@@ -526,10 +526,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_hooks.rs"
+      "rust/fspec-core/tests/list_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_hooks.rs"
+      "rust/fspec-core/src/commands/list_hooks.rs"
     ],
     "totalLinesCovered": 743
   }

@@ -1,7 +1,7 @@
 @KGRAPH-019
 Feature: AST Graph Query Interface & GraphSearch Integration
   """
-  AST dispatch in codelet/napi/src/graph/ast_dispatch.rs. Query source in codelet/napi/schemas/ast-queries.gq (loaded via include_str!). New action variants: AstSearch, AstNeighbors, AstStats added to GraphSearchAction enum. Handler routes AST-prefixed actions to ast_dispatch.
+  AST dispatch in rust/napi/src/graph/ast_dispatch.rs. Query source in rust/napi/schemas/ast-queries.gq (loaded via include_str!). New action variants: AstSearch, AstNeighbors, AstStats added to GraphSearchAction enum. Handler routes AST-prefixed actions to ast_dispatch.
   """
 
   # ========================================

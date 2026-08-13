@@ -4,11 +4,11 @@
       "name": "Embedded transport returns WorkUnitInfo from a single shared service impl",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_happy_path.rs",
+          "file": "rust/rpc-embedded/tests/embedded_happy_path.rs",
           "lines": "21-41",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 33,
                 34,
@@ -57,10 +57,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/embedded_happy_path.rs"
+      "rust/rpc-embedded/tests/embedded_happy_path.rs"
     ],
     "implFiles": [
-      "codelet/rpc-embedded/src/lib.rs"
+      "rust/rpc-embedded/src/lib.rs"
     ],
     "totalLinesCovered": 56
   }

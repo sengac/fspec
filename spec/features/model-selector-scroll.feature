@@ -6,7 +6,7 @@
 @RPC-340
 Feature: Model selector list does not scroll to follow the cursor
   """
-  Scroll state lives in ModelSelectorView (codelet/fspec-tui/src/views/model_selector/mod.rs): scroll_offset + visible_rows fields, windowed by rows::render_body. Fix reuses the existing components::scroll_viewport::ensure_visible(scroll_offset, selected, visible_rows, total) helper (scroll_viewport.rs:46-66), wrapped in a private adjust_scroll() mirroring provider_settings::adjust_scroll. visible_rows = body_area.height - 1 (legend row). adjust_scroll is invoked from move_up/move_down (covers keyboard + mouse-wheel), Home/End, set_providers, handle_filter_key, toggle_expansion, and once at render after visible_rows is known (defensive resize reconcile). No wire-type or Action changes; scrollbar/overflow indicators in rows.rs follow automatically once scroll_offset tracks the cursor.
+  Scroll state lives in ModelSelectorView (rust/fspec-tui/src/views/model_selector/mod.rs): scroll_offset + visible_rows fields, windowed by rows::render_body. Fix reuses the existing components::scroll_viewport::ensure_visible(scroll_offset, selected, visible_rows, total) helper (scroll_viewport.rs:46-66), wrapped in a private adjust_scroll() mirroring provider_settings::adjust_scroll. visible_rows = body_area.height - 1 (legend row). adjust_scroll is invoked from move_up/move_down (covers keyboard + mouse-wheel), Home/End, set_providers, handle_filter_key, toggle_expansion, and once at render after visible_rows is known (defensive resize reconcile). No wire-type or Action changes; scrollbar/overflow indicators in rows.rs follow automatically once scroll_offset tracks the cursor.
   """
 
   # ========================================

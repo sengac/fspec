@@ -9,7 +9,7 @@
 Feature: fspec status subcommand (one-shot health RPC against autodiscovered or --connect'd daemon)
   """
   New subcommand `fspec status` on the existing fspec binary's Cli enum (Mode::Status { connect:
-  Option<String> }). Lives in codelet/fspec/src/status.rs (~80 lines). Mirrors client.rs's
+  Option<String> }). Lives in rust/fspec/src/status.rs (~80 lines). Mirrors client.rs's
   resolve+connect path but uses common::read_and_verify_daemon_json. Opens a one-shot
   WebSocketFspecBackend::connect (no supervisor), calls backend.health(), pretty-prints multi-line
   human-readable output, exits 0 on success / 1 on any failure (no daemon.json, stale, connect

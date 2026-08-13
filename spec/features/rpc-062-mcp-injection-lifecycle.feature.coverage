@@ -4,11 +4,11 @@
       "name": "Idempotent re-init replaces the entry without leaking the previous receiver",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "file": "rust/sessions/tests/mcp_injection_lifecycle.rs",
           "lines": "111-152",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 820,
                 821,
@@ -67,11 +67,11 @@
       "name": "cleanup_mcp_session on an unknown uuid is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "file": "rust/sessions/tests/mcp_injection_lifecycle.rs",
           "lines": "158-178",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 848,
                 849,
@@ -102,11 +102,11 @@
       "name": "init_mcp_session registers per-session state and get_mcp_connections returns Some",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "file": "rust/sessions/tests/mcp_injection_lifecycle.rs",
           "lines": "44-77",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 826,
                 827,
@@ -132,11 +132,11 @@
       "name": "cleanup_mcp_session removes per-session state and get_mcp_connections returns None",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "file": "rust/sessions/tests/mcp_injection_lifecycle.rs",
           "lines": "83-105",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 848,
                 849,
@@ -167,11 +167,11 @@
       "name": "MCP_SESSIONS registry isolates entries per session uuid",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "file": "rust/sessions/tests/mcp_injection_lifecycle.rs",
           "lines": "184-225",
           "implMappings": [
             {
-              "file": "codelet/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp.rs",
               "lines": [
                 820,
                 821,
@@ -238,10 +238,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/mcp_injection_lifecycle.rs"
+      "rust/sessions/tests/mcp_injection_lifecycle.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/mcp.rs"
+      "rust/tools/src/mcp.rs"
     ],
     "totalLinesCovered": 314
   }

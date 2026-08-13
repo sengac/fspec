@@ -13,7 +13,7 @@ Feature: RPC-027 — ModelSelectorDialog and ConfirmDialog migration
   """
 
   Background: User Story
-    As a developer maintaining the codelet/fspec-tui Rust ratatui frontend
+    As a developer maintaining the rust/fspec-tui Rust ratatui frontend
     I want ModelSelectorDialog and ConfirmDialog to use the canonical theme
     So that the inverse selection highlight and yellow button focus match the TypeScript reference
 

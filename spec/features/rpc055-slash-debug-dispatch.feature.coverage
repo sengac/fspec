@@ -4,11 +4,11 @@
       "name": "/debug calls backend.toggle_debug for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "100-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -41,11 +41,11 @@
       "name": "/debug emits a success notice with the resolved file path on Ok",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "137-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -78,11 +78,11 @@
       "name": "/debug emits an error notice on Err",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "164-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -115,11 +115,11 @@
       "name": "/debug with no current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "191-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -152,11 +152,11 @@
       "name": "/debug only affects the focused session — background sessions are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "241-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -189,11 +189,11 @@
       "name": "/debug honours the FSPEC_DEBUG_DIR environment variable",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "303-337",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -226,11 +226,11 @@
       "name": "SessionHeader [DEBUG] badge reflects per-session debug_enabled state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "380-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 247,
                 248,
@@ -252,11 +252,11 @@
       "name": "SessionHeader [DEBUG] badge disappears when debug_enabled flips off",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "411-432",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 247,
                 248,
@@ -278,11 +278,11 @@
       "name": "DebugStateChange chunk from backend updates the badge state for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_debug_rpc055.rs",
+          "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
           "lines": "438-475",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 90,
                 91,
@@ -300,12 +300,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_debug_rpc055.rs"
+      "rust/fspec-tui/tests/slash_debug_rpc055.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
     ],
     "totalLinesCovered": 446
   }

@@ -6,7 +6,7 @@
 @context-management
 @resilience
 Feature: Defense-in-depth bound on tool_result text size in rig patch parse_tool_result_content
-  parse_tool_result_content in codelet/patches/rig-core/src/agent/prompt_request/streaming.rs
+  parse_tool_result_content in rust/patches/rig-core/src/agent/prompt_request/streaming.rs
   (pre-change lines 33-149) bounds oversized image/PDF payloads but wraps plain text
   verbatim at line 149 with vec![ToolResultContent::text(result)]. This work unit adds
   a byte bound on the text branch so no single verbose tool (validate-tags, cargo

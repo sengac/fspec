@@ -2,8 +2,8 @@
 @CMPCT-010
 Feature: SessionSearch Trimming Integration
   """
-  Modify codelet/napi/src/session_search_handler.rs: extend create_handler() to accept Arc<AtomicBool>, add conditional trimming in handle_show() and handle_search() after resolve_message_content() calls
-  Modify codelet/napi/src/session_manager.rs: add compaction_in_progress: Arc<AtomicBool> field to BackgroundSession (alongside compaction_progress), pass to create_handler() at line 5365
+  Modify rust/napi/src/session_search_handler.rs: extend create_handler() to accept Arc<AtomicBool>, add conditional trimming in handle_show() and handle_search() after resolve_message_content() calls
+  Modify rust/napi/src/session_manager.rs: add compaction_in_progress: Arc<AtomicBool> field to BackgroundSession (alongside compaction_progress), pass to create_handler() at line 5365
   Trimmer (codelet_core::compaction::Trimmer) is stateful — must create a new instance per handle_show/handle_search call and process messages in order for tool_use_id correlation. Uses trim_message(&mut self, role, content, metadata).
   StoredMessage has metadata: HashMap<String, Value> field which is passed directly to Trimmer::trim_message(). The role field is a String (user/assistant).
   """

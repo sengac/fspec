@@ -13,10 +13,10 @@ Feature: Agent loop persists user, assistant, tool_result, and token state per t
   persist_assistant_message on Done, persist_tool_result on each
   ToolResult, persist_token_state on Done, and persist_assistant_message
   on Error/Interrupted — same call sites as the canonical NAPI agent loop
-  at codelet/napi/src/agent_loop.rs:529 (user), 1436-1446 (tool result),
+  at rust/napi/src/agent_loop.rs:529 (user), 1436-1446 (tool result),
   1532 (error), 1537 (interrupted), 1542-1548 (done + token state).
 
-  The persistence helpers themselves live in codelet/agent-loop/src/persist.rs
+  The persistence helpers themselves live in rust/agent-loop/src/persist.rs
   (lifted by RPC-072 Phase A as a verbatim NAPI-free copy). This card
   proves they are invoked from the agent loop body and from
   BackgroundOutput at the canonical call sites, that the on-disk envelope
@@ -79,38 +79,38 @@ Feature: Agent loop persists user, assistant, tool_result, and token state per t
     And no thread panics
 
   Scenario: Source-shape — agent_loop body invokes persist_user_message before dispatching to the provider
-    Given the source of codelet/agent-loop/src/agent_loop.rs
+    Given the source of rust/agent-loop/src/agent_loop.rs
     When the file is scanned
     Then it imports persist_user_message from crate::persist
     And the function body contains a call to persist_user_message(&session.id, input)
     And that call is followed by the provider dispatch (no provider dispatch precedes it within the same turn block)
 
   Scenario: Source-shape — BackgroundOutput's StreamEvent::ToolResult arm persists assistant before tool_result
-    Given the source of codelet/agent-loop/src/background_output.rs
+    Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
     Then the StreamEvent::ToolResult arm calls self.persist_assistant_message()
     And the same arm subsequently calls persist_tool_result_internal(...)
     And the assistant-flush call precedes the tool-result persist call textually within that arm
 
   Scenario: Source-shape — BackgroundOutput's StreamEvent::Done arm persists assistant then token state
-    Given the source of codelet/agent-loop/src/background_output.rs
+    Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
     Then the StreamEvent::Done arm calls self.persist_assistant_message_with_stop_reason(stop_reason)
     And the same arm subsequently calls persist_token_state(&self.session.id, input_tokens, output_tokens)
 
   Scenario: Source-shape — BackgroundOutput's StreamEvent::Error arm flushes accumulated assistant content
-    Given the source of codelet/agent-loop/src/background_output.rs
+    Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
     Then the StreamEvent::Error arm calls self.persist_assistant_message()
 
   Scenario: Source-shape — BackgroundOutput's StreamEvent::Interrupted arm flushes accumulated assistant content
-    Given the source of codelet/agent-loop/src/background_output.rs
+    Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
     Then the StreamEvent::Interrupted arm calls self.persist_assistant_message()
 
   Scenario: Boundary — persistence calls in codelet-agent-loop import from crate::persist (not codelet_napi)
     Given the codelet-agent-loop crate
     When its source tree is scanned
-    Then no .rs file under codelet/agent-loop/src/ references codelet_napi::persist
-    And persist.rs lives at codelet/agent-loop/src/persist.rs
+    Then no .rs file under rust/agent-loop/src/ references codelet_napi::persist
+    And persist.rs lives at rust/agent-loop/src/persist.rs
     And it exports persist_user_message, persist_assistant_message_internal, persist_tool_result_internal, and persist_token_state as pub

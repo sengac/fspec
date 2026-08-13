@@ -4,11 +4,11 @@
       "name": "Successful browser OAuth login via NAPI",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "97-165",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 75,
                 76,
@@ -29,11 +29,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "97-165",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 75,
                 76,
@@ -59,11 +59,11 @@
       "name": "Browser OAuth login times out",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "171-204",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 75,
                 76,
@@ -84,11 +84,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "171-204",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 75,
                 76,
@@ -114,11 +114,11 @@
       "name": "Device auth login start returns user code and verification URL",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "210-254",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 97,
                 98,
@@ -146,11 +146,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "210-254",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 97,
                 98,
@@ -183,11 +183,11 @@
       "name": "Device auth login poll resolves with tokens after user authorizes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "260-377",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 127,
                 128,
@@ -254,11 +254,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "260-377",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 127,
                 128,
@@ -330,11 +330,11 @@
       "name": "Device auth polling fails with expired token",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "383-429",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 127,
                 128,
@@ -401,11 +401,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "383-429",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 127,
                 128,
@@ -477,11 +477,11 @@
       "name": "Token refresh returns new tokens",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "435-501",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 196,
                 197,
@@ -522,11 +522,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "435-501",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 196,
                 197,
@@ -572,11 +572,11 @@
       "name": "Token refresh fails with invalid refresh token",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "507-536",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 196,
                 197,
@@ -617,11 +617,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "507-536",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 196,
                 197,
@@ -667,11 +667,11 @@
       "name": "Get tokens returns stored tokens from auth.json",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "542-579",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 240,
                 241,
@@ -693,11 +693,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "542-579",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 240,
                 241,
@@ -724,11 +724,11 @@
       "name": "Get tokens returns null when no auth.json exists",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "585-603",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 240,
                 241,
@@ -750,11 +750,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "file": "rust/napi/tests/codex_oauth_napi_test.rs",
           "lines": "585-603",
           "implMappings": [
             {
-              "file": "codelet/napi/src/codex_oauth.rs",
+              "file": "rust/napi/src/codex_oauth.rs",
               "lines": [
                 240,
                 241,
@@ -783,10 +783,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/codex_oauth_napi_test.rs"
+      "rust/napi/tests/codex_oauth_napi_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/codex_oauth.rs"
+      "rust/napi/src/codex_oauth.rs"
     ],
     "totalLinesCovered": 1468
   }

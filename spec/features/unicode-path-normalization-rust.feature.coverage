@@ -4,11 +4,11 @@
       "name": "Resolve file with U+202F on disk when user types regular space",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "54-85",
           "implMappings": [
             {
-              "file": "codelet/tools/src/unicode_path.rs",
+              "file": "rust/tools/src/unicode_path.rs",
               "lines": [
                 60,
                 61,
@@ -52,11 +52,11 @@
       "name": "Resolve file with regular space on disk when user pastes U+00A0",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "88-116",
           "implMappings": [
             {
-              "file": "codelet/tools/src/unicode_path.rs",
+              "file": "rust/tools/src/unicode_path.rs",
               "lines": [
                 40,
                 41,
@@ -120,11 +120,11 @@
       "name": "validate_and_resolve_path normalizes Unicode whitespace before canonicalization",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "122-148",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 720,
                 721,
@@ -148,11 +148,11 @@
       "name": "require_file_exists finds file via directory scan when normalized path also fails",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "154-184",
           "implMappings": [
             {
-              "file": "codelet/tools/src/validation.rs",
+              "file": "rust/tools/src/validation.rs",
               "lines": [
                 26,
                 27,
@@ -195,11 +195,11 @@
       "name": "Read tool reads file with U+202F when user provides regular space path",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "192-225",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 301,
                 302,
@@ -223,11 +223,11 @@
       "name": "Read tool reads image with U+202F when user provides regular space path",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "228-283",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 301,
                 302,
@@ -251,11 +251,11 @@
       "name": "Edit tool edits file with U+202F when user provides regular space path",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "289-325",
           "implMappings": [
             {
-              "file": "codelet/tools/src/edit.rs",
+              "file": "rust/tools/src/edit.rs",
               "lines": [
                 101,
                 102,
@@ -280,11 +280,11 @@
       "name": "Write tool normalizes Unicode whitespace in file path for new files",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "331-368",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 720,
                 721,
@@ -308,11 +308,11 @@
       "name": "Ls tool lists directory when path contains Unicode whitespace",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "file": "rust/tools/tests/unicode_path_test.rs",
           "lines": "374-407",
           "implMappings": [
             {
-              "file": "codelet/tools/src/ls.rs",
+              "file": "rust/tools/src/ls.rs",
               "lines": [
                 166,
                 167,
@@ -350,15 +350,15 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/unicode_path_test.rs"
+      "rust/tools/tests/unicode_path_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/unicode_path.rs",
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/validation.rs",
-      "codelet/tools/src/read.rs",
-      "codelet/tools/src/edit.rs",
-      "codelet/tools/src/ls.rs"
+      "rust/tools/src/unicode_path.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/validation.rs",
+      "rust/tools/src/read.rs",
+      "rust/tools/src/edit.rs",
+      "rust/tools/src/ls.rs"
     ],
     "totalLinesCovered": 518
   }

@@ -30,12 +30,12 @@ Feature: RPC-011 regression invariants (prior RPC-005..010 signatures and archit
     And the new connect_with_supervisor sits BESIDE it as an additive constructor (does NOT replace it)
 
   Scenario: Architecture invariants from RPC-005 still hold
-    Given the codelet/rpc-embedded/tests/architecture_invariants.rs source-shape regression
+    Given the rust/rpc-embedded/tests/architecture_invariants.rs source-shape regression
     When the test is run on the RPC-011 tree
     Then it asserts: types defined exactly once
     And rpc-server still binds 127.0.0.1
-    And no tokio::runtime::Builder / Runtime::new() construction in codelet/fspec/src/ or codelet/rpc-server/src/
-    And no second envelope format exists (Envelope is the sole wire-format type in codelet/rpc-server/src/envelope.rs)
+    And no tokio::runtime::Builder / Runtime::new() construction in rust/fspec/src/ or rust/rpc-server/src/
+    And no second envelope format exists (Envelope is the sole wire-format type in rust/rpc-server/src/envelope.rs)
     And the rpc crate has no codelet-core dep
     And the test passes
 

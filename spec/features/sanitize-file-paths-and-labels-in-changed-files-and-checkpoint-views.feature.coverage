@@ -4,11 +4,11 @@
       "name": "File paths with unusual characters display cleanly in the Changed Files view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+          "file": "rust/fspec-tui/src/views/diff_common/row.rs",
           "lines": "103-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/row.rs",
               "lines": [
                 49,
                 50,
@@ -47,11 +47,11 @@
       "name": "Checkpoint labels with special characters display cleanly in the Checkpoint view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+          "file": "rust/fspec-tui/src/views/diff_common/row.rs",
           "lines": "154-204",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/render.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/render.rs",
               "lines": [
                 181,
                 182,
@@ -84,11 +84,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/diff_common/row.rs"
+      "rust/fspec-tui/src/views/diff_common/row.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/diff_common/row.rs",
-      "codelet/fspec-tui/src/views/checkpoints/render.rs"
+      "rust/fspec-tui/src/views/diff_common/row.rs",
+      "rust/fspec-tui/src/views/checkpoints/render.rs"
     ],
     "totalLinesCovered": 147
   }

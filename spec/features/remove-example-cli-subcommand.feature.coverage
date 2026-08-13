@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_example.rs",
+          "file": "rust/fspec/tests/cli_remove_example.rs",
           "lines": "93-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_example.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_example.rs",
               "lines": [
                 1,
                 2,
@@ -215,11 +215,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_remove_example.rs",
+          "file": "rust/fspec/tests/cli_remove_example.rs",
           "lines": "93-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_example.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_example.rs",
               "lines": [
                 1,
                 2,
@@ -431,11 +431,11 @@
       "name": "Happy-path soft-delete via CLI",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_example.rs",
+          "file": "rust/fspec/tests/cli_remove_example.rs",
           "lines": "115-141",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_example.rs",
+              "file": "rust/fspec/src/remove_example.rs",
               "lines": [
                 23,
                 24,
@@ -471,11 +471,11 @@
       "name": "Missing work unit exits 1 with canonical stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_example.rs",
+          "file": "rust/fspec/tests/cli_remove_example.rs",
           "lines": "143-163",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_example.rs",
+              "file": "rust/fspec/src/remove_example.rs",
               "lines": [
                 40,
                 41,
@@ -493,11 +493,11 @@
       "name": "Wrong status exits 1 with the phase-guard message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_example.rs",
+          "file": "rust/fspec/tests/cli_remove_example.rs",
           "lines": "165-189",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_example.rs",
+              "file": "rust/fspec/src/remove_example.rs",
               "lines": [
                 40,
                 41,
@@ -515,11 +515,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_example.rs",
+          "file": "rust/fspec/tests/cli_remove_example.rs",
           "lines": "191-243",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_example.rs",
+              "file": "rust/fspec/src/remove_example.rs",
               "lines": [
                 23,
                 24,
@@ -557,11 +557,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_example.rs"
+      "rust/fspec/tests/cli_remove_example.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/remove_example.rs",
-      "codelet/fspec/src/remove_example.rs"
+      "rust/fspec-core/src/help/configs/remove_example.rs",
+      "rust/fspec/src/remove_example.rs"
     ],
     "totalLinesCovered": 627
   }

@@ -4,11 +4,11 @@
       "name": "Installs claude agent files and writes the config",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "53-84",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 126,
                 127,
@@ -79,11 +79,11 @@
       "name": "Installs a TOML-format agent slash command file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "86-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 209,
                 210,
@@ -149,11 +149,11 @@
       "name": "Strips system-reminder blocks to visible instructions for non-claude agents",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "110-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 277,
                 278,
@@ -228,11 +228,11 @@
       "name": "Replaces all template placeholders with agent-specific values",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "135-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 417,
                 418,
@@ -254,11 +254,11 @@
       "name": "Installs multiple agents in order and records only the first in config",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "164-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 126,
                 127,
@@ -329,11 +329,11 @@
       "name": "Rejects an unknown agent id with the valid-id listing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "190-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 144,
                 145,
@@ -362,11 +362,11 @@
       "name": "Rejects an empty agent list because headless selection is unsupported",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "217-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 133,
                 134,
@@ -389,11 +389,11 @@
       "name": "Preserves existing config keys when overwriting the agent field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "238-265",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 428,
                 429,
@@ -431,11 +431,11 @@
       "name": "Shares one implementation between the dispatcher and the CLI bridge",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "267-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 1,
                 2,
@@ -538,11 +538,11 @@
       "name": "Writes the codex slash command under an injectable HOME directory",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/init.rs",
+          "file": "rust/fspec-core/tests/init.rs",
           "lines": "304-346",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 209,
                 210,
@@ -582,10 +582,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/init.rs"
+      "rust/fspec-core/tests/init.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/init.rs"
+      "rust/fspec-core/src/commands/init.rs"
     ],
     "totalLinesCovered": 701
   }

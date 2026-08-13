@@ -4,11 +4,11 @@
       "name": "Embedded and WebSocket transports both reach the same StubSessionManagerHandle",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc054_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc054_cross_transport_parity.rs",
           "lines": "70-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 470,
                 471,
@@ -72,11 +72,11 @@
       "name": "Embedded and WebSocket test_provider_connection both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc054_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc054_cross_transport_parity.rs",
           "lines": "106-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 521,
                 522,
@@ -140,11 +140,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc054_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc054_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs"
     ],
     "totalLinesCovered": 168
   }

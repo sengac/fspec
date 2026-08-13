@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_command_to_foundation.rs",
           "lines": "88-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/add_command_to_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -138,11 +138,11 @@
       "name": "CLI successfully appends a command and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_command_to_foundation.rs",
           "lines": "115-142",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command_to_foundation.rs",
+              "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
                 45,
                 46,
@@ -187,11 +187,11 @@
       "name": "CLI forwards the --description flag into the persisted item",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_command_to_foundation.rs",
           "lines": "144-168",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command_to_foundation.rs",
+              "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
                 50,
                 51,
@@ -210,11 +210,11 @@
       "name": "CLI rejects a missing bounded context with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_command_to_foundation.rs",
           "lines": "170-199",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command_to_foundation.rs",
+              "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
                 71,
                 72,
@@ -232,11 +232,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_command_to_foundation.rs",
           "lines": "201-254",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command_to_foundation.rs",
+              "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
                 58,
                 59,
@@ -263,11 +263,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_command_to_foundation.rs"
+      "rust/fspec/tests/cli_add_command_to_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_command_to_foundation.rs",
-      "codelet/fspec/src/add_command_to_foundation.rs"
+      "rust/fspec-core/src/help/configs/add_command_to_foundation.rs",
+      "rust/fspec/src/add_command_to_foundation.rs"
     ],
     "totalLinesCovered": 340
   }

@@ -4,11 +4,11 @@
       "name": "Pressing Tab enters turn-selection mode and selects the last turn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "142-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 182,
                 183,
@@ -23,7 +23,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 48,
                 49,
@@ -52,7 +52,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 25,
                 26,
@@ -117,11 +117,11 @@
       "name": "Pressing Tab again exits turn-selection mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "185-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 27,
                 28,
@@ -136,7 +136,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 187,
                 188,
@@ -153,11 +153,11 @@
       "name": "Up arrow selects the previous turn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "216-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 76,
                 77,
@@ -177,7 +177,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_arrows.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_arrows.rs",
               "lines": [
                 31,
                 32,
@@ -280,11 +280,11 @@
       "name": "Up arrow on the first turn clamps the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "260-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 84,
                 85,
@@ -302,11 +302,11 @@
       "name": "Down arrow on the last turn clamps the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "290-309",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 84,
                 85,
@@ -324,11 +324,11 @@
       "name": "Enter does not submit input while in turn-selection mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "315-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 32
               ]
@@ -341,11 +341,11 @@
       "name": "Esc exits turn-selection mode without triggering the exit cascade",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "350-382",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 33,
                 34,
@@ -362,11 +362,11 @@
       "name": "Selection stays pinned to the same turn when new content streams in",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "389-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 133,
                 134,
@@ -396,11 +396,11 @@
       "name": "Tab is consumed by an open slash-command popup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "file": "rust/fspec-tui/tests/turn_select_mode_rpc381.rs",
           "lines": "427-463",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 179,
                 180,
@@ -427,15 +427,15 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs"
+      "rust/fspec-tui/tests/turn_select_mode_rpc381.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/dispatch.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
-      "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
-      "codelet/fspec-tui/src/app/dispatch_scroll.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback_arrows.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch_select.rs"
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_select.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+      "rust/fspec-tui/src/app/dispatch_scroll.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_arrows.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_select.rs"
     ],
     "totalLinesCovered": 537
   }

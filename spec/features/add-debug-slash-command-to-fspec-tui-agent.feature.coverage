@@ -8,7 +8,7 @@
           "lines": "335-370",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 79,
                 80,
@@ -76,7 +76,7 @@
           "lines": "373-408",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 79,
                 80,
@@ -144,7 +144,7 @@
           "lines": "411-440",
           "implMappings": [
             {
-              "file": "codelet/common/src/debug_capture/mod.rs",
+              "file": "rust/common/src/debug_capture/mod.rs",
               "lines": [
                 47,
                 48,
@@ -213,7 +213,7 @@
           "lines": "443-471",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction_hook.rs",
+              "file": "rust/core/src/compaction_hook.rs",
               "lines": [
                 68,
                 69,
@@ -254,10 +254,10 @@
       "src/tui/__tests__/AgentModal.test.tsx"
     ],
     "implFiles": [
-      "codelet/napi/src/session.rs",
+      "rust/napi/src/session.rs",
       "src/tui/components/AgentModal.tsx",
-      "codelet/common/src/debug_capture/mod.rs",
-      "codelet/core/src/compaction_hook.rs"
+      "rust/common/src/debug_capture/mod.rs",
+      "rust/core/src/compaction_hook.rs"
     ],
     "totalLinesCovered": 302
   }

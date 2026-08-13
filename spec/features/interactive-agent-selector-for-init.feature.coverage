@@ -4,11 +4,11 @@
       "name": "Selector starts on the first agent when none are detected",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/init_selector.rs",
+          "file": "rust/fspec/src/init_selector.rs",
           "lines": "228-240",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init_selector.rs",
+              "file": "rust/fspec/src/init_selector.rs",
               "lines": [
                 56,
                 57,
@@ -62,11 +62,11 @@
       "name": "Selector pre-selects a detected agent",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/init_selector.rs",
+          "file": "rust/fspec/src/init_selector.rs",
           "lines": "242-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/init.rs",
+              "file": "rust/fspec-core/src/commands/init.rs",
               "lines": [
                 131,
                 132,
@@ -107,11 +107,11 @@
       "name": "Navigation clamps at the list bounds",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/init_selector.rs",
+          "file": "rust/fspec/src/init_selector.rs",
           "lines": "262-285",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init_selector.rs",
+              "file": "rust/fspec/src/init_selector.rs",
               "lines": [
                 80,
                 81,
@@ -164,11 +164,11 @@
       "name": "Selecting an agent installs its files",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/init_selector.rs",
+          "file": "rust/fspec/src/init_selector.rs",
           "lines": "310-341",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 43,
                 44,
@@ -228,11 +228,11 @@
       "name": "Non-TTY shell without --agent shows the TTY guard",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/init_selector.rs",
+          "file": "rust/fspec/src/init_selector.rs",
           "lines": "345-360",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 52,
                 53,
@@ -259,11 +259,11 @@
       "name": "Cancelling the selector writes nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec/src/init_selector.rs",
+          "file": "rust/fspec/src/init_selector.rs",
           "lines": "287-308",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init_selector.rs",
+              "file": "rust/fspec/src/init_selector.rs",
               "lines": [
                 102,
                 103,
@@ -297,12 +297,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/src/init_selector.rs"
+      "rust/fspec/src/init_selector.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/init_selector.rs",
-      "codelet/fspec-core/src/commands/init.rs",
-      "codelet/fspec/src/init.rs"
+      "rust/fspec/src/init_selector.rs",
+      "rust/fspec-core/src/commands/init.rs",
+      "rust/fspec/src/init.rs"
     ],
     "totalLinesCovered": 321
   }

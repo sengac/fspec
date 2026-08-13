@@ -4,11 +4,11 @@
       "name": "Daemon mode emits the port on STDOUT (RPC-005 contract verbatim)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "29-68",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 1,
                 2,
@@ -84,11 +84,11 @@
       "name": "Daemon mode does not call ratatui::init",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "70-100",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 1,
                 2,
@@ -164,11 +164,11 @@
       "name": "Daemon mode keeps stderr fmt tracing subscriber (RPC-005 pattern)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "102-139",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 1,
                 2,
@@ -425,11 +425,11 @@
       "name": "--bind defaults to 127.0.0.1:0 when omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "141-164",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -532,11 +532,11 @@
       "name": "--bind 127.0.0.1:8080 succeeds (custom loopback port)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "166-202",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -639,11 +639,11 @@
       "name": "--bind ::1:0 succeeds (IPv6 loopback)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "204-238",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -746,11 +746,11 @@
       "name": "--bind 0.0.0.0:8080 is REJECTED at clap-arg validation",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "549-583",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -853,11 +853,11 @@
       "name": "--bind with any non-loopback host is REJECTED",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "585-655",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -960,11 +960,11 @@
       "name": "Daemon handles SIGTERM cleanly (extension over RPC-005)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "240-287",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 1,
                 2,
@@ -1040,11 +1040,11 @@
       "name": "Daemon handles ctrl_c (SIGINT) cleanly",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "289-329",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 1,
                 2,
@@ -1120,11 +1120,11 @@
       "name": "--pidfile <path> writes pid + port on bootstrap",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "331-431",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/daemon.rs",
+              "file": "rust/fspec/src/daemon.rs",
               "lines": [
                 1,
                 2,
@@ -1200,11 +1200,11 @@
       "name": "--pidfile is daemon-only (combined mode does not accept it)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "520-547",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -1307,11 +1307,11 @@
       "name": "Daemon mode writes daemon.json so `fspec client` can autodiscover it",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/daemon_mode.rs",
+          "file": "rust/fspec/tests/daemon_mode.rs",
           "lines": "433-518",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 1,
                 2,
@@ -1570,12 +1570,12 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/daemon_mode.rs"
+      "rust/fspec/tests/daemon_mode.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/daemon.rs",
-      "codelet/fspec/src/common.rs",
-      "codelet/fspec/src/main.rs"
+      "rust/fspec/src/daemon.rs",
+      "rust/fspec/src/common.rs",
+      "rust/fspec/src/main.rs"
     ],
     "totalLinesCovered": 1971
   }

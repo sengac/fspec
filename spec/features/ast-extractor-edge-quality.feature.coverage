@@ -4,11 +4,11 @@
       "name": "Python from-import statements produce Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "27-68",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
               "lines": [
                 162,
                 163,
@@ -135,11 +135,11 @@
       "name": "Python stdlib imports do not produce Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "75-99",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
               "lines": [
                 162,
                 163,
@@ -266,11 +266,11 @@
       "name": "Java import declarations produce Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "108-165",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
               "lines": [
                 184,
                 185,
@@ -361,11 +361,11 @@
       "name": "Go same-package files have implicit Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "229-285",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 192,
                 193,
@@ -437,11 +437,11 @@
       "name": "Go method receiver bodies produce Calls edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "292-327",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 358,
                 359,
@@ -497,11 +497,11 @@
       "name": "Go type references in function parameters produce TypeRef edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "334-364",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 411,
                 412,
@@ -621,11 +621,11 @@
       "name": "Python type annotations produce TypeRef edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "371-394",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
               "lines": [
                 331,
                 332,
@@ -754,11 +754,11 @@
       "name": "Go cross-package import statements produce Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "401-442",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs",
               "lines": [
                 258,
                 259,
@@ -868,11 +868,11 @@
       "name": "Java imports with external-looking prefix resolve when file exists in project",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_edge_quality_test.rs",
+          "file": "rust/napi/tests/ast_edge_quality_test.rs",
           "lines": "175-222",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
               "lines": [
                 184,
                 185,
@@ -965,12 +965,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_edge_quality_test.rs"
+      "rust/napi/tests/ast_edge_quality_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_go_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_python_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_java_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_go_extractor.rs"
     ],
     "totalLinesCovered": 1178
   }

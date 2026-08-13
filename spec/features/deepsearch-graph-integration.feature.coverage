@@ -4,11 +4,11 @@
       "name": "GraphSearch tool added when graph database is initialized",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/deepsearch_integration.rs",
+          "file": "rust/napi/src/graph/deepsearch_integration.rs",
           "lines": "86-98",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/deepsearch_integration.rs",
+              "file": "rust/napi/src/graph/deepsearch_integration.rs",
               "lines": [
                 16,
                 17,
@@ -35,11 +35,11 @@
       "name": "DeepSearch works without graph database",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/deepsearch_integration.rs",
+          "file": "rust/napi/src/graph/deepsearch_integration.rs",
           "lines": "104-116",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/deepsearch_integration.rs",
+              "file": "rust/napi/src/graph/deepsearch_integration.rs",
               "lines": [
                 57,
                 58,
@@ -58,11 +58,11 @@
       "name": "Graph context injected into system prompt when data exists",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/deepsearch_integration.rs",
+          "file": "rust/napi/src/graph/deepsearch_integration.rs",
           "lines": "122-149",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/deepsearch_integration.rs",
+              "file": "rust/napi/src/graph/deepsearch_integration.rs",
               "lines": [
                 25,
                 26,
@@ -107,10 +107,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/deepsearch_integration.rs"
+      "rust/napi/src/graph/deepsearch_integration.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/deepsearch_integration.rs"
+      "rust/napi/src/graph/deepsearch_integration.rs"
     ],
     "totalLinesCovered": 107
   }

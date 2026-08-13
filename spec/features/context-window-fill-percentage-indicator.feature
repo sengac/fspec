@@ -7,21 +7,21 @@
 Feature: Context Window Fill Percentage Indicator
   """
   Implementation Architecture:
-  - Backend (Rust): ContextFillUpdate event in stream types (codelet/core/src/stream/types.rs)
-  - Stream Loop: emit_context_fill_from_usage in codelet/cli/src/interactive/stream_loop.rs calculates and emits context fill after token updates
-  - NAPI Bridge: Expose ContextFillUpdate via codelet/napi/src/streaming.rs bindings
+  - Backend (Rust): ContextFillUpdate event in stream types (rust/core/src/stream/types.rs)
+  - Stream Loop: emit_context_fill_from_usage in rust/cli/src/interactive/stream_loop.rs calculates and emits context fill after token updates
+  - NAPI Bridge: Expose ContextFillUpdate via rust/napi/src/streaming.rs bindings
   - Frontend (React): Handle event in src/tui/components/AgentView.tsx, add color-coded display
 
   Data Flow (corrected by RPC-419):
   - The backend's emit_context_fill_from_usage emits effective_tokens = ApiTokenUsage::total_context() = input + cache_read + cache_creation + output + reasoning tokens — physical context-window occupancy with NO cache discount
   - Percentage = trunc((total_context / threshold) * 100)
   - Threshold = context_window * 0.9 (compaction trigger), from calculate_compaction_threshold()
-  - The 0.9 cache-read discount belongs EXCLUSIVELY to compaction's TokenTracker::effective_tokens (compaction scheduling heuristic in codelet/core/src/compaction/model.rs); it plays no part in the fill percentage
+  - The 0.9 cache-read discount belongs EXCLUSIVELY to compaction's TokenTracker::effective_tokens (compaction scheduling heuristic in rust/core/src/compaction/model.rs); it plays no part in the fill percentage
   - The frontend displays the backend-supplied fill percentage verbatim
 
   Dependencies:
-  - Existing TokenTracker infrastructure (codelet/core/src/compaction/model.rs)
-  - Existing calculate_compaction_threshold() function (codelet/cli/src/compaction_threshold.rs)
+  - Existing TokenTracker infrastructure (rust/core/src/compaction/model.rs)
+  - Existing calculate_compaction_threshold() function (rust/cli/src/compaction_threshold.rs)
   - NAPI streaming event system
   - Ink React components (Box, Text)
   """

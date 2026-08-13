@@ -32,7 +32,7 @@ Feature: codelet-agent-loop has zero codelet-napi dependency after Phase A lift
     So that the Rust fspec binary's crate graph stays free of codelet-napi while still reaching every NAPI-side helper through the lifted modules
 
   Scenario: codelet-agent-loop has zero dependency on codelet-napi after the lift
-    Given the codelet-agent-loop crate exists under codelet/agent-loop/
+    Given the codelet-agent-loop crate exists under rust/agent-loop/
     When cargo metadata is invoked for the codelet-agent-loop package
     Then the transitive package set does not contain "codelet-napi"
-    And no .rs file under codelet/agent-loop/src/ contains the substring "codelet_napi"
+    And no .rs file under rust/agent-loop/src/ contains the substring "codelet_napi"

@@ -8,7 +8,7 @@ Feature: Cannot edit the name of an existing custom OpenAI profile
   """
   Rename is implemented as delete-old-key + write-new-key in the profile persistence layer (read-modify-write of fspec-config.json), preserving customModels and sibling profiles. Collision check happens before the write: if the new name already exists as a different profile, reject.
   This deliberately DIVERGES from the TS reference which locks the name in edit mode. The name-editing gate flags (is_editing_name/is_new) and the 'name fixed' comments in profile_form.rs and mode.rs must be updated. EditProfile mode must track the original profile_name so rename can be detected on save.
-  Rename backend is exposed as a new rpc/backend method (e.g. rename_profile(provider_id, old_name, new_name, definition)) OR by threading old_name through the SaveProfile action so handle_save_profile deletes the old key when it differs. The persistence primitives save_profile_at and delete_profile_at already exist in codelet/sessions/src/profile_persistence.rs.
+  Rename backend is exposed as a new rpc/backend method (e.g. rename_profile(provider_id, old_name, new_name, definition)) OR by threading old_name through the SaveProfile action so handle_save_profile deletes the old key when it differs. The persistence primitives save_profile_at and delete_profile_at already exist in rust/sessions/src/profile_persistence.rs.
   """
 
   # ========================================

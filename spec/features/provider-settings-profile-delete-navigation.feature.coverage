@@ -4,11 +4,11 @@
       "name": "Deleting one of several profiles returns the cursor to the provider row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "202-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 140,
                 141,
@@ -28,11 +28,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "202-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 74,
                 75,
@@ -49,11 +49,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "202-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 40,
                 41,
@@ -69,11 +69,11 @@
       "name": "Deleting the only profile returns the cursor to the provider row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "244-298",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 140,
                 141,
@@ -93,11 +93,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "244-298",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 40,
                 41,
@@ -113,11 +113,11 @@
       "name": "A failed delete does not move the cursor and preserves the profiles",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "304-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 154,
                 155,
@@ -133,11 +133,11 @@
       "name": "Saving a profile does not move the cursor to the provider row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
           "lines": "349-378",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 109,
                 110,
@@ -158,10 +158,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs"
+      "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs"
     ],
     "totalLinesCovered": 508
   }

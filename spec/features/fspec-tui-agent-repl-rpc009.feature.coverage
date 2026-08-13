@@ -4,11 +4,11 @@
       "name": "Action::SessionCreated sets the active_session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "297-311",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 185,
                 186,
@@ -43,11 +43,11 @@
       "name": "Action::ChunkReceived for the active session is appended to the scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "313-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 185,
                 186,
@@ -127,11 +127,11 @@
       "name": "Action::ChunkReceived for a DIFFERENT session is silently dropped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "332-349",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 185,
                 186,
@@ -211,11 +211,11 @@
       "name": "Enter on a non-empty input emits Action::InputSubmitted then resets the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "351-369",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 138,
                 139,
@@ -273,11 +273,11 @@
       "name": "Enter on an empty input does NOT emit Action::InputSubmitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "371-384",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 138,
                 139,
@@ -335,11 +335,11 @@
       "name": "Ctrl+C while focused emits Action::Interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "386-405",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 138,
                 139,
@@ -397,11 +397,11 @@
       "name": "Input character keys are forwarded to tui-input only when focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "407-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 138,
                 139,
@@ -459,11 +459,11 @@
       "name": "Input character keys are ignored when the view is not focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "423-436",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 138,
                 139,
@@ -521,11 +521,11 @@
       "name": "stick_to_bottom is true by default and follows new chunks",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "438-460",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 185,
                 186,
@@ -605,11 +605,11 @@
       "name": "stick_to_bottom flips false when the user scrolls up and back to true on reaching the end",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+          "file": "rust/fspec-tui/src/views/agent_repl.rs",
           "lines": "462-497",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent_repl.rs",
+              "file": "rust/fspec-tui/src/views/agent_repl.rs",
               "lines": [
                 138,
                 139,
@@ -669,10 +669,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/agent_repl.rs"
+      "rust/fspec-tui/src/views/agent_repl.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent_repl.rs"
+      "rust/fspec-tui/src/views/agent_repl.rs"
     ],
     "totalLinesCovered": 695
   }

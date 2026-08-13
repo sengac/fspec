@@ -4,7 +4,7 @@
 @mutation
 Feature: Port add-question command to Rust
   """
-  Files (replace stub) codelet/fspec-core/src/commands/add_question.rs; NEW codelet/fspec-core/src/help/configs/add_question.rs; NEW codelet/fspec/src/add_question.rs (bridge); NEW codelet/fspec-core/tests/add_question.rs (dispatcher); NEW codelet/fspec/tests/cli_add_question.rs; NEW codelet/fspec/tests/fixtures/help/add-question.txt
+  Files (replace stub) rust/fspec-core/src/commands/add_question.rs; NEW rust/fspec-core/src/help/configs/add_question.rs; NEW rust/fspec/src/add_question.rs (bridge); NEW rust/fspec-core/tests/add_question.rs (dispatcher); NEW rust/fspec/tests/cli_add_question.rs; NEW rust/fspec/tests/fixtures/help/add-question.txt
   Reuses shared infra: io::ensure::ensure_work_units_file (auto-create), io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps). Questions live in WorkUnit.extra under 'questions' / 'nextQuestionId' because the typed WorkUnit struct does not model them yet — round-trips through serde_json::Value preserves all other unknown work-unit fields.
   Mention regex: hand-rolled ASCII scan (no `regex` crate dep). After each @ collect [A-Za-z0-9_]+ characters; mirrors JS /@\w+/g semantics for ASCII inputs.
   Two-front-doors: dispatcher AND clap CLI both call commands::add_question::run(args_json, project_root). CLI bridge marshals positional workUnitId + question into JSON {workUnitId, question}.

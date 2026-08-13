@@ -4,11 +4,11 @@
       "name": "New view files exist with the required shape and forbidden imports absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_source_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc026_source_shape.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
                 1,
                 2,
@@ -305,11 +305,11 @@
       "name": "Old popup files are removed and their identifiers no longer appear",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_source_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc026_source_shape.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -573,11 +573,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_source_shape.rs"
+      "rust/fspec-tui/tests/rpc026_source_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/resume_session_view.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 1135
   }

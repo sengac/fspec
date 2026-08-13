@@ -4,11 +4,11 @@
       "name": "CLI successfully updates step text and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_step.rs",
+          "file": "rust/fspec/tests/cli_update_step.rs",
           "lines": "60-101",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_step.rs",
+              "file": "rust/fspec/src/update_step.rs",
               "lines": [
                 48,
                 49,
@@ -58,11 +58,11 @@
       "name": "CLI changes a step keyword and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_step.rs",
+          "file": "rust/fspec/tests/cli_update_step.rs",
           "lines": "103-138",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_step.rs",
+              "file": "rust/fspec/src/update_step.rs",
               "lines": [
                 48,
                 49,
@@ -112,11 +112,11 @@
       "name": "CLI rejects missing updates with stderr Error prefix and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_step.rs",
+          "file": "rust/fspec/tests/cli_update_step.rs",
           "lines": "140-175",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_step.rs",
+              "file": "rust/fspec/src/update_step.rs",
               "lines": [
                 48,
                 49,
@@ -166,11 +166,11 @@
       "name": "CLI surfaces a missing-file error with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_step.rs",
+          "file": "rust/fspec/tests/cli_update_step.rs",
           "lines": "177-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_step.rs",
+              "file": "rust/fspec/src/update_step.rs",
               "lines": [
                 48,
                 49,
@@ -220,11 +220,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_step.rs",
+          "file": "rust/fspec/tests/cli_update_step.rs",
           "lines": "212-237",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_step.rs",
+              "file": "rust/fspec/src/update_step.rs",
               "lines": [
                 48,
                 49,
@@ -274,11 +274,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_step.rs",
+          "file": "rust/fspec/tests/cli_update_step.rs",
           "lines": "239-285",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_step.rs",
+              "file": "rust/fspec/src/update_step.rs",
               "lines": [
                 48,
                 49,
@@ -330,10 +330,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_step.rs"
+      "rust/fspec/tests/cli_update_step.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/update_step.rs"
+      "rust/fspec/src/update_step.rs"
     ],
     "totalLinesCovered": 449
   }

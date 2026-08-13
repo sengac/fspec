@@ -1,8 +1,8 @@
 @AMGR-001
 Feature: SessionSearch Tool — Native Rust session history search replacing bash/Python scripts
   """
-  Session search reuses codelet/napi/src/persistence/ (MessageStore, HistoryStore, BlobStore) — all the Python logic from session-search.sh has Rust equivalents except the streaming chunk reassembly which needs porting
-  Tool lives in codelet/tools/src/session_search/ as a module. Action dispatch pattern follows Bridge tool (codelet/tools/src/bridge.rs). Tool is wired into all providers' create_rig_agent().
+  Session search reuses rust/napi/src/persistence/ (MessageStore, HistoryStore, BlobStore) — all the Python logic from session-search.sh has Rust equivalents except the streaming chunk reassembly which needs porting
+  Tool lives in rust/tools/src/session_search/ as a module. Action dispatch pattern follows Bridge tool (rust/tools/src/bridge.rs). Tool is wired into all providers' create_rig_agent().
   """
 
   # ========================================
@@ -16,7 +16,7 @@ Feature: SessionSearch Tool — Native Rust session history search replacing bas
   #   4. SessionSearch output must be usable programmatically (structured data) — not just formatted text — to support compaction and other internal consumers
   #   5. Streaming chunk reassembly (porting the Python logic from session-search.sh) must reconstruct readable text from [Thinking:...], [Tool:...], and raw SSE fragments
   #   6. search_history searches ALL persisted content — user inputs, assistant responses, tool calls, tool results, thinking chunks — not just user input history
-  #   7. Search matching uses the ripgrep libraries (grep-regex, grep-searcher, grep-matcher) already bundled in codelet/tools — same engine as the Grep tool
+  #   7. Search matching uses the ripgrep libraries (grep-regex, grep-searcher, grep-matcher) already bundled in rust/tools — same engine as the Grep tool
   #   8. Search defaults to current project sessions only, with an optional flag to search across all projects
   #   9. Search results include all available metadata per match — session ID, session name, timestamp, role, turn index, matched content preview, surrounding context, project path, provider, message count
   #   10. Time filtering supports both absolute (after/before ISO timestamps) and relative (last_hours/last_days) parameters — whichever is easiest for the LLM to express in the moment

@@ -4,11 +4,11 @@
       "name": "Cursor on the last line of a 10-line buffer sits on the last input-area row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
+          "file": "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
           "lines": "65-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 66,
                 67,
@@ -35,11 +35,11 @@
       "name": "Scrolling the window up with the cursor on the first line pins the cursor to the first input-area row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
+          "file": "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
           "lines": "111-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 66,
                 67,
@@ -66,11 +66,11 @@
       "name": "Cursor mid-way through a line wrapped to three visual rows lands on the matching wrapped row and column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
+          "file": "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
           "lines": "153-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 66,
                 67,
@@ -97,11 +97,11 @@
       "name": "CJK line places the cursor at the display-width column not the char index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
+          "file": "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
           "lines": "198-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
                 66,
                 67,
@@ -128,11 +128,11 @@
       "name": "Cursor position always lies inside the input area rect across a grid of buffer and cursor cases",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
+          "file": "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
           "lines": "238-293",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 135,
                 136,
@@ -150,11 +150,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs"
+      "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input_render.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 269
   }

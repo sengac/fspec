@@ -4,11 +4,11 @@
       "name": "Clap exposes query-dependency-stats as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "50-77",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -115,11 +115,11 @@
       "name": "CLI with --format=json prints all ten canonical fields against an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "83-141",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -226,11 +226,11 @@
       "name": "CLI without --format prints nothing to stdout (TS silent-text parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "146-173",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -337,11 +337,11 @@
       "name": "CLI with --format=text also prints nothing to stdout (explicit text bug parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "178-198",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -448,11 +448,11 @@
       "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "204-230",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -559,11 +559,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "236-300",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -670,11 +670,11 @@
       "name": "query-dependency-stats --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_dependency_stats.rs",
+          "file": "rust/fspec/tests/cli_query_dependency_stats.rs",
           "lines": "307-334",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_dependency_stats.rs",
+              "file": "rust/fspec/src/query_dependency_stats.rs",
               "lines": [
                 1,
                 2,
@@ -783,10 +783,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_dependency_stats.rs"
+      "rust/fspec/tests/cli_query_dependency_stats.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/query_dependency_stats.rs"
+      "rust/fspec/src/query_dependency_stats.rs"
     ],
     "totalLinesCovered": 1177
   }

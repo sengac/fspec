@@ -4,11 +4,11 @@
       "name": "CodexShellCommandFacade maps shell_command to InternalBashParams",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "251-290",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 60,
                 61,
@@ -64,11 +64,11 @@
       "name": "CodexReadFileFacade maps read_file to InternalFileParams::Read",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "295-331",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 110,
                 111,
@@ -124,11 +124,11 @@
       "name": "CodexListDirFacade maps list_dir to InternalLsParams::List",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "360-392",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 162,
                 163,
@@ -188,11 +188,11 @@
       "name": "CodexGrepFilesFacade maps grep_files to InternalSearchParams::Grep",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "427-454",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 218,
                 219,
@@ -231,11 +231,11 @@
       "name": "Codex facades validate required parameters",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "272-293",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 25,
                 26,
@@ -258,11 +258,11 @@
       "name": "Codex facades handle optional parameters gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "333-351",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 38,
                 39,
@@ -287,11 +287,11 @@
       "name": "Codex tool schemas use additionalProperties false",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "474-509",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 60,
                 61,
@@ -488,11 +488,11 @@
       "name": "Codex agent does not expose non-native glob tool",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "718-758",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 288,
                 289,
@@ -500,7 +500,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 306,
                 307,
@@ -565,11 +565,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 682
   }

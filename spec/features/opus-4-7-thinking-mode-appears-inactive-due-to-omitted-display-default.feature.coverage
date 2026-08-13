@@ -4,11 +4,11 @@
       "name": "Opus 4.7 adaptive config includes display summarized",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "256-284",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 247,
                 248,
@@ -34,11 +34,11 @@
       "name": "Opus 4.6 adaptive config also includes display summarized",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "287-316",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 247,
                 248,
@@ -64,11 +64,11 @@
       "name": "Off level returns empty config for adaptive models",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "319-334",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 243,
                 244,
@@ -84,11 +84,11 @@
       "name": "Budgeted models remain unchanged with no display field",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "337-373",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 262,
                 263,
@@ -107,11 +107,11 @@
           ]
         },
         {
-          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
           "lines": "337-373",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 262,
                 263,
@@ -137,10 +137,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
+      "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/thinking_config.rs"
+      "rust/tools/src/facade/thinking_config.rs"
     ],
     "totalLinesCovered": 205
   }

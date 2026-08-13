@@ -4,11 +4,11 @@
       "name": "Parse package.json dependencies into Dependency nodes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dependency_population_test.rs",
+          "file": "rust/napi/tests/ast_dependency_population_test.rs",
           "lines": "21-109",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/npm_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/npm_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -78,11 +78,11 @@
       "name": "Parse Cargo.toml dependencies into Dependency nodes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dependency_population_test.rs",
+          "file": "rust/napi/tests/ast_dependency_population_test.rs",
           "lines": "114-199",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/cargo_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/cargo_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -249,11 +249,11 @@
       "name": "Parse Cargo workspace with multiple member crates",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dependency_population_test.rs",
+          "file": "rust/napi/tests/ast_dependency_population_test.rs",
           "lines": "204-281",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/cargo_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/cargo_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -422,11 +422,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_dependency_population_test.rs"
+      "rust/napi/tests/ast_dependency_population_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/npm_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/cargo_dep_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/npm_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/cargo_dep_extractor.rs"
     ],
     "totalLinesCovered": 621
   }

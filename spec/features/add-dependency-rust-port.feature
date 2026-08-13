@@ -2,7 +2,7 @@
 @RPC-177
 Feature: Port add-dependency command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_dependency.rs. Reuses io::ensure::ensure_work_units_file
+  Core impl at rust/fspec-core/src/commands/add_dependency.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates spec/work-units.json), io::locked_file::write_json_atomic (single atomic write), and
   io::time::iso8601_now (timestamps). The blocks/blockedBy/dependsOn/relatesTo/blockedReason fields
   live in WorkUnit.extra (round-tripped via #[serde(flatten)]). Cycle detection is a DFS over the

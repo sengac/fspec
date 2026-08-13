@@ -4,11 +4,11 @@
       "name": "Flag is false \u2014 SessionSearch show returns full untrimmed content",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "873-901",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 38,
                 39,
@@ -56,11 +56,11 @@
       "name": "Flag is true \u2014 SessionSearch show returns trimmed Read tool results",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "903-935",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 337,
                 338,
@@ -93,11 +93,11 @@
       "name": "Flag is true \u2014 SessionSearch search preserves user messages unchanged",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "937-957",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 210,
                 211,
@@ -132,11 +132,11 @@
       "name": "Flag is true \u2014 SessionSearch show preserves assistant reasoning text",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "959-979",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 337,
                 338,
@@ -169,11 +169,11 @@
       "name": "Trimmer processes messages in order for tool_use_id correlation",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "981-1030",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 640,
                 641,
@@ -202,11 +202,11 @@
       "name": "Trimming is applied after blob resolution",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "1033-1072",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 224,
                 225,
@@ -227,11 +227,11 @@
       "name": "BackgroundSession defaults compaction_in_progress to false",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "1075-1095",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1003,
                 1004,
@@ -314,11 +314,11 @@
       "name": "create_handler accepts compaction_in_progress parameter",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "1098-1118",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_search_handler.rs",
+              "file": "rust/napi/src/session_search_handler.rs",
               "lines": [
                 38,
                 39,
@@ -369,11 +369,11 @@
       "name": "Handler is registered with compaction_in_progress from BackgroundSession",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_search_handler.rs",
+          "file": "rust/napi/src/session_search_handler.rs",
           "lines": "1121-1135",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5371,
                 5372,
@@ -394,11 +394,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/session_search_handler.rs"
+      "rust/napi/src/session_search_handler.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_search_handler.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_search_handler.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 717
   }

@@ -4,11 +4,11 @@
       "name": "Gemini 3 facade generates thinkingLevel configuration for High level",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "122-149",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 47,
                 48,
@@ -61,11 +61,11 @@
       "name": "Gemini 2.5 facade generates thinkingBudget configuration for High level",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "155-188",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 92,
                 93,
@@ -119,11 +119,11 @@
       "name": "Claude facade generates thinking configuration with budget_tokens",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "194-217",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 138,
                 139,
@@ -177,11 +177,11 @@
       "name": "Gemini facade identifies thinking parts in response",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "223-246",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 76,
                 77,
@@ -204,11 +204,11 @@
       "name": "Gemini facade ignores non-thinking parts",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "252-273",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 76,
                 77,
@@ -231,11 +231,11 @@
       "name": "ThinkingLevel Off returns empty configuration for all providers",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "279-302",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
                 53,
                 99,
@@ -250,11 +250,11 @@
       "name": "TypeScript can get thinking configuration via NAPI bindings",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "423-446",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 49,
                 50,
@@ -288,11 +288,11 @@
       "name": "TypeScript can check if content is thinking via NAPI bindings",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/thinking_config.rs",
+          "file": "rust/tools/src/facade/thinking_config.rs",
           "lines": "452-471",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 87,
                 88,
@@ -335,11 +335,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/thinking_config.rs"
+      "rust/tools/src/facade/thinking_config.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/thinking_config.rs",
-      "codelet/napi/src/thinking_config.rs"
+      "rust/tools/src/facade/thinking_config.rs",
+      "rust/napi/src/thinking_config.rs"
     ],
     "totalLinesCovered": 401
   }

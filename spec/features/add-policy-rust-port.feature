@@ -2,7 +2,7 @@
 @RPC-187
 Feature: Port add-policy command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_policy.rs. Reuses io::ensure::ensure_work_units_file,
+  Core impl at rust/fspec-core/src/commands/add_policy.rs. Reuses io::ensure::ensure_work_units_file,
   io::locked_file::write_json_atomic, io::time::iso8601_now. The Event Storm items array lives in the
   work unit's `eventStorm` sub-object inside WorkUnit.extra (round-tripped via serde flatten). On first add
   the sub-object is seeded as {level: 'process_modeling', items: [], nextItemId: 0} matching the TS shared

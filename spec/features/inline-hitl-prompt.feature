@@ -190,7 +190,7 @@ Feature: Inline HITL prompt parity: replace Critical modal with TS-parity inline
   # ─────────────────────────────────────────────────────────────────────
   Scenario: The HITL modal is deleted and no construction site remains
     Given the codelet-fspec-tui crate sources
-    Then the file codelet/fspec-tui/src/components/hitl_dialog.rs does not exist
+    Then the file rust/fspec-tui/src/components/hitl_dialog.rs does not exist
     And the crate sources never mention HITL_DIALOG_ID or HitlDialog
     And components/mod.rs declares no OpenHitlDialog action variant
     And the files hitl_state.rs, hitl_keys.rs, and hitl_prompt.rs each stay under 300 lines

@@ -7,7 +7,7 @@
 Feature: GitHub Copilot OAuth device flow & token storage
   """
   Facade pattern ref: see claude_auth.rs and codex_auth.rs for credential persistence; codex_device_auth.rs is NOT reusable (different OAuth dialect)
-  Module: codelet/providers/src/copilot/{oauth.rs (device flow), auth.rs (credential persistence mirroring claude_auth.rs)} — part of larger copilot/ module built across PROV-054/055/056
+  Module: rust/providers/src/copilot/{oauth.rs (device flow), auth.rs (credential persistence mirroring claude_auth.rs)} — part of larger copilot/ module built across PROV-054/055/056
   TUI integration requires new HookMode variants for deployment-type select and enterprise URL entry; existing oauth-device-waiting HookMode is reused for the polling phase
   """
 

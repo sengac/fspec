@@ -8,7 +8,7 @@
 @agent-view
 Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
   """
-  ThinkingLevelDialog lives at codelet/fspec-tui/src/components/thinking_level_dialog.rs
+  ThinkingLevelDialog lives at rust/fspec-tui/src/components/thinking_level_dialog.rs
   and is the Rust port of src/tui/components/ThinkingLevelDialog.tsx
   (TUI-054). It exposes four radio options — Off / Low / Medium / High —
   matching the codelet_rpc_types::ThinkingLevel enum from RPC-018.
@@ -101,6 +101,6 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
   @line-budget
   @source-shape
   Scenario: thinking_level_dialog.rs stays under 300 lines
-    Given the file codelet/fspec-tui/src/components/thinking_level_dialog.rs after RPC-022 lands
+    Given the file rust/fspec-tui/src/components/thinking_level_dialog.rs after RPC-022 lands
     When a test counts the line-count of the file
     Then the file has fewer than 300 lines

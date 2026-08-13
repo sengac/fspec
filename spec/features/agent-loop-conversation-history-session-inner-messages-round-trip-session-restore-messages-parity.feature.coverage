@@ -4,11 +4,11 @@
       "name": "restore_session_messages replays a one-user-one-assistant transcript into inner.messages and the output stream",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "94-190",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 274,
                 275,
@@ -240,11 +240,11 @@
       "name": "Assistant restoration replays thinking, text, and tool_use blocks then a terminating Done",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "191-289",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 306,
                 307,
@@ -332,11 +332,11 @@
       "name": "User restoration replays tool_result blocks as StreamChunk::ToolResult and does not append to inner messages",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "290-347",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 382,
                 383,
@@ -417,11 +417,11 @@
       "name": "System-reminder envelopes are silently skipped during restoration",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "348-414",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 451,
                 452,
@@ -458,11 +458,11 @@
       "name": "restore_session_messages returns Err on an unknown session id without panicking",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "415-442",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 289,
                 290,
@@ -479,11 +479,11 @@
       "name": "restore_session_messages returns Err on malformed envelope JSON without mutating inner.messages",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "443-481",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 294,
                 295,
@@ -498,11 +498,11 @@
       "name": "Boundary — codelet-sessions still has zero dependency on codelet-napi after the restoration port",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+          "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
           "lines": "482-491",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -586,11 +586,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc081_restore_session_messages.rs"
+      "rust/sessions/tests/rpc081_restore_session_messages.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/Cargo.toml"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/Cargo.toml"
     ],
     "totalLinesCovered": 866
   }

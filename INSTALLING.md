@@ -300,7 +300,7 @@ Remove-Item "$env:USERPROFILE\.local\bin\fspec.exe"
 | --- | --- |
 | `~/.local/bin/fspec` | Default (install.sh) |
 | `/usr/local/bin/fspec` | System-wide (requires sudo) |
-| `codelet/target/release-slim/fspec` | Build from source |
+| `rust/target/release-slim/fspec` | Build from source |
 
 ### Windows
 

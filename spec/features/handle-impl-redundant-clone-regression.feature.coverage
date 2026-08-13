@@ -4,11 +4,11 @@
       "name": "handle_impl.rs has no redundant `id: id.clone(),` struct literal",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs",
+          "file": "rust/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs",
           "lines": "41-60",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1,
                 2,
@@ -1686,11 +1686,11 @@
       "name": "handle_impl.rs has no redundant `prompt: prompt.clone(),` struct literal",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs",
+          "file": "rust/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs",
           "lines": "65-83",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 1,
                 2,
@@ -3365,14 +3365,14 @@
       ]
     },
     {
-      "name": "codelet/sessions/Cargo.toml inherits workspace lints",
+      "name": "rust/sessions/Cargo.toml inherits workspace lints",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs",
+          "file": "rust/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs",
           "lines": "88-119",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -3436,11 +3436,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs"
+      "rust/sessions/tests/rpc077_handle_impl_redundant_clone_shape.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/Cargo.toml"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/Cargo.toml"
     ],
     "totalLinesCovered": 3453
   }

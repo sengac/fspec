@@ -8,7 +8,7 @@ Feature: Model selector profile wire types
 
   # Work unit: RPC-338. Example-mapping context (rules/examples/assumptions)
   # lives on the work unit: `fspec show-work-unit RPC-338`.
-  # Wire-type layer: ProviderInfo (codelet/rpc-types/src/lib.rs) gains
+  # Wire-type layer: ProviderInfo (rust/rpc-types/src/lib.rs) gains
   # profile_name: Option<String> + is_unreachable: bool.
   Background: User Story
     As a codelet TUI user

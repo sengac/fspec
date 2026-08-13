@@ -18,7 +18,7 @@ Feature: RPC-018 cross-transport parity for get_model_info / get_thinking_level 
 
   RPC-018 ships these methods with default `SessionManagerHandle` impls
   that return safe defaults — the concrete override in
-  codelet/napi/src/session_manager.rs is deferred to RPC-022. So the
+  rust/napi/src/session_manager.rs is deferred to RPC-022. So the
   parity scenarios assert default values; the SharedFspecService.with_cwd
   attachment plus codelet_git::status::get_current_branch wires the
   `get_workspace_info` path to live data.

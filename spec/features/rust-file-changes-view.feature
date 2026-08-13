@@ -5,7 +5,7 @@
 @RPC-354
 Feature: File Changes view in Rust TUI (port ChangedFilesViewer)
   """
-  Reuses the existing codelet/git primitives and the established Navigator/Action transport pattern (mirrors checkpoint_counts RPC-015); does not reimplement git logic
+  Reuses the existing rust/git primitives and the established Navigator/Action transport pattern (mirrors checkpoint_counts RPC-015); does not reimplement git logic
   """
 
   # ========================================

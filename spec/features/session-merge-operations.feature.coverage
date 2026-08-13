@@ -4,11 +4,11 @@
       "name": "Merge session changes to main worktree",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "122-172",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -97,11 +97,11 @@
       "name": "Merge session applies added files",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "182-229",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -190,11 +190,11 @@
       "name": "Merge session applies deleted files",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "239-293",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -283,11 +283,11 @@
       "name": "Merge session fails when main has conflicting changes",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "303-367",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -376,11 +376,11 @@
       "name": "Merge session fails when added file conflicts with main",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "377-434",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -469,11 +469,11 @@
       "name": "Merge multiple pending sessions in chosen order",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "444-512",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -562,11 +562,11 @@
       "name": "Merge clean session removes worktree",
       "testMappings": [
         {
-          "file": "codelet/git/tests/session_merge_tests.rs",
+          "file": "rust/git/tests/session_merge_tests.rs",
           "lines": "522-579",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_status.rs",
+              "file": "rust/git/src/session_status.rs",
               "lines": [
                 459,
                 460,
@@ -657,10 +657,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/session_merge_tests.rs"
+      "rust/git/tests/session_merge_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/session_status.rs"
+      "rust/git/src/session_status.rs"
     ],
     "totalLinesCovered": 943
   }

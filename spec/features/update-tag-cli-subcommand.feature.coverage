@@ -4,11 +4,11 @@
       "name": "CLI updates description in place and prints multi-line success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_tag.rs",
+          "file": "rust/fspec/tests/cli_update_tag.rs",
           "lines": "55-94",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_tag.rs",
+              "file": "rust/fspec/src/update_tag.rs",
               "lines": [
                 47,
                 48,
@@ -52,11 +52,11 @@
       "name": "CLI rejects missing updates with stderr Error prefix and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_tag.rs",
+          "file": "rust/fspec/tests/cli_update_tag.rs",
           "lines": "96-126",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_tag.rs",
+              "file": "rust/fspec/src/update_tag.rs",
               "lines": [
                 69,
                 70,
@@ -72,11 +72,11 @@
       "name": "CLI moves tag between categories with --category flag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_tag.rs",
+          "file": "rust/fspec/tests/cli_update_tag.rs",
           "lines": "128-177",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_tag.rs",
+              "file": "rust/fspec/src/update_tag.rs",
               "lines": [
                 55,
                 56,
@@ -99,11 +99,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_tag.rs",
+          "file": "rust/fspec/tests/cli_update_tag.rs",
           "lines": "179-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/update_tag.rs",
+              "file": "rust/fspec-core/src/help/configs/update_tag.rs",
               "lines": [
                 1,
                 2,
@@ -166,11 +166,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_tag.rs"
+      "rust/fspec/tests/cli_update_tag.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/update_tag.rs",
-      "codelet/fspec-core/src/help/configs/update_tag.rs"
+      "rust/fspec/src/update_tag.rs",
+      "rust/fspec-core/src/help/configs/update_tag.rs"
     ],
     "totalLinesCovered": 240
   }

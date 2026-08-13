@@ -7,7 +7,7 @@ Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agen
   """
   Architecture: Option B from the fix-proposal.md attachment was chosen — wrap each affected sync->async bridge in tokio::task::block_in_place(|| Handle::current().block_on(...)) instead of refactoring the SessionManagerHandle trait to async fn (Option A) or building per-call runtimes (Option C, rejected).
   Architecture: The fspec binary's main is annotated with #[tokio::main] (default: multi-thread runtime), and codelet-napi's #[napi(tokio_main)] also uses multi-thread, so block_in_place is legal on every production call site. A debug_assert!(handle.runtime_flavor() == MultiThread, ...) inside the helper makes the precondition explicit.
-  Architecture: New tarpc-over-duplex integration test lives at codelet/rpc/tests/create_session_no_panic_rpc070.rs — spawns the tarpc server on a real multi-thread runtime, connects via tarpc::serde_transport::tcp (or an in-memory duplex from tokio::io::duplex + tarpc::serde_transport::new). Asserts no panic + a non-empty SessionId.
+  Architecture: New tarpc-over-duplex integration test lives at rust/rpc/tests/create_session_no_panic_rpc070.rs — spawns the tarpc server on a real multi-thread runtime, connects via tarpc::serde_transport::tcp (or an in-memory duplex from tokio::io::duplex + tarpc::serde_transport::new). Asserts no panic + a non-empty SessionId.
   """
 
   # ========================================
@@ -26,7 +26,7 @@ Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agen
   # EXAMPLES:
   #   1. User runs `fspec` Rust binary, navigates to DONE column, presses Enter on a work unit -- the Work Agent panel renders WITHOUT any 'Cannot start a runtime' or 'block_on' panic text
   #   2. A tarpc client calls FspecService::create_session(None) over an in-memory duplex transport while the server is driven by the multi-thread tokio runtime -- the call returns a non-empty SessionId and no thread in the server panics
-  #   3. Source-shape grep over codelet/sessions/src/handle_impl.rs shows zero raw `Handle::current().block_on(` occurrences outside a tokio::task::block_in_place(|| ...) wrapper (the impl block contains six block_in_place wrappers total)
+  #   3. Source-shape grep over rust/sessions/src/handle_impl.rs shows zero raw `Handle::current().block_on(` occurrences outside a tokio::task::block_in_place(|| ...) wrapper (the impl block contains six block_in_place wrappers total)
   #   4. The pre-existing codelet-sessions handle_impl tests (scenario_session_manager_satisfies_trait_object, scenario_unknown_session_id_returns_safe_defaults, scenario_impl_block_exists_with_every_override) all still pass after the fix
   #
   # ========================================
@@ -52,7 +52,7 @@ Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agen
     And no worker thread emits the panic "Cannot start a runtime from within a runtime"
 
   Scenario: Every Handle::current().block_on call inside handle_impl.rs is wrapped in tokio::task::block_in_place
-    Given the file codelet/sessions/src/handle_impl.rs
+    Given the file rust/sessions/src/handle_impl.rs
     When I read the source bytes
     Then every occurrence of "tokio::runtime::Handle::current().block_on(" is preceded (within the same statement) by a "tokio::task::block_in_place(" call
     And the file contains exactly one "fn loop_block_on" helper
@@ -60,7 +60,7 @@ Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agen
     And the loop_block_on helper body contains a debug_assert! on RuntimeFlavor::MultiThread
 
   Scenario: test_provider_connection no longer constructs its own runtime
-    Given the file codelet/sessions/src/handle_impl.rs
+    Given the file rust/sessions/src/handle_impl.rs
     When I read the source bytes
     Then the test_provider_connection method body does not contain "Handle::try_current()"
     And the test_provider_connection method body contains "tokio::task::block_in_place"

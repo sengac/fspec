@@ -4,11 +4,11 @@
       "name": "Click on track above thumb jumps to that position",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "159-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -152,11 +152,11 @@
       "name": "Click on track below thumb jumps to that position",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "175-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -300,11 +300,11 @@
       "name": "Click and drag thumb continuously updates scroll offset",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "191-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -448,11 +448,11 @@
       "name": "Quick click on thumb without drag scrolls one viewport height",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "210-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -596,11 +596,11 @@
       "name": "Drag continues when cursor strays outside scrollbar area",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "224-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -744,11 +744,11 @@
       "name": "Non-left-button events are ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "237-248",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -892,11 +892,11 @@
       "name": "Reset clears dragging state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "250-265",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -1040,11 +1040,11 @@
       "name": "No scrollbar needed when content fits in viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
           "lines": "267-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/scrollbar_drag.rs",
+              "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
               "lines": [
                 1,
                 2,
@@ -1190,10 +1190,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/mouse/scrollbar_drag.rs"
+      "rust/fspec-tui/src/mouse/scrollbar_drag.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/mouse/scrollbar_drag.rs"
+      "rust/fspec-tui/src/mouse/scrollbar_drag.rs"
     ],
     "totalLinesCovered": 1171
   }

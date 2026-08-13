@@ -4,11 +4,11 @@
       "name": "CLI exposes query-metrics as a subcommand with flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "57-92",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_metrics.rs",
+              "file": "rust/fspec/src/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -115,11 +115,11 @@
       "name": "CLI against missing work-units.json exits 1 with stderr Query failed prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "94-130",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_metrics.rs",
+              "file": "rust/fspec/src/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -226,11 +226,11 @@
       "name": "CLI JSON output matches dispatcher output for the same on-disk state",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "132-195",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_metrics.rs",
+              "file": "rust/fspec/src/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -332,11 +332,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "132-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -822,11 +822,11 @@
       "name": "CLI text output for aggregate path renders a Project Metrics block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "197-275",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_metrics.rs",
+              "file": "rust/fspec/src/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -933,11 +933,11 @@
       "name": "CLI bridge module delegates to fspec_core with no inline aggregation logic",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "277-322",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_metrics.rs",
+              "file": "rust/fspec/src/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -1039,11 +1039,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_query_metrics.rs",
+          "file": "rust/fspec/tests/cli_query_metrics.rs",
           "lines": "277-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -1531,11 +1531,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_metrics.rs"
+      "rust/fspec/tests/cli_query_metrics.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/query_metrics.rs",
-      "codelet/fspec-core/src/commands/query_metrics.rs"
+      "rust/fspec/src/query_metrics.rs",
+      "rust/fspec-core/src/commands/query_metrics.rs"
     ],
     "totalLinesCovered": 1795
   }

@@ -105,8 +105,8 @@ export function codeRootDirs(codelet: string): string[] {
 
 /**
  * The six pure-Rust persistence modules that RPC-031..RPC-035 lifted
- * out of `codelet/napi/src/persistence/` into
- * `codelet/core/src/persistence/`.
+ * out of `rust/napi/src/persistence/` into
+ * `rust/core/src/persistence/`.
  */
 export const LIFTED_PERSISTENCE_MODULES: readonly string[] = [
   'message_envelope.rs',
@@ -137,13 +137,13 @@ export const ADDITIVE_NAPI_EXPORTS: readonly string[] = [
 export const WATCH_024_REQUIRED_SOURCE_FILES: ReadonlyArray<
   readonly [string, string, string, string]
 > = [
-  ['codelet', 'sessions', 'src', 'session_manager.rs'],
-  ['codelet', 'sessions', 'src', 'background_session.rs'],
-  ['codelet', 'sessions', 'src', 'chain_of_command.rs'],
-  ['codelet', 'sessions', 'src', 'handle_impl.rs'],
-  ['codelet', 'napi', 'src', 'session_bindings.rs'],
-  ['codelet', 'napi', 'src', 'agent_loop.rs'],
-  ['codelet', 'napi', 'src', 'bridges.rs'],
+  ['rust', 'sessions', 'src', 'session_manager.rs'],
+  ['rust', 'sessions', 'src', 'background_session.rs'],
+  ['rust', 'sessions', 'src', 'chain_of_command.rs'],
+  ['rust', 'sessions', 'src', 'handle_impl.rs'],
+  ['rust', 'napi', 'src', 'session_bindings.rs'],
+  ['rust', 'napi', 'src', 'agent_loop.rs'],
+  ['rust', 'napi', 'src', 'bridges.rs'],
 ];
 
 /**
@@ -151,13 +151,13 @@ export const WATCH_024_REQUIRED_SOURCE_FILES: ReadonlyArray<
  * tabulate, mirrored from `final-regression-and-audit.md`.
  */
 export const VERIFICATION_MATRIX_ROWS: readonly string[] = [
-  '`codelet/napi/src/session_manager.rs`',
-  '`codelet/napi/src/session_bindings.rs`',
-  '`codelet/napi/src/persistence/` contents',
-  '`codelet/sessions/src/lib.rs`',
-  '`codelet/sessions/src/background_session.rs`',
-  '`codelet/sessions/src/session_manager.rs`',
-  '`codelet/core/src/persistence/`',
+  '`rust/napi/src/session_manager.rs`',
+  '`rust/napi/src/session_bindings.rs`',
+  '`rust/napi/src/persistence/` contents',
+  '`rust/sessions/src/lib.rs`',
+  '`rust/sessions/src/background_session.rs`',
+  '`rust/sessions/src/session_manager.rs`',
+  '`rust/core/src/persistence/`',
   '`GLOBAL_CHUNK_CALLBACK`',
   '`unsafe impl Send/Sync for GlobalChunkCallback`',
   '`rpc → napi`',

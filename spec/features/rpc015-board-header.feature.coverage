@@ -4,11 +4,11 @@
       "name": "Empty BoardStore paints the FSPEC logo and Checkpoints: None",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
           "lines": "67-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/header.rs",
+              "file": "rust/fspec-tui/src/views/board/header.rs",
               "lines": [
                 1,
                 2,
@@ -74,11 +74,11 @@
       "name": "Non-zero checkpoint counts paint the Manual/Auto breakdown",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
           "lines": "81-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/checkpoint_status.rs",
+              "file": "rust/fspec-tui/src/views/board/checkpoint_status.rs",
               "lines": [
                 1,
                 2,
@@ -139,11 +139,11 @@
       "name": "KeybindingShortcuts chord row is painted in the header",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
           "lines": "97-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
               "lines": [
                 1,
                 2,
@@ -206,11 +206,11 @@
       "name": "New ├──┤ separator sits between the header strip and the details strip",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
           "lines": "115-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 131,
                 132,
@@ -292,11 +292,11 @@
       "name": "RPC-014 details strip and RPC-013 footer are still painted after RPC-015 inserts its header",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
           "lines": "220-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 131,
                 132,
@@ -439,11 +439,11 @@
       "name": "KeybindingShortcuts are visible hints only — no Action wiring lands in this card",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
           "lines": "159-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 74,
                 75,
@@ -508,13 +508,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_board_unit_rpc015.rs"
+      "rust/fspec-tui/tests/view_board_unit_rpc015.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/header.rs",
-      "codelet/fspec-tui/src/views/board/checkpoint_status.rs",
-      "codelet/fspec-tui/src/views/board/keybinding_shortcuts.rs",
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board/header.rs",
+      "rust/fspec-tui/src/views/board/checkpoint_status.rs",
+      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 581
   }

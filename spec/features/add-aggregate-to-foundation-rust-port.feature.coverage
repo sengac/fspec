@@ -4,11 +4,11 @@
       "name": "Dispatcher appends a new aggregate to an existing bounded context",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "92-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 67,
                 68,
@@ -122,11 +122,11 @@
       "name": "Dispatcher assigns sequential ids and increments nextItemId per aggregate",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "129-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 125,
                 126,
@@ -165,11 +165,11 @@
       "name": "Dispatcher persists optional description when provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "166-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 137,
                 138,
@@ -184,11 +184,11 @@
       "name": "Dispatcher omits the description field when no description is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "193-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 137,
                 138,
@@ -203,11 +203,11 @@
       "name": "Dispatcher rejects a non-existent bounded context",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "219-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 81,
                 82,
@@ -240,11 +240,11 @@
       "name": "Dispatcher rejects when foundation.json has no eventStorm data",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "244-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 81,
                 82,
@@ -277,11 +277,11 @@
       "name": "Dispatcher auto-creates foundation.json but still fails when no bounded context exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "275-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 77,
                 78,
@@ -318,11 +318,11 @@
       "name": "Dispatcher links the aggregate to the correct context among multiple bounded contexts",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "306-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 81,
                 82,
@@ -355,11 +355,11 @@
       "name": "Dispatcher preserves unknown top-level fields on write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "332-355",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 153,
                 154,
@@ -375,11 +375,11 @@
       "name": "Dispatcher fails fast when required args are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
           "lines": "357-375",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 67,
                 68,
@@ -399,10 +399,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_aggregate_to_foundation.rs"
+      "rust/fspec-core/tests/add_aggregate_to_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs"
+      "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs"
     ],
     "totalLinesCovered": 508
   }

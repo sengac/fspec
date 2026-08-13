@@ -5,7 +5,7 @@
 @RPC-186
 Feature: fspec add-persona CLI subcommand
   """
-  File layout: rewrite stub codelet/fspec-core/src/commands/add_persona.rs; add CLI bridge codelet/fspec/src/add_persona.rs; help config codelet/fspec-core/src/help/configs/add_persona.rs; dispatcher test codelet/fspec-core/tests/add_persona.rs; CLI test codelet/fspec/tests/cli_add_persona.rs; help fixture codelet/fspec/tests/fixtures/help/add-persona.txt
+  File layout: rewrite stub rust/fspec-core/src/commands/add_persona.rs; add CLI bridge rust/fspec/src/add_persona.rs; help config rust/fspec-core/src/help/configs/add_persona.rs; dispatcher test rust/fspec-core/tests/add_persona.rs; CLI test rust/fspec/tests/cli_add_persona.rs; help fixture rust/fspec/tests/fixtures/help/add-persona.txt
   Core signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> (2-arg form like add_diagram/add_bounded_context). Args (camelCase): { name: String, description: String, goals: Vec<String> default [] }. Does NOT use ensure_foundation_file — reads draft-or-final directly with inline draft-precedence and errors on ENOENT (no auto-create).
   Wiring intent (SHARED FILES — supervisor must apply): register add_persona module in commands/mod.rs; route kebab 'add-persona' in canonical.rs + dispatch.rs to the 2-arg run; register help config in help/configs/mod.rs; add Mode::AddPersona clap variant in fspec/src/main.rs. Worker will REQUEST these, not edit them.
   Write-format divergence: TS writes JSON.stringify(foundation, null, 2) + '\n' (trailing newline), but the shared write_json_atomic helper deliberately omits the trailing newline. For byte parity add-persona writes the foundation file inline (to_string_pretty + '\n') rather than via write_json_atomic. serde_json preserve_order keeps unknown top-level fields and key order.
@@ -45,7 +45,7 @@ Feature: fspec add-persona CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-persona --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-persona.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-persona.txt
     And stdout starts with a blank line followed by 'ADD-PERSONA'
 
   Scenario: CLI appends a persona and prints the multi-line success block
@@ -97,4 +97,4 @@ Feature: fspec add-persona CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-persona "Cli User" "From cli"` afterwards exits 0
     And spec/foundation.json on disk shows personas has length 3
-    And the CLI bridge module codelet/fspec/src/add_persona.rs contains NO inline placeholder, file-read, or file-write logic — its only computation is JSON arg marshalling and stdout rendering
+    And the CLI bridge module rust/fspec/src/add_persona.rs contains NO inline placeholder, file-read, or file-write logic — its only computation is JSON arg marshalling and stdout rendering

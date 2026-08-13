@@ -4,11 +4,11 @@
       "name": "Clap exposes query-orphans as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "334-356",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -68,11 +68,11 @@
       "name": "CLI without options prints success message against an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "358-375",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -132,11 +132,11 @@
       "name": "CLI with --output=json prints empty orphans array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "377-393",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -196,11 +196,11 @@
       "name": "CLI text output lists each orphan with suggested actions",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "395-418",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -260,11 +260,11 @@
       "name": "CLI --exclude-done flag suppresses done orphans",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "420-448",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -324,11 +324,11 @@
       "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "450-465",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -388,11 +388,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "467-509",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -452,11 +452,11 @@
       "name": "query-orphans --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_orphans.rs",
+          "file": "rust/fspec/tests/cli_query_orphans.rs",
           "lines": "511-535",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_orphans.rs",
+              "file": "rust/fspec/src/query_orphans.rs",
               "lines": [
                 1,
                 2,
@@ -518,10 +518,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_orphans.rs"
+      "rust/fspec/tests/cli_query_orphans.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/query_orphans.rs"
+      "rust/fspec/src/query_orphans.rs"
     ],
     "totalLinesCovered": 774
   }

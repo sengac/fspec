@@ -3,10 +3,10 @@
 @wip
 Feature: Port cleanup-checkpoints command to Rust
   """
-  File layout: core codelet/fspec-core/src/commands/cleanup_checkpoints.rs is the single source
-  of truth (run(args_json, project_root)); CLI bridge codelet/fspec/src/cleanup_checkpoints.rs
+  File layout: core rust/fspec-core/src/commands/cleanup_checkpoints.rs is the single source
+  of truth (run(args_json, project_root)); CLI bridge rust/fspec/src/cleanup_checkpoints.rs
   parses the workUnitId positional and the required --keep-last flag; help config
-  codelet/fspec-core/src/help/configs/cleanup_checkpoints.rs.
+  rust/fspec-core/src/help/configs/cleanup_checkpoints.rs.
 
   codelet_git wiring: reuses the list+sort logic shape from list_checkpoints.rs (read
   .git/fspec-checkpoints-index/<wu>.json, codelet_git::ghost_commit::list_ghost_checkpoints,

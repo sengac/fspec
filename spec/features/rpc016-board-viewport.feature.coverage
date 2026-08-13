@@ -4,11 +4,11 @@
       "name": "Column with no scroll renders the down arrow on the last viewport row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "164-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 31,
                 32,
@@ -115,11 +115,11 @@
       "name": "Column with mid-range scroll renders both up and down arrows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "193-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 31,
                 32,
@@ -226,11 +226,11 @@
       "name": "Column with fewer units than viewport_height renders no arrows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "223-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 31,
                 32,
@@ -337,11 +337,11 @@
       "name": "Most-recently-changed work unit renders the ⏩ ⏩ prefix and suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "250-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 145,
                 146,
@@ -371,11 +371,11 @@
       "name": "Work unit with an attached session renders the 🟢 prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "281-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 145,
                 146,
@@ -405,11 +405,11 @@
       "name": "Last-changed and session-attached indicators stack on the same unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "304-329",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 145,
                 146,
@@ -439,11 +439,11 @@
       "name": "PageDown advances the focused column's selection by viewport_height rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "332-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 82,
                 83,
@@ -463,11 +463,11 @@
       "name": "PageUp scrolls the focused column's selection back by viewport_height rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "365-394",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 82,
                 83,
@@ -487,11 +487,11 @@
       "name": "Home jumps the focused column's selection to the first unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "397-423",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 127,
                 128,
@@ -507,11 +507,11 @@
       "name": "End jumps the focused column's selection to the last unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "426-452",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 131,
                 132,
@@ -527,11 +527,11 @@
       "name": "RPC-014 details strip and RPC-015 header are still painted after RPC-016 lands",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc016.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc016.rs",
           "lines": "455-489",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 176,
                 177,
@@ -613,11 +613,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_board_unit_rpc016.rs"
+      "rust/fspec-tui/tests/view_board_unit_rpc016.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/viewport.rs",
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board/viewport.rs",
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 737
   }

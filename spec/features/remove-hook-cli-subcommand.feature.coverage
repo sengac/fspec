@@ -4,11 +4,11 @@
       "name": "remove-hook --help is byte-for-byte identical to TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "65-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_hook.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_hook.rs",
               "lines": [
                 1,
                 2,
@@ -110,11 +110,11 @@
       "name": "CLI writes zero bytes to stdout on success and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "119-149",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_hook.rs",
+              "file": "rust/fspec/src/remove_hook.rs",
               "lines": [
                 49,
                 50,
@@ -147,11 +147,11 @@
       "name": "CLI exits non-zero with error when spec/fspec-hooks.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "155-178",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_hook.rs",
+              "file": "rust/fspec/src/remove_hook.rs",
               "lines": [
                 49,
                 50,
@@ -184,11 +184,11 @@
       "name": "CLI exits non-zero with error when spec/fspec-hooks.json is invalid JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "184-205",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_hook.rs",
+              "file": "rust/fspec/src/remove_hook.rs",
               "lines": [
                 49,
                 50,
@@ -221,11 +221,11 @@
       "name": "CLI is silent when called with a no-op (missing key/name)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "211-240",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_hook.rs",
+              "file": "rust/fspec/src/remove_hook.rs",
               "lines": [
                 49,
                 50,
@@ -258,11 +258,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "246-290",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_hook.rs",
+              "file": "rust/fspec/src/remove_hook.rs",
               "lines": [
                 49,
                 50,
@@ -290,11 +290,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_hook.rs",
           "lines": "246-297",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_hook.rs",
+              "file": "rust/fspec/src/remove_hook.rs",
               "lines": [
                 49,
                 50,

@@ -4,11 +4,11 @@
       "name": "Adds a blocking hook to a work unit with no prior virtualHooks",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "98-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -329,11 +329,11 @@
       "name": "Appends a second hook preserving insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "150-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -654,11 +654,11 @@
       "name": "gitContext=true generates a shell script and stores the relative script path",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "188-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -979,11 +979,11 @@
       "name": "Unknown work unit id returns InvalidArgs with the canonical message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "241-269",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1304,11 +1304,11 @@
       "name": "Empty args object is rejected as InvalidArgs mentioning the missing workUnitId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "270-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1629,11 +1629,11 @@
       "name": "Hook name derivation strips path prefix and trailing arguments",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "293-349",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1954,11 +1954,11 @@
       "name": "blocking and gitContext default to false when omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "350-383",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -2279,11 +2279,11 @@
       "name": "Adding to an existing empty virtualHooks array appends and returns hookCount=1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "384-416",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -2604,11 +2604,11 @@
       "name": "spec/work-units.json is auto-created when missing but lookup still fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "417-451",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -2929,11 +2929,11 @@
       "name": "Result JSON uses camelCase hookCount key",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/add_virtual_hook.rs",
           "lines": "452-485",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -3256,10 +3256,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_virtual_hook.rs"
+      "rust/fspec-core/tests/add_virtual_hook.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_virtual_hook.rs"
+      "rust/fspec-core/src/commands/add_virtual_hook.rs"
     ],
     "totalLinesCovered": 3478
   }

@@ -4,11 +4,11 @@
       "name": "Clap exposes dependencies as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_dependencies.rs",
+          "file": "rust/fspec/tests/cli_dependencies.rs",
           "lines": "61-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/dependencies.rs",
+              "file": "rust/fspec-core/src/help/configs/dependencies.rs",
               "lines": [
                 1,
                 2,
@@ -154,11 +154,11 @@
       "name": "CLI prints the header and relationship lines for a unit with dependencies",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_dependencies.rs",
+          "file": "rust/fspec/tests/cli_dependencies.rs",
           "lines": "89-115",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/dependencies.rs",
+              "file": "rust/fspec/src/dependencies.rs",
               "lines": [
                 41,
                 42,
@@ -192,11 +192,11 @@
       "name": "CLI --graph prints the depth-first blocks tree",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_dependencies.rs",
+          "file": "rust/fspec/tests/cli_dependencies.rs",
           "lines": "117-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/dependencies.rs",
+              "file": "rust/fspec/src/dependencies.rs",
               "lines": [
                 41,
                 42,
@@ -230,11 +230,11 @@
       "name": "CLI exits 1 and writes to stderr when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_dependencies.rs",
+          "file": "rust/fspec/tests/cli_dependencies.rs",
           "lines": "152-184",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/dependencies.rs",
+              "file": "rust/fspec/src/dependencies.rs",
               "lines": [
                 41,
                 42,
@@ -268,11 +268,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_dependencies.rs",
+          "file": "rust/fspec/tests/cli_dependencies.rs",
           "lines": "186-250",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/dependencies.rs",
+              "file": "rust/fspec/src/dependencies.rs",
               "lines": [
                 41,
                 42,
@@ -306,11 +306,11 @@
       "name": "dependencies --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_dependencies.rs",
+          "file": "rust/fspec/tests/cli_dependencies.rs",
           "lines": "252-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/dependencies.rs",
+              "file": "rust/fspec-core/src/help/configs/dependencies.rs",
               "lines": [
                 1,
                 2,
@@ -458,11 +458,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_dependencies.rs"
+      "rust/fspec/tests/cli_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/dependencies.rs",
-      "codelet/fspec/src/dependencies.rs"
+      "rust/fspec-core/src/help/configs/dependencies.rs",
+      "rust/fspec/src/dependencies.rs"
     ],
     "totalLinesCovered": 566
   }

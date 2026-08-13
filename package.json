@@ -4,16 +4,16 @@
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
   "type": "module",
   "workspaces": [
-    "codelet/napi"
+    "rust/napi"
   ],
   "main": "./dist/index.js",
   "bin": {
     "fspec": "./dist/index.js"
   },
   "scripts": {
-    "build:codelet-napi": "cd codelet/napi && npm run build",
-    "build:codelet-napi:all": "cd codelet/napi && npm run build:all",
-    "build:rust:fspec": "(cd codelet && cargo build -p fspec --release) && mkdir -p dist && cp codelet/target/release/fspec dist/fspec && chmod +x dist/fspec",
+    "build:codelet-napi": "cd rust/napi && npm run build",
+    "build:codelet-napi:all": "cd rust/napi && npm run build:all",
+    "build:rust:fspec": "(cd codelet && cargo build -p fspec --release) && mkdir -p dist && cp rust/target/release/fspec dist/fspec && chmod +x dist/fspec",
     "build": "npm run build:codelet-napi && vite build && chmod +x dist/index.js",
     "build:sea": "npm run build && ./scripts/build-sea.sh",
     "build:sea:clean": "./scripts/build-sea.sh --clean",
@@ -22,7 +22,7 @@
     "test:napi-publish": "./scripts/test-napi-publish.sh",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
-    "format": "prettier --write 'src/**/*.ts' 'codelet/**/*.ts'",
+    "format": "prettier --write 'src/**/*.ts' 'rust/**/*.ts'",
     "format:spec": "fspec format",
     "test": "npm run build && vitest run",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.ts",

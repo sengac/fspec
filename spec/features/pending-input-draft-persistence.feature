@@ -27,16 +27,16 @@ Feature: Pending-input draft persistence on session switch
   - SessionContext.input_draft mirror is preserved for the synchronous handle_session_cycle path (RPC-024 behaviour unchanged for Shift+Left/Right).
 
   Files touched:
-  - codelet/fspec-tui/src/components/mod.rs (new Action variants)
-  - codelet/fspec-tui/src/views/agent/dispatch.rs (emit PendingInputChanged on edit)
-  - codelet/fspec-tui/src/app/state.rs (pending_input_save_handle field)
-  - codelet/fspec-tui/src/app/dispatch.rs (route the new variants)
-  - codelet/fspec-tui/src/app/dispatch_pending_input.rs (NEW — debounce + hydration helpers)
-  - codelet/fspec-tui/src/app/mod.rs (pub mod dispatch_pending_input)
-  - codelet/fspec-tui/src/app/dispatch_slash_commands.rs (clear draft after InputSubmitted)
-  - codelet/fspec-tui/src/app/dispatch_resume_search_views.rs (hydrate on AttachToSession)
-  - codelet/fspec-tui/tests/common/mod.rs (MockBackend pending_input scripting)
-  - codelet/fspec-tui/tests/pending_input_durability_rpc052.rs (NEW integration tests)
+  - rust/fspec-tui/src/components/mod.rs (new Action variants)
+  - rust/fspec-tui/src/views/agent/dispatch.rs (emit PendingInputChanged on edit)
+  - rust/fspec-tui/src/app/state.rs (pending_input_save_handle field)
+  - rust/fspec-tui/src/app/dispatch.rs (route the new variants)
+  - rust/fspec-tui/src/app/dispatch_pending_input.rs (NEW — debounce + hydration helpers)
+  - rust/fspec-tui/src/app/mod.rs (pub mod dispatch_pending_input)
+  - rust/fspec-tui/src/app/dispatch_slash_commands.rs (clear draft after InputSubmitted)
+  - rust/fspec-tui/src/app/dispatch_resume_search_views.rs (hydrate on AttachToSession)
+  - rust/fspec-tui/tests/common/mod.rs (MockBackend pending_input scripting)
+  - rust/fspec-tui/tests/pending_input_durability_rpc052.rs (NEW integration tests)
 
   Last-write-wins semantics: aborting the in-flight save is acceptable per the attachment risk note. No version counter.
 
@@ -218,9 +218,9 @@ Feature: Pending-input draft persistence on session switch
   # ─────────────────────────────────────────────────────────────────────
   # Source shape
   # ─────────────────────────────────────────────────────────────────────
-  Scenario: codelet/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers
-    Given the file codelet/fspec-tui/src/app/dispatch_pending_input.rs exists
+  Scenario: rust/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers
+    Given the file rust/fspec-tui/src/app/dispatch_pending_input.rs exists
     When the file is compiled as part of codelet-fspec-tui
     Then it must declare impl App methods named handle_pending_input_changed, handle_seed_pending_input, and spawn_hydrate_pending_input
-    And codelet/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pending_input
-    And codelet/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines
+    And rust/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pending_input
+    And rust/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines

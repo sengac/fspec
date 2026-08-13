@@ -390,7 +390,7 @@
           "lines": "359-401",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5837,
                 5838,
@@ -515,7 +515,7 @@
           "lines": "407-444",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5837,
                 5838,
@@ -640,7 +640,7 @@
           "lines": "450-499",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -697,7 +697,7 @@
           "lines": "505-548",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 87,
                 88,
@@ -733,9 +733,9 @@
     "implFiles": [
       "src/tui/components/SessionFooter.tsx",
       "src/tui/store/footerStore.ts",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/tools/src/footer_cwd.rs",
-      "codelet/tools/src/bash.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/tools/src/footer_cwd.rs",
+      "rust/tools/src/bash.rs"
     ],
     "totalLinesCovered": 927
   }

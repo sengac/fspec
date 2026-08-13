@@ -7,7 +7,7 @@ Feature: Custom-model add NAPI binding
   RPC-347 slice: the add_custom_model NAPI binding accepts a
   CustomModelDefinition-shaped object and persists it through the RPC-346
   profile_sections writer, preserving every supplied field across the NAPI
-  boundary. Test: codelet/napi/tests/custom_model_crud_napi_test.rs
+  boundary. Test: rust/napi/tests/custom_model_crud_napi_test.rs
   """
 
   Background: User Story

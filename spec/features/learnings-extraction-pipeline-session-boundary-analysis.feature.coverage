@@ -4,11 +4,11 @@
       "name": "Extract learnings, explorations, and constraints from a DAG summary",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "97-189",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_extraction.rs",
+              "file": "rust/napi/src/graph/learnings_extraction.rs",
               "lines": [
                 1,
                 2,
@@ -292,11 +292,11 @@
       "name": "Extracted entities are queryable via learnings_search after loading into database",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "194-237",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -392,11 +392,11 @@
       "name": "Decision entities are queryable via learnings_decisions with domain filter",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "242-286",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 86,
                 87,
@@ -455,11 +455,11 @@
       "name": "Learnings stats reflect loaded entities",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "291-326",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 134,
                 135,
@@ -478,11 +478,11 @@
       "name": "Graceful failure when LLM response is unavailable",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "331-362",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_extraction.rs",
+              "file": "rust/napi/src/graph/learnings_extraction.rs",
               "lines": [
                 127,
                 128,
@@ -501,11 +501,11 @@
       "name": "Volume constraint truncates at 20 entities",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "367-401",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_extraction.rs",
+              "file": "rust/napi/src/graph/learnings_extraction.rs",
               "lines": [
                 169,
                 170,
@@ -526,11 +526,11 @@
       "name": "Invalid entity categories are skipped",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "406-462",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_extraction.rs",
+              "file": "rust/napi/src/graph/learnings_extraction.rs",
               "lines": [
                 203,
                 204,
@@ -552,11 +552,11 @@
       "name": "Malformed JSON response returns parse error",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_extraction_test.rs",
+          "file": "rust/napi/tests/learnings_extraction_test.rs",
           "lines": "467-494",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_extraction.rs",
+              "file": "rust/napi/src/graph/learnings_extraction.rs",
               "lines": [
                 134,
                 135,
@@ -574,11 +574,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/learnings_extraction_test.rs"
+      "rust/napi/tests/learnings_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/learnings_extraction.rs",
-      "codelet/napi/src/graph/learnings_dispatch.rs"
+      "rust/napi/src/graph/learnings_extraction.rs",
+      "rust/napi/src/graph/learnings_dispatch.rs"
     ],
     "totalLinesCovered": 810
   }

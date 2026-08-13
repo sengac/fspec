@@ -4,11 +4,11 @@
       "name": "Clap exposes list-scenario-tags as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_scenario_tags.rs",
+          "file": "rust/fspec/tests/cli_list_scenario_tags.rs",
           "lines": "53-103",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 170,
                 171,
@@ -136,11 +136,11 @@
       "name": "CLI exits 2 when required positional arguments are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_scenario_tags.rs",
+          "file": "rust/fspec/tests/cli_list_scenario_tags.rs",
           "lines": "109-130",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 170,
                 171,
@@ -268,11 +268,11 @@
       "name": "CLI prints tag list and exits 0 when scenario has tags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_scenario_tags.rs",
+          "file": "rust/fspec/tests/cli_list_scenario_tags.rs",
           "lines": "136-175",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_scenario_tags.rs",
+              "file": "rust/fspec/src/list_scenario_tags.rs",
               "lines": [
                 63,
                 64,
@@ -323,11 +323,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_scenario_tags.rs",
+          "file": "rust/fspec/tests/cli_list_scenario_tags.rs",
           "lines": "181-235",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_scenario_tags.rs",
+              "file": "rust/fspec/src/list_scenario_tags.rs",
               "lines": [
                 63,
                 64,
@@ -378,11 +378,11 @@
       "name": "list-scenario-tags --help is byte-for-byte identical to TS minimal formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_scenario_tags.rs",
+          "file": "rust/fspec/tests/cli_list_scenario_tags.rs",
           "lines": "240-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/help/configs/list_scenario_tags.rs",
               "lines": [
                 1,
                 2,
@@ -467,12 +467,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_scenario_tags.rs"
+      "rust/fspec/tests/cli_list_scenario_tags.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/main.rs",
-      "codelet/fspec/src/list_scenario_tags.rs",
-      "codelet/fspec-core/src/help/configs/list_scenario_tags.rs"
+      "rust/fspec/src/main.rs",
+      "rust/fspec/src/list_scenario_tags.rs",
+      "rust/fspec-core/src/help/configs/list_scenario_tags.rs"
     ],
     "totalLinesCovered": 610
   }

@@ -4,11 +4,11 @@
       "name": "Reproducing the bug before the fix shows 34 unscoped-napi-attribute errors",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "114-161",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -1878,11 +1878,11 @@
       "name": "After the fix, codelet-rpc-types builds cleanly with the napi feature enabled",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "163-214",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -3752,11 +3752,11 @@
       "name": "The default codelet-rpc-types build remains free of napi-derive after the fix",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "216-257",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -5626,11 +5626,11 @@
       "name": "codelet-napi default features build succeeds after the fix",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "259-286",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -7500,11 +7500,11 @@
       "name": "codelet-napi noop feature build succeeds after the fix",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "288-315",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -9374,11 +9374,11 @@
       "name": "codelet-rpc-types JSON round-trip tests still pass with the napi feature",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "317-360",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -11248,11 +11248,11 @@
       "name": "BUG-146 fix unblocks the RPC-043 noop-build assertion",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "578-611",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -13122,11 +13122,11 @@
       "name": "The fix replaces every field-level napi(js_name) with serde(rename) in the on-disk source",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "362-481",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -14996,11 +14996,11 @@
       "name": "TypeScript surface preserves every camelCase field after regeneration",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs",
+          "file": "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs",
           "lines": "483-576",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -16872,10 +16872,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-types/tests/bug146_napi_attribute_scoping.rs"
+      "rust/rpc-types/tests/bug146_napi_attribute_scoping.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 17212
   }

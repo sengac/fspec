@@ -4,11 +4,11 @@
       "name": "Add single tag to a scenario that previously had no tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "91-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -214,11 +214,11 @@
       "name": "Append a new tag after an existing tag block",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "128-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -424,11 +424,11 @@
       "name": "Multiple tags inserted in argument order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "161-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -634,11 +634,11 @@
       "name": "Duplicate tag is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "192-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -844,11 +844,11 @@
       "name": "Tag without leading @ is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "221-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -1054,11 +1054,11 @@
       "name": "Mixed-case regular tag is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "251-279",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -1264,11 +1264,11 @@
       "name": "Work-unit tag with uppercase is accepted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "281-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -1474,11 +1474,11 @@
       "name": "Registry validation accepts a registered tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "306-340",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -1684,11 +1684,11 @@
       "name": "Registry validation rejects an unregistered tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "341-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -1894,11 +1894,11 @@
       "name": "Missing scenario name surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "381-410",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -2104,11 +2104,11 @@
       "name": "Missing feature file surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "411-433",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -2314,11 +2314,11 @@
       "name": "Feature-level tag and other scenarios are preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_scenario.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_scenario.rs",
           "lines": "434-472",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_scenario.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_scenario.rs",
               "lines": [
                 71,
                 72,
@@ -2526,10 +2526,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_tag_to_scenario.rs"
+      "rust/fspec-core/tests/add_tag_to_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_tag_to_scenario.rs"
+      "rust/fspec-core/src/commands/add_tag_to_scenario.rs"
     ],
     "totalLinesCovered": 2704
   }

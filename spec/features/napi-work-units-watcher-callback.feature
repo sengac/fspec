@@ -10,8 +10,8 @@ Feature: NAPI work-units watcher callback compatibility after the lift
   Architecture
 
   RPC-006 moves the cross-platform `notify`-based watcher logic out of
-  `codelet/napi/src/work_units_watcher.rs` and into a new pure-Rust
-  module at `codelet/core/src/work_units.rs`. The existing NAPI export
+  `rust/napi/src/work_units_watcher.rs` and into a new pure-Rust
+  module at `rust/core/src/work_units.rs`. The existing NAPI export
   surface MUST be preserved bit-for-bit so that the Ink/TS frontend
   keeps working unchanged:
 

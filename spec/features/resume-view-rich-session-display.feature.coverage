@@ -4,11 +4,11 @@
       "name": "Selected session renders name and detail lines with rich information",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "83-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 127,
                 128,
@@ -87,7 +87,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 399,
                 400
@@ -101,11 +101,11 @@
       "name": "Unselected session renders name and detail lines without selection marker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "120-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 127,
                 128,
@@ -191,11 +191,11 @@
       "name": "Session without provider displays unknown in detail line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "163-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 168,
                 169,
@@ -218,11 +218,11 @@
       "name": "Session without timestamp displays unknown in detail line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "196-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 180,
                 181,
@@ -241,7 +241,7 @@
               ]
             },
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 253,
                 254,
@@ -256,11 +256,11 @@
       "name": "Empty session list renders centered placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "227-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 138,
                 139,
@@ -283,11 +283,11 @@
       "name": "Scroll offset accounts for 2 visual rows per session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "246-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 152,
                 153,
@@ -306,11 +306,11 @@
       "name": "Time ago formatting handles various intervals",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui096_rich_session_display.rs",
+          "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
           "lines": "41-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
                 103,
                 104,
@@ -347,12 +347,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/tui096_rich_session_display.rs"
+      "rust/fspec-tui/tests/tui096_rich_session_display.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/rpc-types/src/lib.rs"
+      "rust/fspec-tui/src/views/agent/mode_view_render.rs",
+      "rust/sessions/src/session_manager.rs",
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 438
   }

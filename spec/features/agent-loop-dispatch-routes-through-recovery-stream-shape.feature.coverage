@@ -4,11 +4,11 @@
       "name": "dispatch.rs funnels every provider arm through the recovery-wired streaming engine",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc087_dispatch_routes_through_recovery_stream_shape.rs",
+          "file": "rust/agent-loop/tests/rpc087_dispatch_routes_through_recovery_stream_shape.rs",
           "lines": "21-48",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 37,
                 38,
@@ -92,10 +92,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc087_dispatch_routes_through_recovery_stream_shape.rs"
+      "rust/agent-loop/tests/rpc087_dispatch_routes_through_recovery_stream_shape.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/dispatch.rs"
+      "rust/agent-loop/src/dispatch.rs"
     ],
     "totalLinesCovered": 98
   }

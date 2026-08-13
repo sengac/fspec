@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "68-96",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -72,11 +72,11 @@
       "name": "CLI appends a persona and prints the multi-line success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "101-141",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -140,11 +140,11 @@
       "name": "CLI joins multiple --goal flags with a comma and space",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "146-174",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -208,11 +208,11 @@
       "name": "CLI with no --goal flag prints an empty Goals line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "179-200",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -276,11 +276,11 @@
       "name": "CLI reports placeholder removal before the success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "205-236",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -344,11 +344,11 @@
       "name": "CLI writes to the draft when foundation.json.draft exists",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "241-260",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -412,11 +412,11 @@
       "name": "CLI reports the missing-foundation error with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "265-286",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -480,11 +480,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_persona.rs",
+          "file": "rust/fspec/tests/cli_add_persona.rs",
           "lines": "291-334",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_persona.rs",
+              "file": "rust/fspec/src/add_persona.rs",
               "lines": [
                 39,
                 40,
@@ -550,10 +550,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_persona.rs"
+      "rust/fspec/tests/cli_add_persona.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_persona.rs"
+      "rust/fspec/src/add_persona.rs"
     ],
     "totalLinesCovered": 655
   }

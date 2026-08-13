@@ -4,11 +4,11 @@
       "name": "Helper clamps a context-growth ratio to zero",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
           "lines": "55-74",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 190,
                 191,
@@ -27,11 +27,11 @@
       "name": "Helper reports a normal reduction unchanged",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
           "lines": "81-94",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 190,
                 191,
@@ -50,11 +50,11 @@
       "name": "Helper returns zero when the original token count is zero",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
           "lines": "101-114",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 190,
                 191,
@@ -73,11 +73,11 @@
       "name": "Helper returns zero when compacted tokens equal original tokens",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
           "lines": "121-134",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 190,
                 191,
@@ -96,11 +96,11 @@
       "name": "compact_session RPC result never ships a negative ratio when context grows",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
           "lines": "147-186",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 334,
                 335,
@@ -128,11 +128,11 @@
       "name": "NAPI session_compact result never ships a negative ratio when context grows",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
           "lines": "199-236",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_bindings.rs",
+              "file": "rust/napi/src/session_bindings.rs",
               "lines": [
                 3131,
                 3132,
@@ -162,12 +162,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/cmpct039_ratio_clamp_test.rs"
+      "rust/napi/tests/cmpct039_ratio_clamp_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/napi/src/session_bindings.rs"
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/napi/src/session_bindings.rs"
     ],
     "totalLinesCovered": 200
   }

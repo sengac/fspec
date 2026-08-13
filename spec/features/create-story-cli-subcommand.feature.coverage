@@ -4,11 +4,11 @@
       "name": "create-story --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "92-121",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/create_story.rs",
+              "file": "rust/fspec-core/src/help/configs/create_story.rs",
               "lines": [
                 115,
                 116,
@@ -39,11 +39,11 @@
       "name": "Clap exposes create-story with positional args and the three optional flags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "122-158",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 39,
                 40,
@@ -63,11 +63,11 @@
       "name": "CLI creates a minimal story and prints the success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "159-192",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 49,
                 50,
@@ -114,11 +114,11 @@
       "name": "CLI creates a story with -e epic and includes the Epic line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "193-225",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 49,
                 50,
@@ -160,11 +160,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "193-225",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 49,
                 50,
@@ -211,11 +211,11 @@
       "name": "CLI rejects an unregistered prefix with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "226-249",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 77,
                 78,
@@ -232,11 +232,11 @@
       "name": "CLI rejects a missing foundation with exit 1 and the foundation-missing message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "250-269",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 77,
                 78,
@@ -253,11 +253,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_story.rs",
+          "file": "rust/fspec/tests/cli_create_story.rs",
           "lines": "270-318",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_story.rs",
+              "file": "rust/fspec/src/create_story.rs",
               "lines": [
                 49,
                 50,
@@ -306,11 +306,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_create_story.rs"
+      "rust/fspec/tests/cli_create_story.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/create_story.rs",
-      "codelet/fspec/src/create_story.rs"
+      "rust/fspec-core/src/help/configs/create_story.rs",
+      "rust/fspec/src/create_story.rs"
     ],
     "totalLinesCovered": 437
   }

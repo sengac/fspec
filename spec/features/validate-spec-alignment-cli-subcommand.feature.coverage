@@ -4,11 +4,11 @@
       "name": "Clap exposes validate-spec-alignment as a subcommand and prints --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_spec_alignment.rs",
+          "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
           "lines": "66-91",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_spec_alignment.rs",
+              "file": "rust/fspec/src/validate_spec_alignment.rs",
               "lines": [
                 41,
                 42,
@@ -51,11 +51,11 @@
       "name": "CLI exits 0 and prints success when the work unit has tagged scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_spec_alignment.rs",
+          "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
           "lines": "93-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_spec_alignment.rs",
+              "file": "rust/fspec/src/validate_spec_alignment.rs",
               "lines": [
                 47,
                 48,
@@ -74,11 +74,11 @@
       "name": "CLI exits 1 and prints the warning when no scenarios are tagged",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_spec_alignment.rs",
+          "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
           "lines": "110-129",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_spec_alignment.rs",
+              "file": "rust/fspec/src/validate_spec_alignment.rs",
               "lines": [
                 54,
                 55,
@@ -102,11 +102,11 @@
       "name": "CLI exits 1 when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_spec_alignment.rs",
+          "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
           "lines": "131-151",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_spec_alignment.rs",
+              "file": "rust/fspec/src/validate_spec_alignment.rs",
               "lines": [
                 67,
                 68,
@@ -122,11 +122,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_spec_alignment.rs",
+          "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
           "lines": "153-219",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_spec_alignment.rs",
+              "file": "rust/fspec/src/validate_spec_alignment.rs",
               "lines": [
                 41,
                 42,
@@ -169,11 +169,11 @@
       "name": "validate-spec-alignment --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_validate_spec_alignment.rs",
+          "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
           "lines": "223-247",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/validate_spec_alignment.rs",
+              "file": "rust/fspec/src/validate_spec_alignment.rs",
               "lines": [
                 31,
                 32,
@@ -228,10 +228,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_validate_spec_alignment.rs"
+      "rust/fspec/tests/cli_validate_spec_alignment.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/validate_spec_alignment.rs"
+      "rust/fspec/src/validate_spec_alignment.rs"
     ],
     "totalLinesCovered": 301
   }

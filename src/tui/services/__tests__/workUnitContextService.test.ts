@@ -5,7 +5,7 @@
  *
  * Test Strategy:
  * - Pure functions tested with real test data (no mocks)
- * - NAPI integration tested in Rust unit tests (codelet/napi/src/session_manager.rs)
+ * - NAPI integration tested in Rust unit tests (rust/napi/src/session_manager.rs)
  * - Shared fixtures for consistent test data
  */
 

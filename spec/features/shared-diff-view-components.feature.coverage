@@ -4,11 +4,11 @@
       "name": "Shared diff_line colors added green removed red and hunk dim/cyan",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/diff_common/api_tests.rs",
+          "file": "rust/fspec-tui/src/views/diff_common/api_tests.rs",
           "lines": "19-37",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/diff_render.rs",
               "lines": [
                 26,
                 27,
@@ -46,11 +46,11 @@
       "name": "Shared file_row shows cursor on selected row and truncates long path",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/diff_common/api_tests.rs",
+          "file": "rust/fspec-tui/src/views/diff_common/api_tests.rs",
           "lines": "39-57",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/row.rs",
               "lines": [
                 31,
                 32,
@@ -99,11 +99,11 @@
       "name": "changed_files reuses the shared pane-scrollbar helper that delegates to list_scrollbar",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/diff_common/api_tests.rs",
+          "file": "rust/fspec-tui/src/views/diff_common/api_tests.rs",
           "lines": "59-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/mod.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/mod.rs",
               "lines": [
                 24,
                 25,
@@ -140,12 +140,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/diff_common/api_tests.rs"
+      "rust/fspec-tui/src/views/diff_common/api_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
-      "codelet/fspec-tui/src/views/diff_common/row.rs",
-      "codelet/fspec-tui/src/views/diff_common/mod.rs"
+      "rust/fspec-tui/src/views/diff_common/diff_render.rs",
+      "rust/fspec-tui/src/views/diff_common/row.rs",
+      "rust/fspec-tui/src/views/diff_common/mod.rs"
     ],
     "totalLinesCovered": 143
   }

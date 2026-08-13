@@ -4,11 +4,11 @@
       "name": "Export a work unit with full example mapping data",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "file": "rust/fspec-core/tests/export_example_map.rs",
           "lines": "70-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
                 35,
                 36,
@@ -83,11 +83,11 @@
       "name": "Export a work unit with no example mapping data",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "file": "rust/fspec-core/tests/export_example_map.rs",
           "lines": "132-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
                 99,
                 100,
@@ -118,11 +118,11 @@
       "name": "Export to a nested output path creates parent directories",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "file": "rust/fspec-core/tests/export_example_map.rs",
           "lines": "154-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
                 83,
                 84,
@@ -169,11 +169,11 @@
       "name": "Export a work unit that does not exist fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "file": "rust/fspec-core/tests/export_example_map.rs",
           "lines": "178-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
                 55,
                 56,
@@ -193,11 +193,11 @@
       "name": "Export with a malformed work units file escalates a parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "file": "rust/fspec-core/tests/export_example_map.rs",
           "lines": "199-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
                 51,
                 52,
@@ -212,11 +212,11 @@
       "name": "Dispatcher and core produce identical file content",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "file": "rust/fspec-core/tests/export_example_map.rs",
           "lines": "220-250",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
                 35,
                 36,
@@ -293,10 +293,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/export_example_map.rs"
+      "rust/fspec-core/tests/export_example_map.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/export_example_map.rs"
+      "rust/fspec-core/src/commands/export_example_map.rs"
     ],
     "totalLinesCovered": 372
   }

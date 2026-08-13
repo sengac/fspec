@@ -24,7 +24,7 @@ Feature: TUI provider settings UX for Anthropic subscription connect and disconn
   #   9. Claude OAuth token check is async (claude_oauth_get_tokens returns Promise) unlike Codex (sync) — the reload() function in useProviderSettingsState must await Claude token check and handle the async NAPI boundary
   #   10. The headless flow needs a new PanelMode variant 'oauth-headless-code-entry' for displaying the authorize URL and collecting the pasted code#state — this is distinct from Codex's 'oauth-device-waiting' which just polls automatically
   #   11. Non-OAuth providers (OpenAI, Gemini, etc.) are completely unaffected — only Anthropic and Codex get OAuth login options. Anthropic with API key only (no OAuth tokens) still allows API key editing via 'e' key
-  #   12. NAPI bindings must be rebuilt (napi build) before this card can work — codelet/napi/src/claude_oauth.rs exists from PROV-024 but index.d.ts does not yet export the claude_oauth_* functions
+  #   12. NAPI bindings must be rebuilt (napi build) before this card can work — rust/napi/src/claude_oauth.rs exists from PROV-024 but index.d.ts does not yet export the claude_oauth_* functions
   #
   # EXAMPLES:
   #   1. User expands Anthropic provider with no OAuth tokens and no API key: sees 'Login with Claude (browser)', 'Login with Claude (headless)', and the existing 'edit API key' option (via 'e' key on provider row)

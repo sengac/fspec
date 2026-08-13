@@ -4,11 +4,11 @@
       "name": "Adds a Background section to a feature with no existing Background",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "46-95",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 46,
                 47,
@@ -257,11 +257,11 @@
       "name": "Empty text is rejected and the file is left untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "97-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 53,
                 54,
@@ -280,11 +280,11 @@
       "name": "Whitespace-only text is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "129-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 53,
                 54,
@@ -303,11 +303,11 @@
       "name": "Missing feature file surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "156-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 61,
                 62,
@@ -329,11 +329,11 @@
       "name": "Bare feature name resolves by basename glob over spec/features",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "183-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 123,
                 124,
@@ -369,11 +369,11 @@
       "name": "Replaces an existing Background section in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "222-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 193,
                 194,
@@ -454,11 +454,11 @@
       "name": "Inserts the Background after a Feature-line doc string",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "266-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 169,
                 170,
@@ -563,11 +563,11 @@
       "name": "A file with no Feature line is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_background.rs",
+          "file": "rust/fspec-core/tests/add_background.rs",
           "lines": "307-329",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_background.rs",
+              "file": "rust/fspec-core/src/commands/add_background.rs",
               "lines": [
                 78,
                 79,
@@ -607,10 +607,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_background.rs"
+      "rust/fspec-core/tests/add_background.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_background.rs"
+      "rust/fspec-core/src/commands/add_background.rs"
     ],
     "totalLinesCovered": 750
   }

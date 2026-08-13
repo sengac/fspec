@@ -4,11 +4,11 @@
       "name": "FinalResponse branch triggers recovery when compaction_needed is set",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "192-302",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1287,
                 1288,
@@ -76,11 +76,11 @@
       "name": "In-loop macro handles PromptCancelled from mid-stream hook cancellation",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "304-390",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1469,
                 1470,
@@ -107,11 +107,11 @@
       "name": "In-loop macro handles upstream prompt-too-long error",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "392-469",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1538,
                 1539,
@@ -135,11 +135,11 @@
       "name": "In-loop macro handles Gemini continuation exhaustion",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "471-536",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
                 346,
                 347,
@@ -182,11 +182,11 @@
       "name": "Post-loop safety net runs recovery when loop exits via break with flag set",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "538-656",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1828,
                 1829,
@@ -283,11 +283,11 @@
       "name": "User interrupt takes priority over compaction recovery",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "658-708",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1828,
                 1829,
@@ -384,11 +384,11 @@
       "name": "Gemini session triggers compaction at 80% of context window",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "710-764",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 197,
                 198,
@@ -424,11 +424,11 @@
       "name": "Claude session honours user threshold override",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "766-849",
           "implMappings": [
             {
-              "file": "codelet/cli/src/compaction_threshold.rs",
+              "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
                 197,
                 198,
@@ -464,11 +464,11 @@
       "name": "After recovery, restart stream does not immediately re-trigger the hook",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_trigger_reliability_test.rs",
+          "file": "rust/cli/tests/compaction_trigger_reliability_test.rs",
           "lines": "851-935",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 626,
                 627,
@@ -498,12 +498,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_trigger_reliability_test.rs"
+      "rust/cli/tests/compaction_trigger_reliability_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/gemini_continuation.rs",
-      "codelet/cli/src/compaction_threshold.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/gemini_continuation.rs",
+      "rust/cli/src/compaction_threshold.rs"
     ],
     "totalLinesCovered": 1084
   }

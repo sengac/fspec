@@ -4,11 +4,11 @@
       "name": "Clap exposes list-checkpoints as a subcommand with flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "97-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_checkpoints.rs",
+              "file": "rust/fspec/src/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -107,11 +107,11 @@
       "name": "list-checkpoints --help is byte-for-byte identical to the TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "161-192",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_checkpoints.rs",
+              "file": "rust/fspec-core/src/help/configs/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -323,11 +323,11 @@
       "name": "Missing positional argument exits non-zero with clap's required-arg error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "194-217",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_checkpoints.rs",
+              "file": "rust/fspec/src/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -426,11 +426,11 @@
       "name": "CLI against empty directory prints sentinel and does not auto-init a git repo",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "219-249",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_checkpoints.rs",
+              "file": "rust/fspec/src/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -529,11 +529,11 @@
       "name": "CLI text output renders manual checkpoint progress for the populated case",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "251-296",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_checkpoints.rs",
+              "file": "rust/fspec/src/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -632,11 +632,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "298-338",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_checkpoints.rs",
+              "file": "rust/fspec/src/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -735,11 +735,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_checkpoints.rs",
+          "file": "rust/fspec/tests/cli_list_checkpoints.rs",
           "lines": "340-408",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_checkpoints.rs",
+              "file": "rust/fspec/src/list_checkpoints.rs",
               "lines": [
                 1,
                 2,
@@ -840,11 +840,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_checkpoints.rs"
+      "rust/fspec/tests/cli_list_checkpoints.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_checkpoints.rs",
-      "codelet/fspec-core/src/help/configs/list_checkpoints.rs"
+      "rust/fspec/src/list_checkpoints.rs",
+      "rust/fspec-core/src/help/configs/list_checkpoints.rs"
     ],
     "totalLinesCovered": 1028
   }

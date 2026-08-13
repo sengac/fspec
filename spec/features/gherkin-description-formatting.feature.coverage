@@ -4,11 +4,11 @@
       "name": "Preserve blank line between two feature-level description paragraphs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+          "file": "rust/fspec-core/src/io/gherkin_format.rs",
           "lines": "603-617",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 138,
                 139,
@@ -68,11 +68,11 @@
       "name": "Preserve blank line between two scenario-level description paragraphs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+          "file": "rust/fspec-core/src/io/gherkin_format.rs",
           "lines": "619-634",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 211,
                 212,
@@ -121,11 +121,11 @@
       "name": "Single-paragraph description is unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+          "file": "rust/fspec-core/src/io/gherkin_format.rs",
           "lines": "636-650",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 71,
                 72,
@@ -203,11 +203,11 @@
       "name": "Collapse runs of more than two blank lines between paragraphs to two",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+          "file": "rust/fspec-core/src/io/gherkin_format.rs",
           "lines": "652-669",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 480,
                 481,
@@ -239,11 +239,11 @@
       "name": "Step doc string with an internal blank line is not regressed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+          "file": "rust/fspec-core/src/io/gherkin_format.rs",
           "lines": "671-684",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 71,
                 72,
@@ -321,11 +321,11 @@
       "name": "Formatting a multi-paragraph description is idempotent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+          "file": "rust/fspec-core/src/io/gherkin_format.rs",
           "lines": "686-700",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin_format.rs",
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
               "lines": [
                 45,
                 46,
@@ -346,10 +346,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/src/io/gherkin_format.rs"
+      "rust/fspec-core/src/io/gherkin_format.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/io/gherkin_format.rs"
+      "rust/fspec-core/src/io/gherkin_format.rs"
     ],
     "totalLinesCovered": 337
   }

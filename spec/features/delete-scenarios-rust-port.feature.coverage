@@ -4,11 +4,11 @@
       "name": "Dispatcher dry-run reports matches without modifying files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenarios.rs",
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
           "lines": "70-102",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
                 129,
                 130,
@@ -37,11 +37,11 @@
       "name": "Dispatcher real delete removes matching scenarios and keeps the rest",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenarios.rs",
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
           "lines": "106-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
                 147,
                 148,
@@ -123,11 +123,11 @@
       "name": "Dispatcher applies AND logic across multiple tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenarios.rs",
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
           "lines": "141-165",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
                 218,
                 219,
@@ -198,11 +198,11 @@
       "name": "Dispatcher reports no feature files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenarios.rs",
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
           "lines": "169-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
                 80,
                 81,
@@ -229,11 +229,11 @@
       "name": "Dispatcher reports no matching scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenarios.rs",
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
           "lines": "191-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
                 117,
                 118,
@@ -256,11 +256,11 @@
       "name": "Dispatcher rejects an empty tag list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenarios.rs",
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
           "lines": "221-248",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenarios.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
                 69,
                 70,
@@ -284,10 +284,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_scenarios.rs"
+      "rust/fspec-core/tests/delete_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_scenarios.rs"
+      "rust/fspec-core/src/commands/delete_scenarios.rs"
     ],
     "totalLinesCovered": 346
   }

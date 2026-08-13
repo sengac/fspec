@@ -4,11 +4,11 @@
       "name": "Remove a single tag from a multi-tag scenario",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "99-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -188,11 +188,11 @@
       "name": "Remove multiple tags in one call",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "138-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -372,11 +372,11 @@
       "name": "Requested tag absent from scenario is idempotent success",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "175-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -556,11 +556,11 @@
       "name": "Remove all tags from a scenario",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "207-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -740,11 +740,11 @@
       "name": "Missing scenario is idempotent success",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "240-270",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -924,11 +924,11 @@
       "name": "Missing feature file surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "272-293",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -1108,11 +1108,11 @@
       "name": "Feature-level tags survive the mutation",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "295-327",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -1292,11 +1292,11 @@
       "name": "Tags on a sibling scenario are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_scenario.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
           "lines": "329-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
               "lines": [
                 43,
                 44,
@@ -1478,10 +1478,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_tag_from_scenario.rs"
+      "rust/fspec-core/tests/remove_tag_from_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_tag_from_scenario.rs"
+      "rust/fspec-core/src/commands/remove_tag_from_scenario.rs"
     ],
     "totalLinesCovered": 1605
   }

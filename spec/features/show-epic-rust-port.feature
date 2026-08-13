@@ -4,7 +4,7 @@
 @RPC-302
 Feature: Port show-epic command to Rust
   """
-  show-epic is the single-epic variant of list-epics (already ported under RPC-243). The Rust port reuses the existing typed `Epic` struct at codelet/fspec-core/src/types/epic.rs and the bare-catch helper `io::ensure::read_work_units_or_empty`. The epics.json read path differs from list-epics: show-epic must surface ENOENT as the canonical 'Epic <id> not found' error (NOT the empty-list fallback), so the implementation calls std::fs::read_to_string directly with explicit ErrorKind::NotFound handling.
+  show-epic is the single-epic variant of list-epics (already ported under RPC-243). The Rust port reuses the existing typed `Epic` struct at rust/fspec-core/src/types/epic.rs and the bare-catch helper `io::ensure::read_work_units_or_empty`. The epics.json read path differs from list-epics: show-epic must surface ENOENT as the canonical 'Epic <id> not found' error (NOT the empty-list fallback), so the implementation calls std::fs::read_to_string directly with explicit ErrorKind::NotFound handling.
 
   Percentage rounding differs from list-epics: show-epic uses TS `Math.round((c/t)*100*100)/100` to retain 2 decimal places (1/3 → 33.33, 2/3 → 66.67, 1/2 → 50), whereas list-epics rounds to an integer (1/3 → 33).
 
@@ -139,8 +139,8 @@ Feature: Port show-epic command to Rust
     Then the dispatcher returns success=false with an error message containing the substring 'failed to parse args'
 
   Scenario: Shared infrastructure modules already exist for reuse
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the module io::ensure::read_work_units_or_empty exists and is publicly accessible from the crate root
     Then types::epic::Epic exists with id, title, description and a flatten extra map
     Then commands/show_epic.rs delegates to these shared modules rather than embedding its own filesystem logic

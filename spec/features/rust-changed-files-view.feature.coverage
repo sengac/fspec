@@ -4,11 +4,11 @@
       "name": "Pressing F on the board opens the Changed Files view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "539-560",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 175,
                 176,
@@ -24,11 +24,11 @@
       "name": "Opening flips the Navigator to the Changed Files view and closing returns to the board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "562-582",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 140,
                 141,
@@ -46,11 +46,11 @@
       "name": "The file list renders colored status letters and a selection cursor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "67-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/row.rs",
               "lines": [
                 50,
                 51,
@@ -80,11 +80,11 @@
       "name": "The diff pane renders colored add, remove and hunk-header lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "121-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/diff_render.rs",
               "lines": [
                 40,
                 41,
@@ -107,11 +107,11 @@
       "name": "Moving the selection down reloads the diff for the newly selected file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "144-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 239,
                 240,
@@ -145,11 +145,11 @@
       "name": "Tab moves focus to the diff pane so PgDn scrolls the diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "164-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 175,
                 176,
@@ -175,11 +175,11 @@
       "name": "An empty repo shows the empty-state message and Esc returns to the board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "195-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 71,
                 72,
@@ -198,11 +198,11 @@
       "name": "A mouse wheel scroll over the focused diff pane scrolls it by the WheelVelocity step",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "214-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 191,
                 192,
@@ -234,11 +234,11 @@
       "name": "Diff pane scroll stops at the last full page",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "243-276",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 272,
                 273,
@@ -268,11 +268,11 @@
       "name": "Mouse wheel selection over the file list reloads the diff for the newly selected file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "280-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 191,
                 192,
@@ -326,11 +326,11 @@
       "name": "Mouse wheel over the diff pane scrolls the diff and leaves the file selection unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "310-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 191,
                 192,
@@ -362,11 +362,11 @@
       "name": "With the diff pane focused the Down key scrolls the diff down one line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "360-374",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 183,
                 184,
@@ -399,11 +399,11 @@
       "name": "With the diff pane focused the Up key at the top keeps the diff scroll clamped at zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "376-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 183,
                 184,
@@ -436,11 +436,11 @@
       "name": "With the diff pane focused the Down key does not change the file selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "392-406",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 183,
                 184,
@@ -463,11 +463,11 @@
       "name": "With the file list pane focused the Down key still moves the selection and reloads the diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "408-430",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
                 183,
                 184,
@@ -513,11 +513,11 @@
       "name": "A file list taller than the pane renders a scrollbar in the file list pane",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "455-474",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 101,
                 102,
@@ -580,11 +580,11 @@
       "name": "A diff longer than the pane renders a scrollbar in the diff pane",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "476-498",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 132,
                 133,
@@ -645,11 +645,11 @@
       "name": "A file list that fits the pane renders no scrollbar",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "500-537",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 101,
                 102,
@@ -693,15 +693,15 @@
     "coveredScenarios": 18,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/changed_files/tests.rs"
+      "rust/fspec-tui/src/views/changed_files/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/views/diff_common/row.rs",
-      "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
-      "codelet/fspec-tui/src/views/changed_files/mod.rs",
-      "codelet/fspec-tui/src/views/changed_files/render.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/diff_common/row.rs",
+      "rust/fspec-tui/src/views/diff_common/diff_render.rs",
+      "rust/fspec-tui/src/views/changed_files/mod.rs",
+      "rust/fspec-tui/src/views/changed_files/render.rs"
     ],
     "totalLinesCovered": 826
   }

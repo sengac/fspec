@@ -4,11 +4,11 @@
       "name": "Name-only search excludes source code matches",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "67-94",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 146,
                 147,
@@ -133,11 +133,11 @@
       "name": "Content search finds matches in source code and docstrings",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "99-135",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch_helpers.rs",
+              "file": "rust/napi/src/graph/dispatch_helpers.rs",
               "lines": [
                 59,
                 60,
@@ -177,11 +177,11 @@
       "name": "Default search mode is name-only for backward compatibility",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "140-172",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch_helpers.rs",
+              "file": "rust/napi/src/graph/dispatch_helpers.rs",
               "lines": [
                 75,
                 76,
@@ -205,11 +205,11 @@
       "name": "Decorator filter returns functions with matching decorator",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "177-209",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch_helpers.rs",
+              "file": "rust/napi/src/graph/dispatch_helpers.rs",
               "lines": [
                 88,
                 89,
@@ -247,11 +247,11 @@
       "name": "Parameter filter returns functions with matching parameter name",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "214-250",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch_helpers.rs",
+              "file": "rust/napi/src/graph/dispatch_helpers.rs",
               "lines": [
                 115,
                 116,
@@ -277,11 +277,11 @@
       "name": "Query combined with decorator filter uses AND logic",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "255-280",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 199,
                 200,
@@ -309,11 +309,11 @@
       "name": "All search mode searches every field",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "285-315",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 175,
                 176,
@@ -348,11 +348,11 @@
       "name": "Decorator matching strips leading symbols for cross-language matching",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_search_filter_test.rs",
+          "file": "rust/napi/tests/ast_search_filter_test.rs",
           "lines": "320-353",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch_helpers.rs",
+              "file": "rust/napi/src/graph/dispatch_helpers.rs",
               "lines": [
                 88,
                 89,
@@ -392,11 +392,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_search_filter_test.rs"
+      "rust/napi/tests/ast_search_filter_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_dispatch.rs",
-      "codelet/napi/src/graph/dispatch_helpers.rs"
+      "rust/napi/src/graph/ast_dispatch.rs",
+      "rust/napi/src/graph/dispatch_helpers.rs"
     ],
     "totalLinesCovered": 517
   }

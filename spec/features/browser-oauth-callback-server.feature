@@ -5,12 +5,12 @@
 @PROV-013
 Feature: Browser OAuth HTTP Server for PKCE Callback
   """
-  New file: codelet/providers/src/codex/codex_oauth_server.rs - Hyper-based HTTP server for browser OAuth flow.
+  New file: rust/providers/src/codex/codex_oauth_server.rs - Hyper-based HTTP server for browser OAuth flow.
   Binds to port 1455, serves /auth/callback and /cancel routes. Directly calls existing codex_oauth.rs
   functions (generate_pkce, generate_state, build_authorize_url, validate_oauth_callback) and codex_auth.rs
   functions (write_codex_auth) in-process. No NAPI round-trips - the entire flow stays in Rust.
   New fn exchange_authorization_code() added to codex_oauth.rs for the code-for-tokens exchange.
-  Dependencies: add hyper, hyper-util, and open crates to codelet/providers/Cargo.toml.
+  Dependencies: add hyper, hyper-util, and open crates to rust/providers/Cargo.toml.
   """
 
   # ========================================

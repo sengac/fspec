@@ -4,11 +4,11 @@
       "name": "Full index stores mtime on File nodes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_incremental_test.rs",
+          "file": "rust/napi/tests/ast_incremental_test.rs",
           "lines": "79-118",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/incremental.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/incremental.rs",
               "lines": [
                 1,
                 2,
@@ -230,11 +230,11 @@
       "name": "Incremental re-index detects no changes and skips extraction",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_incremental_test.rs",
+          "file": "rust/napi/tests/ast_incremental_test.rs",
           "lines": "123-162",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/incremental.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/incremental.rs",
               "lines": [
                 1,
                 2,
@@ -456,11 +456,11 @@
       "name": "Incremental re-index extracts only modified files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_incremental_test.rs",
+          "file": "rust/napi/tests/ast_incremental_test.rs",
           "lines": "167-244",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_index.rs",
+              "file": "rust/napi/src/graph/ast_index.rs",
               "lines": [
                 1,
                 2,
@@ -767,11 +767,11 @@
       "name": "Incremental re-index removes deleted file entities",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_incremental_test.rs",
+          "file": "rust/napi/tests/ast_incremental_test.rs",
           "lines": "249-305",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_index.rs",
+              "file": "rust/napi/src/graph/ast_index.rs",
               "lines": [
                 1,
                 2,
@@ -1078,11 +1078,11 @@
       "name": "Incremental re-index adds new file entities",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_incremental_test.rs",
+          "file": "rust/napi/tests/ast_incremental_test.rs",
           "lines": "310-391",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_index.rs",
+              "file": "rust/napi/src/graph/ast_index.rs",
               "lines": [
                 1,
                 2,
@@ -1389,11 +1389,11 @@
       "name": "Incremental falls back to full extraction on empty graph",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_incremental_test.rs",
+          "file": "rust/napi/tests/ast_incremental_test.rs",
           "lines": "396-445",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_index.rs",
+              "file": "rust/napi/src/graph/ast_index.rs",
               "lines": [
                 1,
                 2,
@@ -1706,11 +1706,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 86,
     "testFiles": [
-      "codelet/napi/tests/ast_incremental_test.rs"
+      "rust/napi/tests/ast_incremental_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/incremental.rs",
-      "codelet/napi/src/graph/ast_index.rs"
+      "rust/napi/src/graph/ast_pipeline/incremental.rs",
+      "rust/napi/src/graph/ast_index.rs"
     ],
     "totalLinesCovered": 1947
   }

@@ -4,11 +4,11 @@
       "name": "Removes the only hook and returns remainingCount=0",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "82-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -212,11 +212,11 @@
       "name": "Removing a middle entry preserves the order of remaining hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "121-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -420,11 +420,11 @@
       "name": "Removing a hook with duplicate names removes ALL matches (filter semantics)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "160-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -628,11 +628,11 @@
       "name": "Removing a hook with an associated script deletes the script file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "199-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -836,11 +836,11 @@
       "name": "Removing a hook whose script file does not exist succeeds silently",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "241-276",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1044,11 +1044,11 @@
       "name": "Unknown work unit returns InvalidArgs with the canonical message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "277-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1252,11 +1252,11 @@
       "name": "Work unit without virtualHooks field returns InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "302-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1460,11 +1460,11 @@
       "name": "Work unit with empty virtualHooks array also returns InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "327-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1668,11 +1668,11 @@
       "name": "Non-matching hookName returns InvalidArgs naming both the hook and the work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "352-386",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -1876,11 +1876,11 @@
       "name": "Empty args object is rejected as InvalidArgs mentioning missing workUnitId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "387-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -2084,11 +2084,11 @@
       "name": "Result JSON uses camelCase remainingCount key",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_virtual_hook.rs",
+          "file": "rust/fspec-core/tests/remove_virtual_hook.rs",
           "lines": "410-449",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/commands/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -2294,10 +2294,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_virtual_hook.rs"
+      "rust/fspec-core/tests/remove_virtual_hook.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_virtual_hook.rs"
+      "rust/fspec-core/src/commands/remove_virtual_hook.rs"
     ],
     "totalLinesCovered": 2480
   }

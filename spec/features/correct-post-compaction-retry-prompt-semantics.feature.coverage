@@ -4,11 +4,11 @@
       "name": "flush_partial_state_before_compaction reports whether partial assistant text was appended",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_retry_prompt_policy_test.rs",
+          "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
           "lines": "66-110",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 165,
                 166,
@@ -52,11 +52,11 @@
       "name": "flush_partial_state_before_compaction reports no append when the buffer is empty",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_retry_prompt_policy_test.rs",
+          "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
           "lines": "116-139",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 165,
                 166,
@@ -100,11 +100,11 @@
       "name": "begin_compaction_recovery returns EmbedInInstruction when no partial text exists",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_retry_prompt_policy_test.rs",
+          "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
           "lines": "145-184",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 256,
                 257,
@@ -207,11 +207,11 @@
       "name": "begin_compaction_recovery returns ResumeFromPartial when partial text was preserved",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_retry_prompt_policy_test.rs",
+          "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
           "lines": "190-223",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 256,
                 257,
@@ -314,11 +314,11 @@
       "name": "compaction_retry_prompt maps EmbedInInstruction to the literal \"Continue\" string",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_retry_prompt_policy_test.rs",
+          "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
           "lines": "229-242",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 112,
                 113,
@@ -338,11 +338,11 @@
       "name": "compaction_retry_prompt maps ResumeFromPartial to a resume prompt that references the preserved work",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_retry_prompt_policy_test.rs",
+          "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
           "lines": "248-266",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 112,
                 113,
@@ -364,10 +364,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_retry_prompt_policy_test.rs"
+      "rust/cli/tests/compaction_retry_prompt_policy_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/recovery_compaction.rs"
+      "rust/cli/src/interactive/recovery_compaction.rs"
     ],
     "totalLinesCovered": 438
   }

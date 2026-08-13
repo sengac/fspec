@@ -233,7 +233,7 @@ Feature: Inline Tool-Approval Pause Prompt
   # ─────────────────────────────────────────────────────────────────────
   Scenario: The pause modal is deleted and resume is unreachable from the prompt
     Given the codelet-fspec-tui crate sources
-    Then the file codelet/fspec-tui/src/components/pause_dialog.rs does not exist
+    Then the file rust/fspec-tui/src/components/pause_dialog.rs does not exist
     And components/mod.rs declares no OpenPauseDialog action variant
     And views/agent/pause_keys.rs and app/dispatch_pause_hitl.rs never construct Action::PauseResumed from a pause-prompt key path
     And the files pause_prompt.rs, pause_keys.rs, input_area.rs, and store/agent_view/pause_state.rs each stay under 300 lines

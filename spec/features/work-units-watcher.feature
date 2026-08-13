@@ -13,12 +13,12 @@ Feature: Pure-Rust WorkUnitsWatcher in codelet-core
   Architecture
 
   RPC-006 lifts the cross-platform `notify`-based work-units watcher out
-  of `codelet/napi/src/work_units_watcher.rs` into a new pure-Rust module
-  at `codelet/core/src/work_units.rs`. The lift drops the
+  of `rust/napi/src/work_units_watcher.rs` into a new pure-Rust module
+  at `rust/core/src/work_units.rs`. The lift drops the
   `ThreadsafeFunction` Node bridge and replaces it with a
   `tokio::sync::broadcast::Sender<Vec<WorkUnitInfo>>` so the same watcher
   instance can fan out to multiple subscribers (an embedded RPC reader
-  and the WebSocket fan-out task in codelet/rpc-server).
+  and the WebSocket fan-out task in rust/rpc-server).
 
   Public surface (pure-Rust):
   pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>>

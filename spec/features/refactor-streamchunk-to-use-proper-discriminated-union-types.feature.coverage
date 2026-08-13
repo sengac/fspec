@@ -8,7 +8,7 @@
           "lines": "20-41",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 181,
                 182,
@@ -37,7 +37,7 @@
           "lines": "43-64",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 195,
                 196,
@@ -62,7 +62,7 @@
           "lines": "66-96",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 181,
                 182,
@@ -91,7 +91,7 @@
           "lines": "98-120",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 172,
                 173,
@@ -169,7 +169,7 @@
       "src/tui/__tests__/NAPI-010-stream-chunk-discriminated-union.test.tsx"
     ],
     "implFiles": [
-      "codelet/napi/src/types.rs"
+      "rust/napi/src/types.rs"
     ],
     "totalLinesCovered": 194
   }

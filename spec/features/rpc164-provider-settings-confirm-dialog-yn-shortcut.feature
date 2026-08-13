@@ -8,10 +8,10 @@
 Feature: Provider settings: n/N as cancel shortcut in delete-confirm ConfirmDialog
   """
   TS reference: src/tui/inputHandlers/deleteConfirmModeHandler.ts handleConfirmation() function — 'y' || 'Y' → onConfirm; 'n' || 'N' || Esc → onCancel. Visible UI hint: 'Press y to confirm, n or Esc to cancel' (ProviderSettingsPanel.tsx lines 198, 225, 251).
-  Rust implementation site: codelet/fspec-tui/src/views/agent/confirm_dialog.rs ConfirmDialog::handle_key() (line 139-160). Insert two new match arms BEFORE the catch-all `_ => Ignored`: KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0) which yields Primary; KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()) which yields Cancel.
+  Rust implementation site: rust/fspec-tui/src/views/agent/confirm_dialog.rs ConfirmDialog::handle_key() (line 139-160). Insert two new match arms BEFORE the catch-all `_ => Ignored`: KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0) which yields Primary; KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()) which yields Cancel.
   The existing modifier-guard at the top of handle_key (`if mods.contains(CONTROL) || mods.contains(ALT) → Ignored`) already covers y/Y/n/N with modifiers — no extra guard required for Rule 4.
   ConfirmDialog is shared by two callers: ProviderSettingsView (delete provider credentials) and ResumeSessionView (delete session). Both benefit equally from this parity addition; no caller-side changes required since both already destructure Primary/Cancel outcomes.
-  MergeConfirmDialog (codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs) is a SEPARATE component with its own enum and is NOT covered by this work unit. Out of scope.
+  MergeConfirmDialog (rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs) is a SEPARATE component with its own enum and is NOT covered by this work unit. Out of scope.
   """
 
   # ========================================

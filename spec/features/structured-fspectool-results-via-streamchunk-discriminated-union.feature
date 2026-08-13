@@ -6,8 +6,8 @@
 Feature: Structured FspecTool Results via StreamChunk Discriminated Union
   """
   Architecture notes:
-  - Add FspecCommandRequest and FspecCommandResult types to codelet/napi/src/types.rs following CompactionResult pattern
-  - Modify FspecToolFacadeWrapper in codelet/tools/src/facade/wrapper.rs to emit FspecCommandRequest instead of FSPEC_INTERCEPT string
+  - Add FspecCommandRequest and FspecCommandResult types to rust/napi/src/types.rs following CompactionResult pattern
+  - Modify FspecToolFacadeWrapper in rust/tools/src/facade/wrapper.rs to emit FspecCommandRequest instead of FSPEC_INTERCEPT string
   - Handle FspecCommandRequest chunk in src/tui/components/AgentView.tsx using existing callFspecCommand callback mechanism
   """
 

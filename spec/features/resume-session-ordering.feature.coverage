@@ -4,11 +4,11 @@
       "name": "Sessions ordered by most recently updated first",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui099_session_list_ordering.rs",
+          "file": "rust/sessions/tests/tui099_session_list_ordering.rs",
           "lines": "70-147",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 409,
                 410,
@@ -33,11 +33,11 @@
       "name": "Sessions with identical timestamps are ordered by session ID",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui099_session_list_ordering.rs",
+          "file": "rust/sessions/tests/tui099_session_list_ordering.rs",
           "lines": "153-234",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 409,
                 410,
@@ -62,11 +62,11 @@
       "name": "Sessions without a timestamp appear at the end",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui099_session_list_ordering.rs",
+          "file": "rust/sessions/tests/tui099_session_list_ordering.rs",
           "lines": "240-324",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 409,
                 410,
@@ -93,10 +93,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/tui099_session_list_ordering.rs"
+      "rust/sessions/tests/tui099_session_list_ordering.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/session_manager.rs"
+      "rust/sessions/src/session_manager.rs"
     ],
     "totalLinesCovered": 284
   }

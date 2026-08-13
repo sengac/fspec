@@ -4,11 +4,11 @@
       "name": "Clap exposes delete-diagram with two positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "69-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_diagram.rs",
+              "file": "rust/fspec/src/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -71,11 +71,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "69-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/delete_diagram.rs",
+              "file": "rust/fspec-core/src/help/configs/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -132,11 +132,11 @@
       "name": "CLI removes a diagram by title and prints the success block on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "109-151",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_diagram.rs",
+              "file": "rust/fspec/src/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -204,11 +204,11 @@
       "name": "CLI fails with exit 1 when foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "152-180",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_diagram.rs",
+              "file": "rust/fspec/src/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -276,11 +276,11 @@
       "name": "CLI fails with exit 1 when title is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "181-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_diagram.rs",
+              "file": "rust/fspec/src/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -348,11 +348,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "211-265",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_diagram.rs",
+              "file": "rust/fspec/src/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -420,11 +420,11 @@
       "name": "delete-diagram --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_diagram.rs",
+          "file": "rust/fspec/tests/cli_delete_diagram.rs",
           "lines": "266-287",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/delete_diagram.rs",
+              "file": "rust/fspec-core/src/help/configs/delete_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -483,11 +483,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_diagram.rs"
+      "rust/fspec/tests/cli_delete_diagram.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_diagram.rs",
-      "codelet/fspec-core/src/help/configs/delete_diagram.rs"
+      "rust/fspec/src/delete_diagram.rs",
+      "rust/fspec-core/src/help/configs/delete_diagram.rs"
     ],
     "totalLinesCovered": 629
   }

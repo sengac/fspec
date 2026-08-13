@@ -4,11 +4,11 @@
       "name": "Selecting a github-copilot model right after login succeeds without restart",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_select_model_stale_cache_test.rs",
+          "file": "rust/providers/tests/copilot_select_model_stale_cache_test.rs",
           "lines": "32-86",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 223,
                 224,
@@ -30,11 +30,11 @@
       "name": "User selects github-copilot model after logging in and chats successfully",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_select_model_stale_cache_test.rs",
+          "file": "rust/providers/tests/copilot_select_model_stale_cache_test.rs",
           "lines": "89-128",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 223,
                 224,
@@ -58,10 +58,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/copilot_select_model_stale_cache_test.rs"
+      "rust/providers/tests/copilot_select_model_stale_cache_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 115
   }

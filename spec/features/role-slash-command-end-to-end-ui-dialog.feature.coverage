@@ -4,11 +4,11 @@
       "name": "parse_slash_command routes /role variants to the new RoleDialog parse outcome",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "73-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/slash_parser.rs",
+              "file": "rust/fspec-tui/src/app/slash_parser.rs",
               "lines": [
                 1,
                 2,
@@ -189,11 +189,11 @@
       "name": "Palette pick of /role on a session with no role opens the dialog with empty draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "110-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 25,
                 26,
@@ -225,11 +225,11 @@
       "name": "Palette pick of /role on a session with an existing role pre-fills the dialog draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "146-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 25,
                 26,
@@ -261,11 +261,11 @@
       "name": "Palette pick of /role with no active session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "177-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 31,
                 32,
@@ -284,11 +284,11 @@
       "name": "Submitting bare \"/role\" opens the RoleDialog (no longer clears the role)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "198-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 200,
                 201,
@@ -310,11 +310,11 @@
       "name": "Submitting \"/role You are a code reviewer\" sets the role directly without opening the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "228-255",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 207,
                 208,
@@ -330,11 +330,11 @@
       "name": "Submitting \"/role clear\" clears the role directly without opening the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "257-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 197,
                 198,
@@ -350,11 +350,11 @@
       "name": "Opening the RoleDialog is idempotent when the dialog is already on the Compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_role_rpc063.rs",
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
           "lines": "286-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 35,
                 36,
@@ -371,12 +371,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_role_rpc063.rs"
+      "rust/fspec-tui/tests/slash_role_rpc063.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/slash_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
+      "rust/fspec-tui/src/app/slash_parser.rs",
+      "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 475
   }

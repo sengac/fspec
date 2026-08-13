@@ -2,7 +2,7 @@
 @RPC-169
 Feature: fspec add-assumption CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_assumption.rs — clap-derived struct mirroring TS Commander.js registration
+  CLI bridge: rust/fspec/src/add_assumption.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/add-assumption.ts:65-80). Surface: `fspec add-assumption <work-unit-id> <assumption>`.
   Stdout (success): '✓ Assumption added successfully'. Stderr (failure): '✗ Failed to add assumption: <message>'; exit code 1. Mirrors TS `output.error('✗ Failed to add assumption:', ...)`.
   Help fixture captured from `node dist/index.js add-assumption --help`.
@@ -17,7 +17,7 @@ Feature: fspec add-assumption CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-assumption --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-assumption.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-assumption.txt
     And stdout starts with a blank line followed by 'ADD-ASSUMPTION'
 
   Scenario: CLI successfully appends an assumption and prints the success line
@@ -41,4 +41,4 @@ Feature: fspec add-assumption CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-assumption AUTH-001 "A2"` afterwards exits 0
     And spec/work-units.json on disk shows AUTH-001.assumptions has length 2
-    And the CLI bridge module codelet/fspec/src/add_assumption.rs contains NO inline append, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_assumption.rs contains NO inline append, status guard, or file-write logic — its only computation is JSON arg marshalling

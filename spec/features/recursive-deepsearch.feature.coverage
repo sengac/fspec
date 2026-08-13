@@ -4,11 +4,11 @@
       "name": "Sub-agent includes DeepSearchTool when below max recursion depth",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "26-43",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 126,
                 127,
@@ -51,11 +51,11 @@
       "name": "Sub-agent excludes DeepSearchTool at max recursion depth (base case)",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "49-69",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 126,
                 127,
@@ -98,11 +98,11 @@
       "name": "Default max recursion depth is 2",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "75-93",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 43,
                 44,
@@ -120,11 +120,11 @@
       "name": "Recursive child delegates to grandchild with incremented depth",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "100-124",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 126,
                 127,
@@ -167,11 +167,11 @@
       "name": "Grandchild at max depth cannot recurse further",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "130-155",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 126,
                 127,
@@ -214,11 +214,11 @@
       "name": "Recursive child registers its own handlers with ephemeral UUID",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "161-190",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 112,
                 113,
@@ -275,11 +275,11 @@
       "name": "Handler cleanup chain fires at each recursion level",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "196-234",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 49,
                 50,
@@ -300,11 +300,11 @@
       "name": "max_recursion_depth and max_depth are independent controls",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "240-258",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 39,
                 40,
@@ -326,11 +326,11 @@
       "name": "System prompt teaches RLM decomposition strategy when recursion enabled",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "264-301",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 180,
                 181,
@@ -400,11 +400,11 @@
       "name": "System prompt omits DeepSearch at max recursion depth",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "307-334",
           "implMappings": [
             {
-              "file": "codelet/tools/src/deep_search/mod.rs",
+              "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
                 180,
                 181,
@@ -474,11 +474,11 @@
       "name": "Recursive children work with all providers",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "340-384",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 310,
                 311,
@@ -559,11 +559,11 @@
       "name": "Recursive decomposition over a large codebase",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "390-433",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 88,
                 89,
@@ -662,11 +662,11 @@
       "name": "Recursive decomposition over session history",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "file": "rust/tools/src/deep_search/recursive_tests.rs",
           "lines": "439-480",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 88,
                 89,
@@ -767,11 +767,11 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/deep_search/recursive_tests.rs"
+      "rust/tools/src/deep_search/recursive_tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/deep_search_handler.rs",
-      "codelet/tools/src/deep_search/mod.rs"
+      "rust/napi/src/deep_search_handler.rs",
+      "rust/tools/src/deep_search/mod.rs"
     ],
     "totalLinesCovered": 1330
   }

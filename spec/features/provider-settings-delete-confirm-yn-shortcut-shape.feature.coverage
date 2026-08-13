@@ -4,11 +4,11 @@
       "name": "confirm_dialog.rs handle_key binds n/N as cancel shortcut",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
           "lines": "68-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 163,
                 164,
@@ -23,11 +23,11 @@
       "name": "confirm_dialog.rs handle_key binds y/Y as primary shortcut",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
           "lines": "89-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 162
               ]
@@ -40,11 +40,11 @@
       "name": "n/N arm is wired to the cancel-index outcome path (not focused-index)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
           "lines": "109-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 102,
                 103,
@@ -59,11 +59,11 @@
       "name": "handle_key modifier guard rejects Ctrl/Alt + y|Y|n|N",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
           "lines": "128-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 140,
                 141,
@@ -80,10 +80,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs"
+      "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/confirm_dialog.rs"
+      "rust/fspec-tui/src/views/agent/confirm_dialog.rs"
     ],
     "totalLinesCovered": 81
   }

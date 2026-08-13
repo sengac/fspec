@@ -4,11 +4,11 @@
       "name": "parse_schedule_command resolves bare /schedule to Help",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "470-478",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -39,11 +39,11 @@
       "name": "parse_schedule_command resolves /schedule list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "483-491",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -152,11 +152,11 @@
       "name": "parse_schedule_command resolves a full /schedule add agent command",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "496-526",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -265,11 +265,11 @@
       "name": "parse_schedule_command infers shell job_type from --command flag",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "531-559",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -378,11 +378,11 @@
       "name": "parse_schedule_command resolves /schedule pause <name>",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "564-575",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -491,11 +491,11 @@
       "name": "parse_schedule_command resolves /schedule resume <name>",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "580-591",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -604,11 +604,11 @@
       "name": "parse_schedule_command resolves /schedule remove <name>",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "596-607",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -717,11 +717,11 @@
       "name": "parse_schedule_command falls back to Help on an unknown subcommand",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "612-620",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/schedule_parser.rs",
+              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
               "lines": [
                 92,
                 93,
@@ -830,11 +830,11 @@
       "name": "parse_slash_command routes a /schedule submit-line input to ScheduleSubcommand",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "625-635",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/slash_parser.rs",
+              "file": "rust/fspec-tui/src/app/slash_parser.rs",
               "lines": [
                 100,
                 101,
@@ -857,11 +857,11 @@
       "name": "/schedule popup pick with no current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "94-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 47,
                 48,
@@ -885,11 +885,11 @@
       "name": "/schedule popup pick with an open session emits the Help notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "124-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 47,
                 48,
@@ -913,11 +913,11 @@
       "name": "/schedule list with two schedules emits a multi-line list notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "157-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 112,
                 113,
@@ -949,11 +949,11 @@
       "name": "/schedule list with no schedules emits \"No schedules configured.\"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "197-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 112,
                 113,
@@ -985,11 +985,11 @@
       "name": "/schedule add success emits the \"added\" notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "225-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 92,
                 93,
@@ -1021,11 +1021,11 @@
       "name": "/schedule add error emits an error notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "270-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 92,
                 93,
@@ -1057,11 +1057,11 @@
       "name": "/schedule pause success emits the \"paused\" notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "307-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 132,
                 133,
@@ -1093,11 +1093,11 @@
       "name": "/schedule pause unknown schedule emits an error notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "346-370",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 132,
                 133,
@@ -1129,11 +1129,11 @@
       "name": "/schedule resume success emits the \"resumed\" notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "377-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 152,
                 153,
@@ -1165,11 +1165,11 @@
       "name": "/schedule remove success emits the \"removed\" notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "416-448",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 172,
                 173,
@@ -1203,11 +1203,11 @@
       "name": "Bare /schedule submit-line input emits the Help notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs",
+          "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
           "lines": "455-484",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 47,
                 48,
@@ -1265,12 +1265,12 @@
     "coveredScenarios": 20,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/schedule_dispatch_rpc058.rs"
+      "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/schedule_parser.rs",
-      "codelet/fspec-tui/src/app/slash_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs"
+      "rust/fspec-tui/src/app/schedule_parser.rs",
+      "rust/fspec-tui/src/app/slash_parser.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_schedule.rs"
     ],
     "totalLinesCovered": 1404
   }

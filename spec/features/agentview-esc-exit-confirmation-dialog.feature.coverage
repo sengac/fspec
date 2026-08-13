@@ -4,11 +4,11 @@
       "name": "Idle session ESC opens dialog with idle description and Detach focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "184-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 70,
                 71,
@@ -35,11 +35,11 @@
       "name": "Running session ESC first interrupts then second ESC opens dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "275-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 45,
                 46,
@@ -91,11 +91,11 @@
       "name": "Compacting session ESC routes to interrupt and not to dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "321-345",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 45,
                 46,
@@ -116,11 +116,11 @@
       "name": "No active session ESC dispatches BackToBoard without dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "346-375",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 40,
                 41,
@@ -138,11 +138,11 @@
       "name": "Cyclic Left/Right navigation across the three buttons",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "376-411",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
               "lines": [
                 125,
                 126,
@@ -174,11 +174,11 @@
       "name": "Enter on Detach dispatches BackToBoard without destroying the session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "412-446",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
               "lines": [
                 30,
                 31,
@@ -193,11 +193,11 @@
       "name": "Enter on Close Session destroys the session then dispatches BackToBoard",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "447-510",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
               "lines": [
                 44,
                 45,
@@ -271,11 +271,11 @@
       "name": "Enter on Cancel removes the dialog and stays on AgentView",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "489-525",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
               "lines": [
                 25,
                 26,
@@ -292,11 +292,11 @@
       "name": "ESC inside the dialog is equivalent to Cancel",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "526-556",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
               "lines": [
                 170,
                 171,
@@ -315,11 +315,11 @@
       "name": "Pressing ESC twice from L7 only opens one dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "557-608",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 70,
                 71,
@@ -336,11 +336,11 @@
       "name": "Snapshot of the dialog rendered on 80x24 with is_busy=true",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "609-663",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
               "lines": [
                 212,
                 213,
@@ -435,11 +435,11 @@
       "name": "Snapshot of the dialog rendered on 80x24 with is_busy=false",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "664-714",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
               "lines": [
                 212,
                 213,
@@ -534,11 +534,11 @@
       "name": "End-to-end App render overlays the dialog on top of the AgentView chrome",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "715-774",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 70,
                 71,
@@ -565,11 +565,11 @@
       "name": "Shift+Right on the same work unit after Close Session does not navigate back to the destroyed session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "620-679",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
               "lines": [
                 44,
                 45,
@@ -643,11 +643,11 @@
       "name": "Cycling sessions in AgentView after Close Session does not list the destroyed session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "file": "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
           "lines": "517-615",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
               "lines": [
                 44,
                 45,
@@ -723,12 +723,12 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs"
+      "rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
-      "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_agent_exit.rs"
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+      "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_agent_exit.rs"
     ],
     "totalLinesCovered": 1249
   }

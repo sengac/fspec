@@ -4,11 +4,11 @@
       "name": "MouseTrackingToggle::temporarily_disable writes DisableMouseCapture bytes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mouse_toggle_rpc023.rs",
+          "file": "rust/fspec-tui/tests/mouse_toggle_rpc023.rs",
           "lines": "47-65",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/toggle.rs",
+              "file": "rust/fspec-tui/src/mouse/toggle.rs",
               "lines": [
                 82,
                 83,
@@ -34,11 +34,11 @@
       "name": "MouseTrackingToggle::re_enable writes EnableMouseCapture bytes once",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mouse_toggle_rpc023.rs",
+          "file": "rust/fspec-tui/tests/mouse_toggle_rpc023.rs",
           "lines": "68-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/toggle.rs",
+              "file": "rust/fspec-tui/src/mouse/toggle.rs",
               "lines": [
                 101,
                 102,
@@ -57,11 +57,11 @@
       "name": "MouseTrackingToggle::Drop re-enables capture when still disabled",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mouse_toggle_rpc023.rs",
+          "file": "rust/fspec-tui/tests/mouse_toggle_rpc023.rs",
           "lines": "103-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/toggle.rs",
+              "file": "rust/fspec-tui/src/mouse/toggle.rs",
               "lines": [
                 117,
                 118,
@@ -81,11 +81,11 @@
       "name": "Repeated temporarily_disable restarts the debounce timer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/mouse_toggle_rpc023.rs",
+          "file": "rust/fspec-tui/tests/mouse_toggle_rpc023.rs",
           "lines": "128-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/toggle.rs",
+              "file": "rust/fspec-tui/src/mouse/toggle.rs",
               "lines": [
                 82,
                 83,
@@ -113,10 +113,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/mouse_toggle_rpc023.rs"
+      "rust/fspec-tui/tests/mouse_toggle_rpc023.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/mouse/toggle.rs"
+      "rust/fspec-tui/src/mouse/toggle.rs"
     ],
     "totalLinesCovered": 150
   }

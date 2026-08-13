@@ -4,11 +4,11 @@
       "name": "Search for a function by name using AstSearch action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_query_interface_test.rs",
+          "file": "rust/napi/tests/ast_query_interface_test.rs",
           "lines": "49-78",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 49,
                 50,
@@ -72,11 +72,11 @@
       "name": "Get neighbors of a Function node using AstNeighbors action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_query_interface_test.rs",
+          "file": "rust/napi/tests/ast_query_interface_test.rs",
           "lines": "83-117",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 111,
                 112,
@@ -129,11 +129,11 @@
       "name": "Get AST codebase statistics using AstStats action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_query_interface_test.rs",
+          "file": "rust/napi/tests/ast_query_interface_test.rs",
           "lines": "122-158",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 157,
                 158,
@@ -150,10 +150,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_query_interface_test.rs"
+      "rust/napi/tests/ast_query_interface_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_dispatch.rs"
+      "rust/napi/src/graph/ast_dispatch.rs"
     ],
     "totalLinesCovered": 198
   }

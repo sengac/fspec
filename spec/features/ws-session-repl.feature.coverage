@@ -4,11 +4,11 @@
       "name": "WebSocket list_sessions matches the embedded transport result",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/ws_session_repl.rs",
+          "file": "rust/rpc-server/tests/ws_session_repl.rs",
           "lines": "63-108",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 1,
                 2,
@@ -280,11 +280,11 @@
       "name": "WebSocket create_session + send_input yields the same chunk sequence as embedded (cross-transport parity)",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/ws_session_repl.rs",
+          "file": "rust/rpc-server/tests/ws_session_repl.rs",
           "lines": "110-174",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 180,
                 181,
@@ -337,11 +337,11 @@
       "name": "WebSocket get_session_status reflects Idle to Running to Idle transitions",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/ws_session_repl.rs",
+          "file": "rust/rpc-server/tests/ws_session_repl.rs",
           "lines": "176-233",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 100,
                 101,
@@ -516,10 +516,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/ws_session_repl.rs"
+      "rust/rpc-server/tests/ws_session_repl.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/server.rs"
+      "rust/rpc-server/src/server.rs"
     ],
     "totalLinesCovered": 631
   }

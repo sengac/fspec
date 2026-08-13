@@ -12,7 +12,7 @@ Feature: RPC-013 AgentView footer — placeholder hint for the RPC-013 slice
   placeholder hint. The rich `~/projects/fspec [⌥ codelet-integration]`
   form lands in RPC-018.
 
-  Pair: tests live in codelet/fspec-tui/tests/view_agent_unit_rpc013.rs.
+  Pair: tests live in rust/fspec-tui/tests/view_agent_unit_rpc013.rs.
   """
 
   Background: User Story

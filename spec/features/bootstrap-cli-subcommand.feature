@@ -5,7 +5,7 @@
 @RPC-200
 Feature: Port bootstrap command to Rust (CLI subcommand)
   """
-  Clap surface for the ported bootstrap command. The CLI bridge codelet/fspec/src/bootstrap.rs is a thin façade that marshals JSON args and forwards to fspec_core::commands::bootstrap::run(args_json, project_root); it contains no documentation-building or transform logic. bootstrap takes no positional arguments and no flags. Help output is byte-parity with the captured TypeScript fixture at codelet/fspec/tests/fixtures/help/bootstrap.txt. SHARED-FILE CHANGES are owned by the supervisor (see bootstrap-rust-port.feature docstring).
+  Clap surface for the ported bootstrap command. The CLI bridge rust/fspec/src/bootstrap.rs is a thin façade that marshals JSON args and forwards to fspec_core::commands::bootstrap::run(args_json, project_root); it contains no documentation-building or transform logic. bootstrap takes no positional arguments and no flags. Help output is byte-parity with the captured TypeScript fixture at rust/fspec/tests/fixtures/help/bootstrap.txt. SHARED-FILE CHANGES are owned by the supervisor (see bootstrap-rust-port.feature docstring).
   """
 
   # ========================================
@@ -31,7 +31,7 @@ Feature: Port bootstrap command to Rust (CLI subcommand)
     Given the fspec Rust binary has been compiled
     When I run `fspec bootstrap --help` piped to non-TTY
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/bootstrap.txt
+    Then stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/bootstrap.txt
     Then stdout starts with a blank line followed by "BOOTSTRAP"
 
   Scenario: CLI prints the complete documentation and exits 0

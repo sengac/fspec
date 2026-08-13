@@ -9,7 +9,7 @@
 @RPC-034
 Feature: NAPI Re-Export Shim For Blob Store
   """
-  The NAPI persistence module retains its existing public surface (codelet_napi::persistence::*) after RPC-034 lifts BlobStore + should_use_blob_storage + blob_processing helpers. codelet/napi/src/persistence/blob.rs and codelet/napi/src/persistence/blob_processing.rs are deleted outright. codelet/napi/src/persistence/mod.rs further shrinks (losing the blob+blob_processing module declarations, the BLOB_STORE lazy_static singleton, and the init_blob_store/store_blob/get_blob/blob_exists facade) and becomes a ~30-line thin facade that keeps only set_data_directory (delegating persistence resets to codelet_core::persistence::reset_stores_for_tests which is widened to cover BLOB_STORE), get_data_dir, the History wrappers, and the pub use codelet_core::persistence::*; flat re-export. All internal NAPI modules (session_manager.rs, session_search_handler.rs, persistence/napi_bindings.rs, persistence/tests.rs, persistence/lazy_init_tests.rs) continue to use crate::persistence::{BlobStore, store_blob, get_blob, blob_exists, BLOB_REF_PREFIX, is_blob_reference, extract_blob_hash, make_blob_reference, process_envelope_for_blob_storage, rehydrate_envelope_blobs, should_use_blob_storage} paths unchanged. Lift precedent: matches RPC-025 (history.rs), RPC-026 (sessions.rs delete_session), RPC-031 (message_envelope.rs), RPC-032 (message store), and RPC-033 (session store).
+  The NAPI persistence module retains its existing public surface (codelet_napi::persistence::*) after RPC-034 lifts BlobStore + should_use_blob_storage + blob_processing helpers. rust/napi/src/persistence/blob.rs and rust/napi/src/persistence/blob_processing.rs are deleted outright. rust/napi/src/persistence/mod.rs further shrinks (losing the blob+blob_processing module declarations, the BLOB_STORE lazy_static singleton, and the init_blob_store/store_blob/get_blob/blob_exists facade) and becomes a ~30-line thin facade that keeps only set_data_directory (delegating persistence resets to codelet_core::persistence::reset_stores_for_tests which is widened to cover BLOB_STORE), get_data_dir, the History wrappers, and the pub use codelet_core::persistence::*; flat re-export. All internal NAPI modules (session_manager.rs, session_search_handler.rs, persistence/napi_bindings.rs, persistence/tests.rs, persistence/lazy_init_tests.rs) continue to use crate::persistence::{BlobStore, store_blob, get_blob, blob_exists, BLOB_REF_PREFIX, is_blob_reference, extract_blob_hash, make_blob_reference, process_envelope_for_blob_storage, rehydrate_envelope_blobs, should_use_blob_storage} paths unchanged. Lift precedent: matches RPC-025 (history.rs), RPC-026 (sessions.rs delete_session), RPC-031 (message_envelope.rs), RPC-032 (message store), and RPC-033 (session store).
   """
 
   Background: User Story
@@ -18,10 +18,10 @@ Feature: NAPI Re-Export Shim For Blob Store
     So that every existing crate::persistence::* import in codelet-napi continues to compile, the on-disk blob layout and BLOB_REF_PREFIX wire format remain byte-identical after the lift, and lazy-initialization invariants for the moved BLOB_STORE singleton are observable from NAPI tests via codelet_core::persistence test accessors
 
   Scenario: NAPI re-export shim preserves existing crate::persistence imports for blob types
-    Given codelet/napi/src/persistence/blob.rs is deleted and codelet/napi/src/persistence/blob_processing.rs is deleted
+    Given rust/napi/src/persistence/blob.rs is deleted and rust/napi/src/persistence/blob_processing.rs is deleted
     When internal NAPI modules continue to write `use crate::persistence::{BlobStore, store_blob, get_blob, blob_exists, BLOB_REF_PREFIX, is_blob_reference, extract_blob_hash, make_blob_reference, process_envelope_for_blob_storage, rehydrate_envelope_blobs, should_use_blob_storage}` unchanged
     Then the imports resolve to the codelet-core types
-    And codelet/napi/src/persistence/mod.rs re-exports the lifted surface via `pub use codelet_core::persistence::*;`
+    And rust/napi/src/persistence/mod.rs re-exports the lifted surface via `pub use codelet_core::persistence::*;`
     And `cargo build -p codelet-napi` succeeds without modification of those importing modules
 
   Scenario: All NAPI persistence test suites continue to pass after the blob store lift

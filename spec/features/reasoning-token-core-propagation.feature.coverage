@@ -4,11 +4,11 @@
       "name": "TokenDisplayUpdate propagates reasoning tokens from Usage",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_012_reasoning_token_propagation_test.rs",
+          "file": "rust/core/tests/rig_012_reasoning_token_propagation_test.rs",
           "lines": "24-50",
           "implMappings": [
             {
-              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
                 11,
                 12,
@@ -61,11 +61,11 @@
       "name": "StreamingTokenDisplay propagates reasoning from final response",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_012_reasoning_token_propagation_test.rs",
+          "file": "rust/core/tests/rig_012_reasoning_token_propagation_test.rs",
           "lines": "86-107",
           "implMappings": [
             {
-              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
                 217,
                 218,
@@ -106,11 +106,11 @@
       "name": "Compaction TokenTracker includes reasoning in total_tokens",
       "testMappings": [
         {
-          "file": "codelet/core/tests/rig_012_reasoning_token_propagation_test.rs",
+          "file": "rust/core/tests/rig_012_reasoning_token_propagation_test.rs",
           "lines": "147-216",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 57,
                 58,
@@ -166,11 +166,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/rig_012_reasoning_token_propagation_test.rs"
+      "rust/core/tests/rig_012_reasoning_token_propagation_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/streaming_display/streaming_token_display.rs",
-      "codelet/core/src/compaction/model.rs"
+      "rust/core/src/streaming_display/streaming_token_display.rs",
+      "rust/core/src/compaction/model.rs"
     ],
     "totalLinesCovered": 231
   }

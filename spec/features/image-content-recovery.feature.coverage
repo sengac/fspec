@@ -4,11 +4,11 @@
       "name": "Session recovers when API rejects image content with 400 error",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/image_content_recovery_test.rs",
+          "file": "rust/cli/tests/image_content_recovery_test.rs",
           "lines": "23-75",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 66,
                 67,
@@ -120,11 +120,11 @@
       "name": "Session survives any content-related 400 error",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/image_content_recovery_test.rs",
+          "file": "rust/cli/tests/image_content_recovery_test.rs",
           "lines": "82-103",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 66,
                 67,
@@ -165,10 +165,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/image_content_recovery_test.rs"
+      "rust/cli/tests/image_content_recovery_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 255
   }

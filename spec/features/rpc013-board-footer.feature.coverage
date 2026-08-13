@@ -4,11 +4,11 @@
       "name": "BoardView renders the literal TS UnifiedBoardLayout footer string",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc013.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc013.rs",
           "lines": "74-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 211,
                 212,
@@ -51,11 +51,11 @@
       "name": "BoardView footer omits the legacy `? help q quit Tab switch pane` hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc013.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc013.rs",
           "lines": "97-109",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 211,
                 212,
@@ -98,11 +98,11 @@
       "name": "BoardView paints headers above the footer in its own area",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_board_unit_rpc013.rs",
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc013.rs",
           "lines": "112-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 118,
                 119,
@@ -159,10 +159,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_board_unit_rpc013.rs"
+      "rust/fspec-tui/tests/view_board_unit_rpc013.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 159
   }

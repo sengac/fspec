@@ -4,11 +4,11 @@
       "name": "Clap exposes show-feature as a subcommand and prints flag-aware help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "52-89",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_feature.rs",
+              "file": "rust/fspec/src/show_feature.rs",
               "lines": [
                 1,
                 2,
@@ -99,11 +99,11 @@
       "name": "show-feature against a workspace with no spec/features prints feature-not-found and exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "90-121",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_feature.rs",
+              "file": "rust/fspec/src/show_feature.rs",
               "lines": [
                 44,
                 45,
@@ -130,11 +130,11 @@
       "name": "CLI text output renders feature contents and Work Units None for a tag-free feature",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "122-157",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_feature.rs",
+              "file": "rust/fspec/src/show_feature.rs",
               "lines": [
                 60,
                 61,
@@ -165,11 +165,11 @@
       "name": "CLI text output renders Work Unit progress block when the feature carries a work-unit tag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "158-205",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_feature.rs",
+              "file": "rust/fspec/src/show_feature.rs",
               "lines": [
                 30,
                 31,
@@ -230,11 +230,11 @@
       "name": "show-feature --help is byte-for-byte identical to TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "206-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/show_feature.rs",
+              "file": "rust/fspec-core/src/help/configs/show_feature.rs",
               "lines": [
                 1,
                 2,
@@ -288,11 +288,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "236-274",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_feature.rs",
+              "file": "rust/fspec/src/show_feature.rs",
               "lines": [
                 1,
                 2,
@@ -334,11 +334,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "file": "rust/fspec/tests/cli_show_feature.rs",
           "lines": "275-342",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_feature.rs",
+              "file": "rust/fspec/src/show_feature.rs",
               "lines": [
                 30,
                 31,
@@ -401,11 +401,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_feature.rs"
+      "rust/fspec/tests/cli_show_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/show_feature.rs",
-      "codelet/fspec-core/src/help/configs/show_feature.rs"
+      "rust/fspec/src/show_feature.rs",
+      "rust/fspec-core/src/help/configs/show_feature.rs"
     ],
     "totalLinesCovered": 574
   }

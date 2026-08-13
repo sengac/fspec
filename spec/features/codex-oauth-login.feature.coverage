@@ -4,11 +4,11 @@
       "name": "Browser OAuth login with PKCE completes successfully",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "62-112",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 62,
                 63,
@@ -147,11 +147,11 @@
           ]
         },
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "62-112",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 62,
                 63,
@@ -295,11 +295,11 @@
       "name": "Device auth login for headless environments",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "117-148",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 22,
                 23,
@@ -312,11 +312,11 @@
           ]
         },
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "117-148",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 22,
                 23,
@@ -334,11 +334,11 @@
       "name": "Access token auto-refresh when expired",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "153-196",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 237,
                 238,
@@ -388,11 +388,11 @@
       "name": "Account ID extracted from JWT id_token claims",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "201-228",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 91,
                 92,
@@ -459,11 +459,11 @@
       "name": "Account ID extracted from nested JWT claims",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "233-250",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 107,
                 108,
@@ -484,11 +484,11 @@
       "name": "Account ID extracted from organizations claim as fallback",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "255-270",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 117,
                 118,
@@ -511,11 +511,11 @@
       "name": "OAuth callback rejects mismatched state parameter",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "275-299",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 196,
                 197,
@@ -542,11 +542,11 @@
       "name": "Browser OAuth times out after 5 minutes",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "304-319",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 276,
                 277,
@@ -580,11 +580,11 @@
       "name": "API requests rewritten to Codex endpoint with OAuth headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "324-350",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 213,
                 214,
@@ -619,11 +619,11 @@
       "name": "Existing credentials used without fresh login",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "355-391",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 76,
                 77,
@@ -672,11 +672,11 @@
       "name": "PKCE code verifier meets RFC 7636 requirements",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "file": "rust/providers/tests/codex_oauth_test.rs",
           "lines": "22-57",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 46,
                 47,
@@ -728,11 +728,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/codex_oauth_test.rs"
+      "rust/providers/tests/codex_oauth_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/codex/codex_oauth.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/providers/src/codex/codex_oauth.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 937
   }

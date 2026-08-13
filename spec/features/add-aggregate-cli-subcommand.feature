@@ -2,7 +2,7 @@
 @RPC-165
 Feature: fspec add-aggregate CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_aggregate.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/add_aggregate.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-aggregate.ts:152-189). Surface:
   `fspec add-aggregate <workUnitId> <text> [--responsibilities <list>] [--timestamp <ms>]
   [--bounded-context <context>]`.
@@ -33,7 +33,7 @@ Feature: fspec add-aggregate CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-aggregate --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-aggregate.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-aggregate.txt
     And stdout starts with a blank line followed by 'ADD-AGGREGATE'
 
   Scenario: CLI persists the aggregate but produces no output and exits 1 (TS logger.success bug parity)
@@ -60,4 +60,4 @@ Feature: fspec add-aggregate CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-aggregate AUTH-001 "A2"` afterwards exits 1 with no console output (TS logger.success bug parity)
     And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
-    And the CLI bridge module codelet/fspec/src/add_aggregate.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_aggregate.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

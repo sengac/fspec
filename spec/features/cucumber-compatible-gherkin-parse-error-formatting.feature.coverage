@@ -4,11 +4,11 @@
       "name": "Validate a no-Feature-keyword file reports cucumber vocabulary on Line 0",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cucumber_parse_error.rs",
+          "file": "rust/fspec-core/tests/cucumber_parse_error.rs",
           "lines": "42-102",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin.rs",
+              "file": "rust/fspec-core/src/io/gherkin.rs",
               "lines": [
                 291,
                 292,
@@ -52,7 +52,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-core/src/commands/validate.rs",
+              "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
                 232,
                 233,
@@ -78,11 +78,11 @@
       "name": "Validate a no-Feature-keyword file with unindented step keywords",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cucumber_parse_error.rs",
+          "file": "rust/fspec-core/tests/cucumber_parse_error.rs",
           "lines": "104-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin.rs",
+              "file": "rust/fspec-core/src/io/gherkin.rs",
               "lines": [
                 291,
                 292,
@@ -133,11 +133,11 @@
       "name": "A file with a Feature keyword that fails later stays out of scope",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/cucumber_parse_error.rs",
+          "file": "rust/fspec-core/tests/cucumber_parse_error.rs",
           "lines": "157-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/gherkin.rs",
+              "file": "rust/fspec-core/src/io/gherkin.rs",
               "lines": [
                 291,
                 292,
@@ -190,11 +190,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/cucumber_parse_error.rs"
+      "rust/fspec-core/tests/cucumber_parse_error.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/io/gherkin.rs",
-      "codelet/fspec-core/src/commands/validate.rs"
+      "rust/fspec-core/src/io/gherkin.rs",
+      "rust/fspec-core/src/commands/validate.rs"
     ],
     "totalLinesCovered": 279
   }

@@ -1,7 +1,7 @@
 @KGRAPH-056
 Feature: Add Dart language support to AstGrep and AstGrepRefactor tools via tree-sitter-dart 0.1.0
   """
-  Create a LanguageChoice enum to unify SupportLang variants with custom DartLang — both tools dispatch through this enum. The DartLang struct lives in a new codelet/tools/src/dart_lang.rs module shared by astgrep.rs and astgrep_refactor.rs.
+  Create a LanguageChoice enum to unify SupportLang variants with custom DartLang — both tools dispatch through this enum. The DartLang struct lives in a new rust/tools/src/dart_lang.rs module shared by astgrep.rs and astgrep_refactor.rs.
   The LLM tool description JSON schema (TypeScript side) must also add 'dart' to the language enum so models know they can request Dart searches.
   """
 
@@ -10,7 +10,7 @@ Feature: Add Dart language support to AstGrep and AstGrepRefactor tools via tree
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. tree-sitter-dart v0.1.0 must be added as a direct dependency to codelet/tools since ast-grep upstream removed builtin Dart support in v0.30.0
+  #   1. tree-sitter-dart v0.1.0 must be added as a direct dependency to rust/tools since ast-grep upstream removed builtin Dart support in v0.30.0
   #   2. A custom DartLang struct must implement ast-grep-core's Language trait — no expando_char needed since $ is valid in Dart identifiers (same as Java/JS/Bash in ast-grep)
   #   3. Both AstGrepTool and AstGrepRefactorTool must recognize 'dart' as a language string and dispatch to the custom DartLang
   #   4. The get_extensions() function must map Dart to ["dart"] so directory-walking file search finds .dart files

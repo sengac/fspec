@@ -4,11 +4,11 @@
       "name": "Consecutive Text deltas accumulate into a single in-flight assistant chunk",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "97-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 19,
                 20,
@@ -42,11 +42,11 @@
       "name": "Bullet glyph is applied by the renderer only on lineIndex==0 of the first wrapped line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "146-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 169,
                 170,
@@ -98,11 +98,11 @@
       "name": "Done flushes the in-flight assistant slot and emits no new chunk",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "177-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 123,
                 124,
@@ -137,11 +137,11 @@
       "name": "Done runs formatMarkdownTables over the accumulated assistant text",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "210-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_tables.rs",
               "lines": [
                 1,
                 2,
@@ -263,11 +263,11 @@
       "name": "ToolCall flushes the in-flight assistant text and pushes a tool-call card",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "302-342",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 42,
                 43,
@@ -294,11 +294,11 @@
       "name": "ToolCall drops an empty in-flight assistant placeholder instead of finalising it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "344-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 161,
                 162,
@@ -329,11 +329,11 @@
       "name": "ToolResult attaches to the matching tool-call header and pushes a fresh placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "383-434",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 58,
                 59,
@@ -382,11 +382,11 @@
       "name": "ToolResult with is_error true colours the body via the isError flag",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "436-480",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 169,
                 170,
@@ -410,11 +410,11 @@
       "name": "Continuation Text after ToolResult starts a new AssistantText bubble",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "482-521",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 82,
                 83,
@@ -439,11 +439,11 @@
       "name": "ToolProgress is folded under the matching tool-call card and does not push a new top-level chunk",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "523-554",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 96,
                 97,
@@ -481,11 +481,11 @@
       "name": "Error drops a trailing empty in-flight placeholder before pushing the API Error line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "556-585",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 147,
                 148,
@@ -510,11 +510,11 @@
       "name": "extractToolArgsDisplay collapses Bash command to a one-line summary",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "587-601",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/tool_args.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/tool_args.rs",
               "lines": [
                 18,
                 19,
@@ -563,11 +563,11 @@
       "name": "extractToolArgsDisplay collapses Fspec command to the command subcommand",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "603-618",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/tool_args.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/tool_args.rs",
               "lines": [
                 18,
                 19,
@@ -616,11 +616,11 @@
       "name": "Full round-trip: user asks, assistant thinks, calls a tool, continues, finishes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
+          "file": "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs",
           "lines": "620-665",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 67,
                 68,
@@ -698,13 +698,13 @@
     "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/chunkprocessor_parity_rpc091.rs"
+      "rust/fspec-tui/tests/chunkprocessor_parity_rpc091.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs",
-      "codelet/fspec-tui/src/store/agent_view/markdown_tables.rs",
-      "codelet/fspec-tui/src/store/agent_view/tool_args.rs"
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "rust/fspec-tui/src/store/agent_view/session_context.rs",
+      "rust/fspec-tui/src/store/agent_view/markdown_tables.rs",
+      "rust/fspec-tui/src/store/agent_view/tool_args.rs"
     ],
     "totalLinesCovered": 997
   }

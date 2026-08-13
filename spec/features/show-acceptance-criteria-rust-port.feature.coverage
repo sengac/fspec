@@ -4,11 +4,11 @@
       "name": "Missing spec/features directory returns a structured error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "142-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "Empty spec/features directory returns success with message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "170-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "Tag filter selects only features carrying that tag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "198-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Multiple tag filters require ALL tags present",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "226-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "format=markdown renders H1, blockquote, H2, and bullet steps",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "255-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "format=json renders 2-space JSON array with name, tags, description, scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "284-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "Tag matches zero features returns 'No features found matching tags' message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "320-346",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "Feature without Background section is rendered without background block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "348-372",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "Feature with no scenarios shows 'No scenarios defined' marker in text and markdown",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "374-398",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -139,11 +139,11 @@
       "name": "Output path writes rendered content to disk and changes the message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "400-435",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -154,11 +154,11 @@
       "name": "Summary line reports scenario and feature counts",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "437-467",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -169,11 +169,11 @@
       "name": "Shared infrastructure module is registered for show-acceptance-criteria",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "469-496",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_acceptance_criteria.rs",
+              "file": "rust/fspec-core/src/commands/show_acceptance_criteria.rs",
               "lines": "1-415"
             }
           ]
@@ -186,7 +186,7 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_acceptance_criteria.rs"
+      "rust/fspec/tests/cli_show_acceptance_criteria.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 344

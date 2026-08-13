@@ -4,11 +4,11 @@
       "name": "Custom model with slashes in model_id can spawn AgentManager subordinate",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2344-2411",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 458,
                 459,
@@ -93,11 +93,11 @@
       "name": "set_model_direct stores the full provider-prefixed model string",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2352-2372",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 458,
                 459,
@@ -177,11 +177,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2352-2372",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 458,
                 459,
@@ -266,11 +266,11 @@
       "name": "selected_model_id strips only the first slash segment when the model id contains slashes",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2379-2409",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 540,
                 541,
@@ -323,11 +323,11 @@
       "name": "Codex models continue to work after the fix",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2412-2432",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 458,
                 459,
@@ -412,11 +412,11 @@
       "name": "with_provider_and_model emits a registry-format composite",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "2441-2468",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 311,
                 312,
@@ -480,10 +480,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 573
   }

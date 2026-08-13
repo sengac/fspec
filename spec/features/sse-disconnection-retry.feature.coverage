@@ -4,11 +4,11 @@
       "name": "Recover from a single network blip during streaming",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "20-42",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1191,
                 1192,
@@ -64,11 +64,11 @@
       "name": "All retry attempts exhausted after consecutive failures",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "58-75",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1276,
                 1277,
@@ -84,11 +84,11 @@
       "name": "Partial text preserved on network error during streaming",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "81-98",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1191,
                 1192,
@@ -144,11 +144,11 @@
       "name": "Retry succeeds on second attempt with increasing backoff",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "104-121",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_network.rs",
+              "file": "rust/cli/src/interactive/recovery_network.rs",
               "lines": [
                 14,
                 15,
@@ -178,11 +178,11 @@
       "name": "User interruption during retry backoff aborts immediately",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "127-137",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1204,
                 1205,
@@ -211,11 +211,11 @@
       "name": "Non-network API errors are not retried",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "143-165",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 69,
                 70,
@@ -279,11 +279,11 @@
       "name": "Network retry works in post-compaction retry streams",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "171-185",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/compaction_retry.rs",
+              "file": "rust/cli/src/interactive/compaction_retry.rs",
               "lines": [
                 309,
                 310,
@@ -324,11 +324,11 @@
       "name": "Network retry works in DeepSearch sub-agent streams",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "191-203",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 315,
                 316,
@@ -392,11 +392,11 @@
       "name": "Retry counter resets after successful data receipt",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "209-222",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 609,
                 610,
@@ -521,11 +521,11 @@
       "name": "Transient network error patterns are correctly detected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/network_retry_test.rs",
+          "file": "rust/cli/tests/network_retry_test.rs",
           "lines": "228-277",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 69,
                 70,
@@ -591,14 +591,14 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/network_retry_test.rs"
+      "rust/cli/tests/network_retry_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/recovery_network.rs",
-      "codelet/cli/src/interactive/error_classifiers.rs",
-      "codelet/cli/src/interactive/compaction_retry.rs",
-      "codelet/napi/src/deep_search_handler.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/recovery_network.rs",
+      "rust/cli/src/interactive/error_classifiers.rs",
+      "rust/cli/src/interactive/compaction_retry.rs",
+      "rust/napi/src/deep_search_handler.rs"
     ],
     "totalLinesCovered": 628
   }

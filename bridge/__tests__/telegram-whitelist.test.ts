@@ -181,7 +181,7 @@ describe('Feature: User ID Whitelist for Telegram Bridge (Pure Functions)', () =
   // ============================================================
 
   describe('isUserAuthorized', () => {
-    describe('Scenario: Authorized user message is forwarded to codelet', () => {
+    describe('Scenario: Authorized user message is forwarded to rust', () => {
       it('should authorize user when ID is in whitelist', () => {
         // @step Given a whitelist containing user ID 123456789
         const allowedUserIds = new Set([123456789]);

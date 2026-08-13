@@ -4,11 +4,11 @@
       "name": "read_and_verify_daemon_json deletes stale file when pid is dead",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/stale_daemon_json_rpc011.rs",
+          "file": "rust/fspec/tests/stale_daemon_json_rpc011.rs",
           "lines": "50-97",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 385,
                 386,
@@ -76,11 +76,11 @@
       "name": "read_and_verify_daemon_json accepts a live pid",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/stale_daemon_json_rpc011.rs",
+          "file": "rust/fspec/tests/stale_daemon_json_rpc011.rs",
           "lines": "99-155",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/common.rs",
+              "file": "rust/fspec/src/common.rs",
               "lines": [
                 385,
                 386,
@@ -148,11 +148,11 @@
       "name": "fspec client falls back gracefully on stale daemon.json",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/stale_daemon_json_rpc011.rs",
+          "file": "rust/fspec/tests/stale_daemon_json_rpc011.rs",
           "lines": "157-202",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/client.rs",
+              "file": "rust/fspec/src/client.rs",
               "lines": [
                 118,
                 119,
@@ -181,11 +181,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/stale_daemon_json_rpc011.rs"
+      "rust/fspec/tests/stale_daemon_json_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/common.rs",
-      "codelet/fspec/src/client.rs"
+      "rust/fspec/src/common.rs",
+      "rust/fspec/src/client.rs"
     ],
     "totalLinesCovered": 278
   }

@@ -4,11 +4,11 @@
       "name": "popup_body.rs is deleted from the codebase",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "58-86",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 1,
                 2,
@@ -292,11 +292,11 @@
       "name": "No dialog module imports tui_popup::Popup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "87-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 1,
                 2,
@@ -602,11 +602,11 @@
       "name": "Every refactored dialog file remains under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "112-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 1,
                 2,
@@ -912,11 +912,11 @@
       "name": "TypeScript Ink dialog files are not modified by this refactor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "138-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 1,
                 2,
@@ -1222,11 +1222,11 @@
       "name": "Insta snapshot for HelpDialog is regenerated against the new theme",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "182-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1395,11 +1395,11 @@
       "name": "A new insta snapshot exists for every migrated dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "209-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 1,
                 2,
@@ -1707,12 +1707,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/components/dialog_theme.rs",
-      "codelet/fspec-tui/src/components/help_dialog.rs"
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/components/dialog_theme.rs",
+      "rust/fspec-tui/src/components/help_dialog.rs"
     ],
     "totalLinesCovered": 1784
   }

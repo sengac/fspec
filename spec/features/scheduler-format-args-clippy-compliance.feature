@@ -38,7 +38,7 @@ Feature: skeleton_invariants clippy fails on uninlined_format_args in codelet-co
   @bug-fix
   @regression
   Scenario: scheduler/agent_job.rs uses inline-capture format args exclusively
-    Given the file `codelet/core/src/scheduler/agent_job.rs` exists in the workspace
+    Given the file `rust/core/src/scheduler/agent_job.rs` exists in the workspace
     When I scan every `format!(` and `anyhow!(` invocation in that file
     Then no invocation contains a positional `{}` placeholder followed by a comma-separated argument list
     And every formatted variable appears inline inside the format string (e.g. `{name}`, `{timestamp}`, `{e}`)
@@ -51,7 +51,7 @@ Feature: skeleton_invariants clippy fails on uninlined_format_args in codelet-co
   @bug-fix
   @regression
   Scenario: scheduler/shell_job.rs uses inline-capture format args exclusively
-    Given the file `codelet/core/src/scheduler/shell_job.rs` exists in the workspace
+    Given the file `rust/core/src/scheduler/shell_job.rs` exists in the workspace
     When I scan every `format!(` and `anyhow!(` invocation in that file
     Then no invocation contains a positional `{}` placeholder followed by a comma-separated argument list
     And every formatted variable appears inline inside the format string (e.g. `{name}`, `{command}`, `{e}`)

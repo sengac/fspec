@@ -4,11 +4,11 @@
       "name": "Session creation persists manifest to disk before creating BackgroundSession",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "37-86",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 497,
                 498,
@@ -37,11 +37,11 @@
       "name": "Session creation persists manifest with provider information",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "92-117",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 497,
                 498,
@@ -70,11 +70,11 @@
       "name": "Session listing includes both in-memory and persisted sessions",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "159-195",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 357,
                 358,
@@ -130,11 +130,11 @@
       "name": "Resume session loads messages from persistence layer",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "202-253",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 109,
                 110,
@@ -190,7 +190,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 969,
                 970,
@@ -254,11 +254,11 @@
       "name": "Session creation fails gracefully when persistence fails",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "289-324",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 497,
                 498,
@@ -287,11 +287,11 @@
       "name": "Session destruction removes from memory but preserves manifest",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "121-165",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 1217,
                 1218,
@@ -364,11 +364,11 @@
       "name": "Persistence delete removes manifest from disk",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
           "lines": "167-194",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 969,
                 970,
@@ -434,12 +434,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc422_session_persistence.rs"
+      "rust/sessions/tests/rpc422_session_persistence.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/core/src/persistence/manifest.rs"
+      "rust/sessions/src/session_manager.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/core/src/persistence/manifest.rs"
     ],
     "totalLinesCovered": 585
   }

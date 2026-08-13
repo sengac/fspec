@@ -4,11 +4,11 @@
       "name": "Enter on an OAuthStatus row opens the notice for its own provider, not a mismatched one",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
           "lines": "116-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 31,
                 32,
@@ -70,11 +70,11 @@
       "name": "Enter on an OAuthLogin row opens the notice instead of silently doing nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
           "lines": "154-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 31,
                 32,
@@ -136,11 +136,11 @@
       "name": "d on an OAuthStatus row deletes that provider, not a mismatched one",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
           "lines": "216-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 89,
                 90,
@@ -184,7 +184,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
                 76,
                 77,
@@ -212,11 +212,11 @@
       "name": "Legacy set_providers callers keep their pre-existing Enter and d behavior",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
           "lines": "287-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 158,
                 159,
@@ -301,12 +301,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 57,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov102_nav_item_action_dispatch.rs"
+      "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs",
-      "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
+      "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs",
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
     ],
     "totalLinesCovered": 571
   }

@@ -5,7 +5,7 @@
 @RPC-250
 Feature: List schedules CLI subcommand
   """
-  CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant with --json flag, per RPC-003 §7/§11. The intercept_ts_help() pre-clap routine in main.rs dispatches `list-schedules --help` to codelet/fspec-core/src/help/configs/list_schedules.rs which mirrors src/commands/list-schedules-help.ts byte-for-byte under formatCommandHelp.
+  CLI subcommand is wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant with --json flag, per RPC-003 §7/§11. The intercept_ts_help() pre-clap routine in main.rs dispatches `list-schedules --help` to rust/fspec-core/src/help/configs/list_schedules.rs which mirrors src/commands/list-schedules-help.ts byte-for-byte under formatCommandHelp.
   """
 
   Background: User Story
@@ -14,10 +14,10 @@ Feature: List schedules CLI subcommand
     So that I can discover the --json flag, examples, and related commands from a script or terminal with byte-for-byte parity
 
   Scenario: list-schedules --help is byte-for-byte identical to TS reference output
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-schedules --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec list-schedules --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the TS reference output at codelet/fspec/tests/fixtures/help/list-schedules.txt
+    And stdout is byte-for-byte identical to the TS reference output at rust/fspec/tests/fixtures/help/list-schedules.txt
     And stdout starts with a blank line followed by 'LIST-SCHEDULES'
     And stdout contains the section header 'OPTIONS' followed by '  --json'
     And stdout contains the line 'fspec add-schedule - Create a new schedule'
@@ -35,5 +35,5 @@ Feature: List schedules CLI subcommand
     Given a project root whose spec/schedules.json contains one shell schedule
     When I dispatch list-schedules through fspec_core::dispatch::dispatch_command with format='json' AND I also invoke `fspec list-schedules --json` from a shell against the same project root
     Then both call sites return the identical pretty-printed JSON payload byte-for-byte
-    And the CLI bridge module codelet/fspec/src/list_schedules.rs contains NO inline schedule-aggregation, filter, or rendering logic
+    And the CLI bridge module rust/fspec/src/list_schedules.rs contains NO inline schedule-aggregation, filter, or rendering logic
     And the bridge module's only computation is the boolean-to-format-key JSON arg marshalling

@@ -4,11 +4,11 @@
       "name": "Bootstrap fetches workspace info and stores it in AgentViewStore",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "26-41",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
                 1,
                 2,
@@ -143,11 +143,11 @@
       "name": "Bootstrap is best-effort \u2014 get_workspace_info failures do not abort",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "61-72",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
                 1,
                 2,
@@ -282,11 +282,11 @@
       "name": "Action::SessionCreated spawns get_model_info + get_thinking_level fetches",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "75-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -593,11 +593,11 @@
       "name": "Action::ChunkReceived TokenUpdate updates token_state for the current session only",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "144-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -904,11 +904,11 @@
       "name": "Action::ChunkReceived ContextFillUpdate updates only context_fill_pct",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "176-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -1215,11 +1215,11 @@
       "name": "Action::WorkspaceInfoLoaded updates the AgentViewStore.workspace slot",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "44-58",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -1526,11 +1526,11 @@
       "name": "Action::ModelInfoLoaded for a session NOT current_session still updates the by-session map",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc018.rs",
           "lines": "114-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -1839,11 +1839,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_bootstrap_rpc018.rs"
+      "rust/fspec-tui/tests/app_bootstrap_rpc018.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/bootstrap.rs",
-      "codelet/fspec-tui/src/app/dispatch.rs"
+      "rust/fspec-tui/src/app/bootstrap.rs",
+      "rust/fspec-tui/src/app/dispatch.rs"
     ],
     "totalLinesCovered": 1897
   }

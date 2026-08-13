@@ -4,11 +4,11 @@
       "name": "Scrollback area has no border and no Agent title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "97-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 272,
                 273,
@@ -26,11 +26,11 @@
       "name": "Input area has no border and prompt sits at padded column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "117-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 282,
                 283,
@@ -52,11 +52,11 @@
       "name": "Footer row appears strictly above the input row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "140-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 221,
                 222,
@@ -82,11 +82,11 @@
       "name": "Header inserts work-unit prefix between session number and model",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "161-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 32,
                 33,
@@ -117,11 +117,11 @@
       "name": "Header omits work-unit prefix when no work unit is set",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "193-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 32,
                 33,
@@ -152,11 +152,11 @@
       "name": "Header and footer rows paint dark grey #333333 background on every cell",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "226-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 75,
                 76,
@@ -179,11 +179,11 @@
       "name": "Header and footer have horizontal padding of one column on both edges",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "258-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome.rs",
               "lines": [
                 22,
                 23,
@@ -211,11 +211,11 @@
       "name": "Footer left side is empty - no Enter=send / Ctrl+C / ESC=back hints",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "294-314",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 54,
                 55,
@@ -246,11 +246,11 @@
       "name": "Footer branch glyph uses \u2387 U+2387 not \u2325 U+2325",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "316-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 80,
                 81,
@@ -270,11 +270,11 @@
       "name": "Footer cwd span is dark-grey and bracketed branch span is cyan",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "341-368",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 76,
                 77,
@@ -299,11 +299,11 @@
       "name": "Header [DEBUG] badge paints red-bold when debug enabled",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "377-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 78,
                 79,
@@ -321,11 +321,11 @@
       "name": "Header [ISOLATED] badge paints green when session is isolated",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "423-462",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 52,
                 53,
@@ -343,11 +343,11 @@
       "name": "Header prefix + work unit + model run paints cyan and bold",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc029.rs",
           "lines": "464-498",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 42,
                 43,
@@ -370,13 +370,13 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_agent_unit_rpc029.rs"
+      "rust/fspec-tui/tests/view_agent_unit_rpc029.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/views/agent/header_build.rs",
-      "codelet/fspec-tui/src/views/agent/chrome.rs",
-      "codelet/fspec-tui/src/views/agent/footer.rs"
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs",
+      "rust/fspec-tui/src/views/agent/chrome.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs"
     ],
     "totalLinesCovered": 922
   }

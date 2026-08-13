@@ -4,11 +4,11 @@
       "name": "Spawn agent session with role and prompt",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "69-102",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 35,
                 36,
@@ -76,11 +76,11 @@
       "name": "Spawn agent session with prompt only (no role)",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "107-138",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 35,
                 36,
@@ -148,11 +148,11 @@
       "name": "Agent job fails when prompt is empty",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "143-181",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 44,
                 45,
@@ -175,11 +175,11 @@
       "name": "Agent job fails when agent config is missing entirely",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "186-231",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 18,
                 19,
@@ -204,11 +204,11 @@
       "name": "Agent job fails when prompt field is absent",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "236-274",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 50,
                 51,
@@ -225,11 +225,11 @@
       "name": "Agent job fails when session limit is reached",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "279-319",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 65,
                 66,
@@ -265,11 +265,11 @@
       "name": "Schedule-triggered session is marked with schedule metadata",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "324-355",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3126,
                 3127,
@@ -312,11 +312,11 @@
       "name": "NAPI binding exposes schedule metadata for TUI",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "360-382",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5813,
                 5814,
@@ -342,11 +342,11 @@
       "name": "Non-scheduled session returns false for schedule queries",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "387-403",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 587,
                 588,
@@ -364,11 +364,11 @@
       "name": "Agent session runs to natural completion",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "408-443",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 35,
                 36,
@@ -436,11 +436,11 @@
       "name": "Default model is resolved at fire time from SessionManager",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "448-477",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3108,
                 3109,
@@ -466,11 +466,11 @@
       "name": "Agent job fails when no default model is configured",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/agent_job_test.rs",
+          "file": "rust/napi/tests/agent_job_test.rs",
           "lines": "482-521",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "file": "rust/napi/src/scheduler/agent_job.rs",
               "lines": [
                 44,
                 45,
@@ -489,11 +489,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/agent_job_test.rs"
+      "rust/napi/tests/agent_job_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/scheduler/agent_job.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/scheduler/agent_job.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 700
   }

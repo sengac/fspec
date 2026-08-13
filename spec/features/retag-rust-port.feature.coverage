@@ -4,11 +4,11 @@
       "name": "Renaming a tag across two feature files rewrites every occurrence",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/retag.rs",
+          "file": "rust/fspec-core/tests/retag.rs",
           "lines": "61-89",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/retag.rs",
+              "file": "rust/fspec-core/src/commands/retag.rs",
               "lines": [
                 1,
                 2,
@@ -333,11 +333,11 @@
       "name": "A dry run reports matches but leaves every file byte-equal",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/retag.rs",
+          "file": "rust/fspec-core/tests/retag.rs",
           "lines": "91-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/retag.rs",
+              "file": "rust/fspec-core/src/commands/retag.rs",
               "lines": [
                 1,
                 2,
@@ -662,11 +662,11 @@
       "name": "A missing --to is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/retag.rs",
+          "file": "rust/fspec-core/tests/retag.rs",
           "lines": "133-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/retag.rs",
+              "file": "rust/fspec-core/src/commands/retag.rs",
               "lines": [
                 1,
                 2,
@@ -991,11 +991,11 @@
       "name": "An invalid target tag format is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/retag.rs",
+          "file": "rust/fspec-core/tests/retag.rs",
           "lines": "159-186",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/retag.rs",
+              "file": "rust/fspec-core/src/commands/retag.rs",
               "lines": [
                 1,
                 2,
@@ -1320,11 +1320,11 @@
       "name": "A from tag present in no feature file reports the not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/retag.rs",
+          "file": "rust/fspec-core/tests/retag.rs",
           "lines": "188-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/retag.rs",
+              "file": "rust/fspec-core/src/commands/retag.rs",
               "lines": [
                 1,
                 2,
@@ -1651,10 +1651,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/retag.rs"
+      "rust/fspec-core/tests/retag.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/retag.rs"
+      "rust/fspec-core/src/commands/retag.rs"
     ],
     "totalLinesCovered": 1716
   }

@@ -4,11 +4,11 @@
       "name": "codelet_core::persistence::delete_session lifts the NAPI implementation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc026_cross_transport_parity.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/sessions.rs",
+              "file": "rust/core/src/persistence/sessions.rs",
               "lines": [
                 1,
                 2,
@@ -120,11 +120,11 @@
       "name": "persistence_delete_session round-trips identically across both transports",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc026_cross_transport_parity.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -838,11 +838,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc026_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/sessions.rs",
-      "codelet/rpc/src/lib.rs"
+      "rust/core/src/persistence/sessions.rs",
+      "rust/rpc/src/lib.rs"
     ],
     "totalLinesCovered": 1400
   }

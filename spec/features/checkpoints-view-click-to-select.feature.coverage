@@ -4,11 +4,11 @@
       "name": "Clicking a checkpoint name row selects it and loads its files",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "377-403",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
                 57,
                 58,
@@ -76,11 +76,11 @@
       "name": "Clicking a file row selects it and loads its diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "406-432",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
                 57,
                 58,
@@ -148,11 +148,11 @@
       "name": "Clicking inside the diff pane focuses it without changing any selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "436-457",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
                 57,
                 58,
@@ -220,11 +220,11 @@
       "name": "A click is swallowed while the restore dialog is open",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "488-513",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
                 57,
                 58,
@@ -292,11 +292,11 @@
       "name": "Clicking the already-selected checkpoint row changes nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "516-536",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
                 57,
                 58,
@@ -364,11 +364,11 @@
       "name": "Clicking empty space below the last checkpoint row changes nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "461-485",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
                 273,
                 274,
@@ -392,11 +392,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "461-485",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
                 91,
                 92,
@@ -431,11 +431,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/checkpoints/tests.rs"
+      "rust/fspec-tui/src/views/checkpoints/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/checkpoints/keys.rs",
-      "codelet/fspec-tui/src/views/checkpoints/mod.rs"
+      "rust/fspec-tui/src/views/checkpoints/keys.rs",
+      "rust/fspec-tui/src/views/checkpoints/mod.rs"
     ],
     "totalLinesCovered": 491
   }

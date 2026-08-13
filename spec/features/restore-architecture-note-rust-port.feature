@@ -3,7 +3,7 @@
 Feature: Port restore-architecture-note command to Rust
   """
   Reuses shared infrastructure ensure_work_units_file (load/auto-create), write_json_atomic (atomic write), iso8601_now (timestamp). Architecture notes live in WorkUnit.extra under 'architectureNotes' as Value::Array of objects keyed by 'id'.
-  Files: replace stub at codelet/fspec-core/src/commands/restore_architecture_note.rs; NEW codelet/fspec-core/src/help/configs/restore_architecture_note.rs; NEW codelet/fspec/src/restore_architecture_note.rs (bridge); NEW codelet/fspec-core/tests/restore_architecture_note.rs (dispatcher); NEW codelet/fspec/tests/cli_restore_architecture_note.rs; NEW codelet/fspec/tests/fixtures/help/restore-architecture-note.txt.
+  Files: replace stub at rust/fspec-core/src/commands/restore_architecture_note.rs; NEW rust/fspec-core/src/help/configs/restore_architecture_note.rs; NEW rust/fspec/src/restore_architecture_note.rs (bridge); NEW rust/fspec-core/tests/restore_architecture_note.rs (dispatcher); NEW rust/fspec/tests/cli_restore_architecture_note.rs; NEW rust/fspec/tests/fixtures/help/restore-architecture-note.txt.
   Two-front-doors: dispatcher AND clap CLI both invoke commands::restore_architecture_note::run(args_json, project_root). CLI bridge marshals positional workUnitId + index into JSON {workUnitId, index}.
   Inverse mutation of remove-architecture-note (RPC-267): clears deleted flag, REMOVES (not nullifies) the deletedAt key, idempotent when already active. NO status gate. Updates BOTH workUnit.updatedAt AND data.meta.lastUpdated (TS parity).
   """

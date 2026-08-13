@@ -4,11 +4,11 @@
       "name": "Streaming-disabled request omits streaming options",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov140_nonstreaming_request.rs",
+          "file": "rust/providers/tests/prov140_nonstreaming_request.rs",
           "lines": "104-149",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
                 110,
                 111,
@@ -32,11 +32,11 @@
       "name": "Streaming-enabled request keeps streaming options",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov140_nonstreaming_request.rs",
+          "file": "rust/providers/tests/prov140_nonstreaming_request.rs",
           "lines": "150-197",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
                 122,
                 123,
@@ -55,11 +55,11 @@
       "name": "Non-streaming text reply is adapted into a Text then final item sequence",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov140_nonstreaming_request.rs",
+          "file": "rust/providers/tests/prov140_nonstreaming_request.rs",
           "lines": "198-301",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
               "lines": [
                 80,
                 81,
@@ -125,11 +125,11 @@
       "name": "Non-streaming tool call drives the multi-turn loop to completion",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov140_nonstreaming_request.rs",
+          "file": "rust/providers/tests/prov140_nonstreaming_request.rs",
           "lines": "302-381",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
               "lines": [
                 1,
                 2,
@@ -316,11 +316,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/prov140_nonstreaming_request.rs"
+      "rust/providers/tests/prov140_nonstreaming_request.rs"
     ],
     "implFiles": [
-      "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
-      "codelet/patches/rig-core/src/providers/openai/completion/nonstreaming.rs"
+      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs"
     ],
     "totalLinesCovered": 524
   }

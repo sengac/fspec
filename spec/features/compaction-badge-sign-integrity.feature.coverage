@@ -4,11 +4,11 @@
       "name": "Rust writer clamps a negative wire reduction to zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
+          "file": "rust/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
           "lines": "80-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 148,
                 149,
@@ -28,11 +28,11 @@
       "name": "Rust renderer renders a stored negative reduction verbatim without sign-flipping",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
+          "file": "rust/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
           "lines": "131-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 160,
                 161,
@@ -52,11 +52,11 @@
       "name": "Rust positive wire reduction still renders unchanged with the writer clamp in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
+          "file": "rust/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
           "lines": "160-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 148,
                 149,
@@ -71,11 +71,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
+          "file": "rust/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
           "lines": "160-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
                 160,
                 161,
@@ -97,11 +97,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs"
+      "rust/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
-      "codelet/fspec-tui/src/views/agent/header_build.rs"
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs"
     ],
     "totalLinesCovered": 178
   }

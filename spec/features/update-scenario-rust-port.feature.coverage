@@ -4,11 +4,11 @@
       "name": "Rename a scenario and update its coverage entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "55-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -149,11 +149,11 @@
       "name": "Header indentation and keyword are preserved on rename",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "110-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -294,11 +294,11 @@
       "name": "Renaming a scenario in a missing feature file fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "138-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -439,11 +439,11 @@
       "name": "Renaming a scenario that is not present fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "165-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -579,11 +579,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "165-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -724,11 +724,11 @@
       "name": "Renaming to an existing scenario name fails and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "192-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -869,11 +869,11 @@
       "name": "Renaming succeeds even when no coverage file exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_scenario.rs",
+          "file": "rust/fspec-core/tests/update_scenario.rs",
           "lines": "224-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_scenario.rs",
+              "file": "rust/fspec-core/src/commands/update_scenario.rs",
               "lines": [
                 46,
                 47,
@@ -1016,10 +1016,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_scenario.rs"
+      "rust/fspec-core/tests/update_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_scenario.rs"
+      "rust/fspec-core/src/commands/update_scenario.rs"
     ],
     "totalLinesCovered": 1122
   }

@@ -88,7 +88,7 @@ Before creating the release, you MUST run these checks in this EXACT order:
    npm run build:codelet-napi:all
    ```
 
-2. **Verify all 6 binaries exist in `codelet/napi/`:**
+2. **Verify all 6 binaries exist in `rust/napi/`:**
    - `codelet-napi.darwin-arm64.node`
    - `codelet-napi.darwin-x64.node`
    - `codelet-napi.linux-arm64-gnu.node`
@@ -105,13 +105,13 @@ Before creating the release, you MUST run these checks in this EXACT order:
    - Update `"version"` field to new version (without 'v' prefix)
    - Write updated `package.json`
 
-2. **Update codelet/napi/package.json version:**
-   - Read `codelet/napi/package.json`
+2. **Update rust/napi/package.json version:**
+   - Read `rust/napi/package.json`
    - Update `"version"` field to same new version
-   - Write updated `codelet/napi/package.json`
+   - Write updated `rust/napi/package.json`
 
 3. **Stage all changes:**
-   - Run `git add package.json codelet/napi/package.json codelet/napi/*.node`
+   - Run `git add package.json rust/napi/package.json rust/napi/*.node`
 
 4. **Create release commit:**
    - Commit message format: `chore(release): v{version}`
@@ -173,8 +173,8 @@ npm run build:codelet-napi:all
 
 # 5. Release commit
 # Update package.json version
-# Update codelet/napi/package.json version
-git add package.json codelet/napi/package.json codelet/napi/*.node
+# Update rust/napi/package.json version
+git add package.json rust/napi/package.json rust/napi/*.node
 git commit -m "chore(release): v{version}" -m "{body}" --author="Roland Quast <rquast@rolandquast.com>"
 
 # 6. Create tag
@@ -222,4 +222,4 @@ chore(release): v0.3.1
 - Review code changes to ensure nothing is missed
 - Generate meaningful, detailed release notes
 - Use author `Roland Quast <rquast@rolandquast.com>` for ALL commits
-- Both package.json files (root and codelet/napi) must have matching versions
+- Both package.json files (root and rust/napi) must have matching versions

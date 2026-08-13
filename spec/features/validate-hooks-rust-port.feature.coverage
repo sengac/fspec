@@ -4,11 +4,11 @@
       "name": "Dispatcher reports all hooks valid when every script exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_hooks.rs",
+          "file": "rust/fspec-core/tests/validate_hooks.rs",
           "lines": "56-80",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_hooks.rs",
+              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
                 36,
                 37,
@@ -100,11 +100,11 @@
       "name": "Dispatcher reports a missing hook script",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_hooks.rs",
+          "file": "rust/fspec-core/tests/validate_hooks.rs",
           "lines": "81-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_hooks.rs",
+              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
                 36,
                 37,
@@ -196,11 +196,11 @@
       "name": "Dispatcher reports no hooks configured for an empty hooks object",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_hooks.rs",
+          "file": "rust/fspec-core/tests/validate_hooks.rs",
           "lines": "112-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_hooks.rs",
+              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
                 36,
                 37,
@@ -292,11 +292,11 @@
       "name": "Dispatcher reports a load failure when the config is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_hooks.rs",
+          "file": "rust/fspec-core/tests/validate_hooks.rs",
           "lines": "132-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_hooks.rs",
+              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
                 36,
                 37,
@@ -388,11 +388,11 @@
       "name": "Dispatcher reports a load failure when the config is malformed JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_hooks.rs",
+          "file": "rust/fspec-core/tests/validate_hooks.rs",
           "lines": "153-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_hooks.rs",
+              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
                 36,
                 37,
@@ -484,11 +484,11 @@
       "name": "Dispatcher lists every missing script across multiple events",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_hooks.rs",
+          "file": "rust/fspec-core/tests/validate_hooks.rs",
           "lines": "174-207",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_hooks.rs",
+              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
                 36,
                 37,
@@ -582,10 +582,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/validate_hooks.rs"
+      "rust/fspec-core/tests/validate_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/validate_hooks.rs"
+      "rust/fspec-core/src/commands/validate_hooks.rs"
     ],
     "totalLinesCovered": 632
   }

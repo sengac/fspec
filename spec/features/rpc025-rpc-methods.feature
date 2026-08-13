@@ -7,8 +7,8 @@
 Feature: RPC-025 FspecService persistence_*_history RPCs over both EmbeddedFspecBackend and WebSocketFspecBackend
   """
   RPC-025 (RPC methods slice) — Add three new RPC methods to FspecService
-  in codelet/rpc/src/lib.rs and to the FspecBackend trait in
-  codelet/fspec-tui/src/transport/mod.rs:
+  in rust/rpc/src/lib.rs and to the FspecBackend trait in
+  rust/fspec-tui/src/transport/mod.rs:
   - persistence_add_history(session: SessionId, text: String) -> Result<()>
   - persistence_get_history(session: SessionId, limit: u32) -> Result<Vec<String>>
   - persistence_search_history(query: String) -> Result<Vec<HistoryMatch>>
@@ -18,11 +18,11 @@ Feature: RPC-025 FspecService persistence_*_history RPCs over both EmbeddedFspec
   identical observable behaviour against the same on-disk JSONL store
   (cross-transport-parity invariant from RPC-009/011/012).
 
-  HistoryMatch lands in codelet/rpc-types/src/lib.rs as a new shared
+  HistoryMatch lands in rust/rpc-types/src/lib.rs as a new shared
   type gated on the napi feature, with three fields: session_id,
   text, timestamp_iso (RFC3339 string).
 
-  Tests: codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs.
+  Tests: rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs.
   """
 
   Background: User Story
@@ -31,13 +31,13 @@ Feature: RPC-025 FspecService persistence_*_history RPCs over both EmbeddedFspec
     So that the AgentView can call the backend without knowing whether it is in-process or remote, and the TS Ink TUI's NAPI persistence path stays unchanged
 
   Scenario: FspecService trait declares the three new history RPC methods
-    Given the codelet/rpc crate
+    Given the rust/rpc crate
     Then the FspecService trait declares "async fn persistence_add_history(session: SessionId, text: String) -> Result<(), String>"
     And the FspecService trait declares "async fn persistence_get_history(session: SessionId, limit: u32) -> Result<Vec<String>, String>"
     And the FspecService trait declares "async fn persistence_search_history(query: String) -> Result<Vec<HistoryMatch>, String>"
 
   Scenario: FspecBackend trait declares the three new history methods with matching signatures
-    Given the codelet/fspec-tui crate
+    Given the rust/fspec-tui crate
     Then the FspecBackend trait in transport/mod.rs declares "async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()>"
     And the FspecBackend trait declares "async fn persistence_get_history(&self, session: SessionId, limit: u32) -> Result<Vec<String>>"
     And the FspecBackend trait declares "async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>>"

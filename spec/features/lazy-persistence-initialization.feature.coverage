@@ -4,11 +4,11 @@
       "name": "Lazy per-store initialization — get_history only inits HistoryStore",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "66-90",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 38,
                 39,
@@ -117,11 +117,11 @@
       "name": "Lazy per-store initialization — create_session only inits SessionStore",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "127-153",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 38,
                 39,
@@ -230,11 +230,11 @@
       "name": "Session resume loads only that session's messages",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "162-193",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_index.rs",
+              "file": "rust/napi/src/persistence/message_index.rs",
               "lines": [
                 1,
                 2,
@@ -446,11 +446,11 @@
       "name": "SessionSearch loads messages on demand during cross-session search",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "196-227",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_index.rs",
+              "file": "rust/napi/src/persistence/message_index.rs",
               "lines": [
                 1,
                 2,
@@ -662,11 +662,11 @@
       "name": "Shell history recall shows entries from all sessions",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "233-257",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 490,
                 491,
@@ -729,11 +729,11 @@
       "name": "Search command finds results across all sessions",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "260-304",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 490,
                 491,
@@ -796,11 +796,11 @@
       "name": "Content-addressed messages shared via fork are accessible",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "310-348",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_index.rs",
+              "file": "rust/napi/src/persistence/message_index.rs",
               "lines": [
                 1,
                 2,
@@ -1012,11 +1012,11 @@
       "name": "Append and immediate read consistency",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "351-401",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_index.rs",
+              "file": "rust/napi/src/persistence/message_index.rs",
               "lines": [
                 1,
                 2,
@@ -1228,11 +1228,11 @@
       "name": "Lazy per-store initialization — store_message inits MessageStore and SessionStore",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/lazy_init_tests.rs",
+          "file": "rust/napi/src/persistence/lazy_init_tests.rs",
           "lines": "93-124",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 38,
                 39,
@@ -1343,11 +1343,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/persistence/lazy_init_tests.rs"
+      "rust/napi/src/persistence/lazy_init_tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/mod.rs",
-      "codelet/napi/src/persistence/message_index.rs"
+      "rust/napi/src/persistence/mod.rs",
+      "rust/napi/src/persistence/message_index.rs"
     ],
     "totalLinesCovered": 1501
   }

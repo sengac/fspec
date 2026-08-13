@@ -4,11 +4,11 @@
       "name": "Partial assistant text is saved into the conversation before compaction",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_cancel_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_cancel_preservation_test.rs",
           "lines": "22-64",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 1,
                 2,
@@ -97,7 +97,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1156,
                 1157,
@@ -137,11 +137,11 @@
       "name": "Token tracker is flushed with the latest streaming display values",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_cancel_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_cancel_preservation_test.rs",
           "lines": "66-117",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 1,
                 2,
@@ -237,11 +237,11 @@
       "name": "Empty partial text does not pollute the conversation",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_cancel_preservation_test.rs",
+          "file": "rust/cli/tests/compaction_cancel_preservation_test.rs",
           "lines": "119-144",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 1,
                 2,
@@ -339,11 +339,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_cancel_preservation_test.rs"
+      "rust/cli/tests/compaction_cancel_preservation_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/recovery_compaction.rs",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/recovery_compaction.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 401
   }

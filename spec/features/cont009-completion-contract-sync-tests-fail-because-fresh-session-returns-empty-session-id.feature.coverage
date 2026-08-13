@@ -4,11 +4,11 @@
       "name": "fresh_session() seeds the models cache so session creation succeeds",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
           "lines": "38-70",
           "implMappings": [
             {
-              "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+              "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
               "lines": [
                 38,
                 39,
@@ -55,10 +55,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/cont009_completion_contract_sync.rs"
+      "rust/sessions/tests/cont009_completion_contract_sync.rs"
     ],
     "implFiles": [
-      "codelet/sessions/tests/cont009_completion_contract_sync.rs"
+      "rust/sessions/tests/cont009_completion_contract_sync.rs"
     ],
     "totalLinesCovered": 66
   }

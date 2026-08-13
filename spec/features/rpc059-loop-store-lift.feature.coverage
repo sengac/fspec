@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "Loop store module lives under codelet/core/src/loops/",
+      "name": "Loop store module lives under rust/core/src/loops/",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "49-65",
           "implMappings": [
             {
-              "file": "codelet/core/src/loops/mod.rs",
+              "file": "rust/core/src/loops/mod.rs",
               "lines": [
                 1,
                 2,
@@ -301,11 +301,11 @@
       "name": "codelet-core declares LoopEntry, LoopStore, and IdleCheckFn",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "67-105",
           "implMappings": [
             {
-              "file": "codelet/core/src/loops/mod.rs",
+              "file": "rust/core/src/loops/mod.rs",
               "lines": [
                 22,
                 23,
@@ -361,11 +361,11 @@
       "name": "LoopStore exposes the documented async API",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "107-138",
           "implMappings": [
             {
-              "file": "codelet/core/src/loops/mod.rs",
+              "file": "rust/core/src/loops/mod.rs",
               "lines": [
                 58,
                 59,
@@ -601,11 +601,11 @@
       "name": "The lifted loop store has no NAPI references",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "140-162",
           "implMappings": [
             {
-              "file": "codelet/core/src/loops/mod.rs",
+              "file": "rust/core/src/loops/mod.rs",
               "lines": [
                 1,
                 2,
@@ -895,14 +895,14 @@
       ]
     },
     {
-      "name": "codelet/napi/src/scheduler/mod.rs re-exports the loops surface",
+      "name": "rust/napi/src/scheduler/mod.rs re-exports the loops surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "164-184",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/mod.rs",
+              "file": "rust/napi/src/scheduler/mod.rs",
               "lines": [
                 27,
                 28,
@@ -916,14 +916,14 @@
       ]
     },
     {
-      "name": "codelet/napi/src/scheduler/loop_store.rs is deleted",
+      "name": "rust/napi/src/scheduler/loop_store.rs is deleted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "186-198",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/mod.rs",
+              "file": "rust/napi/src/scheduler/mod.rs",
               "lines": [
                 1,
                 2,
@@ -966,11 +966,11 @@
       "name": "codelet-core lib.rs exports the loops module",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs",
+          "file": "rust/fspec-tui/tests/loop_store_lift_rpc059.rs",
           "lines": "200-211",
           "implMappings": [
             {
-              "file": "codelet/core/src/lib.rs",
+              "file": "rust/core/src/lib.rs",
               "lines": [
                 11
               ]
@@ -985,12 +985,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/loop_store_lift_rpc059.rs"
+      "rust/fspec-tui/tests/loop_store_lift_rpc059.rs"
     ],
     "implFiles": [
-      "codelet/core/src/loops/mod.rs",
-      "codelet/napi/src/scheduler/mod.rs",
-      "codelet/core/src/lib.rs"
+      "rust/core/src/loops/mod.rs",
+      "rust/napi/src/scheduler/mod.rs",
+      "rust/core/src/lib.rs"
     ],
     "totalLinesCovered": 1024
   }

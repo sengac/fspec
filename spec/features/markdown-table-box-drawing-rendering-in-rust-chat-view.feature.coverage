@@ -4,11 +4,11 @@
       "name": "Simple two-column table renders as an aligned box-drawing grid",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "18-72",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
                 83,
                 84,
@@ -94,11 +94,11 @@
       "name": "Colon separators set per-column left, center, and right alignment",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "74-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
                 159,
                 160,
@@ -125,11 +125,11 @@
       "name": "Data row with fewer cells than the header keeps the grid rectangular",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "126-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
                 111,
                 112,
@@ -187,11 +187,11 @@
       "name": "Non-table prose passes through unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "173-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_tables.rs",
               "lines": [
                 15,
                 16,
@@ -229,11 +229,11 @@
       "name": "A table embedded in prose is rendered in place with surrounding lines kept",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "219-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_tables.rs",
               "lines": [
                 15,
                 16,
@@ -266,11 +266,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "219-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
                 83,
                 84,
@@ -356,11 +356,11 @@
       "name": "A pipe block with no separator row is left unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "258-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
                 83,
                 84,
@@ -383,11 +383,11 @@
       "name": "Rendered table grid survives the scrollback wrap path with padding preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
           "lines": "192-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/text_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
               "lines": [
                 30,
                 31,
@@ -422,12 +422,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/store/agent_view/markdown_tables_tests.rs"
+      "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/markdown_table_render.rs",
-      "codelet/fspec-tui/src/store/agent_view/markdown_tables.rs",
-      "codelet/fspec-tui/src/views/agent/text_wrap.rs"
+      "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
+      "rust/fspec-tui/src/store/agent_view/markdown_tables.rs",
+      "rust/fspec-tui/src/views/agent/text_wrap.rs"
     ],
     "totalLinesCovered": 586
   }

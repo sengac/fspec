@@ -4,11 +4,11 @@
       "name": "Resume session after closing terminal",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "14-45",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 92,
                 93,
@@ -39,11 +39,11 @@
       "name": "Fork session at specific message to try alternative approach",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "48-77",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 112,
                 113,
@@ -65,11 +65,11 @@
       "name": "Merge messages from another session",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "80-117",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 123,
                 124,
@@ -125,11 +125,11 @@
       "name": "Cherry-pick message with preceding context",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "120-151",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 168,
                 169,
@@ -188,11 +188,11 @@
       "name": "Navigate command history with keyboard shortcuts",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "154-186",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/history.rs",
+              "file": "rust/napi/src/persistence/history.rs",
               "lines": [
                 1,
                 2,
@@ -367,11 +367,11 @@
       "name": "List all sessions for current project",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "189-217",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 216,
                 217,
@@ -395,11 +395,11 @@
       "name": "Switch to a different session",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "220-246",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 229,
                 230,
@@ -415,11 +415,11 @@
       "name": "Search command history with Ctrl+R",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "249-272",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 338,
                 339,
@@ -446,11 +446,11 @@
       "name": "Forked sessions share message references without duplication",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "275-299",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/storage.rs",
+              "file": "rust/napi/src/persistence/storage.rs",
               "lines": [
                 1,
                 2,
@@ -850,11 +850,11 @@
       "name": "Large content stored in blob storage with hash reference",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "302-328",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/blob.rs",
+              "file": "rust/napi/src/persistence/blob.rs",
               "lines": [
                 1,
                 2,
@@ -1062,11 +1062,11 @@
       "name": "Command history accessible across different sessions",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "331-361",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/history.rs",
+              "file": "rust/napi/src/persistence/history.rs",
               "lines": [
                 1,
                 2,
@@ -1241,11 +1241,11 @@
       "name": "Identical content in different sessions shares blob storage",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "364-381",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/blob.rs",
+              "file": "rust/napi/src/persistence/blob.rs",
               "lines": [
                 1,
                 2,
@@ -1453,11 +1453,11 @@
       "name": "Delete session and cleanup orphaned messages",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "384-414",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 234,
                 235,
@@ -1549,11 +1549,11 @@
       "name": "Session list shows fork lineage",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "417-449",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/storage.rs",
+              "file": "rust/napi/src/persistence/storage.rs",
               "lines": [
                 1,
                 2,
@@ -1953,11 +1953,11 @@
       "name": "Merge imports references without duplicating message content",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "452-482",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 123,
                 124,
@@ -2013,11 +2013,11 @@
       "name": "Fork with invalid index returns clear error",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "485-507",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/storage.rs",
+              "file": "rust/napi/src/persistence/storage.rs",
               "lines": [
                 200,
                 201,
@@ -2080,11 +2080,11 @@
       "name": "Merge from non-existent session returns clear error",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "510-531",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 123,
                 124,
@@ -2140,11 +2140,11 @@
       "name": "Cherry-pick with context exceeding available messages",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "534-558",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 168,
                 169,
@@ -2203,11 +2203,11 @@
       "name": "Stored messages cannot be modified",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "561-584",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/storage.rs",
+              "file": "rust/napi/src/persistence/storage.rs",
               "lines": [
                 1,
                 2,
@@ -2319,11 +2319,11 @@
       "name": "History can be filtered by project",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "587-619",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/history.rs",
+              "file": "rust/napi/src/persistence/history.rs",
               "lines": [
                 1,
                 2,
@@ -2498,11 +2498,11 @@
       "name": "Rename session for better organization",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "622-647",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 242,
                 243,
@@ -2519,11 +2519,11 @@
       "name": "Forking preserves compaction state appropriately",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "650-673",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/storage.rs",
+              "file": "rust/napi/src/persistence/storage.rs",
               "lines": [
                 200,
                 201,
@@ -2636,11 +2636,11 @@
       "name": "Resuming a compacted session reconstructs context correctly",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "676-702",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 105,
                 106,
@@ -2658,11 +2658,11 @@
       "name": "Compaction state persisted in session manifest",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "705-731",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/types.rs",
+              "file": "rust/napi/src/persistence/types.rs",
               "lines": [
                 1,
                 2,
@@ -2842,11 +2842,11 @@
       "name": "Merging into a compacted session preserves compaction",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "734-767",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 123,
                 124,
@@ -2902,11 +2902,11 @@
       "name": "Forking at index before compaction point is rejected",
       "testMappings": [
         {
-          "file": "codelet/napi/src/persistence/tests.rs",
+          "file": "rust/napi/src/persistence/tests.rs",
           "lines": "770-800",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/storage.rs",
+              "file": "rust/napi/src/persistence/storage.rs",
               "lines": [
                 200,
                 201,
@@ -3021,14 +3021,14 @@
     "coveredScenarios": 26,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/persistence/tests.rs"
+      "rust/napi/src/persistence/tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/mod.rs",
-      "codelet/napi/src/persistence/history.rs",
-      "codelet/napi/src/persistence/storage.rs",
-      "codelet/napi/src/persistence/blob.rs",
-      "codelet/napi/src/persistence/types.rs"
+      "rust/napi/src/persistence/mod.rs",
+      "rust/napi/src/persistence/history.rs",
+      "rust/napi/src/persistence/storage.rs",
+      "rust/napi/src/persistence/blob.rs",
+      "rust/napi/src/persistence/types.rs"
     ],
     "totalLinesCovered": 3336
   }

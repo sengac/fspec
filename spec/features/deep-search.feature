@@ -6,8 +6,8 @@
 Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
   """
   Tool is wired into all 5 providers' create_rig_agent() — same pattern as SessionSearch: import DeepSearchTool from codelet_tools, add .tool(DeepSearchTool::new(session_id)) to each provider's AgentBuilder chain. Verified locations: claude.rs:530, openai.rs:338, gemini.rs:172, codex/mod.rs:364, zai.rs:247.
-  AMGR-001 (SessionSearch) provides the foundation for session history access. The implementation pattern: (1) Tool struct in codelet/tools/src/session_search/ with types.rs (SessionSearchAction enum, args, results), handler.rs (per-session handler storage via static RwLock<HashMap<Uuid, Handler>>), reassembly.rs (streaming chunk reconstruction). (2) Handler registered in session_manager.rs via set_session_search_handler(session_id, handler) before agent run, cleaned up after. (3) The handler closure captures project_path AND compaction_trimming: Arc<AtomicBool> — the compaction_trimming flag controls whether Layer 0 trimming (CMPCT-010) is applied to SessionSearch results during agent-controlled compaction. (4) inject_summary (CMPCT-008/009) follows the exact same handler pattern — InjectSummaryTool in codelet/tools/src/inject_summary.rs with set_inject_summary_handler/has_inject_summary_handler. DeepSearch should follow this same module pattern for its tool structure but does NOT need inject_summary (read-only sub-agent).
-  DeepSearch's SessionSearch handler is created via codelet/napi/src/session_search_handler.rs::create_handler(project_path, compaction_trimming). The project_path comes from the parent session's project context (same as the parent agent's handler). compaction_trimming must be Arc::new(AtomicBool::new(false)) since the ephemeral sub-agent never does compaction. This avoids the NAPI boundary problem since the handler is pure Rust — no ThreadsafeFunction needed.
+  AMGR-001 (SessionSearch) provides the foundation for session history access. The implementation pattern: (1) Tool struct in rust/tools/src/session_search/ with types.rs (SessionSearchAction enum, args, results), handler.rs (per-session handler storage via static RwLock<HashMap<Uuid, Handler>>), reassembly.rs (streaming chunk reconstruction). (2) Handler registered in session_manager.rs via set_session_search_handler(session_id, handler) before agent run, cleaned up after. (3) The handler closure captures project_path AND compaction_trimming: Arc<AtomicBool> — the compaction_trimming flag controls whether Layer 0 trimming (CMPCT-010) is applied to SessionSearch results during agent-controlled compaction. (4) inject_summary (CMPCT-008/009) follows the exact same handler pattern — InjectSummaryTool in rust/tools/src/inject_summary.rs with set_inject_summary_handler/has_inject_summary_handler. DeepSearch should follow this same module pattern for its tool structure but does NOT need inject_summary (read-only sub-agent).
+  DeepSearch's SessionSearch handler is created via rust/napi/src/session_search_handler.rs::create_handler(project_path, compaction_trimming). The project_path comes from the parent session's project context (same as the parent agent's handler). compaction_trimming must be Arc::new(AtomicBool::new(false)) since the ephemeral sub-agent never does compaction. This avoids the NAPI boundary problem since the handler is pure Rust — no ThreadsafeFunction needed.
   """
 
   Background: User Story
@@ -17,7 +17,7 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
 
   @tool-trait
   Scenario: DeepSearch implements rig::tool::Tool trait
-    Given the DeepSearch tool struct exists in the codelet/tools/src/deep_search module
+    Given the DeepSearch tool struct exists in the rust/tools/src/deep_search module
     When the rig agent builder includes DeepSearchTool::new(session_id)
     Then DeepSearch has NAME = "DeepSearch"
     And DeepSearch has Args type = DeepSearchArgs with query (required) and scope (optional Vec<String>) and max_depth (optional usize)
@@ -39,8 +39,8 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
   @narrow-scope
   Scenario: Narrow scope restricts sub-agent to specific file
     Given a project with many source files
-    When the parent agent calls DeepSearch with scope ["codelet/tools/src/read.rs"]
-    Then the sub-agent's system prompt describes only "codelet/tools/src/read.rs" as in scope
+    When the parent agent calls DeepSearch with scope ["rust/tools/src/read.rs"]
+    Then the sub-agent's system prompt describes only "rust/tools/src/read.rs" as in scope
     And the sub-agent explores only within the declared scope
     And the sub-agent does not read files outside the scope
 

@@ -4,11 +4,11 @@
       "name": "DeepSearch uses updated model after mid-session model switch",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "7872-7896",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "4347-4381"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "AgentManager uses updated model after mid-session model switch",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "7902-7922",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "4390-4406"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "DeepSearch respects facade_override for custom models",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "7928-7939",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "4352-4357"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Handler re-registration updates all four captured values",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "7945-7977",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "4347-4406"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "No regression when model is never changed",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "7983-8000",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "5050-5081"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "session_set_model_profile also triggers handler re-registration",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "8006-8030",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "6873-6878"
             }
           ]
@@ -96,10 +96,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 200
   }

@@ -4,11 +4,11 @@
       "name": "Typing a sequence of printable ASCII characters appends each to the draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "77-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -38,11 +38,11 @@
       "name": "Space (ASCII 32) is accepted as the lower boundary of the printable range",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "109-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 14,
                 15,
@@ -69,11 +69,11 @@
       "name": "Tilde \"~\" (ASCII 126) is accepted as the upper boundary of the printable range",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "134-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 14,
                 15,
@@ -100,11 +100,11 @@
       "name": "Tab (ASCII 9) is silently dropped as a control character",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "159-180",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -134,11 +134,11 @@
       "name": "Unit Separator (ASCII 31) is silently dropped as a control character",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "186-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -168,11 +168,11 @@
       "name": "DEL (ASCII 127) is silently dropped as out-of-range",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "211-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -202,11 +202,11 @@
       "name": "Non-ASCII Latin-1 character \"é\" (U+00E9) is silently dropped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "236-255",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -236,11 +236,11 @@
       "name": "Non-ASCII BMP character \"✓\" (U+2713) is silently dropped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "261-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -270,11 +270,11 @@
       "name": "Non-BMP emoji \"🔑\" (U+1F511) is silently dropped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "286-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -304,11 +304,11 @@
       "name": "Dropping a non-printable char does NOT clear the empty-key validation status; a subsequent printable char does",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "312-358",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 143,
                 144,
@@ -338,11 +338,11 @@
       "name": "is_printable_ascii() helper classifies characters by ASCII code",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
           "lines": "374-412",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 14,
                 15,
@@ -371,10 +371,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs"
+      "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
     "totalLinesCovered": 464
   }

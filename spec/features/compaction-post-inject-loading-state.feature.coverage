@@ -4,11 +4,11 @@
       "name": "on_injected emits SessionStateChange Running before CompactionComplete",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_post_inject_loading_test.rs",
+          "file": "rust/napi/tests/compaction_post_inject_loading_test.rs",
           "lines": "24-155",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 111,
                 112,
@@ -36,7 +36,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5391,
                 5392,
@@ -59,11 +59,11 @@
       "name": "Done handler keeps status Running when pending DAG has not been applied",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_post_inject_loading_test.rs",
+          "file": "rust/napi/tests/compaction_post_inject_loading_test.rs",
           "lines": "160-228",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 150,
                 151,
@@ -79,7 +79,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6023,
                 6024,
@@ -106,11 +106,11 @@
       "name": "Agent fails to call inject_summary and cleanup prevents permanent compaction flag",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/compaction_post_inject_loading_test.rs",
+          "file": "rust/napi/tests/compaction_post_inject_loading_test.rs",
           "lines": "239-274",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 150,
                 151,
@@ -126,7 +126,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5646,
                 5647,
@@ -149,11 +149,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/compaction_post_inject_loading_test.rs"
+      "rust/napi/tests/compaction_post_inject_loading_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/inject_summary_handler.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/inject_summary_handler.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 317
   }

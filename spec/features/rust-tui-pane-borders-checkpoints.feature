@@ -4,7 +4,7 @@
 @diff-viewer
 Feature: Restore pane divider parity in the Rust TUI Checkpoints view
   """
-  Add a shared vertical-divider helper to codelet/fspec-tui/src/views/diff_common/ (paints '│' in a reserved 1-col gutter using the default colour) and consume it from checkpoints/render.rs between the Checkpoints list pane and the Files list pane. The layout must reserve a 1-col gutter so content rects are not overdrawn, and the cached last_*_rect values used for mouse-wheel hit-testing must reflect the reduced content area. Tests use ratatui TestBackend: render the view into a fixed-size buffer, join cells to a string, and assert '│' appears at the column between the two top panes.
+  Add a shared vertical-divider helper to rust/fspec-tui/src/views/diff_common/ (paints '│' in a reserved 1-col gutter using the default colour) and consume it from checkpoints/render.rs between the Checkpoints list pane and the Files list pane. The layout must reserve a 1-col gutter so content rects are not overdrawn, and the cached last_*_rect values used for mouse-wheel hit-testing must reflect the reduced content area. Tests use ratatui TestBackend: render the view into a fixed-size buffer, join cells to a string, and assert '│' appears at the column between the two top panes.
   """
 
   # ========================================

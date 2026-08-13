@@ -5,7 +5,7 @@
 @GIT-026
 Feature: Orphan Detection and Pruning
   """
-  Implement in codelet/git/src/session_status.rs alongside existing session management code
+  Implement in rust/git/src/session_status.rs alongside existing session management code
   Uses existing list_worktrees(), remove_worktree(), and delete_manifest() functions
   is_orphaned() simplifies status checking by focusing only on orphan detection (subset of derive_session_status logic)
   """

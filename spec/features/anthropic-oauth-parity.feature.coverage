@@ -4,11 +4,11 @@
       "name": "Tool names are prefixed with mcp_ in OAuth mode requests",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "137-190",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 254,
                 255,
@@ -32,11 +32,11 @@
       "name": "API URL is rewritten to append beta query parameter in OAuth mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "192-243",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 276,
                 277,
@@ -67,11 +67,11 @@
       "name": "OAuth requests include merged beta headers and Bearer auth",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "245-326",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 220,
                 221,
@@ -111,11 +111,11 @@
       "name": "System prompt includes Claude Code identity prefix in OAuth mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "328-381",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 416,
                 417,
@@ -134,11 +134,11 @@
       "name": "OAuth max plan users see zero costs",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "401-430",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 395,
                 396,
@@ -153,11 +153,11 @@
       "name": "Tokens loaded from disk force immediate refresh on first API call",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "429-517",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 74,
                 75,
@@ -194,11 +194,11 @@
       "name": "Concurrent requests during expired token only refresh once",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "519-610",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_refreshing_client.rs",
+              "file": "rust/providers/src/claude_refreshing_client.rs",
               "lines": [
                 119,
                 120,
@@ -260,11 +260,11 @@
       "name": "OAuth tokens take precedence over API key in credential chain",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "612-645",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 334,
                 335,
@@ -335,11 +335,11 @@
       "name": "API key fallback works when no OAuth tokens exist",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_parity_regression_test.rs",
+          "file": "rust/providers/tests/claude_parity_regression_test.rs",
           "lines": "647-676",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 236,
                 237,
@@ -433,12 +433,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_parity_regression_test.rs"
+      "rust/providers/tests/claude_parity_regression_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude_oauth.rs",
-      "codelet/providers/src/claude.rs",
-      "codelet/providers/src/claude_refreshing_client.rs"
+      "rust/providers/src/claude_oauth.rs",
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/claude_refreshing_client.rs"
     ],
     "totalLinesCovered": 800
   }

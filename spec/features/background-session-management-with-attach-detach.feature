@@ -12,7 +12,7 @@ Feature: Background Session Management with Attach/Detach
   - AgentView.tsx refactored to use NAPI session bindings instead of direct BackgroundSession ownership
   - Integrates with existing persistence system (persistenceStoreMessageEnvelope) for session recovery
   - Output buffering uses RwLock<Vec<StreamChunk>> unbounded buffer for full session history
-  - Key files: codelet/napi/src/session_manager.rs, src/tui/components/AgentView.tsx
+  - Key files: rust/napi/src/session_manager.rs, src/tui/components/AgentView.tsx
   """
 
   # ========================================

@@ -4,11 +4,11 @@
       "name": "Clap exposes show-event-storm as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "59-89",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "CLI against empty workspace exits 1 with Work unit not found",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "91-111",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "CLI exits 1 with no Event Storm data error when the unit has no eventStorm field",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "113-140",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "CLI prints the JSON array of active items on success",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "142-177",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "CLI exits 1 when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "179-199",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "201-237",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "show-event-storm --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_event_storm.rs",
           "lines": "241-264",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_event_storm.rs",
+              "file": "rust/fspec/src/show_event_storm.rs",
               "lines": "1-59"
             }
           ]
@@ -111,7 +111,7 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_event_storm.rs"
+      "rust/fspec/tests/cli_show_event_storm.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 198

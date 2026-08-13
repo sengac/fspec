@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-18
 **Tool:** AstGrep (Rust)
-**Scope:** `codelet/fspec-core/src/commands/validate.rs`, `codelet/fspec-core/src/io/gherkin.rs`, `gherkin-0.16.0` crate
+**Scope:** `rust/fspec-core/src/commands/validate.rs`, `rust/fspec-core/src/io/gherkin.rs`, `gherkin-0.16.0` crate
 
 ## Re-scope summary
 
@@ -27,7 +27,7 @@ divergence remains. This card is re-scoped to that residual gap.
 - The raw embedded parser-error string differs: Rust `gherkin-0.16`
   `Error at L:C: {"unknown keyword"}` vs TS `@cucumber/gherkin`
   `expected: #FeatureLine, #Comment ...`.
-- Root cause is structural: `codelet/Cargo.toml:135` pins `gherkin = "0.16"`
+- Root cause is structural: `rust/Cargo.toml:135` pins `gherkin = "0.16"`
   whereas TS uses `@cucumber/gherkin` — the two parsers emit different message
   vocabularies and line bases.
 

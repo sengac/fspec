@@ -1,7 +1,7 @@
 @KGRAPH-020
 Feature: Learnings Graph Data Model & Schema
   """
-  Uses nanograph PG schema format. Schema stored at codelet/napi/schemas/learnings.pg, bundled via include_str!. Registry in registry.rs manages the singleton.
+  Uses nanograph PG schema format. Schema stored at rust/napi/schemas/learnings.pg, bundled via include_str!. Registry in registry.rs manages the singleton.
   """
 
   # ========================================

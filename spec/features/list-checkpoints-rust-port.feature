@@ -5,8 +5,8 @@
 @RPC-242
 Feature: Port list-checkpoints command to Rust
   """
-  File layout (worker-owned): codelet/fspec-core/src/commands/list_checkpoints.rs (rewrite stub), codelet/fspec-core/src/help/configs/list_checkpoints.rs (new), codelet/fspec-core/tests/list_checkpoints.rs (new dispatcher test), codelet/fspec/src/list_checkpoints.rs (new CLI bridge), codelet/fspec/tests/cli_list_checkpoints.rs (new CLI test), codelet/fspec/tests/fixtures/help/list-checkpoints.txt (new help fixture)
-  Shared-file changes required from supervisor: (1) codelet/fspec-core/Cargo.toml — add `codelet-git.workspace = true` to [dependencies]; (2) codelet/fspec-core/src/help/configs/mod.rs — add `pub mod list_checkpoints;`; (3) codelet/fspec-core/src/dispatch.rs — register list-checkpoints route delegating to commands::list_checkpoints::run; (4) codelet/fspec/src/main.rs — add Mode::ListCheckpoints { work_unit_id: String } clap variant plus action arm plus help-printing branch. canonical.rs already lists list-checkpoints so no change there.
+  File layout (worker-owned): rust/fspec-core/src/commands/list_checkpoints.rs (rewrite stub), rust/fspec-core/src/help/configs/list_checkpoints.rs (new), rust/fspec-core/tests/list_checkpoints.rs (new dispatcher test), rust/fspec/src/list_checkpoints.rs (new CLI bridge), rust/fspec/tests/cli_list_checkpoints.rs (new CLI test), rust/fspec/tests/fixtures/help/list-checkpoints.txt (new help fixture)
+  Shared-file changes required from supervisor: (1) rust/fspec-core/Cargo.toml — add `codelet-git.workspace = true` to [dependencies]; (2) rust/fspec-core/src/help/configs/mod.rs — add `pub mod list_checkpoints;`; (3) rust/fspec-core/src/dispatch.rs — register list-checkpoints route delegating to commands::list_checkpoints::run; (4) rust/fspec/src/main.rs — add Mode::ListCheckpoints { work_unit_id: String } clap variant plus action arm plus help-printing branch. canonical.rs already lists list-checkpoints so no change there.
   Reuse `codelet_git::ghost_commit::list_ghost_checkpoints(dir, workUnitId) -> Vec<String>` and `codelet_git::ghost_commit::AUTO_CHECKPOINT_PATTERN` constant. NO new gix/git2 code — list-checkpoints is a thin assembly over the existing git crate.
   Index-file reading: keep `read_checkpoint_index_or_empty(cwd, work_unit_id) -> IndexMap<String,String>` as a PRIVATE helper inside commands/list_checkpoints.rs (NOT in io/ensure.rs) to minimise shared-file churn — only list-checkpoints reads .git/fspec-checkpoints-index/{id}.json today. If a second consumer (cleanup-checkpoints / TUI / etc.) ports, refactor into io/ensure.rs at that point.
   Error handling: if open_repo fails (not a git repo) return Ok(empty list) to match `count_checkpoints` semantics and avoid leaking gix errors to the LLM. Any genuine FspecCoreError comes from JSON arg parsing (missing workUnitId).
@@ -28,7 +28,7 @@ Feature: Port list-checkpoints command to Rust
   #   8. Output is sorted by timestamp DESCENDING (newest first) — parity with TS `checkpoints.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())`
   #   9. Text format prints exactly `No checkpoints found for {workUnitId}` (no leading newline) when the checkpoint list is empty; populated lists emit `\nCheckpoints for {workUnitId}:\n\n{icon}  {name} ({automatic|manual})\n   Created: {timestamp}\n\n` for each checkpoint where icon is `🤖` for automatic and `📌` for manual
   #   10. JSON format returns `{ workUnitId, checkpoints: [{ name, timestamp, displayIcon, isAutomatic }] }` with 2-space indentation (parity with TS `JSON.stringify(result, null, 2)`); `--format` is NOT exposed at the TS CLI surface but the Rust shared `run()` accepts it for the dispatcher's structured-output path (same convention as `list-prefixes`)
-  #   11. The standalone fspec binary at codelet/fspec/src/main.rs MUST expose `list-checkpoints <work-unit-id>` as a clap v4 derive subcommand with exactly one required positional argument and NO flags — mirroring the TS Commander.js registration at src/commands/list-checkpoints.ts:83-88
+  #   11. The standalone fspec binary at rust/fspec/src/main.rs MUST expose `list-checkpoints <work-unit-id>` as a clap v4 derive subcommand with exactly one required positional argument and NO flags — mirroring the TS Commander.js registration at src/commands/list-checkpoints.ts:83-88
   #   12. The clap subcommand action MUST delegate to the same `fspec_core::commands::list_checkpoints::run()` function used by the LLM-facing dispatcher (two front doors, one source of truth — RPC-003 §7/§11) and MUST NOT duplicate checkpoint-listing, classification or rendering logic in the CLI bridge
   #   13. The CLI wrapper MUST resolve the project root from current working directory (parity with TS `process.cwd()` default), exit 0 on success, exit 1 on FspecCoreError, and write structured errors to stderr prefixed with `Error:` (same contract as RPC-253 rule [14] and RPC-248 rule [13])
   #
@@ -41,11 +41,11 @@ Feature: Port list-checkpoints command to Rust
   #   6. Dispatch list-checkpoints with format='json' against a git repo containing manual 'baseline' (timestamp 2026-06-01T10:00:00.000Z) and automatic 'AUTH-001-auto-testing' (timestamp 2026-06-02T12:00:00.000Z) for AUTH-001 → JSON checkpoints array has length 2 with AUTH-001-auto-testing first (newest timestamp) and isAutomatic=true, displayIcon='🤖' for that entry
   #   7. Dispatch list-checkpoints against a git repo containing 'baseline' for AUTH-001 but with NO .git/fspec-checkpoints-index/AUTH-001.json file → returns success=true and the baseline entry's timestamp is a non-empty ISO-8601 string (current time fallback)
   #   8. Dispatch list-checkpoints against a git repo containing 'baseline' for AUTH-001 but with malformed JSON in the index file ('{ not json') → command succeeds (does NOT escalate the parse error) and the baseline entry's timestamp is a non-empty ISO-8601 string (fallback path)
-  #   9. Running `./codelet/target/release/fspec list-checkpoints --help` prints clap-generated help with NO --format / --workspace / --prefix flags, lists the positional <workUnitId> argument, and exits 0
-  #   10. Running `./codelet/target/release/fspec list-checkpoints` with NO positional argument exits with clap's standard required-arg error (code 2) and stderr contains 'workUnitId' or 'work-unit-id'
-  #   11. Running `./codelet/target/release/fspec list-checkpoints AUTH-001` in an empty directory prints 'No checkpoints found for AUTH-001' to stdout and exits 0 (does NOT create .git or auto-init a repo)
-  #   12. Running `./codelet/target/release/fspec list-checkpoints AUTH-001` against a git repo with one manual checkpoint 'baseline' (index timestamp present) prints the header 'Checkpoints for AUTH-001:', the line '📌  baseline (manual)', and 'Created: ...' to stdout and exits 0
-  #   13. Running `./codelet/target/release/fspec --help` lists `list-checkpoints` as an available subcommand alongside daemon, client, status, list-work-units, list-prefixes (default combined TUI mode preserved)
+  #   9. Running `./rust/target/release/fspec list-checkpoints --help` prints clap-generated help with NO --format / --workspace / --prefix flags, lists the positional <workUnitId> argument, and exits 0
+  #   10. Running `./rust/target/release/fspec list-checkpoints` with NO positional argument exits with clap's standard required-arg error (code 2) and stderr contains 'workUnitId' or 'work-unit-id'
+  #   11. Running `./rust/target/release/fspec list-checkpoints AUTH-001` in an empty directory prints 'No checkpoints found for AUTH-001' to stdout and exits 0 (does NOT create .git or auto-init a repo)
+  #   12. Running `./rust/target/release/fspec list-checkpoints AUTH-001` against a git repo with one manual checkpoint 'baseline' (index timestamp present) prints the header 'Checkpoints for AUTH-001:', the line '📌  baseline (manual)', and 'Created: ...' to stdout and exits 0
+  #   13. Running `./rust/target/release/fspec --help` lists `list-checkpoints` as an available subcommand alongside daemon, client, status, list-work-units, list-prefixes (default combined TUI mode preserved)
   #
   # ========================================
   Background: User Story
@@ -127,11 +127,11 @@ Feature: Port list-checkpoints command to Rust
     Then the JSON checkpoints array has length 1
     Then the baseline entry's timestamp is a non-empty string of length >= 20
 
-  Scenario: Shared infrastructure modules exist under codelet/fspec-core and codelet-git is wired as a dependency
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/Cargo.toml
+  Scenario: Shared infrastructure modules exist under rust/fspec-core and codelet-git is wired as a dependency
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/Cargo.toml
     Then the dependencies section declares codelet-git via the workspace
-    When I inspect codelet/fspec-core/src/commands/list_checkpoints.rs
+    When I inspect rust/fspec-core/src/commands/list_checkpoints.rs
     Then it references codelet_git::ghost_commit::list_ghost_checkpoints
     Then it references codelet_git::ghost_commit::AUTO_CHECKPOINT_PATTERN
     Then it does NOT contain the substring 'FspecCoreError::NotYetPorted'

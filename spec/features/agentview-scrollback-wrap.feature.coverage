@@ -4,11 +4,11 @@
       "name": "Long line is pre-wrapped into one rendered Line per visual row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_wrap_rpc078.rs",
+          "file": "rust/fspec-tui/tests/scrollback_wrap_rpc078.rs",
           "lines": "48-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/text_wrap.rs",
+              "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
               "lines": [
                 1,
                 2,
@@ -115,11 +115,11 @@
       "name": "Stick to bottom counts visual rows so the latest chunk stays visible after a long wrapped chunk",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_wrap_rpc078.rs",
+          "file": "rust/fspec-tui/tests/scrollback_wrap_rpc078.rs",
           "lines": "119-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 173,
                 174,
@@ -202,11 +202,11 @@
       "name": "Short scrollback content fills from the top of the viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_wrap_rpc078.rs",
+          "file": "rust/fspec-tui/tests/scrollback_wrap_rpc078.rs",
           "lines": "200-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 173,
                 174,
@@ -237,11 +237,11 @@
       "name": "End-to-end App.render top-fills scrollback when only a user line and an API error are present",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/scrollback_wrap_rpc078.rs",
+          "file": "rust/fspec-tui/tests/scrollback_wrap_rpc078.rs",
           "lines": "266-348",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 175,
                 176,
@@ -298,7 +298,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 190,
                 191,
@@ -411,12 +411,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/scrollback_wrap_rpc078.rs"
+      "rust/fspec-tui/tests/scrollback_wrap_rpc078.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/text_wrap.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/text_wrap.rs",
+      "rust/fspec-tui/src/views/agent/scrollback.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 615
   }

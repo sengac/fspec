@@ -4,11 +4,11 @@
       "name": "/detach with a bound work unit clears the binding, resets scrollback and TokenState",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "file": "rust/fspec-tui/tests/slash_detach_rpc050.rs",
           "lines": "126-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 78,
                 79,
@@ -78,11 +78,11 @@
       "name": "/detach with no active session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "file": "rust/fspec-tui/tests/slash_detach_rpc050.rs",
           "lines": "224-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 97,
                 98,
@@ -98,11 +98,11 @@
       "name": "/detach with a session but no work unit attached emits a notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "file": "rust/fspec-tui/tests/slash_detach_rpc050.rs",
           "lines": "256-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 101,
                 102,
@@ -125,11 +125,11 @@
       "name": "/detach failure surfaces an error notice and preserves local state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "file": "rust/fspec-tui/tests/slash_detach_rpc050.rs",
           "lines": "290-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 118,
                 119,
@@ -160,10 +160,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_detach_rpc050.rs"
+      "rust/fspec-tui/tests/slash_detach_rpc050.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs"
+      "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs"
     ],
     "totalLinesCovered": 268
   }

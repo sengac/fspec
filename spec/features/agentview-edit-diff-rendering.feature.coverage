@@ -4,11 +4,11 @@
       "name": "Edit replacing one line shows the old line on red and the new line on green",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "75-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 111,
                 112,
@@ -79,7 +79,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 29,
                 30,
@@ -109,11 +109,11 @@
       "name": "Write of a new three-line file shows three green-background lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "115-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
               "lines": [
                 45,
                 46,
@@ -160,7 +160,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 128,
                 129,
@@ -197,11 +197,11 @@
       "name": "A Bash tool result renders plain white with no diff coloring",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "136-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 139,
                 140,
@@ -251,11 +251,11 @@
       "name": "An Edit over the collapse limit shows 25 lines inline while the modal shows the full diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "160-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
               "lines": [
                 80,
                 81,
@@ -267,7 +267,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 113,
                 114,
@@ -300,11 +300,11 @@
       "name": "An Edit with uncaptured pending input falls back to raw text without panicking",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "204-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 139,
                 140,
@@ -347,7 +347,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
               "lines": [
                 45,
                 46,
@@ -384,11 +384,11 @@
       "name": "Context diff lines render with a gray line-number gutter and white content",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "229-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 29,
                 30,
@@ -467,11 +467,11 @@
       "name": "The marker characters are stripped before display",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "265-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 29,
                 30,
@@ -520,11 +520,11 @@
       "name": "Diff cards bypass the eight-line tool-output collapse",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
           "lines": "290-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 128,
                 129,
@@ -563,14 +563,14 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs"
+      "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-      "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
-      "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
-      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback_select.rs"
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
+      "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_select.rs"
     ],
     "totalLinesCovered": 661
   }

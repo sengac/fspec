@@ -4,11 +4,11 @@
       "name": "Removing the only attachment empties the array and deletes the file from disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "101-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -219,11 +219,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "174-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -434,11 +434,11 @@
       "name": "Work unit with no attachments surfaces the no-attachments error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "203-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -649,11 +649,11 @@
       "name": "Work unit with empty attachments array surfaces the no-attachments error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "232-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -864,11 +864,11 @@
       "name": "Unknown filename surfaces the not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "258-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -1079,11 +1079,11 @@
       "name": "Missing on-disk file degrades gracefully to the \"already missing\" warning",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "294-337",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -1294,11 +1294,11 @@
       "name": "--keep-file preserves the file on disk but removes the array entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "339-391",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -1509,11 +1509,11 @@
       "name": "Removing the middle of three attachments preserves order of the remaining two",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "393-445",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -1724,11 +1724,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_attachment.rs",
+          "file": "rust/fspec-core/tests/remove_attachment.rs",
           "lines": "447-477",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_attachment.rs",
+              "file": "rust/fspec-core/src/commands/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -1941,10 +1941,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_attachment.rs"
+      "rust/fspec-core/tests/remove_attachment.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_attachment.rs"
+      "rust/fspec-core/src/commands/remove_attachment.rs"
     ],
     "totalLinesCovered": 2160
   }

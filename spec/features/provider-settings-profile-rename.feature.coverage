@@ -4,11 +4,11 @@
       "name": "Up arrow re-enters the name field in edit mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
           "lines": "82-101",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 121,
                 122,
@@ -32,11 +32,11 @@
       "name": "An empty name cannot be saved",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
           "lines": "134-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 206,
                 207,
@@ -88,10 +88,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_rename_prov136.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_rename_prov136.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
     "totalLinesCovered": 87
   }

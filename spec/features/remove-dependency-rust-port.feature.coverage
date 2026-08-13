@@ -4,11 +4,11 @@
       "name": "Removing a blocks edge cleans both source and target arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "111-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 95,
                 96,
@@ -78,11 +78,11 @@
       "name": "Removing a blockedBy edge cleans both source and target arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "150-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 95,
                 96,
@@ -152,11 +152,11 @@
       "name": "Removing a dependsOn edge is unidirectional and leaves the target untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "185-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 95,
                 96,
@@ -226,11 +226,11 @@
       "name": "Removing a relatesTo edge cleans both sides of the symmetric link",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "215-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 95,
                 96,
@@ -300,11 +300,11 @@
       "name": "Filtering removes the target id while preserving sibling entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "246-279",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 168,
                 169,
@@ -337,11 +337,11 @@
       "name": "Removing a non-existent dependency is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "281-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 168,
                 169,
@@ -374,11 +374,11 @@
       "name": "Removing an edge whose target does not exist still updates the source array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "303-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 115,
                 116,
@@ -421,11 +421,11 @@
       "name": "Removal does not auto-revert a blocked status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "328-365",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 95,
                 96,
@@ -495,11 +495,11 @@
       "name": "Only the source updatedAt is bumped, target updatedAt is preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "367-398",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 147,
                 148,
@@ -517,11 +517,11 @@
       "name": "Missing source work unit returns the canonical error and writes nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "400-424",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 104,
                 105,
@@ -540,11 +540,11 @@
       "name": "All-empty relationship args is a silent no-op success",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "426-448",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 95,
                 96,
@@ -622,11 +622,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_dependency.rs",
+          "file": "rust/fspec-core/tests/remove_dependency.rs",
           "lines": "450-475",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_dependency.rs",
+              "file": "rust/fspec-core/src/commands/remove_dependency.rs",
               "lines": [
                 100,
                 101,
@@ -651,10 +651,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_dependency.rs"
+      "rust/fspec-core/tests/remove_dependency.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_dependency.rs"
+      "rust/fspec-core/src/commands/remove_dependency.rs"
     ],
     "totalLinesCovered": 802
   }

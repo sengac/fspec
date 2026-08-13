@@ -4,11 +4,11 @@
       "name": "Import full example mapping data into a specifying work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/import_example_map.rs",
+          "file": "rust/fspec-core/tests/import_example_map.rs",
           "lines": "86-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/import_example_map.rs",
+              "file": "rust/fspec-core/src/commands/import_example_map.rs",
               "lines": [
                 45,
                 46,
@@ -147,11 +147,11 @@
       "name": "Import appends to existing example mapping arrays",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/import_example_map.rs",
+          "file": "rust/fspec-core/tests/import_example_map.rs",
           "lines": "125-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/import_example_map.rs",
+              "file": "rust/fspec-core/src/commands/import_example_map.rs",
               "lines": [
                 123,
                 124,
@@ -206,11 +206,11 @@
       "name": "Import a file with only one category leaves the others untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/import_example_map.rs",
+          "file": "rust/fspec-core/tests/import_example_map.rs",
           "lines": "153-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/import_example_map.rs",
+              "file": "rust/fspec-core/src/commands/import_example_map.rs",
               "lines": [
                 45,
                 46,
@@ -339,11 +339,11 @@
       "name": "Import into a work unit that does not exist fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/import_example_map.rs",
+          "file": "rust/fspec-core/tests/import_example_map.rs",
           "lines": "188-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/import_example_map.rs",
+              "file": "rust/fspec-core/src/commands/import_example_map.rs",
               "lines": [
                 45,
                 46,
@@ -384,11 +384,11 @@
       "name": "Import into a work unit not in specifying state fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/import_example_map.rs",
+          "file": "rust/fspec-core/tests/import_example_map.rs",
           "lines": "210-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/import_example_map.rs",
+              "file": "rust/fspec-core/src/commands/import_example_map.rs",
               "lines": [
                 45,
                 46,
@@ -441,11 +441,11 @@
       "name": "Dispatcher and core append identical data",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/import_example_map.rs",
+          "file": "rust/fspec-core/tests/import_example_map.rs",
           "lines": "234-270",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/import_example_map.rs",
+              "file": "rust/fspec-core/src/commands/import_example_map.rs",
               "lines": [
                 45,
                 46,
@@ -576,10 +576,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/import_example_map.rs"
+      "rust/fspec-core/tests/import_example_map.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/import_example_map.rs"
+      "rust/fspec-core/src/commands/import_example_map.rs"
     ],
     "totalLinesCovered": 659
   }

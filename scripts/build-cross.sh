@@ -14,7 +14,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CODELET_DIR="$REPO_ROOT/codelet"
+CODELET_DIR="$REPO_ROOT/rust"
 DIST_DIR="$REPO_ROOT/dist"
 BUILD_PROFILE="${BUILD_PROFILE:-release-slim}"
 

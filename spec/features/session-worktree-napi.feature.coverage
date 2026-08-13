@@ -4,11 +4,11 @@
       "name": "Create isolated session with worktree",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "29-63",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 389,
                 390,
@@ -52,11 +52,11 @@
       "name": "List all session worktrees with status",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "69-117",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 455,
                 456,
@@ -107,11 +107,11 @@
       "name": "List sessions with pending merge filter",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "123-144",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 455,
                 456,
@@ -162,11 +162,11 @@
       "name": "Inspect session diff before merging",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "150-185",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 495,
                 496,
@@ -198,11 +198,11 @@
       "name": "Merge session changes to main worktree",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "191-224",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 516,
                 517,
@@ -238,11 +238,11 @@
       "name": "Merge session returns conflict error",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "230-259",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 516,
                 517,
@@ -278,11 +278,11 @@
       "name": "Discard session without applying changes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "265-290",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 541,
                 542,
@@ -313,11 +313,11 @@
       "name": "Prune orphaned worktrees",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "file": "rust/napi/tests/session_worktree_napi_test.rs",
           "lines": "296-323",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 561,
                 562,
@@ -351,10 +351,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/session_worktree_napi_test.rs"
+      "rust/napi/tests/session_worktree_napi_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/git.rs"
+      "rust/napi/src/git.rs"
     ],
     "totalLinesCovered": 477
   }

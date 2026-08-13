@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "codelet/napi/src/persistence/ contains exactly mod.rs and napi_bindings.rs after the card",
+      "name": "rust/napi/src/persistence/ contains exactly mod.rs and napi_bindings.rs after the card",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "53-103",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -33,14 +33,14 @@
       ]
     },
     {
-      "name": "codelet/napi/index.d.ts is byte-identical before and after the card",
+      "name": "rust/napi/index.d.ts is byte-identical before and after the card",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "339-490",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/napi_bindings.rs",
+              "file": "rust/napi/src/persistence/napi_bindings.rs",
               "lines": [
                 390,
                 391,
@@ -243,11 +243,11 @@
       "name": "Every #[napi] persistence_* function sources its callees through an explicit codelet_core::persistence import",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "108-201",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/napi_bindings.rs",
+              "file": "rust/napi/src/persistence/napi_bindings.rs",
               "lines": [
                 1,
                 2,
@@ -289,11 +289,11 @@
       "name": "The relocated codelet-core persistence::tests suite runs all 48 tests",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "205-285",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/tests.rs",
+              "file": "rust/core/src/persistence/tests.rs",
               "lines": [
                 1,
                 2,
@@ -355,11 +355,11 @@
       "name": "The relocated codelet-core persistence::lazy_init_tests suite runs all 9 BUG-122 lazy-init invariants",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "289-335",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/lazy_init_tests.rs",
+              "file": "rust/core/src/persistence/lazy_init_tests.rs",
               "lines": [
                 1,
                 2,
@@ -407,11 +407,11 @@
       "name": "NAPI-bridge integration tests still pass after the relocation",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "494-567",
           "implMappings": [
             {
-              "file": "codelet/napi/src/test_support.rs",
+              "file": "rust/napi/src/test_support.rs",
               "lines": [
                 18,
                 19,
@@ -441,11 +441,11 @@
       "name": "codelet-rpc-embedded continues to consume persistence without re-introducing the forbidden rpc to napi arrow",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "342-373",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/mod.rs",
+              "file": "rust/core/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -525,11 +525,11 @@
       "name": "The relocated setup_test_env helper uses codelet-core primitives only",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "571-614",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/tests.rs",
+              "file": "rust/core/src/persistence/tests.rs",
               "lines": [
                 29,
                 30,
@@ -563,11 +563,11 @@
       "name": "Both codelet-napi feature builds succeed after the relocation",
       "testMappings": [
         {
-          "file": "codelet/core/tests/persistence_napi_shim_layout_test.rs",
+          "file": "rust/core/tests/persistence_napi_shim_layout_test.rs",
           "lines": "618-678",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -597,15 +597,15 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/persistence_napi_shim_layout_test.rs"
+      "rust/core/tests/persistence_napi_shim_layout_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/mod.rs",
-      "codelet/napi/src/persistence/napi_bindings.rs",
-      "codelet/core/src/persistence/tests.rs",
-      "codelet/core/src/persistence/lazy_init_tests.rs",
-      "codelet/napi/src/test_support.rs",
-      "codelet/core/src/persistence/mod.rs"
+      "rust/napi/src/persistence/mod.rs",
+      "rust/napi/src/persistence/napi_bindings.rs",
+      "rust/core/src/persistence/tests.rs",
+      "rust/core/src/persistence/lazy_init_tests.rs",
+      "rust/napi/src/test_support.rs",
+      "rust/core/src/persistence/mod.rs"
     ],
     "totalLinesCovered": 1083
   }

@@ -4,11 +4,11 @@
       "name": "Event::Mouse is no longer dropped by the App run loop",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_mouse_dispatch_rpc023.rs",
+          "file": "rust/fspec-tui/tests/app_mouse_dispatch_rpc023.rs",
           "lines": "39-79",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 110,
                 111,
@@ -27,10 +27,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_mouse_dispatch_rpc023.rs"
+      "rust/fspec-tui/tests/app_mouse_dispatch_rpc023.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 46
   }

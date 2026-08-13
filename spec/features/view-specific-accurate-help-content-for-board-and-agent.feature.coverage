@@ -4,11 +4,11 @@
       "name": "Board help shows board keybindings and no slash commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_content_rpc397.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_content_rpc397.rs",
           "lines": "51-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_content.rs",
+              "file": "rust/fspec-tui/src/components/help_content.rs",
               "lines": [
                 22,
                 23,
@@ -44,11 +44,11 @@
       "name": "Agent help shows agent keybindings and the full slash-command list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_content_rpc397.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_content_rpc397.rs",
           "lines": "79-120",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_content.rs",
+              "file": "rust/fspec-tui/src/components/help_content.rs",
               "lines": [
                 52,
                 53,
@@ -92,11 +92,11 @@
       "name": "Neither help variant shows the misleading q Quit line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_content_rpc397.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_content_rpc397.rs",
           "lines": "122-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 67,
                 68,
@@ -123,11 +123,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/help_dialog_content_rpc397.rs"
+      "rust/fspec-tui/tests/help_dialog_content_rpc397.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/help_content.rs",
-      "codelet/fspec-tui/src/components/help_dialog.rs"
+      "rust/fspec-tui/src/components/help_content.rs",
+      "rust/fspec-tui/src/components/help_dialog.rs"
     ],
     "totalLinesCovered": 186
   }

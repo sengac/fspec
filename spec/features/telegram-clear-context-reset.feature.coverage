@@ -4,11 +4,11 @@
       "name": "Clear command resets AI context completely",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "file": "rust/napi/tests/telegram_clear_context_test.rs",
           "lines": "45-98",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4508,
                 4509,
@@ -43,11 +43,11 @@
       "name": "System reminders preserved after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "file": "rust/napi/tests/telegram_clear_context_test.rs",
           "lines": "100-161",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4508,
                 4509,
@@ -82,11 +82,11 @@
       "name": "Token counters reset after clear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "file": "rust/napi/tests/telegram_clear_context_test.rs",
           "lines": "163-208",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4508,
                 4509,
@@ -121,11 +121,11 @@
       "name": "Clear resets session state not just output buffer",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "file": "rust/napi/tests/telegram_clear_context_test.rs",
           "lines": "210-259",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4508,
                 4509,
@@ -162,10 +162,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/telegram_clear_context_test.rs"
+      "rust/napi/tests/telegram_clear_context_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 304
   }

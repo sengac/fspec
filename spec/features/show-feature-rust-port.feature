@@ -81,7 +81,7 @@ Feature: Port show-feature command to Rust
     And the file <project_root>/out/snapshot.txt exists with the same bytes as the data field
 
   Scenario: Shared infrastructure modules exist under fspec-core for reuse by other commands
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the helper io::feature_glob::glob_feature_files is publicly accessible from the crate root
     And commands/show_feature.rs no longer returns FspecCoreError::NotYetPorted

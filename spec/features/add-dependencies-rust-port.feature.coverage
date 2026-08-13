@@ -4,11 +4,11 @@
       "name": "Bulk blocks adds bidirectional edges and auto-transitions targets to blocked",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "85-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 86,
                 87,
@@ -83,11 +83,11 @@
       "name": "Bulk blockedBy auto-transitions the SOURCE to blocked with blockedReason",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "143-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 190,
                 191,
@@ -138,11 +138,11 @@
       "name": "Bulk dependsOn writes only the source array with no reverse edge or status change",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "187-221",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 230,
                 231,
@@ -172,11 +172,11 @@
       "name": "Bulk relatesTo creates a symmetric edge on both sides with no status change",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "223-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 249,
                 250,
@@ -217,11 +217,11 @@
       "name": "Missing target id surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "256-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 279,
                 280,
@@ -243,11 +243,11 @@
       "name": "Self-dependency is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "282-306",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 290,
                 291,
@@ -266,11 +266,11 @@
       "name": "Circular blocks chain is detected and rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "308-336",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 387,
                 388,
@@ -318,11 +318,11 @@
       "name": "Missing source work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "338-357",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 86,
                 87,
@@ -353,11 +353,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_dependencies.rs",
+          "file": "rust/fspec-core/tests/add_dependencies.rs",
           "lines": "359-384",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/add_dependencies.rs",
               "lines": [
                 86,
                 87,
@@ -390,10 +390,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_dependencies.rs"
+      "rust/fspec-core/tests/add_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_dependencies.rs"
+      "rust/fspec-core/src/commands/add_dependencies.rs"
     ],
     "totalLinesCovered": 532
   }

@@ -4,11 +4,11 @@
       "name": "Successful browser OAuth login with code paste",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "64-160",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 84,
                 85,
@@ -112,11 +112,11 @@
       "name": "Code paste with mismatched state is rejected as CSRF",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "166-240",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 214,
                 215,
@@ -173,11 +173,11 @@
       "name": "Login times out after 5 minutes without code submission",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "246-276",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 128,
                 129,
@@ -202,11 +202,11 @@
       "name": "Token exchange fails after valid state validation",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "282-336",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 151,
                 152,
@@ -243,11 +243,11 @@
       "name": "User cancels OAuth flow via cancel route",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "342-385",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 270,
                 271,
@@ -269,11 +269,11 @@
       "name": "Code without state hash separator is rejected",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "391-459",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 230,
                 231,
@@ -300,11 +300,11 @@
       "name": "Browser fails to open but server still shows form with link",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "465-523",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 113,
                 114,
@@ -326,11 +326,11 @@
       "name": "Server handles 404 requests without shutting down",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "529-569",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth_server.rs",
+              "file": "rust/providers/src/claude_oauth_server.rs",
               "lines": [
                 280,
                 281,
@@ -346,11 +346,11 @@
       "name": "Claude auth persistence writes correct JSON structure",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_server_test.rs",
+          "file": "rust/providers/tests/claude_oauth_server_test.rs",
           "lines": "575-627",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_auth.rs",
+              "file": "rust/providers/src/claude_auth.rs",
               "lines": [
                 1,
                 2,
@@ -442,11 +442,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_oauth_server_test.rs"
+      "rust/providers/tests/claude_oauth_server_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude_oauth_server.rs",
-      "codelet/providers/src/claude_auth.rs"
+      "rust/providers/src/claude_oauth_server.rs",
+      "rust/providers/src/claude_auth.rs"
     ],
     "totalLinesCovered": 816
   }

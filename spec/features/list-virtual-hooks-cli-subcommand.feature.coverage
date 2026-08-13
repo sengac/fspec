@@ -4,11 +4,11 @@
       "name": "Clap exposes list-virtual-hooks as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_virtual_hooks.rs",
           "lines": "102-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 188,
                 189,
@@ -30,11 +30,11 @@
       "name": "CLI prints the populated text layout when the work unit has virtual hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_virtual_hooks.rs",
           "lines": "152-192",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_virtual_hooks.rs",
+              "file": "rust/fspec/src/list_virtual_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -106,11 +106,11 @@
       "name": "CLI prints the empty-hooks sentinel and exits 0 when the work unit has no virtual hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_virtual_hooks.rs",
           "lines": "194-221",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_virtual_hooks.rs",
+              "file": "rust/fspec/src/list_virtual_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -182,11 +182,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_virtual_hooks.rs",
           "lines": "223-280",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_virtual_hooks.rs",
+              "file": "rust/fspec/src/list_virtual_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -258,11 +258,11 @@
       "name": "list-virtual-hooks --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_virtual_hooks.rs",
           "lines": "282-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/help/configs/list_virtual_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -379,12 +379,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_virtual_hooks.rs"
+      "rust/fspec/tests/cli_list_virtual_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/main.rs",
-      "codelet/fspec/src/list_virtual_hooks.rs",
-      "codelet/fspec-core/src/help/configs/list_virtual_hooks.rs"
+      "rust/fspec/src/main.rs",
+      "rust/fspec/src/list_virtual_hooks.rs",
+      "rust/fspec-core/src/help/configs/list_virtual_hooks.rs"
     ],
     "totalLinesCovered": 500
   }

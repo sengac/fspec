@@ -4,7 +4,7 @@
 @RPC-207
 Feature: compare-implementations CLI subcommand on the standalone fspec Rust binary
   """
-  CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::compare_implementations::run(args_json) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
+  CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::compare_implementations::run(args_json) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
   compare-implementations exposes one REQUIRED --tag flag plus two optional flags: --show-coverage and --json. No positional arguments.
 
@@ -18,27 +18,27 @@ Feature: compare-implementations CLI subcommand on the standalone fspec Rust bin
 
   Scenario: CLI default output prints the green summary line
     Given a temp workspace contains spec/work-units.json with one work unit tagged @cli
-    When I run `./codelet/target/release/fspec compare-implementations --tag @cli` from that workspace
+    When I run `./rust/target/release/fspec compare-implementations --tag @cli` from that workspace
     Then the command exits 0
     And stdout contains the substring '✓ Compared 1 work units tagged with @cli'
 
   Scenario: CLI --json prints 2-space JSON envelope to stdout
     Given a temp workspace contains spec/work-units.json with two work units tagged @cli
-    When I run `./codelet/target/release/fspec compare-implementations --tag @cli --json` from that workspace
+    When I run `./rust/target/release/fspec compare-implementations --tag @cli --json` from that workspace
     Then the command exits 0
     And stdout parses as JSON with workUnits, comparison, namingConventionDifferences, and coverage fields
     And the JSON.workUnits array has 2 elements
 
   Scenario: CLI --show-coverage includes deduplicated coverage file paths
     Given a temp workspace contains spec/work-units.json with one work unit tagged @cli and one .feature.coverage file referencing one test file and one impl file
-    When I run `./codelet/target/release/fspec compare-implementations --tag @cli --show-coverage --json` from that workspace
+    When I run `./rust/target/release/fspec compare-implementations --tag @cli --show-coverage --json` from that workspace
     Then the command exits 0
     And the JSON.coverage array has one entry
     And the JSON coverage[0].testFiles array has one element
 
   Scenario: CLI exits 1 when work-units.json is missing
     Given an empty directory with no spec/ subdirectory is the current working directory
-    When I run `./codelet/target/release/fspec compare-implementations --tag @cli` from that directory
+    When I run `./rust/target/release/fspec compare-implementations --tag @cli` from that directory
     Then the command exits with a non-zero status
     And stderr contains the substring '✗ Comparison failed:'
 
@@ -48,7 +48,7 @@ Feature: compare-implementations CLI subcommand on the standalone fspec Rust bin
     Then both front doors produce the same JSON envelope
 
   Scenario: compare-implementations --help is byte-for-byte identical to the TS formatCommandHelp reference
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec compare-implementations --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec compare-implementations --help` piped to non-TTY
     Then the command exits 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/compare-implementations.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/compare-implementations.txt

@@ -2,7 +2,7 @@
 @SCHED-012
 Feature: Schedule Job Log
   """
-  New module codelet/napi/src/scheduler/job_log.rs — provides append_log_entry() and check_rotation() functions, called from trigger_and_update() and state overlap/defer paths in engine.rs
+  New module rust/napi/src/scheduler/job_log.rs — provides append_log_entry() and check_rotation() functions, called from trigger_and_update() and state overlap/defer paths in engine.rs
   Log entry struct is serialized via serde_json — no custom StreamChunk variant needed, this is file I/O only
   """
 

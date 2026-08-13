@@ -4,11 +4,11 @@
       "name": "Clap exposes show-foundation as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "78-120",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "CLI default render prints PROJECT section to stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "122-139",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "CLI positional section emits raw string in text format",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "141-155",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "CLI --format=json emits JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "157-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "CLI exits 1 when section is unknown",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "173-193",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "CLI --draft surfaces missing-draft error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "195-215",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "CLI --output writes file and stdout prints success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "217-241",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "CLI exits 1 and writes to stderr when foundation.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "243-257",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "CLI --list-sections is parsed but ignored (no-op parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "259-273",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -139,11 +139,11 @@
       "name": "CLI --line-numbers is parsed but ignored (no-op parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "275-289",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -154,11 +154,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "291-318",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -169,21 +169,21 @@
       "name": "show-foundation --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "322-345",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_foundation.rs",
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
           "lines": "322-345",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation.rs",
+              "file": "rust/fspec/src/show_foundation.rs",
               "lines": "1-81"
             }
           ]
@@ -196,7 +196,7 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_foundation.rs"
+      "rust/fspec/tests/cli_show_foundation.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 279

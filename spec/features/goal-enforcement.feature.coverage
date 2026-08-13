@@ -4,11 +4,11 @@
       "name": "Goal presence wins the derived mode over the continue toggle",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "60-99",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 24,
                 25,
@@ -41,11 +41,11 @@
       "name": "done() without evidence or goal assessment is rejected at Tier 1",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "105-139",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 331,
                 332,
@@ -71,11 +71,11 @@
       "name": "done() with a trivial goal assessment is rejected at Tier 1",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "145-169",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 207,
                 208,
@@ -100,11 +100,11 @@
       "name": "done() with evidence and assessment is accepted when no verify command is configured",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "176-204",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 345,
                 346,
@@ -135,11 +135,11 @@
       "name": "Failing verify command rejects done() with exit code and output tail",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "210-240",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 224,
                 225,
@@ -191,11 +191,11 @@
       "name": "Verify command exit code is surfaced in the rejection",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "246-277",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 243,
                 244,
@@ -227,11 +227,11 @@
       "name": "Passing verify command accepts done() and auto-clears the goal",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "283-332",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1510,
                 1511,
@@ -260,11 +260,11 @@
       "name": "Verify command exceeding the timeout rejects done() with a timeout message",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "339-373",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 224,
                 225,
@@ -295,11 +295,11 @@
       "name": "Fourth done() rejection escalates while the goal stays active",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "379-428",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 122,
                 123,
@@ -317,11 +317,11 @@
       "name": "Budget exhaustion in Goal mode escalates instead of the AutoContinue warning finish",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "435-454",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 141,
                 142,
@@ -343,11 +343,11 @@
       "name": "Two consecutive zero-activity nudges escalate immediately",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "460-488",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 127,
                 128,
@@ -367,11 +367,11 @@
       "name": "Escalation pauses the session when a pause handler is registered",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "494-532",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 60,
                 61,
@@ -401,11 +401,11 @@
       "name": "Escalation in plain CLI repl finishes the turn with a prominent blocked message",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "539-567",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1533,
                 1534,
@@ -431,11 +431,11 @@
       "name": "Larger explicit continue budget overrides the Goal default of 15",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "573-589",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 46,
                 47,
@@ -453,11 +453,11 @@
       "name": "Goal default budget of 15 overrides a smaller explicit continue budget",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "596-612",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/goal.rs",
+              "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
                 46,
                 47,
@@ -475,11 +475,11 @@
       "name": "Goal text survives compaction via the CompletionContract system reminder",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "619-678",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/mod.rs",
+              "file": "rust/cli/src/session/mod.rs",
               "lines": [
                 246,
                 247,
@@ -507,11 +507,11 @@
       "name": "Clearing the goal removes the CompletionContract system reminder",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "684-735",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/system_reminders.rs",
+              "file": "rust/cli/src/session/system_reminders.rs",
               "lines": [
                 355,
                 356,
@@ -545,11 +545,11 @@
       "name": "done() tool description includes the goal text while a goal is active",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/goal_enforcement_test.rs",
+          "file": "rust/cli/tests/goal_enforcement_test.rs",
           "lines": "742-767",
           "implMappings": [
             {
-              "file": "codelet/tools/src/done.rs",
+              "file": "rust/tools/src/done.rs",
               "lines": [
                 273,
                 274,
@@ -604,15 +604,15 @@
     "coveredScenarios": 18,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/goal_enforcement_test.rs"
+      "rust/cli/tests/goal_enforcement_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/goal.rs",
-      "codelet/tools/src/done.rs",
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/auto_continue.rs",
-      "codelet/cli/src/session/mod.rs",
-      "codelet/cli/src/session/system_reminders.rs"
+      "rust/cli/src/interactive/goal.rs",
+      "rust/tools/src/done.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/auto_continue.rs",
+      "rust/cli/src/session/mod.rs",
+      "rust/cli/src/session/system_reminders.rs"
     ],
     "totalLinesCovered": 926
   }

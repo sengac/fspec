@@ -8,7 +8,7 @@
           "lines": "113-151",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 992,
                 993,
@@ -23,7 +23,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 34,
                 35,
@@ -45,7 +45,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 75,
                 76,
@@ -68,9 +68,9 @@
       "e2e/prov-126-cloud-sections.test.ts"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/profile_sections.rs",
-      "codelet/fspec-tui/src/views/model_selector/rows.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/profile_sections.rs",
+      "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
     "totalLinesCovered": 72
   }

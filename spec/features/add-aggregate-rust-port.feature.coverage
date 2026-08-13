@@ -4,11 +4,11 @@
       "name": "First add seeds eventStorm and appends aggregate id 0 on a clean specifying work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate.rs",
+          "file": "rust/fspec-core/tests/add_aggregate.rs",
           "lines": "79-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -254,11 +254,11 @@
       "name": "Second add appends with auto-incremented id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate.rs",
+          "file": "rust/fspec-core/tests/add_aggregate.rs",
           "lines": "137-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -504,11 +504,11 @@
       "name": "Responsibilities CSV is split, trimmed and empty-filtered into an array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate.rs",
+          "file": "rust/fspec-core/tests/add_aggregate.rs",
           "lines": "185-207",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -754,11 +754,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate.rs",
+          "file": "rust/fspec-core/tests/add_aggregate.rs",
           "lines": "210-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -1004,11 +1004,11 @@
       "name": "Done or blocked status is rejected verbatim and disk is untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate.rs",
+          "file": "rust/fspec-core/tests/add_aggregate.rs",
           "lines": "238-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -1254,11 +1254,11 @@
       "name": "Missing spec/work-units.json reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_aggregate.rs",
+          "file": "rust/fspec-core/tests/add_aggregate.rs",
           "lines": "266-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_aggregate.rs",
+              "file": "rust/fspec-core/src/commands/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -1506,10 +1506,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_aggregate.rs"
+      "rust/fspec-core/tests/add_aggregate.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_aggregate.rs"
+      "rust/fspec-core/src/commands/add_aggregate.rs"
     ],
     "totalLinesCovered": 1648
   }

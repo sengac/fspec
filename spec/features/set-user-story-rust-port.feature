@@ -5,9 +5,9 @@
 @mutation
 Feature: Port set-user-story command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/set_user_story.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists, builds a UserStory object with the literal field order {role, action, benefit}, assigns it (overwriting any prior value) to workUnit.extra['userStory'], bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic.
-  Help config at codelet/fspec-core/src/help/configs/set_user_story.rs mirrors src/commands/set-user-story-help.ts byte-for-byte.
-  CLI bridge at codelet/fspec/src/set_user_story.rs marshals the positional <work-unit-id> plus required --role, --action, --benefit flags into JSON and delegates to commands::set_user_story::run. No domain logic is duplicated.
+  Core impl at rust/fspec-core/src/commands/set_user_story.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists, builds a UserStory object with the literal field order {role, action, benefit}, assigns it (overwriting any prior value) to workUnit.extra['userStory'], bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic.
+  Help config at rust/fspec-core/src/help/configs/set_user_story.rs mirrors src/commands/set-user-story-help.ts byte-for-byte.
+  CLI bridge at rust/fspec/src/set_user_story.rs marshals the positional <work-unit-id> plus required --role, --action, --benefit flags into JSON and delegates to commands::set_user_story::run. No domain logic is duplicated.
   Two-front-doors: clap CLI and LLM dispatcher both call commands::set_user_story::run(args_json, project_root).
   """
 

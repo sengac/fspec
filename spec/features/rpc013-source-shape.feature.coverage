@@ -4,11 +4,11 @@
       "name": "Navigator no longer reserves a Length(1) footer row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc013.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc013.rs",
           "lines": "73-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 95,
                 96,
@@ -40,11 +40,11 @@
       "name": "AgentView splits its area into scrollback + input + footer rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc013.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc013.rs",
           "lines": "91-116",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 180,
                 181,
@@ -112,11 +112,11 @@
       "name": "FooterView module and its re-exports are removed",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc013.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc013.rs",
           "lines": "42-69",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/mod.rs",
+              "file": "rust/fspec-tui/src/views/mod.rs",
               "lines": [
                 1,
                 2,
@@ -157,11 +157,11 @@
       "name": "BoardView source contains the literal UnifiedBoardLayout footer string",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc013.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc013.rs",
           "lines": "154-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 211,
                 212,
@@ -204,11 +204,11 @@
       "name": "File-size invariant preserved for every modified view file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc013.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc013.rs",
           "lines": "120-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/mod.rs",
+              "file": "rust/fspec-tui/src/views/mod.rs",
               "lines": [
                 1,
                 2,
@@ -251,13 +251,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc013.rs"
+      "rust/fspec-tui/tests/source_shape_rpc013.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/views/mod.rs",
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/mod.rs",
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 285
   }

@@ -10,27 +10,27 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
   the file layout + symbol surface so future refactors cannot silently
   regress the integration shape:
 
-  1. `codelet/rpc-types/src/lib.rs` — two new types
+  1. `rust/rpc-types/src/lib.rs` — two new types
   `ProviderInfo` and `ModelEntry` (cfg-gated for napi).
-  2. `codelet/rpc/src/lib.rs` — `FspecService` trait gains five new
+  2. `rust/rpc/src/lib.rs` — `FspecService` trait gains five new
   methods: `list_providers`, `set_session_model`,
   `set_thinking_level`, `get_session_role`, `set_session_role`.
-  3. `codelet/core/src/session_manager_handle.rs` — trait gains
+  3. `rust/core/src/session_manager_handle.rs` — trait gains
   `set_model`, `set_thinking_level`, `get_role`, `set_role`,
   `list_providers` with default impls returning safe defaults.
-  4. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend` trait
+  4. `rust/fspec-tui/src/transport/mod.rs` — `FspecBackend` trait
   declares the same five methods.
-  5. `codelet/fspec-tui/src/transport/embedded.rs` +
-  `codelet/fspec-tui/src/transport/websocket.rs` — both implement
+  5. `rust/fspec-tui/src/transport/embedded.rs` +
+  `rust/fspec-tui/src/transport/websocket.rs` — both implement
   the five new trait methods.
-  6. `codelet/fspec-tui/src/components/model_selector_dialog.rs` +
-  `codelet/fspec-tui/src/components/thinking_level_dialog.rs` —
+  6. `rust/fspec-tui/src/components/model_selector_dialog.rs` +
+  `rust/fspec-tui/src/components/thinking_level_dialog.rs` —
   new modal dialog modules.
-  7. `codelet/fspec-tui/src/views/agent/role_banner.rs` — new inline
+  7. `rust/fspec-tui/src/views/agent/role_banner.rs` — new inline
   widget module under views/agent/.
-  8. `codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs` — new dispatch
+  8. `rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs` — new dispatch
   helper module.
-  9. `codelet/fspec-tui/src/components/mod.rs::Priority` — gains a
+  9. `rust/fspec-tui/src/components/mod.rs::Priority` — gains a
   new `Foreground = 900` variant.
 
   Existing TS code paths
@@ -48,7 +48,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
 
   @shared-types
   Scenario: New shared types live in rpc-types
-    Given codelet/rpc-types/src/lib.rs after RPC-022 lands
+    Given rust/rpc-types/src/lib.rs after RPC-022 lands
     Then the file contains the substring "pub struct ProviderInfo"
     And the file contains the substring "pub key: String"
     And the file contains the substring "pub display_name: String"
@@ -62,7 +62,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
 
   @rpc-trait
   Scenario: FspecService trait gains five new RPC methods
-    Given codelet/rpc/src/lib.rs after RPC-022 lands
+    Given rust/rpc/src/lib.rs after RPC-022 lands
     Then the file contains the substring "async fn list_providers() -> Vec<ProviderInfo>"
     And the file contains the substring "async fn set_session_model(session_id: SessionId, provider_id: String, model_id: String) -> Result<(), String>"
     And the file contains the substring "async fn set_thinking_level(session_id: SessionId, level: ThinkingLevel) -> Result<(), String>"
@@ -71,7 +71,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
 
   @session-manager-handle
   Scenario: SessionManagerHandle trait gains the new methods with default impls
-    Given codelet/core/src/session_manager_handle.rs after RPC-022 lands
+    Given rust/core/src/session_manager_handle.rs after RPC-022 lands
     Then the file contains the substring "fn list_providers(&self) -> Vec<ProviderInfo>"
     And the file contains the substring "fn set_model(&self, session_id: &SessionId, provider_id: &str, model_id: &str) -> Result<(), String>"
     And the file contains the substring "fn set_thinking_level(&self, session_id: &SessionId, level: ThinkingLevel) -> Result<(), String>"
@@ -81,7 +81,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
 
   @fspec-backend
   Scenario: FspecBackend trait declares the five new methods
-    Given codelet/fspec-tui/src/transport/mod.rs after RPC-022 lands
+    Given rust/fspec-tui/src/transport/mod.rs after RPC-022 lands
     Then the file contains the substring "async fn list_providers"
     And the file contains the substring "async fn set_session_model"
     And the file contains the substring "async fn set_thinking_level"
@@ -90,42 +90,42 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
 
   @transport-impl
   Scenario: Both transports implement the five new FspecBackend methods
-    Given the codelet/fspec-tui crate after RPC-022 lands
-    Then codelet/fspec-tui/src/transport/embedded.rs contains the substring "async fn list_providers"
-    And codelet/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_session_model"
-    And codelet/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_thinking_level"
-    And codelet/fspec-tui/src/transport/embedded.rs contains the substring "async fn get_session_role"
-    And codelet/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_session_role"
-    And codelet/fspec-tui/src/transport/websocket.rs contains the substring "async fn list_providers"
-    And codelet/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_session_model"
-    And codelet/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_thinking_level"
-    And codelet/fspec-tui/src/transport/websocket.rs contains the substring "async fn get_session_role"
-    And codelet/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_session_role"
+    Given the rust/fspec-tui crate after RPC-022 lands
+    Then rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn list_providers"
+    And rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_session_model"
+    And rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_thinking_level"
+    And rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn get_session_role"
+    And rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_session_role"
+    And rust/fspec-tui/src/transport/websocket.rs contains the substring "async fn list_providers"
+    And rust/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_session_model"
+    And rust/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_thinking_level"
+    And rust/fspec-tui/src/transport/websocket.rs contains the substring "async fn get_session_role"
+    And rust/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_session_role"
 
   @new-modules
   Scenario: New modal dialog modules and dispatch helper exist
-    Given the codelet/fspec-tui crate after RPC-022 lands
-    Then the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
-    And the file codelet/fspec-tui/src/views/agent/role_banner.rs exists
-    And the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs exists
+    Given the rust/fspec-tui crate after RPC-022 lands
+    Then the file rust/fspec-tui/src/components/thinking_level_dialog.rs exists
+    And the file rust/fspec-tui/src/views/agent/role_banner.rs exists
+    And the file rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs exists
 
   @line-budget
   Scenario: New RPC-022 modules stay under 300 lines
     Given the new files introduced by RPC-022
     When a test counts the line-count of every .rs file
-    Then codelet/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
-    And codelet/fspec-tui/src/views/agent/role_banner.rs has fewer than 300 lines
-    And codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs has fewer than 300 lines
+    Then rust/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
+    And rust/fspec-tui/src/views/agent/role_banner.rs has fewer than 300 lines
+    And rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs has fewer than 300 lines
 
   @priority-enum
   Scenario: Priority enum gains a Foreground variant numbered 900
-    Given codelet/fspec-tui/src/components/mod.rs after RPC-022 lands
+    Given rust/fspec-tui/src/components/mod.rs after RPC-022 lands
     Then the Priority enum contains the variant "Foreground = 900"
     And Priority::Foreground sorts strictly between Priority::High (800) and Priority::Critical (1000)
 
   @action-enum
   Scenario: Action enum gains the new RPC-022 variants
-    Given codelet/fspec-tui/src/components/mod.rs after RPC-022 lands
+    Given rust/fspec-tui/src/components/mod.rs after RPC-022 lands
     Then the file contains the substring "ModelSelected"
     And the file contains the substring "ThinkingLevelSelected"
     And the file contains the substring "SetSessionRole"

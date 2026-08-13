@@ -4,7 +4,7 @@
 @GIT-023
 Feature: Session Manager List and Inspect
   """
-  Implement SessionInfo and SessionFilter in codelet/git/src/session_manager.rs alongside derive_session_status from GIT-022
+  Implement SessionInfo and SessionFilter in rust/git/src/session_manager.rs alongside derive_session_status from GIT-022
   list_sessions() uses list_worktrees() from GIT-014 and derive_session_status() from GIT-022
   inspect_session() wraps get_session_diff() from GIT-015 - no modification, read-only operation
   """

@@ -1,7 +1,7 @@
 @CMPCT-009
 Feature: inject_summary NAPI Handler and Agent Loop Registration
   """
-  File: codelet/napi/src/inject_summary_handler.rs — contains create_handler() returning InjectSummaryHandler closure. Captures Arc<Mutex<Session>> and context_window u64. Uses codelet_cli::session::system_reminders::partition_for_compaction and codelet_common::token_estimator::count_tokens.
+  File: rust/napi/src/inject_summary_handler.rs — contains create_handler() returning InjectSummaryHandler closure. Captures Arc<Mutex<Session>> and context_window u64. Uses codelet_cli::session::system_reminders::partition_for_compaction and codelet_common::token_estimator::count_tokens.
   Registration follows the exact pattern of SessionSearch handler registration at session_manager.rs:5363-5368. Cleanup follows pattern at session_manager.rs:5575-5578. Handler needs session.inner.clone() and provider_manager.context_window() captured at registration time.
   The handler is synchronous (Fn, not async) but needs to lock the async tokio::sync::Mutex<Session>. Must use tokio::task::block_in_place(|| { runtime_handle.block_on(async { session_inner.lock().await }) }) — same pattern as bridge_handler at session_manager.rs:5533-5536. The runtime_handle is captured at registration time via tokio::runtime::Handle::current().
   """

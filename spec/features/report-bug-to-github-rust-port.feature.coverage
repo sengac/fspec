@@ -4,11 +4,11 @@
       "name": "Default flow produces a complete bug report with all markdown sections",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "94-123",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 74,
                 75,
@@ -254,11 +254,11 @@
       "name": "Environment section reports the pinned fspec version and OS",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "125-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 256,
                 257,
@@ -322,11 +322,11 @@
       "name": "Constructed GitHub URL targets the sengac/fspec issues endpoint with encoded labels",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "144-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 311,
                 312,
@@ -369,11 +369,11 @@
       "name": "URL encoding escapes spaces and special characters like encodeURIComponent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "166-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 329,
                 330,
@@ -398,11 +398,11 @@
       "name": "Work unit context is included when a non-done work unit exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "185-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 139,
                 140,
@@ -527,11 +527,11 @@
       "name": "Both front doors converge on the same fspec-core function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "239-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 74,
                 75,
@@ -604,11 +604,11 @@
       "name": "Gathering context faithfully replicates the TS work-units file side-effect and is sync-safe",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/report_bug_to_github.rs",
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
           "lines": "211-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/report_bug_to_github.rs",
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
               "lines": [
                 139,
                 140,
@@ -674,10 +674,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/report_bug_to_github.rs"
+      "rust/fspec-core/tests/report_bug_to_github.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/report_bug_to_github.rs"
+      "rust/fspec-core/src/commands/report_bug_to_github.rs"
     ],
     "totalLinesCovered": 715
   }

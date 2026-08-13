@@ -4,11 +4,11 @@
       "name": "Provider row selection yields the \"Enter: expand\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "88-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -45,11 +45,11 @@
       "name": "ApiKey row selection yields the \"Enter: edit · d: delete\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "109-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -86,11 +86,11 @@
       "name": "Profile row selection yields the \"Enter: edit · d: delete\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "143-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -127,11 +127,11 @@
       "name": "AddProfile row selection yields the \"Enter: create\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "172-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -168,11 +168,11 @@
       "name": "OAuthLogin row selection yields the \"Enter: start login\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "201-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -209,11 +209,11 @@
       "name": "OAuthStatus row selection yields the \"Enter: logout\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "230-257",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -250,11 +250,11 @@
       "name": "Empty nav-item list (no selection) falls back to FOOTER_COMMON only",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "259-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -306,11 +306,11 @@
       "name": "Separator is U+00B7 MIDDLE DOT, never the pipe character",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "279-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 24,
                 25,
@@ -365,11 +365,11 @@
       "name": "Keybind labels use lowercase colon style, never uppercase pipe style",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "304-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 42,
                 43,
@@ -406,11 +406,11 @@
       "name": "Footer updates in real time when the user navigates between rows of different kinds",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "345-386",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 135,
                 136,
@@ -442,11 +442,11 @@
       "name": "Footer hint is rendered into a single bottom row via render_footer_hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "388-420",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 135,
                 136,
@@ -478,11 +478,11 @@
       "name": "footer_hint_for(None) returns FOOTER_COMMON verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
           "lines": "422-440",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
                 24,
                 25,
@@ -516,11 +516,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs"
+      "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+      "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
+      "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
     "totalLinesCovered": 660
   }

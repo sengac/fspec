@@ -7,10 +7,10 @@
 @PROV-125
 Feature: Cloud providers show empty model lists due to slug/models.dev-id key mismatch
   """
-  Fix lives in codelet/sessions/src/cloud_models.rs: canonical_to_models_dev() must map every canonical slug whose models.dev key differs. Confirmed divergences from live models.dev/api.json: gemini->google (existing), together->togetherai, moonshot->moonshotai. Verify against the cached catalog keys, do not guess.
+  Fix lives in rust/sessions/src/cloud_models.rs: canonical_to_models_dev() must map every canonical slug whose models.dev key differs. Confirmed divergences from live models.dev/api.json: gemini->google (existing), together->togetherai, moonshot->moonshotai. Verify against the cached catalog keys, do not guess.
   cloud_model_entries() currently swallows registry.list_models() errors with `Err(_) => return Vec::new()`. Replace with a branch that distinguishes a genuine absence (return empty) from a diagnosable miss by logging via the crate's tracing/log facility before returning empty. Do not use println!/eprintln! (production code).
   Distinguishing expected-absent from diagnosable-miss: registry.list_models returns Err(Unknown provider) for BOTH. Maintain an explicit known-not-on-models.dev set (codex, github-copilot, galadriel) that returns empty silently. Any other slug that misses must log tracing::warn! (diagnosable divergence) then return empty. This keeps rule 3 and rule 4 from conflicting.
-  Test approach: unit-test cloud_model_entries() and canonical_to_models_dev() directly in codelet/sessions/tests/ (see existing rpc073_cloud_model_catalog.rs). Build a ModelRegistry from a fixture ModelsDevResponse containing togetherai/moonshotai/google keys with tool_call models, and assert the canonical slugs together/moonshot/gemini resolve to non-empty entries. No network calls in tests.
+  Test approach: unit-test cloud_model_entries() and canonical_to_models_dev() directly in rust/sessions/tests/ (see existing rpc073_cloud_model_catalog.rs). Build a ModelRegistry from a fixture ModelsDevResponse containing togetherai/moonshotai/google keys with tool_call models, and assert the canonical slugs together/moonshot/gemini resolve to non-empty entries. No network calls in tests.
   """
 
   # ========================================

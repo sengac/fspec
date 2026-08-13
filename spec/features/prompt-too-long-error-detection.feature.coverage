@@ -4,11 +4,11 @@
       "name": "Thinking budget configuration error is not classified as prompt-too-long",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "75-90",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -19,11 +19,11 @@
       "name": "Generic budget_tokens configuration error is not classified as prompt-too-long",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "94-108",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -34,11 +34,11 @@
       "name": "Prompt too long with zero conversation turns does not trigger compaction",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "228-263",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [1180, 1181, 1182, 1183, 1184, 1185, 1186, 1187, 1188]
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Prompt too long with conversation turns triggers compaction",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "267-311",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [1180, 1181, 1182, 1183, 1184, 1185, 1186, 1187, 1188]
             }
           ]
@@ -64,11 +64,11 @@
       "name": "Actual prompt too long error is correctly detected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "112-125",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -79,11 +79,11 @@
       "name": "Context length exceeded error is correctly detected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "129-142",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -94,11 +94,11 @@
       "name": "Maximum context length error is correctly detected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "146-159",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -109,11 +109,11 @@
       "name": "Too many tokens error is correctly detected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "163-176",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -124,11 +124,11 @@
       "name": "Invalid request error with maximum tokens is correctly detected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "180-195",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -139,11 +139,11 @@
       "name": "Error message with both budget_tokens and context_length is NOT classified as prompt-too-long",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "199-216",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -154,11 +154,11 @@
       "name": "Configuration error propagates to user with clear message",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/prompt_too_long_recovery_test.rs",
+          "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "315-357",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
             }
           ]
@@ -171,10 +171,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/prompt_too_long_recovery_test.rs"
+      "rust/cli/tests/prompt_too_long_recovery_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 407
   }

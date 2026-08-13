@@ -4,11 +4,11 @@
       "name": "Clap exposes create-task with positional args and option flags in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "74-126",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_task.rs",
+              "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 40,
                 41,
@@ -28,11 +28,11 @@
       "name": "CLI creates a minimal task and prints the success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "127-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_task.rs",
+              "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 50,
                 51,
@@ -93,11 +93,11 @@
       "name": "CLI creates a task with description, epic, and parent printing all detail lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "167-211",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_task.rs",
+              "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 55,
                 56,
@@ -153,11 +153,11 @@
       "name": "CLI fails when foundation is missing with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "212-233",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_task.rs",
+              "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 93,
                 94,
@@ -174,11 +174,11 @@
       "name": "CLI rejects an unregistered prefix with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "234-256",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_task.rs",
+              "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 93,
                 94,
@@ -195,11 +195,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "257-315",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_task.rs",
+              "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 69
               ]
@@ -212,11 +212,11 @@
       "name": "create-task --help is byte-for-byte identical to the fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "file": "rust/fspec/tests/cli_create_task.rs",
           "lines": "316-337",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/create_task.rs",
+              "file": "rust/fspec-core/src/help/configs/create_task.rs",
               "lines": [
                 1,
                 2,
@@ -361,11 +361,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_create_task.rs"
+      "rust/fspec/tests/cli_create_task.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/create_task.rs",
-      "codelet/fspec-core/src/help/configs/create_task.rs"
+      "rust/fspec/src/create_task.rs",
+      "rust/fspec-core/src/help/configs/create_task.rs"
     ],
     "totalLinesCovered": 507
   }

@@ -4,8 +4,8 @@
 @RPC-297
 Feature: Port search-scenarios command to Rust
   """
-  Core impl: codelet/fspec-core/src/commands/search_scenarios.rs rewrites the stub; signature run(args_json, project_root). Reuses io/feature_glob.rs (filtered to flat spec/features/*.feature) + io/gherkin.rs::parse_feature_lenient. Reads spec/work-units.json best-effort for work-unit-title matching.
-  Two-front-doors: dispatcher and clap CLI both call search_scenarios::run. CLI bridge codelet/fspec/src/search_scenarios.rs marshals --query/--regex/--json into JSON only. Help config + intercept arm in main.rs (search-scenarios-help.ts exists as rich help). Mode::SearchScenarios variant + forward! arm wired by supervisor.
+  Core impl: rust/fspec-core/src/commands/search_scenarios.rs rewrites the stub; signature run(args_json, project_root). Reuses io/feature_glob.rs (filtered to flat spec/features/*.feature) + io/gherkin.rs::parse_feature_lenient. Reads spec/work-units.json best-effort for work-unit-title matching.
+  Two-front-doors: dispatcher and clap CLI both call search_scenarios::run. CLI bridge rust/fspec/src/search_scenarios.rs marshals --query/--regex/--json into JSON only. Help config + intercept arm in main.rs (search-scenarios-help.ts exists as rich help). Mode::SearchScenarios variant + forward! arm wired by supervisor.
   """
 
   # ========================================
@@ -85,7 +85,7 @@ Feature: Port search-scenarios command to Rust
     And the format field equals 'json'
 
   Scenario: Shared infrastructure module is registered for search-scenarios
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/search_scenarios.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/search_scenarios.rs
     Then the module no longer returns FspecCoreError::NotYetPorted
     And the dispatcher routes search-scenarios to the new run function

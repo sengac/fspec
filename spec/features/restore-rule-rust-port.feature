@@ -2,7 +2,7 @@
 @RPC-291
 Feature: Port restore-rule command to Rust
   """
-  Core impl: codelet/fspec-core/src/commands/restore_rule.rs — replaces the NotYetPorted stub.
+  Core impl: rust/fspec-core/src/commands/restore_rule.rs — replaces the NotYetPorted stub.
   Single source of truth `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.
   Reuses io::ensure::ensure_work_units_file, io::locked_file::write_json_atomic, io::time::iso8601_now.
   RuleItem array lives in WorkUnit.extra["rules"] (since WorkUnit uses #[serde(flatten)]).

@@ -4,11 +4,11 @@
       "name": "CLI lists available research tools with the Commander header",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_research.rs",
+          "file": "rust/fspec/tests/cli_research.rs",
           "lines": "46-68",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/research.rs",
+              "file": "rust/fspec/src/research.rs",
               "lines": [
                 69,
                 70,
@@ -81,11 +81,11 @@
       "name": "CLI tool listing includes per-tool usage guidance",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_research.rs",
+          "file": "rust/fspec/tests/cli_research.rs",
           "lines": "70-86",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/research.rs",
+              "file": "rust/fspec/src/research.rs",
               "lines": [
                 100,
                 101,
@@ -127,11 +127,11 @@
       "name": "CLI fails with a not-found error for an unknown tool",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_research.rs",
+          "file": "rust/fspec/tests/cli_research.rs",
           "lines": "88-104",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/research.rs",
+              "file": "rust/fspec/src/research.rs",
               "lines": [
                 69,
                 70,
@@ -173,11 +173,11 @@
       "name": "research --help matches the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_research.rs",
+          "file": "rust/fspec/tests/cli_research.rs",
           "lines": "106-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/research.rs",
+              "file": "rust/fspec-core/src/help/configs/research.rs",
               "lines": [
                 1,
                 2,
@@ -241,11 +241,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_research.rs"
+      "rust/fspec/tests/cli_research.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/research.rs",
-      "codelet/fspec-core/src/help/configs/research.rs"
+      "rust/fspec/src/research.rs",
+      "rust/fspec-core/src/help/configs/research.rs"
     ],
     "totalLinesCovered": 251
   }

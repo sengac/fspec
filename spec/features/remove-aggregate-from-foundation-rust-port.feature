@@ -5,7 +5,7 @@
 @mutation
 Feature: Port remove-aggregate-from-foundation command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs uses
+  Core impl at rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs uses
   crate::io::ensure::ensure_foundation_file to load (or auto-create) spec/foundation.json,
   locates the bounded_context Event Storm item (type='bounded_context', matching text,
   deleted=false), then locates the aggregate within that context (type='aggregate', matching

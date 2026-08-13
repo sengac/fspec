@@ -4,11 +4,11 @@
       "name": "First example appended with stable id 0 and nextExampleId bumped to 1",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "86-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 60,
                 61,
@@ -101,11 +101,11 @@
       "name": "Second example reuses the incrementing counter",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "142-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 60,
                 61,
@@ -198,11 +198,11 @@
       "name": "Status guard rejects add-example when work unit is not in specifying",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "190-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 82,
                 83,
@@ -226,11 +226,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "221-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 68,
                 69,
@@ -250,11 +250,11 @@
       "name": "Auto-creates spec/work-units.json then reports missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "245-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 65,
                 66,
@@ -277,11 +277,11 @@
       "name": "Success rendering embeds the system reminder block",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "278-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 148,
                 149,
@@ -339,11 +339,11 @@
       "name": "System reminder falls back to 'the user' when userStory.role is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_example.rs",
+          "file": "rust/fspec-core/tests/add_example.rs",
           "lines": "331-353",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "file": "rust/fspec-core/src/commands/add_example.rs",
               "lines": [
                 148,
                 149,
@@ -370,10 +370,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_example.rs"
+      "rust/fspec-core/tests/add_example.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_example.rs"
+      "rust/fspec-core/src/commands/add_example.rs"
     ],
     "totalLinesCovered": 520
   }

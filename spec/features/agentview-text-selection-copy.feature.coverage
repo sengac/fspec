@@ -4,11 +4,11 @@
       "name": "Dragging across two lines copies their text and keeps the highlight",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "174-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 195,
                 196,
@@ -36,11 +36,11 @@
       "name": "Long-pressing a line selects and copies it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "225-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 149,
                 150,
@@ -74,11 +74,11 @@
       "name": "Wheel scrolling still works and does not select or copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "258-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 120,
                 121,
@@ -106,11 +106,11 @@
       "name": "A quick click does not select or copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "290-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 139,
                 140,
@@ -154,11 +154,11 @@
       "name": "Esc clears an active selection without copying",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "322-364",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 186,
                 187,
@@ -178,11 +178,11 @@
       "name": "Scrolling clears an active selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "370-414",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 10,
                 11,
@@ -203,11 +203,11 @@
       "name": "Copying a line abutting the scrollbar excludes the scrollbar glyph",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "421-462",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
                 195,
                 196,
@@ -235,11 +235,11 @@
       "name": "Mouse capture remains enabled throughout selection and copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "file": "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
           "lines": "469-515",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 139,
                 140,
@@ -285,11 +285,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs"
+      "rust/fspec-tui/tests/agentview_text_selection_copy_copy006.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_scroll.rs",
-      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs"
+      "rust/fspec-tui/src/app/dispatch_scroll.rs",
+      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs"
     ],
     "totalLinesCovered": 456
   }

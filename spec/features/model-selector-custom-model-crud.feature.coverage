@@ -4,11 +4,11 @@
       "name": "Pressing 'a' on a profile-section header opens the Add Custom Model form",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1256-1285",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 293,
                 294,
@@ -37,11 +37,11 @@
       "name": "Pressing 'a' on a cloud provider header does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1287-1304",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 293,
                 294,
@@ -70,11 +70,11 @@
       "name": "Pressing 'e' on a custom model opens the Edit Custom Model form prefilled",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1305-1339",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 310,
                 311,
@@ -114,11 +114,11 @@
       "name": "Pressing 'e' or 'd' on a built-in model does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1340-1361",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 310,
                 311,
@@ -178,11 +178,11 @@
       "name": "Adding a custom model with a facade and reasoning enabled saves it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1362-1404",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/form.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/form.rs",
               "lines": [
                 192,
                 193,
@@ -252,7 +252,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 372,
                 373,
@@ -296,11 +296,11 @@
       "name": "Saving the Add form with an empty Model ID is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1405-1422",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/form.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/form.rs",
               "lines": [
                 258,
                 259,
@@ -344,11 +344,11 @@
       "name": "A \"80%\" Compaction Trigger saves a percentage threshold",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1423-1455",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/form.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/form.rs",
               "lines": [
                 291,
                 292,
@@ -376,11 +376,11 @@
       "name": "A bare integer Compaction Trigger saves a tokens threshold",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1456-1488",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/form.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/form.rs",
               "lines": [
                 291,
                 292,
@@ -408,11 +408,11 @@
       "name": "Pressing Esc in the Add form cancels without saving",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1489-1505",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 358,
                 359,
@@ -438,11 +438,11 @@
       "name": "Deleting a custom model after confirming",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1506-1549",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 404,
                 405,
@@ -483,11 +483,11 @@
       "name": "Cancelling the delete confirmation keeps the custom model",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1550-1572",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 404,
                 405,
@@ -528,11 +528,11 @@
       "name": "The open form intercepts keys that are browse shortcuts",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1573-1592",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 466,
                 467,
@@ -559,11 +559,11 @@
       "name": "Editing a custom model saves it in place under the same id",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1593-1624",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 372,
                 373,
@@ -607,11 +607,11 @@
       "name": "An open overlay shows only the form footer, not the browse footer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1915-1937",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 602,
                 603,
@@ -667,11 +667,11 @@
       "name": "Editing a custom model with no stored display name starts blank",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "1938-1960",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/form.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/form.rs",
               "lines": [
                 153,
                 154,
@@ -713,11 +713,11 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs",
-      "codelet/fspec-tui/src/views/model_selector/form.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs",
+      "rust/fspec-tui/src/views/model_selector/form.rs"
     ],
     "totalLinesCovered": 876
   }

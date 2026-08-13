@@ -4,11 +4,11 @@
       "name": "App::new pre-populates the compositor with a Background-priority HelloComponent",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_with_mock_backend.rs",
+          "file": "rust/fspec-tui/tests/app_with_mock_backend.rs",
           "lines": "31-49",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 35,
                 36,
@@ -45,11 +45,11 @@
       "name": "'?' at App level pushes the HelpDialog onto the compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_with_mock_backend.rs",
+          "file": "rust/fspec-tui/tests/app_with_mock_backend.rs",
           "lines": "51-70",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 113,
                 114,
@@ -98,11 +98,11 @@
       "name": "ESC while the HelpDialog is on top removes the dialog via deferred callback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_with_mock_backend.rs",
+          "file": "rust/fspec-tui/tests/app_with_mock_backend.rs",
           "lines": "73-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 83,
                 84,
@@ -127,11 +127,11 @@
       "name": "'q' at App level sets should_quit and the run loop exits",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_with_mock_backend.rs",
+          "file": "rust/fspec-tui/tests/app_with_mock_backend.rs",
           "lines": "96-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 113,
                 114,
@@ -180,11 +180,11 @@
       "name": "App-with-mock-backend snapshot captures HelpDialog visible after '?' and gone after ESC",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_with_mock_backend.rs",
+          "file": "rust/fspec-tui/tests/app_with_mock_backend.rs",
           "lines": "116-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 1,
                 2,
@@ -360,11 +360,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_with_mock_backend.rs"
+      "rust/fspec-tui/tests/app_with_mock_backend.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app.rs",
-      "codelet/fspec-tui/src/components/help_dialog.rs"
+      "rust/fspec-tui/src/app.rs",
+      "rust/fspec-tui/src/components/help_dialog.rs"
     ],
     "totalLinesCovered": 371
   }

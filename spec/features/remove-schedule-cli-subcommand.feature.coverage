@@ -4,11 +4,11 @@
       "name": "remove-schedule --help is byte-for-byte identical to the TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_schedule.rs",
+          "file": "rust/fspec/tests/cli_remove_schedule.rs",
           "lines": "87-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_schedule.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_schedule.rs",
               "lines": [
                 1,
                 2,
@@ -94,11 +94,11 @@
       "name": "CLI removes a schedule and delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_schedule.rs",
+          "file": "rust/fspec/tests/cli_remove_schedule.rs",
           "lines": "132-175",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_schedule.rs",
+              "file": "rust/fspec/src/remove_schedule.rs",
               "lines": [
                 1,
                 2,
@@ -180,11 +180,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_schedule.rs"
+      "rust/fspec/tests/cli_remove_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/remove_schedule.rs",
-      "codelet/fspec/src/remove_schedule.rs"
+      "rust/fspec-core/src/help/configs/remove_schedule.rs",
+      "rust/fspec/src/remove_schedule.rs"
     ],
     "totalLinesCovered": 229
   }

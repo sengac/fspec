@@ -5,10 +5,10 @@
 @RPC-312
 Feature: Port update-foundation command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/update_foundation.rs. Validation order mirrors TS: (1) empty section, (2) projectType length 1-30, (3) problemImpact enum high|medium|low, (4) generic empty content. Reference port: add_command_to_foundation.rs (read_or_init_json + serde_json::Value mutate + write_json_atomic + generate_foundation_md::regenerate).
+  Core impl at rust/fspec-core/src/commands/update_foundation.rs. Validation order mirrors TS: (1) empty section, (2) projectType length 1-30, (3) problemImpact enum high|medium|low, (4) generic empty content. Reference port: add_command_to_foundation.rs (read_or_init_json + serde_json::Value mutate + write_json_atomic + generate_foundation_md::regenerate).
   Draft detection: if spec/foundation.json.draft exists, target=draft (loaded via read_or_init_json), success message 'Updated "<section>" in foundation.json.draft', NO MD regen, NO schema validation. DIVERGENCE: discover_foundation scanOnly chaining deferred (stub) — no systemReminder emitted on draft path.
   Final path: load via ensure_foundation_file (auto-creates v2.0.0 default), mutate nested path, write_json_atomic, then generate_foundation_md::regenerate(project_root). Message 'Updated "<section>" section in FOUNDATION.md'. DIVERGENCE: validateFoundationJson schema gate deferred (validate_foundation_schema is a stub). Supervisor decision noted.
-  CLI bridge codelet/fspec/src/update_foundation.rs: clap struct mirroring TS Commander `update-foundation <section> <content>` (both required positional). Marshals JSON {section, content} only, forwards to fspec_core. Success stdout: '✓ Updated ...' plus '  Updated: spec/foundation.json' + '  Regenerated: spec/FOUNDATION.md' (final) or '  Updated: spec/foundation.json.draft' (draft). Failure stderr 'Error: <message>' exit 1.
+  CLI bridge rust/fspec/src/update_foundation.rs: clap struct mirroring TS Commander `update-foundation <section> <content>` (both required positional). Marshals JSON {section, content} only, forwards to fspec_core. Success stdout: '✓ Updated ...' plus '  Updated: spec/foundation.json' + '  Regenerated: spec/FOUNDATION.md' (final) or '  Updated: spec/foundation.json.draft' (draft). Failure stderr 'Error: <message>' exit 1.
   """
 
   # ========================================

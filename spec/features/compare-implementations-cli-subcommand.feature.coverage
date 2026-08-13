@@ -4,11 +4,11 @@
       "name": "CLI default output prints the green summary line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compare_implementations.rs",
+          "file": "rust/fspec/tests/cli_compare_implementations.rs",
           "lines": "80-102",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compare_implementations.rs",
+              "file": "rust/fspec/src/compare_implementations.rs",
               "lines": [
                 40,
                 41,
@@ -61,11 +61,11 @@
       "name": "CLI --json prints 2-space JSON envelope to stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compare_implementations.rs",
+          "file": "rust/fspec/tests/cli_compare_implementations.rs",
           "lines": "103-132",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compare_implementations.rs",
+              "file": "rust/fspec/src/compare_implementations.rs",
               "lines": [
                 54,
                 55,
@@ -98,11 +98,11 @@
       "name": "CLI --show-coverage includes deduplicated coverage file paths",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compare_implementations.rs",
+          "file": "rust/fspec/tests/cli_compare_implementations.rs",
           "lines": "133-162",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compare_implementations.rs",
+              "file": "rust/fspec/src/compare_implementations.rs",
               "lines": [
                 44,
                 45,
@@ -145,11 +145,11 @@
       "name": "CLI exits 1 when work-units.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compare_implementations.rs",
+          "file": "rust/fspec/tests/cli_compare_implementations.rs",
           "lines": "163-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compare_implementations.rs",
+              "file": "rust/fspec/src/compare_implementations.rs",
               "lines": [
                 76,
                 77,
@@ -165,11 +165,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compare_implementations.rs",
+          "file": "rust/fspec/tests/cli_compare_implementations.rs",
           "lines": "185-214",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compare_implementations.rs",
+              "file": "rust/fspec/src/compare_implementations.rs",
               "lines": [
                 40,
                 41,
@@ -196,11 +196,11 @@
       "name": "compare-implementations --help is byte-for-byte identical to the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compare_implementations.rs",
+          "file": "rust/fspec/tests/cli_compare_implementations.rs",
           "lines": "219-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/compare_implementations.rs",
+              "file": "rust/fspec-core/src/help/configs/compare_implementations.rs",
               "lines": [
                 1,
                 2,
@@ -317,11 +317,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_compare_implementations.rs"
+      "rust/fspec/tests/cli_compare_implementations.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/compare_implementations.rs",
-      "codelet/fspec-core/src/help/configs/compare_implementations.rs"
+      "rust/fspec/src/compare_implementations.rs",
+      "rust/fspec-core/src/help/configs/compare_implementations.rs"
     ],
     "totalLinesCovered": 369
   }

@@ -2,7 +2,7 @@
 @RPC-194
 Feature: Port add-tag-to-scenario command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_tag_to_scenario.rs. Reads the target feature
+  Core impl at rust/fspec-core/src/commands/add_tag_to_scenario.rs. Reads the target feature
   file (relative to project_root), validates each tag format (work-unit pattern @[A-Z]{2,6}-[0-9]+
   OR regular pattern @lowercase-with-hyphens), parses with parse_feature_lenient to find the named
   top-level Scenario, optionally enforces the spec/tags.json registry, then mutates the raw

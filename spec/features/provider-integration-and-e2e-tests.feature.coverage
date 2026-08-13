@@ -4,11 +4,11 @@
       "name": "ClaudeProvider uses ClaudeWebSearchFacade for web search tool",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/provider_facade_integration_test.rs",
+          "file": "rust/providers/tests/provider_facade_integration_test.rs",
           "lines": "20-46",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 288,
                 289,
@@ -44,11 +44,11 @@
       "name": "GeminiProvider includes all facade-wrapped tools",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/provider_facade_integration_test.rs",
+          "file": "rust/providers/tests/provider_facade_integration_test.rs",
           "lines": "52-79",
           "implMappings": [
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 99,
                 100,
@@ -91,11 +91,11 @@
       "name": "E2E test verifies all Gemini tools are registered with correct schemas",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/provider_facade_integration_test.rs",
+          "file": "rust/providers/tests/provider_facade_integration_test.rs",
           "lines": "85-106",
           "implMappings": [
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 99,
                 100,
@@ -138,11 +138,11 @@
       "name": "E2E tests are marked with ignore attribute for CI",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/provider_facade_integration_test.rs",
+          "file": "rust/providers/tests/provider_facade_integration_test.rs",
           "lines": "112-125",
           "implMappings": [
             {
-              "file": "codelet/providers/tests/provider_facade_integration_test.rs",
+              "file": "rust/providers/tests/provider_facade_integration_test.rs",
               "lines": [
                 85,
                 86,
@@ -178,12 +178,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/provider_facade_integration_test.rs"
+      "rust/providers/tests/provider_facade_integration_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude.rs",
-      "codelet/providers/src/gemini.rs",
-      "codelet/providers/tests/provider_facade_integration_test.rs"
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/gemini.rs",
+      "rust/providers/tests/provider_facade_integration_test.rs"
     ],
     "totalLinesCovered": 199
   }

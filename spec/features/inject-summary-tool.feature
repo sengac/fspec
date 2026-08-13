@@ -1,9 +1,9 @@
 @CMPCT-008
 Feature: inject_summary Tool Definition and Schema
   """
-  File: codelet/tools/src/inject_summary.rs — contains InjectSummaryTool struct, InjectSummaryArgs, InjectSummaryResult, InjectSummaryHandler type alias, global handler registry, set/has/execute/clear functions
+  File: rust/tools/src/inject_summary.rs — contains InjectSummaryTool struct, InjectSummaryArgs, InjectSummaryResult, InjectSummaryHandler type alias, global handler registry, set/has/execute/clear functions
   Follows exact pattern of fspec_handler.rs and session_search/handler.rs — per-session Arc<dyn Fn + Send + Sync> stored in global Lazy<RwLock<HashMap<Uuid, Handler>>>
-  Consumer: CMPCT-009 (inject_summary_handler.rs in codelet/napi) creates the actual handler closure and registers it via set_inject_summary_handler(). CMPCT-011 triggers the flow that causes the agent to call inject_summary.
+  Consumer: CMPCT-009 (inject_summary_handler.rs in rust/napi) creates the actual handler closure and registers it via set_inject_summary_handler(). CMPCT-011 triggers the flow that causes the agent to call inject_summary.
   """
 
   # ========================================
@@ -18,7 +18,7 @@ Feature: inject_summary Tool Definition and Schema
   #   5. Global handler registry uses once_cell::sync::Lazy<RwLock<HashMap<Uuid, InjectSummaryHandler>>> like SessionSearchHandler and FspecHandler
   #   6. Tool::call() dispatches to registered handler; returns ToolError when no handler is registered for the session
   #   7. Tool is constructed with session_id (like SessionSearchTool) for per-session handler lookup
-  #   8. Module and types must be re-exported from codelet/tools/src/lib.rs
+  #   8. Module and types must be re-exported from rust/tools/src/lib.rs
   #   9. JSON schema for parameters validates that content is a required string field
   #   10. Tool description must explain: pins DAG summary as system-level content, drops builder turns, persists across future compactions
   #

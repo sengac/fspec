@@ -5,12 +5,12 @@
 Feature: Copilot agent loop dispatch in run_with_provider macro
   """
   PROV-057 L3 (agent-loop half): The run_with_provider! macro in
-  codelet/napi/src/session_manager.rs must have a 'github-copilot' |
+  rust/napi/src/session_manager.rs must have a 'github-copilot' |
   'copilot' arm so the agent loop dispatches to CopilotProvider instead
   of falling through to the 'Unsupported provider' default. The arm
   constructs a CopilotProvider via provider_manager.get_github_copilot()
   and returns a rig_agent stream — see
-  codelet/providers/src/copilot/rig_agent.rs.
+  rust/providers/src/copilot/rig_agent.rs.
   """
 
   Background: User Story

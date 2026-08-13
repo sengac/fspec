@@ -9,7 +9,7 @@
 @critical
 Feature: NAPI Re-Export Shim For Session Store
   """
-  The NAPI persistence module retains its existing public surface (codelet_napi::persistence::*) after RPC-033 lifts SessionStore + SessionManifest + every session-level free function. codelet/napi/src/persistence/storage.rs and codelet/napi/src/persistence/types.rs are deleted outright. codelet/napi/src/persistence/mod.rs becomes a ~50-line thin facade that declares the still-NAPI-owned blob+blob_processing modules, keeps the BLOB_STORE lazy_static singleton (until RPC-034), wraps set_data_directory with the credentials+graph resets while delegating persistence resets to codelet_core::persistence::reset_stores_for_tests, and re-exports the lifted surface via `pub use codelet_core::persistence::*;`. All internal NAPI modules (session_manager.rs, session_search_handler.rs, agent_manager_handler.rs, test_support.rs, persistence/napi_bindings.rs, persistence/tests.rs, persistence/lazy_init_tests.rs) continue to use `crate::persistence::{SessionManifest, load_session, append_message_with_metadata, ...}` paths unchanged. Lift precedent: matches RPC-025 (history.rs), RPC-026 (sessions.rs delete_session), RPC-031 (message_envelope.rs), and RPC-032 (message store).
+  The NAPI persistence module retains its existing public surface (codelet_napi::persistence::*) after RPC-033 lifts SessionStore + SessionManifest + every session-level free function. rust/napi/src/persistence/storage.rs and rust/napi/src/persistence/types.rs are deleted outright. rust/napi/src/persistence/mod.rs becomes a ~50-line thin facade that declares the still-NAPI-owned blob+blob_processing modules, keeps the BLOB_STORE lazy_static singleton (until RPC-034), wraps set_data_directory with the credentials+graph resets while delegating persistence resets to codelet_core::persistence::reset_stores_for_tests, and re-exports the lifted surface via `pub use codelet_core::persistence::*;`. All internal NAPI modules (session_manager.rs, session_search_handler.rs, agent_manager_handler.rs, test_support.rs, persistence/napi_bindings.rs, persistence/tests.rs, persistence/lazy_init_tests.rs) continue to use `crate::persistence::{SessionManifest, load_session, append_message_with_metadata, ...}` paths unchanged. Lift precedent: matches RPC-025 (history.rs), RPC-026 (sessions.rs delete_session), RPC-031 (message_envelope.rs), and RPC-032 (message store).
   """
 
   Background: User Story
@@ -18,10 +18,10 @@ Feature: NAPI Re-Export Shim For Session Store
     So that every existing crate::persistence::* import in codelet-napi continues to compile, the on-disk session.json wire format remains byte-identical after the lift, and lazy-initialization invariants for the moved MESSAGE_STORE and SESSION_STORE singletons are observable from NAPI tests via codelet_core::persistence test accessors
 
   Scenario: NAPI re-export shim preserves existing crate::persistence imports for session types
-    Given codelet/napi/src/persistence/storage.rs is deleted and codelet/napi/src/persistence/types.rs is deleted
+    Given rust/napi/src/persistence/storage.rs is deleted and rust/napi/src/persistence/types.rs is deleted
     When internal NAPI modules continue to write `use crate::persistence::{SessionManifest, load_session, append_message_with_metadata, update_session_tokens, get_session_messages_full, update_message_metadata}` unchanged
     Then the imports resolve to the codelet-core types
-    And codelet/napi/src/persistence/mod.rs re-exports the lifted surface via `pub use codelet_core::persistence::*;`
+    And rust/napi/src/persistence/mod.rs re-exports the lifted surface via `pub use codelet_core::persistence::*;`
     And `cargo build -p codelet-napi` succeeds without modification of those importing modules
 
   Scenario: All NAPI persistence test suites continue to pass after the session store lift

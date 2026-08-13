@@ -2,7 +2,7 @@
 @RPC-196
 Feature: Port answer-question command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/answer_question.rs. Reuses io::ensure::ensure_work_units_file
+  Core impl at rust/fspec-core/src/commands/answer_question.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates), io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps).
   WorkUnit.questions / rules / assumptions / nextRuleId all live in WorkUnit.extra (round-tripped via
   serde flatten). RuleItem is created with the same shape as add-rule: id, text, deleted, createdAt

@@ -8,7 +8,7 @@
           "lines": "256-284",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -148,7 +148,7 @@
           "lines": "286-313",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -288,7 +288,7 @@
           "lines": "349-375",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -428,7 +428,7 @@
           "lines": "439-465",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -568,7 +568,7 @@
           "lines": "494-520",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -708,7 +708,7 @@
           "lines": "548-574",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -848,7 +848,7 @@
           "lines": "662-685",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 551,
                 552,
@@ -988,7 +988,7 @@
           "lines": "164-200",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -1196,7 +1196,7 @@
           "lines": "202-233",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -1404,7 +1404,7 @@
           "lines": "235-271",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -1612,7 +1612,7 @@
           "lines": "341-372",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -1820,7 +1820,7 @@
           "lines": "374-395",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -2028,7 +2028,7 @@
           "lines": "397-432",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -2236,7 +2236,7 @@
           "lines": "438-465",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -2444,7 +2444,7 @@
           "lines": "498-521",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -2652,7 +2652,7 @@
           "lines": "527-556",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -2860,7 +2860,7 @@
           "lines": "562-584",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -3068,7 +3068,7 @@
           "lines": "618-640",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -3276,7 +3276,7 @@
           "lines": "676-698",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -3484,7 +3484,7 @@
           "lines": "730-752",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -3692,7 +3692,7 @@
           "lines": "758-792",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -3900,7 +3900,7 @@
           "lines": "880-902",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -4108,7 +4108,7 @@
           "lines": "931-962",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 547,
                 548,
@@ -4317,7 +4317,7 @@
       "src/tui/__tests__/isolated-session-file-blocking-e2e.test.ts"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "totalLinesCovered": 4589
   }

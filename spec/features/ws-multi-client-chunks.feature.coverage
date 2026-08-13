@@ -4,11 +4,11 @@
       "name": "Multi-client unfiltered fan-out delivers every session's chunks to every connected client",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/ws_multi_client_chunks.rs",
+          "file": "rust/rpc-server/tests/ws_multi_client_chunks.rs",
           "lines": "25-106",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 100,
                 101,
@@ -183,10 +183,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/ws_multi_client_chunks.rs"
+      "rust/rpc-server/tests/ws_multi_client_chunks.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/server.rs"
+      "rust/rpc-server/src/server.rs"
     ],
     "totalLinesCovered": 243
   }

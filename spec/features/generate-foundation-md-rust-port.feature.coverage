@@ -4,11 +4,11 @@
       "name": "Dispatcher generates FOUNDATION.md from foundation.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "193-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
                 65,
                 66,
@@ -102,11 +102,11 @@
       "name": "Dispatcher writes to a custom --output path",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "209-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
                 65,
                 66,
@@ -200,11 +200,11 @@
       "name": "Dispatcher fails when foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "223-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
                 65,
                 66,
@@ -298,11 +298,11 @@
       "name": "Renders header-only output when no optional sections are present",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "248-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/generators/foundation_md.rs",
+              "file": "rust/fspec-core/src/generators/foundation_md.rs",
               "lines": [
                 37,
                 38,
@@ -356,11 +356,11 @@
       "name": "Falls back to a default header when no project name is set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "264-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/generators/foundation_md.rs",
+              "file": "rust/fspec-core/src/generators/foundation_md.rs",
               "lines": [
                 37,
                 38,
@@ -414,11 +414,11 @@
       "name": "Reports a single invalid diagram with a singular failure message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "276-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
                 161,
                 162,
@@ -445,11 +445,11 @@
       "name": "Reports multiple invalid diagrams with a pluralised failure message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "287-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
                 161,
                 162,
@@ -476,11 +476,11 @@
       "name": "regenerate is best-effort and swallows failures for mutation callers",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "238-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
                 155,
                 156,
@@ -495,11 +495,11 @@
       "name": "Reports a diagram with a genuine merman syntax error as invalid",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "314-340",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/generators/foundation_md_util.rs",
+              "file": "rust/fspec-core/src/generators/foundation_md_util.rs",
               "lines": [
                 69,
                 70,
@@ -519,11 +519,11 @@
       "name": "All generator-emitted diagrams parse cleanly under merman",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/src/commands/generate_foundation_md.rs",
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
           "lines": "342-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/generators/foundation_md.rs",
+              "file": "rust/fspec-core/src/generators/foundation_md.rs",
               "lines": [
                 276,
                 277,
@@ -567,12 +567,12 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/src/commands/generate_foundation_md.rs"
+      "rust/fspec-core/src/commands/generate_foundation_md.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/generate_foundation_md.rs",
-      "codelet/fspec-core/src/generators/foundation_md.rs",
-      "codelet/fspec-core/src/generators/foundation_md_util.rs"
+      "rust/fspec-core/src/commands/generate_foundation_md.rs",
+      "rust/fspec-core/src/generators/foundation_md.rs",
+      "rust/fspec-core/src/generators/foundation_md_util.rs"
     ],
     "totalLinesCovered": 555
   }

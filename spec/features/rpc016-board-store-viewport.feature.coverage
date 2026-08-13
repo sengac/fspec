@@ -4,11 +4,11 @@
       "name": "Default BoardStore reports zero scroll_offset for every column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "35-50",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 16,
                 17,
@@ -23,11 +23,11 @@
       "name": "set_scroll_offset_for stores per-column offsets independently",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "51-67",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 23,
                 24,
@@ -42,11 +42,11 @@
       "name": "move_selection within visible viewport leaves scroll_offset unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "68-84",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 29,
                 30,
@@ -101,11 +101,11 @@
       "name": "move_selection beyond bottom of viewport scrolls the focused column down",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "85-116",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 29,
                 30,
@@ -160,11 +160,11 @@
       "name": "move_selection above top of viewport scrolls the focused column up",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "117-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 29,
                 30,
@@ -219,11 +219,11 @@
       "name": "scroll_focused_column advances the selection by viewport_height",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "153-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 44,
                 45,
@@ -240,11 +240,11 @@
       "name": "select_first_in_focused resets the focused column to index 0 with offset 0",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "173-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 51,
                 52,
@@ -261,11 +261,11 @@
       "name": "select_last_in_focused jumps to the last unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "190-204",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 66,
                 67,
@@ -286,11 +286,11 @@
       "name": "move_selection wraps to first index when moving past the last unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "138-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 29,
                 30,
@@ -320,11 +320,11 @@
       "name": "move_selection wraps to last index when moving above the first unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs",
+          "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
           "lines": "155-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 29,
                 30,
@@ -356,10 +356,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/store_board_viewport_rpc016.rs"
+      "rust/fspec-tui/tests/store_board_viewport_rpc016.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/board_viewport.rs"
+      "rust/fspec-tui/src/store/board_viewport.rs"
     ],
     "totalLinesCovered": 384
   }

@@ -19,7 +19,7 @@ Feature: ModelLimitsResolver Trait — Provider Veto Authority
   #   2. The trait must provide max_output_tokens_limit() returning Option<usize> — same semantics as max_context_window()
   #   3. The trait must provide default_context_window() and default_max_output_tokens() — used when no registry data exists
   #   4. A standalone resolve_model_limits(registry_value, user_override, resolver) function must implement the priority chain: user_override → clamp by provider max → registry → clamp by provider max → default
-  #   5. The trait must live in codelet/providers/src/ as a new file (model_limits.rs) — it is part of the provider abstraction, not the CLI
+  #   5. The trait must live in rust/providers/src/ as a new file (model_limits.rs) — it is part of the provider abstraction, not the CLI
   #   6. The trait should optionally provide should_send_max_output_tokens() -> bool (default true) — Codex needs to return false since its API rejects max_output_tokens
   #   7. Env var overrides (OPENAI_CONTEXT_WINDOW, etc.) must be handled inside the resolver, not scattered across provider constructors and manager fallbacks
   #

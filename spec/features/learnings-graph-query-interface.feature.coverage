@@ -4,11 +4,11 @@
       "name": "Search for a learning by text using LearningsSearch action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_query_interface_test.rs",
+          "file": "rust/napi/tests/learnings_query_interface_test.rs",
           "lines": "46-80",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 21,
                 22,
@@ -80,11 +80,11 @@
       "name": "Query decisions filtered by domain and status using LearningsDecisions action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_query_interface_test.rs",
+          "file": "rust/napi/tests/learnings_query_interface_test.rs",
           "lines": "85-128",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 86,
                 87,
@@ -136,11 +136,11 @@
       "name": "Get Learnings graph statistics using LearningsStats action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_query_interface_test.rs",
+          "file": "rust/napi/tests/learnings_query_interface_test.rs",
           "lines": "133-184",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 131,
                 132,
@@ -155,11 +155,11 @@
       "name": "Find related learnings by topic using LearningsRelated action",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_query_interface_test.rs",
+          "file": "rust/napi/tests/learnings_query_interface_test.rs",
           "lines": "189-223",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/learnings_dispatch.rs",
+              "file": "rust/napi/src/graph/learnings_dispatch.rs",
               "lines": [
                 135,
                 136,
@@ -238,10 +238,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/learnings_query_interface_test.rs"
+      "rust/napi/tests/learnings_query_interface_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/learnings_dispatch.rs"
+      "rust/napi/src/graph/learnings_dispatch.rs"
     ],
     "totalLinesCovered": 334
   }

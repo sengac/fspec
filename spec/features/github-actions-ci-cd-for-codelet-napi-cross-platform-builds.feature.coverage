@@ -280,7 +280,7 @@
           "lines": "229-251",
           "implMappings": [
             {
-              "file": "codelet/napi/package.json",
+              "file": "rust/napi/package.json",
               "lines": [
                 1,
                 2,
@@ -426,7 +426,7 @@
           "lines": "321-342",
           "implMappings": [
             {
-              "file": "codelet/napi/package.json",
+              "file": "rust/napi/package.json",
               "lines": [
                 6,
                 7,
@@ -455,7 +455,7 @@
           "lines": "393-428",
           "implMappings": [
             {
-              "file": "codelet/napi/package.json",
+              "file": "rust/napi/package.json",
               "lines": [
                 1,
                 2,
@@ -515,7 +515,7 @@
     ],
     "implFiles": [
       ".github/workflows/build-codelet-napi.yml",
-      "codelet/napi/package.json"
+      "rust/napi/package.json"
     ],
     "totalLinesCovered": 672
   }

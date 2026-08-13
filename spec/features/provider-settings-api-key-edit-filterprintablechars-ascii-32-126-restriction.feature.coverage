@@ -4,11 +4,11 @@
       "name": "is_printable_ascii helper exists in detail.rs with the canonical signature",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
           "lines": "85-99",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 26,
                 27,
@@ -24,11 +24,11 @@
       "name": "is_printable_ascii body evaluates the inclusive ASCII 32..=126 range",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
           "lines": "105-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 26,
                 27,
@@ -44,11 +44,11 @@
       "name": "handle_edit_key body guards draft.push(c) through is_printable_ascii",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
           "lines": "125-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 147,
                 148,
@@ -78,11 +78,11 @@
       "name": "is_printable_ascii guard precedes draft.push(c) in handle_edit_key",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
           "lines": "151-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 147,
                 148,
@@ -114,10 +114,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs"
+      "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
     "totalLinesCovered": 121
   }

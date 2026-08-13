@@ -4,11 +4,11 @@
       "name": "Settled tool card with a short body shows the full body",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
+          "file": "rust/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
           "lines": "113-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 198,
                 199,
@@ -40,11 +40,11 @@
       "name": "Settled tool card with a long body collapses to the last 8 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
+          "file": "rust/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
           "lines": "147-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 210,
                 211,
@@ -62,11 +62,11 @@
       "name": "Streaming tool card shows only the last 10 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
+          "file": "rust/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
           "lines": "188-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 203,
                 204,
@@ -84,11 +84,11 @@
       "name": "A finished stream stays pinned to the end of output",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
+          "file": "rust/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
           "lines": "228-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 198,
                 199,
@@ -120,11 +120,11 @@
       "name": "The full body is preserved for the content modal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
+          "file": "rust/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs",
           "lines": "277-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 72,
                 73,
@@ -141,10 +141,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs"
+      "rust/fspec-tui/tests/settled_tool_card_end_pinned_rpc399.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs"
+      "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs"
     ],
     "totalLinesCovered": 240
   }

@@ -1,11 +1,11 @@
 @RIG-011
 Feature: rig-core Usage Reasoning Tokens Propagation
   """
-  Key files: codelet/patches/rig-core/src/completion/request.rs (Usage struct),
-  codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs (Responses API conversion + OutputTokensDetails),
-  codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs (Responses streaming token_usage()),
-  codelet/patches/rig-core/src/providers/openai/completion/mod.rs (Completions API Usage struct — needs CompletionTokensDetails),
-  codelet/patches/rig-core/src/providers/openai/completion/streaming.rs (Completions streaming)
+  Key files: rust/patches/rig-core/src/completion/request.rs (Usage struct),
+  rust/patches/rig-core/src/providers/openai/responses_api/mod.rs (Responses API conversion + OutputTokensDetails),
+  rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs (Responses streaming token_usage()),
+  rust/patches/rig-core/src/providers/openai/completion/mod.rs (Completions API Usage struct — needs CompletionTokensDetails),
+  rust/patches/rig-core/src/providers/openai/completion/streaming.rs (Completions streaming)
   """
 
   Background: User Story

@@ -4,11 +4,11 @@
       "name": "Setting the default model unblocks session creation",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov118_no_session_default_model.rs",
+          "file": "rust/sessions/tests/prov118_no_session_default_model.rs",
           "lines": "50-90",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 82,
                 83,
@@ -49,10 +49,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov118_no_session_default_model.rs"
+      "rust/sessions/tests/prov118_no_session_default_model.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 68
   }

@@ -4,11 +4,11 @@
       "name": "Request with valid token passes through with correct headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "132-189",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 1,
                 2,
@@ -335,11 +335,11 @@
       "name": "Expired token is automatically refreshed before request",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "196-239",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 118,
                 119,
@@ -409,11 +409,11 @@
       "name": "Token refresh failure propagates error without sending request",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "242-278",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 118,
                 119,
@@ -463,11 +463,11 @@
       "name": "URL rewrite for /v1/responses path",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "281-304",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 193,
                 194,
@@ -498,11 +498,11 @@
       "name": "URL rewrite for /chat/completions path",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "311-330",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 193,
                 194,
@@ -533,11 +533,11 @@
       "name": "Non-API URLs pass through without rewrite",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "337-363",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 193,
                 194,
@@ -568,11 +568,11 @@
       "name": "Streaming request with expired token refreshes before streaming",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "368-410",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 284,
                 285,
@@ -616,11 +616,11 @@
       "name": "Existing Authorization header is replaced with Bearer token",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "414-450",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 205,
                 206,
@@ -646,11 +646,11 @@
       "name": "CodexProvider uses RefreshingCodexClient for OAuth mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "454-491",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 74,
                 75,
@@ -692,11 +692,11 @@
       "name": "Token refresh within expiry buffer triggers proactive refresh",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "493-518",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 107,
                 108,
@@ -720,11 +720,11 @@
       "name": "API key mode passes requests through unchanged",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "523-555",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 62,
                 63,
@@ -747,11 +747,11 @@
       "name": "Default expiry when expires_in is not provided",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "561-611",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/refreshing_client.rs",
+              "file": "rust/providers/src/codex/refreshing_client.rs",
               "lines": [
                 24,
                 25,
@@ -767,11 +767,11 @@
       "name": "Tokens loaded from disk trigger immediate refresh via Some(0)",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_refreshing_client_test.rs",
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
           "lines": "782-845",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 98,
                 99,
@@ -793,11 +793,11 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/codex_refreshing_client_test.rs"
+      "rust/providers/tests/codex_refreshing_client_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/codex/refreshing_client.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/providers/src/codex/refreshing_client.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 1081
   }

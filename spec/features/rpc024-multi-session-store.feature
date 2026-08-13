@@ -24,10 +24,10 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
   - `pub fn set_session_index(...)` — replaced by derived getter.
 
   SessionContext lives in a sibling module
-  `codelet/fspec-tui/src/store/agent_view/session_context.rs` so
+  `rust/fspec-tui/src/store/agent_view/session_context.rs` so
   agent_view.rs stays under the 300-LoC ceiling.
 
-  Tests: codelet/fspec-tui/tests/store_agent_view_multisession_rpc024.rs.
+  Tests: rust/fspec-tui/tests/store_agent_view_multisession_rpc024.rs.
   """
 
   Background: User Story

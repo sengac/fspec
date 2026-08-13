@@ -5,7 +5,7 @@
 @feature-management
 Feature: update-step CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/update_step.rs (NEW CLI bridge); codelet/fspec/tests/cli_update_step.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/update-step.txt (captured help fixture from `node dist/index.js update-step --help`).
+  Files: rust/fspec/src/update_step.rs (NEW CLI bridge); rust/fspec/tests/cli_update_step.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/update-step.txt (captured help fixture from `node dist/index.js update-step --help`).
   Bridge marshals positional <feature> <scenario> <current-step> + optional --text/--keyword into JSON and delegates to commands::update_step::run. No logic in bridge — JSON marshalling + CWD resolution only.
   Exit codes: 0 on success (✓ message to stdout), 1 on FspecCoreError or {success:false} with 'Error:' prefix to stderr.
   """
@@ -46,11 +46,11 @@ Feature: update-step CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec update-step --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/update-step.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/update-step.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/user-auth.feature with scenario "Valid login" containing step "Given I am on the login page"
     When I dispatch update-step through fspec_core::dispatch::dispatch_command with feature='spec/features/user-auth.feature' scenario='Valid login' currentStep='Given I am on the login page' text='I navigate to the login page'
     Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Successfully updated step in scenario '"'"'Valid login'"'"' in user-auth.feature'
-    And the CLI bridge module codelet/fspec/src/update_step.rs contains NO inline gherkin parsing or step-update logic
+    And the CLI bridge module rust/fspec/src/update_step.rs contains NO inline gherkin parsing or step-update logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

@@ -4,11 +4,11 @@
       "name": "Provider clamps registry value to its hard maximum",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "216-232",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -139,11 +139,11 @@
       "name": "Provider trusts registry value when no max is declared",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "234-250",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -274,11 +274,11 @@
       "name": "User override is clamped by provider max",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "252-268",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -409,11 +409,11 @@
       "name": "User override is trusted when provider declares no max",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "270-286",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -544,11 +544,11 @@
       "name": "Provider default is used when no registry or user override exists",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "288-304",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -679,11 +679,11 @@
       "name": "Provider can suppress sending max_output_tokens",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "306-313",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -759,11 +759,11 @@
       "name": "Max output tokens are clamped by provider limit",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "315-331",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -894,11 +894,11 @@
       "name": "Provider default max output tokens used when no registry data",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "333-349",
           "implMappings": [
             {
-              "file": "codelet/providers/src/model_limits.rs",
+              "file": "rust/providers/src/model_limits.rs",
               "lines": [
                 1,
                 2,
@@ -1031,10 +1031,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/model_limits.rs"
+      "rust/providers/src/model_limits.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/model_limits.rs"
+      "rust/providers/src/model_limits.rs"
     ],
     "totalLinesCovered": 1024
   }

@@ -4,11 +4,11 @@
       "name": "CodexWriteStdinFacade maps non-empty chars to InternalExecParams::Write",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2484-2508",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -133,11 +133,11 @@
       "name": "CodexWriteStdinFacade passes all optional params through",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2511-2537",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -262,11 +262,11 @@
       "name": "CodexWriteStdinFacade maps empty chars to InternalExecParams::Poll",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2540-2564",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -391,11 +391,11 @@
       "name": "CodexWriteStdinFacade maps absent chars to InternalExecParams::Poll",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2566-2586",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -520,11 +520,11 @@
       "name": "CodexWriteStdinFacade converts numeric session_id to string",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2589-2612",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -649,11 +649,11 @@
       "name": "CodexWriteStdinFacade validates required session_id parameter",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2614-2634",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -778,11 +778,11 @@
       "name": "CodexWriteStdinFacade rejects null session_id",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2636-2656",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -907,11 +907,11 @@
       "name": "CodexWriteStdinFacade schema has additionalProperties false",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2658-2679",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 500,
                 501,
@@ -1036,11 +1036,11 @@
       "name": "write_stdin facade is registered in Codex create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "2681-2696",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 312,
                 313,
@@ -1113,11 +1113,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/providers/src/codex/mod.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/providers/src/codex/mod.rs"
     ],
     "totalLinesCovered": 1165
   }

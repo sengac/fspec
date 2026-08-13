@@ -4,11 +4,11 @@
       "name": "Validates a schema-valid foundation and reports success",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_foundation_schema.rs",
+          "file": "rust/fspec-core/tests/validate_foundation_schema.rs",
           "lines": "58-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_foundation_schema.rs",
+              "file": "rust/fspec-core/src/commands/validate_foundation_schema.rs",
               "lines": [
                 44,
                 45,
@@ -67,11 +67,11 @@
       "name": "Reports a friendly error when foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_foundation_schema.rs",
+          "file": "rust/fspec-core/tests/validate_foundation_schema.rs",
           "lines": "84-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_foundation_schema.rs",
+              "file": "rust/fspec-core/src/commands/validate_foundation_schema.rs",
               "lines": [
                 44,
                 45,
@@ -130,11 +130,11 @@
       "name": "Renders the minItems special-case error for an empty capabilities array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_foundation_schema.rs",
+          "file": "rust/fspec-core/tests/validate_foundation_schema.rs",
           "lines": "108-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_foundation_schema.rs",
+              "file": "rust/fspec-core/src/commands/validate_foundation_schema.rs",
               "lines": [
                 103,
                 104,
@@ -180,11 +180,11 @@
       "name": "Renders a required-property error when a top-level field is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_foundation_schema.rs",
+          "file": "rust/fspec-core/tests/validate_foundation_schema.rs",
           "lines": "136-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_foundation_schema.rs",
+              "file": "rust/fspec-core/src/commands/validate_foundation_schema.rs",
               "lines": [
                 137,
                 138,
@@ -218,11 +218,11 @@
       "name": "Reports a friendly error when foundation.json contains malformed JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_foundation_schema.rs",
+          "file": "rust/fspec-core/tests/validate_foundation_schema.rs",
           "lines": "167-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_foundation_schema.rs",
+              "file": "rust/fspec-core/src/commands/validate_foundation_schema.rs",
               "lines": [
                 44,
                 45,
@@ -283,10 +283,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/validate_foundation_schema.rs"
+      "rust/fspec-core/tests/validate_foundation_schema.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/validate_foundation_schema.rs"
+      "rust/fspec-core/src/commands/validate_foundation_schema.rs"
     ],
     "totalLinesCovered": 327
   }

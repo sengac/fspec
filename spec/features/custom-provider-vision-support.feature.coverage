@@ -12,15 +12,15 @@
               "lines": [51, 52, 53, 54, 55]
             },
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [185, 186, 187, 188, 189, 190]
             },
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [48, 49, 50, 51, 52, 136, 137]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
             }
           ]
@@ -39,15 +39,15 @@
               "lines": [51, 52, 53, 54, 55]
             },
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [185, 186, 187, 188, 189, 190]
             },
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [48, 49, 50, 51, 52, 136, 137]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
             }
           ]
@@ -66,15 +66,15 @@
               "lines": [51, 52, 53, 54, 55]
             },
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [185, 186, 187, 188, 189, 190]
             },
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [48, 49, 50, 51, 52, 136, 137]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
             }
           ]
@@ -93,15 +93,15 @@
               "lines": [51, 52, 53, 54, 55]
             },
             {
-              "file": "codelet/providers/src/custom/config.rs",
+              "file": "rust/providers/src/custom/config.rs",
               "lines": [185, 186, 187, 188, 189, 190]
             },
             {
-              "file": "codelet/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management.rs",
               "lines": [48, 49, 50, 51, 52, 136, 137]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
             }
           ]
@@ -118,9 +118,9 @@
     ],
     "implFiles": [
       "src/tui/services/customProviderSectionBuilder.ts",
-      "codelet/providers/src/custom/config.rs",
-      "codelet/providers/src/custom/management.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/providers/src/custom/config.rs",
+      "rust/providers/src/custom/management.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 261
   }

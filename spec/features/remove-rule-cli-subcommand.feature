@@ -2,7 +2,7 @@
 @RPC-279
 Feature: fspec remove-rule CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_rule.rs — clap-derived struct mirroring TS Commander.js registration
+  CLI bridge: rust/fspec/src/remove_rule.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/remove-rule.ts:88-105). Surface: `fspec remove-rule <workUnitId> <index>` (index parsed via parseInt base 10).
   Stdout (success): '✓ Removed rule: "<text>"' (TS uses chalk.green; ANSI tolerated via substring match).
   Stderr (failure): '✗ Failed to remove rule: <message>'; exit code 1. Mirrors TS `output.error('✗ Failed to remove rule:', ...)`.
@@ -19,7 +19,7 @@ Feature: fspec remove-rule CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-rule --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-rule.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-rule.txt
     And stdout starts with a blank line followed by 'REMOVE-RULE'
 
   Scenario: CLI soft-deletes a rule and prints the canonical success line
@@ -49,4 +49,4 @@ Feature: fspec remove-rule CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec remove-rule AUTH-001 1` afterwards exits 0
     And spec/work-units.json on disk shows AUTH-001.rules[0].deleted=true and AUTH-001.rules[1].deleted=true
-    And the CLI bridge module codelet/fspec/src/remove_rule.rs contains NO inline soft-delete or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/remove_rule.rs contains NO inline soft-delete or file-write logic — its only computation is JSON arg marshalling

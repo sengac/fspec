@@ -4,11 +4,11 @@
       "name": "Remove an existing schedule deletes only that entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_schedule.rs",
+          "file": "rust/fspec-core/tests/remove_schedule.rs",
           "lines": "81-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_schedule.rs",
+              "file": "rust/fspec-core/src/commands/remove_schedule.rs",
               "lines": [
                 69,
                 70,
@@ -66,11 +66,11 @@
       "name": "Removing a non-existent schedule returns an error and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_schedule.rs",
+          "file": "rust/fspec-core/tests/remove_schedule.rs",
           "lines": "113-140",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_schedule.rs",
+              "file": "rust/fspec-core/src/commands/remove_schedule.rs",
               "lines": [
                 69,
                 70,
@@ -128,11 +128,11 @@
       "name": "Removing a schedule preserves the insertion order of the remaining schedules",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_schedule.rs",
+          "file": "rust/fspec-core/tests/remove_schedule.rs",
           "lines": "143-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_schedule.rs",
+              "file": "rust/fspec-core/src/commands/remove_schedule.rs",
               "lines": [
                 69,
                 70,
@@ -192,10 +192,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_schedule.rs"
+      "rust/fspec-core/tests/remove_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_schedule.rs"
+      "rust/fspec-core/src/commands/remove_schedule.rs"
     ],
     "totalLinesCovered": 222
   }

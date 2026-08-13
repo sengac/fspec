@@ -4,11 +4,11 @@
       "name": "Old Turn nodes are pruned except decision-linked ones",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/compaction.rs",
+          "file": "rust/napi/src/graph/compaction.rs",
           "lines": "141-197",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/compaction.rs",
+              "file": "rust/napi/src/graph/compaction.rs",
               "lines": [
                 53,
                 54,
@@ -69,11 +69,11 @@
       "name": "Pruning a Turn cascades to delete its edges",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/compaction.rs",
+          "file": "rust/napi/src/graph/compaction.rs",
           "lines": "204-228",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/compaction.rs",
+              "file": "rust/napi/src/graph/compaction.rs",
               "lines": [
                 53,
                 54,
@@ -115,11 +115,11 @@
       "name": "Schema hash match skips migration",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/compaction.rs",
+          "file": "rust/napi/src/graph/compaction.rs",
           "lines": "233-244",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/compaction.rs",
+              "file": "rust/napi/src/graph/compaction.rs",
               "lines": [
                 84,
                 85,
@@ -153,11 +153,11 @@
       "name": "Safe schema change auto-migrates on open",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/compaction.rs",
+          "file": "rust/napi/src/graph/compaction.rs",
           "lines": "250-272",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/compaction.rs",
+              "file": "rust/napi/src/graph/compaction.rs",
               "lines": [
                 84,
                 85,
@@ -193,10 +193,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/compaction.rs"
+      "rust/napi/src/graph/compaction.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/compaction.rs"
+      "rust/napi/src/graph/compaction.rs"
     ],
     "totalLinesCovered": 240
   }

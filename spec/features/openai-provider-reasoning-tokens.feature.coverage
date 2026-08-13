@@ -4,11 +4,11 @@
       "name": "Streaming surfaces vLLM-native `reasoning` field as reasoning output",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1756-1792",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
                 303,
                 304,
@@ -45,11 +45,11 @@
       "name": "Streaming still surfaces Z.AI/GLM `reasoning_content` field as reasoning output",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1798-1831",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
                 303,
                 304,
@@ -86,11 +86,11 @@
       "name": "Streaming concatenates reasoning with reasoning_content first then reasoning when both fields are present",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1837-1877",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
                 303,
                 304,
@@ -127,11 +127,11 @@
       "name": "Streaming passes through normal content chunks unchanged when no reasoning fields are present",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1883-1916",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
                 303,
                 304,
@@ -168,11 +168,11 @@
       "name": "Non-streaming surfaces vLLM-native `reasoning` field on the assistant message",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1594-1638",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
                 881,
                 882,
@@ -232,11 +232,11 @@
       "name": "Non-streaming surfaces Z.AI/GLM `reasoning_content` field on the assistant message",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1641-1681",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
                 129,
                 130,
@@ -276,11 +276,11 @@
       "name": "Non-streaming works unchanged when the assistant message has no reasoning field",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1684-1724",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
                 881,
                 882,
@@ -340,11 +340,11 @@
       "name": "Outgoing request body never contains reasoning-suppression keys",
       "testMappings": [
         {
-          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
           "lines": "1727-1750",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
                 1156,
                 1157,
@@ -445,11 +445,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/patches/rig-core/src/providers/openai/completion/mod.rs"
+      "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
     ],
     "implFiles": [
-      "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
-      "codelet/patches/rig-core/src/providers/openai/completion/mod.rs"
+      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
     ],
     "totalLinesCovered": 608
   }

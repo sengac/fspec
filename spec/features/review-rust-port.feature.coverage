@@ -4,11 +4,11 @@
       "name": "Reviewing a fully compliant work unit reports an overall PASS",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "79-132",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 126,
                 127,
@@ -225,11 +225,11 @@
       "name": "Reviewing a work unit with no linked feature emits a warning and no coverage data",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "134-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 227,
                 228,
@@ -277,11 +277,11 @@
       "name": "Reviewing a work unit with partial coverage reports NEEDS WORK and lists uncovered scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "165-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 290,
                 291,
@@ -474,11 +474,11 @@
       "name": "Reviewing a work unit whose linked test file uses the any type reports a critical issue",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "215-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 331,
                 332,
@@ -580,11 +580,11 @@
       "name": "Reviewing a work unit id that does not exist returns an error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "255-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 188,
                 189,
@@ -604,11 +604,11 @@
       "name": "The AI deep-review reminder is wrapped according to the configured agent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "284-352",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 73,
                 74,
@@ -672,11 +672,11 @@
       "name": "Reviewing a non-backlog work unit with no Example Mapping reports an ACDD failure",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/review.rs",
+          "file": "rust/fspec-core/tests/review.rs",
           "lines": "354-378",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/review.rs",
+              "file": "rust/fspec-core/src/commands/review.rs",
               "lines": [
                 143,
                 144,
@@ -735,10 +735,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/review.rs"
+      "rust/fspec-core/tests/review.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/review.rs"
+      "rust/fspec-core/src/commands/review.rs"
     ],
     "totalLinesCovered": 911
   }

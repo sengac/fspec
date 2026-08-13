@@ -4,11 +4,11 @@
       "name": "CLI prints success message when copying all hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "104-136",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/copy_virtual_hooks.rs",
+              "file": "rust/fspec/src/copy_virtual_hooks.rs",
               "lines": [
                 44,
                 45,
@@ -79,11 +79,11 @@
       "name": "CLI prints success message when copying a single named hook",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "137-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/copy_virtual_hooks.rs",
+              "file": "rust/fspec/src/copy_virtual_hooks.rs",
               "lines": [
                 44,
                 45,
@@ -154,11 +154,11 @@
       "name": "CLI exits 1 when --from is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "172-198",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/copy_virtual_hooks.rs",
+              "file": "rust/fspec/src/copy_virtual_hooks.rs",
               "lines": [
                 44,
                 45,
@@ -229,11 +229,11 @@
       "name": "CLI exits 1 when --to is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "199-225",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/copy_virtual_hooks.rs",
+              "file": "rust/fspec/src/copy_virtual_hooks.rs",
               "lines": [
                 44,
                 45,
@@ -304,11 +304,11 @@
       "name": "CLI exits 1 when source has no hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "226-255",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/copy_virtual_hooks.rs",
+              "file": "rust/fspec/src/copy_virtual_hooks.rs",
               "lines": [
                 44,
                 45,
@@ -379,11 +379,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "256-323",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/copy_virtual_hooks.rs",
+              "file": "rust/fspec/src/copy_virtual_hooks.rs",
               "lines": [
                 44,
                 45,
@@ -454,11 +454,11 @@
       "name": "copy-virtual-hooks --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_copy_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_copy_virtual_hooks.rs",
           "lines": "324-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/copy_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/help/configs/copy_virtual_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -609,11 +609,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_copy_virtual_hooks.rs"
+      "rust/fspec/tests/cli_copy_virtual_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/copy_virtual_hooks.rs",
-      "codelet/fspec-core/src/help/configs/copy_virtual_hooks.rs"
+      "rust/fspec/src/copy_virtual_hooks.rs",
+      "rust/fspec-core/src/help/configs/copy_virtual_hooks.rs"
     ],
     "totalLinesCovered": 739
   }

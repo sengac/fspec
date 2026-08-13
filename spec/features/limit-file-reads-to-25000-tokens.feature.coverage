@@ -4,11 +4,11 @@
       "name": "Read file under token limit",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "62-85",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 257,
                 258,
@@ -55,11 +55,11 @@
       "name": "Read image file exempt from token limit",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "121-143",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 162,
                 163,
@@ -80,11 +80,11 @@
       "name": "Read PDF file exempt from token limit",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "146-164",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 171,
                 172,
@@ -174,11 +174,11 @@
       "name": "Partial read within token limit",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "167-184",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 278,
                 279,
@@ -201,11 +201,11 @@
       "name": "Read file exceeding token limit throws error",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "88-118",
           "implMappings": [
             {
-              "file": "codelet/tools/src/error.rs",
+              "file": "rust/tools/src/error.rs",
               "lines": [
                 1,
                 2,
@@ -267,11 +267,11 @@
       "name": "Custom token limit via environment variable",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "187-215",
           "implMappings": [
             {
-              "file": "codelet/common/src/token_estimator.rs",
+              "file": "rust/common/src/token_estimator.rs",
               "lines": [
                 85,
                 86,
@@ -289,11 +289,11 @@
       "name": "Token estimation uses tiktoken-rs cl100k_base encoding",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "18-44",
           "implMappings": [
             {
-              "file": "codelet/common/src/token_estimator.rs",
+              "file": "rust/common/src/token_estimator.rs",
               "lines": [
                 44,
                 45,
@@ -325,11 +325,11 @@
       "name": "TokenEstimator is shared across codebase",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "47-57",
           "implMappings": [
             {
-              "file": "codelet/common/src/token_estimator.rs",
+              "file": "rust/common/src/token_estimator.rs",
               "lines": [
                 22,
                 23,
@@ -349,11 +349,11 @@
       "name": "Replace byte-based estimation in interactive_helpers",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "220-235",
           "implMappings": [
             {
-              "file": "codelet/common/src/token_estimator.rs",
+              "file": "rust/common/src/token_estimator.rs",
               "lines": [
                 78,
                 79,
@@ -368,11 +368,11 @@
       "name": "Replace byte-based estimation in persistence storage",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "238-249",
           "implMappings": [
             {
-              "file": "codelet/common/src/token_estimator.rs",
+              "file": "rust/common/src/token_estimator.rs",
               "lines": [
                 78,
                 79,
@@ -387,11 +387,11 @@
       "name": "Replace byte-based estimation in compactor",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "file": "rust/cli/tests/token_estimator_test.rs",
           "lines": "252-263",
           "implMappings": [
             {
-              "file": "codelet/common/src/token_estimator.rs",
+              "file": "rust/common/src/token_estimator.rs",
               "lines": [
                 78,
                 79,
@@ -408,12 +408,12 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/token_estimator_test.rs"
+      "rust/cli/tests/token_estimator_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/read.rs",
-      "codelet/tools/src/error.rs",
-      "codelet/common/src/token_estimator.rs"
+      "rust/tools/src/read.rs",
+      "rust/tools/src/error.rs",
+      "rust/common/src/token_estimator.rs"
     ],
     "totalLinesCovered": 448
   }

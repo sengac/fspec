@@ -10,7 +10,7 @@ Feature: Agent loop classifies 429 errors and emits NET-001 reconnect notificati
   """
   RPC-087 (child of RPC-072 family). Error classification + retry must
   go through the recovery_network / compaction / thinking / truncation /
-  stall / image helpers from codelet/cli/src/interactive/ so 429s
+  stall / image helpers from rust/cli/src/interactive/ so 429s
   trigger NET-001 reconnect notifications instead of raw JSON in
   scrollback + dialog.
 

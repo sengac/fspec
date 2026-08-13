@@ -4,11 +4,11 @@
       "name": "Returns an empty prefixes list when spec/ does not exist and does not auto-create files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "89-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 41,
                 42,
@@ -59,11 +59,11 @@
       "name": "Aggregates work-unit completion progress per prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "123-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 100,
                 101,
@@ -107,11 +107,11 @@
       "name": "Treats missing work-units.json as zero counts without throwing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "167-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 98,
                 99,
@@ -139,11 +139,11 @@
       "name": "Treats malformed work-units.json as zero counts without throwing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "192-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 98,
                 99,
@@ -171,11 +171,11 @@
       "name": "Escalates malformed prefixes.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "220-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/ensure.rs",
+              "file": "rust/fspec-core/src/io/ensure.rs",
               "lines": [
                 70,
                 71,
@@ -201,11 +201,11 @@
       "name": "Preserves insertion order of prefixes.json (not alphabetical)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "240-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/types/work_unit.rs",
+              "file": "rust/fspec-core/src/types/work_unit.rs",
               "lines": [
                 221,
                 222,
@@ -240,11 +240,11 @@
       "name": "Text format omits the 'Work Units' line when totalWorkUnits is zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "279-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 135,
                 136,
@@ -284,11 +284,11 @@
       "name": "Text format renders completion progress with Math.round percentage semantics",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "319-348",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 100,
                 101,
@@ -332,11 +332,11 @@
       "name": "Text format rounds 2/3 progress to 67 percent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "349-378",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 100,
                 101,
@@ -380,11 +380,11 @@
       "name": "JSON format emits two-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "379-423",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 65,
                 66,
@@ -411,11 +411,11 @@
       "name": "Text format prints 'No prefixes found' for an empty prefixes file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "424-443",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_prefixes.rs",
+              "file": "rust/fspec-core/src/commands/list_prefixes.rs",
               "lines": [
                 135,
                 136,
@@ -428,14 +428,14 @@
       ]
     },
     {
-      "name": "Shared infrastructure modules exist under codelet/fspec-core for reuse by other commands",
+      "name": "Shared infrastructure modules exist under rust/fspec-core for reuse by other commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_prefixes.rs",
+          "file": "rust/fspec-core/tests/list_prefixes.rs",
           "lines": "444-497",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/types/prefix.rs",
+              "file": "rust/fspec-core/src/types/prefix.rs",
               "lines": [
                 1,
                 2,
@@ -523,13 +523,13 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_prefixes.rs"
+      "rust/fspec-core/tests/list_prefixes.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_prefixes.rs",
-      "codelet/fspec-core/src/io/ensure.rs",
-      "codelet/fspec-core/src/types/work_unit.rs",
-      "codelet/fspec-core/src/types/prefix.rs"
+      "rust/fspec-core/src/commands/list_prefixes.rs",
+      "rust/fspec-core/src/io/ensure.rs",
+      "rust/fspec-core/src/types/work_unit.rs",
+      "rust/fspec-core/src/types/prefix.rs"
     ],
     "totalLinesCovered": 734
   }

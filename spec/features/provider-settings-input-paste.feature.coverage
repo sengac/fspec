@@ -4,11 +4,11 @@
       "name": "Pasting a URL into the focused Base URL field inserts it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
           "lines": "119-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
               "lines": [
                 17,
                 18,
@@ -43,11 +43,11 @@
       "name": "Pasting an API key into the profile form keeps the field masked",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
           "lines": "138-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
               "lines": [
                 80,
                 81,
@@ -74,11 +74,11 @@
       "name": "Pasting a multi-line secret into the inline API-key entry strips newlines and stays masked",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
           "lines": "180-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 173,
                 174,
@@ -112,11 +112,11 @@
       "name": "Pasting while the provider list is focused does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
           "lines": "230-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/paste.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/paste.rs",
               "lines": [
                 17,
                 18,
@@ -157,13 +157,13 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs"
+      "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
-      "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs",
-      "codelet/fspec-tui/src/views/provider_settings/paste.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/detail.rs",
+      "rust/fspec-tui/src/views/provider_settings/paste.rs"
     ],
     "totalLinesCovered": 217
   }

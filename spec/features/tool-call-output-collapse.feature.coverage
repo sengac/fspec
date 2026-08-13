@@ -4,11 +4,11 @@
       "name": "Settled tool card with a short body shows the full body",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "file": "rust/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
           "lines": "112-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 147,
                 148,
@@ -57,11 +57,11 @@
       "name": "Streaming tool card shows only the last 10 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "file": "rust/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
           "lines": "191-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 186,
                 187,
@@ -74,7 +74,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 172,
                 173,
@@ -96,11 +96,11 @@
       "name": "The full body is preserved for the content modal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "file": "rust/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
           "lines": "274-313",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
               "lines": [
                 113,
                 114,
@@ -130,11 +130,11 @@
       "name": "Settled tool card with a long body collapses to the last 8 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "file": "rust/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
           "lines": "145-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 210,
                 211,
@@ -152,11 +152,11 @@
       "name": "A finished stream stays pinned to the end of output",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "file": "rust/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
           "lines": "226-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 198,
                 199,
@@ -190,12 +190,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs"
+      "rust/fspec-tui/tests/tool_call_output_collapse_rpc389.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-      "codelet/fspec-tui/src/views/agent/scrollback_select.rs"
+      "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_select.rs"
     ],
     "totalLinesCovered": 293
   }

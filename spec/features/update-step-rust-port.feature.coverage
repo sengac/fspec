@@ -4,11 +4,11 @@
       "name": "Update step text while keeping the keyword",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "56-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -153,11 +153,11 @@
       "name": "Change a step keyword while keeping the text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "94-123",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -302,11 +302,11 @@
       "name": "Update both text and keyword where text carries a keyword prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "125-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -451,11 +451,11 @@
       "name": "Match a step by its text alone without the keyword",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "156-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -600,11 +600,11 @@
       "name": "Supplying neither text nor keyword fails without modifying the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "187-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -749,11 +749,11 @@
       "name": "Updating a step in a missing feature file fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "218-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -898,11 +898,11 @@
       "name": "Updating a step in an absent scenario fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "245-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -1047,11 +1047,11 @@
       "name": "Updating a step that does not match fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_step.rs",
+          "file": "rust/fspec-core/tests/update_step.rs",
           "lines": "276-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_step.rs",
+              "file": "rust/fspec-core/src/commands/update_step.rs",
               "lines": [
                 49,
                 50,
@@ -1198,10 +1198,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_step.rs"
+      "rust/fspec-core/tests/update_step.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_step.rs"
+      "rust/fspec-core/src/commands/update_step.rs"
     ],
     "totalLinesCovered": 1308
   }

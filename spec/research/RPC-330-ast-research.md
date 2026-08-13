@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-18
 **Tool:** AstGrep (Rust)
-**Scope:** `codelet/fspec-core/src/io/gherkin_format.rs`, `gherkin-0.16.0` crate parser
+**Scope:** `rust/fspec-core/src/io/gherkin_format.rs`, `gherkin-0.16.0` crate parser
 
 ## Confirmed: real, unfixed bug
 

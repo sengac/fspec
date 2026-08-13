@@ -4,11 +4,11 @@
       "name": "Adding a command to an existing bounded context appends the item and increments nextItemId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
           "lines": "82-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
                 57,
                 58,
@@ -114,11 +114,11 @@
       "name": "The color field is persisted as the JSON string 'blue'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
           "lines": "121-140",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
                 118,
                 119,
@@ -141,11 +141,11 @@
       "name": "Optional description is persisted as the trailing field in TS key order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
           "lines": "142-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
                 118,
                 119,
@@ -168,11 +168,11 @@
       "name": "Adding a command to a non-existent bounded context fails and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
           "lines": "197-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
                 104,
                 105,
@@ -194,11 +194,11 @@
       "name": "A command links only to the matching context and a second add increments nextItemId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
           "lines": "225-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
                 90,
                 91,
@@ -254,11 +254,11 @@
       "name": "A foundation with no event storm reports the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_command_to_foundation.rs",
+          "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
           "lines": "287-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_command_to_foundation.rs",
+              "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
                 74,
                 75,
@@ -312,10 +312,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_command_to_foundation.rs"
+      "rust/fspec-core/tests/add_command_to_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_command_to_foundation.rs"
+      "rust/fspec-core/src/commands/add_command_to_foundation.rs"
     ],
     "totalLinesCovered": 432
   }

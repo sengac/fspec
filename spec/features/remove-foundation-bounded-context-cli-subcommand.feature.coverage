@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_foundation_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_remove_foundation_bounded_context.rs",
           "lines": "95-126",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_foundation_bounded_context.rs",
+              "file": "rust/fspec/src/remove_foundation_bounded_context.rs",
               "lines": [
                 31,
                 32,
@@ -45,11 +45,11 @@
       "name": "CLI soft-deletes a childless bounded context and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_foundation_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_remove_foundation_bounded_context.rs",
           "lines": "128-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_foundation_bounded_context.rs",
+              "file": "rust/fspec/src/remove_foundation_bounded_context.rs",
               "lines": [
                 31,
                 32,
@@ -86,11 +86,11 @@
       "name": "CLI --cascade removes the context and prints the cascade success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_foundation_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_remove_foundation_bounded_context.rs",
           "lines": "161-187",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_foundation_bounded_context.rs",
+              "file": "rust/fspec/src/remove_foundation_bounded_context.rs",
               "lines": [
                 34,
                 35,
@@ -118,11 +118,11 @@
       "name": "CLI rejects a non-empty context without --cascade with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_foundation_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_remove_foundation_bounded_context.rs",
           "lines": "189-214",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_foundation_bounded_context.rs",
+              "file": "rust/fspec/src/remove_foundation_bounded_context.rs",
               "lines": [
                 51,
                 52,
@@ -138,11 +138,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_foundation_bounded_context.rs",
+          "file": "rust/fspec/tests/cli_remove_foundation_bounded_context.rs",
           "lines": "216-272",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_foundation_bounded_context.rs",
+              "file": "rust/fspec/src/remove_foundation_bounded_context.rs",
               "lines": [
                 40,
                 41,
@@ -166,10 +166,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_foundation_bounded_context.rs"
+      "rust/fspec/tests/cli_remove_foundation_bounded_context.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_foundation_bounded_context.rs"
+      "rust/fspec/src/remove_foundation_bounded_context.rs"
     ],
     "totalLinesCovered": 254
   }

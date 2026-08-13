@@ -5,8 +5,8 @@
 Feature: Port query-metrics command to Rust
   """
   Routing: dispatcher needs query-metrics moved from run_stub to run_ported and added to is_ported predicate — shared file change, supervisor required.
-  CLI binding: codelet/fspec/src/main.rs needs a Mode::QueryMetrics clap variant — shared file change, supervisor required.
-  Help registry: codelet/fspec-core/src/help/configs/mod.rs needs pub mod query_metrics; — shared file change, supervisor required.
+  CLI binding: rust/fspec/src/main.rs needs a Mode::QueryMetrics clap variant — shared file change, supervisor required.
+  Help registry: rust/fspec-core/src/help/configs/mod.rs needs pub mod query_metrics; — shared file change, supervisor required.
   Timestamp parsing: use a tiny inline RFC-3339-ish parser yielding epoch milliseconds (i64); we never need the civil date. Parse failures collapse to 0 ms per TS Date(NaN) tolerance.
   File read MUST escalate parse and ENOENT errors. Cannot reuse read_work_units_or_empty (which swallows). Inline std::fs::read_to_string + serde_json + 'Failed to query metrics:' wrapping in commands/query_metrics.rs.
   Type field tolerance: WorkUnit type is Option<String> in fspec-core/types/work_unit.rs; we MUST NOT deserialise it strictly. Use WorkUnit::type_str() for the wu.type||'story' default.
@@ -43,10 +43,10 @@ Feature: Port query-metrics command to Rust
   #   6. Dispatcher call: query-metrics with {} against an empty work-units map yields aggregateMetrics={ totalWorkUnits:0, completedWorkUnits:0, byType:{ story:{count:0}, task:{count:0}, bug:{count:0} } } — averageCycleTime omitted at top level AND inside each byType entry
   #   7. Dispatcher call: query-metrics with {} against a missing spec/work-units.json returns dispatch failure with error beginning 'Failed to query metrics:' and exits 1; the file is NOT auto-created
   #   8. Dispatcher call: query-metrics with {"format":"text"} produces a non-JSON Project Metrics block when work-units exist; text vs json are the only allowed format values, with text default
-  #   9. CLI: ./codelet/target/release/fspec query-metrics --help exits 0 and prints byte-for-byte the captured fixture (including the vestigial --metric line)
+  #   9. CLI: ./rust/target/release/fspec query-metrics --help exits 0 and prints byte-for-byte the captured fixture (including the vestigial --metric line)
   #   10. CLI: fspec query-metrics --work-unit-id AUTH-001 --format json prints the same JSON the dispatcher produces against the same on-disk state, exit 0
   #   11. CLI: fspec query-metrics (no args) against an empty directory exits 1 and prints '✗ Query failed: Failed to query metrics: ...' to stderr (because work-units.json must exist)
-  #   12. CLI bridge module codelet/fspec/src/query_metrics.rs contains NO inline aggregation or hours-formatting logic — only argv → JSON marshalling and delegation to fspec_core
+  #   12. CLI bridge module rust/fspec/src/query_metrics.rs contains NO inline aggregation or hours-formatting logic — only argv → JSON marshalling and delegation to fspec_core
   #
   # ========================================
   Background: User Story

@@ -5,7 +5,7 @@
 @RPC-386
 Feature: AgentManager handler binds to global SessionManager singleton instead of the daemon-owned instance
   """
-  Root cause: codelet/agent-loop/src/agent_manager_handler.rs calls SessionManager::instance() at lines 43 (create_handler) and 909 (create_async_handler). The fspec binary owns a separate manager built in codelet/fspec/src/common.rs::build_service (SessionManager::new() + FspecAgentHooks), so spawns land in the empty Noop-hooks singleton.
+  Root cause: rust/agent-loop/src/agent_manager_handler.rs calls SessionManager::instance() at lines 43 (create_handler) and 909 (create_async_handler). The fspec binary owns a separate manager built in rust/fspec/src/common.rs::build_service (SessionManager::new() + FspecAgentHooks), so spawns land in the empty Noop-hooks singleton.
   Fix via dependency injection: give BackgroundSession a Weak<SessionManager> owning-manager back-reference, populated by create_session_with_id / create_isolated_session_with_id from a self-Weak the manager holds when wrapped in Arc. Thread the resolved Arc<SessionManager> into create_handler/create_async_handler instead of SessionManager::instance(); fall back to instance() when the back-reference is absent (NAPI path).
   """
 

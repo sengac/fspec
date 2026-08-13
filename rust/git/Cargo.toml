@@ -1,0 +1,56 @@
+[package]
+name = "codelet-git"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Git operations using gitoxide (gix) for rust"
+
+[dependencies]
+# gitoxide - pure Rust git implementation
+gix = { version = "0.72", default-features = false, features = [
+    "status",
+    "revision",
+    "blob-diff",
+    "attributes",
+    "excludes",
+    "index",
+] }
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# RPC-015: shared CheckpointCounts wire type — both the new
+# `count_checkpoints` helper and the FspecService impl return the SAME
+# struct so the additive `napi::count_checkpoints` export and the new
+# tarpc method cannot drift.
+codelet-rpc-types = { workspace = true }
+
+# Diff algorithm (for unified diff generation)
+similar = "2"
+
+# Three-way merge (for conflict marker generation)
+diffy = "0.4"
+
+# Directory walking
+walkdir = "2"
+
+# Small vectors for commit parents
+smallvec = "1"
+
+# Date/time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Serialization (for session manifest)
+serde.workspace = true
+serde_json.workspace = true
+
+# Home directory (for manifest storage)
+dirs.workspace = true
+
+# Logging
+tracing.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

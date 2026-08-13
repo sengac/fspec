@@ -8,7 +8,7 @@
 Feature: Wire codelet-sessions::SessionManager into codelet-fspec build_service
 
   # SharedFspecService::with_session_manager already delegates chunks_rx/logs_rx/status_changes_rx
-  # to the SessionManagerHandle when one is attached (see codelet/rpc/src/lib.rs lines 526-580).
+  # to the SessionManagerHandle when one is attached (see rust/rpc/src/lib.rs lines 526-580).
   # NO additional fan-out task is needed in this card — the bridging is already a runtime property
   # of the SharedFspecService constructor.
   #
@@ -24,14 +24,14 @@ Feature: Wire codelet-sessions::SessionManager into codelet-fspec build_service
   # hooks are populated.
   Background: User Story
     As a Rust developer wiring codelet-sessions into the codelet-fspec binary
-    I want codelet/fspec/src/common.rs::build_service to construct a real codelet_sessions::SessionManager and pass it via SharedFspecService::with_session_manager, with codelet-sessions declared as a Cargo dependency
+    I want rust/fspec/src/common.rs::build_service to construct a real codelet_sessions::SessionManager and pass it via SharedFspecService::with_session_manager, with codelet-sessions declared as a Cargo dependency
     So that the fspec binary in all three modes runs real agent sessions through the NAPI-free codelet-sessions crate
 
   @rule:build_service_constructs_session_manager
   @wiring
   Scenario: build_service constructs a real SessionManager and passes it via with_session_manager
     Given the RPC-044 changes are applied to the codelet workspace
-    When I open `codelet/fspec/src/common.rs`
+    When I open `rust/fspec/src/common.rs`
     Then the file contains the literal substring `use codelet_sessions::SessionManager`
     And the file contains the literal substring `use codelet_core::SessionManagerHandle`
     And the `build_service` function constructs `let session_manager: Arc<dyn SessionManagerHandle> = Arc::new(SessionManager::new());`
@@ -41,9 +41,9 @@ Feature: Wire codelet-sessions::SessionManager into codelet-fspec build_service
   @rule:cargo_toml_session_dep
   @cargo
   @manifest
-  Scenario: codelet/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi
+  Scenario: rust/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi
     Given the RPC-044 changes are applied to the codelet workspace
-    When I open `codelet/fspec/Cargo.toml`
+    When I open `rust/fspec/Cargo.toml`
     Then the `[dependencies]` table contains `codelet-sessions.workspace = true` or `codelet-sessions = { workspace = true }`
     And the file contains zero occurrences of the literal substring `codelet-napi`
 
@@ -53,5 +53,5 @@ Feature: Wire codelet-sessions::SessionManager into codelet-fspec build_service
     Given the RPC-044 changes are applied to the codelet workspace
     When `build_service` is invoked against a temp workspace
     Then `service.cwd()` returns `Some(temp_workspace_path)` as before
-    And the literal substring `SharedFspecService::with_session_manager(watcher, session_manager)` is present in codelet/fspec/src/common.rs
+    And the literal substring `SharedFspecService::with_session_manager(watcher, session_manager)` is present in rust/fspec/src/common.rs
     And a chunk sent through `service.chunks_tx()` is received via `service.chunks_rx()` proving the SessionManager broadcast is live

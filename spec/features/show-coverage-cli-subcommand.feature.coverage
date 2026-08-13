@@ -4,11 +4,11 @@
       "name": "Clap exposes show-coverage as a subcommand and prints help on --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "102-138",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -74,11 +74,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "103-140",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -149,11 +149,11 @@
       "name": "show-coverage with a missing feature exits 1 and writes the TS-parity error to stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "140-170",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -219,11 +219,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "141-172",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -294,11 +294,11 @@
       "name": "CLI per-feature mode renders markdown report to stdout for a fully covered feature",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "172-211",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -364,11 +364,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "173-213",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -439,11 +439,11 @@
       "name": "CLI per-feature JSON mode renders 2-space-indented JSON for the requested feature",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "213-249",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -509,11 +509,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "214-251",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -584,11 +584,11 @@
       "name": "CLI project-wide mode aggregates and renders Project Coverage Report",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "251-287",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -654,11 +654,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "252-289",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -729,11 +729,11 @@
       "name": "CLI project-wide mode exits 1 when spec/features/ is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "289-319",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -799,11 +799,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "290-321",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -874,11 +874,11 @@
       "name": "CLI project-wide mode exits 1 when spec/features/ exists but is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "321-345",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -944,11 +944,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "322-347",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1019,11 +1019,11 @@
       "name": "CLI tolerates a trailing .feature on the positional feature-name",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "347-376",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1089,11 +1089,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "348-378",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1164,11 +1164,11 @@
       "name": "show-coverage --help is byte-for-byte identical to TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "378-406",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1234,11 +1234,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "379-408",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1309,11 +1309,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "408-438",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1379,11 +1379,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "409-440",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1454,11 +1454,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "440-495",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1524,11 +1524,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_show_coverage.rs",
+          "file": "rust/fspec/tests/cli_show_coverage.rs",
           "lines": "441-495",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_coverage.rs",
+              "file": "rust/fspec/src/show_coverage.rs",
               "lines": [
                 1,
                 2,
@@ -1601,10 +1601,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_coverage.rs"
+      "rust/fspec/tests/cli_show_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/show_coverage.rs"
+      "rust/fspec/src/show_coverage.rs"
     ],
     "totalLinesCovered": 0
   }

@@ -4,11 +4,11 @@
       "name": "Escalates a structured error when spec/features/ does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "73-90",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 69,
                 70,
@@ -47,11 +47,11 @@
       "name": "Returns an empty features list when spec/features/ exists but contains no .feature files",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "93-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 69,
                 70,
@@ -115,11 +115,11 @@
       "name": "Aggregates feature names, scenario counts, and tags sorted by file path",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "114-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 69,
                 70,
@@ -301,11 +301,11 @@
       "name": "Filters features by exact tag match including the leading '@'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "162-193",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 99,
                 100,
@@ -324,11 +324,11 @@
       "name": "Silently skips files that fail to parse without escalating",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "196-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 84,
                 85,
@@ -355,11 +355,11 @@
       "name": "Sorts features alphabetically by file path regardless of glob order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "233-265",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 114,
                 115,
@@ -374,11 +374,11 @@
       "name": "Text format prints sentinel for empty results",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "268-286",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 245,
                 246,
@@ -395,11 +395,11 @@
       "name": "Text format renders a populated listing with header line and unfiltered summary",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "289-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 241,
                 242,
@@ -443,11 +443,11 @@
       "name": "Text format with a tag filter uses the matching summary phrasing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "325-353",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 261,
                 262,
@@ -471,11 +471,11 @@
       "name": "JSON format emits a 2-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "356-410",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
                 118,
                 119,
@@ -500,11 +500,11 @@
       "name": "Shared infrastructure modules exist under fspec-core for reuse by other gherkin-aware commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_features.rs",
+          "file": "rust/fspec-core/tests/list_features.rs",
           "lines": "413-461",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/io/feature_glob.rs",
+              "file": "rust/fspec-core/src/io/feature_glob.rs",
               "lines": [
                 1,
                 2,
@@ -662,11 +662,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_features.rs"
+      "rust/fspec-core/tests/list_features.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_features.rs",
-      "codelet/fspec-core/src/io/feature_glob.rs"
+      "rust/fspec-core/src/commands/list_features.rs",
+      "rust/fspec-core/src/io/feature_glob.rs"
     ],
     "totalLinesCovered": 849
   }

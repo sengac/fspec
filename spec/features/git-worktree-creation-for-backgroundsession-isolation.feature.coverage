@@ -4,11 +4,11 @@
       "name": "Create worktree at HEAD for new session",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "102-141",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 49,
                 50,
@@ -86,11 +86,11 @@
       "name": "Create worktree at specific commit ref",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "154-191",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 68,
                 69,
@@ -149,11 +149,11 @@
       "name": "Auto-create worktrees directory if it doesn't exist",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "203-228",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 92,
                 93,
@@ -168,11 +168,11 @@
       "name": "Remove worktree and clean up git metadata",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "240-267",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 123,
                 124,
@@ -211,11 +211,11 @@
       "name": "List all session worktrees",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "281-310",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 260,
                 261,
@@ -284,11 +284,11 @@
       "name": "Fail gracefully when creating worktree in non-git directory",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "321-345",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 73,
                 74
@@ -302,11 +302,11 @@
       "name": "Fail gracefully when worktree already exists for session",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "356-379",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 85,
                 86,
@@ -324,11 +324,11 @@
       "name": "Worktree provides true filesystem isolation",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "391-435",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 151,
                 152,
@@ -439,11 +439,11 @@
       "name": "Session without worktree uses main repository directly",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_tests.rs",
+          "file": "rust/git/tests/worktree_tests.rs",
           "lines": "452-477",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": [
                 12,
                 13,
@@ -500,10 +500,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/worktree_tests.rs"
+      "rust/git/tests/worktree_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/worktree.rs"
+      "rust/git/src/worktree.rs"
     ],
     "totalLinesCovered": 632
   }

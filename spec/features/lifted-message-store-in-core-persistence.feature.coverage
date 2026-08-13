@@ -4,11 +4,11 @@
       "name": "compute_hash produces the same SHA-256 hex from codelet-core as from codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/core/tests/message_store_lifted_test.rs",
+          "file": "rust/core/tests/message_store_lifted_test.rs",
           "lines": "35-56",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/messages.rs",
+              "file": "rust/core/src/persistence/messages.rs",
               "lines": [
                 424,
                 425,
@@ -27,11 +27,11 @@
       "name": "MessageStore round-trips a stored message through messages.jsonl and messages.idx",
       "testMappings": [
         {
-          "file": "codelet/core/tests/message_store_lifted_test.rs",
+          "file": "rust/core/tests/message_store_lifted_test.rs",
           "lines": "62-100",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/messages.rs",
+              "file": "rust/core/src/persistence/messages.rs",
               "lines": [
                 99,
                 100,
@@ -253,11 +253,11 @@
       "name": "codelet-core consumers can import MessageStore without depending on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/core/tests/message_store_lifted_test.rs",
+          "file": "rust/core/tests/message_store_lifted_test.rs",
           "lines": "112-141",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/mod.rs",
+              "file": "rust/core/src/persistence/mod.rs",
               "lines": [
                 13,
                 14,
@@ -276,11 +276,11 @@
       "name": "messages.jsonl and messages.idx wire format stays byte-identical after the lift",
       "testMappings": [
         {
-          "file": "codelet/core/tests/message_store_lifted_test.rs",
+          "file": "rust/core/tests/message_store_lifted_test.rs",
           "lines": "147-185",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/messages/index.rs",
+              "file": "rust/core/src/persistence/messages/index.rs",
               "lines": [
                 29,
                 30,
@@ -491,12 +491,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/message_store_lifted_test.rs"
+      "rust/core/tests/message_store_lifted_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/messages.rs",
-      "codelet/core/src/persistence/mod.rs",
-      "codelet/core/src/persistence/messages/index.rs"
+      "rust/core/src/persistence/messages.rs",
+      "rust/core/src/persistence/mod.rs",
+      "rust/core/src/persistence/messages/index.rs"
     ],
     "totalLinesCovered": 551
   }

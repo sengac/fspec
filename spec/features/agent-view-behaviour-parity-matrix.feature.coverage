@@ -4,11 +4,11 @@
       "name": "/help pushes the HelpDialog onto the compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "45-58",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -346,11 +346,11 @@
       "name": "/quit flips the should_quit flag without touching the backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "63-84",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -688,11 +688,11 @@
       "name": "/clear resets the focused session's scrollback and calls backend.clear_history",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "89-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -1030,11 +1030,11 @@
       "name": "/model pushes the ModelSelectorDialog onto the compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "119-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -1372,11 +1372,11 @@
       "name": "/thinking (bare) pushes the ThinkingLevelDialog onto the compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "141-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -1714,11 +1714,11 @@
       "name": "/thinking high inline sets the level without opening the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "159-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -2056,11 +2056,11 @@
       "name": "/role (bare from palette) pushes the RoleDialog onto the compositor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "190-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -2398,11 +2398,11 @@
       "name": "/role <text> inline sets the session role without opening the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "208-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -2740,11 +2740,11 @@
       "name": "/resume opens the ResumeSessionView mode view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "239-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -3082,11 +3082,11 @@
       "name": "/search opens the SearchHistoryView mode view with no backend call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "257-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -3424,11 +3424,11 @@
       "name": "/provider activates the ProviderSettings view mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "278-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -3766,11 +3766,11 @@
       "name": "/debug calls backend.toggle_debug for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "320-344",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -4108,11 +4108,11 @@
       "name": "/compact calls backend.compact_session for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "349-369",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -4450,11 +4450,11 @@
       "name": "/isolation opens the CreateSessionDialog pre-selected to Isolated",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "374-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -4792,11 +4792,11 @@
       "name": "/blocklist activates the Blocklist view mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "395-411",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -5134,11 +5134,11 @@
       "name": "/detach clears the work-unit context for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "416-447",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -5476,11 +5476,11 @@
       "name": "/merge-worktree calls backend.inspect_session_changes for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "452-469",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -5818,11 +5818,11 @@
       "name": "/schedule (bare from palette) emits a static help notice into scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "474-491",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -6160,11 +6160,11 @@
       "name": "/schedule list invokes backend.schedule_list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "496-513",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -6502,11 +6502,11 @@
       "name": "/loop (bare from palette) emits a static help notice into scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "518-535",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -6844,11 +6844,11 @@
       "name": "/loop list invokes backend.loop_list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "540-557",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -7186,11 +7186,11 @@
       "name": "Shift+Right cycles focus forward through open sessions",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "562-584",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -7528,11 +7528,11 @@
       "name": "Shift+Up loads the most-recent history entry into the input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "592-619",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -7870,11 +7870,11 @@
       "name": "Tab on a session with seeded scrollback enters turn-selection mode (placeholder for future RPC card)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "625-648",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -8212,11 +8212,11 @@
       "name": "Ctrl+R opens the SearchHistoryView with no backend call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "656-673",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -8554,11 +8554,11 @@
       "name": "Esc with one HelpDialog on the compositor pops that dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "678-697",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -8896,11 +8896,11 @@
       "name": "Enter on plain text forwards the value to backend.send_input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "702-725",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -9238,11 +9238,11 @@
       "name": "Ctrl+C while the focused session is Running calls backend.interrupt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "730-754",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -9580,11 +9580,11 @@
       "name": "PageDown advances the scrollback viewport and End jumps to the bottom",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs",
+          "file": "rust/fspec-tui/tests/behaviour_parity_rpc065.rs",
           "lines": "759-785",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/common/harness.rs",
+              "file": "rust/fspec-tui/tests/common/harness.rs",
               "lines": [
                 1,
                 2,
@@ -9924,10 +9924,10 @@
     "coveredScenarios": 29,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/behaviour_parity_rpc065.rs"
+      "rust/fspec-tui/tests/behaviour_parity_rpc065.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/tests/common/harness.rs"
+      "rust/fspec-tui/tests/common/harness.rs"
     ],
     "totalLinesCovered": 10391
   }

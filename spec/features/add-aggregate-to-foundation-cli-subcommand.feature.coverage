@@ -4,11 +4,11 @@
       "name": "Clap exposes add-aggregate-to-foundation with positional args and description flag in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
           "lines": "83-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -133,11 +133,11 @@
       "name": "CLI adds an aggregate and prints the success message on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
           "lines": "130-160",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec/src/add_aggregate_to_foundation.rs",
               "lines": [
                 39,
                 40,
@@ -171,11 +171,11 @@
       "name": "CLI persists the optional description via the -d flag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
           "lines": "161-186",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec/src/add_aggregate_to_foundation.rs",
               "lines": [
                 42,
                 43,
@@ -195,11 +195,11 @@
       "name": "CLI rejects an unknown bounded context with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
           "lines": "187-212",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec/src/add_aggregate_to_foundation.rs",
               "lines": [
                 61,
                 62,
@@ -215,11 +215,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
           "lines": "213-267",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec/src/add_aggregate_to_foundation.rs",
               "lines": [
                 51,
                 52,
@@ -240,11 +240,11 @@
       "name": "add-aggregate-to-foundation --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
           "lines": "268-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
               "lines": [
                 1,
                 2,
@@ -371,11 +371,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_aggregate_to_foundation.rs"
+      "rust/fspec/tests/cli_add_aggregate_to_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
-      "codelet/fspec/src/add_aggregate_to_foundation.rs"
+      "rust/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
+      "rust/fspec/src/add_aggregate_to_foundation.rs"
     ],
     "totalLinesCovered": 476
   }

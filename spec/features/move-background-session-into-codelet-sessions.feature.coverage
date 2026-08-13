@@ -4,11 +4,11 @@
       "name": "codelet-sessions builds standalone with BackgroundSession at its new home",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "86-128",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 1,
                 2,
@@ -1214,11 +1214,11 @@
       "name": "codelet-napi still builds against the re-exported BackgroundSession",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "134-189",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 113,
                 114,
@@ -1239,11 +1239,11 @@
       "name": "The moved background_session.rs has no napi:: references",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "195-228",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 1,
                 2,
@@ -1337,11 +1337,11 @@
       "name": "The moved background_session.rs has no crate::persistence or crate::types imports",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "235-310",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 51,
                 52,
@@ -1385,11 +1385,11 @@
       "name": "send_input is rewritten to a non-NAPI Result type",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "316-375",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 1072,
                 1073,
@@ -1420,7 +1420,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5556,
                 5557,
@@ -1439,11 +1439,11 @@
       "name": "handle_output uses the new chunks_tx broadcast and no longer touches GLOBAL_CHUNK_CALLBACK",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "382-461",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 757,
                 758,
@@ -1500,11 +1500,11 @@
       "name": "codelet-sessions has no transitive dependency on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "467-551",
           "implMappings": [
             {
-              "file": "codelet/sessions/Cargo.toml",
+              "file": "rust/sessions/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -1570,11 +1570,11 @@
       "name": "Pre-existing in-file unit tests in codelet-napi still pass via the re-exports",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "558-633",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 113,
                 114,
@@ -1595,11 +1595,11 @@
       "name": "codelet-sessions tests assert BackgroundSession is reachable from its new home",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "640-713",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 99,
                 100,
@@ -1938,11 +1938,11 @@
       "name": "NAPI TypeScript surface is byte-stable across the move",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "719-835",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 113,
                 114,
@@ -1965,12 +1965,12 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/background_session_shape.rs"
+      "rust/sessions/tests/background_session_shape.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/background_session.rs",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/sessions/Cargo.toml"
+      "rust/sessions/src/background_session.rs",
+      "rust/napi/src/session_manager.rs",
+      "rust/sessions/Cargo.toml"
     ],
     "totalLinesCovered": 2495
   }

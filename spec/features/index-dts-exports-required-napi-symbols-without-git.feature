@@ -14,7 +14,7 @@ Feature: index.d.ts exports required NAPI symbols without consulting git
     So that tests pass regardless of git branch or working-tree state
 
   Scenario: index.d.ts exports required NAPI symbols without consulting git
-    Given the file codelet/napi/index.d.ts exists on disk
+    Given the file rust/napi/index.d.ts exists on disk
     When I read the file content directly
     Then the file contains the export sessionManagerCreate
     And the file contains the export sessionSetGlobalChunkCallback

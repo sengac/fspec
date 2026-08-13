@@ -4,11 +4,11 @@
       "name": "Attribute runaway subordinate_forwarding recv loop to correct thread and function",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "99-183",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/attribution.rs",
+              "file": "rust/tools/src/profile/attribution.rs",
               "lines": [
                 136,
                 137,
@@ -198,11 +198,11 @@
       "name": "Detect stripped build and report debug info unavailable",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "189-255",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/attribution.rs",
+              "file": "rust/tools/src/profile/attribution.rs",
               "lines": [
                 136,
                 137,
@@ -392,11 +392,11 @@
       "name": "Filter samples by focus substring to narrow to a single call chain",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "261-337",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/attribution.rs",
+              "file": "rust/tools/src/profile/attribution.rs",
               "lines": [
                 136,
                 137,
@@ -586,11 +586,11 @@
       "name": "Walk leaf to root skipping noise frames for attribution",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "343-398",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/attribution.rs",
+              "file": "rust/tools/src/profile/attribution.rs",
               "lines": [
                 320,
                 321,
@@ -643,11 +643,11 @@
       "name": "Credit only the outermost inlined symbol per physical frame",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "404-451",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/attribution.rs",
+              "file": "rust/tools/src/profile/attribution.rs",
               "lines": [
                 320,
                 321,
@@ -700,11 +700,11 @@
       "name": "Report cpu_cores_consumed from total sample count",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "457-483",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/attribution.rs",
+              "file": "rust/tools/src/profile/attribution.rs",
               "lines": [
                 136,
                 137,
@@ -894,11 +894,11 @@
       "name": "Preserve backward compatibility of existing ProfileResult fields",
       "testMappings": [
         {
-          "file": "codelet/tools/src/profile/diagnostics_tests.rs",
+          "file": "rust/tools/src/profile/diagnostics_tests.rs",
           "lines": "489-530",
           "implMappings": [
             {
-              "file": "codelet/tools/src/profile/result.rs",
+              "file": "rust/tools/src/profile/result.rs",
               "lines": [
                 13,
                 14,
@@ -940,11 +940,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/profile/diagnostics_tests.rs"
+      "rust/tools/src/profile/diagnostics_tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/profile/attribution.rs",
-      "codelet/tools/src/profile/result.rs"
+      "rust/tools/src/profile/attribution.rs",
+      "rust/tools/src/profile/result.rs"
     ],
     "totalLinesCovered": 1224
   }

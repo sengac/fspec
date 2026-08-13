@@ -5,7 +5,7 @@
 @provider-abstraction
 Feature: Directory Listing Facade
   """
-  GeminiListDirectoryFacade in codelet/tools/src/facade/ls.rs implements LsToolFacade trait. Uses tool name 'list_directory'. Maps {path} to InternalLsParams::List. Wrapped with LsToolFacadeWrapper and replaces raw LsTool in GeminiProvider.create_rig_agent().
+  GeminiListDirectoryFacade in rust/tools/src/facade/ls.rs implements LsToolFacade trait. Uses tool name 'list_directory'. Maps {path} to InternalLsParams::List. Wrapped with LsToolFacadeWrapper and replaces raw LsTool in GeminiProvider.create_rig_agent().
   """
 
   # ========================================

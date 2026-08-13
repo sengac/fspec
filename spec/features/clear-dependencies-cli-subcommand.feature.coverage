@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "file": "rust/fspec/tests/cli_clear_dependencies.rs",
           "lines": "97-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/clear_dependencies.rs",
+              "file": "rust/fspec-core/src/help/configs/clear_dependencies.rs",
               "lines": [
                 1,
                 2,
@@ -87,11 +87,11 @@
       "name": "Invocation with --confirm wipes every dependency edge and reports success",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "file": "rust/fspec/tests/cli_clear_dependencies.rs",
           "lines": "121-174",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_dependencies.rs",
+              "file": "rust/fspec/src/clear_dependencies.rs",
               "lines": [
                 41,
                 42,
@@ -135,11 +135,11 @@
       "name": "Missing --confirm flag exits 1 with the canonical error message on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "file": "rust/fspec/tests/cli_clear_dependencies.rs",
           "lines": "176-196",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_dependencies.rs",
+              "file": "rust/fspec/src/clear_dependencies.rs",
               "lines": [
                 60,
                 61,
@@ -164,11 +164,11 @@
       "name": "Missing source work unit exits 1 with the canonical error message on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "file": "rust/fspec/tests/cli_clear_dependencies.rs",
           "lines": "198-214",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_dependencies.rs",
+              "file": "rust/fspec/src/clear_dependencies.rs",
               "lines": [
                 60,
                 61,
@@ -195,11 +195,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_clear_dependencies.rs"
+      "rust/fspec/tests/cli_clear_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/clear_dependencies.rs",
-      "codelet/fspec/src/clear_dependencies.rs"
+      "rust/fspec-core/src/help/configs/clear_dependencies.rs",
+      "rust/fspec/src/clear_dependencies.rs"
     ],
     "totalLinesCovered": 240
   }

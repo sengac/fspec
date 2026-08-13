@@ -4,11 +4,11 @@
       "name": "Codex OAuth alone yields a populated Codex (ChatGPT) section",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov129_codex_section_synthesis.rs",
+          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
           "lines": "110-158",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 158,
                 159,
@@ -90,7 +90,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 993,
                 994,
@@ -118,11 +118,11 @@
       "name": "Non-allowlisted OpenAI models are excluded from Codex (ChatGPT)",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov129_codex_section_synthesis.rs",
+          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
           "lines": "163-200",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/codex_allowlist.rs",
+              "file": "rust/sessions/src/codex_allowlist.rs",
               "lines": [
                 96,
                 97,
@@ -192,11 +192,11 @@
       "name": "Allowlisted Codex models are ordered by allowlist priority",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov129_codex_section_synthesis.rs",
+          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
           "lines": "205-239",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/codex_allowlist.rs",
+              "file": "rust/sessions/src/codex_allowlist.rs",
               "lines": [
                 123,
                 124,
@@ -239,11 +239,11 @@
       "name": "A hidden allowlist entry is excluded from Codex (ChatGPT)",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov129_codex_section_synthesis.rs",
+          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
           "lines": "244-270",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/codex_allowlist.rs",
+              "file": "rust/sessions/src/codex_allowlist.rs",
               "lines": [
                 96,
                 97,
@@ -281,11 +281,11 @@
       "name": "Without Codex credentials the standalone OpenAI API section is preserved",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov129_codex_section_synthesis.rs",
+          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
           "lines": "276-317",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/cloud_models.rs",
               "lines": [
                 195,
                 196,
@@ -339,12 +339,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov129_codex_section_synthesis.rs"
+      "rust/sessions/tests/prov129_codex_section_synthesis.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/cloud_models.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/codex_allowlist.rs"
+      "rust/sessions/src/cloud_models.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/codex_allowlist.rs"
     ],
     "totalLinesCovered": 439
   }

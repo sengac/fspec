@@ -4,11 +4,11 @@
       "name": "Bare /continue toggles auto-continue with the default budget",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "22-42",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -129,7 +129,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/continue_parser.rs",
+              "file": "rust/fspec-tui/src/app/continue_parser.rs",
               "lines": [
                 22,
                 23,
@@ -253,11 +253,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "206-242",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -385,11 +385,11 @@
       "name": "/continue with a numeric budget arms or updates the budget",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "49-64",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -510,7 +510,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/continue_parser.rs",
+              "file": "rust/fspec-tui/src/app/continue_parser.rs",
               "lines": [
                 22,
                 23,
@@ -634,11 +634,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "245-276",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -766,11 +766,11 @@
       "name": "/continue on and /continue off set the state explicitly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "71-88",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -891,7 +891,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/continue_parser.rs",
+              "file": "rust/fspec-tui/src/app/continue_parser.rs",
               "lines": [
                 22,
                 23,
@@ -1015,11 +1015,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "279-304",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -1147,11 +1147,11 @@
       "name": "/continue 0 is rejected with a hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "95-111",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -1272,7 +1272,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/continue_parser.rs",
+              "file": "rust/fspec-tui/src/app/continue_parser.rs",
               "lines": [
                 22,
                 23,
@@ -1396,11 +1396,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "307-331",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -1528,11 +1528,11 @@
       "name": "An invalid /continue argument leaves state unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "118-134",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -1653,7 +1653,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/continue_parser.rs",
+              "file": "rust/fspec-tui/src/app/continue_parser.rs",
               "lines": [
                 22,
                 23,
@@ -1777,11 +1777,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "334-361",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/auto_continue.rs",
+              "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
                 106,
                 107,
@@ -1909,11 +1909,11 @@
       "name": "The TUI exposes /continue via the palette and typed input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "141-161",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_commands.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
               "lines": [
                 20,
                 21,
@@ -2059,7 +2059,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/slash_parser.rs",
+              "file": "rust/fspec-tui/src/app/slash_parser.rs",
               "lines": [
                 56,
                 57,
@@ -2146,7 +2146,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_continue.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_continue.rs",
               "lines": [
                 20,
                 21,
@@ -2206,11 +2206,11 @@
       "name": "The CLI repl handles /continue before the provider-switch catch-all",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "364-389",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/repl_loop.rs",
+              "file": "rust/cli/src/interactive/repl_loop.rs",
               "lines": [
                 136,
                 137,
@@ -2248,11 +2248,11 @@
       "name": "The status bar shows an auto-continue indicator while armed",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/cont002_continue_command_test.rs",
+          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
           "lines": "168-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/continue_parser.rs",
+              "file": "rust/fspec-tui/src/app/continue_parser.rs",
               "lines": [
                 140,
                 141,
@@ -2265,7 +2265,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 98,
                 99,
@@ -2299,16 +2299,16 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/cont002_continue_command_test.rs"
+      "rust/fspec-tui/tests/cont002_continue_command_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/auto_continue.rs",
-      "codelet/fspec-tui/src/app/continue_parser.rs",
-      "codelet/fspec-tui/src/views/agent/slash_commands.rs",
-      "codelet/fspec-tui/src/app/slash_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_continue.rs",
-      "codelet/cli/src/interactive/repl_loop.rs",
-      "codelet/fspec-tui/src/views/agent/chrome_paint.rs"
+      "rust/cli/src/interactive/auto_continue.rs",
+      "rust/fspec-tui/src/app/continue_parser.rs",
+      "rust/fspec-tui/src/views/agent/slash_commands.rs",
+      "rust/fspec-tui/src/app/slash_parser.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_continue.rs",
+      "rust/cli/src/interactive/repl_loop.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
     "totalLinesCovered": 2523
   }

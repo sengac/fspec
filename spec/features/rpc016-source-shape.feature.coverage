@@ -4,11 +4,11 @@
       "name": "WorkUnitInfo gains the last_state_change_at field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "42-52",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 58,
                 59
@@ -22,11 +22,11 @@
       "name": "codelet_core::work_units reads stateHistory into last_state_change_at",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "55-70",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units.rs",
+              "file": "rust/core/src/work_units.rs",
               "lines": [
                 69,
                 70,
@@ -71,11 +71,11 @@
       "name": "Action enum gains the four new viewport variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "73-98",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 177,
                 178,
@@ -102,11 +102,11 @@
       "name": "BoardStore declares the scroll_offsets field and viewport methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "101-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
                 13,
                 14,
@@ -195,11 +195,11 @@
       "name": "Viewport painter module exists as a separate file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "149-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 1,
                 2,
@@ -373,11 +373,11 @@
       "name": "New and modified board modules stay under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "162-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -663,11 +663,11 @@
       "name": "RPC-013 / RPC-014 / RPC-015 invariants preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "197-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -953,11 +953,11 @@
       "name": "Views still avoid encapsulated transport crates and host runtime construction",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc016.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
           "lines": "226-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/viewport.rs",
+              "file": "rust/fspec-tui/src/views/board/viewport.rs",
               "lines": [
                 1,
                 2,
@@ -1133,15 +1133,15 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc016.rs"
+      "rust/fspec-tui/tests/source_shape_rpc016.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/core/src/work_units.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/store/board_viewport.rs",
-      "codelet/fspec-tui/src/views/board/viewport.rs",
-      "codelet/fspec-tui/src/views/board.rs"
+      "rust/rpc-types/src/lib.rs",
+      "rust/core/src/work_units.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/store/board_viewport.rs",
+      "rust/fspec-tui/src/views/board/viewport.rs",
+      "rust/fspec-tui/src/views/board.rs"
     ],
     "totalLinesCovered": 1204
   }

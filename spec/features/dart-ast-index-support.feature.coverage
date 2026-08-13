@@ -4,11 +4,11 @@
       "name": "Extract File, Function, and Type nodes from Dart source with Contains edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "22-78",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 68,
                 69,
@@ -53,11 +53,11 @@
       "name": "Extract relative imports as Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "83-120",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 335,
                 336,
@@ -155,11 +155,11 @@
       "name": "Skip external dart: and package: imports",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "125-148",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 362,
                 363,
@@ -190,11 +190,11 @@
       "name": "Extract Calls edges from function bodies",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "153-173",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 422,
                 423,
@@ -263,11 +263,11 @@
       "name": "Extract TypeRef edges from function signatures excluding builtins",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "178-211",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 512,
                 513,
@@ -343,11 +343,11 @@
       "name": "Extract dependencies from pubspec.yaml",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "216-271",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/pubspec_dep_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/pubspec_dep_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -474,11 +474,11 @@
       "name": "Extract named constructors and factory constructors as Function nodes",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "276-323",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 160,
                 161,
@@ -561,11 +561,11 @@
       "name": "Dart files are included in SUPPORTED_EXTENSIONS and dispatched correctly",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "328-353",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 57,
                 58,
@@ -592,11 +592,11 @@
       "name": "Identify uncalled Dart functions and unimported files as dead code",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/dart_edge_extraction_test.rs",
+          "file": "rust/napi/tests/dart_edge_extraction_test.rs",
           "lines": "418-532",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
               "lines": [
                 63,
                 64,
@@ -649,12 +649,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/dart_edge_extraction_test.rs"
+      "rust/napi/tests/dart_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/pubspec_dep_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/mod.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/pubspec_dep_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/mod.rs"
     ],
     "totalLinesCovered": 918
   }

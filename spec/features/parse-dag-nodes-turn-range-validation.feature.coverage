@@ -4,11 +4,11 @@
       "name": "Reversed turn range is rejected with a warning",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "235-253",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 456,
                 457,
@@ -29,11 +29,11 @@
       "name": "Forward turn range is parsed unchanged",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "254-272",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 421,
                 422,
@@ -106,11 +106,11 @@
       "name": "Equal start and end is accepted",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "273-290",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 456,
                 457,
@@ -131,11 +131,11 @@
       "name": "Mixed input keeps only well-formed nodes",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "291-313",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 421,
                 422,
@@ -208,11 +208,11 @@
       "name": "Property — every parsed node satisfies turn_start <= turn_end (unconditional, no clamping)",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "315-350",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 456,
                 457,
@@ -235,10 +235,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs"
+      "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/model.rs"
+      "rust/core/src/compaction/model.rs"
     ],
     "totalLinesCovered": 264
   }

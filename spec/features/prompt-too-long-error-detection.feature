@@ -6,7 +6,7 @@
 @PROV-010
 Feature: False positive prompt-too-long detection triggers empty compaction on Opus 4.6
   """
-  Fix is_prompt_too_long_error() in codelet/cli/src/interactive/stream_loop.rs to exclude thinking budget errors
+  Fix is_prompt_too_long_error() in rust/cli/src/interactive/stream_loop.rs to exclude thinking budget errors
   Add guard in error handler (~line 1173) to verify compactable turns exist before triggering compaction
   """
 

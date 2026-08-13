@@ -4,11 +4,11 @@
       "name": "NAPI re-export shim preserves existing crate::persistence imports for blob types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/blob_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/blob_store_lift_shim_test.rs",
           "lines": "62-91",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -52,11 +52,11 @@
       "name": "All NAPI persistence test suites continue to pass after the blob store lift",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/blob_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/blob_store_lift_shim_test.rs",
           "lines": "97-176",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -173,11 +173,11 @@
       "name": "set_data_directory in codelet-napi resets the lifted BLOB_STORE alongside MESSAGE_STORE SESSION_STORE history credentials and graph",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/blob_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/blob_store_lift_shim_test.rs",
           "lines": "182-228",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 36,
                 37,
@@ -219,11 +219,11 @@
       "name": "BlobStore is initialized lazily and only by blob operations",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/blob_store_lift_shim_test.rs",
+          "file": "rust/napi/tests/blob_store_lift_shim_test.rs",
           "lines": "234-272",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/blob.rs",
+              "file": "rust/core/src/persistence/blob.rs",
               "lines": [
                 196,
                 197,
@@ -302,11 +302,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/blob_store_lift_shim_test.rs"
+      "rust/napi/tests/blob_store_lift_shim_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/mod.rs",
-      "codelet/core/src/persistence/blob.rs"
+      "rust/napi/src/persistence/mod.rs",
+      "rust/core/src/persistence/blob.rs"
     ],
     "totalLinesCovered": 428
   }

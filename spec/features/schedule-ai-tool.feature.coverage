@@ -4,11 +4,11 @@
       "name": "Add an agent-type schedule",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "179-214",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 27,
                 28,
@@ -190,11 +190,11 @@
       "name": "Add a shell-type schedule",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "219-245",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 27,
                 28,
@@ -376,11 +376,11 @@
       "name": "List all schedules",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "251-279",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 37,
                 67,
@@ -495,11 +495,11 @@
       "name": "Pause an active schedule",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "285-309",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 38,
                 67,
@@ -634,11 +634,11 @@
       "name": "Resume a paused schedule",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "315-339",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 39,
                 67,
@@ -773,11 +773,11 @@
       "name": "Remove an existing schedule",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "345-365",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 40,
                 67,
@@ -911,11 +911,11 @@
       "name": "Reject invalid cron expression",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "373-403",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 168,
                 169,
@@ -995,11 +995,11 @@
       "name": "Reject duplicate schedule name",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "410-432",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 265,
                 266,
@@ -1016,11 +1016,11 @@
       "name": "Reject removal of nonexistent schedule",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "439-459",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 416,
                 417,
@@ -1040,11 +1040,11 @@
       "name": "Graceful error when no handler is registered",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "465-487",
           "implMappings": [
             {
-              "file": "codelet/tools/src/schedule/handler.rs",
+              "file": "rust/tools/src/schedule/handler.rs",
               "lines": [
                 57,
                 58,
@@ -1068,11 +1068,11 @@
       "name": "Reject invalid timezone",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "494-524",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 177,
                 178,
@@ -1150,11 +1150,11 @@
       "name": "Reject agent job missing required fields",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "531-563",
           "implMappings": [
             {
-              "file": "codelet/napi/src/schedule_handler.rs",
+              "file": "rust/napi/src/schedule_handler.rs",
               "lines": [
                 188,
                 189,
@@ -1226,11 +1226,11 @@
       "name": "ScheduleTool registered in all provider agent builders",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "file": "rust/napi/tests/schedule_tool_test.rs",
           "lines": "563-675",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 502,
                 503,
@@ -1279,12 +1279,12 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/schedule_tool_test.rs"
+      "rust/napi/tests/schedule_tool_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/schedule_handler.rs",
-      "codelet/tools/src/schedule/handler.rs",
-      "codelet/providers/src/claude.rs"
+      "rust/napi/src/schedule_handler.rs",
+      "rust/tools/src/schedule/handler.rs",
+      "rust/providers/src/claude.rs"
     ],
     "totalLinesCovered": 1503
   }

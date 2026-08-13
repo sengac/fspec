@@ -4,11 +4,11 @@
       "name": "Claude resolver clamps registry context window to 200k",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "414-430",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 185,
                 186,
@@ -50,11 +50,11 @@
       "name": "Claude resolver clamps registry max output tokens to 8192",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "434-452",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 185,
                 186,
@@ -96,11 +96,11 @@
       "name": "Claude resolver returns correct defaults",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "454-474",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 185,
                 186,
@@ -142,11 +142,11 @@
       "name": "OpenAI resolver trusts registry values",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "476-500",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 87,
                 88,
@@ -190,11 +190,11 @@
       "name": "OpenAI resolver reads default from OPENAI_CONTEXT_WINDOW env var",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "503-523",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 87,
                 88,
@@ -238,11 +238,11 @@
       "name": "OpenAI resolver reads default from OPENAI_MAX_OUTPUT_TOKENS env var",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "526-546",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 87,
                 88,
@@ -286,11 +286,11 @@
       "name": "OpenAI resolver falls back to compile-time defaults",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "549-574",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 87,
                 88,
@@ -334,11 +334,11 @@
       "name": "Gemini resolver trusts registry and has correct defaults",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "577-595",
           "implMappings": [
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 37,
                 38,
@@ -381,11 +381,11 @@
       "name": "Codex resolver returns correct defaults and suppresses max_output_tokens",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "598-614",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 81,
                 82,
@@ -434,11 +434,11 @@
       "name": "Codex resolver does not clamp registry values",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "616-632",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/mod.rs",
+              "file": "rust/providers/src/codex/mod.rs",
               "lines": [
                 81,
                 82,
@@ -487,11 +487,11 @@
       "name": "Z.AI resolver returns correct defaults",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "635-651",
           "implMappings": [
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "rust/providers/src/zai.rs",
               "lines": [
                 58,
                 59,
@@ -534,11 +534,11 @@
       "name": "Copilot resolver returns correct defaults",
       "testMappings": [
         {
-          "file": "codelet/providers/src/model_limits.rs",
+          "file": "rust/providers/src/model_limits.rs",
           "lines": "654-672",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 268,
                 269,
@@ -579,15 +579,15 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/model_limits.rs"
+      "rust/providers/src/model_limits.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude.rs",
-      "codelet/providers/src/openai.rs",
-      "codelet/providers/src/gemini.rs",
-      "codelet/providers/src/codex/mod.rs",
-      "codelet/providers/src/zai.rs",
-      "codelet/providers/src/copilot/provider.rs"
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/openai.rs",
+      "rust/providers/src/gemini.rs",
+      "rust/providers/src/codex/mod.rs",
+      "rust/providers/src/zai.rs",
+      "rust/providers/src/copilot/provider.rs"
     ],
     "totalLinesCovered": 620
   }

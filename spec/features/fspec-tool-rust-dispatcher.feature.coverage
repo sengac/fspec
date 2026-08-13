@@ -4,11 +4,11 @@
       "name": "Standalone Rust binary returns UnknownCommand error for a name not in the map",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "103-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/dispatch.rs",
+              "file": "rust/fspec-core/src/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -150,11 +150,11 @@
       "name": "NAPI Node-hosted CLI delegates back to TypeScript transparently",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "141-151",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 499,
                 500,
@@ -233,11 +233,11 @@
       "name": "pre_tool_use hook short-circuits dispatch",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "154-163",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 976,
                 977,
@@ -354,7 +354,7 @@
       "name": "Every TypeScript command name has a child work unit under RPC-003",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "356-425",
           "implMappings": [
             {
@@ -371,11 +371,11 @@
       "name": "Every command stub file exists with the canonical template",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "256-354",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/mod.rs",
+              "file": "rust/fspec-core/src/commands/mod.rs",
               "lines": [
                 1,
                 2,
@@ -557,11 +557,11 @@
       "name": "agent_loop falls back to the Rust dispatcher when the NAPI chunk callback is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "427-460",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 499,
                 500,
@@ -640,11 +640,11 @@
       "name": "NotYetPorted error renders the full agent-facing contract when constructed directly",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/dispatcher_test.rs",
+          "file": "rust/fspec-core/tests/dispatcher_test.rs",
           "lines": "23-67",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/error.rs",
+              "file": "rust/fspec-core/src/error.rs",
               "lines": [
                 18,
                 19,
@@ -657,7 +657,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-core/src/canonical.rs",
+              "file": "rust/fspec-core/src/canonical.rs",
               "lines": [
                 1027,
                 1028,
@@ -675,16 +675,16 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/dispatcher_test.rs"
+      "rust/fspec-core/tests/dispatcher_test.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/dispatch.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/tools/src/facade/wrapper.rs",
+      "rust/fspec-core/src/dispatch.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/tools/src/facade/wrapper.rs",
       "spec/work-units.json",
-      "codelet/fspec-core/src/commands/mod.rs",
-      "codelet/fspec-core/src/error.rs",
-      "codelet/fspec-core/src/canonical.rs"
+      "rust/fspec-core/src/commands/mod.rs",
+      "rust/fspec-core/src/error.rs",
+      "rust/fspec-core/src/canonical.rs"
     ],
     "totalLinesCovered": 857
   }

@@ -16,7 +16,7 @@ Feature: RPC-027 — SlashCommandPopup and FileSearchPopup migration
   """
 
   Background: User Story
-    As a developer maintaining the codelet/fspec-tui Rust ratatui frontend
+    As a developer maintaining the rust/fspec-tui Rust ratatui frontend
     I want the slash and file search popups to use the same canonical theme
     So that the inverse highlight and marker alignment match every other dialog
 

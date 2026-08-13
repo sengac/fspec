@@ -10,7 +10,7 @@ Feature: Port add-capability command to Rust
   Appends a {name, description} capability to solutionSpace.capabilities in the
   foundation document.
 
-  Core impl at codelet/fspec-core/src/commands/add_capability.rs uses the
+  Core impl at rust/fspec-core/src/commands/add_capability.rs uses the
   2-arg signature run(args_json, project_root). Args (camelCase JSON):
   { name: String, description: String }.
 

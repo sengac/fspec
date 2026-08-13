@@ -2,7 +2,7 @@
 @RPC-183
 Feature: fspec add-foundation-bounded-context CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_foundation_bounded_context.rs — clap-derived struct mirroring
+  CLI bridge: rust/fspec/src/add_foundation_bounded_context.rs — clap-derived struct mirroring
   the TS Commander.js registration (src/commands/add-foundation-bounded-context.ts:122-132).
   Surface: `fspec add-foundation-bounded-context <text>`.
   Stdout (success): '✓ Added bounded context "<text>" to foundation Event Storm' ONLY (the TS
@@ -24,7 +24,7 @@ Feature: fspec add-foundation-bounded-context CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-foundation-bounded-context --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-foundation-bounded-context.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-foundation-bounded-context.txt
     And stdout starts with a blank line followed by 'ADD-FOUNDATION-BOUNDED-CONTEXT'
 
   Scenario: CLI successfully appends a bounded context and prints the success line
@@ -49,4 +49,4 @@ Feature: fspec add-foundation-bounded-context CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-foundation-bounded-context "C2"` afterwards exits 0
     And spec/foundation.json on disk shows eventStorm.items has length 2
-    And the CLI bridge module codelet/fspec/src/add_foundation_bounded_context.rs contains NO inline item construction, seeding, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_foundation_bounded_context.rs contains NO inline item construction, seeding, or file-write logic — its only computation is JSON arg marshalling

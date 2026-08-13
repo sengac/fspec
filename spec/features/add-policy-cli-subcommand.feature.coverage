@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "82-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_policy.rs",
+              "file": "rust/fspec-core/src/help/configs/add_policy.rs",
               "lines": [
                 97,
                 98,
@@ -34,11 +34,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "82-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_policy.rs",
+              "file": "rust/fspec-core/src/help/configs/add_policy.rs",
               "lines": [
                 97,
                 98,
@@ -69,11 +69,11 @@
       "name": "Clap exposes add-policy with positional args and the four optional flags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "112-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_policy.rs",
+              "file": "rust/fspec/src/add_policy.rs",
               "lines": [
                 38,
                 39,
@@ -94,11 +94,11 @@
       "name": "CLI successfully appends a policy and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "151-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_policy.rs",
+              "file": "rust/fspec/src/add_policy.rs",
               "lines": [
                 49,
                 50,
@@ -154,11 +154,11 @@
       "name": "CLI forwards the when/then/bounded-context flags into the persisted item",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "182-227",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_policy.rs",
+              "file": "rust/fspec/src/add_policy.rs",
               "lines": [
                 49,
                 50,
@@ -214,11 +214,11 @@
       "name": "CLI rejects a done-state work unit with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "228-261",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_policy.rs",
+              "file": "rust/fspec/src/add_policy.rs",
               "lines": [
                 49,
                 50,
@@ -274,11 +274,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_policy.rs",
+          "file": "rust/fspec/tests/cli_add_policy.rs",
           "lines": "262-311",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_policy.rs",
+              "file": "rust/fspec/src/add_policy.rs",
               "lines": [
                 49,
                 50,
@@ -336,11 +336,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_policy.rs"
+      "rust/fspec/tests/cli_add_policy.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_policy.rs",
-      "codelet/fspec/src/add_policy.rs"
+      "rust/fspec-core/src/help/configs/add_policy.rs",
+      "rust/fspec/src/add_policy.rs"
     ],
     "totalLinesCovered": 483
   }

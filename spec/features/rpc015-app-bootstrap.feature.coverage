@@ -4,11 +4,11 @@
       "name": "BoardStore.checkpoint_counts is updated by Action::CheckpointCountsLoaded",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_bootstrap_rpc015.rs",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc015.rs",
           "lines": "42-72",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 1,
                 2,
@@ -215,10 +215,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_bootstrap_rpc015.rs"
+      "rust/fspec-tui/tests/app_bootstrap_rpc015.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch.rs"
+      "rust/fspec-tui/src/app/dispatch.rs"
     ],
     "totalLinesCovered": 224
   }

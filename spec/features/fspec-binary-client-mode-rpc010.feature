@@ -30,9 +30,9 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
   • Single attempt only; full retry/backoff is RPC-011.
 
   Source artifacts:
-  • codelet/fspec/src/client.rs (NEW)
-  • codelet/fspec-tui/src/transport/websocket.rs::WebSocketFspecBackend (existing — RPC-008)
-  • codelet/fspec-tui/src/app.rs::App + bootstrap (existing — RPC-009)
+  • rust/fspec/src/client.rs (NEW)
+  • rust/fspec-tui/src/transport/websocket.rs::WebSocketFspecBackend (existing — RPC-008)
+  • rust/fspec-tui/src/app.rs::App + bootstrap (existing — RPC-009)
   """
 
   Background: 
@@ -94,7 +94,7 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
 
   @smoke
   Scenario: Client mode does not construct a SharedFspecService
-    Given the file `codelet/fspec/src/client.rs` exists
+    Given the file `rust/fspec/src/client.rs` exists
     Then it contains no call to `common::build_service`
     And it contains no call to `bind_and_serve`
     And it contains no construction of `EmbeddedFspecBackend`
@@ -102,7 +102,7 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
 
   @smoke
   Scenario: Client mode does not call ratatui::init directly — App owns the TerminalGuard
-    Given the file `codelet/fspec/src/client.rs` exists
+    Given the file `rust/fspec/src/client.rs` exists
     Then the file constructs an App via `App::new(Arc::new(backend))` exactly once
     And the file calls `.bootstrap().await` on that App before `.run().await` (RPC-009 sequence)
     And the file calls `.run().await` on that App exactly once

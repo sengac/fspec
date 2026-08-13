@@ -242,7 +242,7 @@
           "lines": "272-303",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6692,
                 6693,
@@ -278,7 +278,7 @@
           "lines": "309-347",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6713,
                 6714,
@@ -336,7 +336,7 @@
           "lines": "434-487",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 877,
                 878,
@@ -466,7 +466,7 @@
           "lines": "88-153",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 393,
                 394,
@@ -527,7 +527,7 @@
     ],
     "implFiles": [
       "src/tui/components/AgentView.tsx",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 737
   }

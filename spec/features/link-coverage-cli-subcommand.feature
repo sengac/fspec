@@ -5,7 +5,7 @@
 @RPC-240
 Feature: fspec link-coverage CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/link_coverage.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/link_coverage.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/link-coverage.ts:226-250). Surface:
   `fspec link-coverage <feature-name> --scenario <name> [--test-file <path>] [--test-lines <range>]
   [--impl-file <path>] [--impl-lines <lines>] [--skip-validation] [--skip-step-validation]`.
@@ -26,7 +26,7 @@ Feature: fspec link-coverage CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec link-coverage --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/link-coverage.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/link-coverage.txt
     And stdout contains the substring "--scenario"
 
   Scenario: CLI links a test mapping and prints the success message
@@ -57,4 +57,4 @@ Feature: fspec link-coverage CLI subcommand
     When I dispatch link-coverage through fspec_core::dispatch::dispatch_command against that workspace
     And I run `fspec link-coverage user-login --scenario Login --test-file src/auth.test.ts --test-lines 45-62` against an identical workspace
     Then both invocations report success
-    And the CLI bridge module codelet/fspec/src/link_coverage.rs contains NO inline mutation, validation, or rendering logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/link_coverage.rs contains NO inline mutation, validation, or rendering logic — its only computation is JSON arg marshalling

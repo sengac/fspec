@@ -4,11 +4,11 @@
       "name": "Returns empty suggestions array when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "78-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 70,
                 71,
@@ -51,11 +51,11 @@
       "name": "Sequential IDs in the same prefix produce a medium-confidence dependsOn suggestion",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "105-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 198,
                 199,
@@ -110,11 +110,11 @@
       "name": "A Test work unit depends on a matching Build work unit with high confidence",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "144-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 113,
                 114,
@@ -157,11 +157,11 @@
       "name": "A feature work unit depends on a same-prefix infrastructure work unit with high confidence",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "183-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 145,
                 146,
@@ -225,11 +225,11 @@
       "name": "Specific patterns override the generic sequential suggestion for the same pair",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "222-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 198,
                 199,
@@ -288,11 +288,11 @@
       "name": "Existing dependsOn relationship excludes the sequential suggestion",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "261-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 303,
                 304,
@@ -312,11 +312,11 @@
       "name": "The unimplemented same-epic relatesTo rule produces no suggestions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "286-309",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 104,
                 105,
@@ -469,11 +469,11 @@
       "name": "JSON suggestion field declaration order is from, to, type, reason, confidence",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "311-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 51,
                 52,
@@ -529,11 +529,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "311-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 51,
                 52,
@@ -594,11 +594,11 @@
       "name": "Default text output renders a numbered summary",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "341-374",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 271,
                 272,
@@ -626,11 +626,11 @@
       "name": "Default text output renders the empty sentinel when there are no suggestions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "376-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 271,
                 272,
@@ -658,11 +658,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
           "lines": "394-412",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
               "lines": [
                 70,
                 71,
@@ -707,10 +707,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/suggest_dependencies.rs"
+      "rust/fspec-core/tests/suggest_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/suggest_dependencies.rs"
+      "rust/fspec-core/src/commands/suggest_dependencies.rs"
     ],
     "totalLinesCovered": 868
   }

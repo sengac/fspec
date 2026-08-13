@@ -4,11 +4,11 @@
       "name": "FspecMilestone annotation serializes and deserializes",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "16-33",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 270,
                 271,
@@ -74,11 +74,11 @@
       "name": "ErrorResolution annotation round-trips through serde",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "39-54",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 270,
                 271,
@@ -144,11 +144,11 @@
       "name": "FileModification annotation round-trips through serde",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "60-75",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 270,
                 271,
@@ -214,11 +214,11 @@
       "name": "All FileOp variants round-trip through serde",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "81-96",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 275,
                 276,
@@ -239,16 +239,16 @@
       "name": "Deprecated PreservationContext still compiles",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "102-118",
           "implMappings": []
         },
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "105-119",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/deprecated.rs",
+              "file": "rust/core/src/compaction/deprecated.rs",
               "lines": [
                 55,
                 56,
@@ -281,16 +281,16 @@
       "name": "Deprecated BuildStatus still compiles",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "124-138",
           "implMappings": []
         },
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "126-140",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/deprecated.rs",
+              "file": "rust/core/src/compaction/deprecated.rs",
               "lines": [
                 18,
                 19,
@@ -326,11 +326,11 @@
       "name": "TokenTracker remains unchanged",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "144-165",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 56,
                 57,
@@ -489,11 +489,11 @@
       "name": "StructuralAnnotation and FileOp are accessible via module re-exports",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/structural_annotation.test.rs",
+          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
           "lines": "171-184",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/mod.rs",
+              "file": "rust/core/src/compaction/mod.rs",
               "lines": [
                 31
               ]
@@ -508,12 +508,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/structural_annotation.test.rs"
+      "rust/core/src/compaction/__tests__/structural_annotation.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/model.rs",
-      "codelet/core/src/compaction/deprecated.rs",
-      "codelet/core/src/compaction/mod.rs"
+      "rust/core/src/compaction/model.rs",
+      "rust/core/src/compaction/deprecated.rs",
+      "rust/core/src/compaction/mod.rs"
     ],
     "totalLinesCovered": 528
   }

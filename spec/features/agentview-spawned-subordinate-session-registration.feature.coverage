@@ -4,11 +4,11 @@
       "name": "A spawned subordinate appears as a new tab in the TUI",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
+          "file": "rust/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
           "lines": "80-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
                 219,
                 220,
@@ -46,11 +46,11 @@
       "name": "A duplicate session-created event does not create a second tab",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
+          "file": "rust/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
           "lines": "112-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
                 143,
                 144,
@@ -77,11 +77,11 @@
       "name": "TUI-initiated session creation produces exactly one tab",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
+          "file": "rust/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
           "lines": "139-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 122,
                 123,
@@ -124,11 +124,11 @@
       "name": "The subscriber recovers from a lagged broadcast receiver",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
+          "file": "rust/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
           "lines": "169-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
                 219,
                 220,
@@ -168,14 +168,14 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
-      "codelet/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs"
+      "rust/sessions/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
+      "rust/fspec-tui/tests/spawned_subordinate_session_registration_parity_rpc385.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/fspec-tui/src/app/bootstrap.rs",
-      "codelet/fspec-tui/src/store/agent_view.rs",
-      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs"
+      "rust/sessions/src/session_manager.rs",
+      "rust/fspec-tui/src/app/bootstrap.rs",
+      "rust/fspec-tui/src/store/agent_view.rs",
+      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs"
     ],
     "totalLinesCovered": 269
   }

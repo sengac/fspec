@@ -4,11 +4,11 @@
       "name": "UserInput chunk renders as green You: prefixed line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "102-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -93,11 +93,11 @@
       "name": "Text assistant chunk renders as white circle-bullet prefixed line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "133-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -182,11 +182,11 @@
       "name": "Error chunk renders as API Error prefixed status line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "169-192",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -271,11 +271,11 @@
       "name": "Done chunk produces no scrollback line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "197-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -360,11 +360,11 @@
       "name": "Interrupted chunk renders as warning-prefixed status line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "227-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -449,11 +449,11 @@
       "name": "UserNotification chunk renders the message verbatim with no extra prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "259-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -538,11 +538,11 @@
       "name": "IncomingMessage chunk parses SUPERVISOR prefix and renders as magenta bracket-W line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "290-318",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 215,
                 216,
@@ -583,11 +583,11 @@
       "name": "Thinking chunk renders as yellow Thinking-prefixed block",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "323-358",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 155,
                 156,
@@ -672,11 +672,11 @@
       "name": "User input is not duplicated when the session manager broadcasts UserInput back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs",
           "lines": "364-400",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 173,
                 174,
@@ -778,11 +778,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs"
+      "rust/fspec-tui/tests/chunk_rendering_parity_rpc078.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
+      "rust/fspec-tui/src/store/agent_view/session_context.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 894
   }

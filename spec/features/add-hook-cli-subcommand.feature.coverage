@@ -4,11 +4,11 @@
       "name": "add-hook --help is byte-for-byte identical to TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hook.rs",
+          "file": "rust/fspec/tests/cli_add_hook.rs",
           "lines": "60-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_hook.rs",
+              "file": "rust/fspec-core/src/help/configs/add_hook.rs",
               "lines": [
                 1,
                 2,
@@ -153,11 +153,11 @@
       "name": "CLI writes zero bytes to stdout on success and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hook.rs",
+          "file": "rust/fspec/tests/cli_add_hook.rs",
           "lines": "118-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hook.rs",
+              "file": "rust/fspec/src/add_hook.rs",
               "lines": [
                 51,
                 52,
@@ -195,11 +195,11 @@
       "name": "CLI passes --blocking and --timeout as JSON marshalling fields",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hook.rs",
+          "file": "rust/fspec/tests/cli_add_hook.rs",
           "lines": "154-182",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hook.rs",
+              "file": "rust/fspec/src/add_hook.rs",
               "lines": [
                 51,
                 52,
@@ -237,11 +237,11 @@
       "name": "CLI is silent when invoked against a populated config",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hook.rs",
+          "file": "rust/fspec/tests/cli_add_hook.rs",
           "lines": "188-219",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hook.rs",
+              "file": "rust/fspec/src/add_hook.rs",
               "lines": [
                 51,
                 52,
@@ -279,11 +279,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_hook.rs",
+          "file": "rust/fspec/tests/cli_add_hook.rs",
           "lines": "225-274",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hook.rs",
+              "file": "rust/fspec/src/add_hook.rs",
               "lines": [
                 51,
                 52,
@@ -316,11 +316,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_add_hook.rs",
+          "file": "rust/fspec/tests/cli_add_hook.rs",
           "lines": "225-281",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_hook.rs",
+              "file": "rust/fspec/src/add_hook.rs",
               "lines": [
                 51,
                 52,

@@ -4,11 +4,11 @@
       "name": "Clap exposes generate-scenarios as a subcommand and prints byte-parity help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_scenarios.rs",
+          "file": "rust/fspec/tests/cli_generate_scenarios.rs",
           "lines": "128-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/generate_scenarios.rs",
+              "file": "rust/fspec-core/src/help/configs/generate_scenarios.rs",
               "lines": [
                 1,
                 2,
@@ -220,11 +220,11 @@
       "name": "CLI creates a context-only feature file and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_scenarios.rs",
+          "file": "rust/fspec/tests/cli_generate_scenarios.rs",
           "lines": "160-192",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_scenarios.rs",
+              "file": "rust/fspec/src/generate_scenarios.rs",
               "lines": [
                 52,
                 53,
@@ -282,11 +282,11 @@
       "name": "CLI prints failure to stderr and exits 1 for a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_scenarios.rs",
+          "file": "rust/fspec/tests/cli_generate_scenarios.rs",
           "lines": "193-213",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_scenarios.rs",
+              "file": "rust/fspec/src/generate_scenarios.rs",
               "lines": [
                 52,
                 53,
@@ -344,11 +344,11 @@
       "name": "CLI accepts the ignore-possible-duplicates flag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_scenarios.rs",
+          "file": "rust/fspec/tests/cli_generate_scenarios.rs",
           "lines": "214-246",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_scenarios.rs",
+              "file": "rust/fspec/src/generate_scenarios.rs",
               "lines": [
                 52,
                 53,
@@ -406,11 +406,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_scenarios.rs",
+          "file": "rust/fspec/tests/cli_generate_scenarios.rs",
           "lines": "247-274",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_scenarios.rs",
+              "file": "rust/fspec/src/generate_scenarios.rs",
               "lines": [
                 52,
                 53,
@@ -470,11 +470,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_generate_scenarios.rs"
+      "rust/fspec/tests/cli_generate_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/generate_scenarios.rs",
-      "codelet/fspec/src/generate_scenarios.rs"
+      "rust/fspec-core/src/help/configs/generate_scenarios.rs",
+      "rust/fspec/src/generate_scenarios.rs"
     ],
     "totalLinesCovered": 530
   }

@@ -4,11 +4,11 @@
       "name": "GitHub.com device flow goes straight to device-waiting and connects",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
           "lines": "163-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
               "lines": [
                 40,
                 41,
@@ -157,11 +157,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
           "lines": "426-520",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
               "lines": [
                 28,
                 29,
@@ -215,11 +215,11 @@
       "name": "GitHub Enterprise prompts for a host, normalizes it, and polls against it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
           "lines": "218-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
               "lines": [
                 122,
                 123,
@@ -301,11 +301,11 @@
       "name": "Submitting an empty enterprise URL shows a validation error",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
           "lines": "286-379",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
               "lines": [
                 122,
                 123,
@@ -354,11 +354,11 @@
       "name": "Esc cancels the copilot preamble modes back to list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
           "lines": "349-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
               "lines": [
                 78,
                 79,
@@ -452,11 +452,11 @@
       "name": "A failed copilot device-start shows the error screen and retries on Enter",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
           "lines": "528-603",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
               "lines": [
                 43,
                 44,
@@ -489,7 +489,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_login.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
               "lines": [
                 104,
                 105,
@@ -520,12 +520,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs"
+      "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
-      "codelet/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
-      "codelet/fspec-tui/src/views/provider_settings/oauth_login.rs"
+      "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
+      "rust/fspec-tui/src/views/provider_settings/oauth_login.rs"
     ],
     "totalLinesCovered": 1085
   }

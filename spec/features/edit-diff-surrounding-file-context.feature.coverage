@@ -4,11 +4,11 @@
       "name": "A mid-file edit shows three unchanged lines above and below the change",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
           "lines": "71-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
                 53,
                 54,
@@ -98,7 +98,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
                 150,
                 151,
@@ -128,11 +128,11 @@
       "name": "An edit on the first line shows no before-context and trailing context",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
           "lines": "138-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
                 82,
                 83,
@@ -187,11 +187,11 @@
       "name": "An edit on the last line shows leading context and no after-context",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
           "lines": "191-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
                 82,
                 83,
@@ -246,11 +246,11 @@
       "name": "A missing or unreadable file falls back to fragments-only with no panic",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
           "lines": "249-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
                 53,
                 54,
@@ -279,11 +279,11 @@
       "name": "A Write of a new file shows only added lines and no context rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
           "lines": "279-299",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
               "lines": [
                 85,
                 86,
@@ -326,11 +326,11 @@
       "name": "A shared boundary line is shown once and never duplicated by injected context",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
           "lines": "301-355",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
                 88,
                 89,
@@ -372,12 +372,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs"
+      "rust/fspec-tui/tests/edit_diff_context_rpc394.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
-      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-      "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs"
+      "rust/fspec-tui/src/store/agent_view/diff_context.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs"
     ],
     "totalLinesCovered": 545
   }

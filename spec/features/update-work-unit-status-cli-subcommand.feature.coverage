@@ -4,11 +4,11 @@
       "name": "CLI applies a valid transition and exits zero",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "93-110",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_status.rs",
+              "file": "rust/fspec/src/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -98,11 +98,11 @@
       "name": "CLI rejects an invalid transition with a non-zero exit code",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "112-129",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_status.rs",
+              "file": "rust/fspec/src/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -192,11 +192,11 @@
       "name": "CLI rejects an unknown work unit id",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "131-149",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_status.rs",
+              "file": "rust/fspec/src/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -286,11 +286,11 @@
       "name": "CLI requires --blocked-reason when moving to blocked",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "151-185",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_status.rs",
+              "file": "rust/fspec/src/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -380,11 +380,11 @@
       "name": "CLI rejects an unknown status value",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "187-204",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_status.rs",
+              "file": "rust/fspec/src/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -474,11 +474,11 @@
       "name": "CLI honours --skip-temporal-validation",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "206-244",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/update_work_unit_status.rs",
+              "file": "rust/fspec/src/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -568,11 +568,11 @@
       "name": "CLI surfaces blocking hook failure on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "246-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/virtual_hooks_exec.rs",
+              "file": "rust/fspec-core/src/virtual_hooks_exec.rs",
               "lines": [
                 34,
                 35,
@@ -647,11 +647,11 @@
       "name": "CLI help text matches the byte-for-byte fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_update_work_unit_status.rs",
+          "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
           "lines": "284-303",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/update_work_unit_status.rs",
+              "file": "rust/fspec-core/src/help/configs/update_work_unit_status.rs",
               "lines": [
                 1,
                 2,
@@ -715,12 +715,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_update_work_unit_status.rs"
+      "rust/fspec/tests/cli_update_work_unit_status.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/update_work_unit_status.rs",
-      "codelet/fspec-core/src/virtual_hooks_exec.rs",
-      "codelet/fspec-core/src/help/configs/update_work_unit_status.rs"
+      "rust/fspec/src/update_work_unit_status.rs",
+      "rust/fspec-core/src/virtual_hooks_exec.rs",
+      "rust/fspec-core/src/help/configs/update_work_unit_status.rs"
     ],
     "totalLinesCovered": 783
   }

@@ -7,7 +7,7 @@
 Feature: RPC-012 BoardStore — work-units grouped into 7 columns with focus + selection
   """
   RPC-012 — BoardStore unit-level contract. Plain owned Rust struct in
-  codelet/fspec-tui/src/store/board.rs; mutated only on the App task per
+  rust/fspec-tui/src/store/board.rs; mutated only on the App task per
   the RPC-009 single-task tenere pattern.
 
   TS reference: src/tui/store/fspecStore.ts (work-units list + status

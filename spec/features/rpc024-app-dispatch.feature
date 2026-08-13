@@ -17,7 +17,7 @@ Feature: RPC-024 App::dispatch routes SessionPrev/Next/ChunkReceived through mul
   but until RPC-024 the catch-all `_ => {}` arm in App::dispatch
   swallowed them. RPC-024 adds the routing arms.
 
-  Tests: codelet/fspec-tui/tests/app_dispatch_rpc024.rs.
+  Tests: rust/fspec-tui/tests/app_dispatch_rpc024.rs.
   """
 
   Background: User Story

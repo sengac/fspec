@@ -4,11 +4,11 @@
       "name": "Returns empty patterns array when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "86-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -285,11 +285,11 @@
       "name": "Ignores non-done work units entirely",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "109-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -566,11 +566,11 @@
       "name": "Skips done unit missing iterations field",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "133-151",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -847,11 +847,11 @@
       "name": "Skips done unit missing estimate field",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "153-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -1128,11 +1128,11 @@
       "name": "Single done unit with estimate=3 and iterations=1 yields a low-confidence pattern",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "173-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -1409,11 +1409,11 @@
       "name": "Two done units with estimate=3 and iterations [1,2] yield medium confidence",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "197-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -1690,11 +1690,11 @@
       "name": "Four done units with estimate=5 and iterations [1,2,3,4] yield high confidence",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "224-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -1971,11 +1971,11 @@
       "name": "Two buckets emit patterns sorted ascending by points",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "253-279",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -2252,11 +2252,11 @@
       "name": "JSON field declaration order is preserved",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "281-309",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -2533,11 +2533,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_estimation_guide.rs",
+          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
           "lines": "311-334",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_estimation_guide.rs",
+              "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
               "lines": [
                 1,
                 2,
@@ -2816,10 +2816,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_estimation_guide.rs"
+      "rust/fspec/tests/cli_query_estimation_guide.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/query_estimation_guide.rs"
+      "rust/fspec-core/src/commands/query_estimation_guide.rs"
     ],
     "totalLinesCovered": 3130
   }

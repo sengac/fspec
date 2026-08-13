@@ -4,11 +4,11 @@
       "name": "CLI deletes a tag and prints the multi-line success block when no feature files reference it",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_tag.rs",
+          "file": "rust/fspec/tests/cli_delete_tag.rs",
           "lines": "80-130",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_tag.rs",
+              "file": "rust/fspec/src/delete_tag.rs",
               "lines": [
                 45,
                 46,
@@ -48,11 +48,11 @@
       "name": "CLI dry-run prints the would-delete preview and skips the trailing 'Updated:' / 'Regenerated:' lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_tag.rs",
+          "file": "rust/fspec/tests/cli_delete_tag.rs",
           "lines": "136-168",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_tag.rs",
+              "file": "rust/fspec/src/delete_tag.rs",
               "lines": [
                 45,
                 46,
@@ -92,11 +92,11 @@
       "name": "CLI blocks deletion with stderr Error prefix and exit 1 when the tag is referenced and --force is not set",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_tag.rs",
+          "file": "rust/fspec/tests/cli_delete_tag.rs",
           "lines": "174-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_tag.rs",
+              "file": "rust/fspec/src/delete_tag.rs",
               "lines": [
                 45,
                 46,
@@ -136,11 +136,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_tag.rs",
+          "file": "rust/fspec/tests/cli_delete_tag.rs",
           "lines": "218-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/delete_tag.rs",
+              "file": "rust/fspec-core/src/help/configs/delete_tag.rs",
               "lines": [
                 1,
                 2,
@@ -216,11 +216,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_tag.rs"
+      "rust/fspec/tests/cli_delete_tag.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_tag.rs",
-      "codelet/fspec-core/src/help/configs/delete_tag.rs"
+      "rust/fspec/src/delete_tag.rs",
+      "rust/fspec-core/src/help/configs/delete_tag.rs"
     ],
     "totalLinesCovered": 290
   }

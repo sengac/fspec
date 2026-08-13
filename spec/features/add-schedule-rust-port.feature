@@ -5,9 +5,9 @@
 @RPC-191
 Feature: Port add-schedule command to Rust
   """
-  New impl at codelet/fspec-core/src/commands/add_schedule.rs replaces the NotYetPorted stub. Signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Args struct (camelCase) mirrors AddScheduleOptions: name, cron, timezone, jobType, overlapPolicy?, role?, prompt?, command?
-  SHARED-FILE REQUEST: cron validation. TS uses cron-validate npm pkg with 5-field preset (no seconds, no L/W/#/blank-day). Rust workspace already has croner=2 + chrono-tz=0.10 deps used by codelet/core/src/scheduler/cron_utils.rs (parse_cron via croner::Cron::new(expr).parse(); parse_timezone via tz_str.parse::<Tz>()). Need supervisor to add `croner` and `chrono-tz` to codelet/fspec-core/Cargo.toml [dependencies]. NOTE: croner default may accept 6-field/seconds; we enforce the 5-field count check first (matching TS split length==5) before croner parse to keep parity.
-  schedules.json IO: TS ensureSchedulesFile auto-creates {version:'1.0.0',schedules:{}} via fileManager.readJSON. Rust will add a shared io helper ensure_schedules_file(project_root) -> SchedulesData (auto-create) + write_json_atomic for the write, OR inline read_or_init_json with default. PREFERENCE: add ensure_schedules_file to codelet/fspec-core/src/io/ensure.rs — SHARED FILE, supervisor-owned. Will ASK supervisor to add it; remove-schedule (RPC-280) also needs the schedules path helper. Model SchedulesData as { version: String (default 1.0.0), schedules: IndexMap<String, serde_json::Value> } to preserve insertion order + round-trip unknown fields.
+  New impl at rust/fspec-core/src/commands/add_schedule.rs replaces the NotYetPorted stub. Signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Args struct (camelCase) mirrors AddScheduleOptions: name, cron, timezone, jobType, overlapPolicy?, role?, prompt?, command?
+  SHARED-FILE REQUEST: cron validation. TS uses cron-validate npm pkg with 5-field preset (no seconds, no L/W/#/blank-day). Rust workspace already has croner=2 + chrono-tz=0.10 deps used by rust/core/src/scheduler/cron_utils.rs (parse_cron via croner::Cron::new(expr).parse(); parse_timezone via tz_str.parse::<Tz>()). Need supervisor to add `croner` and `chrono-tz` to rust/fspec-core/Cargo.toml [dependencies]. NOTE: croner default may accept 6-field/seconds; we enforce the 5-field count check first (matching TS split length==5) before croner parse to keep parity.
+  schedules.json IO: TS ensureSchedulesFile auto-creates {version:'1.0.0',schedules:{}} via fileManager.readJSON. Rust will add a shared io helper ensure_schedules_file(project_root) -> SchedulesData (auto-create) + write_json_atomic for the write, OR inline read_or_init_json with default. PREFERENCE: add ensure_schedules_file to rust/fspec-core/src/io/ensure.rs — SHARED FILE, supervisor-owned. Will ASK supervisor to add it; remove-schedule (RPC-280) also needs the schedules path helper. Model SchedulesData as { version: String (default 1.0.0), schedules: IndexMap<String, serde_json::Value> } to preserve insertion order + round-trip unknown fields.
   """
 
   # ========================================
@@ -15,7 +15,7 @@ Feature: Port add-schedule command to Rust
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. The Rust dispatcher route for `add-schedule` MUST replace the NotYetPorted stub at codelet/fspec-core/src/commands/add_schedule.rs
+  #   1. The Rust dispatcher route for `add-schedule` MUST replace the NotYetPorted stub at rust/fspec-core/src/commands/add_schedule.rs
   #   2. Schedule name must be a lowercase hyphenated slug matching ^[a-z0-9]+(-[a-z0-9]+)*$ (after trim); otherwise error 'Invalid schedule name '<name>'. Names must be lowercase, hyphenated slugs (e.g., 'nightly-review', 'daily-sync').'
   #   3. Cron expression must be exactly 5 whitespace-separated fields; otherwise error 'Invalid cron expression: expected 5 fields (minute hour dayOfMonth month dayOfWeek), got <n>'. Then it must pass standard cron validation; an invalid expression errors with 'Invalid cron expression: <detail>'
   #   4. Timezone must be a valid IANA timezone string (trimmed); otherwise error 'Invalid timezone '<tz>'. ...' with suggestions when available

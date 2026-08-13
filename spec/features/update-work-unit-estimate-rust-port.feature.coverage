@@ -4,11 +4,11 @@
       "name": "Dispatcher estimates a task without any feature file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "76-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 92,
                 93,
@@ -89,11 +89,11 @@
       "name": "Dispatcher rejects a non-Fibonacci estimate",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "106-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 80,
                 81,
@@ -129,11 +129,11 @@
       "name": "Dispatcher rejects a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "139-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 112,
                 113,
@@ -151,11 +151,11 @@
       "name": "Dispatcher blocks estimating a story without a feature file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "166-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 118,
                 119,
@@ -185,11 +185,11 @@
       "name": "Dispatcher blocks estimating a story whose feature file has prefill placeholders",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "202-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 118,
                 119,
@@ -219,11 +219,11 @@
       "name": "Dispatcher estimates a story with a clean tagged feature file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "242-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 136,
                 137,
@@ -263,11 +263,11 @@
       "name": "CLI delegates to the same fspec-core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_work_unit_estimate.rs",
+          "file": "rust/fspec-core/tests/update_work_unit_estimate.rs",
           "lines": "273-293",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_work_unit_estimate.rs",
+              "file": "rust/fspec-core/src/commands/update_work_unit_estimate.rs",
               "lines": [
                 80,
                 81,
@@ -292,10 +292,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_work_unit_estimate.rs"
+      "rust/fspec-core/tests/update_work_unit_estimate.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_work_unit_estimate.rs"
+      "rust/fspec-core/src/commands/update_work_unit_estimate.rs"
     ],
     "totalLinesCovered": 362
   }

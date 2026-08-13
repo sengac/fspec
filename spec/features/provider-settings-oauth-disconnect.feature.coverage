@@ -4,11 +4,11 @@
       "name": "Enter on an oauth-status row opens the DisconnectOAuth confirm",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "104-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 86,
                 87,
@@ -38,11 +38,11 @@
       "name": "Pressing d on an oauth-status row opens the DisconnectOAuth confirm not the api-key delete",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "140-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 118,
                 119,
@@ -82,11 +82,11 @@
       "name": "Confirming disconnect clears codex tokens once and refreshes the nav",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "343-399",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 39,
                 40,
@@ -135,11 +135,11 @@
       "name": "Cancelling disconnect with Esc preserves the tokens",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "169-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
               "lines": [
                 33,
                 34,
@@ -171,11 +171,11 @@
       "name": "Cancelling disconnect with n makes no backend call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "203-227",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
               "lines": [
                 39,
                 40,
@@ -201,11 +201,11 @@
       "name": "An unrelated key in the confirm dialog is consumed and the dialog stays open",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "228-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
               "lines": [
                 53,
                 54,
@@ -220,11 +220,11 @@
       "name": "A backend clear error returns to list silently without leaking the RPC name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "406-489",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 52,
                 53,
@@ -259,11 +259,11 @@
       "name": "Disconnect routes to the correct per-provider clear method",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "490-533",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/oauth_disconnect.rs",
+              "file": "rust/rpc/src/oauth_disconnect.rs",
               "lines": [
                 27,
                 28,
@@ -288,11 +288,11 @@
       "name": "OAuth backend methods are napi-direct on embedded and no-op on websocket",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
           "lines": "664-730",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 660,
                 661,
@@ -321,14 +321,14 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs"
+      "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
-      "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
-      "codelet/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
-      "codelet/rpc/src/oauth_disconnect.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+      "rust/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
+      "rust/rpc/src/oauth_disconnect.rs",
+      "rust/fspec-tui/src/transport/embedded.rs"
     ],
     "totalLinesCovered": 581
   }

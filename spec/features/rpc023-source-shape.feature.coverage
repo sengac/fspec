@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "codelet/fspec-tui/src/mouse module exists with the expected files",
+      "name": "rust/fspec-tui/src/mouse module exists with the expected files",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "32-53",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/mod.rs",
+              "file": "rust/fspec-tui/src/mouse/mod.rs",
               "lines": [
                 1,
                 2,
@@ -46,11 +46,11 @@
       "name": "No raw SGR mouse escape strings appear outside terminal.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "56-86",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/toggle.rs",
+              "file": "rust/fspec-tui/src/mouse/toggle.rs",
               "lines": [
                 26,
                 27,
@@ -67,11 +67,11 @@
       "name": "EnableMouseCapture and DisableMouseCapture appear only in terminal.rs and mouse/toggle.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "89-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/toggle.rs",
+              "file": "rust/fspec-tui/src/mouse/toggle.rs",
               "lines": [
                 26,
                 27,
@@ -88,11 +88,11 @@
       "name": "Dialog-priority components match Event::Key exclusively",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "117-132",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/disconnect_dialog.rs",
+              "file": "rust/fspec-tui/src/components/disconnect_dialog.rs",
               "lines": [
                 109,
                 110,
@@ -126,11 +126,11 @@
       "name": "Mouse module files and views/board.rs stay under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "135-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 1,
                 2,
@@ -441,11 +441,11 @@
       "name": "Action enum gains the three new variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "166-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 192,
                 193,
@@ -478,11 +478,11 @@
       "name": "rect_contains is half-open on the right and bottom edges",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc023.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
           "lines": "192-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/hit_test.rs",
+              "file": "rust/fspec-tui/src/mouse/hit_test.rs",
               "lines": [
                 29,
                 30,
@@ -505,15 +505,15 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc023.rs"
+      "rust/fspec-tui/tests/source_shape_rpc023.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/mouse/mod.rs",
-      "codelet/fspec-tui/src/mouse/toggle.rs",
-      "codelet/fspec-tui/src/components/disconnect_dialog.rs",
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/mouse/hit_test.rs"
+      "rust/fspec-tui/src/mouse/mod.rs",
+      "rust/fspec-tui/src/mouse/toggle.rs",
+      "rust/fspec-tui/src/components/disconnect_dialog.rs",
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/mouse/hit_test.rs"
     ],
     "totalLinesCovered": 559
   }

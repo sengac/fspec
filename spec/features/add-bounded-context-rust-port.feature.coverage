@@ -4,11 +4,11 @@
       "name": "First add seeds the eventStorm sub-object on a clean work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "70-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 176,
                 177,
@@ -37,11 +37,11 @@
       "name": "The color field is persisted as JSON null",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "110-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 76,
                 77,
@@ -56,11 +56,11 @@
       "name": "Optional description, timestamp and boundedContext fields are persisted in TS insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "132-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 79,
                 80,
@@ -81,11 +81,11 @@
       "name": "Second add increments nextItemId and preserves insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "180-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 194,
                 195,
@@ -119,11 +119,11 @@
       "name": "Missing work unit surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "223-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 142,
                 143,
@@ -145,11 +145,11 @@
       "name": "Done state is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "251-277",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 153,
                 154,
@@ -172,11 +172,11 @@
       "name": "Blocked state is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "279-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 153,
                 154,
@@ -199,11 +199,11 @@
       "name": "Missing spec/work-units.json reports the canonical not-found error without creating the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_bounded_context.rs",
           "lines": "307-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
                 118,
                 119,
@@ -224,10 +224,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_bounded_context.rs"
+      "rust/fspec-core/tests/add_bounded_context.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_bounded_context.rs"
+      "rust/fspec-core/src/commands/add_bounded_context.rs"
     ],
     "totalLinesCovered": 336
   }

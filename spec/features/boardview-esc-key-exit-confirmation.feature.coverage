@@ -4,11 +4,11 @@
       "name": "Pressing Esc on the BoardView opens an exit confirmation dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "65-91",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 131,
                 132,
@@ -46,11 +46,11 @@
       "name": "Pressing 'q' on the BoardView is ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "99-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 131,
                 132,
@@ -88,11 +88,11 @@
       "name": "Confirming the exit dialog closes the application",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "133-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
               "lines": [
                 175,
                 176,
@@ -116,11 +116,11 @@
       "name": "Cancelling the exit dialog with Esc returns to the board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "177-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
               "lines": [
                 156,
                 157,
@@ -139,11 +139,11 @@
       "name": "DisconnectDialog still honors 'q' to quit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "221-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 108,
                 109,
@@ -176,11 +176,11 @@
       "name": "DisconnectDialog still honors 'r' to reconnect",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "258-299",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 108,
                 109,
@@ -213,11 +213,11 @@
       "name": "AgentView Esc-cascade still clears non-empty input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
+          "file": "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs",
           "lines": "303-355",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/events.rs",
+              "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
                 131,
                 132,
@@ -257,11 +257,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs"
+      "rust/fspec-tui/tests/boardview_esc_exit_confirmation_rpc102.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/events.rs",
-      "codelet/fspec-tui/src/components/board_exit_confirmation_dialog.rs"
+      "rust/fspec-tui/src/app/events.rs",
+      "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs"
     ],
     "totalLinesCovered": 399
   }

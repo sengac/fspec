@@ -5,7 +5,7 @@
 @RPC-322
 Feature: Validate-hooks CLI subcommand
   """
-  File layout: core impl codelet/fspec-core/src/commands/validate_hooks.rs (rewrite stub); help config codelet/fspec-core/src/help/configs/validate_hooks.rs; CLI bridge codelet/fspec/src/validate_hooks.rs; core test codelet/fspec-core/tests/validate_hooks.rs; CLI test codelet/fspec/tests/cli_validate_hooks.rs; help fixture codelet/fspec/tests/fixtures/help/validate-hooks.txt
+  File layout: core impl rust/fspec-core/src/commands/validate_hooks.rs (rewrite stub); help config rust/fspec-core/src/help/configs/validate_hooks.rs; CLI bridge rust/fspec/src/validate_hooks.rs; core test rust/fspec-core/tests/validate_hooks.rs; CLI test rust/fspec/tests/cli_validate_hooks.rs; help fixture rust/fspec/tests/fixtures/help/validate-hooks.txt
   FRAMING A: the TS shell validate-hooks action awaits validateHooks but DISCARDS the result (prints nothing, never calls process.exit) — the broken-CLI pattern. Rust implements the help-doc canon (print status + meaningful exit code), mirroring the RPC-247 list-hooks precedent. DESIGN: core run reads spec/fspec-hooks.json as raw serde_json::Value (only hook.command strings needed; no new shared type). Map empty hooks -> 'No hooks configured (nothing to validate)' exit 0; missing/invalid file -> 'Failed to load hook configuration' exit 1; missing scripts -> '✗ Hook validation failed' block exit 1; all good -> '✓ All hooks are valid' exit 0. PROPOSAL for supervisor: run returns JSON {valid, exitCode, message} so CLI bridge prints message + uses exitCode (RPC-247 precedent); confirm. Supervisor wires canonical.rs, dispatch.rs, help/configs/mod.rs, main.rs Mode+intercept+forward. No new io/ensure helper required.
   """
 
@@ -32,33 +32,33 @@ Feature: Validate-hooks CLI subcommand
     So that I can trust my hook configuration before relying on hooks for workflow automation
 
   Scenario: validate-hooks --help is byte-for-byte identical to the TS reference
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec validate-hooks --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec validate-hooks --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/validate-hooks.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/validate-hooks.txt
     And stdout starts with a blank line followed by 'VALIDATE-HOOKS'
 
   Scenario: CLI prints success and exits 0 when all hook scripts exist
     Given spec/fspec-hooks.json configures one hook whose command script exists on disk
-    When I run `./codelet/target/release/fspec validate-hooks`
+    When I run `./rust/target/release/fspec validate-hooks`
     Then the command exits 0
     Then stdout contains the substring '✓ All hooks are valid'
 
   Scenario: CLI reports missing scripts and exits 1
     Given spec/fspec-hooks.json configures a hook with command 'spec/hooks/lint.sh' that does not exist on disk
-    When I run `./codelet/target/release/fspec validate-hooks`
+    When I run `./rust/target/release/fspec validate-hooks`
     Then the command exits with code 1
     Then stdout contains the substring '✗ Hook validation failed'
     Then stdout contains the substring 'Hook command not found: spec/hooks/lint.sh'
 
   Scenario: CLI reports a load failure and exits 1 when the config is missing
     Given an empty directory with no spec/fspec-hooks.json is set as the working directory
-    When I run `./codelet/target/release/fspec validate-hooks`
+    When I run `./rust/target/release/fspec validate-hooks`
     Then the command exits with code 1
     Then stdout contains the substring 'Failed to load hook configuration'
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root whose spec/fspec-hooks.json references a missing hook script
-    When I dispatch validate-hooks through fspec_core::dispatch::dispatch_command and also run `./codelet/target/release/fspec validate-hooks` against the same on-disk state
+    When I dispatch validate-hooks through fspec_core::dispatch::dispatch_command and also run `./rust/target/release/fspec validate-hooks` against the same on-disk state
     Then both paths agree the configuration is invalid
-    Then the CLI bridge module codelet/fspec/src/validate_hooks.rs contains NO inline validation logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/validate_hooks.rs contains NO inline validation logic — its only computation is JSON arg marshalling

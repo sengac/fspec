@@ -4,11 +4,11 @@
       "name": "Clap exposes create-epic with positional args and a --description flag in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "48-100",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_epic.rs",
+              "file": "rust/fspec/src/create_epic.rs",
               "lines": [
                 39,
                 40,
@@ -57,11 +57,11 @@
       "name": "CLI creates a minimal epic and prints the success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "102-135",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_epic.rs",
+              "file": "rust/fspec/src/create_epic.rs",
               "lines": [
                 39,
                 40,
@@ -110,11 +110,11 @@
       "name": "CLI creates an epic with -d description and includes the Description line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "137-175",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_epic.rs",
+              "file": "rust/fspec/src/create_epic.rs",
               "lines": [
                 39,
                 40,
@@ -163,11 +163,11 @@
       "name": "CLI rejects an invalid epicId with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "177-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_epic.rs",
+              "file": "rust/fspec/src/create_epic.rs",
               "lines": [
                 60,
                 61,
@@ -195,11 +195,11 @@
       "name": "CLI rejects creating an epic that already exists with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "212-253",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_epic.rs",
+              "file": "rust/fspec/src/create_epic.rs",
               "lines": [
                 60,
                 61,
@@ -227,11 +227,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "255-307",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/create_epic.rs",
+              "file": "rust/fspec/src/create_epic.rs",
               "lines": [
                 39,
                 40,
@@ -280,11 +280,11 @@
       "name": "create-epic --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "file": "rust/fspec/tests/cli_create_epic.rs",
           "lines": "309-340",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/create_epic.rs",
+              "file": "rust/fspec-core/src/help/configs/create_epic.rs",
               "lines": [
                 1,
                 2,
@@ -371,11 +371,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_create_epic.rs"
+      "rust/fspec/tests/cli_create_epic.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/create_epic.rs",
-      "codelet/fspec-core/src/help/configs/create_epic.rs"
+      "rust/fspec/src/create_epic.rs",
+      "rust/fspec-core/src/help/configs/create_epic.rs"
     ],
     "totalLinesCovered": 540
   }

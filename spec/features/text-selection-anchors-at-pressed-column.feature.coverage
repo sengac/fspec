@@ -4,11 +4,11 @@
       "name": "Dragging from a mid-line column in the scrollback copies from that column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
           "lines": "40-77",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
                 80,
                 81,
@@ -37,11 +37,11 @@
       "name": "Dragging from a mid-word column in the input composer copies from that column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
           "lines": "84-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
                 120,
                 121,
@@ -66,11 +66,11 @@
       "name": "Dragging from a mid-line column in the turn-content modal copies from that column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
           "lines": "149-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
               "lines": [
                 101,
                 102,
@@ -92,11 +92,11 @@
       "name": "Dragging from a mid-title column in the board details strip copies from that column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
           "lines": "202-265",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
                 91,
                 92,
@@ -122,11 +122,11 @@
       "name": "A long-press with no drag still selects and copies the whole line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
           "lines": "272-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
                 104,
                 105,
@@ -149,11 +149,11 @@
       "name": "A zero-width drag copies nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
           "lines": "319-347",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "file": "rust/fspec-tui/src/mouse/selection.rs",
               "lines": [
                 43,
                 44,
@@ -172,15 +172,15 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs"
+      "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
-      "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
-      "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
-      "codelet/fspec-tui/src/views/board/details_select.rs",
-      "codelet/fspec-tui/src/mouse/gesture.rs",
-      "codelet/fspec-tui/src/mouse/selection.rs"
+      "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
+      "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
+      "rust/fspec-tui/src/views/board/details_select.rs",
+      "rust/fspec-tui/src/mouse/gesture.rs",
+      "rust/fspec-tui/src/mouse/selection.rs"
     ],
     "totalLinesCovered": 348
   }

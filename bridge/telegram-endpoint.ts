@@ -12,7 +12,7 @@
  * - Single session at a time - rejects additional connections
  * - Chat ID learned from TELEGRAM_CHAT_ID env or first Telegram message
  *
- * Wire protocol (multiplexed envelope) — matches codelet/tools/src/bridge_multiplexed.rs:
+ * Wire protocol (multiplexed envelope) — matches rust/tools/src/bridge_multiplexed.rs:
  *
  *   { service: 'auth' | 'relay' | 'fspec' | 'session' | 'terminal' | 'system',
  *     type: string,

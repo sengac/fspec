@@ -4,11 +4,11 @@
       "name": "PKCE code verifier meets RFC 7636 requirements",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "24-55",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 1,
                 2,
@@ -45,11 +45,11 @@
       "name": "PKCE challenge is deterministic for a given verifier",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "61-72",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 1,
                 2,
@@ -86,11 +86,11 @@
       "name": "Authorize URL contains all required parameters for Max mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "78-131",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 82,
                 83,
@@ -122,11 +122,11 @@
       "name": "Authorization code in code-hash-state format is parsed correctly",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "137-150",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 107,
                 108,
@@ -149,11 +149,11 @@
       "name": "Authorization code without hash separator is used as-is",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "156-168",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 107,
                 108,
@@ -176,11 +176,11 @@
       "name": "Authorization code exchanged for tokens at token endpoint",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "174-237",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 123,
                 124,
@@ -229,11 +229,11 @@
       "name": "Code exchange fails with invalid authorization code",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "243-280",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 123,
                 124,
@@ -282,11 +282,11 @@
       "name": "Token refresh using refresh_token grant",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "286-333",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 165,
                 166,
@@ -324,11 +324,11 @@
       "name": "OAuth headers built with required beta headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "339-373",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 222,
                 223,
@@ -379,11 +379,11 @@
       "name": "OAuth headers preserve existing beta headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "379-409",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 222,
                 223,
@@ -434,11 +434,11 @@
       "name": "Tool names prefixed with mcp_ in OAuth mode",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "415-424",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 266,
                 267,
@@ -453,11 +453,11 @@
       "name": "Tool names stripped of mcp_ prefix from response",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "430-439",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 273,
                 274,
@@ -474,11 +474,11 @@
       "name": "Messages URL rewritten with beta query parameter",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "445-453",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 283,
                 284,
@@ -510,11 +510,11 @@
       "name": "Messages URL with existing query parameters gets beta appended",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "459-477",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 283,
                 284,
@@ -546,11 +546,11 @@
       "name": "Non-messages URL is not rewritten",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "483-492",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 283,
                 284,
@@ -582,11 +582,11 @@
       "name": "Token expiry calculated from expires_in seconds",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/claude_oauth_test.rs",
+          "file": "rust/providers/tests/claude_oauth_test.rs",
           "lines": "498-525",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude_oauth.rs",
+              "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
                 308,
                 309,
@@ -610,10 +610,10 @@
     "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/claude_oauth_test.rs"
+      "rust/providers/tests/claude_oauth_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/claude_oauth.rs"
+      "rust/providers/src/claude_oauth.rs"
     ],
     "totalLinesCovered": 775
   }

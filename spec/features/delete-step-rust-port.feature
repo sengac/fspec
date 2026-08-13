@@ -4,7 +4,7 @@
 @RPC-221
 Feature: Port delete-step command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/delete_step.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate; gherkin-0.16 Step.keyword includes a trailing space and Step.value is the text, so full step text = keyword + value; Step.position.line (1-based) locates the removed line. Line-based split('\n')/join('\n') edit.
+  Core impl at rust/fspec-core/src/commands/delete_step.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate; gherkin-0.16 Step.keyword includes a trailing space and Step.value is the text, so full step text = keyword + value; Step.position.line (1-based) locates the removed line. Line-based split('\n')/join('\n') edit.
   Recoverable failures returned as inner JSON envelope {success:false,error}; success {success:true,message}. CLI bridge prints '✓ <message>' / 'Error: <error>' to stderr + exit 1. Two-front-doors: bridge marshals positional <feature> <scenario> <step> into {feature, scenario, step} JSON only; no domain logic.
   """
 

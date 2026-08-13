@@ -4,11 +4,11 @@
       "name": "Session manifest preserves full provider string after creation",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "file": "rust/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
           "lines": "129-164",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/hooks.rs",
+              "file": "rust/agent-loop/src/hooks.rs",
               "lines": [
                 1,
                 2,
@@ -34,11 +34,11 @@
       "name": "FspecAgentHooks does not overwrite the session manifest",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "file": "rust/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
           "lines": "59-116",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/hooks.rs",
+              "file": "rust/agent-loop/src/hooks.rs",
               "lines": [
                 44,
                 45,
@@ -75,11 +75,11 @@
       "name": "Session resume restores the correct model from persisted manifest",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "file": "rust/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
           "lines": "199-224",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/hooks.rs",
+              "file": "rust/agent-loop/src/hooks.rs",
               "lines": [
                 1,
                 2,
@@ -105,11 +105,11 @@
       "name": "Removing duplicate manifest creation does not break agent loop persistence",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "file": "rust/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
           "lines": "234-272",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/hooks.rs",
+              "file": "rust/agent-loop/src/hooks.rs",
               "lines": [
                 44,
                 45,
@@ -148,10 +148,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs"
+      "rust/agent-loop/tests/rpc423_duplicate_manifest_removal.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/hooks.rs"
+      "rust/agent-loop/src/hooks.rs"
     ],
     "totalLinesCovered": 237
   }

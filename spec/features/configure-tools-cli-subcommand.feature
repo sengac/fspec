@@ -4,7 +4,7 @@
 @RPC-208
 Feature: fspec configure-tools CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/configure_tools.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/configure_tools.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/configure-tools.ts:193-243). Surface:
   `fspec configure-tools [--test-command <command>] [--quality-commands <commands...>] [--reconfigure]`.
   The bridge marshals args into JSON {testCommand?, qualityCommands?, reconfigure?} (omitting None)
@@ -26,7 +26,7 @@ Feature: fspec configure-tools CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec configure-tools --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/configure-tools.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/configure-tools.txt
 
   Scenario: CLI saves the test command and prints the confirmation line
     Given a project root tempdir with no spec/fspec-config.json
@@ -54,4 +54,4 @@ Feature: fspec configure-tools CLI subcommand
     Then spec/fspec-config.json shows tools.test.command='via-dispatcher'
     And running `fspec configure-tools --quality-commands "via-cli"` afterwards exits 0
     And spec/fspec-config.json still shows tools.test.command='via-dispatcher' and tools.qualityCheck.commands=['via-cli']
-    And the CLI bridge module codelet/fspec/src/configure_tools.rs contains NO inline config-merge or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/configure_tools.rs contains NO inline config-merge or file-write logic — its only computation is JSON arg marshalling

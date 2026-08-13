@@ -4,11 +4,11 @@
       "name": "Removing an existing command soft-deletes it and returns the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
           "lines": "87-132",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
                 49,
                 50,
@@ -120,11 +120,11 @@
       "name": "Removing when the foundation has no event storm reports the no-data error and leaves the file unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
           "lines": "134-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
                 63,
                 64,
@@ -149,11 +149,11 @@
       "name": "Removing from a non-existent bounded context fails with the context not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
           "lines": "168-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
                 87,
                 88,
@@ -184,11 +184,11 @@
       "name": "Removing a command name that does not exist in the matched context fails",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
           "lines": "205-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
                 107,
                 108,
@@ -220,11 +220,11 @@
       "name": "A command belonging to a different context id is not matched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
           "lines": "242-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
                 107,
                 108,
@@ -256,11 +256,11 @@
       "name": "Removing an already soft-deleted command fails as not-found",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
           "lines": "275-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
                 107,
                 108,
@@ -294,10 +294,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_command_from_foundation.rs"
+      "rust/fspec-core/tests/remove_command_from_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_command_from_foundation.rs"
+      "rust/fspec-core/src/commands/remove_command_from_foundation.rs"
     ],
     "totalLinesCovered": 406
   }

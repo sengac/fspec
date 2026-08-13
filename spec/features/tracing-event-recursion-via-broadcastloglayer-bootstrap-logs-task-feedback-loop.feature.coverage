@@ -4,11 +4,11 @@
       "name": "Events targeted at codelet_fspec_tui::app::bootstrap are not broadcast",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/log_layer_cycle_filter.rs",
+          "file": "rust/rpc/tests/log_layer_cycle_filter.rs",
           "lines": "30-46",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/log_layer.rs",
+              "file": "rust/rpc/src/log_layer.rs",
               "lines": [
                 94,
                 95,
@@ -62,11 +62,11 @@
       "name": "Events from non-TUI-bootstrap targets are still broadcast",
       "testMappings": [
         {
-          "file": "codelet/rpc/tests/log_layer_cycle_filter.rs",
+          "file": "rust/rpc/tests/log_layer_cycle_filter.rs",
           "lines": "48-72",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/log_layer.rs",
+              "file": "rust/rpc/src/log_layer.rs",
               "lines": [
                 94,
                 95,
@@ -143,10 +143,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc/tests/log_layer_cycle_filter.rs"
+      "rust/rpc/tests/log_layer_cycle_filter.rs"
     ],
     "implFiles": [
-      "codelet/rpc/src/log_layer.rs"
+      "rust/rpc/src/log_layer.rs"
     ],
     "totalLinesCovered": 147
   }

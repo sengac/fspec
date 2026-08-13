@@ -4,11 +4,11 @@
       "name": "addTo=rule creates a proper RuleItem with id from nextRuleId",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "78-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -274,11 +274,11 @@
       "name": "addTo=rule with preexisting nextRuleId increments sequentially",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "129-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -544,11 +544,11 @@
       "name": "addTo=assumption appends raw string to assumptions array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "154-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -814,11 +814,11 @@
       "name": "addTo=none with answer marks question but does not modify rules/assumptions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "184-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -1084,11 +1084,11 @@
       "name": "No answer leaves answer/answered untouched but still selects the question",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "218-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -1354,11 +1354,11 @@
       "name": "Missing work unit surfaces canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "245-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -1624,11 +1624,11 @@
       "name": "Non-specifying status is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "274-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -1894,11 +1894,11 @@
       "name": "No questions array yields canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "304-331",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -2164,11 +2164,11 @@
       "name": "Out-of-range index yields canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "333-361",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -2434,11 +2434,11 @@
       "name": "Raw-string legacy question entry is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "363-391",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -2704,11 +2704,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/answer_question.rs",
+          "file": "rust/fspec-core/tests/answer_question.rs",
           "lines": "393-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/answer_question.rs",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -2976,10 +2976,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/answer_question.rs"
+      "rust/fspec-core/tests/answer_question.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/answer_question.rs"
+      "rust/fspec-core/src/commands/answer_question.rs"
     ],
     "totalLinesCovered": 3128
   }

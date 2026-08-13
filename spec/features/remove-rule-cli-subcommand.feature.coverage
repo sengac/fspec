@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_rule.rs",
+          "file": "rust/fspec/tests/cli_remove_rule.rs",
           "lines": "67-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_rule.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_rule.rs",
               "lines": [
                 1,
                 2,
@@ -64,11 +64,11 @@
       "name": "CLI soft-deletes a rule and prints the canonical success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_rule.rs",
+          "file": "rust/fspec/tests/cli_remove_rule.rs",
           "lines": "85-105",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_rule.rs",
+              "file": "rust/fspec/src/remove_rule.rs",
               "lines": [
                 27,
                 28,
@@ -111,11 +111,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_rule.rs",
+          "file": "rust/fspec/tests/cli_remove_rule.rs",
           "lines": "124-164",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_rule.rs",
+              "file": "rust/fspec/src/remove_rule.rs",
               "lines": [
                 27,
                 28,
@@ -168,11 +168,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 60,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_rule.rs"
+      "rust/fspec/tests/cli_remove_rule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/remove_rule.rs",
-      "codelet/fspec/src/remove_rule.rs"
+      "rust/fspec-core/src/help/configs/remove_rule.rs",
+      "rust/fspec/src/remove_rule.rs"
     ],
     "totalLinesCovered": 232
   }

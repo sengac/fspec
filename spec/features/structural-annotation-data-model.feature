@@ -1,7 +1,7 @@
 @CMPCT-007
 Feature: Structural Annotation Data Model
   """
-  Both enums live in codelet/core/src/compaction/model.rs alongside existing TokenTracker, ConversationTurn, ToolCall, ToolResult
+  Both enums live in rust/core/src/compaction/model.rs alongside existing TokenTracker, ConversationTurn, ToolCall, ToolResult
   Consumer: CMPCT-011 (per-turn annotation detector) will attach StructuralAnnotation to persisted messages. Agent sees annotations via SessionSearch metadata during DAG construction.
   """
 
@@ -15,7 +15,7 @@ Feature: Structural Annotation Data Model
   #   3. FileOp enum must have exactly 3 variants: Created, Modified, Deleted and derive Debug, Clone, Serialize, Deserialize
   #   4. PreservationContext and BuildStatus must be marked #[deprecated] with a note pointing to StructuralAnnotation
   #   5. TokenTracker must remain completely unchanged
-  #   6. StructuralAnnotation and FileOp must be re-exported from codelet/core/src/compaction/mod.rs
+  #   6. StructuralAnnotation and FileOp must be re-exported from rust/core/src/compaction/mod.rs
   #   7. StructuralAnnotation must round-trip through serde JSON serialization/deserialization
   #   8. All existing code that uses PreservationContext and BuildStatus must still compile (deprecated items remain usable with warnings)
   #

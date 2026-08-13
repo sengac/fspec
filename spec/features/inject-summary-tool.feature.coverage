@@ -4,11 +4,11 @@
       "name": "Tool implements Rig Tool trait with correct name and schema",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "183-210",
           "implMappings": [
             {
-              "file": "codelet/tools/src/inject_summary.rs",
+              "file": "rust/tools/src/inject_summary.rs",
               "lines": [
                 1,
                 2,
@@ -190,11 +190,11 @@
       "name": "Successful inject_summary dispatches to registered handler",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "213-248",
           "implMappings": [
             {
-              "file": "codelet/tools/src/inject_summary.rs",
+              "file": "rust/tools/src/inject_summary.rs",
               "lines": [
                 1,
                 2,
@@ -376,11 +376,11 @@
       "name": "inject_summary with no handler returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "251-269",
           "implMappings": [
             {
-              "file": "codelet/tools/src/inject_summary.rs",
+              "file": "rust/tools/src/inject_summary.rs",
               "lines": [
                 75,
                 76,
@@ -414,11 +414,11 @@
       "name": "Concurrent sessions have isolated handlers",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "272-315",
           "implMappings": [
             {
-              "file": "codelet/tools/src/inject_summary.rs",
+              "file": "rust/tools/src/inject_summary.rs",
               "lines": [
                 40,
                 41,
@@ -487,11 +487,11 @@
       "name": "Handler removal via set_inject_summary_handler with None",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "318-342",
           "implMappings": [
             {
-              "file": "codelet/tools/src/inject_summary.rs",
+              "file": "rust/tools/src/inject_summary.rs",
               "lines": [
                 49,
                 50,
@@ -523,11 +523,11 @@
       "name": "Tool is constructed with session_id for handler lookup",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "345-371",
           "implMappings": [
             {
-              "file": "codelet/tools/src/inject_summary.rs",
+              "file": "rust/tools/src/inject_summary.rs",
               "lines": [
                 115,
                 116,
@@ -551,11 +551,11 @@
       "name": "Tool and handler types are exported from lib.rs",
       "testMappings": [
         {
-          "file": "codelet/tools/src/inject_summary.rs",
+          "file": "rust/tools/src/inject_summary.rs",
           "lines": "375-401",
           "implMappings": [
             {
-              "file": "codelet/tools/src/lib.rs",
+              "file": "rust/tools/src/lib.rs",
               "lines": [
                 120,
                 121,
@@ -575,11 +575,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/inject_summary.rs"
+      "rust/tools/src/inject_summary.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/inject_summary.rs",
-      "codelet/tools/src/lib.rs"
+      "rust/tools/src/inject_summary.rs",
+      "rust/tools/src/lib.rs"
     ],
     "totalLinesCovered": 663
   }

@@ -4,11 +4,11 @@
       "name": "CLI exits 2 when the required positional argument is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "167-188",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 1,
                 2,
@@ -114,11 +114,11 @@
       "name": "CLI prints the empty-attachments sentinel and exits 0 when the work unit has no attachments",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "194-214",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 59,
                 60,
@@ -165,11 +165,11 @@
       "name": "CLI text output renders present and missing attachments with size and ✗ markers",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "220-291",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 59,
                 60,
@@ -216,11 +216,11 @@
       "name": "CLI exits 1 and writes to stderr when the requested work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "297-323",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 87,
                 88,
@@ -238,11 +238,11 @@
       "name": "CLI exits 1 when work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "329-355",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 87,
                 88,
@@ -260,11 +260,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "361-398",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 1,
                 2,
@@ -370,11 +370,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "404-465",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_attachments.rs",
+              "file": "rust/fspec/src/list_attachments.rs",
               "lines": [
                 1,
                 2,
@@ -480,11 +480,11 @@
       "name": "list-attachments --help is byte-for-byte identical to TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_attachments.rs",
+          "file": "rust/fspec/tests/cli_list_attachments.rs",
           "lines": "99-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/list_attachments.rs",
+              "file": "rust/fspec-core/src/help/configs/list_attachments.rs",
               "lines": [
                 1,
                 2,
@@ -598,11 +598,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_attachments.rs"
+      "rust/fspec/tests/cli_list_attachments.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_attachments.rs",
-      "codelet/fspec-core/src/help/configs/list_attachments.rs"
+      "rust/fspec/src/list_attachments.rs",
+      "rust/fspec-core/src/help/configs/list_attachments.rs"
     ],
     "totalLinesCovered": 855
   }

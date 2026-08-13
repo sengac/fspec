@@ -4,11 +4,11 @@
       "name": "Pre-prompt compaction uses in-view DAG flow instead of legacy batch LLM",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "64-122",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 459,
                 460,
@@ -60,11 +60,11 @@
       "name": "Post-loop hook-triggered compaction uses in-view DAG flow",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "128-169",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1545,
                 1546,
@@ -142,11 +142,11 @@
       "name": "Slash compact command uses in-view DAG flow instead of legacy batch LLM",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "175-214",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/repl_loop.rs",
+              "file": "rust/cli/src/interactive/repl_loop.rs",
               "lines": [
                 86,
                 87,
@@ -208,11 +208,11 @@
       "name": "compaction_in_progress flag is threaded through run_agent_stream call chain",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "220-248",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 256,
                 257,
@@ -289,11 +289,11 @@
       "name": "CLI callers create a local compaction_in_progress flag",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "254-275",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/agent_runner.rs",
+              "file": "rust/cli/src/interactive/agent_runner.rs",
               "lines": [
                 29,
                 30
@@ -307,11 +307,11 @@
       "name": "Post-compaction context never drops below minimum floor",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "281-326",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 250,
                 251,
@@ -382,11 +382,11 @@
       "name": "Callers adapt to execute_compaction returning Ok instead of metrics",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "332-364",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 471,
                 472,
@@ -426,11 +426,11 @@
       "name": "Per-turn annotation detection wired into stream loop",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "370-424",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "file": "rust/core/src/compaction/annotation_detector.rs",
               "lines": [
                 55,
                 56,
@@ -451,11 +451,11 @@
       "name": "Per-turn annotation detection captures fspec milestones",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "430-469",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "file": "rust/core/src/compaction/annotation_detector.rs",
               "lines": [
                 68,
                 69,
@@ -499,11 +499,11 @@
       "name": "Per-turn annotation detection captures error resolution transitions",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "475-529",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "file": "rust/core/src/compaction/annotation_detector.rs",
               "lines": [
                 131,
                 132,
@@ -574,11 +574,11 @@
       "name": "CompactionHook threshold detection logic remains unchanged",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/emergency_threshold_compaction_test.rs",
+          "file": "rust/cli/tests/emergency_threshold_compaction_test.rs",
           "lines": "535-585",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction_hook.rs",
+              "file": "rust/core/src/compaction_hook.rs",
               "lines": [
                 76,
                 77,
@@ -741,15 +741,15 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/emergency_threshold_compaction_test.rs"
+      "rust/cli/tests/emergency_threshold_compaction_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/repl_loop.rs",
-      "codelet/cli/src/interactive/agent_runner.rs",
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/core/src/compaction/annotation_detector.rs",
-      "codelet/core/src/compaction_hook.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/repl_loop.rs",
+      "rust/cli/src/interactive/agent_runner.rs",
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/core/src/compaction/annotation_detector.rs",
+      "rust/core/src/compaction_hook.rs"
     ],
     "totalLinesCovered": 1031
   }

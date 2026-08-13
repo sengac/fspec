@@ -7,7 +7,7 @@ Feature: Port list-prefixes command to Rust
   """
   New shared helper `io::ensure::read_prefixes_or_empty(cwd) -> Result<PrefixesData, FspecCoreError>` lives alongside `ensure_prefixes_file` but returns `Ok(PrefixesData::initial())` on ENOENT instead of auto-creating. This separates 'read-only' from 'load-or-init' semantics — list-prefixes uses the former (TS does NOT call ensurePrefixesFile), list-work-units continues to use the latter.
   New shared helper `io::ensure::read_work_units_or_empty(cwd) -> Result<WorkUnitsData, FspecCoreError>` returns `Ok(WorkUnitsData::initial(...))` on BOTH ENOENT and parse error — this captures TS's bare `catch {}` on work-units (silently empty on any failure). list-work-units continues to use `ensure_work_units_file` (which auto-creates AND escalates parse errors).
-  The shape of each Prefix record in spec/prefixes.json is `{ prefix: string, description: string, createdAt: string }` (TS interface at src/commands/list-prefixes.ts:7-11). Add a typed `Prefix` struct to codelet/fspec-core/src/types/prefix.rs (new file) and refactor `PrefixesData.prefixes` from `Map<String, Value>` to `IndexMap<String, Prefix>` with a `#[serde(flatten)] extra: Map<String, Value>` field on Prefix for forward-compat. This preserves insertion order (rule [6]).
+  The shape of each Prefix record in spec/prefixes.json is `{ prefix: string, description: string, createdAt: string }` (TS interface at src/commands/list-prefixes.ts:7-11). Add a typed `Prefix` struct to rust/fspec-core/src/types/prefix.rs (new file) and refactor `PrefixesData.prefixes` from `Map<String, Value>` to `IndexMap<String, Prefix>` with a `#[serde(flatten)] extra: Map<String, Value>` field on Prefix for forward-compat. This preserves insertion order (rule [6]).
   """
 
   # ========================================
@@ -24,7 +24,7 @@ Feature: Port list-prefixes command to Rust
   #   7. Each prefix entry in the structured result MUST contain prefix (string), description (string), totalWorkUnits (number), completedWorkUnits (number), completionPercentage (number) — matching the TS PrefixWithProgress interface exactly
   #   8. The text format (default) prints 'No prefixes found' for empty lists; populated lists print '\nPrefixes (N)\n' header followed by each prefix as 'PREFIX\n  description\n[  Work Units: completed/total (pct%)\n]\n' — the 'Work Units' line only appears when totalWorkUnits > 0 (parity with src/commands/list-prefixes.ts:107-123)
   #   9. The JSON format wraps the result in `{ prefixes: [...] }` with 2-space indentation (parity with TS `JSON.stringify(result, null, 2)`); --format is NOT exposed at the TS CLI surface but the Rust shared `run()` accepts it for the dispatcher's structured-output path
-  #   10. The standalone fspec binary at codelet/fspec/src/main.rs MUST expose `list-prefixes` as a clap v4 derive subcommand with NO flags — matching the flag-less TS Commander.js registration at src/commands/list-prefixes.ts:101-104 (no --status, no --prefix, no --format)
+  #   10. The standalone fspec binary at rust/fspec/src/main.rs MUST expose `list-prefixes` as a clap v4 derive subcommand with NO flags — matching the flag-less TS Commander.js registration at src/commands/list-prefixes.ts:101-104 (no --status, no --prefix, no --format)
   #   11. The clap subcommand action MUST delegate to the same fspec_core::commands::list_prefixes::run() function used by the LLM-facing dispatcher (two front doors, one source of truth — RPC-003 §7/§11) and MUST NOT duplicate prefix-aggregation, filter or rendering logic in the CLI bridge
   #   12. Shared infrastructure MUST be reused — the command reads spec/prefixes.json via a NEW shared helper (e.g. `io::read_prefixes_or_empty`) that is symmetric with the existing `ensure_prefixes_file` but returns `Ok(empty)` on ENOENT instead of auto-creating; the existing `WorkUnit`, `WorkUnitsData`, `PrefixesData`, and `project_root` modules MUST be reused without duplication
   #   13. The CLI wrapper MUST resolve the project root from current working directory (parity with TS `process.cwd()` default at src/commands/list-prefixes.ts:39), exit 0 on success, exit 1 on FspecCoreError, and write structured errors to stderr prefixed with `Error:` (same chalk-equivalent contract as RPC-253 rule [14])
@@ -39,10 +39,10 @@ Feature: Port list-prefixes command to Rust
   #   7. prefixes.json contains AUTH with description 'Auth features' and zero matching work-units → text output prints 'AUTH\n  Auth features\n' with NO 'Work Units:' progress line (parity with TS guard at line 117: 'if (prefix.totalWorkUnits > 0)')
   #   8. prefixes.json has AUTH with 1 done and 2 backlog work-units → text output's 'Work Units:' line reads exactly '  Work Units: 1/3 (33%)' (Math.round semantics — 33.33% rounds DOWN to 33; verify with a 2/3 case rounding to 67%)
   #   9. Dispatcher receives `{"format":"json"}` against a prefixes.json containing AUTH (0/0) → DispatchResult.data is exactly `{\n  "prefixes": [\n    {\n      "prefix": "AUTH",\n      "description": "...",\n      "totalWorkUnits": 0,\n      "completedWorkUnits": 0,\n      "completionPercentage": 0\n    }\n  ]\n}` (2-space indent, no trailing newline)
-  #   10. Running `./codelet/target/release/fspec list-prefixes` in an empty directory prints 'No prefixes found' to stdout and exits 0 (does NOT auto-create spec/ since list-prefixes only reads)
-  #   11. Running `./codelet/target/release/fspec list-prefixes --help` prints clap-generated help with NO --status / --prefix / --epic / --format / --workspace flags listed (parity with TS Commander's flag-less registration and RPC-253's global-workspace exclusion)
-  #   12. Running `./codelet/target/release/fspec list-prefixes` against a directory whose spec/prefixes.json contains invalid JSON prints `Error: ... Failed to parse prefixes.json: ...` to stderr and exits with code 1
-  #   13. Both invocation paths produce the SAME structured data: (a) dispatch_command("list-prefixes", `{"format":"json"}`, project_root) and (b) `./codelet/target/release/fspec list-prefixes` against the same on-disk state — the only differences are how args are parsed (JSON vs flag-less clap) and how the result is delivered (DispatchResult.data vs stdout text)
+  #   10. Running `./rust/target/release/fspec list-prefixes` in an empty directory prints 'No prefixes found' to stdout and exits 0 (does NOT auto-create spec/ since list-prefixes only reads)
+  #   11. Running `./rust/target/release/fspec list-prefixes --help` prints clap-generated help with NO --status / --prefix / --epic / --format / --workspace flags listed (parity with TS Commander's flag-less registration and RPC-253's global-workspace exclusion)
+  #   12. Running `./rust/target/release/fspec list-prefixes` against a directory whose spec/prefixes.json contains invalid JSON prints `Error: ... Failed to parse prefixes.json: ...` to stderr and exits with code 1
+  #   13. Both invocation paths produce the SAME structured data: (a) dispatch_command("list-prefixes", `{"format":"json"}`, project_root) and (b) `./rust/target/release/fspec list-prefixes` against the same on-disk state — the only differences are how args are parsed (JSON vs flag-less clap) and how the result is delivered (DispatchResult.data vs stdout text)
   #
   # ========================================
   Background: User Story
@@ -123,9 +123,9 @@ Feature: Port list-prefixes command to Rust
     When I dispatch list-prefixes with format='text'
     Then the DispatchResult.data is exactly the string 'No prefixes found'
 
-  Scenario: Shared infrastructure modules exist under codelet/fspec-core for reuse by other commands
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+  Scenario: Shared infrastructure modules exist under rust/fspec-core for reuse by other commands
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the modules io::ensure::read_prefixes_or_empty and io::ensure::read_work_units_or_empty exist and are publicly accessible from the crate root
     Then types::prefix::Prefix exists and PrefixesData.prefixes is keyed by an IndexMap to preserve insertion order
     Then list_prefixes::run delegates to these shared modules rather than embedding its own filesystem logic

@@ -290,7 +290,7 @@
           "lines": "167-186",
           "implMappings": [
             {
-              "file": "codelet/napi/src/thinking_config.rs",
+              "file": "rust/napi/src/thinking_config.rs",
               "lines": [
                 1,
                 2,
@@ -406,7 +406,7 @@
           "lines": "189-212",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 679,
                 680,
@@ -461,7 +461,7 @@
           "lines": "215-234",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 60,
                 61,
@@ -574,10 +574,10 @@
     ],
     "implFiles": [
       "src/utils/thinkingLevel.ts",
-      "codelet/napi/src/thinking_config.rs",
-      "codelet/napi/src/session.rs",
+      "rust/napi/src/thinking_config.rs",
+      "rust/napi/src/session.rs",
       "src/tui/components/AgentModal.tsx",
-      "codelet/napi/src/types.rs"
+      "rust/napi/src/types.rs"
     ],
     "totalLinesCovered": 570
   }

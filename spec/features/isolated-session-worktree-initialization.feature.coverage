@@ -4,11 +4,11 @@
       "name": "Worktree has all tracked files in git index after creation",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "file": "rust/git/tests/worktree_index_initialization_tests.rs",
           "lines": "27-82",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
@@ -24,11 +24,11 @@
       "name": "Worktree has clean git status after creation",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "file": "rust/git/tests/worktree_index_initialization_tests.rs",
           "lines": "95-133",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
@@ -44,11 +44,11 @@
       "name": "Session Management Panel shows accurate file change count",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "file": "rust/git/tests/worktree_index_initialization_tests.rs",
           "lines": "148-196",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "get_session_diff detects and reports corrupted index",
       "testMappings": [
         {
-          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "file": "rust/git/tests/worktree_index_initialization_tests.rs",
           "lines": "211-284",
           "implMappings": [
             {
-              "file": "codelet/git/src/worktree.rs",
+              "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
@@ -81,11 +81,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/worktree_index_initialization_tests.rs",
+      "rust/git/tests/worktree_index_initialization_tests.rs",
       "src/git/__tests__/worktree-index-initialization.test.ts"
     ],
     "implFiles": [
-      "codelet/git/src/worktree.rs"
+      "rust/git/src/worktree.rs"
     ],
     "totalLinesCovered": 372
   }

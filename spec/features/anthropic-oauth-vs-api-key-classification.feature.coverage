@@ -4,11 +4,11 @@
       "name": "Anthropic with an env API key is not classified as OAuth-logged-in",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
+          "file": "rust/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
           "lines": "36-71",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
               "lines": [
                 72,
                 73,
@@ -33,11 +33,11 @@
       "name": "Anthropic configured without an env API key shows the logout row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
+          "file": "rust/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
           "lines": "72-101",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
               "lines": [
                 72,
                 73,
@@ -62,11 +62,11 @@
       "name": "Anthropic offers both OAuth login rows and an api-key row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
+          "file": "rust/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
           "lines": "102-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
               "lines": [
                 72,
                 73,
@@ -93,10 +93,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs"
+      "rust/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/projection.rs"
+      "rust/fspec-tui/src/views/provider_settings/projection.rs"
     ],
     "totalLinesCovered": 130
   }

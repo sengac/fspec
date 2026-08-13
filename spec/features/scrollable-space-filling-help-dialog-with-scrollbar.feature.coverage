@@ -4,11 +4,11 @@
       "name": "PageDown advances a page when content overflows the terminal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
           "lines": "96-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 117,
                 118,
@@ -94,11 +94,11 @@
       "name": "End jumps to the bottom and the thumb sits at the bottom",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
           "lines": "155-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 117,
                 118,
@@ -184,11 +184,11 @@
       "name": "Mouse wheel scrolls the content and is clamped at the top",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
           "lines": "197-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog_scroll.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog_scroll.rs",
               "lines": [
                 1,
                 2,
@@ -349,11 +349,11 @@
       "name": "No scrollbar and inert paging when all content fits",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
+          "file": "rust/fspec-tui/tests/help_dialog_scroll_rpc396.rs",
           "lines": "238-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 162,
                 163,
@@ -396,11 +396,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/help_dialog_scroll_rpc396.rs"
+      "rust/fspec-tui/tests/help_dialog_scroll_rpc396.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/help_dialog.rs",
-      "codelet/fspec-tui/src/components/help_dialog_scroll.rs"
+      "rust/fspec-tui/src/components/help_dialog.rs",
+      "rust/fspec-tui/src/components/help_dialog_scroll.rs"
     ],
     "totalLinesCovered": 475
   }

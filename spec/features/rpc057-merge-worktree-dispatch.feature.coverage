@@ -4,11 +4,11 @@
       "name": "/merge-worktree with no current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "104-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 43,
                 44,
@@ -54,11 +54,11 @@
       "name": "/merge-worktree on a session with no changes emits \"nothing to merge\"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "132-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 78,
                 79,
@@ -93,11 +93,11 @@
       "name": "/merge-worktree on a session with changes opens the MergeConfirmDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "174-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 100,
                 101,
@@ -123,11 +123,11 @@
       "name": "MergeConfirmDialog renders the change summary",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "213-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
               "lines": [
                 150,
                 151,
@@ -205,11 +205,11 @@
       "name": "MergeConfirmDialog opens with Merge focused; Tab cycles forward through buttons",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "247-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
               "lines": [
                 82,
                 83,
@@ -288,11 +288,11 @@
       "name": "MergeConfirmDialog handle_key Enter on Merge emits the MergeConfirmed outcome",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "280-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
               "lines": [
                 100,
                 101,
@@ -353,11 +353,11 @@
       "name": "MergeConfirmDialog handle_key Enter on Discard emits the DiscardConfirmed outcome",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "305-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
               "lines": [
                 100,
                 101,
@@ -418,11 +418,11 @@
       "name": "MergeConfirmDialog handle_key Esc emits the Cancel outcome regardless of focus",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "331-350",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
               "lines": [
                 111,
                 112,
@@ -472,11 +472,11 @@
       "name": "Action::MergeConfirmed routes through backend.merge_session_worktree and emits a success notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "355-407",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 115,
                 116,
@@ -519,11 +519,11 @@
       "name": "Action::MergeConfirmed with NoChanges status emits the nothing-to-merge notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "411-447",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 204,
                 205,
@@ -557,11 +557,11 @@
       "name": "Action::MergeConfirmed with Conflict status seeds the input with a conflict-context message",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "451-506",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 225,
                 226,
@@ -601,11 +601,11 @@
       "name": "Action::MergeConfirmed with Err emits an error notice and pops the dialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "510-546",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 115,
                 116,
@@ -648,11 +648,11 @@
       "name": "Action::DiscardConfirmed routes through backend.discard_session_worktree",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "551-597",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 147,
                 148,
@@ -685,11 +685,11 @@
       "name": "Action::DiscardConfirmed with Err emits an error notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "601-632",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 147,
                 148,
@@ -722,11 +722,11 @@
       "name": "Action::CancelMergeDialog pops the dialog without firing any backend call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/merge_worktree_rpc057.rs",
+          "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
           "lines": "636-677",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 169,
                 170,
@@ -744,11 +744,11 @@
     "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/merge_worktree_rpc057.rs"
+      "rust/fspec-tui/tests/merge_worktree_rpc057.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
-      "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs"
+      "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+      "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs"
     ],
     "totalLinesCovered": 1020
   }

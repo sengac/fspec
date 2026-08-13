@@ -480,7 +480,7 @@ describe('Feature: relay-bridge-endpoint.feature — Command integration', () =>
       expect(forwarded.command).toBe('board');
 
       // @step And bridge_relay.rs should emit a FspecCommandRequest StreamChunk into the session
-      // (Rust side tested in codelet/tools/src/bridge_relay.rs test_handle_command_emits_fspec_request)
+      // (Rust side tested in rust/tools/src/bridge_relay.rs test_handle_command_emits_fspec_request)
 
       // @step And GlobalSessionStreamManager should handle it by calling fspecCallback
       // (TypeScript side tested in GlobalSessionStreamManager integration)

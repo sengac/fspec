@@ -4,11 +4,11 @@
       "name": "CLI prints success message when clearing hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_clear_virtual_hooks.rs",
           "lines": "93-122",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_virtual_hooks.rs",
+              "file": "rust/fspec/src/clear_virtual_hooks.rs",
               "lines": [
                 30,
                 31,
@@ -86,11 +86,11 @@
       "name": "CLI succeeds with clearedCount=0 when the unit has no hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_clear_virtual_hooks.rs",
           "lines": "123-151",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_virtual_hooks.rs",
+              "file": "rust/fspec/src/clear_virtual_hooks.rs",
               "lines": [
                 30,
                 31,
@@ -168,11 +168,11 @@
       "name": "CLI exits 1 with chalk failure prefix when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_clear_virtual_hooks.rs",
           "lines": "152-180",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_virtual_hooks.rs",
+              "file": "rust/fspec/src/clear_virtual_hooks.rs",
               "lines": [
                 30,
                 31,
@@ -250,11 +250,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_clear_virtual_hooks.rs",
           "lines": "181-243",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_virtual_hooks.rs",
+              "file": "rust/fspec/src/clear_virtual_hooks.rs",
               "lines": [
                 30,
                 31,
@@ -327,11 +327,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_clear_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_clear_virtual_hooks.rs",
           "lines": "181-243",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/clear_virtual_hooks.rs",
+              "file": "rust/fspec/src/clear_virtual_hooks.rs",
               "lines": [
                 30,
                 31,
@@ -409,11 +409,11 @@
       "name": "clear-virtual-hooks --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_clear_virtual_hooks.rs",
+          "file": "rust/fspec/tests/cli_clear_virtual_hooks.rs",
           "lines": "244-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/help/configs/clear_virtual_hooks.rs",
               "lines": [
                 1,
                 2,
@@ -519,11 +519,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_clear_virtual_hooks.rs"
+      "rust/fspec/tests/cli_clear_virtual_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/clear_virtual_hooks.rs",
-      "codelet/fspec-core/src/help/configs/clear_virtual_hooks.rs"
+      "rust/fspec/src/clear_virtual_hooks.rs",
+      "rust/fspec-core/src/help/configs/clear_virtual_hooks.rs"
     ],
     "totalLinesCovered": 664
   }

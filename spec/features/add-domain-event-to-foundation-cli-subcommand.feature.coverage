@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_domain_event_to_foundation.rs",
           "lines": "91-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
               "lines": [
                 99,
                 100,
@@ -40,11 +40,11 @@
       "name": "CLI successfully appends a domain event and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_domain_event_to_foundation.rs",
           "lines": "121-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
                 45,
                 46,
@@ -89,11 +89,11 @@
       "name": "CLI forwards the --description flag into the persisted item",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_domain_event_to_foundation.rs",
           "lines": "152-184",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
                 45,
                 46,
@@ -138,11 +138,11 @@
       "name": "CLI rejects a missing bounded context with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_domain_event_to_foundation.rs",
           "lines": "186-218",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
                 45,
                 46,
@@ -187,11 +187,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "file": "rust/fspec/tests/cli_add_domain_event_to_foundation.rs",
           "lines": "220-273",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
                 45,
                 46,
@@ -238,11 +238,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs"
+      "rust/fspec/tests/cli_add_domain_event_to_foundation.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
-      "codelet/fspec/src/add_domain_event_to_foundation.rs"
+      "rust/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
+      "rust/fspec/src/add_domain_event_to_foundation.rs"
     ],
     "totalLinesCovered": 331
   }

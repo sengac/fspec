@@ -4,7 +4,7 @@
 @RPC-367
 Feature: Restore pane border/divider parity in Rust TUI Changed Files and Checkpoints views
   """
-  Add shared border helpers to codelet/fspec-tui/src/views/diff_common/: a vertical-divider helper (reserves a 1-col gutter and paints '│' using default colour) and a heading-underline helper (paints a 1-row '─' rule below pane_header). Both views (changed_files/render.rs and checkpoints/render.rs) consume these helpers.
+  Add shared border helpers to rust/fspec-tui/src/views/diff_common/: a vertical-divider helper (reserves a 1-col gutter and paints '│' using default colour) and a heading-underline helper (paints a 1-row '─' rule below pane_header). Both views (changed_files/render.rs and checkpoints/render.rs) consume these helpers.
   Layout constraints must reserve space for dividers (1 column between horizontally-split panes; 1 row for the heading underline) so content rects are not overdrawn. Update cached last_*_rect values used for mouse-wheel hit-testing (pane_at) and page-step math to reflect the reduced content area.
   Tests use ratatui TestBackend: render each view into a fixed-size buffer, join cells to a string, and assert '│' appears at the column between panes and '─' appears on the row below each heading. Follow the existing buffer-to-string pattern in full_screen_shell.rs tests and changed_files/tests.rs.
   """

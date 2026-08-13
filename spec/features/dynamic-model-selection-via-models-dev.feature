@@ -30,13 +30,13 @@ Feature: Dynamic Model Selection via models.dev
   7. Configure agent with model limits (context, output) from metadata
 
   FILE STRUCTURE:
-  - codelet/providers/src/models/cache.rs - ModelCache
-  - codelet/providers/src/models/registry.rs - ModelRegistry
-  - codelet/providers/src/models/types.rs - Provider, Model, Capabilities structs
-  - codelet/providers/src/facade/traits.rs - ProviderFacade trait
-  - codelet/providers/src/facade/anthropic.rs - AnthropicFacade
-  - codelet/providers/src/facade/google.rs - GoogleFacade
-  - codelet/providers/src/facade/openai.rs - OpenAIFacade
+  - rust/providers/src/models/cache.rs - ModelCache
+  - rust/providers/src/models/registry.rs - ModelRegistry
+  - rust/providers/src/models/types.rs - Provider, Model, Capabilities structs
+  - rust/providers/src/facade/traits.rs - ProviderFacade trait
+  - rust/providers/src/facade/anthropic.rs - AnthropicFacade
+  - rust/providers/src/facade/google.rs - GoogleFacade
+  - rust/providers/src/facade/openai.rs - OpenAIFacade
 
   BUILD INTEGRATION:
   - build.rs fetches models.dev and embeds as FALLBACK_MODELS using include_bytes!

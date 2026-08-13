@@ -2,8 +2,8 @@
 Feature: Scheduled Indexing via Skills File
   """
   Two responsibilities:
-  1. Skills file config parsing (codelet/napi/src/graph/indexing.rs) — parses markdown JSON blocks, validates with defaults
-  2. Session scanning pipeline (codelet/napi/src/graph/indexing.rs:scan_and_index_sessions) — reads sessions from persistence layer, extracts structural entities from tool call metadata in messages, loads into nanograph, updates watermarks
+  1. Skills file config parsing (rust/napi/src/graph/indexing.rs) — parses markdown JSON blocks, validates with defaults
+  2. Session scanning pipeline (rust/napi/src/graph/indexing.rs:scan_and_index_sessions) — reads sessions from persistence layer, extracts structural entities from tool call metadata in messages, loads into nanograph, updates watermarks
   """
 
   # ========================================

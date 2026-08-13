@@ -23,21 +23,21 @@ Feature: Source-shape regression for RPC-026 mode-view files (RPC-021c)
   Scenario: New view files exist with the required shape and forbidden imports absent
     Given the repository is at the RPC-026 implementing snapshot
     When the source-shape regression test runs
-    Then codelet/fspec-tui/src/views/agent/resume_session_view.rs exists with line count < 300
-    And codelet/fspec-tui/src/views/agent/search_history_view.rs exists with line count < 300
-    And codelet/fspec-tui/src/views/agent/confirm_dialog.rs exists with line count < 300
+    Then rust/fspec-tui/src/views/agent/resume_session_view.rs exists with line count < 300
+    And rust/fspec-tui/src/views/agent/search_history_view.rs exists with line count < 300
+    And rust/fspec-tui/src/views/agent/confirm_dialog.rs exists with line count < 300
     And resume_session_view.rs contains no occurrences of "tui_popup" or "popup_body"
     And search_history_view.rs contains no occurrences of "tui_popup" or "popup_body"
     And the first non-attribute statement in each mode view's render fn is "Clear.render(area, buf)" or "frame.render_widget(Clear, area)"
-    And codelet/fspec-tui/src/views/agent.rs line count is < 300
-    And codelet/fspec-tui/src/app/dispatch_resume_search_views.rs line count is < 300
+    And rust/fspec-tui/src/views/agent.rs line count is < 300
+    And rust/fspec-tui/src/app/dispatch_resume_search_views.rs line count is < 300
 
   @source-shape
   Scenario: Old popup files are removed and their identifiers no longer appear
     Given the repository is at the RPC-026 implementing snapshot
-    When ripgrep searches codelet/fspec-tui/src/ for "ResumePicker"
+    When ripgrep searches rust/fspec-tui/src/ for "ResumePicker"
     Then zero matches are returned
-    When ripgrep searches codelet/fspec-tui/src/ for "SearchPalette"
+    When ripgrep searches rust/fspec-tui/src/ for "SearchPalette"
     Then zero matches are returned
-    And codelet/fspec-tui/src/views/agent/resume_picker.rs does NOT exist
-    And codelet/fspec-tui/src/views/agent/search_palette.rs does NOT exist
+    And rust/fspec-tui/src/views/agent/resume_picker.rs does NOT exist
+    And rust/fspec-tui/src/views/agent/search_palette.rs does NOT exist

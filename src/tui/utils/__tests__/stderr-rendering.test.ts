@@ -14,7 +14,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-// The stderr marker constant - must match Rust (codelet/tools/src/bash.rs)
+// The stderr marker constant - must match Rust (rust/tools/src/bash.rs)
 const STDERR_MARKER = '⚠stderr⚠';
 
 /**
@@ -213,7 +213,7 @@ describe('Feature: Stderr Rendering in Tool Output', () => {
 
   describe('Scenario: Marker constant consistency', () => {
     it('should use the correct marker string', () => {
-      // This must match the Rust constant in codelet/tools/src/bash.rs
+      // This must match the Rust constant in rust/tools/src/bash.rs
       expect(STDERR_MARKER).toBe('⚠stderr⚠');
     });
 

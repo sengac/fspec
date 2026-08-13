@@ -17,7 +17,7 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
   """
 
   Background: User Story
-    As a developer maintaining the codelet/fspec-tui Rust ratatui frontend
+    As a developer maintaining the rust/fspec-tui Rust ratatui frontend
     I want the refactor's cross-cutting invariants pinned by tests
     So that no future change can silently regress the canonical look
 
@@ -25,8 +25,8 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
   # Section I — Structural invariants
   # ============================================================
   Scenario: popup_body.rs is deleted from the codebase
-    Given the codelet/fspec-tui crate
-    Then the file codelet/fspec-tui/src/views/agent/popup_body.rs does not exist
+    Given the rust/fspec-tui crate
+    Then the file rust/fspec-tui/src/views/agent/popup_body.rs does not exist
     And no source file references "mod popup_body"
     And no source file imports "popup_body::PopupBody"
 
@@ -55,7 +55,7 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
     And the top border row contains "╭" then horizontal box-drawing characters then "╮" with no title text
 
   Scenario: A new insta snapshot exists for every migrated dialog
-    Given the codelet/fspec-tui/src/components/snapshots/ directory
+    Given the rust/fspec-tui/src/components/snapshots/ directory
     Then there is a snapshot named help_dialog__centered_popup_80x24
     And there is a snapshot named disconnect_dialog__centered_popup_80x24
     And there is a snapshot named thinking_level_dialog__centered_popup_80x24

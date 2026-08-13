@@ -4,11 +4,11 @@
       "name": "Generating TAGS.md from a valid tags.json writes the file and returns the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_tags_md.rs",
+          "file": "rust/fspec-core/tests/generate_tags_md.rs",
           "lines": "116-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_tags_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -235,11 +235,11 @@
       "name": "A relative output override is resolved against the project root",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_tags_md.rs",
+          "file": "rust/fspec-core/tests/generate_tags_md.rs",
           "lines": "158-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_tags_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -466,11 +466,11 @@
       "name": "Generation fails when spec/tags.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_tags_md.rs",
+          "file": "rust/fspec-core/tests/generate_tags_md.rs",
           "lines": "184-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_tags_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -697,11 +697,11 @@
       "name": "Generation fails when tags.json fails schema validation",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_tags_md.rs",
+          "file": "rust/fspec-core/tests/generate_tags_md.rs",
           "lines": "208-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_tags_md.rs",
+              "file": "rust/fspec-core/src/commands/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -930,10 +930,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/generate_tags_md.rs"
+      "rust/fspec-core/tests/generate_tags_md.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/generate_tags_md.rs"
+      "rust/fspec-core/src/commands/generate_tags_md.rs"
     ],
     "totalLinesCovered": 972
   }

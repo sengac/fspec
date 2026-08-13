@@ -4,11 +4,11 @@
       "name": "Typing fires Action::PendingInputChanged when the buffer text changes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "95-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 259,
                 260,
@@ -47,11 +47,11 @@
       "name": "Cursor-only key events do not fire Action::PendingInputChanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "127-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 259,
                 260,
@@ -90,11 +90,11 @@
       "name": "Single PendingInputChanged triggers exactly one debounced backend save",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "162-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 51,
                 52,
@@ -145,11 +145,11 @@
       "name": "Rapid PendingInputChanged events coalesce into a single backend save with the final value",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "197-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 51,
                 52,
@@ -200,11 +200,11 @@
       "name": "PendingInputChanged with no current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "245-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 51,
                 52,
@@ -224,11 +224,11 @@
       "name": "PendingInputChanged updates SessionContext.input_draft mirror immediately",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "273-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 60,
                 61,
@@ -246,11 +246,11 @@
       "name": "SessionCreated hydrates the live input from backend.get_pending_input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "298-332",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 125,
                 126,
@@ -283,11 +283,11 @@
       "name": "SessionCreated with backend returning None leaves the input empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "334-365",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 140,
                 141,
@@ -333,11 +333,11 @@
       "name": "AttachToSession hydrates the live input from backend.get_pending_input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "366-394",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 88,
                 89,
@@ -355,11 +355,11 @@
       "name": "SeedPendingInput is dropped when the activated session is no longer focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "396-438",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 94,
                 95,
@@ -396,11 +396,11 @@
       "name": "SeedPendingInput updates SessionContext.input_draft for the target session even when not focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "440-477",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 94,
                 95,
@@ -437,11 +437,11 @@
       "name": "InputSubmitted clears the durable draft via backend.set_pending_input(None)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "479-512",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 120,
                 121,
@@ -472,11 +472,11 @@
       "name": "Backend.set_pending_input error does not panic and emits no scrollback notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "514-556",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 75,
                 76,
@@ -501,11 +501,11 @@
       "name": "Backend.get_pending_input error during hydration leaves the input empty without panicking",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "558-583",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 148,
                 149,
@@ -541,11 +541,11 @@
       "name": "Shift+Left/Right cycling uses SessionContext.input_draft (no backend round-trip per cycle)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "585-645",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 25,
                 26,
@@ -574,14 +574,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers",
+      "name": "rust/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
+          "file": "rust/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "647-703",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 1,
                 2,
@@ -768,14 +768,14 @@
     "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs"
+      "rust/fspec-tui/tests/pending_input_durability_rpc052.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/dispatch.rs",
-      "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
-      "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
-      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs"
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/app/dispatch_pending_input.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs"
     ],
     "totalLinesCovered": 1101
   }

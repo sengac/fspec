@@ -8,7 +8,7 @@
           "lines": "162-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/model_id.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/model_id.rs",
               "lines": [
                 20,
                 21,
@@ -44,7 +44,7 @@
       "e2e/prov-117-model-select.test.ts"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/model_id.rs"
+      "rust/fspec-tui/src/views/model_selector/model_id.rs"
     ],
     "totalLinesCovered": 95
   }

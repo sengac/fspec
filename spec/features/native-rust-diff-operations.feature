@@ -2,7 +2,7 @@
 Feature: Replace diff-worker.ts with native Rust NAPI diff operations
   """
   Rust side: Add get_checkpoint_file_diff(dir, filepath, checkpoint_ref) to codelet-git/src/diff.rs. Use gix to resolve the ref, read blob content from both commits (checkpoint tree and HEAD tree), then use similar::TextDiff to generate unified diff.
-  NAPI side: Add #[napi] pub fn get_checkpoint_file_diff(dir, filepath, checkpoint_ref) to codelet/napi/src/git.rs, wrapping the new Rust function.
+  NAPI side: Add #[napi] pub fn get_checkpoint_file_diff(dir, filepath, checkpoint_ref) to rust/napi/src/git.rs, wrapping the new Rust function.
   TypeScript side: In diff.ts, replace getCheckpointFileDiff to call new NAPI binding instead of execSync('git show'). Remove Worker imports from FileDiffViewer.tsx and CheckpointViewer.tsx — call getFileDiff/getCheckpointFileDiff directly in useEffect with synchronous NAPI. Keep parseDiff/DiffLine as-is.
   Cleanup: Delete src/git/diff-worker.ts, src/git/worker-path.ts, src/tui/components/__tests__/worker-path-resolution.test.tsx. Remove esbuild diff-worker step from package.json 'build' script. The feature file for BUG-071 can remain as historical documentation.
   """

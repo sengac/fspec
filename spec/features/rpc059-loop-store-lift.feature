@@ -8,17 +8,17 @@
 Feature: Loop store lift into codelet-core::loops
   """
   Phase 7.6 of the RPC-030 roadmap. The loop_store module currently in
-  codelet/napi/src/scheduler/loop_store.rs MUST be lifted into
-  codelet/core/src/loops/mod.rs following the same lift pattern used
+  rust/napi/src/scheduler/loop_store.rs MUST be lifted into
+  rust/core/src/loops/mod.rs following the same lift pattern used
   by RPC-031..RPC-034 for persistence and RPC-058 for the scheduler
   engine.
 
   After the lift:
 
-  - codelet/core/src/loops/mod.rs hosts the LoopEntry struct, the
+  - rust/core/src/loops/mod.rs hosts the LoopEntry struct, the
   LoopStore active-task manager, the IdleCheckFn type alias, and the
   process-global LOOP_STORE singleton.
-  - codelet/napi/src/scheduler/mod.rs collapses its
+  - rust/napi/src/scheduler/mod.rs collapses its
   `pub mod loop_store; pub use loop_store::LoopStore;` lines into a
   re-export shim: `pub use codelet_core::loops::{LoopEntry,
   LoopStore, IdleCheckFn};` plus an empty `pub mod loop_store {
@@ -38,19 +38,19 @@ Feature: Loop store lift into codelet-core::loops
     I want source-shape tests to pin the loop-store lift
     So that no future refactor can re-introduce a NAPI dependency into the loop store
 
-  Scenario: Loop store module lives under codelet/core/src/loops/
-    Given the directory codelet/core/src/loops/ exists
+  Scenario: Loop store module lives under rust/core/src/loops/
+    Given the directory rust/core/src/loops/ exists
     Then it contains a file named "mod.rs"
 
   Scenario: codelet-core declares LoopEntry, LoopStore, and IdleCheckFn
-    Given the file codelet/core/src/loops/mod.rs is compiled
+    Given the file rust/core/src/loops/mod.rs is compiled
     Then it declares a public struct named "LoopEntry"
     And LoopEntry has fields named id, session_id, prompt, interval_seconds, created_at, expires_at, last_run_at
     And it declares a public struct named "LoopStore"
     And it declares a public type alias named "IdleCheckFn"
 
   Scenario: LoopStore exposes the documented async API
-    Given the file codelet/core/src/loops/mod.rs is compiled
+    Given the file rust/core/src/loops/mod.rs is compiled
     Then LoopStore declares a method named "instance" returning &'static LoopStore
     And LoopStore declares a method named "cancel" taking &str and returning a future of bool
     And LoopStore declares a method named "list_for_session" taking Uuid and returning a future of Vec<LoopEntry>
@@ -60,20 +60,20 @@ Feature: Loop store lift into codelet-core::loops
     And LoopStore declares a method named "is_empty" returning a future of bool
 
   Scenario: The lifted loop store has no NAPI references
-    Given the directory codelet/core/src/loops/ exists
-    Then no file under codelet/core/src/loops/ contains the text "use napi"
-    And no file under codelet/core/src/loops/ contains the text "napi_derive"
+    Given the directory rust/core/src/loops/ exists
+    Then no file under rust/core/src/loops/ contains the text "use napi"
+    And no file under rust/core/src/loops/ contains the text "napi_derive"
 
-  Scenario: codelet/napi/src/scheduler/mod.rs re-exports the loops surface
-    Given the file codelet/napi/src/scheduler/mod.rs is compiled
+  Scenario: rust/napi/src/scheduler/mod.rs re-exports the loops surface
+    Given the file rust/napi/src/scheduler/mod.rs is compiled
     Then it contains a re-export of codelet_core::loops::LoopStore
     And it contains a re-export of codelet_core::loops::LoopEntry
     And it contains a re-export of codelet_core::loops::IdleCheckFn
 
-  Scenario: codelet/napi/src/scheduler/loop_store.rs is deleted
-    Given the directory codelet/napi/src/scheduler/ exists
+  Scenario: rust/napi/src/scheduler/loop_store.rs is deleted
+    Given the directory rust/napi/src/scheduler/ exists
     Then it does not contain a file named "loop_store.rs"
 
   Scenario: codelet-core lib.rs exports the loops module
-    Given the file codelet/core/src/lib.rs is compiled
+    Given the file rust/core/src/lib.rs is compiled
     Then it declares a public module named "loops"

@@ -4,11 +4,11 @@
       "name": "CodexListDirFacade maps offset and limit to InternalLsParams",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "799-848",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 240,
                 241,
@@ -58,11 +58,11 @@
       "name": "CodexListDirFacade backward compatible without optional params",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "851-874",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 240,
                 241,
@@ -112,11 +112,11 @@
       "name": "CodexListDirFacade schema includes offset limit and depth properties",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "877-901",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 240,
                 241,
@@ -166,11 +166,11 @@
       "name": "CodexListDirFacade maps depth to InternalLsParams",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "904-935",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 240,
                 241,
@@ -220,11 +220,11 @@
       "name": "Other facades provide None for offset limit and depth",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "938-958",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/traits.rs",
+              "file": "rust/tools/src/facade/traits.rs",
               "lines": [
                 244,
                 245,
@@ -255,11 +255,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/tools/src/facade/traits.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/tools/src/facade/traits.rs"
     ],
     "totalLinesCovered": 321
   }

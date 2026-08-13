@@ -4,11 +4,11 @@
       "name": "Down past the bottom paints the selected row on the last content row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/scroll_tests.rs",
           "lines": "130-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 212,
                 213,
@@ -68,11 +68,11 @@
       "name": "Returning to the first model paints it on the first content row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/scroll_tests.rs",
           "lines": "161-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 212,
                 213,
@@ -132,11 +132,11 @@
       "name": "End jumps to the last model and paints it at the bottom edge",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/scroll_tests.rs",
           "lines": "196-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 212,
                 213,
@@ -196,11 +196,11 @@
       "name": "A mid-list selection is painted within the viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/scroll_tests.rs",
           "lines": "221-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 212,
                 213,
@@ -260,11 +260,11 @@
       "name": "PageDown advances by one viewport height and keeps the selection painted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/scroll_tests.rs",
           "lines": "242-266",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 296,
                 297,
@@ -318,11 +318,11 @@
       "name": "An overflowing list paints a scrollbar column beside the content",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/scroll_tests.rs",
           "lines": "267-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 244,
                 245,
@@ -373,11 +373,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/scroll_tests.rs"
+      "rust/fspec-tui/src/views/model_selector/scroll_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows.rs",
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/rows.rs",
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "totalLinesCovered": 435
   }

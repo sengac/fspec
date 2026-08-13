@@ -4,11 +4,11 @@
       "name": "Persisted default is restored to the active session at startup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
+          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
           "lines": "106-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
                 87,
                 88,
@@ -41,11 +41,11 @@
       "name": "Pressing D persists the default and immediately repaints the badge",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
+          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
           "lines": "62-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 196,
                 197,
@@ -79,11 +79,11 @@
       "name": "Resuming an older session applies the persisted default once",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
+          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
           "lines": "135-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_chrome.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
               "lines": [
                 47,
                 48,
@@ -147,11 +147,11 @@
       "name": "A manual thinking selection is not clobbered when the session regains focus",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
+          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
           "lines": "172-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_session_chrome.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
               "lines": [
                 61,
                 62,
@@ -200,11 +200,11 @@
       "name": "No persisted default yields Off and does not error at startup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
+          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
           "lines": "222-244",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 167,
                 168,
@@ -242,13 +242,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/tui093_default_thinking_restore_parity.rs"
+      "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/bootstrap.rs",
-      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
-      "codelet/fspec-tui/src/app/dispatch_session_chrome.rs",
-      "codelet/sessions/src/default_thinking_level_persistence.rs"
+      "rust/fspec-tui/src/app/bootstrap.rs",
+      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+      "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
+      "rust/sessions/src/default_thinking_level_persistence.rs"
     ],
     "totalLinesCovered": 335
   }

@@ -4,7 +4,7 @@
 @RPC-167
 Feature: add-architecture CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/add_architecture.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_architecture.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-architecture.txt (captured help fixture from `node dist/index.js add-architecture --help`).
+  Files: rust/fspec/src/add_architecture.rs (NEW CLI bridge); rust/fspec/tests/cli_add_architecture.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/add-architecture.txt (captured help fixture from `node dist/index.js add-architecture --help`).
   Bridge marshals positional <feature> + <text> into JSON {feature, text} and delegates to commands::add_architecture::run. No logic in bridge — JSON marshalling and CWD resolution only.
   Exit codes: 0 on success (stdout '✓ <message>'); 1 on FspecCoreError with 'Error:' prefix to stderr.
   """
@@ -46,11 +46,11 @@ Feature: add-architecture CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec add-architecture --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/add-architecture.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/add-architecture.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     When I dispatch add-architecture through fspec_core::dispatch::dispatch_command with feature='spec/features/login.feature' and text='Uses bcrypt'
     Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Added architecture documentation to spec/features/login.feature'
-    And the CLI bridge module codelet/fspec/src/add_architecture.rs contains NO inline gherkin parsing or line-splice mutation logic
+    And the CLI bridge module rust/fspec/src/add_architecture.rs contains NO inline gherkin parsing or line-splice mutation logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

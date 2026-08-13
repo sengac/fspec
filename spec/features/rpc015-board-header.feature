@@ -29,8 +29,8 @@ Feature: RPC-015 BoardView header — FSPEC Logo + CheckpointStatus + Keybinding
 
   No TypeScript code is modified.
 
-  Pair: render tests live in codelet/fspec-tui/tests/view_board_unit_rpc015.rs;
-  bootstrap-flow tests live in codelet/fspec-tui/tests/app_bootstrap_rpc015.rs.
+  Pair: render tests live in rust/fspec-tui/tests/view_board_unit_rpc015.rs;
+  bootstrap-flow tests live in rust/fspec-tui/tests/app_bootstrap_rpc015.rs.
   """
 
   Background: User Story

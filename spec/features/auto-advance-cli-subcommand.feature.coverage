@@ -4,11 +4,11 @@
       "name": "Shell auto-advance reproduces the broken Framing-A failure",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_auto_advance.rs",
+          "file": "rust/fspec/tests/cli_auto_advance.rs",
           "lines": "73-101",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/auto_advance.rs",
+              "file": "rust/fspec/src/auto_advance.rs",
               "lines": [
                 48,
                 49,
@@ -42,11 +42,11 @@
       "name": "Shell auto-advance with --dry-run behaves identically",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_auto_advance.rs",
+          "file": "rust/fspec/tests/cli_auto_advance.rs",
           "lines": "104-128",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/auto_advance.rs",
+              "file": "rust/fspec/src/auto_advance.rs",
               "lines": [
                 48,
                 49,
@@ -80,11 +80,11 @@
       "name": "auto-advance --help is byte-for-byte identical to the TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_auto_advance.rs",
+          "file": "rust/fspec/tests/cli_auto_advance.rs",
           "lines": "131-158",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/auto_advance.rs",
+              "file": "rust/fspec/src/auto_advance.rs",
               "lines": [
                 1,
                 2,
@@ -165,11 +165,11 @@
       "name": "CLI bridge delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_auto_advance.rs",
+          "file": "rust/fspec/tests/cli_auto_advance.rs",
           "lines": "161-190",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/auto_advance.rs",
+              "file": "rust/fspec/src/auto_advance.rs",
               "lines": [
                 1,
                 2,
@@ -252,10 +252,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_auto_advance.rs"
+      "rust/fspec/tests/cli_auto_advance.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/auto_advance.rs"
+      "rust/fspec/src/auto_advance.rs"
     ],
     "totalLinesCovered": 294
   }

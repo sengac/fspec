@@ -4,11 +4,11 @@
       "name": "Scheduler spawns on first session creation",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "80-105",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 23,
                 24,
@@ -33,11 +33,11 @@
       "name": "Schedule triggers when last run is older than previous cron time",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "111-140",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 105,
                 106,
@@ -130,11 +130,11 @@
       "name": "Schedule does not trigger when already run since last cron time",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "146-171",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 105,
                 106,
@@ -227,11 +227,11 @@
       "name": "Schedule with no last run triggers immediately",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "177-199",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 105,
                 106,
@@ -324,11 +324,11 @@
       "name": "Paused schedule is skipped during evaluation",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "205-233",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 114,
                 115,
@@ -350,11 +350,11 @@
       "name": "Schedule respects configured timezone",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "239-261",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 125,
                 126,
@@ -387,11 +387,11 @@
       "name": "Scheduler handles missing schedules file gracefully",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "267-286",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 72,
                 73,
@@ -416,11 +416,11 @@
       "name": "Scheduler handles malformed JSON gracefully",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "292-316",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 88,
                 89,
@@ -440,11 +440,11 @@
       "name": "Job completion updates last run timestamp",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "322-351",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 225,
                 226,
@@ -480,11 +480,11 @@
       "name": "New schedule is picked up without restart",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "357-399",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 66,
                 67,
@@ -531,11 +531,11 @@
       "name": "Agent job type delegates to agent execution",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "405-432",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 209,
                 210,
@@ -557,11 +557,11 @@
       "name": "Shell job type delegates to shell execution",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "file": "rust/napi/tests/scheduler_engine_test.rs",
           "lines": "438-459",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 220,
                 221,
@@ -580,10 +580,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/scheduler_engine_test.rs"
+      "rust/napi/tests/scheduler_engine_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/scheduler/engine.rs"
+      "rust/napi/src/scheduler/engine.rs"
     ],
     "totalLinesCovered": 707
   }

@@ -4,7 +4,7 @@
 @RPC-272
 Feature: fspec remove-domain-event-from-foundation CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_domain_event_from_foundation.rs — clap-derived struct mirroring
+  CLI bridge: rust/fspec/src/remove_domain_event_from_foundation.rs — clap-derived struct mirroring
   the TS Commander.js registration (src/commands/remove-domain-event-from-foundation.ts:131-153).
   Surface: `fspec remove-domain-event-from-foundation <context-name> <event-name>` (NO options).
   Stdout (success): '✓ Removed domain event "<event-name>" from "<context-name>" bounded context' (TS
@@ -26,7 +26,7 @@ Feature: fspec remove-domain-event-from-foundation CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-domain-event-from-foundation --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-domain-event-from-foundation.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-domain-event-from-foundation.txt
 
   Scenario: CLI successfully soft-deletes a domain event and prints the success line
     Given a project root tempdir with spec/foundation.json whose eventStorm has a bounded_context text='Work Management' id=0 and an event text='WorkUnitCreated' boundedContextId=0 deleted=false
@@ -49,4 +49,4 @@ Feature: fspec remove-domain-event-from-foundation CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec remove-domain-event-from-foundation "Work Management" "E2"` afterwards exits 0
     And spec/foundation.json on disk shows both event items E1 and E2 with deleted=true
-    And the CLI bridge module codelet/fspec/src/remove_domain_event_from_foundation.rs contains NO inline context lookup, event match, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/remove_domain_event_from_foundation.rs contains NO inline context lookup, event match, or file-write logic — its only computation is JSON arg marshalling

@@ -4,11 +4,11 @@
       "name": "handle_edit_key body contains the merged KeyCode::Backspace | KeyCode::Delete arm",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
           "lines": "102-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 134,
                 135,
@@ -33,11 +33,11 @@
       "name": "merged Backspace|Delete arm body contains draft.pop() deletion call",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
           "lines": "122-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 134,
                 135,
@@ -62,11 +62,11 @@
       "name": "handle_edit_key body contains zero standalone KeyCode::Delete arms",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
           "lines": "144-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 102,
                 103,
@@ -150,11 +150,11 @@
       "name": "merged Backspace|Delete arm precedes the KeyCode::Char(c) arm in handle_edit_key",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs",
           "lines": "191-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 102,
                 103,
@@ -240,10 +240,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs"
+      "rust/fspec-tui/tests/rpc155_delete_key_removes_draft_chars_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
     "totalLinesCovered": 266
   }

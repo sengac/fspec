@@ -44,10 +44,10 @@ Feature: RPC-016 BoardView per-column scroll viewport + ⏩/🟢 indicators + ke
   purely additive.
 
   Pair: render tests live in
-  codelet/fspec-tui/tests/view_board_unit_rpc016.rs; viewport math /
-  store tests live in codelet/fspec-tui/tests/store_board_viewport_rpc016.rs;
+  rust/fspec-tui/tests/view_board_unit_rpc016.rs; viewport math /
+  store tests live in rust/fspec-tui/tests/store_board_viewport_rpc016.rs;
   source-shape regressions live in
-  codelet/fspec-tui/tests/source_shape_rpc016.rs.
+  rust/fspec-tui/tests/source_shape_rpc016.rs.
   """
 
   Background: User Story

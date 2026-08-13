@@ -4,7 +4,7 @@
 @RPC-218
 Feature: Port delete-features command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/delete_features.rs reuses crate::io::feature_glob::glob_feature_files for the recursive spec/features walk (relative forward-slash paths, alphabetical sort); a DirectoryNotFound result is mapped to an empty list to preserve the TS 'No feature files found' message.
+  Core impl at rust/fspec-core/src/commands/delete_features.rs reuses crate::io::feature_glob::glob_feature_files for the recursive spec/features walk (relative forward-slash paths, alphabetical sort); a DirectoryNotFound result is mapped to an empty list to preserve the TS 'No feature files found' message.
   Feature-level tags come from parse_feature_lenient(feature.tags) with the leading '@' re-prepended (gherkin-0.16 strips it); AND match via tags.iter().all(); unparseable/featureless files skipped. Output JSON envelope {success, deletedCount, message?, files?, error?}; CLI bridge owns all rendering (dry-run/real/empty) and marshals repeatable --tag into {tags:[...], dryRun?}.
   """
 
@@ -65,7 +65,7 @@ Feature: Port delete-features command to Rust
     Given the standalone fspec Rust binary is built
     When I run 'fspec delete-features --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-features.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/delete-features.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with two features tagged @deprecated

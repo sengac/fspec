@@ -64,7 +64,7 @@ You should see:
 Run the skill file to connect:
 
 ```bash
-# In your codelet/claude session, run:
+# In your rust/claude session, run:
 /skill skills/telegram-bridge.md
 ```
 

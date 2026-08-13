@@ -11,8 +11,8 @@ Feature: codelet-fspec no codelet-napi dependency regression guard
   # NOT transitively depend on the codelet-napi crate. The agent surface reaches
   # the binary through the NAPI-free codelet-sessions crate, not through the
   # NAPI bridge. This regression test mirrors the cargo-metadata + source-import
-  # walk pattern in codelet/sessions/tests/skeleton_invariants.rs and
-  # codelet/rpc-embedded/tests/rpc_006_source_shape.rs.
+  # walk pattern in rust/sessions/tests/skeleton_invariants.rs and
+  # rust/rpc-embedded/tests/rpc_006_source_shape.rs.
   Background: User Story
     As a Rust developer maintaining the codelet workspace
     I want a regression test that asserts codelet-fspec does not transitively depend on codelet-napi (neither in cargo metadata nor in source imports)
@@ -27,4 +27,4 @@ Feature: codelet-fspec no codelet-napi dependency regression guard
     Then the command exits with code 0
     And the test parses `cargo metadata` output for codelet-fspec
     And the resulting transitive package set does not contain the package name `codelet-napi`
-    And no `.rs` file under `codelet/fspec/src/` contains the substring `codelet_napi`
+    And no `.rs` file under `rust/fspec/src/` contains the substring `codelet_napi`

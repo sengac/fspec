@@ -2,7 +2,7 @@
 @RPC-176
 Feature: fspec add-dependencies CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-dependencies.ts:85-125).
+  CLI bridge: rust/fspec/src/add_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-dependencies.ts:85-125).
   Surface: `fspec add-dependencies <workUnitId> [--blocks <ids...>] [--blocked-by <ids...>] [--depends-on <ids...>] [--relates-to <ids...>]`.
   Stdout (success): chalk.green '✓ Added <n> dependencies successfully' (ANSI tolerated by tests via substring match).
   Stderr (failure): '✗ Failed to add dependencies: <message>' prefixed line; exit code 1.
@@ -19,7 +19,7 @@ Feature: fspec add-dependencies CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-dependencies --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-dependencies.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-dependencies.txt
 
   Scenario: Multi-flag invocation marshalls all four arrays into the JSON args
     Given a project root tempdir with AUTH-001, AUTH-002, AUTH-003, FOO-001 all status=backlog and empty dependency arrays

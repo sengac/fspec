@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "file": "rust/fspec/tests/cli_generate_tags_md.rs",
           "lines": "98-119",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "file": "rust/fspec/src/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -68,11 +68,11 @@
       "name": "CLI generates TAGS.md and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "file": "rust/fspec/tests/cli_generate_tags_md.rs",
           "lines": "125-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "file": "rust/fspec/src/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -132,11 +132,11 @@
       "name": "CLI forwards the --output flag to a custom path",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "file": "rust/fspec/tests/cli_generate_tags_md.rs",
           "lines": "154-177",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "file": "rust/fspec/src/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -196,11 +196,11 @@
       "name": "CLI reports a missing tags.json with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "file": "rust/fspec/tests/cli_generate_tags_md.rs",
           "lines": "183-208",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "file": "rust/fspec/src/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -260,11 +260,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "file": "rust/fspec/tests/cli_generate_tags_md.rs",
           "lines": "214-255",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "file": "rust/fspec/src/generate_tags_md.rs",
               "lines": [
                 1,
                 2,
@@ -326,10 +326,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_generate_tags_md.rs"
+      "rust/fspec/tests/cli_generate_tags_md.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/generate_tags_md.rs"
+      "rust/fspec/src/generate_tags_md.rs"
     ],
     "totalLinesCovered": 378
   }

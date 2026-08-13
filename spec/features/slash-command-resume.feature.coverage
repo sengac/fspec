@@ -4,11 +4,11 @@
       "name": "AttachToSession spawns backend.resume_session for the selected session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "file": "rust/fspec-tui/tests/slash_resume_rpc049.rs",
           "lines": "95-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 56,
                 57,
@@ -93,11 +93,11 @@
       "name": "SessionResumeComplete seeds scrollback from get_buffered_output on Ok",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "file": "rust/fspec-tui/tests/slash_resume_rpc049.rs",
           "lines": "135-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 130,
                 131,
@@ -129,11 +129,11 @@
       "name": "SessionResumeFailed emits an error notice and skips get_buffered_output",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "file": "rust/fspec-tui/tests/slash_resume_rpc049.rs",
           "lines": "183-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 115,
                 116,
@@ -156,11 +156,11 @@
       "name": "Idempotent re-restore — AttachToSession on an already-open session still calls resume_session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "file": "rust/fspec-tui/tests/slash_resume_rpc049.rs",
           "lines": "217-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 56,
                 57,
@@ -247,10 +247,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_resume_rpc049.rs"
+      "rust/fspec-tui/tests/slash_resume_rpc049.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
+      "rust/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 303
   }

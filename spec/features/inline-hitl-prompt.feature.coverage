@@ -4,11 +4,11 @@
       "name": "Options question renders inline with radios, colors, Other entry, and footer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "179-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
               "lines": [
                 40,
                 41,
@@ -239,11 +239,11 @@
       "name": "Multi-question request shows a magenta question progress marker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "285-325",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
               "lines": [
                 40,
                 41,
@@ -291,11 +291,11 @@
       "name": "Up and Down wrap the selection across options and the virtual Other entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "331-372",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/hitl_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/hitl_state.rs",
               "lines": [
                 96,
                 97,
@@ -317,11 +317,11 @@
       "name": "Answers accumulate across questions and submit together after the last question",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "378-451",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
                 44,
                 45,
@@ -406,11 +406,11 @@
       "name": "Enter on Other activates freeform mode with the shared input, empty-submit hint, and submit",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "738-848",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
                 124,
                 125,
@@ -464,11 +464,11 @@
       "name": "Esc in Other mode returns to the options list without sending anything",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "850-893",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
                 119,
                 120,
@@ -493,11 +493,11 @@
       "name": "Freeform question consumes the composer draft as the answer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "899-962",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
                 78,
                 79,
@@ -527,11 +527,11 @@
       "name": "Composer draft and cursor survive an options-only HITL round-trip",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "964-1012",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 84,
                 85,
@@ -575,11 +575,11 @@
       "name": "Esc on an options question cancels the whole request through the backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "457-500",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
                 144,
                 145,
@@ -608,11 +608,11 @@
       "name": "Paused chunk stores a HITL slot that wins over the pause slot and Running clears it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "506-576",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 52,
                 53,
@@ -694,11 +694,11 @@
       "name": "Hotkeys, Tab, scroll, and paste do nothing on an options question",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "582-639",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
                 91,
                 92,
@@ -742,11 +742,11 @@
       "name": "Paste in Other mode inserts into the shared input",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "1018-1046",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
                 167,
                 168,
@@ -790,11 +790,11 @@
       "name": "The HITL modal is deleted and no construction site remains",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
           "lines": "645-704",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 575,
                 576,
@@ -859,16 +859,16 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/inline_hitl_prompt_rpc411.rs"
+      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/hitl_prompt.rs",
-      "codelet/fspec-tui/src/store/agent_view/hitl_state.rs",
-      "codelet/fspec-tui/src/app/dispatch_hitl_prompt.rs",
-      "codelet/fspec-tui/src/views/agent/hitl_keys.rs",
-      "codelet/fspec-tui/src/views/agent/input_area.rs",
-      "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
-      "codelet/fspec-tui/src/components/mod.rs"
+      "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
+      "rust/fspec-tui/src/store/agent_view/hitl_state.rs",
+      "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+      "rust/fspec-tui/src/views/agent/hitl_keys.rs",
+      "rust/fspec-tui/src/views/agent/input_area.rs",
+      "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+      "rust/fspec-tui/src/components/mod.rs"
     ],
     "totalLinesCovered": 1437
   }

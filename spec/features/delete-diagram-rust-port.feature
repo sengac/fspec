@@ -23,7 +23,7 @@ Feature: Port delete-diagram command to Rust
   uses std::fs::read_to_string + an explicit ENOENT check and does NOT route through
   ensure_foundation_file.
 
-  Core impl at codelet/fspec-core/src/commands/delete_diagram.rs reads
+  Core impl at rust/fspec-core/src/commands/delete_diagram.rs reads
   spec/foundation.json (no auto-create), finds the first diagram with matching title,
   removes it via Vec::remove, and persists via crate::io::locked_file::write_json_atomic
   so other top-level fields round-trip losslessly.

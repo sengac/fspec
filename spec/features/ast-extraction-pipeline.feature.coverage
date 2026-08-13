@@ -4,11 +4,11 @@
       "name": "Extract Function nodes from a TypeScript file",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "58-126",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -203,11 +203,11 @@
       "name": "Extract Type nodes from a Rust file",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "131-218",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
               "lines": [
                 1,
                 2,
@@ -386,11 +386,11 @@
       "name": "Extract import edges from TypeScript files",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "223-292",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 100,
                 101,
@@ -486,11 +486,11 @@
       "name": "Walk project directory with gitignore and batch load",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_extraction_pipeline_test.rs",
+          "file": "rust/napi/tests/ast_extraction_pipeline_test.rs",
           "lines": "297-396",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/mod.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/mod.rs",
               "lines": [
                 1,
                 2,
@@ -621,12 +621,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_extraction_pipeline_test.rs"
+      "rust/napi/tests/ast_extraction_pipeline_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/mod.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_rust_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/mod.rs"
     ],
     "totalLinesCovered": 878
   }

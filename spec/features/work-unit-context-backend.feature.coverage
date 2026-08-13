@@ -4,11 +4,11 @@
       "name": "Work unit ID appears in environment information when entering AgentView",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "3278-3313",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "69-102"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "LLM receives notification when updating a different work unit",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "3336-3374",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "69-102"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "No notification when no active session exists",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "3403-3416",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": "69-102"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Current date appears in environment information",
       "testMappings": [
         {
-          "file": "codelet/cli/src/session/context_gathering.rs",
+          "file": "rust/cli/src/session/context_gathering.rs",
           "lines": "211-271",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 20,
                 21,
@@ -106,11 +106,11 @@
       "name": "AI must use environment date not training data",
       "testMappings": [
         {
-          "file": "codelet/cli/src/session/context_gathering.rs",
+          "file": "rust/cli/src/session/context_gathering.rs",
           "lines": "280-315",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 20,
                 21,
@@ -163,11 +163,11 @@
       "name": "Resumed session gets fresh environment info with current date",
       "testMappings": [
         {
-          "file": "codelet/cli/src/session/context_gathering.rs",
+          "file": "rust/cli/src/session/context_gathering.rs",
           "lines": "323-368",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/context_gathering.rs",
+              "file": "rust/cli/src/session/context_gathering.rs",
               "lines": [
                 20,
                 21,
@@ -224,11 +224,11 @@
       "name": "Compaction preserves environment date during session",
       "testMappings": [
         {
-          "file": "codelet/cli/src/session/system_reminders.rs",
+          "file": "rust/cli/src/session/system_reminders.rs",
           "lines": "604-651",
           "implMappings": [
             {
-              "file": "codelet/cli/src/session/system_reminders.rs",
+              "file": "rust/cli/src/session/system_reminders.rs",
               "lines": [
                 208,
                 209,
@@ -274,14 +274,14 @@
     "coveredScenarios": 7,
     "coveragePercent": 88,
     "testFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/cli/src/session/context_gathering.rs",
-      "codelet/cli/src/session/system_reminders.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/cli/src/session/context_gathering.rs",
+      "rust/cli/src/session/system_reminders.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/cli/src/session/context_gathering.rs",
-      "codelet/cli/src/session/system_reminders.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/cli/src/session/context_gathering.rs",
+      "rust/cli/src/session/system_reminders.rs"
     ],
     "totalLinesCovered": 453
   }

@@ -4,11 +4,11 @@
       "name": "render_nav_items reads view.test_result inside the per-row paint loop",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "108-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 24,
                 25,
@@ -72,11 +72,11 @@
       "name": "Provider row gate guards the test_result decoration paint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "133-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 60,
                 61,
@@ -102,11 +102,11 @@
       "name": "paint_test_result_decoration has exactly one call site and exactly one fn definition",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "163-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 68,
                 69,
@@ -128,11 +128,11 @@
       "name": "paint_test_result_decoration accepts the canonical six-argument signature",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "192-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 77,
                 78,
@@ -152,11 +152,11 @@
       "name": "paint_test_result_decoration helper is owned exclusively by list_nav_render.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "227-257",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 77,
                 78,
@@ -198,11 +198,11 @@
       "name": "Decoration foreground comes from status decoration and background comes from row_band_bg",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "260-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 96,
                 97,
@@ -224,11 +224,11 @@
       "name": "Separator and decoration coordinates respect the row right boundary",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs",
           "lines": "292-327",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 85,
                 86,
@@ -253,10 +253,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs"
+      "rust/fspec-tui/tests/rpc150_inline_test_result_render_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs"
+      "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs"
     ],
     "totalLinesCovered": 343
   }

@@ -5,8 +5,8 @@
 @RPC-197
 Feature: audit-coverage CLI subcommand
   """
-  Core impl: rewrite codelet/fspec-core/src/commands/audit_coverage.rs to `pub async fn run(args_json, project_root)`; reuse crate::types::coverage::CoverageFile (no new shared type).
-  Core returns JSON envelope {output, exitCode} (validate.rs pattern); CLI bridge codelet/fspec/src/audit_coverage.rs parses it, prints output, returns exitCode. Help config codelet/fspec-core/src/help/configs/audit_coverage.rs. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::AuditCoverage + intercept + mod, help configs/mod.rs.
+  Core impl: rewrite rust/fspec-core/src/commands/audit_coverage.rs to `pub async fn run(args_json, project_root)`; reuse crate::types::coverage::CoverageFile (no new shared type).
+  Core returns JSON envelope {output, exitCode} (validate.rs pattern); CLI bridge rust/fspec/src/audit_coverage.rs parses it, prints output, returns exitCode. Help config rust/fspec-core/src/help/configs/audit_coverage.rs. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::AuditCoverage + intercept + mod, help configs/mod.rs.
   """
 
   # ========================================
@@ -35,29 +35,29 @@ Feature: audit-coverage CLI subcommand
     So that coverage-file file-existence auditing has byte-parity with the TypeScript implementation
 
   Scenario: Clap exposes audit-coverage as a subcommand requiring a feature-name and printing byte-parity help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec audit-coverage --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec audit-coverage --help` piped to non-TTY
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/audit-coverage.txt
+    Then stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/audit-coverage.txt
     Then stdout starts with a blank line followed by 'AUDIT-COVERAGE'
 
   Scenario: CLI reports all files present and exits 0
     Given a project root whose spec/features/user-login.feature.coverage references three files that all exist
-    When I run `./codelet/target/release/fspec audit-coverage user-login` from that directory
+    When I run `./rust/target/release/fspec audit-coverage user-login` from that directory
     Then the command exits 0
     Then stdout contains the substring '✅ All files found (3/3)'
     Then stdout contains the substring 'All mappings valid'
 
   Scenario: CLI reports a missing test file and exits 1
     Given a project root whose spec/features/user-login.feature.coverage maps to a test file that does not exist
-    When I run `./codelet/target/release/fspec audit-coverage user-login` from that directory
+    When I run `./rust/target/release/fspec audit-coverage user-login` from that directory
     Then the command exits 1
     Then stdout contains the substring '❌ Test file not found:'
     Then stdout contains the substring 'Recommendation: Remove this mapping or restore the deleted file'
 
   Scenario: CLI reports a missing coverage file and exits 1
     Given a project root with no spec/features/user-login.feature.coverage file
-    When I run `./codelet/target/release/fspec audit-coverage user-login` from that directory
+    When I run `./rust/target/release/fspec audit-coverage user-login` from that directory
     Then the command exits 1
     Then stdout contains the substring '✗ Coverage file not found:'
 
@@ -65,4 +65,4 @@ Feature: audit-coverage CLI subcommand
     Given a project root whose spec/features/user-login.feature.coverage references files that all exist
     When I dispatch audit-coverage through fspec_core::dispatch::dispatch_command for feature 'user-login'
     Then the dispatcher's DispatchResult.data carries the same output and exitCode the CLI prints against the same on-disk state
-    Then the CLI bridge module codelet/fspec/src/audit_coverage.rs contains NO inline file-existence or rendering logic — its only computation is JSON arg marshalling and envelope decoding
+    Then the CLI bridge module rust/fspec/src/audit_coverage.rs contains NO inline file-existence or rendering logic — its only computation is JSON arg marshalling and envelope decoding

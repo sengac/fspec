@@ -4,11 +4,11 @@
       "name": "Execute command in specified working directory",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_tool_test.rs",
+          "file": "rust/tools/tests/bash_tool_test.rs",
           "lines": "219-244",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 287,
                 288,
@@ -69,11 +69,11 @@
       "name": "Execute command without cwd parameter (backward compatible)",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_tool_test.rs",
+          "file": "rust/tools/tests/bash_tool_test.rs",
           "lines": "246-264",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 287,
                 288,
@@ -134,11 +134,11 @@
       "name": "Error when cwd directory does not exist",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_tool_test.rs",
+          "file": "rust/tools/tests/bash_tool_test.rs",
           "lines": "266-293",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 287,
                 288,
@@ -201,10 +201,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/bash_tool_test.rs"
+      "rust/tools/tests/bash_tool_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bash.rs"
+      "rust/tools/src/bash.rs"
     ],
     "totalLinesCovered": 220
   }

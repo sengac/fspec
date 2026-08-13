@@ -260,7 +260,7 @@ describe('tokenStateUtils', () => {
 
     it('should match Rust formula exactly', () => {
       // Verify against known Rust calculation
-      // From codelet/cli/tests/autocompact_buffer_test.rs
+      // From rust/cli/tests/autocompact_buffer_test.rs
       // Claude: 200000 context, 16000 max_output
       // Usable = 200000 - 16000 = 184000
       const usable = 200000 - Math.min(16000, 32000);

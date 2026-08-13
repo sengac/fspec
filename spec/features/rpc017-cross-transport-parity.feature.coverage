@@ -4,11 +4,11 @@
       "name": "EmbeddedFspecBackend.move_work_unit_up persists through the shared helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "81-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 104,
                 105,
@@ -30,11 +30,11 @@
       "name": "WebSocketFspecBackend.move_work_unit_down crosses tarpc cleanly",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "104-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 290,
                 291,
@@ -57,11 +57,11 @@
       "name": "Both transports return Err for done-column targets",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "129-162",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 434,
                 435,
@@ -111,11 +111,11 @@
       "name": "napi::move_work_unit_up is wired through the same shared helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "163-193",
           "implMappings": [
             {
-              "file": "codelet/napi/src/work_units_watcher.rs",
+              "file": "rust/napi/src/work_units_watcher.rs",
               "lines": [
                 193,
                 194,
@@ -149,11 +149,11 @@
       "name": "FspecService::move_work_unit_up delegates through SharedFspecService::cwd to the shared helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "194-215",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 434,
                 435,
@@ -182,11 +182,11 @@
       "name": "FspecService::move_work_unit_down delegates through SharedFspecService::cwd to the shared helper",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "216-237",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 452,
                 453,
@@ -218,11 +218,11 @@
       "name": "FspecService::move_work_unit_up returns Err when no cwd is attached",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
           "lines": "238-260",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 434,
                 435,
@@ -253,15 +253,15 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
-      "codelet/fspec/src/common.rs"
+      "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
+      "rust/fspec/src/common.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/napi/src/work_units_watcher.rs",
-      "codelet/fspec/src/common.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/napi/src/work_units_watcher.rs",
+      "rust/fspec/src/common.rs"
     ],
     "totalLinesCovered": 358
   }

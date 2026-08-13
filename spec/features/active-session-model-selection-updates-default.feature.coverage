@@ -4,11 +4,11 @@
       "name": "Active-session model switch updates the global default",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov123_active_selection_updates_default.rs",
+          "file": "rust/sessions/tests/prov123_active_selection_updates_default.rs",
           "lines": "40-71",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 999,
                 1000,
@@ -93,11 +93,11 @@
       "name": "A new session inherits the model selected in the active session",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov123_active_selection_updates_default.rs",
+          "file": "rust/sessions/tests/prov123_active_selection_updates_default.rs",
           "lines": "73-112",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 999,
                 1000,
@@ -182,11 +182,11 @@
       "name": "The active-session switch persists the new default to disk",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov123_active_selection_updates_default.rs",
+          "file": "rust/sessions/tests/prov123_active_selection_updates_default.rs",
           "lines": "114-161",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 999,
                 1000,
@@ -264,7 +264,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 231,
                 232,
@@ -301,11 +301,11 @@
       "name": "Creating an isolated session leaves the global default unchanged",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov123_active_selection_updates_default.rs",
+          "file": "rust/sessions/tests/prov123_active_selection_updates_default.rs",
           "lines": "163-206",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 660,
                 661,
@@ -393,11 +393,11 @@
       "name": "A profile-qualified selection updates the default and round-trips to a new session",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov123_active_selection_updates_default.rs",
+          "file": "rust/sessions/tests/prov123_active_selection_updates_default.rs",
           "lines": "208-257",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 999,
                 1000,
@@ -482,11 +482,11 @@
       "name": "An empty model selection never overwrites the global default",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov123_active_selection_updates_default.rs",
+          "file": "rust/sessions/tests/prov123_active_selection_updates_default.rs",
           "lines": "259-299",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 231,
                 232,
@@ -525,11 +525,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov123_active_selection_updates_default.rs"
+      "rust/sessions/tests/prov123_active_selection_updates_default.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/session_manager.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/session_manager.rs"
     ],
     "totalLinesCovered": 673
   }

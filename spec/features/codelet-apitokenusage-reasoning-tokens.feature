@@ -1,7 +1,7 @@
 @RIG-011
 Feature: codelet ApiTokenUsage Reasoning Tokens
   """
-  Key files: codelet/core/src/token_usage.rs (ApiTokenUsage struct, update_from_usage, total_context)
+  Key files: rust/core/src/token_usage.rs (ApiTokenUsage struct, update_from_usage, total_context)
   Data flow: rig::completion::Usage → codelet_core::ApiTokenUsage
   """
 

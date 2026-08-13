@@ -4,11 +4,11 @@
       "name": "Page includes Prism 1.29 scripts and theme stylesheet",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "11-37",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mod.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mod.rs",
               "lines": [
                 16,
                 17,
@@ -54,11 +54,11 @@
       "name": "Page highlights code blocks with an alias map on DOMContentLoaded",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "40-57",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 31,
                 32,
@@ -111,11 +111,11 @@
       "name": "Page adds copy buttons and uppercase language badges",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "60-74",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 53,
                 54,
@@ -144,11 +144,11 @@
       "name": "Page provides a theme toggle persisted to localStorage",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "77-99",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 76,
                 77,
@@ -181,11 +181,11 @@
       "name": "Page provides clamped font-size controls persisted to localStorage",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "102-141",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 98,
                 99,
@@ -234,11 +234,11 @@
       "name": "Stylesheet defines both dark and light theme variables",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "144-160",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/styles.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/styles.rs",
               "lines": [
                 12,
                 13,
@@ -284,11 +284,11 @@
       "name": "Existing mermaid script and content wrapper are preserved",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "163-186",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/mod.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/mod.rs",
               "lines": [
                 22,
                 23,
@@ -328,11 +328,11 @@
       "name": "Mermaid theme follows the saved viewer theme",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "187-205",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 11,
                 12,
@@ -357,11 +357,11 @@
       "name": "Prism language aliases map shorthand languages to Prism grammars",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
+          "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
           "lines": "207-229",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/template/scripts.rs",
+              "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
                 41,
                 42,
@@ -385,12 +385,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/attachment-viewer/tests/viewer_prism_theme_fonts.rs"
+      "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs"
     ],
     "implFiles": [
-      "codelet/attachment-viewer/src/markdown/template/mod.rs",
-      "codelet/attachment-viewer/src/markdown/template/scripts.rs",
-      "codelet/attachment-viewer/src/markdown/template/styles.rs"
+      "rust/attachment-viewer/src/markdown/template/mod.rs",
+      "rust/attachment-viewer/src/markdown/template/scripts.rs",
+      "rust/attachment-viewer/src/markdown/template/styles.rs"
     ],
     "totalLinesCovered": 441
   }

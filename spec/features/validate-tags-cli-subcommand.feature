@@ -5,7 +5,7 @@
 @RPC-324
 Feature: Validate-tags CLI subcommand
   """
-  File layout: core impl codelet/fspec-core/src/commands/validate_tags.rs (rewrite stub); help config codelet/fspec-core/src/help/configs/validate_tags.rs; CLI bridge codelet/fspec/src/validate_tags.rs; core test codelet/fspec-core/tests/validate_tags.rs; CLI test codelet/fspec/tests/cli_validate_tags.rs; help fixture codelet/fspec/tests/fixtures/help/validate-tags.txt
+  File layout: core impl rust/fspec-core/src/commands/validate_tags.rs (rewrite stub); help config rust/fspec-core/src/help/configs/validate_tags.rs; CLI bridge rust/fspec/src/validate_tags.rs; core test rust/fspec-core/tests/validate_tags.rs; CLI test rust/fspec/tests/cli_validate_tags.rs; help fixture rust/fspec/tests/fixtures/help/validate-tags.txt
   Reuse: ensure_tags_file (RPC-251), io::gherkin::parse_feature_lenient (RPC-299) for feature+scenario tag extraction. SHARED-FILE REQUEST to supervisor: (1) a read-only work-units loader returning Option<WorkUnitsData> on any error (null parity) — model in-command as Option or add io::ensure::read_work_units_or_none; (2) non-throwing feature glob (glob_feature_files errors on missing spec/features; need empty-vec parity) — either add glob_feature_files_or_empty or handle DirectoryNotFound in-command; (3) supervisor wires canonical.rs PORTED_COMMANDS, dispatch.rs run_ported, commands/mod.rs already has module, help/configs/mod.rs, main.rs Mode+intercept+forward. Work-unit tag regexes ported inline.
   """
 
@@ -42,22 +42,22 @@ Feature: Validate-tags CLI subcommand
     So that I can catch unregistered tags and misplaced work-unit tags from a shell or the LLM dispatcher without relying on Node.js
 
   Scenario: Clap exposes validate-tags as a subcommand with file argument and flags
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec validate-tags --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec validate-tags --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/validate-tags.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/validate-tags.txt
     And stdout starts with a blank line followed by 'VALIDATE-TAGS'
 
   Scenario: CLI exits 0 with no output for a single valid file and no flags
     Given spec/tags.json registers the tags used by a feature file including a component and feature-group tag
     Given a single feature file carries only registered tags
-    When I run `./codelet/target/release/fspec validate-tags spec/features/valid.feature`
+    When I run `./rust/target/release/fspec validate-tags spec/features/valid.feature`
     Then the command exits 0
     Then stdout is empty
 
   Scenario: CLI exits 1 and prints a violation block for an unregistered tag
     Given a feature file carries the unregistered feature-level tag '@made-up'
-    When I run `./codelet/target/release/fspec validate-tags spec/features/bad.feature`
+    When I run `./rust/target/release/fspec validate-tags spec/features/bad.feature`
     Then the command exits with code 1
     Then stdout contains the substring 'has tag violations:'
     Then stdout contains the substring 'Unregistered tag: @made-up'
@@ -65,13 +65,13 @@ Feature: Validate-tags CLI subcommand
   Scenario: CLI --verbose prints a passing line per valid file
     Given spec/tags.json registers the tags used by a feature file including a component and feature-group tag
     Given a single feature file carries only registered tags
-    When I run `./codelet/target/release/fspec validate-tags spec/features/valid.feature --verbose`
+    When I run `./rust/target/release/fspec validate-tags spec/features/valid.feature --verbose`
     Then the command exits 0
     Then stdout contains the substring '✓ All tags in spec/features/valid.feature are registered'
 
   Scenario: CLI --summary prints only the summary count lines
     Given two feature files where one has an unregistered tag
-    When I run `./codelet/target/release/fspec validate-tags --summary`
+    When I run `./rust/target/release/fspec validate-tags --summary`
     Then the command exits with code 1
     Then stdout contains the substring 'files passed'
     Then stdout contains the substring 'files have tag violations'
@@ -79,6 +79,6 @@ Feature: Validate-tags CLI subcommand
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root with spec/tags.json and a feature file carrying an unregistered tag
-    When I dispatch validate-tags through fspec_core::dispatch::dispatch_command and also run `./codelet/target/release/fspec validate-tags` against the same on-disk state
+    When I dispatch validate-tags through fspec_core::dispatch::dispatch_command and also run `./rust/target/release/fspec validate-tags` against the same on-disk state
     Then both paths agree the file is invalid
-    Then the CLI bridge module codelet/fspec/src/validate_tags.rs contains NO inline validation or rendering logic — its only computation is JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/validate_tags.rs contains NO inline validation or rendering logic — its only computation is JSON arg marshalling

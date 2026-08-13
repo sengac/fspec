@@ -5,7 +5,7 @@
 @COPY-002
 Feature: Text selection region model
   """
-  New module codelet/fspec-tui/src/mouse/selection.rs. Types: Cell { row: u16, col: u16 } and Selection { anchor: Cell, cursor: Cell }. A RowSpan { row: u16, start_col: u16, end_col: u16 } (end exclusive, half-open to match the existing rect_contains half-open convention).
+  New module rust/fspec-tui/src/mouse/selection.rs. Types: Cell { row: u16, col: u16 } and Selection { anchor: Cell, cursor: Cell }. A RowSpan { row: u16, start_col: u16, end_col: u16 } (end exclusive, half-open to match the existing rect_contains half-open convention).
   For multi-row spans the caller supplies a row width (content width) so the first/middle rows can extend to the row end. Method signature: fn spans(&self, row_width: u16) -> Vec<RowSpan>. Normalization: order (row, col) pairs lexicographically; if start==end return empty vec.
   Pure module: no crossterm, ratatui, or io imports beyond primitive types. Depends on nothing else in COPY. Consumed by COPY-004 (text reconstruction), COPY-005 (highlight), and held live by COPY-006. Unit tests assert the exact Vec<RowSpan> for each example; no I/O.
   half-open columns: a span cols 2..6 covers columns 2,3,4,5. Middle-row full spans are 0..row_width. This matches how COPY-004 will slice span.content and COPY-005 will style cells.

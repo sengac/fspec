@@ -1,7 +1,7 @@
 @BRIDGE-008
 Feature: Telegram Stream Control Channel
   """
-  BridgeManager in codelet/napi handles WebSocket connections and message routing. Control messages need to be handled in the input_receiver mpsc channel handler that processes incoming WebSocket messages.
+  BridgeManager in rust/napi handles WebSocket connections and message routing. Control messages need to be handled in the input_receiver mpsc channel handler that processes incoming WebSocket messages.
   """
 
   # ========================================

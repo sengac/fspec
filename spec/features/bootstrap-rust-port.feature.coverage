@@ -4,11 +4,11 @@
       "name": "Dispatch returns the complete documentation for an empty project",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "60-97",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 44,
                 45,
@@ -42,11 +42,11 @@
       "name": "Output contains the header marker and core workflow strings",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "99-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 44,
                 45,
@@ -80,11 +80,11 @@
       "name": "Output contains all six help-section markers in order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "137-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 44,
                 45,
@@ -118,11 +118,11 @@
       "name": "Config test-command placeholder is replaced",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "179-204",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 67,
                 68,
@@ -190,11 +190,11 @@
       "name": "Config quality-check-commands placeholder is replaced with the joined string",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "206-237",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 67,
                 68,
@@ -262,11 +262,11 @@
       "name": "Malformed config leaves placeholders intact and still succeeds",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "239-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 67,
                 68,
@@ -334,11 +334,11 @@
       "name": "Event Storm reminder names the matching FOUND work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "266-311",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 124,
                 125,
@@ -458,11 +458,11 @@
       "name": "Event Storm reminder suggests creating a work unit when none matches",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "313-338",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 124,
                 125,
@@ -611,11 +611,11 @@
       "name": "No reminder when the event storm is already populated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "340-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/bootstrap.rs",
+              "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
                 124,
                 125,
@@ -673,11 +673,11 @@
       "name": "CLI and dispatcher converge on the same fspec_core run function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/bootstrap.rs",
+          "file": "rust/fspec-core/tests/bootstrap.rs",
           "lines": "364-401",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/bootstrap.rs",
+              "file": "rust/fspec/src/bootstrap.rs",
               "lines": [
                 43,
                 44,
@@ -711,11 +711,11 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/bootstrap.rs"
+      "rust/fspec-core/tests/bootstrap.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/bootstrap.rs",
-      "codelet/fspec/src/bootstrap.rs"
+      "rust/fspec-core/src/commands/bootstrap.rs",
+      "rust/fspec/src/bootstrap.rs"
     ],
     "totalLinesCovered": 878
   }

@@ -4,11 +4,11 @@
       "name": "First add seeds rules array and nextRuleId on a clean specifying work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_rule.rs",
+          "file": "rust/fspec-core/tests/add_rule.rs",
           "lines": "78-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_rule.rs",
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
                 67,
                 68,
@@ -110,11 +110,11 @@
       "name": "Second add appends with auto-incremented id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_rule.rs",
+          "file": "rust/fspec-core/tests/add_rule.rs",
           "lines": "128-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_rule.rs",
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
                 67,
                 68,
@@ -216,11 +216,11 @@
       "name": "Missing work unit surfaces the canonical error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_rule.rs",
+          "file": "rust/fspec-core/tests/add_rule.rs",
           "lines": "170-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_rule.rs",
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
                 78,
                 79,
@@ -241,11 +241,11 @@
       "name": "Non-specifying status is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_rule.rs",
+          "file": "rust/fspec-core/tests/add_rule.rs",
           "lines": "199-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_rule.rs",
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
                 88,
                 89,
@@ -273,11 +273,11 @@
       "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_rule.rs",
+          "file": "rust/fspec-core/tests/add_rule.rs",
           "lines": "228-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_rule.rs",
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
                 75,
                 76,
@@ -303,10 +303,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_rule.rs"
+      "rust/fspec-core/tests/add_rule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_rule.rs"
+      "rust/fspec-core/src/commands/add_rule.rs"
     ],
     "totalLinesCovered": 392
   }

@@ -2,8 +2,8 @@
 @RPC-229
 Feature: Port export-work-units command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/export_work_units.rs: signature pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>; direct std::fs::read_to_string of spec/work-units.json (no auto-create), Object.values via data.work_units.values(), for format=json serde_json::to_string_pretty(units) then std::fs::write(output, ...); else wrap 'Unsupported format: <fmt>'; returns {success:true}
-  CLI bridge codelet/fspec/src/export_work_units.rs marshals format(positional)/output(positional)/status(--status) to core; success log mirrors broken TS 'Exported undefined work units to undefined'. Help config codelet/fspec-core/src/help/configs/export_work_units.rs mirrors export-work-units-help.ts. SUPERVISOR wires canonical.rs/dispatch.rs/commands.mod.rs/help configs.mod.rs/main.rs
+  Core impl at rust/fspec-core/src/commands/export_work_units.rs: signature pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>; direct std::fs::read_to_string of spec/work-units.json (no auto-create), Object.values via data.work_units.values(), for format=json serde_json::to_string_pretty(units) then std::fs::write(output, ...); else wrap 'Unsupported format: <fmt>'; returns {success:true}
+  CLI bridge rust/fspec/src/export_work_units.rs marshals format(positional)/output(positional)/status(--status) to core; success log mirrors broken TS 'Exported undefined work units to undefined'. Help config rust/fspec-core/src/help/configs/export_work_units.rs mirrors export-work-units-help.ts. SUPERVISOR wires canonical.rs/dispatch.rs/commands.mod.rs/help configs.mod.rs/main.rs
   """
 
   # ========================================

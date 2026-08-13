@@ -4,7 +4,7 @@
 @RPC-198
 Feature: Port auto-advance command to Rust
   """
-  File layout: core codelet/fspec-core/src/commands/auto_advance.rs (rewrite stub) is single source of truth run(args_json, project_root); CLI bridge codelet/fspec/src/auto_advance.rs (Framing A, marshals {} ignoring --dry-run); help config codelet/fspec-core/src/help/configs/auto_advance.rs; help fixture codelet/fspec/tests/fixtures/help/auto-advance.txt; integration test codelet/fspec/tests/cli_auto_advance.rs; core test codelet/fspec-core/tests/auto_advance.rs
+  File layout: core rust/fspec-core/src/commands/auto_advance.rs (rewrite stub) is single source of truth run(args_json, project_root); CLI bridge rust/fspec/src/auto_advance.rs (Framing A, marshals {} ignoring --dry-run); help config rust/fspec-core/src/help/configs/auto_advance.rs; help fixture rust/fspec/tests/fixtures/help/auto-advance.txt; integration test rust/fspec/tests/cli_auto_advance.rs; core test rust/fspec-core/tests/auto_advance.rs
   Reuses shared types/helpers: WorkUnitsData/WorkUnitStatus (types/work_unit.rs), write_json_atomic (io/locked_file.rs), iso8601_now (io/time.rs). Mutation uses raw serde_json::Map round-trip (like update_work_unit.rs) to preserve on-disk key order + unmodelled fields. No new shared files required.
   """
 
@@ -27,7 +27,7 @@ Feature: Port auto-advance command to Rust
   #
   # ========================================
   Background: User Story
-    Given the auto-advance command is ported to Rust in codelet/fspec-core/src/commands/auto_advance.rs
+    Given the auto-advance command is ported to Rust in rust/fspec-core/src/commands/auto_advance.rs
     And both the LLM dispatcher and the standalone Rust binary call the same fspec_core::commands::auto_advance::run function
 
   Scenario: Dispatcher advances a testing work unit to implementing on tests-pass

@@ -4,11 +4,11 @@
       "name": "execute_compaction sets flag, clears context, and injects system instruction",
       "testMappings": [
         {
-          "file": "codelet/napi/src/inject_summary_handler.rs",
+          "file": "rust/napi/src/inject_summary_handler.rs",
           "lines": "306-369",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 169,
                 170,
@@ -108,11 +108,11 @@
       "name": "execute_compaction makes zero LLM calls",
       "testMappings": [
         {
-          "file": "codelet/napi/src/inject_summary_handler.rs",
+          "file": "rust/napi/src/inject_summary_handler.rs",
           "lines": "370-393",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 169,
                 170,
@@ -212,11 +212,11 @@
       "name": "Compaction system instruction guides agent through DAG construction",
       "testMappings": [
         {
-          "file": "codelet/napi/src/inject_summary_handler.rs",
+          "file": "rust/napi/src/inject_summary_handler.rs",
           "lines": "396-435",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 169,
                 170,
@@ -264,11 +264,11 @@
       "name": "Agent builds DAG via SessionSearch and calls inject_summary",
       "testMappings": [
         {
-          "file": "codelet/napi/src/inject_summary_handler.rs",
+          "file": "rust/napi/src/inject_summary_handler.rs",
           "lines": "167-222",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 38,
                 39,
@@ -352,11 +352,11 @@
       "name": "inject_summary handler clears compaction_in_progress flag",
       "testMappings": [
         {
-          "file": "codelet/napi/src/inject_summary_handler.rs",
+          "file": "rust/napi/src/inject_summary_handler.rs",
           "lines": "127-162",
           "implMappings": [
             {
-              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "file": "rust/napi/src/inject_summary_handler.rs",
               "lines": [
                 38,
                 39,
@@ -440,11 +440,11 @@
       "name": "session_compact NAPI binding triggers in-view flow",
       "testMappings": [
         {
-          "file": "codelet/napi/src/inject_summary_handler.rs",
+          "file": "rust/napi/src/inject_summary_handler.rs",
           "lines": "227-268",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 7366,
                 7367,
@@ -567,12 +567,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/inject_summary_handler.rs"
+      "rust/napi/src/inject_summary_handler.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive_helpers.rs",
-      "codelet/napi/src/inject_summary_handler.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/napi/src/inject_summary_handler.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 925
   }

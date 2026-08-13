@@ -4,11 +4,11 @@
       "name": "Auto-reconnect backoff schedule",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+          "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
           "lines": "57-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 260,
                 261,
@@ -122,11 +122,11 @@
       "name": "Auto-reconnect happy path",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+          "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
           "lines": "131-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 260,
                 261,
@@ -240,11 +240,11 @@
       "name": "Reconnect re-issues create_session(None) and replaces active session id",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+          "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
           "lines": "202-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app.rs",
+              "file": "rust/fspec-tui/src/app.rs",
               "lines": [
                 345,
                 346,
@@ -290,11 +290,11 @@
       "name": "Client receives ServerGoingAway when daemon shuts down gracefully",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+          "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
           "lines": "302-353",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 63,
                 64,
@@ -314,7 +314,7 @@
       "name": "Reconnecting Action updates the inline reconnecting line in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+          "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
           "lines": "342-377",
           "implMappings": []
         }
@@ -326,12 +326,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs"
+      "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/fspec-tui/src/app.rs",
-      "codelet/rpc-server/src/server.rs"
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/app.rs",
+      "rust/rpc-server/src/server.rs"
     ],
     "totalLinesCovered": 532
   }

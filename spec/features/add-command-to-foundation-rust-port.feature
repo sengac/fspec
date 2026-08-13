@@ -2,7 +2,7 @@
 @RPC-175
 Feature: Port add-command-to-foundation command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_command_to_foundation.rs — Rust parity port of
+  Core impl at rust/fspec-core/src/commands/add_command_to_foundation.rs — Rust parity port of
   src/commands/add-command-to-foundation.ts. Appends a `command` Event Storm item to
   spec/foundation.json's eventStorm.items array, linked to a named bounded context via
   boundedContextId. Loads foundation.json via io::ensure::ensure_foundation_file (auto-creates the

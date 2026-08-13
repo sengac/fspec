@@ -4,11 +4,11 @@
       "name": "Truncated tool call error includes structured recovery instruction",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "file": "rust/cli/tests/truncation_recovery_test.rs",
           "lines": "20-60",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 226,
                 235,
@@ -119,11 +119,11 @@
       "name": "Retry budget prevents infinite truncation retry loops",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "file": "rust/cli/tests/truncation_recovery_test.rs",
           "lines": "68-143",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 226,
                 235,
@@ -258,11 +258,11 @@
       "name": "Normal completion is unaffected by truncation recovery logic",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "file": "rust/cli/tests/truncation_recovery_test.rs",
           "lines": "150-200",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 235,
                 236
@@ -276,11 +276,11 @@
       "name": "Text-only truncation does not trigger tool call recovery",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "file": "rust/cli/tests/truncation_recovery_test.rs",
           "lines": "209-237",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 235,
                 236
@@ -294,11 +294,11 @@
       "name": "Truncation recovery is provider-agnostic",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "file": "rust/cli/tests/truncation_recovery_test.rs",
           "lines": "244-279",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 235,
                 236,
@@ -347,10 +347,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/truncation_recovery_test.rs"
+      "rust/cli/tests/truncation_recovery_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 494
   }

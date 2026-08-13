@@ -4,11 +4,11 @@
       "name": "ResumeSessionView scrolls beyond 10 rows using terminal height",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_resume_session_view.rs",
+          "file": "rust/fspec-tui/tests/rpc026_resume_session_view.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
                 1,
                 2,
@@ -305,11 +305,11 @@
       "name": "D opens the ConfirmDialog and Enter on Primary deletes the session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_resume_session_view.rs",
+          "file": "rust/fspec-tui/tests/rpc026_resume_session_view.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
                 1,
                 2,
@@ -606,11 +606,11 @@
       "name": "Empty session list renders the no-sessions placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_resume_session_view.rs",
+          "file": "rust/fspec-tui/tests/rpc026_resume_session_view.rs",
           "lines": "1-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
                 1,
                 2,
@@ -909,10 +909,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_resume_session_view.rs"
+      "rust/fspec-tui/tests/rpc026_resume_session_view.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/resume_session_view.rs"
+      "rust/fspec-tui/src/views/agent/resume_session_view.rs"
     ],
     "totalLinesCovered": 1755
   }

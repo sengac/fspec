@@ -4,11 +4,11 @@
       "name": "bind_and_serve signature is unchanged",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/regression_invariants_rpc011.rs",
+          "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
           "lines": "36-72",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server.rs",
               "lines": [
                 72,
                 73,
@@ -71,11 +71,11 @@
       "name": "WebSocketFspecBackend::connect signature is unchanged",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/regression_invariants_rpc011.rs",
+          "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
           "lines": "74-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 60,
                 61,
@@ -100,11 +100,11 @@
       "name": "Architecture invariants from RPC-005 still hold",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/regression_invariants_rpc011.rs",
+          "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
           "lines": "106-181",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/lib.rs",
+              "file": "rust/rpc-server/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -166,11 +166,11 @@
       "name": "Earlier RPC-005..010 test suites still pass",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/regression_invariants_rpc011.rs",
+          "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
           "lines": "216-278",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/lib.rs",
+              "file": "rust/rpc-server/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -234,12 +234,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/regression_invariants_rpc011.rs"
+      "rust/rpc-server/tests/regression_invariants_rpc011.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/server.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/rpc-server/src/lib.rs"
+      "rust/rpc-server/src/server.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/rpc-server/src/lib.rs"
     ],
     "totalLinesCovered": 371
   }

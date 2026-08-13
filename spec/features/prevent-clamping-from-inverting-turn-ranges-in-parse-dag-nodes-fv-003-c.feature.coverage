@@ -4,11 +4,11 @@
       "name": "turn_start beyond message_count drops the node with a warning",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "592-615",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -49,11 +49,11 @@
       "name": "turn_end above message_count is clamped while turn_start is preserved",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "615-635",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -94,11 +94,11 @@
       "name": "turn_start equal to message_count - 1 is accepted",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "635-653",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -139,11 +139,11 @@
       "name": "turn_start equal to message_count drops the node",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "653-673",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -184,11 +184,11 @@
       "name": "Mixed input drops only the out-of-range node",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "673-695",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -229,11 +229,11 @@
       "name": "message_count of zero rejects every node",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "695-714",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -274,11 +274,11 @@
       "name": "Property — every parsed node satisfies turn_start <= turn_end and turn_end < message_count after clamping",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
           "lines": "716-758",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 479,
                 480,
@@ -321,10 +321,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs"
+      "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/model.rs"
+      "rust/core/src/compaction/model.rs"
     ],
     "totalLinesCovered": 374
   }

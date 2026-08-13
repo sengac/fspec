@@ -5,7 +5,7 @@
 @RPC-286
 Feature: Port research command to Rust
   """
-  Core impl target: codelet/fspec-core/src/commands/research.rs. Signature changes from the
+  Core impl target: rust/fspec-core/src/commands/research.rs. Signature changes from the
   current stub run(args_json) to the canonical run(args_json, project_root). Args mirror the TS
   ResearchOptions surface exposed by the Commander.js registration at src/commands/research.ts:276-407:
   {tool:Option<String>, workUnit:Option<String>, all:bool, query:Option<String>, args:Vec<String>(forwarded)}.
@@ -34,7 +34,7 @@ Feature: Port research command to Rust
   deterministic and sync-safe.
 
   Reuse / new shared infrastructure (Phase C, supervisor-owned wiring): a config-resolution helper mirroring
-  src/utils/config-resolution.ts (env → user → project → default precedence) under codelet/fspec-core/src/io/
+  src/utils/config-resolution.ts (env → user → project → default precedence) under rust/fspec-core/src/io/
   or a new module; a static tool registry table. SHARED-FILE REQUESTS to supervisor (deferred to Phase C):
   (1) canonical.rs PORTED_COMMANDS add 'research'; (2) dispatch.rs move research from run_stub to run_ported
   with run(args_json, project_root); (3) main.rs Mode::Research clap variant {tool, work_unit, all, trailing

@@ -4,11 +4,11 @@
       "name": "Replaces a matching placeholder step in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_step.rs",
+          "file": "rust/fspec-core/tests/add_step.rs",
           "lines": "51-81",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_step.rs",
+              "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
                 150,
                 151,
@@ -56,11 +56,11 @@
       "name": "Appends a new step after the last existing step",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_step.rs",
+          "file": "rust/fspec-core/tests/add_step.rs",
           "lines": "88-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_step.rs",
+              "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
                 209,
                 210,
@@ -110,11 +110,11 @@
       "name": "Indentation is inherited from existing steps",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_step.rs",
+          "file": "rust/fspec-core/tests/add_step.rs",
           "lines": "117-137",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_step.rs",
+              "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
                 137,
                 138,
@@ -139,11 +139,11 @@
       "name": "Invalid step type is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_step.rs",
+          "file": "rust/fspec-core/tests/add_step.rs",
           "lines": "144-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_step.rs",
+              "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
                 53,
                 54,
@@ -172,11 +172,11 @@
       "name": "Unknown scenario name is rejected with available list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_step.rs",
+          "file": "rust/fspec-core/tests/add_step.rs",
           "lines": "175-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_step.rs",
+              "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
                 110,
                 111,
@@ -215,11 +215,11 @@
       "name": "Missing feature file surfaces the not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_step.rs",
+          "file": "rust/fspec-core/tests/add_step.rs",
           "lines": "207-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_step.rs",
+              "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
                 70,
                 71,
@@ -252,10 +252,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_step.rs"
+      "rust/fspec-core/tests/add_step.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_step.rs"
+      "rust/fspec-core/src/commands/add_step.rs"
     ],
     "totalLinesCovered": 301
   }

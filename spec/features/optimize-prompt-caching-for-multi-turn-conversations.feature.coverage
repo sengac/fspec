@@ -4,11 +4,11 @@
       "name": "Single turn conversation caches final message",
       "testMappings": [
         {
-          "file": "codelet/providers/src/caching_client.rs",
+          "file": "rust/providers/src/caching_client.rs",
           "lines": "253-273",
           "implMappings": [
             {
-              "file": "codelet/providers/src/caching_client.rs",
+              "file": "rust/providers/src/caching_client.rs",
               "lines": [
                 99,
                 100,
@@ -61,11 +61,11 @@
       "name": "Two turn conversation caches final message",
       "testMappings": [
         {
-          "file": "codelet/providers/src/caching_client.rs",
+          "file": "rust/providers/src/caching_client.rs",
           "lines": "304-326",
           "implMappings": [
             {
-              "file": "codelet/providers/src/caching_client.rs",
+              "file": "rust/providers/src/caching_client.rs",
               "lines": [
                 99,
                 100,
@@ -118,11 +118,11 @@
       "name": "Three turn conversation caches final message",
       "testMappings": [
         {
-          "file": "codelet/providers/src/caching_client.rs",
+          "file": "rust/providers/src/caching_client.rs",
           "lines": "329-354",
           "implMappings": [
             {
-              "file": "codelet/providers/src/caching_client.rs",
+              "file": "rust/providers/src/caching_client.rs",
               "lines": [
                 99,
                 100,
@@ -175,11 +175,11 @@
       "name": "Multi-turn conversation with tool use caches final message",
       "testMappings": [
         {
-          "file": "codelet/providers/src/caching_client.rs",
+          "file": "rust/providers/src/caching_client.rs",
           "lines": "357-389",
           "implMappings": [
             {
-              "file": "codelet/providers/src/caching_client.rs",
+              "file": "rust/providers/src/caching_client.rs",
               "lines": [
                 99,
                 100,
@@ -232,11 +232,11 @@
       "name": "Message with string content is transformed to array format",
       "testMappings": [
         {
-          "file": "codelet/providers/src/caching_client.rs",
+          "file": "rust/providers/src/caching_client.rs",
           "lines": "276-301",
           "implMappings": [
             {
-              "file": "codelet/providers/src/caching_client.rs",
+              "file": "rust/providers/src/caching_client.rs",
               "lines": [
                 117,
                 118,
@@ -259,11 +259,11 @@
       "name": "Message with array content has cache_control added to last block",
       "testMappings": [
         {
-          "file": "codelet/providers/src/caching_client.rs",
+          "file": "rust/providers/src/caching_client.rs",
           "lines": "392-419",
           "implMappings": [
             {
-              "file": "codelet/providers/src/caching_client.rs",
+              "file": "rust/providers/src/caching_client.rs",
               "lines": [
                 129,
                 130,
@@ -286,10 +286,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/caching_client.rs"
+      "rust/providers/src/caching_client.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/caching_client.rs"
+      "rust/providers/src/caching_client.rs"
     ],
     "totalLinesCovered": 341
   }

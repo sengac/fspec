@@ -4,11 +4,11 @@
       "name": "Clap exposes show-acceptance-criteria as a subcommand and prints flag help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "498-525",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "CLI against workspace with no spec/features exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "527-551",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "CLI default text output prints feature name and scenario steps",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "553-580",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "CLI --format=markdown prints H1/H2/bullet step output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "582-603",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "CLI --format=json prints 2-space JSON array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "605-626",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "CLI --output writes file and prints message without dumping content",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "628-661",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "CLI --tag matching zero features prints 'No features found matching tags'",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "663-686",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "show-acceptance-criteria --help is byte-for-byte identical to the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "688-716",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "718-746",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -139,11 +139,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_acceptance_criteria.rs",
+          "file": "rust/fspec/tests/cli_show_acceptance_criteria.rs",
           "lines": "748-801",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_acceptance_criteria.rs",
+              "file": "rust/fspec/src/show_acceptance_criteria.rs",
               "lines": "1-82"
             }
           ]
@@ -156,7 +156,7 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_acceptance_criteria.rs"
+      "rust/fspec/tests/cli_show_acceptance_criteria.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 295

@@ -4,11 +4,11 @@
       "name": "Clap exposes show-deleted as a subcommand with positional workUnitId and no flags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "82-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 44,
                 45,
@@ -71,11 +71,11 @@
       "name": "CLI prints sentinel when the work unit exists but has no deleted items",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "141-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 164,
                 165,
@@ -91,11 +91,11 @@
       "name": "CLI text output renders header and item lines for the populated case",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "169-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 164,
                 165,
@@ -128,11 +128,11 @@
       "name": "CLI exits 1 and writes to stderr when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "217-246",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 62,
                 63,
@@ -152,11 +152,11 @@
       "name": "CLI auto-creates work-units.json before checking for the requested work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "248-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 56,
                 57,
@@ -182,11 +182,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "274-315",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 1,
                 2,
@@ -211,11 +211,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "317-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 44,
                 45,
@@ -278,11 +278,11 @@
       "name": "show-deleted --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "file": "rust/fspec/tests/cli_show_deleted.rs",
           "lines": "383-407",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
                 1,
                 2,
@@ -309,10 +309,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_deleted.rs"
+      "rust/fspec/tests/cli_show_deleted.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/show_deleted.rs"
+      "rust/fspec-core/src/commands/show_deleted.rs"
     ],
     "totalLinesCovered": 494
   }

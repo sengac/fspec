@@ -4,11 +4,11 @@
       "name": "Clap exposes set-user-story with positional and required flags in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "90-144",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 39,
                 40,
@@ -23,11 +23,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "91-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 1,
                 2,
@@ -120,11 +120,11 @@
       "name": "CLI writes the user story and prints the success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "150-201",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 50,
                 51,
@@ -161,11 +161,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "151-205",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 1,
                 2,
@@ -258,11 +258,11 @@
       "name": "CLI rejects an unknown work unit with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "207-241",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 71,
                 72,
@@ -273,11 +273,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "208-245",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 1,
                 2,
@@ -370,11 +370,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "247-293",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 50,
                 51,
@@ -411,11 +411,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "248-297",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/set_user_story.rs",
+              "file": "rust/fspec/src/set_user_story.rs",
               "lines": [
                 1,
                 2,
@@ -508,11 +508,11 @@
       "name": "set-user-story --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "299-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/set_user_story.rs",
+              "file": "rust/fspec-core/src/help/configs/set_user_story.rs",
               "lines": [
                 1,
                 2,
@@ -642,11 +642,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_set_user_story.rs",
+          "file": "rust/fspec/tests/cli_set_user_story.rs",
           "lines": "300-326",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/set_user_story.rs",
+              "file": "rust/fspec-core/src/help/configs/set_user_story.rs",
               "lines": [
                 1,
                 2,
@@ -783,11 +783,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_set_user_story.rs"
+      "rust/fspec/tests/cli_set_user_story.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/set_user_story.rs",
-      "codelet/fspec-core/src/help/configs/set_user_story.rs"
+      "rust/fspec/src/set_user_story.rs",
+      "rust/fspec-core/src/help/configs/set_user_story.rs"
     ],
     "totalLinesCovered": 1304
   }

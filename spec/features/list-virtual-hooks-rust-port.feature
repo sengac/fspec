@@ -4,9 +4,9 @@
 @RPC-252
 Feature: Port list-virtual-hooks command to Rust
   """
-  New impl file at codelet/fspec-core/src/commands/list_virtual_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_work_units::run. Args struct deserializes `{workUnitId: String, format?: 'text'|'json'}` with `#[serde(default)]` on format only — workUnitId is REQUIRED and parse failures surface as InvalidArgs.
+  New impl file at rust/fspec-core/src/commands/list_virtual_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_work_units::run. Args struct deserializes `{workUnitId: String, format?: 'text'|'json'}` with `#[serde(default)]` on format only — workUnitId is REQUIRED and parse failures surface as InvalidArgs.
 
-  The shell-facing CLI bridge is now delivered as part of RPC-252 — see codelet/fspec/src/list_virtual_hooks.rs and spec/features/list-virtual-hooks-cli-subcommand.feature. Both front doors (LLM tool-call dispatcher and clap shell subcommand) call the same `list_virtual_hooks::run` function defined in this port.
+  The shell-facing CLI bridge is now delivered as part of RPC-252 — see rust/fspec/src/list_virtual_hooks.rs and spec/features/list-virtual-hooks-cli-subcommand.feature. Both front doors (LLM tool-call dispatcher and clap shell subcommand) call the same `list_virtual_hooks::run` function defined in this port.
 
   The command reads `spec/work-units.json` via the shared `crate::io::ensure::ensure_work_units_file` helper (parity with `list-work-units` Rust port — auto-creates the file with empty store if missing). It then looks up the requested work unit by id; if not present, returns `FspecCoreError::InvalidArgs { reason: "Work unit '<id>' does not exist" }` (the dispatcher converts this to success=false with that error string).
 

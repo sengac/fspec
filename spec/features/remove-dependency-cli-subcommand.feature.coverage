@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "126-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_dependency.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -168,11 +168,11 @@
       "name": "Positional shorthand removes the dependsOn edge",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "151-173",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 64,
                 65,
@@ -234,11 +234,11 @@
       "name": "--depends-on flag removes the same edge as the positional shorthand",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "175-197",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 64,
                 65,
@@ -300,11 +300,11 @@
       "name": "Positional and --depends-on with the same value succeed without conflict",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "199-220",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 66,
                 67,
@@ -327,11 +327,11 @@
       "name": "Positional and --depends-on with different values exits 1 with conflict message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "222-246",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 66,
                 67,
@@ -354,11 +354,11 @@
       "name": "No relationship args supplied exits 1 with the at-least-one guard message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "248-265",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 78,
                 79,
@@ -380,11 +380,11 @@
       "name": "--blocks flag removes a blocks edge bidirectionally",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "267-293",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 89,
                 90,
@@ -421,11 +421,11 @@
       "name": "--blocked-by flag removes a blockedBy edge bidirectionally",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "295-321",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 89,
                 90,
@@ -462,11 +462,11 @@
       "name": "--relates-to flag removes a symmetric relatesTo edge",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "323-349",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 89,
                 90,
@@ -503,11 +503,11 @@
       "name": "Missing source work unit exits 1 with the canonical error on stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_dependency.rs",
+          "file": "rust/fspec/tests/cli_remove_dependency.rs",
           "lines": "351-368",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_dependency.rs",
+              "file": "rust/fspec/src/remove_dependency.rs",
               "lines": [
                 105,
                 106,
@@ -530,11 +530,11 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_dependency.rs"
+      "rust/fspec/tests/cli_remove_dependency.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/remove_dependency.rs",
-      "codelet/fspec/src/remove_dependency.rs"
+      "rust/fspec-core/src/help/configs/remove_dependency.rs",
+      "rust/fspec/src/remove_dependency.rs"
     ],
     "totalLinesCovered": 598
   }

@@ -4,11 +4,11 @@
       "name": "ProviderSettingsEvent enum declares SwitchToModels variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
           "lines": "94-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 57,
                 58,
@@ -34,11 +34,11 @@
       "name": "handle_list_key body binds Tab to SwitchToModels via an expression arm",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
           "lines": "113-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 64
               ]
@@ -51,11 +51,11 @@
       "name": "handle_list_key checks filter_mode BEFORE dispatching Tab to SwitchToModels",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
           "lines": "132-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 30,
                 31,
@@ -102,11 +102,11 @@
       "name": "handle_filter_key body does NOT emit SwitchToModels",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
           "lines": "162-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 161,
                 162,
@@ -180,11 +180,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs"
+      "rust/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/mod.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 177
   }

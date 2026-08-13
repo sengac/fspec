@@ -4,11 +4,11 @@
       "name": "ThinkingLevelDialog renders at Priority::Foreground",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "49-61",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 142,
                 143,
@@ -28,11 +28,11 @@
       "name": "ThinkingLevelDialog renders the four canonical labels",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "62-98",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 104,
                 105,
@@ -144,11 +144,11 @@
       "name": "Dialog opens with the currently-active level pre-selected",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "99-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 47,
                 48,
@@ -176,11 +176,11 @@
       "name": "Arrow keys navigate the 4 levels with wrap-around",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "128-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 85,
                 86,
@@ -203,11 +203,11 @@
       "name": "Enter on a level emits Action::ThinkingLevelSelected",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "160-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 169,
                 170,
@@ -232,11 +232,11 @@
       "name": "Esc dismisses the ThinkingLevelDialog without side effects",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "201-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 154,
                 155,
@@ -254,11 +254,11 @@
       "name": "thinking_level_dialog.rs stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
+          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
           "lines": "232-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -476,10 +476,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/thinking_level_dialog_rpc022.rs"
+      "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/thinking_level_dialog.rs"
+      "rust/fspec-tui/src/components/thinking_level_dialog.rs"
     ],
     "totalLinesCovered": 557
   }

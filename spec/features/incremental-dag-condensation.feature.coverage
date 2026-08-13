@@ -4,11 +4,11 @@
       "name": "First compaction uses FRESH instruction when no existing DAG",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "66-112",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 245,
                 246,
@@ -133,11 +133,11 @@
       "name": "Second compaction uses INCREMENTAL instruction when existing DAG found",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "118-177",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 245,
                 246,
@@ -325,11 +325,11 @@
       "name": "detect_existing_dag finds DAG in messages",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "183-228",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 322,
                 323,
@@ -375,11 +375,11 @@
       "name": "detect_existing_dag returns None when no DAG exists",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "234-257",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 322,
                 323,
@@ -425,11 +425,11 @@
       "name": "Incremental template substitution replaces placeholders",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "263-296",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 295,
                 296,
@@ -467,11 +467,11 @@
       "name": "execute_compaction appends resume prompt for both modes",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "302-372",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 373,
                 374,
@@ -531,11 +531,11 @@
       "name": "Existing DAG with no parseable dag-node blocks uses fallback turn_end",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "378-398",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 322,
                 323,
@@ -581,11 +581,11 @@
       "name": "FRESH instruction preserves current behavior",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "404-441",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 245,
                 246,
@@ -647,11 +647,11 @@
       "name": "INCREMENTAL instruction contains promotion guidance",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/incremental_dag_condensation_test.rs",
+          "file": "rust/cli/tests/incremental_dag_condensation_test.rs",
           "lines": "447-493",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive_helpers.rs",
+              "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
                 295,
                 296,
@@ -691,10 +691,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/incremental_dag_condensation_test.rs"
+      "rust/cli/tests/incremental_dag_condensation_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive_helpers.rs"
+      "rust/cli/src/interactive_helpers.rs"
     ],
     "totalLinesCovered": 929
   }

@@ -7,7 +7,7 @@
 Feature: fspec binary loads dotenv at startup
   """
   Architecture notes:
-  - The pure-Rust `fspec` binary entry (codelet/fspec/src/main.rs) must call
+  - The pure-Rust `fspec` binary entry (rust/fspec/src/main.rs) must call
   the cwd-only dotenv load once before clap dispatch via the seam
   `startup_env::load_startup_env()`, which runs
   `let _ = dotenvy::from_path(std::path::Path::new(".env"));`. This loads
@@ -19,9 +19,9 @@ Feature: fspec binary loads dotenv at startup
   provider keys) into a process whose own cwd has none — breaking spawn-based
   parity tests. `from_path` reads strictly <cwd>/.env, matching the
   TypeScript `join(process.cwd(), '.env')`.
-  - dotenvy is already a workspace dependency (codelet/Cargo.toml); it must be
-  declared in codelet/fspec/Cargo.toml [dependencies] as
-  `dotenvy.workspace = true` (mirroring codelet/cli/Cargo.toml).
+  - dotenvy is already a workspace dependency (rust/Cargo.toml); it must be
+  declared in rust/fspec/Cargo.toml [dependencies] as
+  `dotenvy.workspace = true` (mirroring rust/cli/Cargo.toml).
   - dotenvy::from_path() is NON-overriding: a key already exported in the shell
   keeps its value; a missing .env returns Err and is ignored.
   - cargo_shape.rs locks the [dependencies] keys list and main.rs line cap;
@@ -65,13 +65,13 @@ Feature: fspec binary loads dotenv at startup
 
   @source-shape
   Scenario: The fspec startup seam calls dotenvy in startup_env and main.rs invokes it before clap parse
-    Given the file "codelet/fspec/src/startup_env.rs"
+    Given the file "rust/fspec/src/startup_env.rs"
     When the source is scanned for "dotenvy::from_path"
     Then it contains a call to "dotenvy::from_path"
-    And the file "codelet/fspec/src/main.rs" invokes "startup_env::load_startup_env()" before the clap parse of the Cli struct
+    And the file "rust/fspec/src/main.rs" invokes "startup_env::load_startup_env()" before the clap parse of the Cli struct
 
   @source-shape
   Scenario: The fspec crate declares the dotenvy dependency
-    Given the file "codelet/fspec/Cargo.toml"
+    Given the file "rust/fspec/Cargo.toml"
     When the "[dependencies]" table is parsed
     Then it contains a key "dotenvy"

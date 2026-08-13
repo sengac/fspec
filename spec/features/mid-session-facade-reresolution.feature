@@ -5,7 +5,7 @@
 @RPC-348
 Feature: Mid-session facade re-resolution for custom models on set_model
   """
-  Fix location is codelet/sessions/src/model_resolution.rs apply_model_selection. For the custom-model branch, after set_model_direct, derive the facade via codelet_providers::custom::derive_facade_for_custom(provider), call pm.set_facade_override(Some(facade)) when derived, and call apply_custom_provider_env_vars; for the non-custom branch call pm.set_facade_override(None) to clear any stale facade. Mirrors the NAPI session_set_model_profile post-set_model_direct block in session_bindings.rs lines 1955-1993.
+  Fix location is rust/sessions/src/model_resolution.rs apply_model_selection. For the custom-model branch, after set_model_direct, derive the facade via codelet_providers::custom::derive_facade_for_custom(provider), call pm.set_facade_override(Some(facade)) when derived, and call apply_custom_provider_env_vars; for the non-custom branch call pm.set_facade_override(None) to clear any stale facade. Mirrors the NAPI session_set_model_profile post-set_model_direct block in session_bindings.rs lines 1955-1993.
   Offline test setup combines two fixtures: the rpc343 SessionManager setup (set_data_directory + dummy ANTHROPIC/GOOGLE keys + set_default_model) plus a DiscoveryFixture-style redirect of HOME/FSPEC_HOME/CWD so a custom provider config written under .fspec/providers is discoverable by derive_facade_for_custom and custom_provider_registered. Facade is observed via session.inner.lock().await then provider_manager().facade_override().
   """
 

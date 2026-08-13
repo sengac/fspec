@@ -4,11 +4,11 @@
       "name": "Paused chunk reaches subscribers while the pause wait is still pending",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/paused_chunk_delivery_rpc409.rs",
+          "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
           "lines": "140-190",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 984,
                 985,
@@ -42,11 +42,11 @@
       "name": "Fspec request chunk reaches subscribers while the fspec wait is still pending",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/paused_chunk_delivery_rpc409.rs",
+          "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
           "lines": "195-247",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 984,
                 985,
@@ -82,11 +82,11 @@
       "name": "Paused chunk reaches subscribers while the HITL wait is still pending",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/paused_chunk_delivery_rpc409.rs",
+          "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
           "lines": "252-290",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 984,
                 985,
@@ -119,11 +119,11 @@
       "name": "Waits fall back to a direct blocking recv when called off-runtime",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/paused_chunk_delivery_rpc409.rs",
+          "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
           "lines": "295-327",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 984,
                 985,
@@ -159,10 +159,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/paused_chunk_delivery_rpc409.rs"
+      "rust/sessions/tests/paused_chunk_delivery_rpc409.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/background_session.rs"
+      "rust/sessions/src/background_session.rs"
     ],
     "totalLinesCovered": 265
   }

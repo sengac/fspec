@@ -2,7 +2,7 @@
 @RPC-274
 Feature: fspec remove-foundation-bounded-context CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_foundation_bounded_context.rs — clap-derived struct mirroring
+  CLI bridge: rust/fspec/src/remove_foundation_bounded_context.rs — clap-derived struct mirroring
   the TS Commander.js registration (src/commands/remove-foundation-bounded-context.ts:140-160).
   Surface: `fspec remove-foundation-bounded-context <context-name> [--cascade]`.
   Stdout (success): '✓ Removed bounded context "<name>"<cascadeMsg> from foundation Event Storm'
@@ -25,7 +25,7 @@ Feature: fspec remove-foundation-bounded-context CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-foundation-bounded-context --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-foundation-bounded-context.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-foundation-bounded-context.txt
     And stdout starts with a blank line followed by 'REMOVE-FOUNDATION-BOUNDED-CONTEXT'
 
   Scenario: CLI soft-deletes a childless bounded context and prints the success line
@@ -55,4 +55,4 @@ Feature: fspec remove-foundation-bounded-context CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec remove-foundation-bounded-context "C2"` afterwards exits 0
     And spec/foundation.json on disk shows both 'C1' and 'C2' items have deleted=true
-    And the CLI bridge module codelet/fspec/src/remove_foundation_bounded_context.rs contains NO inline find, soft-delete, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/remove_foundation_bounded_context.rs contains NO inline find, soft-delete, or file-write logic — its only computation is JSON arg marshalling

@@ -4,11 +4,11 @@
       "name": "Registry returns stale data when OnceCell is not invalidated after refresh",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_refresh_invalidation_test.rs",
+          "file": "rust/napi/tests/model_refresh_invalidation_test.rs",
           "lines": "112-141",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/mod.rs",
+              "file": "rust/napi/src/models/mod.rs",
               "lines": [
                 35,
                 36,
@@ -42,11 +42,11 @@
       "name": "Refresh invalidates in-memory cache so new models appear",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_refresh_invalidation_test.rs",
+          "file": "rust/napi/tests/model_refresh_invalidation_test.rs",
           "lines": "150-183",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "file": "rust/napi/src/models/napi_bindings.rs",
               "lines": [
                 168,
                 169,
@@ -71,11 +71,11 @@
           ]
         },
         {
-          "file": "codelet/napi/tests/model_refresh_invalidation_test.rs",
+          "file": "rust/napi/tests/model_refresh_invalidation_test.rs",
           "lines": "150-183",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/mod.rs",
+              "file": "rust/napi/src/models/mod.rs",
               "lines": [
                 50,
                 51,
@@ -94,11 +94,11 @@
       "name": "Registry is lazy-initialized and cached across calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/model_refresh_invalidation_test.rs",
+          "file": "rust/napi/tests/model_refresh_invalidation_test.rs",
           "lines": "192-215",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/mod.rs",
+              "file": "rust/napi/src/models/mod.rs",
               "lines": [
                 35,
                 36,
@@ -126,11 +126,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/model_refresh_invalidation_test.rs"
+      "rust/napi/tests/model_refresh_invalidation_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/models/mod.rs",
-      "codelet/napi/src/models/napi_bindings.rs"
+      "rust/napi/src/models/mod.rs",
+      "rust/napi/src/models/napi_bindings.rs"
     ],
     "totalLinesCovered": 183
   }

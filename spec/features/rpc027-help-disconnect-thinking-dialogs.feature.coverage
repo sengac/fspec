@@ -4,11 +4,11 @@
       "name": "HelpDialog renders with the cyan accent and inner-title body",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "90-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -177,11 +177,11 @@
       "name": "HelpDialog body lists every RPC-009 keybinding",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "135-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -350,11 +350,11 @@
       "name": "HelpDialog no longer imports tui_popup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "160-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -523,11 +523,11 @@
       "name": "DisconnectDialog renders with the red accent and the \"Disconnected\" inner title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "190-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/disconnect_dialog.rs",
+              "file": "rust/fspec-tui/src/components/disconnect_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -759,11 +759,11 @@
       "name": "DisconnectDialog updates the body inline on Action::Reconnecting(N)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "221-245",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/disconnect_dialog.rs",
+              "file": "rust/fspec-tui/src/components/disconnect_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -995,11 +995,11 @@
       "name": "ThinkingLevelDialog renders with the yellow accent and inner-title body",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "250-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1219,11 +1219,11 @@
       "name": "ThinkingLevelDialog highlights the current level with the inverse style",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "269-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1443,11 +1443,11 @@
       "name": "ThinkingLevelDialog footer documents the four key bindings",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "309-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -1667,11 +1667,11 @@
       "name": "Pressing D in ThinkingLevelDialog emits Action::SetThinkingLevelDefault and keeps the dialog open",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "331-367",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 144,
                 145,
@@ -1692,11 +1692,11 @@
       "name": "Pressing uppercase D in ThinkingLevelDialog behaves identically to lowercase d",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "368-391",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 144,
                 145,
@@ -1717,11 +1717,11 @@
       "name": "SetThinkingLevelDefault is wired through the backend trait stack",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
           "lines": "392-426",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 180,
                 181,
@@ -1776,13 +1776,13 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_parity_bcd.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/help_dialog.rs",
-      "codelet/fspec-tui/src/components/disconnect_dialog.rs",
-      "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
-      "codelet/fspec-tui/src/transport/mod.rs"
+      "rust/fspec-tui/src/components/help_dialog.rs",
+      "rust/fspec-tui/src/components/disconnect_dialog.rs",
+      "rust/fspec-tui/src/components/thinking_level_dialog.rs",
+      "rust/fspec-tui/src/transport/mod.rs"
     ],
     "totalLinesCovered": 1927
   }

@@ -4,11 +4,11 @@
       "name": "Clap exposes remove-virtual-hook as a subcommand and prints flag-aware --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "106-160",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -94,11 +94,11 @@
       "name": "CLI removes an existing hook and prints the canonical success lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "161-201",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -184,11 +184,11 @@
       "name": "CLI fails with exit 1 when the work unit has no virtual hooks",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "202-234",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -274,11 +274,11 @@
       "name": "CLI fails with exit 1 when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "235-267",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -364,11 +364,11 @@
       "name": "CLI fails with exit 1 when the named hook is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "268-295",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -454,11 +454,11 @@
       "name": "CLI deletes the associated script file on removal",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "296-337",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -544,11 +544,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "338-399",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_virtual_hook.rs",
+              "file": "rust/fspec/src/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -634,11 +634,11 @@
       "name": "remove-virtual-hook --help is byte-for-byte identical to TS formatCommandHelp reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_virtual_hook.rs",
+          "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
           "lines": "400-426",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_virtual_hook.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_virtual_hook.rs",
               "lines": [
                 1,
                 2,
@@ -764,11 +764,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_virtual_hook.rs"
+      "rust/fspec/tests/cli_remove_virtual_hook.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_virtual_hook.rs",
-      "codelet/fspec-core/src/help/configs/remove_virtual_hook.rs"
+      "rust/fspec/src/remove_virtual_hook.rs",
+      "rust/fspec-core/src/help/configs/remove_virtual_hook.rs"
     ],
     "totalLinesCovered": 951
   }

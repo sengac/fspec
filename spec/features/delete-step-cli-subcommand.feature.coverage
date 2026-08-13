@@ -4,11 +4,11 @@
       "name": "CLI deletes a step and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_step.rs",
+          "file": "rust/fspec/tests/cli_delete_step.rs",
           "lines": "59-83",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_step.rs",
+              "file": "rust/fspec/src/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -89,11 +89,11 @@
       "name": "CLI surfaces a missing step with stderr Error prefix and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_step.rs",
+          "file": "rust/fspec/tests/cli_delete_step.rs",
           "lines": "89-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_step.rs",
+              "file": "rust/fspec/src/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -174,11 +174,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_step.rs",
+          "file": "rust/fspec/tests/cli_delete_step.rs",
           "lines": "114-135",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_step.rs",
+              "file": "rust/fspec/src/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -259,11 +259,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_step.rs",
+          "file": "rust/fspec/tests/cli_delete_step.rs",
           "lines": "141-189",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_step.rs",
+              "file": "rust/fspec/src/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -346,10 +346,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_step.rs"
+      "rust/fspec/tests/cli_delete_step.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_step.rs"
+      "rust/fspec/src/delete_step.rs"
     ],
     "totalLinesCovered": 392
   }

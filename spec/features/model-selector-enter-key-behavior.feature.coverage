@@ -4,11 +4,11 @@
       "name": "Pressing Enter on a collapsed provider header expands the section",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
           "lines": "31-50",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
                 105,
                 106,
@@ -56,11 +56,11 @@
       "name": "Pressing Enter again on an expanded provider header collapses the section",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
           "lines": "53-81",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
                 105,
                 106,
@@ -108,11 +108,11 @@
       "name": "Pressing Enter on a selectable model row selects the model and closes the view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
           "lines": "84-109",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
                 105,
                 106,
@@ -162,10 +162,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs"
+      "rust/fspec-tui/src/views/model_selector/tests_enter_expand.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/dispatch.rs"
+      "rust/fspec-tui/src/views/model_selector/dispatch.rs"
     ],
     "totalLinesCovered": 259
   }

@@ -4,11 +4,11 @@
       "name": "Clap exposes restore-checkpoint as a subcommand with two positionals",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "99-125",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_checkpoint.rs",
+              "file": "rust/fspec/src/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -118,11 +118,11 @@
       "name": "CLI restores against a clean working tree and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "127-146",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_checkpoint.rs",
+              "file": "rust/fspec/src/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -232,11 +232,11 @@
       "name": "CLI exits 1 with the re-run hint when the working tree is dirty",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "148-168",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_checkpoint.rs",
+              "file": "rust/fspec/src/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -346,11 +346,11 @@
       "name": "CLI exits 1 when the checkpoint does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "170-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_checkpoint.rs",
+              "file": "rust/fspec/src/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -460,11 +460,11 @@
       "name": "Default combined TUI mode is preserved after adding restore-checkpoint",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "183-202",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_checkpoint.rs",
+              "file": "rust/fspec/src/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -574,11 +574,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "204-252",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_checkpoint.rs",
+              "file": "rust/fspec/src/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -688,11 +688,11 @@
       "name": "restore-checkpoint --help is byte-for-byte identical to TS",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_checkpoint.rs",
+          "file": "rust/fspec/tests/cli_restore_checkpoint.rs",
           "lines": "254-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/help/configs/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -746,11 +746,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_restore_checkpoint.rs"
+      "rust/fspec/tests/cli_restore_checkpoint.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/restore_checkpoint.rs",
-      "codelet/fspec-core/src/help/configs/restore_checkpoint.rs"
+      "rust/fspec/src/restore_checkpoint.rs",
+      "rust/fspec-core/src/help/configs/restore_checkpoint.rs"
     ],
     "totalLinesCovered": 807
   }

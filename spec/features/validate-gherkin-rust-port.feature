@@ -28,8 +28,8 @@ Feature: Port validate command to Rust
   #   3. Dispatch validate against a tempdir with one valid and one syntactically-broken file → output marks the broken file '✗ <file> has syntax errors:' with a 'Line N:' detail, summary 'Validated 2 files: 1 valid, 1 invalid', exit 1
   #   4. Dispatch validate against a tempdir with an empty spec/features/ (zero .feature files) → 'No feature files found in spec/features/' on stderr, exit 2
   #   5. Dispatch validate against a file containing 4 consecutive blank lines → valid=false with error message containing 'Excessive blank lines detected', exit 1 (content heuristic, independent of parser)
-  #   6. Running `./codelet/target/release/fspec validate <single-valid-file>` prints '✓ <file> is valid' to stdout and exits 0; running it against a broken file exits 1 with the '✗ ... has syntax errors:' marker and a 'Line N:' detail on stdout
-  #   7. Running `./codelet/target/release/fspec validate --help` prints the formatted help block byte-identical to the captured TS fixture and exits 0; the help lists the [file] argument and -v/--verbose option
+  #   6. Running `./rust/target/release/fspec validate <single-valid-file>` prints '✓ <file> is valid' to stdout and exits 0; running it against a broken file exits 1 with the '✗ ... has syntax errors:' marker and a 'Line N:' detail on stdout
+  #   7. Running `./rust/target/release/fspec validate --help` prints the formatted help block byte-identical to the captured TS fixture and exits 0; the help lists the [file] argument and -v/--verbose option
   #
   # QUESTIONS (ANSWERED):
   #   Q: RPC-329 — the raw gherkin parser-error TEXT diverges from @cucumber/gherkin. Confirm tests should assert on structural facts + matching substrings only (NOT exact raw message), matching the sibling-command precedent (add_scenario.rs). Supervisor: OK to proceed with this framing without blocking?

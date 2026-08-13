@@ -4,11 +4,11 @@
       "name": "Successful browser OAuth login with PKCE",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "47-141",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth_server.rs",
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
               "lines": [
                 1,
                 2,
@@ -398,11 +398,11 @@
       "name": "OAuth callback rejects mismatched state parameter",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "204-271",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth_server.rs",
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
               "lines": [
                 1,
                 2,
@@ -792,11 +792,11 @@
       "name": "OAuth login times out after 5 minutes",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "275-314",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth_server.rs",
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
               "lines": [
                 1,
                 2,
@@ -1186,11 +1186,11 @@
       "name": "Port 1455 already in use",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "320-347",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth_server.rs",
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
               "lines": [
                 68,
                 69,
@@ -1220,11 +1220,11 @@
       "name": "Token exchange fails due to network error",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "353-401",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 244,
                 245,
@@ -1330,11 +1330,11 @@
       "name": "User cancels OAuth flow via cancel route",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "407-448",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth_server.rs",
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
               "lines": [
                 1,
                 2,
@@ -1724,11 +1724,11 @@
       "name": "PKCE code verifier meets RFC 7636 requirements",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "502-538",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 28,
                 29,
@@ -1791,11 +1791,11 @@
       "name": "OAuth authorize URL contains all required parameters",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "544-587",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 163,
                 164,
@@ -1846,11 +1846,11 @@
       "name": "Authorization code exchanged for tokens at token endpoint",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/codex_oauth_server_test.rs",
+          "file": "rust/providers/tests/codex_oauth_server_test.rs",
           "lines": "144-196",
           "implMappings": [
             {
-              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
                 244,
                 245,
@@ -1958,11 +1958,11 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/codex_oauth_server_test.rs"
+      "rust/providers/tests/codex_oauth_server_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/codex/codex_oauth_server.rs",
-      "codelet/providers/src/codex/codex_oauth.rs"
+      "rust/providers/src/codex/codex_oauth_server.rs",
+      "rust/providers/src/codex/codex_oauth.rs"
     ],
     "totalLinesCovered": 2264
   }

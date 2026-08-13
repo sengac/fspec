@@ -4,11 +4,11 @@
       "name": "Provider reports streaming disabled when the env flag is false",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov140_provider_streaming_flag.rs",
+          "file": "rust/providers/tests/prov140_provider_streaming_flag.rs",
           "lines": "67-88",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 205,
                 206,
@@ -77,11 +77,11 @@
       "name": "Provider defaults to streaming enabled when the env flag is unset",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/prov140_provider_streaming_flag.rs",
+          "file": "rust/providers/tests/prov140_provider_streaming_flag.rs",
           "lines": "89-105",
           "implMappings": [
             {
-              "file": "codelet/providers/src/openai.rs",
+              "file": "rust/providers/src/openai.rs",
               "lines": [
                 205,
                 206,
@@ -152,10 +152,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/prov140_provider_streaming_flag.rs"
+      "rust/providers/tests/prov140_provider_streaming_flag.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/openai.rs"
+      "rust/providers/src/openai.rs"
     ],
     "totalLinesCovered": 153
   }

@@ -4,11 +4,11 @@
       "name": "Removes a single tag from a feature file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "42-80",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -159,11 +159,11 @@
       "name": "Removes multiple tags in a single call",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "83-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -314,11 +314,11 @@
       "name": "Missing target file surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "118-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -469,11 +469,11 @@
       "name": "Removing an absent tag leaves the file untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "141-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -624,11 +624,11 @@
       "name": "Source without a Feature header is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "173-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -779,11 +779,11 @@
       "name": "Removed tag leaves other tags untouched in their original positions",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "200-227",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -934,11 +934,11 @@
       "name": "Multi-tag-on-one-line passes the existence check but is preserved on disk (whole-line equality only)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_tag_from_feature.rs",
+          "file": "rust/fspec-core/tests/remove_tag_from_feature.rs",
           "lines": "230-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_tag_from_feature.rs",
+              "file": "rust/fspec-core/src/commands/remove_tag_from_feature.rs",
               "lines": [
                 1,
                 2,
@@ -1091,10 +1091,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_tag_from_feature.rs"
+      "rust/fspec-core/tests/remove_tag_from_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_tag_from_feature.rs"
+      "rust/fspec-core/src/commands/remove_tag_from_feature.rs"
     ],
     "totalLinesCovered": 1174
   }

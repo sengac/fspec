@@ -4,11 +4,11 @@
       "name": "Registry updates CWD when Bash tool uses explicit cwd",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/footer_cwd_registry_test.rs",
+          "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "30-48",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -61,11 +61,11 @@
       "name": "Registry tracks CWD independently per session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/footer_cwd_registry_test.rs",
+          "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "54-85",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -118,11 +118,11 @@
       "name": "Registry CWD returns to session default on no explicit cwd",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/footer_cwd_registry_test.rs",
+          "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "91-108",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -175,11 +175,11 @@
       "name": "Cleanup removes CWD entry on session destroy",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/footer_cwd_registry_test.rs",
+          "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "114-128",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -232,11 +232,11 @@
       "name": "Reading CWD for unknown session returns None",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/footer_cwd_registry_test.rs",
+          "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "134-145",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -289,11 +289,11 @@
       "name": "Initial CWD is seeded at session creation",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/footer_cwd_registry_test.rs",
+          "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "151-172",
           "implMappings": [
             {
-              "file": "codelet/tools/src/footer_cwd.rs",
+              "file": "rust/tools/src/footer_cwd.rs",
               "lines": [
                 1,
                 2,
@@ -348,10 +348,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/footer_cwd_registry_test.rs"
+      "rust/tools/tests/footer_cwd_registry_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/footer_cwd.rs"
+      "rust/tools/src/footer_cwd.rs"
     ],
     "totalLinesCovered": 364
   }

@@ -4,11 +4,11 @@
       "name": "Updates only the description when only --description is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "86-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 62,
                 63,
@@ -197,11 +197,11 @@
       "name": "Moves tag to a different category preserving original description when --description is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "117-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 131,
                 132,
@@ -262,11 +262,11 @@
       "name": "Moves tag to a different category and overrides description when both --category and --description are provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "154-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 131,
                 132,
@@ -327,11 +327,11 @@
       "name": "Sorts tags alphabetically within the target category after cross-category move",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "186-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 172,
                 173,
@@ -348,11 +348,11 @@
       "name": "Preserves insertion order when description-only update inside the same category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "225-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 178,
                 179,
@@ -375,11 +375,11 @@
       "name": "Rejects request when neither --category nor --description is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "261-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 72,
                 73,
@@ -401,11 +401,11 @@
       "name": "Rejects request when spec/tags.json does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "291-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 85,
                 86,
@@ -424,11 +424,11 @@
       "name": "Rejects request when the tag is not found in any category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "322-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 104,
                 105,
@@ -459,11 +459,11 @@
       "name": "Rejects unknown target category with canonical Available categories list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "353-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 140,
                 141,
@@ -495,11 +495,11 @@
       "name": "Treats category lookup as case-sensitive (lowercase variant does not match)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "383-406",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 133,
                 134,
@@ -538,11 +538,11 @@
       "name": "Preserves auxiliary top-level fields and does NOT bump statistics.lastUpdated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "408-468",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 94,
                 95,
@@ -564,11 +564,11 @@
       "name": "Escalates malformed tags.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "470-498",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 98,
                 99,
@@ -586,11 +586,11 @@
       "name": "Renders multi-line success block on success",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "file": "rust/fspec-core/tests/update_tag.rs",
           "lines": "500-531",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
               "lines": [
                 246,
                 247,
@@ -610,10 +610,10 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/update_tag.rs"
+      "rust/fspec-core/tests/update_tag.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/update_tag.rs"
+      "rust/fspec-core/src/commands/update_tag.rs"
     ],
     "totalLinesCovered": 830
   }

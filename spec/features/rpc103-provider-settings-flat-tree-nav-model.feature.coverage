@@ -4,11 +4,11 @@
       "name": "Fresh view with collapsed providers yields one NavItem per provider",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "118-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_item.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
               "lines": [
                 70,
                 71,
@@ -112,11 +112,11 @@
       "name": "Expanding anthropic without OAuth tokens injects oauth-login and api-key children",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "153-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_item.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
               "lines": [
                 70,
                 71,
@@ -220,11 +220,11 @@
       "name": "Expanding openai with profiles injects profile rows and a trailing add-profile pseudo-row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "200-249",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_item.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
               "lines": [
                 70,
                 71,
@@ -328,11 +328,11 @@
       "name": "Expanding anthropic with OAuth tokens prepends an oauth-status row before oauth-login rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "251-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_item.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
               "lines": [
                 70,
                 71,
@@ -436,11 +436,11 @@
       "name": "Filter is parent-anchored — children of filtered-out providers disappear",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "294-340",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_item.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
               "lines": [
                 70,
                 71,
@@ -466,11 +466,11 @@
       "name": "Expansion state survives set_providers reload",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "342-393",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
                 20,
                 21,
@@ -488,11 +488,11 @@
       "name": "Enter on a provider row toggles expansion without mutating selected_index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "395-441",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 62,
                 63,
@@ -534,11 +534,11 @@
       "name": "Enter on an api-key child row transitions directly to the EditApiKey state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
           "lines": "443-478",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 61,
                 62,
@@ -597,12 +597,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs"
+      "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/nav_item.rs",
-      "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 816
   }

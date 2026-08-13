@@ -8,7 +8,7 @@
           "lines": "80-98",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1696,
                 1697,
@@ -149,7 +149,7 @@
           "lines": "101-119",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 259,
                 260,
@@ -200,7 +200,7 @@
           "lines": "122-139",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 148,
                 149,
@@ -219,7 +219,7 @@
           "lines": "142-157",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 360,
                 361,
@@ -312,7 +312,7 @@
           "lines": "182-201",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6895,
                 6896,
@@ -369,7 +369,7 @@
           "lines": "204-226",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 7018,
                 7019,
@@ -428,7 +428,7 @@
           "lines": "229-250",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 34,
                 35,
@@ -871,7 +871,7 @@
           "lines": "253-278",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5793,
                 5794,
@@ -1034,7 +1034,7 @@
           "lines": "281-297",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 945,
                 946,
@@ -1322,7 +1322,7 @@
           "lines": "361-374",
           "implMappings": [
             {
-              "file": "codelet/napi/src/navigation.rs",
+              "file": "rust/napi/src/navigation.rs",
               "lines": [
                 21,
                 22,
@@ -1360,7 +1360,7 @@
           "lines": "377-399",
           "implMappings": [
             {
-              "file": "codelet/napi/src/work_units_watcher.rs",
+              "file": "rust/napi/src/work_units_watcher.rs",
               "lines": [
                 1,
                 2,
@@ -1386,7 +1386,7 @@
           "lines": "402-437",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 1,
                 2,
@@ -1453,14 +1453,14 @@
       "src/tui/__tests__/watch-024-supervisor-terminology-refactoring.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/components/SupervisorTemplateForm.tsx",
-      "codelet/napi/src/types.rs",
+      "rust/napi/src/types.rs",
       "src/tui/components/SupervisorCreateView.tsx",
       "src/tui/utils/supervisorTemplateStorage.ts",
       "src/tui/utils/slashCommands.ts",
-      "codelet/napi/src/navigation.rs",
-      "codelet/napi/src/work_units_watcher.rs"
+      "rust/napi/src/navigation.rs",
+      "rust/napi/src/work_units_watcher.rs"
     ],
     "totalLinesCovered": 1517
   }

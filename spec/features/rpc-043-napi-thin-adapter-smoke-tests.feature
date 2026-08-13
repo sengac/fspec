@@ -9,8 +9,8 @@ Feature: RPC-043 NAPI thin-adapter smoke-test contract
   Architecture notes:
   - Split out from the main RPC-043 feature file (reduce-codelet-napi-to-thin-adapter-session-bindings-rs-update-cargo-toml.feature)
   to satisfy fspec's 1-feature = 1-test-file invariant. RPC-043's deliverables include BOTH a static shape-test
-  binary (codelet/napi/tests/session_bindings_shape.rs) AND a runtime smoke-test binary
-  (codelet/napi/tests/session_bindings_smoke.rs). When fspec's 1:1 validator was introduced this feature was
+  binary (rust/napi/tests/session_bindings_shape.rs) AND a runtime smoke-test binary
+  (rust/napi/tests/session_bindings_smoke.rs). When fspec's 1:1 validator was introduced this feature was
   refactored into two siblings to keep both test binaries traceable to their owning Gherkin scenarios.
   - The smoke binary exercises every public #[napi] wrapper from codelet-napi against a fresh SessionManager
   singleton + the canonical UNKNOWN_UUID, locking in the pre-RPC-043 observable error/no-op behaviour as a

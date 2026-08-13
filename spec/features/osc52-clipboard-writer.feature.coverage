@@ -4,11 +4,11 @@
       "name": "Writing ASCII text emits a BEL-terminated OSC 52 sequence",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+          "file": "rust/fspec-tui/src/mouse/clipboard.rs",
           "lines": "63-73",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+              "file": "rust/fspec-tui/src/mouse/clipboard.rs",
               "lines": [
                 48,
                 49,
@@ -27,11 +27,11 @@
       "name": "Writing an empty string emits an empty base64 payload",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+          "file": "rust/fspec-tui/src/mouse/clipboard.rs",
           "lines": "75-88",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+              "file": "rust/fspec-tui/src/mouse/clipboard.rs",
               "lines": [
                 48,
                 49,
@@ -50,11 +50,11 @@
       "name": "Writing multi-line text base64-encodes the newline byte",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+          "file": "rust/fspec-tui/src/mouse/clipboard.rs",
           "lines": "90-100",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+              "file": "rust/fspec-tui/src/mouse/clipboard.rs",
               "lines": [
                 48,
                 49,
@@ -73,11 +73,11 @@
       "name": "Writing an emoji encodes its raw UTF-8 bytes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+          "file": "rust/fspec-tui/src/mouse/clipboard.rs",
           "lines": "102-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+              "file": "rust/fspec-tui/src/mouse/clipboard.rs",
               "lines": [
                 48,
                 49,
@@ -96,11 +96,11 @@
       "name": "The production constructor targets stdout and the test constructor targets a buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+          "file": "rust/fspec-tui/src/mouse/clipboard.rs",
           "lines": "114-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/mouse/clipboard.rs",
+              "file": "rust/fspec-tui/src/mouse/clipboard.rs",
               "lines": [
                 30,
                 31,
@@ -130,10 +130,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/mouse/clipboard.rs"
+      "rust/fspec-tui/src/mouse/clipboard.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/mouse/clipboard.rs"
+      "rust/fspec-tui/src/mouse/clipboard.rs"
     ],
     "totalLinesCovered": 105
   }

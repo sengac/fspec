@@ -4,11 +4,11 @@
       "name": "Header shows the rules count",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "249-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/render.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
                 39,
                 40,
@@ -72,11 +72,11 @@
       "name": "A vertical divider separates the list and details panes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "264-299",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/render.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
                 39,
                 40,
@@ -140,11 +140,11 @@
       "name": "Footer shows the reference-parity hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "301-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/render.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
                 39,
                 40,
@@ -208,11 +208,11 @@
       "name": "RPC-056 rendering behaviour is preserved after the framing change",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "318-365",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/panes.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/panes.rs",
               "lines": [
                 28,
                 29,
@@ -456,11 +456,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/blocklist/tests.rs"
+      "rust/fspec-tui/src/views/blocklist/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/blocklist/render.rs",
-      "codelet/fspec-tui/src/views/blocklist/panes.rs"
+      "rust/fspec-tui/src/views/blocklist/render.rs",
+      "rust/fspec-tui/src/views/blocklist/panes.rs"
     ],
     "totalLinesCovered": 500
   }

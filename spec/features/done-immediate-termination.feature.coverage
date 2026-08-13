@@ -4,11 +4,11 @@
       "name": "Accepted done() terminates the turn at the ToolResult arm",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "100-156",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1024,
                 1025,
@@ -59,7 +59,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 40,
                 41,
@@ -152,11 +152,11 @@
       "name": "Goal-mode acceptance exits at the ToolResult arm (deferral superseded by CONT-006)",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "163-217",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -241,11 +241,11 @@
       "name": "Rejected done() records no acceptance and never exits early",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "223-259",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -279,11 +279,11 @@
       "name": "Stale done() while auto-continue is off never exits early",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "265-294",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 48,
                 49,
@@ -317,11 +317,11 @@
       "name": "FinalResponse fallback runs the identical shared teardown",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "300-363",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/done_early_exit.rs",
+              "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
                 71,
                 72,
@@ -376,7 +376,7 @@
               ]
             },
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1576,
                 1577,
@@ -402,11 +402,11 @@
       "name": "Pending assistant text is preserved in history before the early break",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "370-402",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1041,
                 1042,
@@ -432,11 +432,11 @@
       "name": "Stream-loop wiring pins early-exit ordering and single-teardown invariants",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/cont005_done_immediate_termination.rs",
+          "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
           "lines": "409-493",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 1024,
                 1025,
@@ -496,11 +496,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/cont005_done_immediate_termination.rs"
+      "rust/cli/tests/cont005_done_immediate_termination.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs",
-      "codelet/cli/src/interactive/done_early_exit.rs"
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/done_early_exit.rs"
     ],
     "totalLinesCovered": 729
   }

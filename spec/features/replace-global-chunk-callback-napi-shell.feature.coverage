@@ -4,11 +4,11 @@
       "name": "SessionManager wires its manager-owned senders into every BackgroundSession at creation time",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1027-1084",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 411,
                 412,
@@ -244,11 +244,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1027-1084",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 642,
                 643,
@@ -503,11 +503,11 @@
       "name": "The SessionManagerHooks trait no longer carries emit_isolation_state_change",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1086-1161",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 82,
                 83,
@@ -588,11 +588,11 @@
       "name": "session_set_global_chunk_callback subscribes to SessionManager::instance().chunks_tx() and fans into the JS ThreadsafeFunction",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1163-1254",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4283,
                 4284,
@@ -696,11 +696,11 @@
       "name": "emit_block_notification_to_tui and spawn_footer_poller route through SessionManager::instance().chunks_tx().send",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1255-1306",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4490,
                 4491,
@@ -721,11 +721,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1255-1306",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4051,
                 4052,
@@ -858,11 +858,11 @@
       "name": "The FspecHandler and bridge command_emitter gates consult a new is_global_chunk_callback_registered helper",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1308-1348",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 86,
                 87,
@@ -880,11 +880,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1308-1348",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 2995,
                 2996,
@@ -903,11 +903,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1308-1348",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3275,
                 3276,
@@ -938,11 +938,11 @@
       "name": "codelet-sessions and codelet-napi continue to build with TS surface byte-stable",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1400-1503",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 70,
                 71,
@@ -980,11 +980,11 @@
       "name": "All codelet-sessions shape tests continue to pass with inverted GLOBAL_CHUNK_CALLBACK assertions",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1505-1559",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 320,
                 321,
@@ -1022,11 +1022,11 @@
       "name": "Multiple subscribers each observe every chunk emitted by a BackgroundSession in arrival order",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/session_manager_shape.rs",
+          "file": "rust/sessions/tests/session_manager_shape.rs",
           "lines": "1350-1393",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 199,
                 200,
@@ -1084,12 +1084,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/session_manager_shape.rs"
+      "rust/sessions/tests/session_manager_shape.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/sessions/src/background_session.rs"
+      "rust/sessions/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
+      "rust/sessions/src/background_session.rs"
     ],
     "totalLinesCovered": 1620
   }

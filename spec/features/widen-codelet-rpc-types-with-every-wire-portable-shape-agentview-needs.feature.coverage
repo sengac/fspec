@@ -4,11 +4,11 @@
       "name": "Phase 2.1 per-session derived-state types are added with the documented field shapes",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "30-103",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 539,
                 540,
@@ -64,11 +64,11 @@
       "name": "ThinkingConfig holds provider-specific config as a JSON-encoded string",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "110-141",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 585,
                 586,
@@ -90,11 +90,11 @@
       "name": "Phase 2.2 pause and HITL wire types are added with the AgentView-facing shape",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "148-227",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 596,
                 597,
@@ -185,11 +185,11 @@
       "name": "Phase 2.4 IsolatedSessionInfo and base_commit augmentation",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "233-275",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 676,
                 677,
@@ -325,11 +325,11 @@
       "name": "FspecResult retains its existing byte-compatible shape",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "281-312",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 467,
                 468,
@@ -351,11 +351,11 @@
       "name": "All new types JSON-round-trip cleanly via serde_json",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "318-442",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 523,
                 524,
@@ -539,11 +539,11 @@
       "name": "Both feature gates of codelet-rpc-types build cleanly",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "448-491",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/Cargo.toml",
+              "file": "rust/rpc-types/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -588,11 +588,11 @@
       "name": "codelet-napi continues to compile after the rpc-types widening",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "497-540",
           "implMappings": [
             {
-              "file": "codelet/napi/src/types.rs",
+              "file": "rust/napi/src/types.rs",
               "lines": [
                 332,
                 333,
@@ -614,11 +614,11 @@
       "name": "New types are publicly re-exported from the rpc-types crate root",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/tests/rpc036_widen_types.rs",
+          "file": "rust/rpc-types/tests/rpc036_widen_types.rs",
           "lines": "546-612",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 523,
                 524,
@@ -804,12 +804,12 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-types/tests/rpc036_widen_types.rs"
+      "rust/rpc-types/tests/rpc036_widen_types.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/rpc-types/Cargo.toml",
-      "codelet/napi/src/types.rs"
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc-types/Cargo.toml",
+      "rust/napi/src/types.rs"
     ],
     "totalLinesCovered": 1195
   }

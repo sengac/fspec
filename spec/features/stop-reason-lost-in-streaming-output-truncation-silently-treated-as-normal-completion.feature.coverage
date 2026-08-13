@@ -4,11 +4,11 @@
       "name": "Anthropic streaming propagates max_tokens stop_reason through FinalResponse",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
           "lines": "22-44",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
               "lines": [
                 117,
                 118,
@@ -65,11 +65,11 @@
       "name": "Truncated tool calls produce informative error identifying truncation as the cause",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
           "lines": "50-82",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
               "lines": [
                 436,
                 437,
@@ -113,11 +113,11 @@
       "name": "Normal end_turn completion has no truncation warning and correct persistence",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
           "lines": "88-104",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 183,
                 184,
@@ -183,11 +183,11 @@
       "name": "OpenAI streaming propagates max_tokens stop_reason instead of hardcoding end_turn",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
           "lines": "110-130",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 3932,
                 3933,
@@ -239,11 +239,11 @@
       "name": "OpenAI max_output_tokens reads runtime environment variable",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
           "lines": "136-164",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 545,
                 546,
@@ -272,13 +272,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/stop_reason_propagation_test.rs"
+      "rust/providers/tests/stop_reason_propagation_test.rs"
     ],
     "implFiles": [
-      "codelet/patches/rig-core/src/providers/anthropic/streaming.rs",
-      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
-      "codelet/napi/src/session_manager.rs",
-      "codelet/providers/src/manager.rs"
+      "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
+      "rust/napi/src/session_manager.rs",
+      "rust/providers/src/manager.rs"
     ],
     "totalLinesCovered": 309
   }

@@ -3,7 +3,7 @@
 @BUG-098
 Feature: Merge conflict markers never written to worktree files — LLM told to resolve markers that don't exist
   """
-  Implementation uses the `diffy` crate for three-way merge (diffy::merge). Add `diffy = "1"` to codelet/git/Cargo.toml. The `similar` crate already present only supports two-way diff — not three-way merge with conflict markers.
+  Implementation uses the `diffy` crate for three-way merge (diffy::merge). Add `diffy = "1"` to rust/git/Cargo.toml. The `similar` crate already present only supports two-way diff — not three-way merge with conflict markers.
   New function `write_conflict_markers()` in session_result.rs: takes base/session/main content for each conflicting file, runs diffy::merge(), writes result to worktree file. Called BEFORE returning ConflictError in apply_session_changes().
   detect_conflicts() currently compares raw bytes. For the three-way merge, we need to also consider: (1) identical changes = not a real conflict, (2) non-overlapping changes in same file = auto-merge, no conflict. diffy handles this automatically when its merge result has no conflicts.
   The TypeScript layer (conflictLlmContext.ts, mergeWorktreeHandler.ts) needs NO changes. The fix is entirely in the Rust layer — write markers into worktree files so that the existing 'read file + resolve markers' instruction to the LLM actually works.

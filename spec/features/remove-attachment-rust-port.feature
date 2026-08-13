@@ -3,7 +3,7 @@
 @RPC-268
 Feature: Port remove-attachment command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/remove_attachment.rs. Reuses io::ensure::ensure_work_units_file
+  Core impl at rust/fspec-core/src/commands/remove_attachment.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates spec/work-units.json), io::locked_file::write_json_atomic (single atomic write), and
   io::time::iso8601_now (timestamps). Reads/mutates the attachments field via WorkUnit.extra['attachments'].
   Suffix-match (str::ends_with) parity with TS path.endsWith locates the target by file basename.

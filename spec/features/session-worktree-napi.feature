@@ -2,7 +2,7 @@
 @GIT-027
 Feature: Session Worktree NAPI Bindings
   """
-  NAPI bindings in codelet/napi/src/git.rs expose Rust session_status.rs functions (list_sessions, inspect_session, merge_session, discard_session, prune_orphaned) to TypeScript.
+  NAPI bindings in rust/napi/src/git.rs expose Rust session_status.rs functions (list_sessions, inspect_session, merge_session, discard_session, prune_orphaned) to TypeScript.
   """
 
   # ========================================

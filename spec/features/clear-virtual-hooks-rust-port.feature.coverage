@@ -4,11 +4,11 @@
       "name": "Returns error when the requested work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "101-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -106,11 +106,11 @@
       "name": "Returns error when spec/work-units.json is auto-created and the requested id is not in the empty store",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "126-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -208,11 +208,11 @@
       "name": "Clears all hooks from a work unit with three virtualHooks",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "157-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -310,11 +310,11 @@
       "name": "Clearing a work unit with no virtualHooks succeeds with clearedCount=0",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "209-245",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -412,11 +412,11 @@
       "name": "Clearing a work unit with an empty virtualHooks array succeeds with clearedCount=0",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "246-279",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -514,11 +514,11 @@
       "name": "Script files in spec/hooks/.virtual/ are unlinked for each cleared hook",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "280-321",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -616,11 +616,11 @@
       "name": "Missing script files are silently ignored",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "322-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -718,11 +718,11 @@
       "name": "Missing workUnitId argument is rejected as InvalidArgs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "352-377",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -820,11 +820,11 @@
       "name": "Result JSON shape preserves field order success then clearedCount",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/clear_virtual_hooks.rs",
+          "file": "rust/fspec-core/tests/clear_virtual_hooks.rs",
           "lines": "378-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/clear_virtual_hooks.rs",
+              "file": "rust/fspec-core/src/commands/clear_virtual_hooks.rs",
               "lines": [
                 62,
                 63,
@@ -924,10 +924,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/clear_virtual_hooks.rs"
+      "rust/fspec-core/tests/clear_virtual_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/clear_virtual_hooks.rs"
+      "rust/fspec-core/src/commands/clear_virtual_hooks.rs"
     ],
     "totalLinesCovered": 1083
   }

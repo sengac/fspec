@@ -19,8 +19,8 @@ import {
   blocklistAllowSession,
   blocklistIsSessionAllowed,
   blocklistClearSessionAllowances,
-} from '../../codelet/napi';
-import type { JsBlocklistConfig, JsCheckResult } from '../../codelet/napi';
+} from '../../rust/napi';
+import type { JsBlocklistConfig, JsCheckResult } from '../../rust/napi';
 
 describe('Feature: Blocklist Core - Command/Tool Filtering', () => {
   let tmpDir: string;

@@ -4,11 +4,11 @@
       "name": "agent_loop signature declares mut mcp_injection_rx parameter (no underscore prefix)",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc089_mcp_injection_drain.rs",
+          "file": "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs",
           "lines": "88-111",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 74,
                 75,
@@ -25,11 +25,11 @@
       "name": "agent_loop body declares the mcp_channel_open initialiser",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc089_mcp_injection_drain.rs",
+          "file": "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs",
           "lines": "113-130",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 79,
                 80,
@@ -46,11 +46,11 @@
       "name": "tokio::select! arm is gated on if mcp_channel_open",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc089_mcp_injection_drain.rs",
+          "file": "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs",
           "lines": "132-149",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 192,
                 193,
@@ -113,11 +113,11 @@
       "name": "agent_loop body matches all three McpInjection outcomes",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc089_mcp_injection_drain.rs",
+          "file": "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs",
           "lines": "151-181",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 194,
                 195,
@@ -178,11 +178,11 @@
       "name": "mcp_channel_open initialiser precedes the flag flip in agent_loop",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc089_mcp_injection_drain.rs",
+          "file": "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs",
           "lines": "183-211",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 74,
                 75,
@@ -366,10 +366,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc089_mcp_injection_drain.rs"
+      "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/agent_loop.rs"
+      "rust/agent-loop/src/agent_loop.rs"
     ],
     "totalLinesCovered": 400
   }

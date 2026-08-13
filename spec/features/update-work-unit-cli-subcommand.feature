@@ -5,9 +5,9 @@
 @RPC-317
 Feature: Port update-work-unit command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.
+  Core impl at rust/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.
   WorkUnit typed fields used: title, epic, updated_at. description, parent, children arrays live in the WorkUnit.extra map and are mutated by string key (same pattern as update_prefix.rs) to avoid touching the shared work_unit.rs type. Circular-reference check is a recursive helper over the work_units IndexMap mirroring TS wouldCreateCircularReference.
-  Core returns raw error reasons (TS throws unwrapped). CLI bridge at codelet/fspec/src/update_work_unit.rs marshals --title/--description/--epic/--parent + positional workUnitId into JSON (omitting None) and prints '✗ Work unit <id> updated successfully' on success / error to stderr on failure (parity with TS chalk path). Help config at codelet/fspec-core/src/help/configs/update_work_unit.rs mirrors update-work-unit-help.ts.
+  Core returns raw error reasons (TS throws unwrapped). CLI bridge at rust/fspec/src/update_work_unit.rs marshals --title/--description/--epic/--parent + positional workUnitId into JSON (omitting None) and prints '✗ Work unit <id> updated successfully' on success / error to stderr on failure (parity with TS chalk path). Help config at rust/fspec-core/src/help/configs/update_work_unit.rs mirrors update-work-unit-help.ts.
   """
 
   # ========================================
@@ -43,8 +43,8 @@ Feature: Port update-work-unit command to Rust
     So that the standalone fspec binary can update work unit metadata natively without delegating to TypeScript
 
   Scenario: Clap exposes update-work-unit with positional arg and metadata flags in --help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec update-work-unit --help`
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec update-work-unit --help`
     Then the command exits 0
     And stdout describes the update-work-unit subcommand
     And stdout mentions the `<workUnitId>` argument
@@ -56,13 +56,13 @@ Feature: Port update-work-unit command to Rust
 
   Scenario: CLI updates a work unit title and prints the success line
     Given spec/work-units.json contains work unit 'AUTH-001' with title 'Login'
-    When I run `./codelet/target/release/fspec update-work-unit AUTH-001 --title New`
+    When I run `./rust/target/release/fspec update-work-unit AUTH-001 --title New`
     Then the command exits 0
     And stdout contains the line '✓ Work unit AUTH-001 updated successfully'
     And spec/work-units.json work unit 'AUTH-001' has title 'New'
 
   Scenario: CLI reports failure for a missing work unit on stderr
     Given an empty working directory with no spec/ subdirectory
-    When I run `./codelet/target/release/fspec update-work-unit MISSING-999 --title X`
+    When I run `./rust/target/release/fspec update-work-unit MISSING-999 --title X`
     Then the command exits 1
     And stderr contains the substring "Work unit 'MISSING-999' does not exist"

@@ -4,11 +4,11 @@
       "name": "Script sets both context_window and max_output_tokens",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "175-196",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/provider.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
                 87,
                 88,
@@ -71,7 +71,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 64,
                 65,
@@ -155,11 +155,11 @@
       "name": "Legacy script without get_model_limits falls back to JSON ModelDef values",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "202-228",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 64,
                 65,
@@ -199,11 +199,11 @@
       "name": "Partial override — only context_window set, max_output_tokens falls back",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "233-254",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 95,
                 96,
@@ -256,11 +256,11 @@
       "name": "Invalid non-positive value is rejected and JSON ModelDef value is used",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "260-289",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 116,
                 117,
@@ -293,11 +293,11 @@
       "name": "Script branches on config.model_alias to return alias-specific limits",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "295-347",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/provider.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
                 87,
                 88,
@@ -367,11 +367,11 @@
       "name": "Script sets an absolute-tokens compaction threshold",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "353-396",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 142,
                 143,
@@ -457,7 +457,7 @@
               ]
             },
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6904,
                 6905,
@@ -580,11 +580,11 @@
       "name": "Script sets a percentage compaction threshold",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "402-426",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 200,
                 201,
@@ -619,11 +619,11 @@
       "name": "Invalid compaction_threshold shape is rejected and no override is surfaced",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/rhai_scripted_model_limits_tests.rs",
+          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
           "lines": "432-461",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/model_limits.rs",
+              "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
                 200,
                 201,
@@ -660,12 +660,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/rhai_scripted_model_limits_tests.rs"
+      "rust/providers/tests/rhai_scripted_model_limits_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/provider.rs",
-      "codelet/providers/src/custom/model_limits.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/providers/src/custom/provider.rs",
+      "rust/providers/src/custom/model_limits.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 769
   }

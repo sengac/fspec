@@ -10,7 +10,7 @@ Feature: codelet-sessions no codelet-napi dependency regression guard
   # Architectural invariant enforced by RPC-044 Phase 5: the codelet-sessions
   # crate — which RPC-044 wires into the fspec binary — MUST NOT transitively
   # depend on codelet-napi. The existing
-  # codelet/sessions/tests/skeleton_invariants.rs::scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi
+  # rust/sessions/tests/skeleton_invariants.rs::scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi
   # already enforces the cargo-metadata half of this invariant (RPC-038). This
   # test adds the symmetric source-import scan so the forbidden arrow stays
   # absent in source as well as in the resolved graph.
@@ -28,4 +28,4 @@ Feature: codelet-sessions no codelet-napi dependency regression guard
     Then the command exits with code 0
     And the test parses `cargo metadata` output for codelet-sessions
     And the resulting transitive package set does not contain the package name `codelet-napi`
-    And no `.rs` file under `codelet/sessions/src/` contains the substring `codelet_napi`
+    And no `.rs` file under `rust/sessions/src/` contains the substring `codelet_napi`

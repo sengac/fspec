@@ -2,7 +2,7 @@
 @RPC-181
 Feature: fspec add-example CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_example.rs — clap variant mirroring TS Commander.js registration
+  CLI bridge: rust/fspec/src/add_example.rs — clap variant mirroring TS Commander.js registration
   at src/commands/add-example.ts:98-115. Surface: `fspec add-example <workUnitId> <example>`.
   Stdout (success): "✓ Example added successfully\n\n<system-reminder>...</system-reminder>".
   Stderr (failure): "✗ Failed to add example: <message>" line; exit code 1.
@@ -20,7 +20,7 @@ Feature: fspec add-example CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-example --help`
     Then the exit code is 0
-    And stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-example.txt
+    And stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-example.txt
 
   Scenario: Happy-path invocation marshals positional args and writes the example
     Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying

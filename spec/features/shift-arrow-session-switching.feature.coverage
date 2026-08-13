@@ -695,7 +695,7 @@
           "lines": "235-272",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 49,
                 50,
@@ -805,7 +805,7 @@
     "implFiles": [
       "src/tui/components/AgentView.tsx",
       "src/tui/components/MultiLineInput.tsx",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 949
   }

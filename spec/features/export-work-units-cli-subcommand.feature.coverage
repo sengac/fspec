@@ -4,11 +4,11 @@
       "name": "CLI exports work units to JSON and prints the Framing A success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_work_units.rs",
+          "file": "rust/fspec/tests/cli_export_work_units.rs",
           "lines": "73-101",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/export_work_units.rs",
+              "file": "rust/fspec/src/export_work_units.rs",
               "lines": [
                 46,
                 47,
@@ -50,11 +50,11 @@
       "name": "CLI export-work-units csv fails with the unsupported-format error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_work_units.rs",
+          "file": "rust/fspec/tests/cli_export_work_units.rs",
           "lines": "103-121",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/export_work_units.rs",
+              "file": "rust/fspec/src/export_work_units.rs",
               "lines": [
                 46,
                 47,
@@ -96,11 +96,11 @@
       "name": "CLI export-work-units --help matches the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_work_units.rs",
+          "file": "rust/fspec/tests/cli_export_work_units.rs",
           "lines": "123-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/export_work_units.rs",
+              "file": "rust/fspec-core/src/help/configs/export_work_units.rs",
               "lines": [
                 43,
                 44,
@@ -130,11 +130,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_export_work_units.rs"
+      "rust/fspec/tests/cli_export_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/export_work_units.rs",
-      "codelet/fspec-core/src/help/configs/export_work_units.rs"
+      "rust/fspec/src/export_work_units.rs",
+      "rust/fspec-core/src/help/configs/export_work_units.rs"
     ],
     "totalLinesCovered": 146
   }

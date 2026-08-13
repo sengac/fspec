@@ -4,11 +4,11 @@
       "name": "provider.rs is under 300 lines after refactoring",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/file_size_compliance_tests.rs",
+          "file": "rust/providers/src/copilot/file_size_compliance_tests.rs",
           "lines": "16-33",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 1,
                 2,
@@ -313,11 +313,11 @@
       "name": "Token refresh orchestration is accessible via CopilotProvider delegate",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/file_size_compliance_tests.rs",
+          "file": "rust/providers/src/copilot/file_size_compliance_tests.rs",
           "lines": "39-66",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/token_refresh.rs",
+              "file": "rust/providers/src/copilot/token_refresh.rs",
               "lines": [
                 67,
                 68,
@@ -379,11 +379,11 @@
       "name": "Callers use module-level functions instead of CopilotProvider convenience methods",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/file_size_compliance_tests.rs",
+          "file": "rust/providers/src/copilot/file_size_compliance_tests.rs",
           "lines": "72-93",
           "implMappings": [
             {
-              "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+              "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
               "lines": [
                 10,
                 11,
@@ -410,12 +410,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/copilot/file_size_compliance_tests.rs"
+      "rust/providers/src/copilot/file_size_compliance_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/provider.rs",
-      "codelet/providers/src/copilot/token_refresh.rs",
-      "codelet/providers/tests/copilot_http_middleware_routing_test.rs"
+      "rust/providers/src/copilot/provider.rs",
+      "rust/providers/src/copilot/token_refresh.rs",
+      "rust/providers/tests/copilot_http_middleware_routing_test.rs"
     ],
     "totalLinesCovered": 424
   }

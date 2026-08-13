@@ -4,11 +4,11 @@
       "name": "Dispatcher emits guidance for a work unit in specifying status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_event_storm.rs",
+          "file": "rust/fspec-core/tests/discover_event_storm.rs",
           "lines": "108-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/discover_event_storm.rs",
               "lines": [
                 271,
                 272,
@@ -115,11 +115,11 @@
       "name": "Dispatcher returns missing-file error in an empty workspace without auto-creating",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_event_storm.rs",
+          "file": "rust/fspec-core/tests/discover_event_storm.rs",
           "lines": "159-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/discover_event_storm.rs",
               "lines": [
                 271,
                 272,
@@ -226,11 +226,11 @@
       "name": "Dispatcher returns Work unit not found when the id is not a key in workUnits",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_event_storm.rs",
+          "file": "rust/fspec-core/tests/discover_event_storm.rs",
           "lines": "183-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/discover_event_storm.rs",
               "lines": [
                 271,
                 272,
@@ -337,11 +337,11 @@
       "name": "Dispatcher rejects a work unit not in specifying status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/discover_event_storm.rs",
+          "file": "rust/fspec-core/tests/discover_event_storm.rs",
           "lines": "201-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/discover_event_storm.rs",
+              "file": "rust/fspec-core/src/commands/discover_event_storm.rs",
               "lines": [
                 271,
                 272,
@@ -450,10 +450,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/discover_event_storm.rs"
+      "rust/fspec-core/tests/discover_event_storm.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/discover_event_storm.rs"
+      "rust/fspec-core/src/commands/discover_event_storm.rs"
     ],
     "totalLinesCovered": 496
   }

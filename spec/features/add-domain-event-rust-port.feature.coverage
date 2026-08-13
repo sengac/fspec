@@ -4,11 +4,11 @@
       "name": "Add first domain event to a work unit with no Event Storm",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "91-121",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -177,11 +177,11 @@
       "name": "Reject duplicate event with same case",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "123-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -350,11 +350,11 @@
       "name": "Append optional timestamp and bounded context",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "159-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -523,11 +523,11 @@
       "name": "Re-add an event whose prior occurrence was soft-deleted",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "184-215",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -696,11 +696,11 @@
       "name": "Reject add for a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "217-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -869,11 +869,11 @@
       "name": "Reject add when work units file is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "241-266",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -1042,11 +1042,11 @@
       "name": "Reject add for a work unit in done state",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "268-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -1215,11 +1215,11 @@
       "name": "Reject duplicate event case-insensitively",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_domain_event.rs",
+          "file": "rust/fspec-core/tests/add_domain_event.rs",
           "lines": "292-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_domain_event.rs",
+              "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
                 67,
                 68,
@@ -1390,10 +1390,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_domain_event.rs"
+      "rust/fspec-core/tests/add_domain_event.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_domain_event.rs"
+      "rust/fspec-core/src/commands/add_domain_event.rs"
     ],
     "totalLinesCovered": 1479
   }

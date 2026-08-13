@@ -116,6 +116,6 @@ Feature: AgentView Thinking indicator animation parity
     And MultiLineInput is mounted and contains the buffer "x" with the cursor positioned after it
 
   Scenario: Source-shape ceiling stays under 300 LoC for input_transition.rs
-    Given the source file codelet/fspec-tui/src/views/agent/input_transition.rs after the animation state machine has been implemented
+    Given the source file rust/fspec-tui/src/views/agent/input_transition.rs after the animation state machine has been implemented
     When the source-shape test reads the file's line count
     Then the line count is strictly less than 300

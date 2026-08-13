@@ -4,11 +4,11 @@
       "name": "Returns a structured error when the requested work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "84-118",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
@@ -23,11 +23,11 @@
       "name": "Returns the empty-attachments sentinel when the attachments field is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "120-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
@@ -47,11 +47,11 @@
       "name": "Returns the empty-attachments sentinel when the attachments array is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "145-171",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
@@ -71,11 +71,11 @@
       "name": "Renders a present attachment with size and modified-line prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "173-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
@@ -105,11 +105,11 @@
       "name": "Renders a missing attachment with the ✗ marker and the canonical not-found message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "228-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
@@ -133,11 +133,11 @@
       "name": "Preserves attachment-array insertion order and mixes present/missing markers",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "282-363",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
                 113, 114, 115, 116, 117, 118, 119, 120,
@@ -157,11 +157,11 @@
       "name": "Rejects an empty arguments object with a structured InvalidArgs error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "365-387",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85
@@ -175,11 +175,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "389-412",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89
@@ -193,11 +193,11 @@
       "name": "JSON format emits two-space indented payload with the canonical field set",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "414-485",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
@@ -223,11 +223,11 @@
       "name": "Shared infrastructure and ported wiring are in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_attachments.rs",
+          "file": "rust/fspec-core/tests/list_attachments.rs",
           "lines": "487-526",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_attachments.rs",
+              "file": "rust/fspec-core/src/commands/list_attachments.rs",
               "lines": [
                 1, 2, 3, 4, 5, 6, 7, 8, 9,
                 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -267,10 +267,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_attachments.rs"
+      "rust/fspec-core/tests/list_attachments.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_attachments.rs"
+      "rust/fspec-core/src/commands/list_attachments.rs"
     ],
     "totalLinesCovered": 1116
   }

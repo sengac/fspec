@@ -4,11 +4,11 @@
       "name": "Embedded list_sessions returns the same Vec<SessionInfo> as the underlying SessionManager",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_session_repl.rs",
+          "file": "rust/rpc-embedded/tests/embedded_session_repl.rs",
           "lines": "56-86",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 30,
                 31,
@@ -86,11 +86,11 @@
       "name": "Embedded create_session + send_input emits at least one StreamChunk on chunks_rx within 5s",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_session_repl.rs",
+          "file": "rust/rpc-embedded/tests/embedded_session_repl.rs",
           "lines": "88-121",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1,
                 2,
@@ -322,11 +322,11 @@
       "name": "interrupt(session_id) flips state and emits StreamChunk::Interrupted on chunks_rx",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_session_repl.rs",
+          "file": "rust/rpc-embedded/tests/embedded_session_repl.rs",
           "lines": "123-178",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1,
                 2,
@@ -558,11 +558,11 @@
       "name": "get_session_status reflects Idle to Running to Idle transitions equally on both transports",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/embedded_session_repl.rs",
+          "file": "rust/rpc-embedded/tests/embedded_session_repl.rs",
           "lines": "180-244",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1,
                 2,
@@ -796,11 +796,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/embedded_session_repl.rs"
+      "rust/rpc-embedded/tests/embedded_session_repl.rs"
     ],
     "implFiles": [
-      "codelet/rpc-embedded/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/rpc-embedded/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 912
   }

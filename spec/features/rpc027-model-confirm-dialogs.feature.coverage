@@ -4,11 +4,11 @@
       "name": "ConfirmDialog renders with the yellow accent and caller-supplied title",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
           "lines": "250-275",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -266,11 +266,11 @@
       "name": "ConfirmDialog button row uses inverse highlight on the focused button",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
           "lines": "276-306",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -528,11 +528,11 @@
       "name": "ConfirmDialog Left and Right cycle button focus",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
           "lines": "307-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 115,
                 116,
@@ -590,11 +590,11 @@
       "name": "ConfirmDialog Esc returns Cancel from any focused index",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ef.rs",
           "lines": "331-345",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 115,
                 116,
@@ -654,11 +654,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_parity_ef.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_ef.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/model_selector_dialog.rs",
-      "codelet/fspec-tui/src/views/agent/confirm_dialog.rs"
+      "rust/fspec-tui/src/components/model_selector_dialog.rs",
+      "rust/fspec-tui/src/views/agent/confirm_dialog.rs"
     ],
     "totalLinesCovered": 1916
   }

@@ -5,7 +5,7 @@
 @feature-management
 Feature: update-scenario CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/update_scenario.rs (NEW CLI bridge); codelet/fspec/tests/cli_update_scenario.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/update-scenario.txt (captured help fixture from `node dist/index.js update-scenario --help`).
+  Files: rust/fspec/src/update_scenario.rs (NEW CLI bridge); rust/fspec/tests/cli_update_scenario.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/update-scenario.txt (captured help fixture from `node dist/index.js update-scenario --help`).
   Bridge marshals positional <feature> <old-name> <new-name> into JSON and delegates to commands::update_scenario::run. No logic in bridge — JSON marshalling + CWD resolution only.
   Exit codes: 0 on success (✓ message to stdout), 1 on FspecCoreError or {success:false} with 'Error:' prefix to stderr.
   """
@@ -40,11 +40,11 @@ Feature: update-scenario CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec update-scenario --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/update-scenario.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/update-scenario.txt
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/user-auth.feature containing a scenario "Login with valid credentials"
     When I dispatch update-scenario through fspec_core::dispatch::dispatch_command with feature='spec/features/user-auth.feature' oldName='Login with valid credentials' newName='Renamed'
     Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Successfully renamed scenario to '"'"'Renamed'"'"' in user-auth.feature'
-    And the CLI bridge module codelet/fspec/src/update_scenario.rs contains NO inline gherkin parsing or scenario-rename logic
+    And the CLI bridge module rust/fspec/src/update_scenario.rs contains NO inline gherkin parsing or scenario-rename logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

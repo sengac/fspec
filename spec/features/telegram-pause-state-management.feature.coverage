@@ -136,7 +136,7 @@
       ]
     },
     {
-      "name": "Telegram endpoint receives pause request from codelet",
+      "name": "Telegram endpoint receives pause request from rust",
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",

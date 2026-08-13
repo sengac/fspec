@@ -4,11 +4,11 @@
       "name": "Move a work unit into the states array matching its status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/repair_work_units.rs",
+          "file": "rust/fspec-core/tests/repair_work_units.rs",
           "lines": "64-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/repair_work_units.rs",
+              "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
                 117,
                 118,
@@ -183,11 +183,11 @@
       "name": "Repair a missing blockedBy reverse link",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/repair_work_units.rs",
+          "file": "rust/fspec-core/tests/repair_work_units.rs",
           "lines": "107-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/repair_work_units.rs",
+              "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
                 117,
                 118,
@@ -362,11 +362,11 @@
       "name": "Repair a missing relatesTo reverse link",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/repair_work_units.rs",
+          "file": "rust/fspec-core/tests/repair_work_units.rs",
           "lines": "144-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/repair_work_units.rs",
+              "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
                 117,
                 118,
@@ -541,11 +541,11 @@
       "name": "Fully consistent data yields zero repairs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/repair_work_units.rs",
+          "file": "rust/fspec-core/tests/repair_work_units.rs",
           "lines": "181-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/repair_work_units.rs",
+              "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
                 117,
                 118,
@@ -720,11 +720,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/repair_work_units.rs",
+          "file": "rust/fspec-core/tests/repair_work_units.rs",
           "lines": "236-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/repair_work_units.rs",
+              "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
                 117,
                 118,
@@ -901,10 +901,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/repair_work_units.rs"
+      "rust/fspec-core/tests/repair_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/repair_work_units.rs"
+      "rust/fspec-core/src/commands/repair_work_units.rs"
     ],
     "totalLinesCovered": 1010
   }

@@ -4,11 +4,11 @@
       "name": "Action::ModelSelected spawns set_session_model and refreshes SessionHeader chrome",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "53-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 135,
                 136,
@@ -44,11 +44,11 @@
       "name": "Action::ThinkingLevelSelected spawns set_thinking_level and refreshes the [T:] badge",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "84-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 163,
                 164,
@@ -81,11 +81,11 @@
       "name": "Action::SetSessionRole(Some) spawns set_session_role and updates AgentViewStore.role_by_session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "111-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 188,
                 189,
@@ -113,11 +113,11 @@
       "name": "Action::SetSessionRole(None) clears the role and persists via backend",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "142-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 188,
                 189,
@@ -145,11 +145,11 @@
       "name": "Action::SessionRoleLoaded folds a backend-fetched role into AgentViewStore",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "171-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 208,
                 209,
@@ -168,11 +168,11 @@
       "name": "Action::SessionCreated triggers a backend.get_session_role spawn that fills AgentViewStore.role_by_session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "249-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 216,
                 217,
@@ -202,11 +202,11 @@
       "name": "Action::ModelSelected against a service with no session manager is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "279-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 141,
                 142,
@@ -236,11 +236,11 @@
       "name": "dispatch_model_thinking_dialogs.rs stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
+          "file": "rust/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "301-315",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 1,
                 2,
@@ -529,11 +529,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/app_dispatch_rpc022.rs"
+      "rust/fspec-tui/tests/app_dispatch_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
-      "codelet/fspec-tui/src/components/model_selector_dialog.rs"
+      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+      "rust/fspec-tui/src/components/model_selector_dialog.rs"
     ],
     "totalLinesCovered": 670
   }

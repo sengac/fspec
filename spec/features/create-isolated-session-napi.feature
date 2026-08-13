@@ -1,7 +1,7 @@
 @GIT-028
 Feature: Add createIsolatedSession NAPI binding
   """
-  Add session_manager_create_isolated() in codelet/napi/src/session_manager.rs, uses IsolatedSessionInfo::new_isolated() and create_session_manifest() from codelet-git
+  Add session_manager_create_isolated() in rust/napi/src/session_manager.rs, uses IsolatedSessionInfo::new_isolated() and create_session_manifest() from codelet-git
   TypeScript tests must be in src/tui/__tests__/ or similar, calling the actual NAPI binding - NOT Rust source-code-grep tests
   """
 

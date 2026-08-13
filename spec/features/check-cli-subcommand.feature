@@ -5,8 +5,8 @@
 @RPC-201
 Feature: check CLI subcommand
   """
-  Core impl: rewrite codelet/fspec-core/src/commands/check.rs to `pub async fn run(args_json, project_root)`; reuse io::feature_glob::glob_feature_files, io::gherkin::parse_feature_lenient, and call commands::validate_tags::run internally (await it). Returns full JSON result object {success, gherkinStatus, tagStatus, formatStatus, fileCount, errors?, message?, details?}.
-  BLOCKING DECISION for SUPERVISOR: formatStatus needs a Gherkin AST->text formatter (src/utils/gherkin-formatter.ts ~380 LOC) that does NOT exist in Rust (format RPC-230 still a stub). Option A: port formatter to shared io::gherkin_format.rs first (cross-worker dep). Option B (recommended): land check now with gherkin+tag fully ported and formatStatus=SKIP until the formatter lands (SKIP never fails success, matching TS outer-catch behaviour). CLI bridge codelet/fspec/src/check.rs renders display + exit code. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::Check{verbose} + intercept + mod, help configs/mod.rs.
+  Core impl: rewrite rust/fspec-core/src/commands/check.rs to `pub async fn run(args_json, project_root)`; reuse io::feature_glob::glob_feature_files, io::gherkin::parse_feature_lenient, and call commands::validate_tags::run internally (await it). Returns full JSON result object {success, gherkinStatus, tagStatus, formatStatus, fileCount, errors?, message?, details?}.
+  BLOCKING DECISION for SUPERVISOR: formatStatus needs a Gherkin AST->text formatter (src/utils/gherkin-formatter.ts ~380 LOC) that does NOT exist in Rust (format RPC-230 still a stub). Option A: port formatter to shared io::gherkin_format.rs first (cross-worker dep). Option B (recommended): land check now with gherkin+tag fully ported and formatStatus=SKIP until the formatter lands (SKIP never fails success, matching TS outer-catch behaviour). CLI bridge rust/fspec/src/check.rs renders display + exit code. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::Check{verbose} + intercept + mod, help configs/mod.rs.
   """
 
   # ========================================
@@ -36,15 +36,15 @@ Feature: check CLI subcommand
     So that the combined Gherkin-syntax, tag, and formatting validation has parity with the TypeScript implementation
 
   Scenario: Clap exposes check with -v/--verbose and prints byte-parity help
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec check --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec check --help` piped to non-TTY
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/check.txt
+    Then stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/check.txt
     Then stdout starts with a blank line followed by 'CHECK'
 
   Scenario: CLI passes and exits 0 for valid registered feature files
     Given a project root whose spec/features holds valid feature files with registered tags
-    When I run `./codelet/target/release/fspec check` from that directory
+    When I run `./rust/target/release/fspec check` from that directory
     Then the command exits 0
     Then stdout contains the substring 'Gherkin syntax: PASS'
     Then stdout contains the substring 'Tag validation: PASS'
@@ -52,18 +52,18 @@ Feature: check CLI subcommand
 
   Scenario: CLI exits 1 when a feature file has invalid Gherkin syntax
     Given a project root whose spec/features holds a feature file with invalid Gherkin syntax
-    When I run `./codelet/target/release/fspec check` from that directory
+    When I run `./rust/target/release/fspec check` from that directory
     Then the command exits 1
     Then stdout contains the substring 'Gherkin syntax: FAIL'
     Then stdout contains the substring 'Some checks failed'
 
   Scenario: CLI reports the no-files case and exits 0
     Given a project root with no feature files under spec/features
-    When I run `./codelet/target/release/fspec check` from that directory
+    When I run `./rust/target/release/fspec check` from that directory
     Then the command exits 0
 
   Scenario: CLI delegates to the same fspec_core function as the dispatcher
     Given a project root whose spec/features holds valid feature files with registered tags
     When I dispatch check through fspec_core::dispatch::dispatch_command
     Then the dispatcher's DispatchResult.data reports the same gherkinStatus and tagStatus the CLI renders against the same on-disk state
-    Then the CLI bridge module codelet/fspec/src/check.rs contains NO inline parsing, tag-validation, or check-aggregation logic — its only computation is JSON arg marshalling and display rendering from the envelope
+    Then the CLI bridge module rust/fspec/src/check.rs contains NO inline parsing, tag-validation, or check-aggregation logic — its only computation is JSON arg marshalling and display rendering from the envelope

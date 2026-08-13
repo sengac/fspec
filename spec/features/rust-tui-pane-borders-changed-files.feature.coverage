@@ -4,11 +4,11 @@
       "name": "Changed Files view shows a vertical divider between the Files and Diff panes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "550-583",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 54,
                 55,
@@ -33,11 +33,11 @@
       "name": "Each pane shows a horizontal underline rule beneath its heading",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "586-611",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/diff_common/pane.rs",
+              "file": "rust/fspec-tui/src/views/diff_common/pane.rs",
               "lines": [
                 27,
                 28,
@@ -89,11 +89,11 @@
       "name": "Empty Changed Files view still shows its empty-state message",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
           "lines": "614-655",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
                 77,
                 78,
@@ -114,11 +114,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/changed_files/tests.rs"
+      "rust/fspec-tui/src/views/changed_files/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/changed_files/render.rs",
-      "codelet/fspec-tui/src/views/diff_common/pane.rs"
+      "rust/fspec-tui/src/views/changed_files/render.rs",
+      "rust/fspec-tui/src/views/diff_common/pane.rs"
     ],
     "totalLinesCovered": 162
   }

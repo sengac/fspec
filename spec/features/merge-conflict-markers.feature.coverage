@@ -4,11 +4,11 @@
       "name": "Conflicting text file gets standard git conflict markers written to worktree",
       "testMappings": [
         {
-          "file": "codelet/git/src/three_way_merge.rs",
+          "file": "rust/git/src/three_way_merge.rs",
           "lines": "143-196",
           "implMappings": [
             {
-              "file": "codelet/git/src/three_way_merge.rs",
+              "file": "rust/git/src/three_way_merge.rs",
               "lines": [
                 44,
                 45,
@@ -36,11 +36,11 @@
           ]
         },
         {
-          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "file": "rust/git/tests/three_way_merge_integration_tests.rs",
           "lines": "38-107",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 122,
                 123,
@@ -111,7 +111,7 @@
           "lines": "82-132",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 230,
                 231,
@@ -127,11 +127,11 @@
       "name": "Non-overlapping changes in same file merge cleanly without conflict markers",
       "testMappings": [
         {
-          "file": "codelet/git/src/three_way_merge.rs",
+          "file": "rust/git/src/three_way_merge.rs",
           "lines": "201-257",
           "implMappings": [
             {
-              "file": "codelet/git/src/three_way_merge.rs",
+              "file": "rust/git/src/three_way_merge.rs",
               "lines": [
                 44,
                 45,
@@ -159,11 +159,11 @@
           ]
         },
         {
-          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "file": "rust/git/tests/three_way_merge_integration_tests.rs",
           "lines": "114-173",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 122,
                 123,
@@ -234,7 +234,7 @@
           "lines": "139-186",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 230,
                 231,
@@ -250,11 +250,11 @@
       "name": "File added in both session and main with different content gets conflict markers",
       "testMappings": [
         {
-          "file": "codelet/git/src/three_way_merge.rs",
+          "file": "rust/git/src/three_way_merge.rs",
           "lines": "262-300",
           "implMappings": [
             {
-              "file": "codelet/git/src/three_way_merge.rs",
+              "file": "rust/git/src/three_way_merge.rs",
               "lines": [
                 44,
                 45,
@@ -282,11 +282,11 @@
           ]
         },
         {
-          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "file": "rust/git/tests/three_way_merge_integration_tests.rs",
           "lines": "180-218",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 122,
                 123,
@@ -357,7 +357,7 @@
           "lines": "192-243",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 230,
                 231,
@@ -373,11 +373,11 @@
       "name": "Binary file conflict is reported without writing conflict markers",
       "testMappings": [
         {
-          "file": "codelet/git/src/three_way_merge.rs",
+          "file": "rust/git/src/three_way_merge.rs",
           "lines": "305-361",
           "implMappings": [
             {
-              "file": "codelet/git/src/three_way_merge.rs",
+              "file": "rust/git/src/three_way_merge.rs",
               "lines": [
                 78,
                 79,
@@ -433,11 +433,11 @@
           ]
         },
         {
-          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "file": "rust/git/tests/three_way_merge_integration_tests.rs",
           "lines": "225-280",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 122,
                 123,
@@ -508,7 +508,7 @@
           "lines": "249-299",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 230,
                 231,
@@ -524,11 +524,11 @@
       "name": "Identical changes from session and main do not produce a conflict",
       "testMappings": [
         {
-          "file": "codelet/git/src/three_way_merge.rs",
+          "file": "rust/git/src/three_way_merge.rs",
           "lines": "366-401",
           "implMappings": [
             {
-              "file": "codelet/git/src/three_way_merge.rs",
+              "file": "rust/git/src/three_way_merge.rs",
               "lines": [
                 44,
                 45,
@@ -556,11 +556,11 @@
           ]
         },
         {
-          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "file": "rust/git/tests/three_way_merge_integration_tests.rs",
           "lines": "287-326",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 122,
                 123,
@@ -631,7 +631,7 @@
           "lines": "305-326",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 230,
                 231,
@@ -647,11 +647,11 @@
       "name": "Re-running merge after resolving conflict markers succeeds",
       "testMappings": [
         {
-          "file": "codelet/git/src/three_way_merge.rs",
+          "file": "rust/git/src/three_way_merge.rs",
           "lines": "406-414",
           "implMappings": [
             {
-              "file": "codelet/git/src/three_way_merge.rs",
+              "file": "rust/git/src/three_way_merge.rs",
               "lines": [
                 44,
                 45,
@@ -679,11 +679,11 @@
           ]
         },
         {
-          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "file": "rust/git/tests/three_way_merge_integration_tests.rs",
           "lines": "333-389",
           "implMappings": [
             {
-              "file": "codelet/git/src/session_result.rs",
+              "file": "rust/git/src/session_result.rs",
               "lines": [
                 122,
                 123,
@@ -757,14 +757,14 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/src/three_way_merge.rs",
-      "codelet/git/tests/three_way_merge_integration_tests.rs",
+      "rust/git/src/three_way_merge.rs",
+      "rust/git/tests/three_way_merge_integration_tests.rs",
       "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts"
     ],
     "implFiles": [
-      "codelet/git/src/three_way_merge.rs",
-      "codelet/git/src/session_result.rs",
-      "codelet/napi/src/git.rs"
+      "rust/git/src/three_way_merge.rs",
+      "rust/git/src/session_result.rs",
+      "rust/napi/src/git.rs"
     ],
     "totalLinesCovered": 1332
   }

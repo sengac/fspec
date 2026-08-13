@@ -4,11 +4,11 @@
       "name": "Aggregate JSON with no filter computes totals, completion and averages",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "50-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -494,11 +494,11 @@
       "name": "Single work unit JSON returns cycleTime and timePerState",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "143-204",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -984,11 +984,11 @@
       "name": "Unknown work unit id fails with wrapped error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "206-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -1474,11 +1474,11 @@
       "name": "Work unit without state history fails with wrapped error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "238-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -1964,11 +1964,11 @@
       "name": "Type filter omits byType from the result",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "270-310",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -2454,11 +2454,11 @@
       "name": "Empty work units map preserves the three byType keys with zero counts",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "312-364",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -2944,11 +2944,11 @@
       "name": "Missing work-units.json escalates as a wrapped Failed to query metrics error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "366-392",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -3434,11 +3434,11 @@
       "name": "Text aggregate output is human-readable and not JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/query_metrics.rs",
+          "file": "rust/fspec-core/tests/query_metrics.rs",
           "lines": "394-455",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_metrics.rs",
+              "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
                 1,
                 2,
@@ -3926,10 +3926,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/query_metrics.rs"
+      "rust/fspec-core/tests/query_metrics.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/query_metrics.rs"
+      "rust/fspec-core/src/commands/query_metrics.rs"
     ],
     "totalLinesCovered": 4188
   }

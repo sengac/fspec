@@ -4,11 +4,11 @@
       "name": "ScrollbackList::push appends a chunk and bumps offset in stick mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
           "lines": "58-78",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 83,
                 84,
@@ -26,11 +26,11 @@
       "name": "PageUp on the scrollback decrements offset by viewport_height and disables stick",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
           "lines": "80-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 131,
                 132,
@@ -47,11 +47,11 @@
       "name": "PageDown / End from a scrolled-up position re-enables stick when offset reaches the tail",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
           "lines": "96-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 138,
                 139,
@@ -74,11 +74,11 @@
       "name": "ScrollbackList::render only lays out the visible window",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
           "lines": "114-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
               "lines": [
                 163,
                 164,
@@ -126,11 +126,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 80,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs"
+      "rust/fspec-tui/tests/view_agent_scrollback_rpc019.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/scrollback.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/scrollback.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 190
   }

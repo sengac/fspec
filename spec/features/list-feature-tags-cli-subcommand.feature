@@ -5,11 +5,11 @@
 @RPC-244
 Feature: List Feature Tags Cli Subcommand
   """
-  CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_feature_tags::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
+  CLI subcommand is wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_feature_tags::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
   The subcommand exposes exactly ONE flag: --show-categories (long-only, no short form), mirroring the TypeScript Commander.js registration at src/commands/list-feature-tags.ts:159-167 which declares .command('list-feature-tags').argument('<file>', ...).option('--show-categories', ...). No --format, no --workspace, no --cwd. The <file> positional is REQUIRED — clap returns exit code 2 if omitted.
 
-  The bridge module at codelet/fspec/src/list_feature_tags.rs performs only JSON arg marshalling and CWD resolution; no Gherkin parsing, no tag iteration, no category lookup, no rendering. The scenario_cli_bridge_module_embeds_no_duplicated_business_logic test scans the bridge file for forbidden TAG-DOMAIN substrings (e.g. 'No tags found', 'Tags on this feature', 'Invalid Gherkin syntax') to enforce the two-front-doors invariant.
+  The bridge module at rust/fspec/src/list_feature_tags.rs performs only JSON arg marshalling and CWD resolution; no Gherkin parsing, no tag iteration, no category lookup, no rendering. The scenario_cli_bridge_module_embeds_no_duplicated_business_logic test scans the bridge file for forbidden TAG-DOMAIN substrings (e.g. 'No tags found', 'Tags on this feature', 'Invalid Gherkin syntax') to enforce the two-front-doors invariant.
   """
 
   Background: User Story
@@ -18,8 +18,8 @@ Feature: List Feature Tags Cli Subcommand
     So that I can audit the feature-level tags on a single .feature file (with optional category cross-reference) from a script or terminal without going through the LLM tool-call dispatcher
 
   Scenario: CLI clap subcommand exposes list-feature-tags with --show-categories
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-feature-tags --help` from a shell
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec list-feature-tags --help` from a shell
     Then the command exits 0
     And stdout contains clap-generated help describing the list-feature-tags subcommand
     And stdout contains the substring '--show-categories'
@@ -30,7 +30,7 @@ Feature: List Feature Tags Cli Subcommand
 
   Scenario: CLI happy path prints flat alphabetical-declaration tag list and exits 0
     Given spec/features/user-auth.feature exists with feature-level tags '@critical @auth' on a single line before 'Feature: User Authentication'
-    When I run `./codelet/target/release/fspec list-feature-tags spec/features/user-auth.feature` from the project root
+    When I run `./rust/target/release/fspec list-feature-tags spec/features/user-auth.feature` from the project root
     Then the command exits 0
     And stdout contains the substring 'Tags on this feature:'
     And stdout contains the exact line '  @critical'
@@ -38,7 +38,7 @@ Feature: List Feature Tags Cli Subcommand
     And the line '  @critical' appears BEFORE the line '  @auth' in stdout
 
   Scenario: CLI bridge module embeds no duplicated business logic
-    Given the CLI bridge module codelet/fspec/src/list_feature_tags.rs is the only shell-facing entry point for list-feature-tags
+    Given the CLI bridge module rust/fspec/src/list_feature_tags.rs is the only shell-facing entry point for list-feature-tags
     When the test harness reads the bridge source file as a string
     Then the bridge source does NOT contain the substring 'No tags found on this feature'
     And the bridge source does NOT contain the substring 'File does not contain a valid Feature'
@@ -46,36 +46,36 @@ Feature: List Feature Tags Cli Subcommand
 
   Scenario: CLI --show-categories flag emits categorized tag/category pairs
     Given spec/features/user-auth.feature exists with feature-level tag '@critical' before 'Feature: User Authentication' AND spec/tags.json registers '@critical' under the Phase Tags category
-    When I run `./codelet/target/release/fspec list-feature-tags spec/features/user-auth.feature --show-categories`
+    When I run `./rust/target/release/fspec list-feature-tags spec/features/user-auth.feature --show-categories`
     Then the command exits 0
     And stdout reflects the category cross-reference produced by fspec_core::commands::list_feature_tags::run with showCategories=true
 
   Scenario: CLI exits 1 with stderr-routed error when feature file does not exist
     Given a working directory containing no spec/features/missing.feature
-    When I run `./codelet/target/release/fspec list-feature-tags spec/features/missing.feature` from that directory
+    When I run `./rust/target/release/fspec list-feature-tags spec/features/missing.feature` from that directory
     Then the command exits with code 1
     Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
     Then stdout contains zero bytes
 
   Scenario: CLI exits 1 with stderr-routed error when --show-categories is combined with a missing file
     Given a working directory containing no spec/features/missing.feature
-    When I run `./codelet/target/release/fspec list-feature-tags spec/features/missing.feature --show-categories` from that directory
+    When I run `./rust/target/release/fspec list-feature-tags spec/features/missing.feature --show-categories` from that directory
     Then the command exits with code 1
     Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
     Then stdout contains zero bytes
 
   Scenario: CLI exits 1 with stderr-routed error when the file is not a valid Gherkin feature
     Given spec/features/broken.feature contains the plain text 'Not a feature at all' with no Feature header
-    When I run `./codelet/target/release/fspec list-feature-tags spec/features/broken.feature` from that directory
+    When I run `./rust/target/release/fspec list-feature-tags spec/features/broken.feature` from that directory
     Then the command exits with code 1
     Then stderr contains the exact line 'Error: File does not contain a valid Feature'
     Then stdout contains zero bytes
 
   Scenario: list-feature-tags --help is byte-for-byte identical to TS formatCommandHelp reference output
-    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-feature-tags --help` piped to non-TTY
+    Given the fspec Rust binary at rust/target/release/fspec has been compiled
+    When I run `./rust/target/release/fspec list-feature-tags --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the TS reference fixture at codelet/fspec/tests/fixtures/help/list-feature-tags.txt
+    And stdout is byte-for-byte identical to the TS reference fixture at rust/fspec/tests/fixtures/help/list-feature-tags.txt
     And stdout starts with a blank line followed by 'LIST-FEATURE-TAGS'
     And stdout contains the section header 'ARGUMENTS' followed by '  <file> (required)'
     And stdout contains the section header 'OPTIONS' listing only '--show-categories'

@@ -1,7 +1,7 @@
 @PROV-020
 Feature: Claude OAuth core flow for Anthropic subscriptions
   """
-  New file: codelet/providers/src/claude_oauth.rs — Anthropic OAuth core module, mirrors codex_oauth.rs structure. Constants, PKCE, authorize URL, code exchange, token refresh, header building, tool name prefixing, URL rewriting. All pure functions + async HTTP calls. Re-uses existing sha2/base64/rand crates.
+  New file: rust/providers/src/claude_oauth.rs — Anthropic OAuth core module, mirrors codex_oauth.rs structure. Constants, PKCE, authorize URL, code exchange, token refresh, header building, tool name prefixing, URL rewriting. All pure functions + async HTTP calls. Re-uses existing sha2/base64/rand crates.
   Key structural difference from Codex OAuth: Anthropic token endpoint uses JSON body (Content-Type: application/json) not form-encoded. Also no id_token in response — just access_token, refresh_token, expires_in. No JWT account_id extraction needed.
   PKCE code can be shared between codex_oauth.rs and claude_oauth.rs — the generate_pkce() and generate_state() functions are identical. Consider extracting to a shared oauth_common module, or just re-implement (they're small).
   """

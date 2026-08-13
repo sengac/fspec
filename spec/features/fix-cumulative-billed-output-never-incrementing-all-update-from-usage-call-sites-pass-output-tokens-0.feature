@@ -15,10 +15,10 @@ Feature: Fix cumulative_billed_output never incrementing — all update_from_usa
   update_from_usage continues to carry the session-wide cumulative display value.
 
   Call sites to fix:
-  - codelet/cli/src/interactive/stream_loop.rs:1808         (main turn finalization)
-  - codelet/cli/src/interactive/gemini_continuation.rs:324  (Gemini continuation normal completion)
-  - codelet/cli/src/interactive/gemini_continuation.rs:427  (update_token_tracker helper)
-  - codelet/cli/src/interactive/recovery_compaction.rs:189  (CMPCT-024 flush on cancel)
+  - rust/cli/src/interactive/stream_loop.rs:1808         (main turn finalization)
+  - rust/cli/src/interactive/gemini_continuation.rs:324  (Gemini continuation normal completion)
+  - rust/cli/src/interactive/gemini_continuation.rs:427  (update_token_tracker helper)
+  - rust/cli/src/interactive/recovery_compaction.rs:189  (CMPCT-024 flush on cancel)
 
   Delta formula:
   let per_turn_delta = current_cumulative_output.saturating_sub(

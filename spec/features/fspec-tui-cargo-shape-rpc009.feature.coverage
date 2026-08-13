@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "codelet/fspec-tui/Cargo.toml [dependencies] now lists tui-input alongside the existing entries",
+      "name": "rust/fspec-tui/Cargo.toml [dependencies] now lists tui-input alongside the existing entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
           "lines": "24-54",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 12,
                 13,
@@ -47,14 +47,14 @@
       ]
     },
     {
-      "name": "codelet/Cargo.toml [workspace.dependencies] declares tui-input = \"0.10\"",
+      "name": "rust/Cargo.toml [workspace.dependencies] declares tui-input = \"0.10\"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
           "lines": "56-71",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 75,
                 76,
@@ -66,14 +66,14 @@
       ]
     },
     {
-      "name": "Production [dependencies] of codelet/fspec-tui still excludes codelet-napi and codelet-core",
+      "name": "Production [dependencies] of rust/fspec-tui still excludes codelet-napi and codelet-core",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
           "lines": "73-91",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 12,
                 13,
@@ -112,14 +112,14 @@
       ]
     },
     {
-      "name": "dev-dependencies of codelet/fspec-tui still excludes codelet-napi (codelet-core stays allowed for fixtures)",
+      "name": "dev-dependencies of rust/fspec-tui still excludes codelet-napi (codelet-core stays allowed for fixtures)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
           "lines": "93-111",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/Cargo.toml",
+              "file": "rust/fspec-tui/Cargo.toml",
               "lines": [
                 43,
                 44,
@@ -138,11 +138,11 @@
       "name": "New src/views/*.rs files preserve the host-supplied tokio runtime invariant (Q9)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
           "lines": "113-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/mod.rs",
+              "file": "rust/fspec-tui/src/views/mod.rs",
               "lines": [
                 1,
                 2,
@@ -176,11 +176,11 @@
       "name": "New src/views/*.rs files do not directly import the encapsulated transport crates",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
           "lines": "154-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/mod.rs",
+              "file": "rust/fspec-tui/src/views/mod.rs",
               "lines": [
                 1,
                 2,
@@ -216,12 +216,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc009.rs"
+      "rust/fspec-tui/tests/source_shape_rpc009.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/Cargo.toml",
-      "codelet/Cargo.toml",
-      "codelet/fspec-tui/src/views/mod.rs"
+      "rust/fspec-tui/Cargo.toml",
+      "rust/Cargo.toml",
+      "rust/fspec-tui/src/views/mod.rs"
     ],
     "totalLinesCovered": 270
   }

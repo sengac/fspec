@@ -4,11 +4,11 @@
       "name": "Dragging across the id and title row copies its visible text",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
           "lines": "62-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
                 119,
                 120,
@@ -99,11 +99,11 @@
       "name": "Dragging across the wrapped description rows copies them as shown",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
           "lines": "116-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
                 177,
                 178,
@@ -147,11 +147,11 @@
       "name": "Copying a full-width description line excludes the side border glyph",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
           "lines": "205-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
                 177,
                 178,
@@ -190,11 +190,11 @@
       "name": "Changing the selected work unit clears an active strip selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
           "lines": "270-329",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
                 145,
                 146,
@@ -220,11 +220,11 @@
       "name": "Esc clears an active strip selection without copying",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
           "lines": "337-378",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 162,
                 163,
@@ -241,11 +241,11 @@
       "name": "A quick click in the details strip does not select or copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
           "lines": "366-388",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
                 56,
                 57,
@@ -279,12 +279,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs"
+      "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board/details_select.rs",
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/views/board/mouse.rs"
+      "rust/fspec-tui/src/views/board/details_select.rs",
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/board/mouse.rs"
     ],
     "totalLinesCovered": 488
   }

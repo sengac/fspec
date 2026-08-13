@@ -4,11 +4,11 @@
       "name": "A selected default model survives a process restart",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov119_default_model_persistence.rs",
+          "file": "rust/sessions/tests/prov119_default_model_persistence.rs",
           "lines": "60-96",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 183,
                 184,
@@ -74,7 +74,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/default_model_persistence.rs",
+              "file": "rust/sessions/src/default_model_persistence.rs",
               "lines": [
                 48,
                 49,
@@ -131,11 +131,11 @@
       "name": "First launch with no persisted config has no default model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov119_default_model_persistence.rs",
+          "file": "rust/sessions/tests/prov119_default_model_persistence.rs",
           "lines": "101-124",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 183,
                 184,
@@ -149,7 +149,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/default_model_persistence.rs",
+              "file": "rust/sessions/src/default_model_persistence.rs",
               "lines": [
                 70,
                 71,
@@ -184,11 +184,11 @@
       "name": "An empty model selection is never persisted",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov119_default_model_persistence.rs",
+          "file": "rust/sessions/tests/prov119_default_model_persistence.rs",
           "lines": "129-159",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_model_persistence.rs",
+              "file": "rust/sessions/src/default_model_persistence.rs",
               "lines": [
                 48,
                 49,
@@ -213,7 +213,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 227,
                 228,
@@ -243,11 +243,11 @@
       "name": "A missing or malformed config file degrades to no default model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov119_default_model_persistence.rs",
+          "file": "rust/sessions/tests/prov119_default_model_persistence.rs",
           "lines": "164-184",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_model_persistence.rs",
+              "file": "rust/sessions/src/default_model_persistence.rs",
               "lines": [
                 69,
                 70,
@@ -285,11 +285,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov119_default_model_persistence.rs"
+      "rust/sessions/tests/prov119_default_model_persistence.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/sessions/src/default_model_persistence.rs"
+      "rust/sessions/src/session_manager.rs",
+      "rust/sessions/src/default_model_persistence.rs"
     ],
     "totalLinesCovered": 313
   }

@@ -4,11 +4,11 @@
       "name": "Create form starts editing the name with prefilled base URL",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "74-90",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 53,
                 54,
@@ -35,11 +35,11 @@
       "name": "Edit form prefills connection fields from the stored profile",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "92-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 69,
                 70,
@@ -68,11 +68,11 @@
       "name": "Down arrow from name editing focuses the first connection field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "117-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 97,
                 98,
@@ -93,11 +93,11 @@
       "name": "Up arrow on the first field re-enters name editing in create mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "131-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 106,
                 107,
@@ -118,11 +118,11 @@
       "name": "Tab is ignored and leaves the focused field unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "143-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 170,
                 171,
@@ -150,11 +150,11 @@
       "name": "Saving a valid profile emits a SaveProfile action and returns to list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "157-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 188,
                 189,
@@ -194,11 +194,11 @@
       "name": "Saving with an empty api key does nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "176-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 145,
                 146,
@@ -226,11 +226,11 @@
       "name": "Numeric fields are parsed on save and non-numeric input is omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "190-206",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 145,
                 146,
@@ -265,11 +265,11 @@
       "name": "Escape returns to list without saving",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "208-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 196,
                 197,
@@ -285,11 +285,11 @@
       "name": "Compaction threshold percentage is parsed on save",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs",
           "lines": "222-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 240,
                 241,
@@ -315,10 +315,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_form_prov110.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_form_prov110.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
     "totalLinesCovered": 305
   }

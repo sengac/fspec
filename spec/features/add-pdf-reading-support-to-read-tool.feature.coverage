@@ -4,11 +4,11 @@
       "name": "Read PDF with default visual mode renders pages as images",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "21-54",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 177,
                 178,
@@ -66,11 +66,11 @@
       "name": "Read PDF with explicit text mode extracts searchable text",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "60-101",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 196,
                 197,
@@ -90,11 +90,11 @@
       "name": "Read PDF with images mode extracts embedded images",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "107-141",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 204,
                 205,
@@ -115,11 +115,11 @@
       "name": "Reject password-protected PDF with clear error before parsing",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "147-182",
           "implMappings": [
             {
-              "file": "codelet/tools/src/pdf.rs",
+              "file": "rust/tools/src/pdf.rs",
               "lines": [
                 88,
                 89,
@@ -136,11 +136,11 @@
       "name": "Visual mode includes page count for context awareness",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "188-221",
           "implMappings": [
             {
-              "file": "codelet/tools/src/pdf.rs",
+              "file": "rust/tools/src/pdf.rs",
               "lines": [
                 207,
                 208,
@@ -185,11 +185,11 @@
       "name": "Text mode handles scanned PDFs gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "227-256",
           "implMappings": [
             {
-              "file": "codelet/tools/src/pdf.rs",
+              "file": "rust/tools/src/pdf.rs",
               "lines": [
                 115,
                 116,
@@ -211,11 +211,11 @@
       "name": "All PDF modes are exempt from text token limits",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "262-301",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 171,
                 172,
@@ -280,11 +280,11 @@
       "name": "Invalid pdf_mode falls back to visual mode",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "file": "rust/tools/tests/pdf_read_test.rs",
           "lines": "307-334",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 213,
                 214,
@@ -307,11 +307,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/pdf_read_test.rs"
+      "rust/tools/tests/pdf_read_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/read.rs",
-      "codelet/tools/src/pdf.rs"
+      "rust/tools/src/read.rs",
+      "rust/tools/src/pdf.rs"
     ],
     "totalLinesCovered": 452
   }

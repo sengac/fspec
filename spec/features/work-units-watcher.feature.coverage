@@ -4,11 +4,11 @@
       "name": "WorkUnitsWatcher publishes a new snapshot on file mutation",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_watcher_test.rs",
+          "file": "rust/core/tests/work_units_watcher_test.rs",
           "lines": "61-97",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units.rs",
+              "file": "rust/core/src/work_units.rs",
               "lines": [
                 150,
                 151,
@@ -96,11 +96,11 @@
       "name": "Multiple subscribers each observe every broadcast on file mutation",
       "testMappings": [
         {
-          "file": "codelet/core/tests/work_units_watcher_test.rs",
+          "file": "rust/core/tests/work_units_watcher_test.rs",
           "lines": "99-136",
           "implMappings": [
             {
-              "file": "codelet/core/src/work_units.rs",
+              "file": "rust/core/src/work_units.rs",
               "lines": [
                 126,
                 127,
@@ -230,10 +230,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/work_units_watcher_test.rs"
+      "rust/core/tests/work_units_watcher_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/work_units.rs"
+      "rust/core/src/work_units.rs"
     ],
     "totalLinesCovered": 267
   }

@@ -4,11 +4,11 @@
       "name": "Auto-creates tags.json and registers a new tag in an existing category",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "66-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 67,
                 68,
@@ -174,11 +174,11 @@
       "name": "Rejects duplicate tag across all categories",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "119-160",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 104,
                 105,
@@ -206,11 +206,11 @@
       "name": "Rejects tag missing leading @ character",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "162-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 75,
                 76,
@@ -234,11 +234,11 @@
       "name": "Normalises uppercase tag to lowercase and reports conversion",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "190-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 88,
                 89,
@@ -265,11 +265,11 @@
       "name": "Rejects tag containing characters outside the allowed regex",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "228-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 94,
                 95,
@@ -290,11 +290,11 @@
       "name": "Rejects unknown category with canonical Available categories list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "258-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 121,
                 122,
@@ -331,11 +331,11 @@
       "name": "Matches category name case-insensitively but writes canonical on-disk name in success message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "287-321",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 147,
                 148,
@@ -421,11 +421,11 @@
       "name": "Sorts tags alphabetically within the matched category after insert",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "323-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 147,
                 148,
@@ -453,11 +453,11 @@
       "name": "Preserves auxiliary top-level fields and bumps statistics.lastUpdated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "364-430",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 164,
                 165,
@@ -488,11 +488,11 @@
       "name": "Escalates malformed tags.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/register_tag.rs",
+          "file": "rust/fspec-core/tests/register_tag.rs",
           "lines": "432-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/register_tag.rs",
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
                 102,
                 103,
@@ -510,10 +510,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/register_tag.rs"
+      "rust/fspec-core/tests/register_tag.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/register_tag.rs"
+      "rust/fspec-core/src/commands/register_tag.rs"
     ],
     "totalLinesCovered": 734
   }

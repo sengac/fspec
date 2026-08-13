@@ -4,11 +4,11 @@
       "name": "Dispatcher deletes an existing epic from spec/epics.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "80-103",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 52,
                 53,
@@ -109,11 +109,11 @@
       "name": "Dispatcher clears epicId references on matching prefixes when deleting an epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "105-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 115,
                 116,
@@ -141,11 +141,11 @@
       "name": "Dispatcher clears epic references on matching work units when deleting an epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "143-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 115,
                 116,
@@ -178,11 +178,11 @@
       "name": "Dispatcher rejects deletion of a missing epic with the canonical wrapped error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "190-219",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 92,
                 93,
@@ -203,11 +203,11 @@
       "name": "Dispatcher tolerates missing spec/prefixes.json (TS bare-catch parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "221-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 152,
                 153,
@@ -253,11 +253,11 @@
       "name": "Dispatcher tolerates missing spec/work-units.json (TS bare-catch parity)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "242-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 152,
                 153,
@@ -303,11 +303,11 @@
       "name": "Dispatcher tolerates malformed spec/prefixes.json silently",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "258-281",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 143,
                 144,
@@ -327,11 +327,11 @@
       "name": "Dispatcher tolerates malformed spec/work-units.json silently",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "283-306",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 143,
                 144,
@@ -351,11 +351,11 @@
       "name": "Dispatcher preserves non-matching epics, prefixes, and work units",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "308-389",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 167,
                 168,
@@ -381,11 +381,11 @@
       "name": "Dispatcher response text renders the canonical success line",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "391-412",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 137,
                 138,
@@ -401,11 +401,11 @@
       "name": "Dispatcher fails fast when required args are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "file": "rust/fspec-core/tests/delete_epic.rs",
           "lines": "414-433",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
                 54,
                 55,
@@ -426,10 +426,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_epic.rs"
+      "rust/fspec-core/tests/delete_epic.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_epic.rs"
+      "rust/fspec-core/src/commands/delete_epic.rs"
     ],
     "totalLinesCovered": 588
   }

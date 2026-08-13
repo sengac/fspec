@@ -8,7 +8,7 @@ Feature: Reject overlapping same-depth turn ranges in parse_dag_nodes (FV-003-b)
   """
   On completion, FORMAL_VERIFICATION.md MUST be updated: (1) Remove FV-003-b row from Findings table at line 197. (2) Decrement limitation count in FV-003 row of Proofs status table at line 216. (3) Remove the limitation_parser_does_not_reject_overlap test from dag_node_proptest.test.rs.
   Existing limitation_parser_does_not_reject_overlap test must be REMOVED from dag_node_proptest.test.rs (it pinned the now-obsolete behaviour)
-  Implementation lives in codelet/core/src/compaction/model.rs::parse_dag_nodes — replace the current 'check overlaps and warn' loop with a 'reject overlaps, drop later, log warn' filter. Sort by (depth, turn_start) before the dedupe pass to make left-to-right preference deterministic.
+  Implementation lives in rust/core/src/compaction/model.rs::parse_dag_nodes — replace the current 'check overlaps and warn' loop with a 'reject overlaps, drop later, log warn' filter. Sort by (depth, turn_start) before the dedupe pass to make left-to-right preference deterministic.
   FORMAL_VERIFICATION.md updates required on done: (1) remove FV-003-b row from Findings table at line 197, (2) update FV-003 row of Proofs status table at line 216 to reflect '1 limitation pinned' instead of '2 limitations pinned'. The post-validating virtual hook already greps for 'FV-003-b' and blocks if still present.
   Stable test pattern follows CMPCT-035 (FV-003-a): example-mapped Gherkin → 1:1 unit tests with @step comments + a single proptest assertion. No tracing-subscriber capture is wired in; warning emission is documented as 'verified by source inspection' per the existing convention.
   """

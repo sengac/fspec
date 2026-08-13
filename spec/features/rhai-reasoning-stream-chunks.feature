@@ -17,7 +17,7 @@ Feature: Add StreamChunk::ReasoningDelta variant and stream_convert plumbing for
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. StreamChunk enum in codelet/providers/src/custom/stream.rs gains a ReasoningDelta(String) variant carrying the reasoning text fragment
+  #   1. StreamChunk enum in rust/providers/src/custom/stream.rs gains a ReasoningDelta(String) variant carrying the reasoning text fragment
   #   2. stream_convert::handle_one dispatches kind values 'reasoning_delta' and 'thinking_delta' to emit a StreamChunk::ReasoningDelta carrying the map's 'text' field
   #   3. A parse_stream_chunk map of kind 'reasoning_delta' with an empty or missing text field produces zero chunks (same behaviour as empty text_delta)
   #   4. ReasoningDelta chunks flow through the same stream_http::open_stream SSE adapter and end up in the public Stream<Item = Result<StreamChunk, ProviderError>> yielded by RhaiCustomProvider::complete_with_tools_streaming

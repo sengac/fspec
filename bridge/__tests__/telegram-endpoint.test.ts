@@ -1114,7 +1114,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
   // -------------------------------------------
 
   describe('Feature: User ID Whitelist for Telegram Bridge', () => {
-    describe('Scenario: Authorized user message is forwarded to codelet', () => {
+    describe('Scenario: Authorized user message is forwarded to rust', () => {
       it('should forward message when user ID is in whitelist', () => {
         // @step Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "123456789"
         process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';

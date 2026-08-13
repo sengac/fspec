@@ -6,12 +6,12 @@ Feature: checkpoint CLI subcommand on the standalone fspec Rust binary
   Two-front-doors invariant (RPC-003 §7/§11): the clap subcommand
   `fspec checkpoint <work-unit-id> <checkpoint-name>` and the LLM-facing dispatcher both
   route through codelet_fspec_core::commands::checkpoint::run. The CLI bridge
-  (codelet/fspec/src/checkpoint.rs) only marshals the two positionals into JSON and resolves
+  (rust/fspec/src/checkpoint.rs) only marshals the two positionals into JSON and resolves
   project_root from the current working directory (parity with the TS process.cwd() default).
   No capture, index, or rendering logic is duplicated in the bridge.
 
   Help parity: `fspec checkpoint --help` (NO_COLOR, non-TTY) is byte-for-byte identical to the
-  captured TS fixture at codelet/fspec/tests/fixtures/help/checkpoint.txt.
+  captured TS fixture at rust/fspec/tests/fixtures/help/checkpoint.txt.
   """
 
   Background: User Story
@@ -49,11 +49,11 @@ Feature: checkpoint CLI subcommand on the standalone fspec Rust binary
     Given a git repository with uncommitted changes
     When I dispatch checkpoint through fspec_core::dispatch::dispatch_command with format "json"
     Then the dispatcher result succeeds and reports capturedFiles
-    And the CLI bridge module codelet/fspec/src/checkpoint.rs contains NO inline capture, index-write, or rendering logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/checkpoint.rs contains NO inline capture, index-write, or rendering logic — its only computation is JSON arg marshalling
 
   Scenario: checkpoint --help is byte-for-byte identical to TS
     Given the fspec Rust binary has been compiled
     When I run "fspec checkpoint --help" piped to non-TTY with NO_COLOR set
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/checkpoint.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/checkpoint.txt
     And stdout starts with a blank line followed by "CHECKPOINT"

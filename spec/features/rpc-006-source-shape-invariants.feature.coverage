@@ -4,11 +4,11 @@
       "name": "default_fixture is unreachable from production code",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
           "lines": "24-57",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -159,11 +159,11 @@
       "name": "Embedded transport reuses the host tokio runtime Handle for any fan-out it spawns",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
           "lines": "59-94",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -267,11 +267,11 @@
       "name": "Shared service crate codelet-rpc may depend on codelet-core but not on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
           "lines": "96-130",
           "implMappings": [
             {
-              "file": "codelet/rpc/Cargo.toml",
+              "file": "rust/rpc/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -333,11 +333,11 @@
       "name": "rpc-server binary still binds 127.0.0.1 loopback only after the watcher integration",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
           "lines": "132-161",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/main.rs",
+              "file": "rust/rpc-server/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -399,11 +399,11 @@
       "name": "WorkUnitInfo continues to be defined exactly once in rpc-types",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
           "lines": "163-199",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -515,11 +515,11 @@
       "name": "Embedded push path contains no bincode encode call",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/rpc_006_source_shape.rs",
+          "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
           "lines": "201-225",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -625,14 +625,14 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/rpc_006_source_shape.rs"
+      "rust/rpc-embedded/tests/rpc_006_source_shape.rs"
     ],
     "implFiles": [
-      "codelet/rpc/src/lib.rs",
-      "codelet/rpc-embedded/src/lib.rs",
-      "codelet/rpc/Cargo.toml",
-      "codelet/rpc-server/src/main.rs",
-      "codelet/rpc-types/src/lib.rs"
+      "rust/rpc/src/lib.rs",
+      "rust/rpc-embedded/src/lib.rs",
+      "rust/rpc/Cargo.toml",
+      "rust/rpc-server/src/main.rs",
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 720
   }

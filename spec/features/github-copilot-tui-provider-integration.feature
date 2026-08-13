@@ -6,7 +6,7 @@
 @PROV-054
 Feature: GitHub Copilot TUI provider integration
   """
-  Uses new HookMode variants oauth-deployment-type-select and oauth-enterprise-url-entry. GitHub Copilot is registered in SUPPORTED_PROVIDERS with authType 'oauth' and requiresApiKey false. NAPI bridge (codelet/napi/src/copilot_oauth.rs) exposes copilotOauthDeviceLoginStart/Poll/GetCredential/ClearCredential/NormalizeEnterpriseDomain. Login flow is orchestrated by src/tui/utils/copilotLoginFlow.ts and driven by src/tui/inputHandlers/copilotOauthModeHandler.ts. OAuth labels come from src/tui/utils/oauthProviderLabels.ts (single source of truth, no more binary ternaries). Login items come from src/tui/utils/oauthLoginLabels.ts (registry-driven, no hard-coded isAnthropic).
+  Uses new HookMode variants oauth-deployment-type-select and oauth-enterprise-url-entry. GitHub Copilot is registered in SUPPORTED_PROVIDERS with authType 'oauth' and requiresApiKey false. NAPI bridge (rust/napi/src/copilot_oauth.rs) exposes copilotOauthDeviceLoginStart/Poll/GetCredential/ClearCredential/NormalizeEnterpriseDomain. Login flow is orchestrated by src/tui/utils/copilotLoginFlow.ts and driven by src/tui/inputHandlers/copilotOauthModeHandler.ts. OAuth labels come from src/tui/utils/oauthProviderLabels.ts (single source of truth, no more binary ternaries). Login items come from src/tui/utils/oauthLoginLabels.ts (registry-driven, no hard-coded isAnthropic).
   """
 
   Background: User Story

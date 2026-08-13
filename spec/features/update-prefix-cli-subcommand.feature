@@ -9,7 +9,7 @@
 Feature: Port update-prefix command to Rust
   """
   Two-front-doors invariant (RPC-003 §7/§11): dispatcher and clap CLI both call commands::update_prefix::run(args_json, project_root). CLI bridge marshals positional <prefix> + --description into JSON object {prefix, description}; epicId is dispatcher-only.
-  Prefix struct (codelet/fspec-core/src/types/prefix.rs) does NOT have native epicId or updatedAt fields. RPC-313 mutates these via the existing #[serde(flatten)] extra: serde_json::Map<String, Value> catch-all. Existing on-disk epicId/updatedAt round-trip through this map; new values are inserted by string key. This keeps RPC-313 fully within worker-owned files and avoids a shared-type change.
+  Prefix struct (rust/fspec-core/src/types/prefix.rs) does NOT have native epicId or updatedAt fields. RPC-313 mutates these via the existing #[serde(flatten)] extra: serde_json::Map<String, Value> catch-all. Existing on-disk epicId/updatedAt round-trip through this map; new values are inserted by string key. This keeps RPC-313 fully within worker-owned files and avoids a shared-type change.
   Epic verification uses io::ensure::read_epics_or_empty (RPC-243 helper) rather than a (non-existent) ensure_epics_file. Observable difference vs TS: when epicId is provided but spec/epics.json is missing, TS auto-creates an empty epics.json before failing with 'Epic <Y> not found'; Rust returns 'Epic <Y> not found' without touching disk. User-visible error message is identical. If strict side-effect parity is required, supervisor can add ensure_epics_file later (read-only RPC).
   Atomic write via io::locked_file::write_json_atomic (write-temp + rename). spec/prefixes.json is rebuilt from the in-memory PrefixesData and re-serialised in full — this matches TS fileManager.transaction semantics and ensures partial writes never land.
   Insertion order: PrefixesData.prefixes is IndexMap<String, Prefix>. We update the existing entry in-place using IndexMap::get_mut(&prefix); we do NOT call insert() (which would not move existing keys but is misleading). On-disk JSON preserves the original position of the updated record.
@@ -96,25 +96,25 @@ Feature: Port update-prefix command to Rust
     Then stderr contains the substring 'required'
 
   Scenario: CLI help surface matches the captured TS fixture
-    Given the TS help fixture at codelet/fspec/tests/fixtures/help/update-prefix.txt
+    Given the TS help fixture at rust/fspec/tests/fixtures/help/update-prefix.txt
     When I run `fspec update-prefix --help`
     Then the process exits with code 0
     Then stdout matches the captured TS fixture byte-for-byte (modulo trailing newline)
 
   Scenario: Clap exposes update-prefix as a top-level subcommand
-    Given the codelet/fspec crate is built
+    Given the rust/fspec crate is built
     When I run `fspec --help`
     Then the process exits with code 0
     Then stdout contains the substring 'update-prefix'
 
   Scenario: CLI delegates to the same fspec_core function the dispatcher uses
-    Given the codelet/fspec crate is built
-    When I inspect codelet/fspec/src/update_prefix.rs
+    Given the rust/fspec crate is built
+    When I inspect rust/fspec/src/update_prefix.rs
     Then the source declares it calls `codelet_fspec_core::commands::update_prefix::run`
     Then the source does NOT perform any file IO directly on spec/prefixes.json
 
   Scenario: Default combined TUI mode is preserved when no subcommand is given
-    Given the codelet/fspec crate is built
+    Given the rust/fspec crate is built
     When I run `fspec` with no arguments
     Then the binary does NOT route to update_prefix::run
     Then the binary attempts to launch the combined TUI mode (the existing default arm)

@@ -4,11 +4,11 @@
       "name": "Screenshot reproduction renders only the user input line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "93-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 66,
                 67,
@@ -110,11 +110,11 @@
       "name": "UserInput chunk renders as user-prefix scrollback line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "143-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 117,
                 118,
@@ -165,11 +165,11 @@
       "name": "Two SessionStateChange chunks leave scrollback empty and seq at zero",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "169-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 66,
                 67,
@@ -271,11 +271,11 @@
       "name": "Interleaved visible and silent chunks keep seq monotonic over visible chunks only",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "198-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 66,
                 67,
@@ -377,11 +377,11 @@
       "name": "IncomingMessage chunk renders as supervisor-prefix line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "243-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 117,
                 118,
@@ -432,11 +432,11 @@
       "name": "Interrupted chunk renders as interrupted-with-queued-count line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "269-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 117,
                 118,
@@ -487,11 +487,11 @@
       "name": "All state-only and tool variants are suppressed from scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "292-396",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 66,
                 67,
@@ -593,11 +593,11 @@
       "name": "SessionStateChange still mutates per-session status pill even when suppressed from scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
+          "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
           "lines": "398-428",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
                 66,
                 67,
@@ -701,10 +701,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/chunk_rendering_parity_rpc071.rs"
+      "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/session_context.rs"
+      "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
     "totalLinesCovered": 896
   }

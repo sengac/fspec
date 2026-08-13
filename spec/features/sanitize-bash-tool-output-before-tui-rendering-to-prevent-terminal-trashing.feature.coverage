@@ -4,11 +4,11 @@
       "name": "ANSI color codes from ls --color are stripped before rendering",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "99-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
               "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
@@ -19,11 +19,11 @@
       "name": "Complex ANSI sequences from neofetch are fully stripped",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "149-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
               "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
@@ -34,11 +34,11 @@
       "name": "Tab characters in bash output are replaced with spaces",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "186-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
               "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
@@ -49,11 +49,11 @@
       "name": "Carriage returns are removed to prevent line overwriting",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "223-236",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
               "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
@@ -64,11 +64,11 @@
       "name": "Control characters are removed except newlines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "284-297",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
               "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
@@ -79,11 +79,11 @@
       "name": "Plain text output passes through sanitization unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "320-333",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
               "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
@@ -94,11 +94,11 @@
       "name": "ToolProgress streaming chunks are also sanitized",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "373-386",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [229, 230, 231, 232, 233]
             }
           ]
@@ -109,11 +109,11 @@
       "name": "LLM receives raw unsanitized output while TUI gets sanitized",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "file": "rust/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "425-438",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [179, 180, 181, 182, 183]
             }
           ]
@@ -126,11 +126,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/store/agent_view/sanitize.rs"
+      "rust/fspec-tui/src/store/agent_view/sanitize.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs"
+      "rust/fspec-tui/src/store/agent_view/sanitize.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs"
     ],
     "totalLinesCovered": 328
   }

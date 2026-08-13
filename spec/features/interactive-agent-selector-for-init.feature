@@ -8,7 +8,7 @@
 @critical
 Feature: Interactive agent selector for init
   """
-  The interactive selector lives in the CLI bridge crate codelet/fspec (owns ratatui + crossterm). fspec-core stays terminal-free and exposes available_agents() (id, name, description) plus detect_agents(project_root). Navigation state is a pure struct: AgentSelectorState { agents, preselected, cursor } with move_up/move_down (clamped, no wrap) and current_id(); the ratatui render + crossterm event loop wrap this state. TTY detection uses std::io::stdin().is_terminal(); when no --agent and not a TTY the existing TTY-guard error/exit-1 path is preserved, and the LLM dispatcher path in fspec-core is unchanged.
+  The interactive selector lives in the CLI bridge crate rust/fspec (owns ratatui + crossterm). fspec-core stays terminal-free and exposes available_agents() (id, name, description) plus detect_agents(project_root). Navigation state is a pure struct: AgentSelectorState { agents, preselected, cursor } with move_up/move_down (clamped, no wrap) and current_id(); the ratatui render + crossterm event loop wrap this state. TTY detection uses std::io::stdin().is_terminal(); when no --agent and not a TTY the existing TTY-guard error/exit-1 path is preserved, and the LLM dispatcher path in fspec-core is unchanged.
   """
 
   Background: User Story

@@ -5,8 +5,8 @@
 @RPC-179
 Feature: Port add-domain-event command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_domain_event.rs. INLINES the logic (does NOT use the shared addEventStormItem util) because it has the BUG-087 dedup step. Reads spec/work-units.json (existsSync check first, NO auto-create on missing), mutates wu.extra['eventStorm'] map, write_json_atomic. Item field order: id, type, color, text, deleted, createdAt, then optional timestamp/boundedContext appended.
-  Returns {success, eventId} from core; CLI bridge codelet/fspec/src/add_domain_event.rs is a clap-derived struct (workUnitId, text, --timestamp, --bounded-context) that marshals to dispatch and formats the success/failure stdout/stderr lines (no domain logic).
+  Core impl at rust/fspec-core/src/commands/add_domain_event.rs. INLINES the logic (does NOT use the shared addEventStormItem util) because it has the BUG-087 dedup step. Reads spec/work-units.json (existsSync check first, NO auto-create on missing), mutates wu.extra['eventStorm'] map, write_json_atomic. Item field order: id, type, color, text, deleted, createdAt, then optional timestamp/boundedContext appended.
+  Returns {success, eventId} from core; CLI bridge rust/fspec/src/add_domain_event.rs is a clap-derived struct (workUnitId, text, --timestamp, --bounded-context) that marshals to dispatch and formats the success/failure stdout/stderr lines (no domain logic).
   """
 
   # ========================================

@@ -4,11 +4,11 @@
       "name": "ProviderInfo carries profile and reachability fields over the wire",
       "testMappings": [
         {
-          "file": "codelet/rpc-types/src/lib.rs",
+          "file": "rust/rpc-types/src/lib.rs",
           "lines": "1586-1615",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 360,
                 361,
@@ -41,10 +41,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/lib.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/lib.rs"
     ],
     "totalLinesCovered": 49
   }

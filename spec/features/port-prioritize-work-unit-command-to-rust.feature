@@ -5,10 +5,10 @@
 @RPC-255
 Feature: Port prioritize-work-unit command to Rust
   """
-  Core impl signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> in codelet/fspec-core/src/commands/prioritize_work_unit.rs (replaces NotYetPorted stub).
+  Core impl signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> in rust/fspec-core/src/commands/prioritize_work_unit.rs (replaces NotYetPorted stub).
   Args struct (camelCase, serde default): workUnitId: String (required); position: optional accepting 'top'/'bottom' string OR a JSON number (use serde_json::Value or untagged enum); before: Option<String>; after: Option<String>.
   Loads via ensure_work_units_file; writes via write_json_atomic on the whole WorkUnitsData. Only states.<status> Vec reordered. Vec::insert index clamped to len to mirror JS splice-beyond-length.
-  CLI bridge codelet/fspec/src/prioritize_work_unit.rs: CliArgs { work_unit_id, position: Option<String>, before, after }. Parse position string -> 'top'/'bottom' string or numeric JSON. Success line: '✓ Work unit <id> prioritized successfully'; error to stderr '✗ Failed to prioritize work unit: <msg>', exit 1.
+  CLI bridge rust/fspec/src/prioritize_work_unit.rs: CliArgs { work_unit_id, position: Option<String>, before, after }. Parse position string -> 'top'/'bottom' string or numeric JSON. Success line: '✓ Work unit <id> prioritized successfully'; error to stderr '✗ Failed to prioritize work unit: <msg>', exit 1.
   """
 
   # ========================================
@@ -95,7 +95,7 @@ Feature: Port prioritize-work-unit command to Rust
     And the implementing order becomes AUTH-001, AUTH-002
 
   Scenario: CLI delegates to the same fspec_core function as the dispatcher
-    Given the codelet/fspec crate is built
-    When I inspect codelet/fspec/src/prioritize_work_unit.rs
+    Given the rust/fspec crate is built
+    When I inspect rust/fspec/src/prioritize_work_unit.rs
     Then the source declares it calls codelet_fspec_core::commands::prioritize_work_unit::run
     Then the source does NOT perform any file IO directly on spec/work-units.json

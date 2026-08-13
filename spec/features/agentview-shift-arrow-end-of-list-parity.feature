@@ -6,9 +6,9 @@
 @RPC-096
 Feature: AgentView Shift+Left/Right end-of-list parity: open Create Session dialog off-right, exit to BoardView off-left
   """
-  Architecture target: codelet/fspec-tui/src/store/agent_view.rs — add `pub enum NavTarget { Session(usize), CreateDialog, Board }`, `pub fn navigate_next(&self) -> NavTarget`, `pub fn navigate_prev(&self) -> NavTarget`. Delete `pub fn cycle_session`. Extract to sibling agent_view/navigation.rs if file exceeds 300 LoC.
-  Architecture target: codelet/fspec-tui/src/app/dispatch_session_cycle.rs — replace `agent_view_store.cycle_session(delta)` with `let target = if delta < 0 { store.navigate_prev() } else { store.navigate_next() };` then `match target { NavTarget::Session(idx) => self.switch_to_session_index(idx), NavTarget::CreateDialog => self.agent_view_store.request_create_session_dialog_no_auto(), NavTarget::Board => self.dispatch(Action::BackToBoard) }`. Need a new store method `request_create_session_dialog_no_auto()` that sets only `show_create_session_dialog = true` (not `should_auto_create_session`).
-  Existing reusable infra: CreateSessionDialog component already exists at codelet/fspec-tui/src/components/create_session_dialog.rs with CREATE_SESSION_DIALOG_ID and Component impl. The store flag show_create_session_dialog is already plumbed and consumed by the compositor render path — no new dialog component work required. Action::BackToBoard already exists at codelet/fspec-tui/src/app/dispatch.rs:111-113 for the Board exit.
+  Architecture target: rust/fspec-tui/src/store/agent_view.rs — add `pub enum NavTarget { Session(usize), CreateDialog, Board }`, `pub fn navigate_next(&self) -> NavTarget`, `pub fn navigate_prev(&self) -> NavTarget`. Delete `pub fn cycle_session`. Extract to sibling agent_view/navigation.rs if file exceeds 300 LoC.
+  Architecture target: rust/fspec-tui/src/app/dispatch_session_cycle.rs — replace `agent_view_store.cycle_session(delta)` with `let target = if delta < 0 { store.navigate_prev() } else { store.navigate_next() };` then `match target { NavTarget::Session(idx) => self.switch_to_session_index(idx), NavTarget::CreateDialog => self.agent_view_store.request_create_session_dialog_no_auto(), NavTarget::Board => self.dispatch(Action::BackToBoard) }`. Need a new store method `request_create_session_dialog_no_auto()` that sets only `show_create_session_dialog = true` (not `should_auto_create_session`).
+  Existing reusable infra: CreateSessionDialog component already exists at rust/fspec-tui/src/components/create_session_dialog.rs with CREATE_SESSION_DIALOG_ID and Component impl. The store flag show_create_session_dialog is already plumbed and consumed by the compositor render path — no new dialog component work required. Action::BackToBoard already exists at rust/fspec-tui/src/app/dispatch.rs:111-113 for the Board exit.
   Draft snapshot semantics: for NavTarget::Session(idx) preserve RPC-024 round-trip; for NavTarget::CreateDialog do NOT snapshot the draft (per Example [5] the user expects their typed text to persist as they 'open the dialog'); for NavTarget::Board snapshot the draft into current session's input_draft so a later switch back via the BoardView restores the typing the user had in flight.
   """
 
@@ -133,8 +133,8 @@ Feature: AgentView Shift+Left/Right end-of-list parity: open Create Session dial
   @agent-view
   @tui-component
   Scenario: cycle_session is removed from the AgentViewStore public API
-    Given the source file codelet/fspec-tui/src/store/agent_view.rs
+    Given the source file rust/fspec-tui/src/store/agent_view.rs
     Then it does not contain the substring "pub fn cycle_session"
     And it does contain the substring "pub fn navigate_next"
     And it does contain the substring "pub fn navigate_prev"
-    And the file has fewer than 300 lines, OR navigate_next/navigate_prev live in the sibling module codelet/fspec-tui/src/store/agent_view/navigation.rs
+    And the file has fewer than 300 lines, OR navigate_next/navigate_prev live in the sibling module rust/fspec-tui/src/store/agent_view/navigation.rs

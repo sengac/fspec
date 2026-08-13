@@ -4,11 +4,11 @@
       "name": "Replace anyhow::anyhow! with Error::from in all RigAgent streaming paths",
       "testMappings": [
         {
-          "file": "codelet/core/src/rig_agent.rs",
+          "file": "rust/core/src/rig_agent.rs",
           "lines": "207-235",
           "implMappings": [
             {
-              "file": "codelet/core/src/rig_agent.rs",
+              "file": "rust/core/src/rig_agent.rs",
               "lines": [
                 67,
                 68,
@@ -27,10 +27,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/rig_agent.rs"
+      "rust/core/src/rig_agent.rs"
     ],
     "implFiles": [
-      "codelet/core/src/rig_agent.rs"
+      "rust/core/src/rig_agent.rs"
     ],
     "totalLinesCovered": 63
   }

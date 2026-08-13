@@ -14,7 +14,7 @@ Feature: Backend custom-model RPC + NAPI surface (add/update/delete_custom_model
   #
   # BUSINESS RULES:
   #   1. The FspecService RPC trait exposes three methods: add_custom_model, update_custom_model, and delete_custom_model (matching the TS save/delete service split: add = save with no original id, update = save replacing an original id)
-  #   2. A transport-portable CustomModelDefinition wire type carries id (required) plus optional displayName, facade, contextWindow, maxOutputTokens, compactionThreshold, reasoning, hasVision; it maps 1:1 to codelet/sessions CustomModelDef
+  #   2. A transport-portable CustomModelDefinition wire type carries id (required) plus optional displayName, facade, contextWindow, maxOutputTokens, compactionThreshold, reasoning, hasVision; it maps 1:1 to rust/sessions CustomModelDef
   #   3. add_custom_model delegates to SessionManagerHandle and ultimately profile_sections::save_custom_model with original_model_id = None (append); update_custom_model passes original_model_id = Some(old_id) (replace in place); delete_custom_model calls profile_sections::delete_custom_model
   #   4. SessionManagerHandle gains the three methods with default no-op implementations returning Ok(()); FspecServiceImpl delegates through the optional handle and returns Ok (silent no-op) when no handle is attached, mirroring set_session_model's idempotent contract
   #   5. All three transports (FspecBackend default trait, embedded, and websocket) expose the three methods with identical behavior — cross-transport parity, the same pattern as the existing RPC-0xx surface

@@ -8,7 +8,7 @@
           "lines": "37-115",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6256,
                 6257,
@@ -50,7 +50,7 @@
       "src/__tests__/napi-session-co-listener-parity.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 104
   }

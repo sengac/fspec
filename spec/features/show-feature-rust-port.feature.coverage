@@ -4,11 +4,11 @@
       "name": "Bare-name lookup resolves to spec/features/<name>.feature and renders Work Units None when no WU tags present",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "69-98",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 92,
                 93,
@@ -64,11 +64,11 @@
       "name": "Direct path lookup resolves a feature path ending in .feature",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "99-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 209,
                 210,
@@ -100,11 +100,11 @@
       "name": "Missing feature file returns Feature file not found with the unresolved input",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "132-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 145,
                 146,
@@ -142,11 +142,11 @@
       "name": "Invalid Gherkin syntax returns success false with Invalid Gherkin syntax prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "165-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 181,
                 182,
@@ -172,11 +172,11 @@
       "name": "Feature-level work-unit tag attaches to scenarios that lack their own WU tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "198-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 242,
                 243,
@@ -249,11 +249,11 @@
       "name": "Scenario-level WU tag overrides feature-level for that scenario and produces a scenario-level entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "260-334",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 270,
                 271,
@@ -298,11 +298,11 @@
       "name": "Missing work-units json yields Unknown title and unknown status enrichment",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "335-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 328,
                 329,
@@ -347,11 +347,11 @@
       "name": "JSON format emits a 2-space-indented object with feature AST and workUnits array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "367-417",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 389,
                 390,
@@ -445,11 +445,11 @@
       "name": "Output path writes rendered content to disk and content field still echoes it",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "418-454",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 115,
                 116,
@@ -478,11 +478,11 @@
       "name": "Shared infrastructure modules exist under fspec-core for reuse by other commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "file": "rust/fspec-core/tests/show_feature.rs",
           "lines": "455-480",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
                 1,
                 2,
@@ -546,10 +546,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/show_feature.rs"
+      "rust/fspec-core/tests/show_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/show_feature.rs"
+      "rust/fspec-core/src/commands/show_feature.rs"
     ],
     "totalLinesCovered": 792
   }

@@ -384,7 +384,7 @@
           "lines": "168-199",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 4773,
                 4774,
@@ -744,7 +744,7 @@
       "src/tui/components/AnchorView.tsx",
       "src/tui/components/AnchorListPane.tsx",
       "src/tui/components/AnchorListItem.tsx",
-      "codelet/napi/src/session_manager.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/components/AnchorPreviewPane.tsx"
     ],
     "totalLinesCovered": 860

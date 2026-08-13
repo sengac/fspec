@@ -4,8 +4,8 @@
 @RPC-300
 Feature: Port show-coverage command to Rust
   """
-  The Rust port lives at codelet/fspec-core/src/commands/show_coverage.rs with the signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Both invocation paths (LLM dispatcher AND standalone CLI) call this single function — RPC-003 §7/§11 two-front-doors invariant.
-  Coverage sidecar types live in a new shared module codelet/fspec-core/src/types/coverage.rs that mirrors src/utils/coverage-file.ts: CoverageFile { scenarios: Vec<CoverageScenario>, stats: Option<CoverageStats> }, CoverageScenario { name, test_mappings }, TestMapping { file, lines: String, impl_mappings: Vec<ImplMapping> }, ImplMapping { file, lines: ImplLines (untagged enum of Vec<u32> | String) }, CoverageStats { total_scenarios, covered_scenarios, coverage_percent, test_files, impl_files, total_lines_covered }. All structs carry #[serde(rename_all = "camelCase")] and #[serde(flatten)] extra: serde_json::Map<String, Value> to preserve unknown fields.
+  The Rust port lives at rust/fspec-core/src/commands/show_coverage.rs with the signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Both invocation paths (LLM dispatcher AND standalone CLI) call this single function — RPC-003 §7/§11 two-front-doors invariant.
+  Coverage sidecar types live in a new shared module rust/fspec-core/src/types/coverage.rs that mirrors src/utils/coverage-file.ts: CoverageFile { scenarios: Vec<CoverageScenario>, stats: Option<CoverageStats> }, CoverageScenario { name, test_mappings }, TestMapping { file, lines: String, impl_mappings: Vec<ImplMapping> }, ImplMapping { file, lines: ImplLines (untagged enum of Vec<u32> | String) }, CoverageStats { total_scenarios, covered_scenarios, coverage_percent, test_files, impl_files, total_lines_covered }. All structs carry #[serde(rename_all = "camelCase")] and #[serde(flatten)] extra: serde_json::Map<String, Value> to preserve unknown fields.
   Coverage status is computed by the helper get_coverage_status: returns FullyCovered (✅) when any testMapping has ≥1 implMapping; PartiallyCovered (⚠️) when testMappings present but none have implMappings; Uncovered (❌) when testMappings is empty.
   Markdown rendering MUST be done via explicit `lines.push(...)` followed by `lines.join("\n")`, mirroring TS exactly. JSON rendering MUST use #[derive(Serialize)] structs with explicit declaration-order fields — DO NOT route through json!{} which alphabetizes via BTreeMap.
   The async fn signature is preserved for dispatcher contract uniformity even though every branch resolves on first poll (only std::fs / serde_json used). poll_sync_future will handle dispatch under the sync runtime.
@@ -210,8 +210,8 @@ Feature: Port show-coverage command to Rust
     And the error's command field equals 'show-coverage'
 
   Scenario: Coverage sidecar types module is publicly accessible from the crate root
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/types/
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/types/
     Then the module types::coverage exists and exposes CoverageFile, CoverageScenario, TestMapping, ImplMapping, CoverageStats
     And the CoverageFile struct uses #[serde(rename_all = "camelCase")] and preserves unknown fields via a flattened extra map
     And commands/show_coverage.rs no longer returns FspecCoreError::NotYetPorted

@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_answer_question.rs",
+          "file": "rust/fspec/tests/cli_answer_question.rs",
           "lines": "83-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/answer_question.rs",
+              "file": "rust/fspec-core/src/help/configs/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -101,11 +101,11 @@
       "name": "CLI successfully answers a question with addTo=rule and prints the success lines",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_answer_question.rs",
+          "file": "rust/fspec/tests/cli_answer_question.rs",
           "lines": "109-139",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/answer_question.rs",
+              "file": "rust/fspec/src/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -200,11 +200,11 @@
       "name": "CLI defaults --add-to to 'none' (no rule/assumption added)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_answer_question.rs",
+          "file": "rust/fspec/tests/cli_answer_question.rs",
           "lines": "141-167",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/answer_question.rs",
+              "file": "rust/fspec/src/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -299,11 +299,11 @@
       "name": "CLI rejects non-specifying status with exit 1 and TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_answer_question.rs",
+          "file": "rust/fspec/tests/cli_answer_question.rs",
           "lines": "169-194",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/answer_question.rs",
+              "file": "rust/fspec/src/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -398,11 +398,11 @@
       "name": "CLI rejects out-of-range index with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_answer_question.rs",
+          "file": "rust/fspec/tests/cli_answer_question.rs",
           "lines": "196-213",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/answer_question.rs",
+              "file": "rust/fspec/src/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -497,11 +497,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_answer_question.rs",
+          "file": "rust/fspec/tests/cli_answer_question.rs",
           "lines": "215-267",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/answer_question.rs",
+              "file": "rust/fspec/src/answer_question.rs",
               "lines": [
                 1,
                 2,
@@ -598,11 +598,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_answer_question.rs"
+      "rust/fspec/tests/cli_answer_question.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/answer_question.rs",
-      "codelet/fspec/src/answer_question.rs"
+      "rust/fspec-core/src/help/configs/answer_question.rs",
+      "rust/fspec/src/answer_question.rs"
     ],
     "totalLinesCovered": 676
   }

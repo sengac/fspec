@@ -4,11 +4,11 @@
       "name": "Saving a new openai profile writes and refreshes the list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
           "lines": "87-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 20,
                 21,
@@ -83,7 +83,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 706,
                 707,
@@ -122,11 +122,11 @@
       "name": "Editing an existing profile dispatches SaveProfile and repaints the row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
           "lines": "134-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 55,
                 56,
@@ -166,7 +166,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 255,
                 256,
@@ -203,11 +203,11 @@
       "name": "Confirming a profile deletion removes it and refreshes the list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
           "lines": "169-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 20,
                 21,
@@ -310,7 +310,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 268,
                 269,
@@ -333,11 +333,11 @@
       "name": "A failed profile save surfaces an inline error without leaking",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
           "lines": "214-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 55,
                 56,
@@ -384,11 +384,11 @@
       "name": "ConfirmDeleteProfile and DeleteProfile route through the same handler",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
           "lines": "276-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
                 20,
                 21,
@@ -427,7 +427,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 242,
                 243,
@@ -496,13 +496,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/app/dispatch_provider_settings.rs"
+      "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings.rs"
     ],
     "totalLinesCovered": 607
   }

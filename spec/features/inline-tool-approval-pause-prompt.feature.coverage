@@ -4,11 +4,11 @@
       "name": "Triple pause prompt renders inline with options, colors, and hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "183-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_prompt.rs",
               "lines": [
                 62,
                 63,
@@ -134,11 +134,11 @@
       "name": "Confirm pause prompt renders yellow header, dim details line, and Y/N row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "262-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_prompt.rs",
               "lines": [
                 179,
                 180,
@@ -179,11 +179,11 @@
       "name": "Confirm pause prompt without details omits the details line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "323-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_prompt.rs",
               "lines": [
                 48,
                 49,
@@ -205,11 +205,11 @@
       "name": "Pause prompt replaces the draft and paints no hardware cursor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "346-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 64,
                 65,
@@ -254,11 +254,11 @@
       "name": "Prompt renders only when the paused session is focused",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "384-415",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 48,
                 49,
@@ -319,11 +319,11 @@
       "name": "Left and Right cycle the triple selection with wraparound",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "478-524",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/pause_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/pause_state.rs",
               "lines": [
                 63,
                 64,
@@ -352,11 +352,11 @@
       "name": "Enter sends the selected approval choice and resets the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "527-569",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 141,
                 142,
@@ -379,11 +379,11 @@
       "name": "Esc on a triple prompt denies instead of resuming",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "572-610",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_keys.rs",
               "lines": [
                 38,
                 39,
@@ -446,11 +446,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "572-610",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 190,
                 191,
@@ -482,11 +482,11 @@
       "name": "Esc on a confirm prompt denies",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "669-699",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_keys.rs",
               "lines": [
                 38,
                 39,
@@ -549,11 +549,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "669-699",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 166,
                 167,
@@ -586,11 +586,11 @@
       "name": "Printable keys are swallowed while the pause prompt is showing",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "702-729",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
                 84,
                 85,
@@ -610,11 +610,11 @@
       "name": "Paused chunk with pause state stores a per-session slot without mounting a modal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "736-782",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 55,
                 56,
@@ -701,11 +701,11 @@
       "name": "Stale Paused chunk with no pause state sets no slot",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "785-817",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 55,
                 56,
@@ -775,11 +775,11 @@
       "name": "HITL wins on tie and no pause slot is set",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "820-856",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 94,
                 95,
@@ -810,11 +810,11 @@
       "name": "Running chunk clears the pause slot and resets the selection",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "859-904",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 117,
                 118,
@@ -826,11 +826,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "859-904",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/pause_state.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/pause_state.rs",
               "lines": [
                 55,
                 56,
@@ -846,11 +846,11 @@
       "name": "Prompt keys route to the paused session in a multi-session app",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "907-936",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_keys.rs",
               "lines": [
                 38,
                 39,
@@ -918,11 +918,11 @@
       "name": "Draft text and cursor survive the pause round-trip",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "943-984",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 64,
                 65,
@@ -967,11 +967,11 @@
       "name": "The pause modal is deleted and resume is unreachable from the prompt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "991-1041",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_keys.rs",
               "lines": [
                 1,
                 2,
@@ -1076,11 +1076,11 @@
       "name": "Long triple prompt header wraps instead of clipping",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "418-471",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_prompt.rs",
               "lines": [
                 48,
                 49,
@@ -1097,11 +1097,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "418-471",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_prompt.rs",
               "lines": [
                 100,
                 101,
@@ -1162,11 +1162,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "418-471",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 36,
                 37,
@@ -1205,11 +1205,11 @@
       "name": "Y approves a confirm prompt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "613-638",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_keys.rs",
               "lines": [
                 76,
                 77,
@@ -1231,11 +1231,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "613-638",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 166,
                 167,
@@ -1268,11 +1268,11 @@
       "name": "N denies a confirm prompt",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "641-666",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/pause_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/pause_keys.rs",
               "lines": [
                 76,
                 77,
@@ -1294,11 +1294,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
+          "file": "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs",
           "lines": "641-666",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 166,
                 167,
@@ -1333,15 +1333,15 @@
     "coveredScenarios": 20,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/inline_pause_prompt_rpc406.rs"
+      "rust/fspec-tui/tests/inline_pause_prompt_rpc406.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/pause_prompt.rs",
-      "codelet/fspec-tui/src/views/agent/input_area.rs",
-      "codelet/fspec-tui/src/store/agent_view/pause_state.rs",
-      "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
-      "codelet/fspec-tui/src/views/agent/pause_keys.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch.rs"
+      "rust/fspec-tui/src/views/agent/pause_prompt.rs",
+      "rust/fspec-tui/src/views/agent/input_area.rs",
+      "rust/fspec-tui/src/store/agent_view/pause_state.rs",
+      "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+      "rust/fspec-tui/src/views/agent/pause_keys.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs"
     ],
     "totalLinesCovered": 2011
   }

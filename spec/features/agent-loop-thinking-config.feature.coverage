@@ -4,11 +4,11 @@
       "name": "InputWithImages carries thinking_config alongside text and images",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "195-249",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 132,
                 133,
@@ -29,11 +29,11 @@
       "name": "run_with_provider! macro forwards thinking config to create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "253-310",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/dispatch.rs",
+              "file": "rust/agent-loop/src/dispatch.rs",
               "lines": [
                 37,
                 38,
@@ -115,11 +115,11 @@
       "name": "agent_loop body computes thinking_config_value per turn",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "310-383",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 372,
                 373,
@@ -230,11 +230,11 @@
       "name": "All run_with_provider! call sites pass thinking_config_value",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "383-437",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 867,
                 868,
@@ -332,11 +332,11 @@
       "name": "OpenAI inlined arm passes thinking_config_value to create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "437-471",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 869,
                 870,
@@ -394,11 +394,11 @@
       "name": "Custom-provider fallthrough passes thinking_config_value to create_rig_agent",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "471-502",
           "implMappings": [
             {
-              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
                 953,
                 954,
@@ -478,11 +478,11 @@
       "name": "Provider create_rig_agent signature compiles for all 6 instance-based built-in providers",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "502-568",
           "implMappings": [
             {
-              "file": "codelet/providers/src/claude.rs",
+              "file": "rust/providers/src/claude.rs",
               "lines": [
                 507,
                 508,
@@ -500,11 +500,11 @@
       "name": "CustomProvider create_rig_agent signature accepts thinking_config as its last argument",
       "testMappings": [
         {
-          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "file": "rust/agent-loop/tests/rpc085_thinking_config.rs",
           "lines": "568-593",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/custom_provider.rs",
+              "file": "rust/providers/src/custom/custom_provider.rs",
               "lines": [
                 110,
                 111,
@@ -526,13 +526,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/agent-loop/tests/rpc085_thinking_config.rs"
+      "rust/agent-loop/tests/rpc085_thinking_config.rs"
     ],
     "implFiles": [
-      "codelet/agent-loop/src/dispatch.rs",
-      "codelet/agent-loop/src/agent_loop.rs",
-      "codelet/providers/src/claude.rs",
-      "codelet/providers/src/custom/custom_provider.rs"
+      "rust/agent-loop/src/dispatch.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/custom/custom_provider.rs"
     ],
     "totalLinesCovered": 794
   }

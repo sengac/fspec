@@ -3,12 +3,12 @@
 @GIT-015
 Feature: Session result collection and patch application
   """
-  API in codelet/git/src/worktree.rs:
+  API in rust/git/src/worktree.rs:
   - get_session_diff(repo_path, session_id) → SessionResult (for review, no side effects)
   - apply_session_changes(repo_path, session_id) → applies changes and removes worktree
   - abort_session(repo_path, session_id) → removes worktree without applying
 
-  Expose NAPI bindings in codelet/napi/src/git.rs for TypeScript consumption.
+  Expose NAPI bindings in rust/napi/src/git.rs for TypeScript consumption.
   Also expose GIT-014 worktree primitives (createWorktree, removeWorktree, listWorktrees) that weren't bound yet.
 
   SessionResult struct: session_id, diff (unified format), files_changed, files_added, files_deleted, base_commit

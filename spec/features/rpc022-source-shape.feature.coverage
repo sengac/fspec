@@ -4,11 +4,11 @@
       "name": "New shared types live in rpc-types",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "51-77",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 341,
                 342,
@@ -46,11 +46,11 @@
       "name": "FspecService trait gains five new RPC methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "77-110",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 163,
                 164,
@@ -96,11 +96,11 @@
       "name": "SessionManagerHandle trait gains the new methods with default impls",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "110-142",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 124,
                 125,
@@ -169,11 +169,11 @@
       "name": "FspecBackend trait declares the five new methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "142-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 1,
                 2,
@@ -305,11 +305,11 @@
       "name": "Both transports implement the five new FspecBackend methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "159-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 178,
                 179,
@@ -366,11 +366,11 @@
       "name": "New modal dialog modules and dispatch helper exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "187-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 1,
                 2,
@@ -657,11 +657,11 @@
       "name": "New RPC-022 modules stay under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "219-248",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 1
               ]
@@ -674,11 +674,11 @@
       "name": "Priority enum gains a Foreground variant numbered 900",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "237-250",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 32,
                 33,
@@ -700,11 +700,11 @@
       "name": "Action enum gains the new RPC-022 variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "250-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 325,
                 326,
@@ -760,7 +760,7 @@
       "name": "Existing TS modal dialog files are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "271-288",
           "implMappings": [
             {
@@ -777,11 +777,11 @@
       "name": "New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc022.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
           "lines": "306-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 1
               ]
@@ -796,17 +796,17 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc022.rs"
+      "rust/fspec-tui/tests/source_shape_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
-      "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+      "rust/fspec-tui/src/components/thinking_level_dialog.rs",
+      "rust/fspec-tui/src/components/mod.rs",
       "src/tui/components/ModelSelectorScreen.tsx"
     ],
     "totalLinesCovered": 901

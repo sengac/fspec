@@ -4,11 +4,11 @@
       "name": "Empty Context Window field shows a dim placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
           "lines": "109-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
               "lines": [
                 51,
                 52,
@@ -63,11 +63,11 @@
       "name": "Empty Max Output Tokens field shows a dim placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
           "lines": "133-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
               "lines": [
                 51,
                 52,
@@ -122,11 +122,11 @@
       "name": "Empty Compaction Threshold field shows a dim placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
           "lines": "157-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
               "lines": [
                 51,
                 52,
@@ -181,11 +181,11 @@
       "name": "A field with a typed value shows the value not the placeholder",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
           "lines": "181-207",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
               "lines": [
                 64,
                 65,
@@ -227,11 +227,11 @@
       "name": "Placeholder hints are never persisted into the saved profile",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
           "lines": "212-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
                 153,
                 154,
@@ -260,11 +260,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
-      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
     "totalLinesCovered": 302
   }

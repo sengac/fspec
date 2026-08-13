@@ -4,11 +4,11 @@
       "name": "Scrolling down keeps the focused row inside the visible window",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "88-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 127,
                 128,
@@ -109,11 +109,11 @@
       "name": "Scrolling back up above the window scrolls the offset back",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "108-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 127,
                 128,
@@ -214,11 +214,11 @@
       "name": "scroll_offset clamps at total minus visible when selecting the last row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "131-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 127,
                 128,
@@ -319,11 +319,11 @@
       "name": "Rendering an overflowing list windows the rows and shows a scroll indicator",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "149-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/render.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
                 69,
                 70,
@@ -450,11 +450,11 @@
       "name": "Re-seeding with a shorter list resets the scroll offset into range",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "171-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 91,
                 92,
@@ -476,11 +476,11 @@
       "name": "An overflowing list renders a scrollbar gutter and a fitting list does not",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
           "lines": "191-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/render.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
                 69,
                 70,
@@ -609,11 +609,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/blocklist/tests.rs"
+      "rust/fspec-tui/src/views/blocklist/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/blocklist/mod.rs",
-      "codelet/fspec-tui/src/views/blocklist/render.rs"
+      "rust/fspec-tui/src/views/blocklist/mod.rs",
+      "rust/fspec-tui/src/views/blocklist/render.rs"
     ],
     "totalLinesCovered": 638
   }

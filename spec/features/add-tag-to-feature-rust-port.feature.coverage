@@ -4,11 +4,11 @@
       "name": "Adds a single tag to a feature with no existing tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "65-94",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -496,11 +496,11 @@
       "name": "Adds multiple tags in a single call preserving order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "95-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -988,11 +988,11 @@
       "name": "Missing feature file surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "127-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -1480,11 +1480,11 @@
       "name": "Rejects input tag missing the leading at-sign",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "150-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -1972,11 +1972,11 @@
       "name": "Rejects mixed-case tag that fails both allowed regexes",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "178-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -2464,11 +2464,11 @@
       "name": "Rejects duplicate tag already present on the feature",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "202-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -2956,11 +2956,11 @@
       "name": "validateRegistry=true rejects a tag not in spec/tags.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "229-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -3448,11 +3448,11 @@
       "name": "Appends new tag AFTER existing tag block when prior tags are present",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "259-288",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -3940,11 +3940,11 @@
       "name": "Inserts new tag at top of file when there are no existing tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "289-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -4432,11 +4432,11 @@
       "name": "Without validateRegistry emits a system-reminder for an unregistered non-work-unit tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "313-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -4924,11 +4924,11 @@
       "name": "Work-unit form tag without registry validation does NOT emit unregistered-tag reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "340-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -5416,11 +5416,11 @@
       "name": "Emits missing-required-tags reminder when neither component nor feature-group is present after insert",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "367-390",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -5908,11 +5908,11 @@
       "name": "No missing-required-tags reminder when component and feature-group tags are both supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_tag_to_feature.rs",
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
           "lines": "391-412",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_tag_to_feature.rs",
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
               "lines": [
                 1,
                 2,
@@ -6402,10 +6402,10 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_tag_to_feature.rs"
+      "rust/fspec-core/tests/add_tag_to_feature.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_tag_to_feature.rs"
+      "rust/fspec-core/src/commands/add_tag_to_feature.rs"
     ],
     "totalLinesCovered": 6536
   }

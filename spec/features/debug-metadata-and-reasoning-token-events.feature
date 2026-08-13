@@ -1,9 +1,9 @@
 @RIG-011
 Feature: Debug Metadata and Reasoning Token Events
   """
-  Key files: codelet/cli/src/interactive/stream_loop.rs (debug events + api.request model bug),
-  codelet/cli/src/interactive/repl_loop.rs (metadata model bug),
-  codelet/napi/src/session_manager.rs (NAPI metadata model bug)
+  Key files: rust/cli/src/interactive/stream_loop.rs (debug events + api.request model bug),
+  rust/cli/src/interactive/repl_loop.rs (metadata model bug),
+  rust/napi/src/session_manager.rs (NAPI metadata model bug)
   """
 
   Background: User Story

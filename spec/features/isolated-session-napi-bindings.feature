@@ -5,7 +5,7 @@ Feature: Isolated session NAPI bindings
   """
   NAPI bindings for isolated session management: listSessions, inspectSession,
   mergeSession, discardSession, pruneOrphaned.
-  These bindings exist in codelet/napi/src/git.rs and provide the foundation
+  These bindings exist in rust/napi/src/git.rs and provide the foundation
   for TUI session management.
   """
 

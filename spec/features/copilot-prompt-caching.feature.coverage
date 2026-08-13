@@ -4,11 +4,11 @@
       "name": "Claude model multi-turn conversation gets cache control on system, last tool, and last assistant message",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/prompt_cache_tests.rs",
+          "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
           "lines": "17-86",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/prompt_cache.rs",
+              "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
                 1,
                 2,
@@ -138,11 +138,11 @@
       "name": "GPT model requests are not modified with cache control",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/prompt_cache_tests.rs",
+          "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
           "lines": "91-117",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/prompt_cache.rs",
+              "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
                 50,
                 51,
@@ -162,11 +162,11 @@
       "name": "Gemini model requests are not modified with cache control",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/prompt_cache_tests.rs",
+          "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
           "lines": "122-143",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/prompt_cache.rs",
+              "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
                 50,
                 51,
@@ -186,11 +186,11 @@
       "name": "Single-turn Claude conversation only caches system message",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/prompt_cache_tests.rs",
+          "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
           "lines": "148-180",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/prompt_cache.rs",
+              "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
                 68,
                 69,
@@ -215,11 +215,11 @@
       "name": "Claude request with empty tools array does not crash",
       "testMappings": [
         {
-          "file": "codelet/providers/src/copilot/prompt_cache_tests.rs",
+          "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
           "lines": "185-223",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/prompt_cache.rs",
+              "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
                 104,
                 105,
@@ -243,10 +243,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/copilot/prompt_cache_tests.rs"
+      "rust/providers/src/copilot/prompt_cache_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/prompt_cache.rs"
+      "rust/providers/src/copilot/prompt_cache.rs"
     ],
     "totalLinesCovered": 348
   }

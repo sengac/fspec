@@ -4,11 +4,11 @@
       "name": "Remove an existing persona by exact name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "58-91",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -119,11 +119,11 @@
       "name": "Draft precedence routes the removal to foundation.json.draft",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "92-118",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -234,11 +234,11 @@
       "name": "Removing a non-existent name lists the available personas",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "119-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -349,11 +349,11 @@
       "name": "Removing from an empty personas array reports that no personas exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "155-186",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -464,11 +464,11 @@
       "name": "Missing foundation file and draft surface the not-found error and create nothing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "187-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -579,11 +579,11 @@
       "name": "Name matching is case-sensitive",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "215-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -694,11 +694,11 @@
       "name": "Only the first matching persona is removed when names are duplicated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "245-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -809,11 +809,11 @@
       "name": "The written file uses 2-space indentation, a trailing newline, and preserves unknown top-level fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/remove_persona.rs",
+          "file": "rust/fspec-core/tests/remove_persona.rs",
           "lines": "272-306",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/remove_persona.rs",
+              "file": "rust/fspec-core/src/commands/remove_persona.rs",
               "lines": [
                 49,
                 50,
@@ -926,10 +926,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/remove_persona.rs"
+      "rust/fspec-core/tests/remove_persona.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/remove_persona.rs"
+      "rust/fspec-core/src/commands/remove_persona.rs"
     ],
     "totalLinesCovered": 1041
   }

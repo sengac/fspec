@@ -4,11 +4,11 @@
       "name": "Fresh launch with no persisted model selects the first available reachable cloud model",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "56-75",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -76,11 +76,11 @@
       "name": "Persisted model that still matches a credentialed section is restored exactly",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "78-99",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -148,11 +148,11 @@
       "name": "Persisted model whose provider lost credentials falls back to first-available",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "102-120",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -220,11 +220,11 @@
       "name": "Unreachable zero-model local profiles are skipped in favour of a reachable cloud model",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "123-143",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -292,11 +292,11 @@
       "name": "First-available honours build order so a reachable profile precedes cloud",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "146-167",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -364,11 +364,11 @@
       "name": "Genuinely zero reachable model-bearing sections leaves no default and declines",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "170-190",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -436,11 +436,11 @@
       "name": "Anthropic is never substituted as a hardcoded default when not credentialed",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "193-214",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -508,11 +508,11 @@
       "name": "Ambiguous multi-provider credential state is not silently resolved by provider priority",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/startup_model_resolution_tests.rs",
+          "file": "rust/sessions/src/startup_model_resolution_tests.rs",
           "lines": "217-232",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/startup_model_resolution.rs",
+              "file": "rust/sessions/src/startup_model_resolution.rs",
               "lines": [
                 52,
                 53,
@@ -582,10 +582,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/src/startup_model_resolution_tests.rs"
+      "rust/sessions/src/startup_model_resolution_tests.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/startup_model_resolution.rs"
+      "rust/sessions/src/startup_model_resolution.rs"
     ],
     "totalLinesCovered": 611
   }

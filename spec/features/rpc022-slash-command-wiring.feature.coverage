@@ -4,11 +4,11 @@
       "name": "parse_slash_command recognises the four wired commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "52-85",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 51,
                 52,
@@ -40,11 +40,11 @@
       "name": "Submitting \"/model\" opens the ModelSelectorDialog and spawns list_providers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "86-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 108,
                 109,
@@ -84,11 +84,11 @@
       "name": "Submitting \"/thinking\" opens the ThinkingLevelDialog seeded with the cached level",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "158-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 103,
                 104,
@@ -117,11 +117,11 @@
       "name": "Submitting \"/role You are a reviewer\" sets the role and shows the RoleBanner",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "215-246",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 127,
                 128,
@@ -141,11 +141,11 @@
       "name": "Submitting \"/role clear\" clears the role and hides the RoleBanner",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "247-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 188,
                 189,
@@ -173,11 +173,11 @@
       "name": "Submitting bare \"/role\" is treated as a clear",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "273-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 59,
                 60,
@@ -192,11 +192,11 @@
       "name": "Submitting plain text falls through to backend.send_input unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "293-316",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 134,
                 135,
@@ -235,11 +235,11 @@
       "name": "Slash commands are NOT appended to the per-session history",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "317-349",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 108,
                 109,
@@ -304,11 +304,11 @@
       "name": "Slash popup selection of /model also opens the ModelSelectorDialog",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "350-378",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 51,
                 52,
@@ -330,11 +330,11 @@
       "name": "Slash popup selection of /role is treated as a clear and does not surface a [notice]",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "file": "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs",
           "lines": "377-424",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 55,
                 56,
@@ -365,11 +365,11 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs"
+      "rust/fspec-tui/tests/slash_command_wiring_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
+      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 574
   }

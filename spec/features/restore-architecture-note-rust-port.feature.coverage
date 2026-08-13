@@ -4,11 +4,11 @@
       "name": "Dispatcher restores a soft-deleted architecture note by stable ID",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "88-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 61,
                 62,
@@ -147,11 +147,11 @@
       "name": "Dispatcher is idempotent when the note is already active",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "129-161",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 118,
                 119,
@@ -187,11 +187,11 @@
       "name": "Dispatcher rejects an unknown work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "163-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 71,
                 72,
@@ -210,11 +210,11 @@
       "name": "Dispatcher rejects when architectureNotes is missing or empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "191-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 79,
                 80,
@@ -244,11 +244,11 @@
       "name": "Dispatcher rejects when the architecture note ID is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "219-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 98,
                 99,
@@ -273,11 +273,11 @@
       "name": "Dispatcher computes activeCount as the number of non-deleted notes after restoration",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "249-283",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 123,
                 124,
@@ -326,11 +326,11 @@
       "name": "Dispatcher allows restoration regardless of work unit status",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "285-311",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 61,
                 62,
@@ -469,11 +469,11 @@
       "name": "Dispatcher updates meta.lastUpdated as well as workUnit.updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "313-360",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 161,
                 162,
@@ -490,11 +490,11 @@
       "name": "Dispatcher fails fast when required args are missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_architecture_note.rs",
+          "file": "rust/fspec-core/tests/restore_architecture_note.rs",
           "lines": "362-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/commands/restore_architecture_note.rs",
               "lines": [
                 61,
                 62,
@@ -514,10 +514,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/restore_architecture_note.rs"
+      "rust/fspec-core/tests/restore_architecture_note.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/restore_architecture_note.rs"
+      "rust/fspec-core/src/commands/restore_architecture_note.rs"
     ],
     "totalLinesCovered": 650
   }

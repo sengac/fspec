@@ -4,11 +4,11 @@
       "name": "Dispatcher summarises work units carrying the tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compare_implementations.rs",
+          "file": "rust/fspec-core/tests/compare_implementations.rs",
           "lines": "76-113",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compare_implementations.rs",
+              "file": "rust/fspec-core/src/commands/compare_implementations.rs",
               "lines": [
                 43,
                 44,
@@ -82,11 +82,11 @@
       "name": "Dispatcher includes deduplicated coverage file paths",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compare_implementations.rs",
+          "file": "rust/fspec-core/tests/compare_implementations.rs",
           "lines": "114-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compare_implementations.rs",
+              "file": "rust/fspec-core/src/commands/compare_implementations.rs",
               "lines": [
                 82,
                 83,
@@ -209,11 +209,11 @@
       "name": "Dispatcher returns empty workUnits when no tag matches",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compare_implementations.rs",
+          "file": "rust/fspec-core/tests/compare_implementations.rs",
           "lines": "155-180",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compare_implementations.rs",
+              "file": "rust/fspec-core/src/commands/compare_implementations.rs",
               "lines": [
                 66,
                 67,
@@ -258,11 +258,11 @@
       "name": "Dispatcher errors when work-units.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/compare_implementations.rs",
+          "file": "rust/fspec-core/tests/compare_implementations.rs",
           "lines": "181-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/compare_implementations.rs",
+              "file": "rust/fspec-core/src/commands/compare_implementations.rs",
               "lines": [
                 52,
                 53,
@@ -338,10 +338,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/compare_implementations.rs"
+      "rust/fspec-core/tests/compare_implementations.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/compare_implementations.rs"
+      "rust/fspec-core/src/commands/compare_implementations.rs"
     ],
     "totalLinesCovered": 387
   }

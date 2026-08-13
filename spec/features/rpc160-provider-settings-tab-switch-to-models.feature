@@ -11,7 +11,7 @@ Feature: Provider settings: Tab keybind in list mode emits SwitchToModels event
   navigation logic is skipped.
 
   Rust port (RPC-160):
-  * codelet/fspec-tui/src/views/provider_settings/mod.rs adds
+  * rust/fspec-tui/src/views/provider_settings/mod.rs adds
   `ProviderSettingsEvent::SwitchToModels` next to Consumed / Ignored /
   Emit(Action) / Close.
   * list.rs::handle_list_key adds `KeyCode::Tab =>

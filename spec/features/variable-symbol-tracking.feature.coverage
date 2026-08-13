@@ -4,11 +4,11 @@
       "name": "TypeScript module-level const declarations extracted as Variables",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_variable_tracking_test.rs",
+          "file": "rust/napi/tests/ast_variable_tracking_test.rs",
           "lines": "56-98",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/variables.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/variables.rs",
               "lines": [
                 1,
                 2,
@@ -330,11 +330,11 @@
       "name": "Python module-level variables extracted while function-local excluded",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_variable_tracking_test.rs",
+          "file": "rust/napi/tests/ast_variable_tracking_test.rs",
           "lines": "103-146",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/variables.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/variables.rs",
               "lines": [
                 1,
                 2,
@@ -656,11 +656,11 @@
       "name": "Rust const and static declarations extracted as Variables",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_variable_tracking_test.rs",
+          "file": "rust/napi/tests/ast_variable_tracking_test.rs",
           "lines": "151-194",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/variables.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/variables.rs",
               "lines": [
                 1,
                 2,
@@ -982,11 +982,11 @@
       "name": "Java class-level static fields extracted as Variables",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_variable_tracking_test.rs",
+          "file": "rust/napi/tests/ast_variable_tracking_test.rs",
           "lines": "199-243",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/variables.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/variables.rs",
               "lines": [
                 1,
                 2,
@@ -1308,11 +1308,11 @@
       "name": "Search variables by name pattern across languages",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_variable_tracking_test.rs",
+          "file": "rust/napi/tests/ast_variable_tracking_test.rs",
           "lines": "248-283",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 170,
                 171,
@@ -1396,11 +1396,11 @@
       "name": "ast_stats includes variable count after indexing",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_variable_tracking_test.rs",
+          "file": "rust/napi/tests/ast_variable_tracking_test.rs",
           "lines": "288-315",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/dispatch_helpers.rs",
+              "file": "rust/napi/src/graph/dispatch_helpers.rs",
               "lines": [
                 14,
                 15,
@@ -1445,12 +1445,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_variable_tracking_test.rs"
+      "rust/napi/tests/ast_variable_tracking_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/variables.rs",
-      "codelet/napi/src/graph/ast_dispatch.rs",
-      "codelet/napi/src/graph/dispatch_helpers.rs"
+      "rust/napi/src/graph/ast_pipeline/variables.rs",
+      "rust/napi/src/graph/ast_dispatch.rs",
+      "rust/napi/src/graph/dispatch_helpers.rs"
     ],
     "totalLinesCovered": 1583
   }

@@ -4,11 +4,11 @@
       "name": "CLI deletes a scenario and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenario.rs",
+          "file": "rust/fspec/tests/cli_delete_scenario.rs",
           "lines": "63-89",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenario.rs",
+              "file": "rust/fspec/src/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -90,11 +90,11 @@
       "name": "CLI surfaces a missing scenario with stderr Error prefix and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenario.rs",
+          "file": "rust/fspec/tests/cli_delete_scenario.rs",
           "lines": "95-114",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenario.rs",
+              "file": "rust/fspec/src/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -176,11 +176,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenario.rs",
+          "file": "rust/fspec/tests/cli_delete_scenario.rs",
           "lines": "120-141",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenario.rs",
+              "file": "rust/fspec/src/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -262,11 +262,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenario.rs",
+          "file": "rust/fspec/tests/cli_delete_scenario.rs",
           "lines": "147-186",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenario.rs",
+              "file": "rust/fspec/src/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -350,10 +350,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_scenario.rs"
+      "rust/fspec/tests/cli_delete_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_scenario.rs"
+      "rust/fspec/src/delete_scenario.rs"
     ],
     "totalLinesCovered": 389
   }

@@ -4,11 +4,11 @@
       "name": "Returns empty schedules with canonical columns when spec/schedules.json does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "61-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 123,
                 124,
@@ -40,11 +40,11 @@
       "name": "Returns schedule entries verbatim when spec/schedules.json is populated",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "94-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 123,
                 124,
@@ -76,11 +76,11 @@
       "name": "Treats empty schedules map as no schedules but still emits columns",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "159-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 123,
                 124,
@@ -112,11 +112,11 @@
       "name": "Swallows invalid JSON as empty result with canonical columns",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "187-224",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 123,
                 124,
@@ -148,11 +148,11 @@
       "name": "Preserves insertion order of schedules (not alphabetical)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "226-288",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 123,
                 124,
@@ -184,11 +184,11 @@
       "name": "JSON format emits two-space indented payload for the empty/missing case",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "290-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 93,
                 94,
@@ -220,11 +220,11 @@
       "name": "Text format prints 'No schedules configured.' sentinel for the empty/missing case",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "324-354",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 173,
                 174,
@@ -309,11 +309,11 @@
       "name": "Text format renders the populated case using the documented help-example layout",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "356-413",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 173,
                 174,
@@ -398,11 +398,11 @@
       "name": "Default format (no format key supplied) is text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_schedules.rs",
+          "file": "rust/fspec-core/tests/list_schedules.rs",
           "lines": "415-435",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_schedules.rs",
+              "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
                 93,
                 94,
@@ -436,10 +436,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_schedules.rs"
+      "rust/fspec-core/tests/list_schedules.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_schedules.rs"
+      "rust/fspec-core/src/commands/list_schedules.rs"
     ],
     "totalLinesCovered": 653
   }

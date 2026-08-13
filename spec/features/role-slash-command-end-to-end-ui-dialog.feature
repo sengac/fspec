@@ -16,12 +16,12 @@ Feature: /role slash command end-to-end (UI dialog)
   app_dispatch_rpc022.rs and slash_command_wiring_rpc022.rs that
   asserted the old clear semantics are updated in this card.
 
-  [D] Slash parser changes (codelet/fspec-tui/src/app/slash_parser.rs):
+  [D] Slash parser changes (rust/fspec-tui/src/app/slash_parser.rs):
   bare `/role` → SlashCommandParse::OpenRoleDialog. `/role <text>` →
   SetRole(text). `/role clear` (case-insensitive) → ClearRole. `/role `
   (trailing-space empty arg) → OpenRoleDialog.
 
-  [E] Dispatch wiring (codelet/fspec-tui/src/app/dispatch_role_dialog.rs):
+  [E] Dispatch wiring (rust/fspec-tui/src/app/dispatch_role_dialog.rs):
   SlashCommandAction::Role arm AND SlashCommandParse::OpenRoleDialog
   arm both route to handle_open_role_dialog(), which reads the current
   role from AgentViewStore::role_for(current_session) and pushes a
@@ -30,7 +30,7 @@ Feature: /role slash command end-to-end (UI dialog)
   Component-level scenarios (priority, render, handle_event paths,
   footer text, take_pending_action, source-shape) live in
   spec/features/role-dialog-component.feature and the matching test
-  file is codelet/fspec-tui/tests/role_dialog_rpc063.rs.
+  file is rust/fspec-tui/tests/role_dialog_rpc063.rs.
   """
 
   Background: User Story

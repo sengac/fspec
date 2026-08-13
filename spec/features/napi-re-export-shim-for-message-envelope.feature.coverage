@@ -4,11 +4,11 @@
       "name": "NAPI re-export shim preserves existing crate::persistence imports",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/message_envelope_lift_shim_test.rs",
+          "file": "rust/napi/tests/message_envelope_lift_shim_test.rs",
           "lines": "16-109",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -58,11 +58,11 @@
       "name": "All NAPI persistence tests continue to pass after the lift",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/message_envelope_lift_shim_test.rs",
+          "file": "rust/napi/tests/message_envelope_lift_shim_test.rs",
           "lines": "111-176",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "file": "rust/napi/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -114,10 +114,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/message_envelope_lift_shim_test.rs"
+      "rust/napi/tests/message_envelope_lift_shim_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/persistence/message_envelope.rs"
+      "rust/napi/src/persistence/message_envelope.rs"
     ],
     "totalLinesCovered": 236
   }

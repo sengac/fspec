@@ -4,11 +4,11 @@
       "name": "Enter on a profile row opens the edit form prefilled from the stored config",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "102-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 57,
                 58,
@@ -42,11 +42,11 @@
       "name": "Enter on the Add Profile row opens a create form with defaults",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "145-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 91,
                 92,
@@ -68,11 +68,11 @@
       "name": "Pressing d on a profile row opens a per-profile delete confirm that targets only that profile",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "178-223",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 112,
                 113,
@@ -123,11 +123,11 @@
       "name": "Pressing d on the Add Profile row has no delete action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "226-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 126,
                 127,
@@ -143,11 +143,11 @@
       "name": "The full-config loader returns parsed ProfileDefinitions keyed by name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "250-279",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 152,
                 153,
@@ -242,11 +242,11 @@
       "name": "The full-config loader merges with project overriding user by name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "282-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 225,
                 226,
@@ -268,11 +268,11 @@
       "name": "Folding loaded credentials stores the per-profile config map for prefill",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "315-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
                 63,
                 64,
@@ -295,11 +295,11 @@
       "name": "The profile row display string is split back to the bare name for lookup",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
           "lines": "342-371",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
                 30,
                 31,
@@ -330,12 +330,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_profile_crud_prov111.rs"
+      "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
-      "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
-      "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
+      "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+      "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
     ],
     "totalLinesCovered": 451
   }

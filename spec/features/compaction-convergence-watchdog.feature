@@ -1,8 +1,8 @@
 @CMPCT-020
 Feature: Compaction Convergence Watchdog
   """
-  New functions in codelet/cli/src/interactive_helpers.rs: COMPACTION_ESCALATION_MESSAGE constant, force_inject_fallback_dag(), extract_partial_dag_nodes()
-  Watchdog retry logic in codelet/napi/src/session_manager.rs agent_loop — after run_with_provider check compaction_in_progress and retry with escalation
+  New functions in rust/cli/src/interactive_helpers.rs: COMPACTION_ESCALATION_MESSAGE constant, force_inject_fallback_dag(), extract_partial_dag_nodes()
+  Watchdog retry logic in rust/napi/src/session_manager.rs agent_loop — after run_with_provider check compaction_in_progress and retry with escalation
   Reuses wrap_dag_content from inject_summary_handler.rs and reset_session_to_reminders + recalculate_token_tracker from interactive_helpers.rs
   """
 

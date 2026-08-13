@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from C include directives",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/c_cpp_edge_extraction_test.rs",
+          "file": "rust/napi/tests/c_cpp_edge_extraction_test.rs",
           "lines": "17-57",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
               "lines": [
                 38,
                 39,
@@ -53,11 +53,11 @@
       "name": "Extract Calls edges from C function calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/c_cpp_edge_extraction_test.rs",
+          "file": "rust/napi/tests/c_cpp_edge_extraction_test.rs",
           "lines": "62-87",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
               "lines": [
                 115,
                 116,
@@ -100,11 +100,11 @@
       "name": "Extract Imports edges from C++ include directives",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/c_cpp_edge_extraction_test.rs",
+          "file": "rust/napi/tests/c_cpp_edge_extraction_test.rs",
           "lines": "92-118",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
               "lines": [
                 30,
                 31,
@@ -145,11 +145,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/c_cpp_edge_extraction_test.rs"
+      "rust/napi/tests/c_cpp_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
-      "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+      "rust/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs"
     ],
     "totalLinesCovered": 185
   }

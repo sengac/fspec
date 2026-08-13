@@ -4,11 +4,11 @@
       "name": "Clap exposes remove-architecture-note with positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
           "lines": "74-122",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
                 30,
                 31,
@@ -48,11 +48,11 @@
       "name": "CLI soft-deletes an architecture note and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
           "lines": "124-159",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
                 40,
                 41,
@@ -82,11 +82,11 @@
       "name": "CLI reports the idempotent message when re-deleting",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
           "lines": "161-199",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
                 40,
                 41,
@@ -116,11 +116,11 @@
       "name": "CLI rejects an unknown work unit with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
           "lines": "201-235",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
                 49,
                 50,
@@ -140,11 +140,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
           "lines": "237-282",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
                 36,
                 37,
@@ -163,11 +163,11 @@
       "name": "remove-architecture-note --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
           "lines": "284-313",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/remove_architecture_note.rs",
+              "file": "rust/fspec-core/src/help/configs/remove_architecture_note.rs",
               "lines": [
                 1,
                 2,
@@ -260,11 +260,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_architecture_note.rs"
+      "rust/fspec/tests/cli_remove_architecture_note.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_architecture_note.rs",
-      "codelet/fspec-core/src/help/configs/remove_architecture_note.rs"
+      "rust/fspec/src/remove_architecture_note.rs",
+      "rust/fspec-core/src/help/configs/remove_architecture_note.rs"
     ],
     "totalLinesCovered": 393
   }

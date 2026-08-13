@@ -4,11 +4,11 @@
       "name": "Saving High writes the nested tui.defaultThinkingLevel key",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "34-44",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 55,
                 56,
@@ -55,11 +55,11 @@
       "name": "Saved level round-trips through the shared config",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "47-58",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 91,
                 92,
@@ -86,11 +86,11 @@
       "name": "Saving preserves pre-existing sibling keys",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "61-84",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 55,
                 56,
@@ -137,11 +137,11 @@
       "name": "Project scope overrides the user value on load",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "87-111",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 91,
                 92,
@@ -168,11 +168,11 @@
       "name": "An out-of-range value loads as Off",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "114-128",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 91,
                 92,
@@ -199,11 +199,11 @@
       "name": "A missing config file loads as Off",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "131-141",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 91,
                 92,
@@ -230,11 +230,11 @@
       "name": "The global wrappers round-trip via the shared config",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
           "lines": "144-156",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/default_thinking_level_persistence.rs",
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
                 107,
                 108,
@@ -274,10 +274,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/tui092_shared_config_thinking_level.rs"
+      "rust/sessions/tests/tui092_shared_config_thinking_level.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/default_thinking_level_persistence.rs"
+      "rust/sessions/src/default_thinking_level_persistence.rs"
     ],
     "totalLinesCovered": 267
   }

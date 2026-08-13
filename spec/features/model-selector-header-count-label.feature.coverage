@@ -4,11 +4,11 @@
       "name": "A provider with exactly one model is labelled with the singular noun",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests.rs",
           "lines": "222-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 152,
                 153,
@@ -22,7 +22,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/state.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/state.rs",
               "lines": [
                 177,
                 178,
@@ -39,11 +39,11 @@
       "name": "A provider with two models is labelled with the plural noun",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests.rs",
           "lines": "243-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 152,
                 153,
@@ -66,11 +66,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows_tests.rs"
+      "rust/fspec-tui/src/views/model_selector/rows_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows.rs",
-      "codelet/fspec-tui/src/views/model_selector/state.rs"
+      "rust/fspec-tui/src/views/model_selector/rows.rs",
+      "rust/fspec-tui/src/views/model_selector/state.rs"
     ],
     "totalLinesCovered": 62
   }

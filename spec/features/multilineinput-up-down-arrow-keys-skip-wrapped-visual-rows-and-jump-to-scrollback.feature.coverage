@@ -4,11 +4,11 @@
       "name": "Up arrow at visual top returns Ignored for scrollback navigation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
           "lines": "100-127",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 246,
                 247,
@@ -43,11 +43,11 @@
       "name": "Down arrow at visual bottom returns Ignored for scrollback navigation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
           "lines": "131-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 246,
                 247,
@@ -82,11 +82,11 @@
       "name": "Up arrow on a single visual row returns Ignored for scrollback navigation",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
           "lines": "160-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 246,
                 247,
@@ -121,11 +121,11 @@
       "name": "Down arrow returns Continued when cursor is not at visual bottom",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
           "lines": "25-62",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 246,
                 247,
@@ -160,11 +160,11 @@
       "name": "Up arrow returns Continued when cursor is not at visual top",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
+          "file": "rust/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs",
           "lines": "66-96",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 246,
                 247,
@@ -201,10 +201,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs"
+      "rust/fspec-tui/tests/multilineinput_updown_wrapped_visual_rows_rpc429.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input.rs"
     ],
     "totalLinesCovered": 262
   }

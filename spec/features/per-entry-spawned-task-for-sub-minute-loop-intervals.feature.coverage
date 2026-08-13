@@ -4,11 +4,11 @@
       "name": "Loop fires at exact sub-minute interval",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "58-106",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "file": "rust/napi/src/scheduler/loop_store.rs",
               "lines": [
                 224,
                 225,
@@ -145,11 +145,11 @@
       "name": "Minimum interval is 1 second",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "112-150",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "file": "rust/napi/src/scheduler/loop_store.rs",
               "lines": [
                 238,
                 239,
@@ -198,11 +198,11 @@
       "name": "Cancel aborts the spawned task immediately",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "156-195",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "file": "rust/napi/src/scheduler/loop_store.rs",
               "lines": [
                 109,
                 110,
@@ -224,11 +224,11 @@
       "name": "Skip firing when session is busy",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "201-251",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "file": "rust/napi/src/scheduler/loop_store.rs",
               "lines": [
                 259,
                 260,
@@ -330,11 +330,11 @@
       "name": "Auto-terminate when session is destroyed",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "257-300",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "file": "rust/napi/src/scheduler/loop_store.rs",
               "lines": [
                 181,
                 182,
@@ -376,11 +376,11 @@
       "name": "Cron engine tick is unaffected",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "310-348",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/engine.rs",
+              "file": "rust/napi/src/scheduler/engine.rs",
               "lines": [
                 1,
                 2,
@@ -400,11 +400,11 @@
       "name": "Expired loop auto-terminates",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/loop_task_test.rs",
+          "file": "rust/napi/tests/loop_task_test.rs",
           "lines": "354-408",
           "implMappings": [
             {
-              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "file": "rust/napi/src/scheduler/loop_store.rs",
               "lines": [
                 287,
                 288,
@@ -431,11 +431,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/loop_task_test.rs"
+      "rust/napi/tests/loop_task_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/scheduler/loop_store.rs",
-      "codelet/napi/src/scheduler/engine.rs"
+      "rust/napi/src/scheduler/loop_store.rs",
+      "rust/napi/src/scheduler/engine.rs"
     ],
     "totalLinesCovered": 630
   }

@@ -31,7 +31,7 @@ Feature: Health RPC + ServerStats extensions (HealthInfo lifted type + lag count
     When inspecting HealthInfo's definition
     Then it carries #[cfg_attr(feature = "napi", napi(object))]
     And it implements Serialize + Deserialize + Clone + Debug
-    And it lives in codelet/rpc-types/src/lib.rs alongside WorkUnitInfo / SessionInfo
+    And it lives in rust/rpc-types/src/lib.rs alongside WorkUnitInfo / SessionInfo
 
   Scenario: FspecBackend trait gains health on both transports
     Given the FspecBackend trait

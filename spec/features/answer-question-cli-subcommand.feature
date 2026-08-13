@@ -2,7 +2,7 @@
 @RPC-196
 Feature: fspec answer-question CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/answer_question.rs — clap-derived struct mirroring TS Commander.js
+  CLI bridge: rust/fspec/src/answer_question.rs — clap-derived struct mirroring TS Commander.js
   registration (src/commands/answer-question.ts:126-170). Surface:
   `fspec answer-question <workUnitId> <index> [--answer <text>] [--add-to <rule|assumption|none>]`.
 
@@ -30,7 +30,7 @@ Feature: fspec answer-question CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec answer-question --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/answer-question.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/answer-question.txt
     And stdout starts with a blank line followed by 'ANSWER-QUESTION'
 
   Scenario: CLI successfully answers a question with addTo=rule and prints the success lines
@@ -74,4 +74,4 @@ Feature: fspec answer-question CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec answer-question AUTH-001 0 --answer "Twice" --add-to rule` afterwards exits 0
     And spec/work-units.json on disk shows AUTH-001.rules has length 2
-    And the CLI bridge module codelet/fspec/src/answer_question.rs contains NO inline question lookup, status guard, RuleItem construction, or file-write logic — its only computation is clap parsing + JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/answer_question.rs contains NO inline question lookup, status guard, RuleItem construction, or file-write logic — its only computation is clap parsing + JSON arg marshalling

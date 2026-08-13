@@ -6,7 +6,7 @@
 @COPY-001
 Feature: OSC 52 clipboard writer
   """
-  New module codelet/fspec-tui/src/mouse/clipboard.rs (or clipboard/mod.rs). Public type Osc52Clipboard<W: Write + Send = std::io::Stdout>, mirroring the MouseTrackingToggle testing pattern (generic writer + with_stdout() production ctor + new(writer) test ctor).
+  New module rust/fspec-tui/src/mouse/clipboard.rs (or clipboard/mod.rs). Public type Osc52Clipboard<W: Write + Send = std::io::Stdout>, mirroring the MouseTrackingToggle testing pattern (generic writer + with_stdout() production ctor + new(writer) test ctor).
   Encoding: use the base64 crate's STANDARD engine (base64::engine::general_purpose::STANDARD.encode(bytes)) on text.as_bytes(). Add base64 as a dependency to fspec-tui/Cargo.toml if not already present.
   Byte format: write b"\x1b]52;c;", then the base64 ascii, then b"\x07" (BEL). Use write!/write_all + flush. Method signature: fn copy(&mut self, text: &str) -> std::io::Result<()>.
   Testing: unit tests in the module inject a Vec<u8>, call copy(...), and assert the full byte slice equals the expected ESC]52;c;<b64>BEL. Cover ascii, empty, multiline, and emoji cases. No real stdout/terminal needed. Follows integration-first/redirect-not-intercept philosophy.

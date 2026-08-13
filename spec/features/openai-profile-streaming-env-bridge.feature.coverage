@@ -4,11 +4,11 @@
       "name": "Selecting a streaming-disabled profile exports OPENAI_STREAMING false",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov140_streaming_env_bridge.rs",
+          "file": "rust/sessions/tests/prov140_streaming_env_bridge.rs",
           "lines": "77-102",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/model_resolution.rs",
+              "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
                 197,
                 198,
@@ -29,11 +29,11 @@
       "name": "Selecting a profile without a streaming flag leaves streaming enabled",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/prov140_streaming_env_bridge.rs",
+          "file": "rust/sessions/tests/prov140_streaming_env_bridge.rs",
           "lines": "103-124",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 100,
                 101,
@@ -52,11 +52,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/prov140_streaming_env_bridge.rs"
+      "rust/sessions/tests/prov140_streaming_env_bridge.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/model_resolution.rs",
-      "codelet/sessions/src/profile_sections.rs"
+      "rust/sessions/src/model_resolution.rs",
+      "rust/sessions/src/profile_sections.rs"
     ],
     "totalLinesCovered": 62
   }

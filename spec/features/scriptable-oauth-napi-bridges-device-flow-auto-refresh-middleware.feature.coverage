@@ -4,11 +4,11 @@
       "name": "User runs device-code login and receives a user_code",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_device_flow_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_device_flow_tests.rs",
           "lines": "120-148",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/custom_oauth_device.rs",
+              "file": "rust/providers/src/oauth/custom_oauth_device.rs",
               "lines": [
                 27,
                 28,
@@ -27,11 +27,11 @@
       "name": "Polling yields tokens after the user authorises the device",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_device_flow_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_device_flow_tests.rs",
           "lines": "153-189",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/custom_oauth_device.rs",
+              "file": "rust/providers/src/oauth/custom_oauth_device.rs",
               "lines": [
                 40,
                 41,
@@ -80,11 +80,11 @@
       "name": "Denied polling does not persist tokens",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_device_flow_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_device_flow_tests.rs",
           "lines": "194-215",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/custom_oauth_device.rs",
+              "file": "rust/providers/src/oauth/custom_oauth_device.rs",
               "lines": [
                 65,
                 66,
@@ -108,11 +108,11 @@
       "name": "Middleware auto-refreshes expired tokens on the next request",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_device_flow_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_device_flow_tests.rs",
           "lines": "220-253",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/scripted_refreshing_client.rs",
+              "file": "rust/providers/src/oauth/scripted_refreshing_client.rs",
               "lines": [
                 48,
                 49,
@@ -149,11 +149,11 @@
       "name": "Built-in provider refresh is untouched when no shadow config exists",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/scriptable_oauth_device_flow_tests.rs",
+          "file": "rust/providers/tests/scriptable_oauth_device_flow_tests.rs",
           "lines": "258-282",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/scripted_refreshing_client.rs",
+              "file": "rust/providers/src/oauth/scripted_refreshing_client.rs",
               "lines": [
                 35,
                 36,
@@ -175,11 +175,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/scriptable_oauth_device_flow_tests.rs"
+      "rust/providers/tests/scriptable_oauth_device_flow_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/oauth/custom_oauth_device.rs",
-      "codelet/providers/src/oauth/scripted_refreshing_client.rs"
+      "rust/providers/src/oauth/custom_oauth_device.rs",
+      "rust/providers/src/oauth/scripted_refreshing_client.rs"
     ],
     "totalLinesCovered": 236
   }

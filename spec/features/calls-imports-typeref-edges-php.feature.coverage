@@ -4,11 +4,11 @@
       "name": "Extract Imports edges from PHP use statements",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/php_edge_extraction_test.rs",
+          "file": "rust/napi/tests/php_edge_extraction_test.rs",
           "lines": "70-139",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
               "lines": [
                 197,
                 198,
@@ -89,11 +89,11 @@
       "name": "Extract Calls edges from PHP same-file method calls",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/php_edge_extraction_test.rs",
+          "file": "rust/napi/tests/php_edge_extraction_test.rs",
           "lines": "145-180",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
               "lines": [
                 273,
                 274,
@@ -153,11 +153,11 @@
       "name": "Extract TypeRef edges from PHP type-annotated signatures",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/php_edge_extraction_test.rs",
+          "file": "rust/napi/tests/php_edge_extraction_test.rs",
           "lines": "186-228",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_php_extractor.rs",
               "lines": [
                 325,
                 326,
@@ -267,10 +267,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/php_edge_extraction_test.rs"
+      "rust/napi/tests/php_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_php_extractor.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_php_extractor.rs"
     ],
     "totalLinesCovered": 362
   }

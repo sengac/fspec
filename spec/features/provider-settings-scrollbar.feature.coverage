@@ -4,11 +4,11 @@
       "name": "Overflowing provider list paints a scrollbar column",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
           "lines": "86-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -101,11 +101,11 @@
       "name": "A fitting provider list paints no scrollbar",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
           "lines": "112-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -198,11 +198,11 @@
       "name": "The scrollbar steals no content row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
           "lines": "135-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
               "lines": [
                 44,
                 45,
@@ -295,11 +295,11 @@
       "name": "Scrolling moves the scrollbar thumb",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
           "lines": "158-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/list_scrollbar.rs",
+              "file": "rust/fspec-tui/src/components/list_scrollbar.rs",
               "lines": [
                 22,
                 23,
@@ -343,11 +343,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs"
+      "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs",
-      "codelet/fspec-tui/src/components/list_scrollbar.rs"
+      "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+      "rust/fspec-tui/src/components/list_scrollbar.rs"
     ],
     "totalLinesCovered": 363
   }

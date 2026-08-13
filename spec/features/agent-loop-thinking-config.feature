@@ -33,37 +33,37 @@ Feature: Agent loop threads /thinking high into the provider request
     So that /thinking high, adaptive models, and PromptInput.thinking_config all influence the on-wire provider request without drifting between arms
 
   Scenario: InputWithImages carries thinking_config alongside text and images
-    Given the dispatch helper struct in codelet/agent-loop/src/dispatch.rs
+    Given the dispatch helper struct in rust/agent-loop/src/dispatch.rs
     When the structural source is inspected
     Then InputWithImages declares a thinking_config field of type Option<String>
     And the field documents that it is a per-turn override superimposed on session_thinking_level
 
   Scenario: run_with_provider! macro forwards thinking config to create_rig_agent
-    Given the run_with_provider! macro_rules! body in codelet/agent-loop/src/dispatch.rs
+    Given the run_with_provider! macro_rules! body in rust/agent-loop/src/dispatch.rs
     When the macro body is parsed
     Then the macro accepts a $thinking metavariable as its 7th positional argument
     And the macro invokes provider.create_rig_agent with role_preamble.as_deref() and $thinking.clone() as the 2nd and 3rd positional arguments
 
   Scenario: agent_loop body computes thinking_config_value per turn
-    Given the agent loop body in codelet/agent-loop/src/agent_loop.rs
+    Given the agent loop body in rust/agent-loop/src/agent_loop.rs
     When the source is scanned
     Then a thinking_config_value binding of type Option<serde_json::Value> is computed once per turn
     And the computation references compute_effective_thinking_level, is_adaptive_thinking_model, and get_thinking_config
     And the computation honours the PROV-005 priority order (adaptive first, then TS-passed config, then unified detection)
 
   Scenario: All run_with_provider! call sites pass thinking_config_value
-    Given the agent loop body in codelet/agent-loop/src/agent_loop.rs
+    Given the agent loop body in rust/agent-loop/src/agent_loop.rs
     When every invocation of the run_with_provider! macro is enumerated
     Then each invocation passes thinking_config_value as its 7th positional argument
     And the enumerated providers cover claude, gemini, zai, codex, and copilot
 
   Scenario: OpenAI inlined arm passes thinking_config_value to create_rig_agent
-    Given the inlined "openai" => { ... } match arm in codelet/agent-loop/src/agent_loop.rs
+    Given the inlined "openai" => { ... } match arm in rust/agent-loop/src/agent_loop.rs
     When the arm body is parsed
     Then provider.create_rig_agent is invoked with session.id, role_preamble.as_deref(), and thinking_config_value.clone() as the 1st, 2nd, and 3rd positional arguments
 
   Scenario: Custom-provider fallthrough passes thinking_config_value to create_rig_agent
-    Given the `_ =>` custom-provider fallthrough match arm in codelet/agent-loop/src/agent_loop.rs
+    Given the `_ =>` custom-provider fallthrough match arm in rust/agent-loop/src/agent_loop.rs
     When the arm body is parsed
     Then codelet_providers::custom::CustomProvider::create_rig_agent is invoked
     And the final three positional arguments are session.id, role_preamble.as_deref(), and thinking_config_value.clone()

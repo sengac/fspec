@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate.rs",
           "lines": "83-110",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_aggregate.rs",
+              "file": "rust/fspec/src/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -107,11 +107,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_aggregate.rs",
+          "file": "rust/fspec/tests/cli_add_aggregate.rs",
           "lines": "178-228",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_aggregate.rs",
+              "file": "rust/fspec/src/add_aggregate.rs",
               "lines": [
                 1,
                 2,
@@ -220,10 +220,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 50,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_aggregate.rs"
+      "rust/fspec/tests/cli_add_aggregate.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_aggregate.rs"
+      "rust/fspec/src/add_aggregate.rs"
     ],
     "totalLinesCovered": 488
   }

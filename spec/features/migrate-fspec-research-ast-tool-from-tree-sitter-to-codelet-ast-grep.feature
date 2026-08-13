@@ -6,9 +6,9 @@
 Feature: Migrate fspec research AST tool from tree-sitter to codelet ast-grep
   """
 
-  - Rust implementation in codelet/napi/src/astgrep.rs exposes astGrepSearch() and astGrepRefactor() via NAPI
+  - Rust implementation in rust/napi/src/astgrep.rs exposes astGrepSearch() and astGrepRefactor() via NAPI
   - TypeScript CLI wrapper in src/research-tools/ast.ts handles argument parsing and calls NAPI functions
-  - Existing codelet/tools/src/astgrep.rs AstGrepTool contains core pattern matching logic to reuse
+  - Existing rust/tools/src/astgrep.rs AstGrepTool contains core pattern matching logic to reuse
   - Removes 17 tree-sitter npm dependencies and associated TypeScript code (query-executor.ts, language-loader.ts, ast-queries/)
 
   """
@@ -69,7 +69,7 @@ Feature: Migrate fspec research AST tool from tree-sitter to codelet ast-grep
   # ========================================
   Background: User Story
     As a developer using fspec
-    I want to use the ast research tool with pattern-based search via codelet's native ast-grep implementation
+    I want to use the ast research tool with pattern-based search via rust's native ast-grep implementation
     So that I eliminate 17 tree-sitter npm dependencies, get better performance, and gain code extraction capabilities for refactoring large files
 
   Scenario: Search for functions using pattern matching

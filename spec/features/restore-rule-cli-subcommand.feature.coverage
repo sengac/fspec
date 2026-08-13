@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "110-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/restore_rule.rs",
+              "file": "rust/fspec-core/src/help/configs/restore_rule.rs",
               "lines": [
                 1,
                 2,
@@ -94,11 +94,11 @@
       "name": "Happy-path single restore via CLI",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "132-163",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_rule.rs",
+              "file": "rust/fspec/src/restore_rule.rs",
               "lines": [
                 58,
                 59,
@@ -135,11 +135,11 @@
       "name": "Missing work unit exits 1 with canonical stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "165-188",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_rule.rs",
+              "file": "rust/fspec/src/restore_rule.rs",
               "lines": [
                 69,
                 70,
@@ -164,11 +164,11 @@
       "name": "Wrong status exits 1 with the phase-guard message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "190-212",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_rule.rs",
+              "file": "rust/fspec/src/restore_rule.rs",
               "lines": [
                 69,
                 70,
@@ -193,11 +193,11 @@
       "name": "Non-numeric index falls through to TS parseInt NaN parity",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "214-236",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_rule.rs",
+              "file": "rust/fspec/src/restore_rule.rs",
               "lines": [
                 90,
                 91,
@@ -225,11 +225,11 @@
       "name": "Unknown --ids flag is rejected by clap with non-zero exit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "238-261",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_rule.rs",
+              "file": "rust/fspec/src/restore_rule.rs",
               "lines": [
                 49,
                 50,
@@ -249,11 +249,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "file": "rust/fspec/tests/cli_restore_rule.rs",
           "lines": "263-307",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_rule.rs",
+              "file": "rust/fspec/src/restore_rule.rs",
               "lines": [
                 58,
                 59,
@@ -292,11 +292,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_restore_rule.rs"
+      "rust/fspec/tests/cli_restore_rule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/restore_rule.rs",
-      "codelet/fspec/src/restore_rule.rs"
+      "rust/fspec-core/src/help/configs/restore_rule.rs",
+      "rust/fspec/src/restore_rule.rs"
     ],
     "totalLinesCovered": 366
   }

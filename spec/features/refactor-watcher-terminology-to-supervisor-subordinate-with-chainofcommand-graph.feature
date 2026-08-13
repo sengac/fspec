@@ -55,7 +55,7 @@ Feature: Refactor watcher terminology to supervisor/subordinate with ChainOfComm
   #   Q: watcherInject is exported from NAPI but has ZERO TypeScript consumers (only in index.d.ts). Auto-inject handles injection internally in Rust. Is manual inject from TypeScript needed, or is this dead code?
   #   A: The function is called internally in Rust by auto-inject (line 5899). Keep the function (rename to supervisor_inject), but remove the #[napi] export — no TypeScript consumer needs it.
   #
-  #   Q: codelet/napi/index.d.ts is auto-generated from Rust NAPI bindings — renaming the Rust functions will auto-update this file. It should NOT be manually edited.
+  #   Q: rust/napi/index.d.ts is auto-generated from Rust NAPI bindings — renaming the Rust functions will auto-update this file. It should NOT be manually edited.
   #   A: Yes, auto-generated from #[napi] macros. Rust renames will auto-update it on build. Do not manually edit.
   #
   # ========================================

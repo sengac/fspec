@@ -2,7 +2,7 @@
 @RPC-169
 Feature: Port add-assumption command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_assumption.rs. Reuses io::ensure::ensure_work_units_file,
+  Core impl at rust/fspec-core/src/commands/add_assumption.rs. Reuses io::ensure::ensure_work_units_file,
   io::locked_file::write_json_atomic, io::time::iso8601_now. The assumptions array lives in WorkUnit.extra
   as Vec<String> (plain strings, NOT a stable-id item shape). Two-front-doors: bridge marshals JSON
   {workUnitId, assumption} only.

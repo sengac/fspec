@@ -4,11 +4,11 @@
       "name": "/clear resets scrollback but does NOT append any [notice] line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "111-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 40,
                 41,
@@ -41,11 +41,11 @@
       "name": "/clear with backend Err does NOT append any [error] line to scrollback",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "153-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 40,
                 41,
@@ -80,10 +80,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_clear_rpc046.rs"
+      "rust/fspec-tui/tests/slash_clear_rpc046.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_clear.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_clear.rs"
     ],
     "totalLinesCovered": 98
   }

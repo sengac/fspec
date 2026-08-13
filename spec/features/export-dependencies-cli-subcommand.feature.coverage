@@ -4,11 +4,11 @@
       "name": "CLI export-dependencies mermaid writes the file and prints the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_dependencies.rs",
+          "file": "rust/fspec/tests/cli_export_dependencies.rs",
           "lines": "78-100",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/export_dependencies.rs",
+              "file": "rust/fspec/src/export_dependencies.rs",
               "lines": [
                 40,
                 41,
@@ -41,11 +41,11 @@
       "name": "CLI export-dependencies json writes the dependency map",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_dependencies.rs",
+          "file": "rust/fspec/tests/cli_export_dependencies.rs",
           "lines": "101-120",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/export_dependencies.rs",
+              "file": "rust/fspec/src/export_dependencies.rs",
               "lines": [
                 40,
                 41,
@@ -78,11 +78,11 @@
       "name": "CLI export-dependencies requires the output argument",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_dependencies.rs",
+          "file": "rust/fspec/tests/cli_export_dependencies.rs",
           "lines": "121-139",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/export_dependencies.rs",
+              "file": "rust/fspec/src/export_dependencies.rs",
               "lines": [
                 32,
                 33,
@@ -99,11 +99,11 @@
       "name": "CLI export-dependencies --help prints the help fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_dependencies.rs",
+          "file": "rust/fspec/tests/cli_export_dependencies.rs",
           "lines": "140-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/export_dependencies.rs",
+              "file": "rust/fspec-core/src/help/configs/export_dependencies.rs",
               "lines": [
                 32,
                 33,
@@ -131,11 +131,11 @@
       "name": "CLI delegates to the same fspec-core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_export_dependencies.rs",
+          "file": "rust/fspec/tests/cli_export_dependencies.rs",
           "lines": "164-189",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/export_dependencies.rs",
+              "file": "rust/fspec/src/export_dependencies.rs",
               "lines": [
                 48,
                 49,
@@ -156,11 +156,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_export_dependencies.rs"
+      "rust/fspec/tests/cli_export_dependencies.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/export_dependencies.rs",
-      "codelet/fspec-core/src/help/configs/export_dependencies.rs"
+      "rust/fspec/src/export_dependencies.rs",
+      "rust/fspec-core/src/help/configs/export_dependencies.rs"
     ],
     "totalLinesCovered": 182
   }

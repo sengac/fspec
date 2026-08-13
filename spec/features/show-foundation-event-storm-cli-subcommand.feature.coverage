@@ -4,11 +4,11 @@
       "name": "Clap exposes show-foundation-event-storm as a subcommand and prints flag help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "342-378",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "CLI against workspace with no foundation.json exits 1 with error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "380-404",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "CLI prints empty array when foundation.json has no eventStorm",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "406-427",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "CLI prints all active items when no filters are supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "429-450",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "CLI --type filter narrows to matching items",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "452-478",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "CLI --context filter returns bounded context plus linked items",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "480-501",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "CLI --context with unknown name prints empty array",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "503-526",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "show-foundation-event-storm --help is byte-for-byte identical to the TS formatCommandHelp reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "528-556",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "558-586",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -139,11 +139,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
           "lines": "588-631",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/show_foundation_event_storm.rs",
+              "file": "rust/fspec/src/show_foundation_event_storm.rs",
               "lines": "1-53"
             }
           ]
@@ -156,7 +156,7 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_show_foundation_event_storm.rs"
+      "rust/fspec/tests/cli_show_foundation_event_storm.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 281

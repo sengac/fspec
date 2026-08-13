@@ -4,11 +4,11 @@
       "name": "Progress emitted during tool execution carries the active tool_call_id",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
           "lines": "54-115",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 465,
                 466,
@@ -44,11 +44,11 @@
           ]
         },
         {
-          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
           "lines": "54-115",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 465,
                 466,
@@ -89,11 +89,11 @@
       "name": "Active tool_call_id is set on ToolCall and cleared on ToolResult",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
           "lines": "125-178",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 913,
                 914,
@@ -176,11 +176,11 @@
           ]
         },
         {
-          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
           "lines": "125-178",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 913,
                 914,
@@ -268,11 +268,11 @@
       "name": "Stray progress with no active tool call is dropped without panic",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
           "lines": "190-229",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 479,
                 480,
@@ -301,10 +301,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs"
+      "rust/cli/tests/tool_progress_tool_call_id_bug149.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 497
   }

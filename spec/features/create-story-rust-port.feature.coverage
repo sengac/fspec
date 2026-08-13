@@ -4,11 +4,11 @@
       "name": "Dispatcher creates a minimal story and writes spec/work-units.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "131-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 76,
                 77,
@@ -217,11 +217,11 @@
       "name": "New story object field order matches the TS object literal",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "174-204",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 148,
                 149,
@@ -254,11 +254,11 @@
       "name": "Dispatcher stores an optional description after updatedAt",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "205-233",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 158,
                 159,
@@ -273,11 +273,11 @@
       "name": "ID generation increments using the prefixCounters high-water-mark",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "234-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 330,
                 331,
@@ -313,11 +313,11 @@
       "name": "A child story is linked to its parent and omits the children array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "261-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 164,
                 165,
@@ -395,11 +395,11 @@
       "name": "An epic association appends the story id to the epic workUnits array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "295-323",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 249,
                 250,
@@ -432,11 +432,11 @@
       "name": "Dispatcher rejects a missing foundation with the foundation-missing message",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "324-360",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 83,
                 84,
@@ -455,11 +455,11 @@
       "name": "Dispatcher rejects an empty title",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "361-383",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 91,
                 92,
@@ -478,11 +478,11 @@
       "name": "Dispatcher rejects an unregistered prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "384-406",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 99,
                 100,
@@ -505,11 +505,11 @@
       "name": "Dispatcher rejects a non-existent parent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "407-429",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 114,
                 115,
@@ -529,11 +529,11 @@
       "name": "Dispatcher rejects exceeding the maximum nesting depth",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "430-460",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 122,
                 123,
@@ -552,11 +552,11 @@
       "name": "Dispatcher rejects a non-existent epic",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "461-484",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 133,
                 134,
@@ -577,11 +577,11 @@
       "name": "Dispatcher response text renders the success block and Example-Mapping reminder",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_story.rs",
+          "file": "rust/fspec-core/tests/create_story.rs",
           "lines": "485-520",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_story.rs",
+              "file": "rust/fspec-core/src/commands/create_story.rs",
               "lines": [
                 278,
                 279,
@@ -644,10 +644,10 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/create_story.rs"
+      "rust/fspec-core/tests/create_story.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/create_story.rs"
+      "rust/fspec-core/src/commands/create_story.rs"
     ],
     "totalLinesCovered": 820
   }

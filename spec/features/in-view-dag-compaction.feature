@@ -24,7 +24,7 @@ Feature: In-View DAG Construction Compaction Flow
   #   9. Per-turn annotations must be zero-cost inline detection — no LLM calls, no external process, just pattern matching on tool call metadata
   #   10. Annotations must be attached to turn metadata in the persisted message store so SessionSearch can surface them during DAG construction
   #   11. Wall-clock compaction time must be <5 seconds (the only latency is /clear + system instruction injection, no LLM wait)
-  #   12. The annotation_detector module must live in codelet/core/src/compaction/annotation_detector.rs and use StructuralAnnotation from CMPCT-007
+  #   12. The annotation_detector module must live in rust/core/src/compaction/annotation_detector.rs and use StructuralAnnotation from CMPCT-007
   #   13. session_compact() NAPI binding must trigger the same in-view flow as execute_compaction() — not the batch LLM pipeline
   #   14. No watchdog needed in this card. If the agent fails to call inject_summary, context keeps growing until the emergency threshold (CMPCT-012) fires again. CMPCT-012 is the explicit safety net for this case. The compaction_in_progress flag stays true, keeping SessionSearch trimmed, which is benign.
   #   15. The inject_summary handler (CMPCT-009) should clear the flag. This is per the CMPCT-009 description: 'handler will be extended to clear that flag after injection completes'. This ensures the flag is cleared atomically with the injection — no window where flag is true but DAG is already pinned. We'll modify the CMPCT-009 handler to accept the Arc<AtomicBool> and clear it.

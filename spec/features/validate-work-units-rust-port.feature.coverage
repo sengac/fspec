@@ -4,11 +4,11 @@
       "name": "Dispatcher reports a clean store as valid",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "64-107",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -280,11 +280,11 @@
       "name": "Dispatcher flags a work unit whose parent is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "108-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -556,11 +556,11 @@
       "name": "Dispatcher flags a parent that does not list its child",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "143-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -832,11 +832,11 @@
       "name": "Dispatcher flags a missing child reference",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "182-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -1108,11 +1108,11 @@
       "name": "Dispatcher flags an invalid status value",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "217-253",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -1384,11 +1384,11 @@
       "name": "Dispatcher flags a work unit absent from its state array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "254-290",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -1660,11 +1660,11 @@
       "name": "Dispatcher flags a work unit listed in the wrong state array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "291-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -1936,11 +1936,11 @@
       "name": "Dispatcher flags an empty string in the rules array",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "323-360",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -2212,11 +2212,11 @@
       "name": "Dispatcher flags a malformed questions item",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "361-395",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -2488,11 +2488,11 @@
       "name": "Dispatcher flags a non-array dependency field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "396-430",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -2764,11 +2764,11 @@
       "name": "Dispatcher reports schema errors for a missing workUnits field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "431-459",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -3040,11 +3040,11 @@
       "name": "Dispatcher auto-creates and validates an empty store when work-units.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/validate_work_units.rs",
+          "file": "rust/fspec-core/tests/validate_work_units.rs",
           "lines": "460-478",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/validate_work_units.rs",
+              "file": "rust/fspec-core/src/commands/validate_work_units.rs",
               "lines": [
                 52,
                 53,
@@ -3318,10 +3318,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/validate_work_units.rs"
+      "rust/fspec-core/tests/validate_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/validate_work_units.rs"
+      "rust/fspec-core/src/commands/validate_work_units.rs"
     ],
     "totalLinesCovered": 3535
   }

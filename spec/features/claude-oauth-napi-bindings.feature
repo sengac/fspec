@@ -1,7 +1,7 @@
 @PROV-024
 Feature: NAPI bindings for Anthropic OAuth subscription flows
   """
-  New file: codelet/napi/src/claude_oauth.rs — All NAPI functions in one module. Imports claude_browser_oauth_login from claude_oauth_server, generate_pkce/build_authorize_url/parse_authorization_code/exchange_authorization_code/calculate_expiry from claude_oauth, refresh_access_token_at from claude_oauth, read_claude_auth/write_claude_auth/get_claude_auth_path from claude_auth. Mirrors codex_oauth.rs structure.
+  New file: rust/napi/src/claude_oauth.rs — All NAPI functions in one module. Imports claude_browser_oauth_login from claude_oauth_server, generate_pkce/build_authorize_url/parse_authorization_code/exchange_authorization_code/calculate_expiry from claude_oauth, refresh_access_token_at from claude_oauth, read_claude_auth/write_claude_auth/get_claude_auth_path from claude_auth. Mirrors codex_oauth.rs structure.
   NapiClaudeTokens #[napi(object)] struct maps to ClaudeAuthJson with access_token, refresh_token, expires (f64 for JS compatibility). NapiClaudeHeadlessStartResult #[napi(object)] with authorize_url (String) and pkce_verifier (String) — verifier returned to TS so it can be passed back to complete().
   lib.rs registration: add `mod claude_oauth;` under #[cfg(not(feature = "noop"))] and `pub use claude_oauth::*;` — same pattern as codex_oauth module.
   Headless two-phase approach: claude_oauth_headless_start() generates PKCE via generate_pkce(), builds authorize URL via build_authorize_url(), returns NapiClaudeHeadlessStartResult. claude_oauth_headless_complete(code_with_state, pkce_verifier) parses code#state, validates state == pkce_verifier, exchanges via exchange_authorization_code(), persists via write_claude_auth(), returns NapiClaudeTokens. No CodeEntryFn callback needed — NAPI boundary stays clean.
@@ -20,7 +20,7 @@ Feature: NAPI bindings for Anthropic OAuth subscription flows
   #   5. claude_oauth_clear_tokens() is an async NAPI function that deletes claude_auth.json (or clears its content) for disconnect — mirrors codex_oauth_clear_tokens() pattern
   #   6. All NAPI functions convert Rust errors to napi::Error via Error::from_reason() — TypeScript sees rejected promises with descriptive error messages
   #   7. NapiClaudeTokens is an #[napi(object)] struct with fields: access_token (String), refresh_token (String), expires (f64, milliseconds since epoch) — maps to ClaudeAuthJson from claude_auth.rs
-  #   8. The NAPI module file is codelet/napi/src/claude_oauth.rs, registered in lib.rs under #[cfg(not(feature = "noop"))] — same pattern as codex_oauth module
+  #   8. The NAPI module file is rust/napi/src/claude_oauth.rs, registered in lib.rs under #[cfg(not(feature = "noop"))] — same pattern as codex_oauth module
   #
   # EXAMPLES:
   #   1. TUI calls claude_oauth_browser_login(): tokio spawns claude_browser_oauth_login(), local server starts, browser opens, user authorizes on claude.ai, pastes code#state, tokens exchanged, Promise resolves with NapiClaudeTokens containing access_token, refresh_token, expires

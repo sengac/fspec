@@ -5,7 +5,7 @@
 @mutation
 Feature: Port add-aggregate-to-foundation command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs uses
+  Core impl at rust/fspec-core/src/commands/add_aggregate_to_foundation.rs uses
   crate::io::ensure::ensure_foundation_file to load (or auto-create) spec/foundation.json
   (canonical generic schema v2.0.0), locates the target bounded_context Event Storm item by
   type='bounded_context' and matching text, and appends a new aggregate item to

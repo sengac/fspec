@@ -8,9 +8,9 @@
 @BUG-124
 Feature: Shift+Arrow navigation skips sessions when supervisor has multiple subordinates
   """
-  Fix lives in codelet/napi/src/navigation.rs build_navigation_list() — replace hierarchy-aware traversal with sessions.keys().copied().collect()
+  Fix lives in rust/napi/src/navigation.rs build_navigation_list() — replace hierarchy-aware traversal with sessions.keys().copied().collect()
   chain_of_command parameter remains in the signature but is unused (prefix with underscore) — preserves ABI/test compatibility
-  Tests live in codelet/napi/tests/navigation_hierarchy_test.rs (Rust integration test file run via cargo test). The file already provides MockBackgroundSession + MockChainOfCommand and a local copy of build_navigation_list — the local mock copy and the production navigation.rs copy must both be updated.
+  Tests live in rust/napi/tests/navigation_hierarchy_test.rs (Rust integration test file run via cargo test). The file already provides MockBackgroundSession + MockChainOfCommand and a local copy of build_navigation_list — the local mock copy and the production navigation.rs copy must both be updated.
   The trigger that exposes the bug is INSERTION ORDER: when the supervisor session is inserted into the IndexMap BEFORE its subordinates (real-world spawn pattern). Existing tests in navigation_hierarchy_test.rs always insert children adjacent to or after their named groupings, which happens to mask the duplication. New regression tests must insert the supervisor FIRST, then the subordinates.
   """
 

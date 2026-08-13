@@ -4,11 +4,11 @@
       "name": "Standalone fspec binary exposes query-work-units as a clap subcommand",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "94-120",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -123,11 +123,11 @@
       "name": "CLI query-work-units --format=json prints parseable JSON to stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "121-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -242,11 +242,11 @@
       "name": "CLI query-work-units --format=text prints NOTHING to stdout per TS quirk",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "149-167",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -361,11 +361,11 @@
       "name": "CLI query-work-units --tag filter matches dispatcher behavior",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "168-190",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -480,11 +480,11 @@
       "name": "CLI query-work-units exits 1 and writes to stderr when spec/work-units.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "191-218",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -599,11 +599,11 @@
       "name": "CLI query-work-units exits 1 and writes to stderr when spec/work-units.json is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "219-239",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -718,11 +718,11 @@
       "name": "Subcommand help excludes the global workspace flag",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "240-265",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -837,11 +837,11 @@
       "name": "query-work-units --help matches TS formatCommandHelp reference fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "266-291",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -956,11 +956,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_work_units.rs",
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
           "lines": "292-310",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/query_work_units.rs",
+              "file": "rust/fspec/src/query_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -1077,10 +1077,10 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_work_units.rs"
+      "rust/fspec/tests/cli_query_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/query_work_units.rs"
+      "rust/fspec/src/query_work_units.rs"
     ],
     "totalLinesCovered": 1361
   }

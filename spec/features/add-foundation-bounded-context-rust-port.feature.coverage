@@ -4,11 +4,11 @@
       "name": "First add seeds the eventStorm sub-object on a foundation with no eventStorm field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
           "lines": "57-96",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 83,
                 84,
@@ -31,11 +31,11 @@
       "name": "The color field is persisted as JSON null",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
           "lines": "98-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 100,
                 101,
@@ -54,11 +54,11 @@
       "name": "The persisted item key order matches TS insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
           "lines": "119-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 98,
                 99,
@@ -89,11 +89,11 @@
       "name": "Second add increments nextItemId and assigns the next id",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
           "lines": "147-182",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 95,
                 96,
@@ -129,11 +129,11 @@
       "name": "Missing foundation.json is auto-created with the default schema before appending",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
           "lines": "184-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 74,
                 75,
@@ -148,11 +148,11 @@
       "name": "Unknown top-level foundation fields are preserved byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
           "lines": "211-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 120,
                 121,
@@ -169,10 +169,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_foundation_bounded_context.rs"
+      "rust/fspec-core/tests/add_foundation_bounded_context.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs"
+      "rust/fspec-core/src/commands/add_foundation_bounded_context.rs"
     ],
     "totalLinesCovered": 238
   }

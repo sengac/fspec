@@ -4,11 +4,11 @@
       "name": "Dispatcher increments iterations from absent to one",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/record_iteration.rs",
+          "file": "rust/fspec-core/tests/record_iteration.rs",
           "lines": "85-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/record_iteration.rs",
+              "file": "rust/fspec-core/src/commands/record_iteration.rs",
               "lines": [
                 77,
                 78,
@@ -86,11 +86,11 @@
       "name": "Dispatcher increments an existing iterations count",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/record_iteration.rs",
+          "file": "rust/fspec-core/tests/record_iteration.rs",
           "lines": "108-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/record_iteration.rs",
+              "file": "rust/fspec-core/src/commands/record_iteration.rs",
               "lines": [
                 77,
                 78,
@@ -168,11 +168,11 @@
       "name": "Dispatcher fails for a missing work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/record_iteration.rs",
+          "file": "rust/fspec-core/tests/record_iteration.rs",
           "lines": "143-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/record_iteration.rs",
+              "file": "rust/fspec-core/src/commands/record_iteration.rs",
               "lines": [
                 77,
                 78,
@@ -250,11 +250,11 @@
       "name": "CLI and dispatcher converge on the same fspec-core function",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/record_iteration.rs",
+          "file": "rust/fspec-core/tests/record_iteration.rs",
           "lines": "161-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/record_iteration.rs",
+              "file": "rust/fspec-core/src/commands/record_iteration.rs",
               "lines": [
                 77,
                 78,
@@ -334,10 +334,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/record_iteration.rs"
+      "rust/fspec-core/tests/record_iteration.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/record_iteration.rs"
+      "rust/fspec-core/src/commands/record_iteration.rs"
     ],
     "totalLinesCovered": 378
   }

@@ -4,11 +4,11 @@
       "name": "Creates a sidecar for a feature file that lacks one",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_coverage.rs",
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "86-139",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
                 173,
                 174,
@@ -25,11 +25,11 @@
       "name": "Skips a sidecar that is already in sync",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_coverage.rs",
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "141-192",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
                 158,
                 159,
@@ -48,11 +48,11 @@
       "name": "Updates a sidecar when scenarios were added and removed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_coverage.rs",
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "194-270",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
                 210,
                 211,
@@ -145,11 +145,11 @@
       "name": "Recreates a sidecar that contains invalid JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_coverage.rs",
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "272-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
                 166,
                 167,
@@ -166,11 +166,11 @@
       "name": "Dry-run reports would-create files without writing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_coverage.rs",
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "310-351",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
                 100,
                 101,
@@ -203,11 +203,11 @@
       "name": "Missing features directory surfaces an error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/generate_coverage.rs",
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "353-376",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
                 74,
                 75,
@@ -224,10 +224,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/generate_coverage.rs"
+      "rust/fspec-core/tests/generate_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/generate_coverage.rs"
+      "rust/fspec-core/src/commands/generate_coverage.rs"
     ],
     "totalLinesCovered": 408
   }

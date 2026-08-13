@@ -134,7 +134,7 @@ Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, a
     Then the input row shows the placeholder text "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn)"
 
   Scenario: New modules stay under the 300-LoC source-shape ceiling
-    Given codelet/fspec-tui/src/views/agent/spinner.rs exists
-    And codelet/fspec-tui/src/views/agent/input_transition.rs exists
+    Given rust/fspec-tui/src/views/agent/spinner.rs exists
+    And rust/fspec-tui/src/views/agent/input_transition.rs exists
     When the source-shape test runs
     Then both files have fewer than 300 lines of code

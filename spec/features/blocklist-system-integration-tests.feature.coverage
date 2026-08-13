@@ -8,7 +8,7 @@
           "lines": "51-130",
           "implMappings": [
             {
-              "file": "codelet/napi/src/blocklist.rs",
+              "file": "rust/napi/src/blocklist.rs",
               "lines": [
                 1,
                 2,
@@ -297,7 +297,7 @@
           "lines": "132-207",
           "implMappings": [
             {
-              "file": "codelet/tools/src/stage_permissions/mod.rs",
+              "file": "rust/tools/src/stage_permissions/mod.rs",
               "lines": [
                 1,
                 2,
@@ -513,7 +513,7 @@
           "lines": "209-261",
           "implMappings": [
             {
-              "file": "codelet/napi/src/blocklist.rs",
+              "file": "rust/napi/src/blocklist.rs",
               "lines": [
                 188,
                 189,
@@ -806,8 +806,8 @@
       "src/__tests__/integration/blocklist-system-integration.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/blocklist.rs",
-      "codelet/tools/src/stage_permissions/mod.rs",
+      "rust/napi/src/blocklist.rs",
+      "rust/tools/src/stage_permissions/mod.rs",
       "src/tui/components/BlocklistListView.tsx",
       "src/tui/components/AgentView.tsx"
     ],

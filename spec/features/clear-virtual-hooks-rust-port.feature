@@ -5,9 +5,9 @@
 @RPC-205
 Feature: Port clear-virtual-hooks command to Rust
   """
-  New impl file at codelet/fspec-core/src/commands/clear_virtual_hooks.rs replaces the NotYetPorted stub. Module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` mirroring the list_virtual_hooks::run signature.
+  New impl file at rust/fspec-core/src/commands/clear_virtual_hooks.rs replaces the NotYetPorted stub. Module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` mirroring the list_virtual_hooks::run signature.
 
-  The shell-facing CLI bridge is delivered alongside this port — see codelet/fspec/src/clear_virtual_hooks.rs and spec/features/clear-virtual-hooks-cli-subcommand.feature. Both front doors (LLM tool-call dispatcher and clap shell subcommand) call the same `clear_virtual_hooks::run` function defined in this port.
+  The shell-facing CLI bridge is delivered alongside this port — see rust/fspec/src/clear_virtual_hooks.rs and spec/features/clear-virtual-hooks-cli-subcommand.feature. Both front doors (LLM tool-call dispatcher and clap shell subcommand) call the same `clear_virtual_hooks::run` function defined in this port.
 
   The command reads `spec/work-units.json` via the shared `crate::io::ensure::ensure_work_units_file` helper (auto-creates an empty store on ENOENT, parity with the TS `ensureWorkUnitsFile` helper). It then looks up the requested work unit by id; if not present, returns `FspecCoreError::InvalidArgs { reason: "Work unit '<id>' does not exist" }` (the dispatcher converts this to success=false with that error string).
 

@@ -4,11 +4,11 @@
       "name": "list_providers maps codelet_providers::custom::ProviderInfo into codelet_rpc_types::ProviderInfo with the correct field mapping",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_list_providers_wiring.rs",
+          "file": "rust/sessions/tests/rpc073_list_providers_wiring.rs",
           "lines": "268-326",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 920,
                 921,
@@ -119,11 +119,11 @@
       "name": "list_providers degrades gracefully to Vec::new() and logs via tracing::error when list_providers_info returns Err",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_list_providers_wiring.rs",
+          "file": "rust/sessions/tests/rpc073_list_providers_wiring.rs",
           "lines": "332-360",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 920,
                 921,
@@ -234,11 +234,11 @@
       "name": "Source-shape regression: handle_impl.rs list_providers body calls list_providers_info and no longer returns the empty Vec::new() stub",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_list_providers_wiring.rs",
+          "file": "rust/sessions/tests/rpc073_list_providers_wiring.rs",
           "lines": "366-400",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 920,
                 921,
@@ -349,11 +349,11 @@
       "name": "list_providers returns built-in cloud providers only when they have at least one model",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_list_providers_wiring.rs",
+          "file": "rust/sessions/tests/rpc073_list_providers_wiring.rs",
           "lines": "160-216",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 920,
                 921,
@@ -457,7 +457,7 @@
               ]
             },
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 45,
                 46,
@@ -475,11 +475,11 @@
       "name": "list_providers entries have populated key and display_name fields and a non-empty models Vec",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc073_list_providers_wiring.rs",
+          "file": "rust/sessions/tests/rpc073_list_providers_wiring.rs",
           "lines": "222-262",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 920,
                 921,
@@ -592,11 +592,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc073_list_providers_wiring.rs"
+      "rust/sessions/tests/rpc073_list_providers_wiring.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/sessions/src/profile_sections.rs"
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/profile_sections.rs"
     ],
     "totalLinesCovered": 722
   }

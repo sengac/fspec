@@ -8,7 +8,7 @@
           "lines": "45-81",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 17,
                 18,
@@ -64,7 +64,7 @@
           "lines": "83-117",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 96,
                 97,
@@ -176,7 +176,7 @@
           "lines": "119-149",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 144,
                 145,
@@ -240,7 +240,7 @@
           "lines": "151-173",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 30,
                 31,
@@ -263,7 +263,7 @@
           "lines": "175-201",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 217,
                 218,
@@ -540,7 +540,7 @@
       "src/git/__tests__/native-rust-diff-operations.test.ts"
     ],
     "implFiles": [
-      "codelet/git/src/diff.rs",
+      "rust/git/src/diff.rs",
       "src/tui/components/FileDiffViewer.tsx",
       "src/tui/components/CheckpointViewer.tsx",
       "package.json",

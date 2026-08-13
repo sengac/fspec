@@ -4,11 +4,11 @@
       "name": "Agent loop dispatches github-copilot to CopilotProvider",
       "testMappings": [
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "4284-4408",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5242,
                 5243,
@@ -24,11 +24,11 @@
           ]
         },
         {
-          "file": "codelet/napi/src/session_manager.rs",
+          "file": "rust/napi/src/session_manager.rs",
           "lines": "4284-4408",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/rig_agent.rs",
+              "file": "rust/providers/src/copilot/rig_agent.rs",
               "lines": [
                 56,
                 57,
@@ -102,11 +102,11 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/session_manager.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/providers/src/copilot/rig_agent.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/providers/src/copilot/rig_agent.rs"
     ],
     "totalLinesCovered": 319
   }

@@ -7,7 +7,7 @@ Feature: Role injection into LLM system prompt
   - Gemini: build_gemini_system_prompt() appends role as Project-Specific Instructions
   - OpenAI/ZAI: prepend_fspec_guidance() prepends fspec guidance + role
   - Codex: role is appended after CODEX_BASE_INSTRUCTIONS (base instructions always preserved)
-  Single change in codelet/napi/src/session_manager.rs run_with_provider! macro reads the role.
+  Single change in rust/napi/src/session_manager.rs run_with_provider! macro reads the role.
   Provider-specific handling ensures role integrates cleanly with each provider's system prompt.
   """
 

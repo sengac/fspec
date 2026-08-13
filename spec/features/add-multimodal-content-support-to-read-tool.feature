@@ -7,13 +7,13 @@
 Feature: Add Multimodal Content Support to Read Tool
   """
   LAYER ARCHITECTURE:
-  1. Read Tool (codelet/tools/src/read.rs): Detects file type, returns structured output
+  1. Read Tool (rust/tools/src/read.rs): Detects file type, returns structured output
   2. Agent Loop: Parses tool output, converts to appropriate message content type
   3. Provider Layer (rig): Converts message content to provider-specific API format
 
   FILE STRUCTURE:
-  - codelet/tools/src/read.rs - Read tool implementation
-  - codelet/tools/src/file_type.rs - File type detection (new)
+  - rust/tools/src/read.rs - Read tool implementation
+  - rust/tools/src/file_type.rs - File type detection (new)
   - codelet-napi/src/session.rs - Agent loop tool result handling
 
   CRITICAL REQUIREMENTS:

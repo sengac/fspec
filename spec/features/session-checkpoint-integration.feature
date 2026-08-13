@@ -1,8 +1,8 @@
 @GIT-021
 Feature: Session Checkpoint Integration
   """
-  Primary implementation in codelet/napi/src/session_manager.rs - add checkpoint(), restore(), list_checkpoints() methods to BackgroundSession
-  Uses create_ghost_commit(), restore_ghost_commit(), list_ghost_checkpoints() from codelet/git/src/ghost_commit.rs
+  Primary implementation in rust/napi/src/session_manager.rs - add checkpoint(), restore(), list_checkpoints() methods to BackgroundSession
+  Uses create_ghost_commit(), restore_ghost_commit(), list_ghost_checkpoints() from rust/git/src/ghost_commit.rs
   Add SessionError enum with NotIsolated variant for error handling
   """
 

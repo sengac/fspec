@@ -4,11 +4,11 @@
       "name": "Dispatcher appends a capability to an existing foundation.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "69-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -210,11 +210,11 @@
       "name": "Draft takes precedence over the final foundation file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "105-146",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -416,11 +416,11 @@
       "name": "Capabilities array is created when solutionSpace has no capabilities key",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "147-177",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -622,11 +622,11 @@
       "name": "All-placeholder capabilities are pruned before the new entry is added",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "178-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -828,11 +828,11 @@
       "name": "Mixed real-and-placeholder array keeps every entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "211-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -1034,11 +1034,11 @@
       "name": "Dispatcher fails when neither foundation.json nor its draft exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "242-270",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -1240,11 +1240,11 @@
       "name": "Unknown top-level foundation fields are preserved on write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "271-295",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -1446,11 +1446,11 @@
       "name": "Successful result reports the written file, name and description",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_capability.rs",
+          "file": "rust/fspec-core/tests/add_capability.rs",
           "lines": "296-323",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_capability.rs",
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -1654,10 +1654,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_capability.rs"
+      "rust/fspec-core/tests/add_capability.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_capability.rs"
+      "rust/fspec-core/src/commands/add_capability.rs"
     ],
     "totalLinesCovered": 1775
   }

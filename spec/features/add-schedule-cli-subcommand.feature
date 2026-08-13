@@ -5,7 +5,7 @@
 @RPC-191
 Feature: Add schedule CLI subcommand
   """
-  CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant (Mode::AddSchedule) with -n/--name, -c/--cron, -z/--timezone, -t/--type, -r/--role, -p/--prompt, --command, -o/--overlap flags, per RPC-003 §7/§11. The intercept_ts_help() pre-clap routine routes `add-schedule --help` to codelet/fspec-core/src/help/configs/add_schedule.rs which mirrors src/commands/add-schedule-help.ts byte-for-byte under formatCommandHelp. The bridge codelet/fspec/src/add_schedule.rs marshals CliArgs to JSON and delegates to fspec_core::commands::add_schedule::run — no validation or IO.
+  CLI subcommand is wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant (Mode::AddSchedule) with -n/--name, -c/--cron, -z/--timezone, -t/--type, -r/--role, -p/--prompt, --command, -o/--overlap flags, per RPC-003 §7/§11. The intercept_ts_help() pre-clap routine routes `add-schedule --help` to rust/fspec-core/src/help/configs/add_schedule.rs which mirrors src/commands/add-schedule-help.ts byte-for-byte under formatCommandHelp. The bridge rust/fspec/src/add_schedule.rs marshals CliArgs to JSON and delegates to fspec_core::commands::add_schedule::run — no validation or IO.
   """
 
   Background: User Story
@@ -17,7 +17,7 @@ Feature: Add schedule CLI subcommand
     Given the fspec Rust binary has been compiled
     When I run `fspec add-schedule --help` piped to non-TTY
     Then the command exits 0
-    Then stdout is byte-for-byte identical to the TS reference output at codelet/fspec/tests/fixtures/help/add-schedule.txt
+    Then stdout is byte-for-byte identical to the TS reference output at rust/fspec/tests/fixtures/help/add-schedule.txt
     Then stdout advertises the -n/--name, -c/--cron, -z/--timezone, -t/--type, -r/--role, -p/--prompt, --command, and -o/--overlap flags
 
   Scenario: CLI registers an agent schedule and delegates to the same fspec_core function as the dispatcher
@@ -25,4 +25,4 @@ Feature: Add schedule CLI subcommand
     When I run `fspec add-schedule -n nightly-review -c "0 2 * * *" -z UTC -t agent -r "Security reviewer" -p "Review src/"` from a shell against that project root
     Then the command exits 0
     Then spec/schedules.json contains a schedule named 'nightly-review' with jobType='agent'
-    Then the CLI bridge module codelet/fspec/src/add_schedule.rs contains NO validation, schedule-construction, or file-writing logic beyond JSON arg marshalling
+    Then the CLI bridge module rust/fspec/src/add_schedule.rs contains NO validation, schedule-construction, or file-writing logic beyond JSON arg marshalling

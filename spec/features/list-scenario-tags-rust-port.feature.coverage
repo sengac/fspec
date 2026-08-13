@@ -4,11 +4,11 @@
       "name": "Returns 'File not found' error when feature file does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "55-90",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 113,
                 114,
@@ -36,11 +36,11 @@
       "name": "Returns 'Invalid Gherkin syntax' error when feature file is malformed",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "83-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 141,
                 142,
@@ -59,11 +59,11 @@
       "name": "Returns 'Scenario not found' error when scenario name is absent",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "127-168",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 149,
                 150,
@@ -82,11 +82,11 @@
       "name": "Returns success with empty tags and sentinel message when scenario has no tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "149-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 145,
                 146,
@@ -104,11 +104,11 @@
       "name": "Returns tags array with leading '@' preserved when scenario has tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "191-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 143,
                 144,
@@ -148,11 +148,11 @@
       "name": "Only matches top-level Scenario keyword (Background and Rule:Scenario excluded)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "230-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 201,
                 202,
@@ -221,11 +221,11 @@
       "name": "showCategories enriches tags with category labels from spec/tags.json",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "260-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 151,
                 152,
@@ -251,11 +251,11 @@
       "name": "showCategories labels tags absent from the registry as 'Unknown'",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "307-352",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 152,
                 153,
@@ -275,11 +275,11 @@
       "name": "showCategories degrades gracefully when spec/tags.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "354-394",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 263,
                 264,
@@ -303,11 +303,11 @@
       "name": "showCategories degrades gracefully when spec/tags.json is invalid JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "396-435",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 263,
                 264,
@@ -331,11 +331,11 @@
       "name": "Excludes Scenarios nested inside Rule: blocks",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "451-479",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 270,
                 271,
@@ -373,11 +373,11 @@
       "name": "Excludes Scenario Outline keyword (only matches plain Scenario)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_scenario_tags.rs",
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
           "lines": "481-509",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_scenario_tags.rs",
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
                 279,
                 280,
@@ -400,10 +400,10 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_scenario_tags.rs"
+      "rust/fspec-core/tests/list_scenario_tags.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_scenario_tags.rs"
+      "rust/fspec-core/src/commands/list_scenario_tags.rs"
     ],
     "totalLinesCovered": 662
   }

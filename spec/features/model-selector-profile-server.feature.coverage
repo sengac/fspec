@@ -4,11 +4,11 @@
       "name": "A cloud provider reports no profile and is reachable",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "248-262",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 25,
                 26,
@@ -35,11 +35,11 @@
       "name": "A reachable local-server profile is reported as a profile section",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "265-282",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 48,
                 49,
@@ -70,11 +70,11 @@
       "name": "An unreachable local-server profile with no custom models is marked unreachable",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "285-312",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 48,
                 49,
@@ -105,11 +105,11 @@
       "name": "A failed-probe profile with custom models is not marked unreachable",
       "testMappings": [
         {
-          "file": "codelet/sessions/src/profile_sections.rs",
+          "file": "rust/sessions/src/profile_sections.rs",
           "lines": "315-334",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
                 48,
                 49,
@@ -142,10 +142,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections.rs"
     ],
     "totalLinesCovered": 153
   }

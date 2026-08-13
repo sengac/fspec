@@ -4,11 +4,11 @@
       "name": "session_manager_handle.rs use-block does not import NotificationSeverity",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
+          "file": "rust/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
           "lines": "120-170",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 29,
                 30,
@@ -30,11 +30,11 @@
       "name": "cargo clippy on codelet-core emits no unused_imports diagnostic against session_manager_handle.rs",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
+          "file": "rust/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
           "lines": "224-261",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 29,
                 30,
@@ -56,11 +56,11 @@
       "name": "codelet-core skeleton-invariants workspace-lint precondition: codelet-core itself passes -D warnings",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
+          "file": "rust/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
           "lines": "311-376",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 29,
                 30,
@@ -82,11 +82,11 @@
       "name": "Source-shape regression test pins the absence of unused NotificationSeverity import",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
+          "file": "rust/sessions/tests/rpc076_session_manager_handle_imports_shape.rs",
           "lines": "180-212",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 29,
                 30,
@@ -110,10 +110,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc076_session_manager_handle_imports_shape.rs"
+      "rust/sessions/tests/rpc076_session_manager_handle_imports_shape.rs"
     ],
     "implFiles": [
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 228
   }

@@ -4,11 +4,11 @@
       "name": "MessageEnvelope round-trips with byte-identical JSON from codelet-core",
       "testMappings": [
         {
-          "file": "codelet/core/tests/message_envelope_lifted_test.rs",
+          "file": "rust/core/tests/message_envelope_lifted_test.rs",
           "lines": "22-67",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/message_envelope.rs",
+              "file": "rust/core/src/persistence/message_envelope.rs",
               "lines": [
                 1,
                 2,
@@ -759,11 +759,11 @@
       "name": "codelet-core consumers can import MessageEnvelope without depending on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/core/tests/message_envelope_lifted_test.rs",
+          "file": "rust/core/tests/message_envelope_lifted_test.rs",
           "lines": "73-116",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/mod.rs",
+              "file": "rust/core/src/persistence/mod.rs",
               "lines": [
                 14,
                 15,
@@ -783,11 +783,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/message_envelope_lifted_test.rs"
+      "rust/core/tests/message_envelope_lifted_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/message_envelope.rs",
-      "codelet/core/src/persistence/mod.rs"
+      "rust/core/src/persistence/message_envelope.rs",
+      "rust/core/src/persistence/mod.rs"
     ],
     "totalLinesCovered": 835
   }

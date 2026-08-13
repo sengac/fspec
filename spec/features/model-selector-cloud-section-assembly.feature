@@ -7,7 +7,7 @@
 Feature: Cloud section assembly drops empty cloud sections (TS parity)
   """
   PROV-127 unit layer for the section-assembly rule. The pure helper
-  codelet/sessions/src/profile_sections.rs::retain_populated_cloud_sections
+  rust/sessions/src/profile_sections.rs::retain_populated_cloud_sections
   drops cloud sections (profile_name == None) whose model list is empty, while
   never dropping local-server profile sections (profile_name == Some). Mirrors
   TS cloudSectionBuilder.ts filter(s => s.hasCredentials) +

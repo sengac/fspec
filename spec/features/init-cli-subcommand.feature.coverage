@@ -4,11 +4,11 @@
       "name": "Clap exposes init as a subcommand and prints --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "44-70",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 43,
                 44,
@@ -58,11 +58,11 @@
       "name": "CLI installs the claude agent and prints the success summary",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "72-112",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 43,
                 44,
@@ -112,11 +112,11 @@
       "name": "CLI installs multiple agents from repeated --agent flags",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "114-137",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 43,
                 44,
@@ -166,11 +166,11 @@
       "name": "CLI without --agent fails because the shell is non-TTY",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "139-155",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 73,
                 74,
@@ -188,11 +188,11 @@
       "name": "CLI rejects an unknown agent id",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "157-173",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 73,
                 74,
@@ -210,11 +210,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "175-216",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/init.rs",
+              "file": "rust/fspec/src/init.rs",
               "lines": [
                 43,
                 44,
@@ -264,11 +264,11 @@
       "name": "init --help is byte-for-byte identical to the TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_init.rs",
+          "file": "rust/fspec/tests/cli_init.rs",
           "lines": "220-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/init.rs",
+              "file": "rust/fspec-core/src/help/configs/init.rs",
               "lines": [
                 74,
                 75,
@@ -300,11 +300,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_init.rs"
+      "rust/fspec/tests/cli_init.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/init.rs",
-      "codelet/fspec-core/src/help/configs/init.rs"
+      "rust/fspec/src/init.rs",
+      "rust/fspec-core/src/help/configs/init.rs"
     ],
     "totalLinesCovered": 375
   }

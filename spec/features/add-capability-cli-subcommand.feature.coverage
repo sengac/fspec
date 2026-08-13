@@ -4,11 +4,11 @@
       "name": "Clap exposes add-capability with two positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "78-116",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -97,11 +97,11 @@
       "name": "CLI adds a capability and prints the success block on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "118-158",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -190,11 +190,11 @@
       "name": "CLI writes to the draft and reports the draft file name",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "160-191",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -283,11 +283,11 @@
       "name": "CLI prints the placeholder-removal line when only placeholders existed",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "193-227",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -376,11 +376,11 @@
       "name": "CLI fails with exit 1 when foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "229-252",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -469,11 +469,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "254-307",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -562,11 +562,11 @@
       "name": "add-capability --help is byte-for-byte identical to the captured fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_capability.rs",
+          "file": "rust/fspec/tests/cli_add_capability.rs",
           "lines": "309-330",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_capability.rs",
+              "file": "rust/fspec/src/add_capability.rs",
               "lines": [
                 1,
                 2,
@@ -657,10 +657,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_capability.rs"
+      "rust/fspec/tests/cli_add_capability.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_capability.rs"
+      "rust/fspec/src/add_capability.rs"
     ],
     "totalLinesCovered": 786
   }

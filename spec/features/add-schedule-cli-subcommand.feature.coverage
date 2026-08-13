@@ -4,11 +4,11 @@
       "name": "add-schedule --help is byte-for-byte identical to the TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_schedule.rs",
+          "file": "rust/fspec/tests/cli_add_schedule.rs",
           "lines": "60-109",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_schedule.rs",
+              "file": "rust/fspec-core/src/help/configs/add_schedule.rs",
               "lines": [
                 1,
                 2,
@@ -170,11 +170,11 @@
       "name": "CLI registers an agent schedule and delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_schedule.rs",
+          "file": "rust/fspec/tests/cli_add_schedule.rs",
           "lines": "112-171",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_schedule.rs",
+              "file": "rust/fspec/src/add_schedule.rs",
               "lines": [
                 1,
                 2,
@@ -295,11 +295,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_schedule.rs"
+      "rust/fspec/tests/cli_add_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_schedule.rs",
-      "codelet/fspec/src/add_schedule.rs"
+      "rust/fspec-core/src/help/configs/add_schedule.rs",
+      "rust/fspec/src/add_schedule.rs"
     ],
     "totalLinesCovered": 367
   }

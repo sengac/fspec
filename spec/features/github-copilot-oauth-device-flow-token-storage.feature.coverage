@@ -4,11 +4,11 @@
       "name": "Login to github.com Copilot deployment via OAuth device flow",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_oauth_device_flow_test.rs",
+          "file": "rust/providers/tests/copilot_oauth_device_flow_test.rs",
           "lines": "33-142",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/oauth.rs",
+              "file": "rust/providers/src/copilot/oauth.rs",
               "lines": [
                 324,
                 325,
@@ -62,7 +62,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/auth.rs",
+              "file": "rust/providers/src/copilot/auth.rs",
               "lines": [
                 90,
                 91,
@@ -96,11 +96,11 @@
       "name": "Login to GitHub Enterprise Copilot deployment with normalized enterprise URL",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_oauth_device_flow_test.rs",
+          "file": "rust/providers/tests/copilot_oauth_device_flow_test.rs",
           "lines": "150-220",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/oauth.rs",
+              "file": "rust/providers/src/copilot/oauth.rs",
               "lines": [
                 324,
                 325,
@@ -161,11 +161,11 @@
       "name": "Polling loop handles authorization_pending by sleeping interval plus 3 second safety margin",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_oauth_device_flow_test.rs",
+          "file": "rust/providers/tests/copilot_oauth_device_flow_test.rs",
           "lines": "229-302",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/oauth.rs",
+              "file": "rust/providers/src/copilot/oauth.rs",
               "lines": [
                 197,
                 198,
@@ -302,11 +302,11 @@
       "name": "Polling loop handles slow_down by increasing interval per RFC 8628 §3.5",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_oauth_device_flow_test.rs",
+          "file": "rust/providers/tests/copilot_oauth_device_flow_test.rs",
           "lines": "310-383",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/oauth.rs",
+              "file": "rust/providers/src/copilot/oauth.rs",
               "lines": [
                 197,
                 198,
@@ -443,11 +443,11 @@
       "name": "Logout deletes the github-copilot credential file",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_oauth_device_flow_test.rs",
+          "file": "rust/providers/tests/copilot_oauth_device_flow_test.rs",
           "lines": "391-430",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/auth.rs",
+              "file": "rust/providers/src/copilot/auth.rs",
               "lines": [
                 116,
                 117,
@@ -471,12 +471,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/copilot_oauth_device_flow_test.rs",
+      "rust/providers/tests/copilot_oauth_device_flow_test.rs",
       "src/tui/__tests__/provider-settings-github-copilot.test.ts"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/oauth.rs",
-      "codelet/providers/src/copilot/auth.rs"
+      "rust/providers/src/copilot/oauth.rs",
+      "rust/providers/src/copilot/auth.rs"
     ],
     "totalLinesCovered": 1037
   }

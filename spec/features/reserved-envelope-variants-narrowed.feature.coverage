@@ -4,11 +4,11 @@
       "name": "Reserved envelope variants are still rejected after WorkUnitsUpdate is implemented",
       "testMappings": [
         {
-          "file": "codelet/rpc-server/tests/ws_reserved_variants_after_rpc006.rs",
+          "file": "rust/rpc-server/tests/ws_reserved_variants_after_rpc006.rs",
           "lines": "25-81",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/pump.rs",
+              "file": "rust/rpc-server/src/pump.rs",
               "lines": [
                 50,
                 51,
@@ -42,10 +42,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-server/tests/ws_reserved_variants_after_rpc006.rs"
+      "rust/rpc-server/tests/ws_reserved_variants_after_rpc006.rs"
     ],
     "implFiles": [
-      "codelet/rpc-server/src/pump.rs"
+      "rust/rpc-server/src/pump.rs"
     ],
     "totalLinesCovered": 77
   }

@@ -4,11 +4,11 @@
       "name": "Selecting a model with no active session sets the default model",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov118_no_session_default_model.rs",
+          "file": "rust/fspec-tui/tests/prov118_no_session_default_model.rs",
           "lines": "47-88",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 66,
                 67,
@@ -65,11 +65,11 @@
       "name": "Selecting a model with an active session updates the live session unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov118_no_session_default_model.rs",
+          "file": "rust/fspec-tui/tests/prov118_no_session_default_model.rs",
           "lines": "90-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 111,
                 112,
@@ -123,10 +123,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov118_no_session_default_model.rs"
+      "rust/fspec-tui/tests/prov118_no_session_default_model.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs"
+      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs"
     ],
     "totalLinesCovered": 164
   }

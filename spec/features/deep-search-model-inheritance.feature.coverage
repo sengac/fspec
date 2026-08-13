@@ -4,11 +4,11 @@
       "name": "Sub-agent inherits Claude provider and model from parent session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "801-860",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 57,
                 58,
@@ -57,11 +57,11 @@
       "name": "Sub-agent inherits OpenAI provider and model from parent session",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "866-926",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 5386,
                 5387,
@@ -96,11 +96,11 @@
       "name": "Sub-agent uses with_provider_and_model instead of with_model_support",
       "testMappings": [
         {
-          "file": "codelet/tools/src/deep_search/tests.rs",
+          "file": "rust/tools/src/deep_search/tests.rs",
           "lines": "901-966",
           "implMappings": [
             {
-              "file": "codelet/napi/src/deep_search_handler.rs",
+              "file": "rust/napi/src/deep_search_handler.rs",
               "lines": [
                 130,
                 131,
@@ -163,11 +163,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 60,
     "testFiles": [
-      "codelet/tools/src/deep_search/tests.rs"
+      "rust/tools/src/deep_search/tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/deep_search_handler.rs",
-      "codelet/napi/src/session_manager.rs"
+      "rust/napi/src/deep_search_handler.rs",
+      "rust/napi/src/session_manager.rs"
     ],
     "totalLinesCovered": 288
   }

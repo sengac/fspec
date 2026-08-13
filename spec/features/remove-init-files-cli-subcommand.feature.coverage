@@ -4,11 +4,11 @@
       "name": "Clap exposes remove-init-files as a subcommand and prints --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "file": "rust/fspec/tests/cli_remove_init_files.rs",
           "lines": "64-89",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_init_files.rs",
+              "file": "rust/fspec/src/remove_init_files.rs",
               "lines": [
                 43,
                 44,
@@ -49,11 +49,11 @@
       "name": "CLI removes claude agent files and prints the success summary",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "file": "rust/fspec/tests/cli_remove_init_files.rs",
           "lines": "91-117",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_init_files.rs",
+              "file": "rust/fspec/src/remove_init_files.rs",
               "lines": [
                 52,
                 53,
@@ -78,11 +78,11 @@
       "name": "CLI --keep-config preserves spec/fspec-config.json",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "file": "rust/fspec/tests/cli_remove_init_files.rs",
           "lines": "119-136",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_init_files.rs",
+              "file": "rust/fspec/src/remove_init_files.rs",
               "lines": [
                 46,
                 47,
@@ -99,11 +99,11 @@
       "name": "CLI exits 1 when no agent installation is detected",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "file": "rust/fspec/tests/cli_remove_init_files.rs",
           "lines": "138-154",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_init_files.rs",
+              "file": "rust/fspec/src/remove_init_files.rs",
               "lines": [
                 66,
                 67,
@@ -119,11 +119,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "file": "rust/fspec/tests/cli_remove_init_files.rs",
           "lines": "156-203",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_init_files.rs",
+              "file": "rust/fspec/src/remove_init_files.rs",
               "lines": [
                 43,
                 44,
@@ -164,11 +164,11 @@
       "name": "remove-init-files --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "file": "rust/fspec/tests/cli_remove_init_files.rs",
           "lines": "207-231",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_init_files.rs",
+              "file": "rust/fspec/src/remove_init_files.rs",
               "lines": [
                 31,
                 32,
@@ -223,10 +223,10 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_init_files.rs"
+      "rust/fspec/tests/cli_remove_init_files.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_init_files.rs"
+      "rust/fspec/src/remove_init_files.rs"
     ],
     "totalLinesCovered": 282
   }

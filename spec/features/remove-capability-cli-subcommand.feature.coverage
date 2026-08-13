@@ -4,11 +4,11 @@
       "name": "Clap exposes remove-capability with one positional arg in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "70-102",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -80,11 +80,11 @@
       "name": "CLI removes a capability and prints the success line on stdout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "104-137",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -156,11 +156,11 @@
       "name": "CLI prints the no-capabilities detail line and exits 1 when none exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "139-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -232,11 +232,11 @@
       "name": "CLI lists available capabilities and exits 1 when the name is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "168-201",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -308,11 +308,11 @@
       "name": "CLI fails with exit 1 when foundation.json is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "203-226",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -384,11 +384,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "228-286",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -460,11 +460,11 @@
       "name": "remove-capability --help is byte-for-byte identical to the captured fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_capability.rs",
+          "file": "rust/fspec/tests/cli_remove_capability.rs",
           "lines": "288-309",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_capability.rs",
+              "file": "rust/fspec/src/remove_capability.rs",
               "lines": [
                 1,
                 2,
@@ -538,10 +538,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_capability.rs"
+      "rust/fspec/tests/cli_remove_capability.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_capability.rs"
+      "rust/fspec/src/remove_capability.rs"
     ],
     "totalLinesCovered": 654
   }

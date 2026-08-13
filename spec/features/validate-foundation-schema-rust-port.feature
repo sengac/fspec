@@ -5,7 +5,7 @@
 @RPC-321
 Feature: Port validate-foundation-schema command to Rust
   """
-  Reuse the existing native validator at codelet/fspec-core/src/generators/foundation_schema.rs (validate_foundation + SchemaError) which already mirrors the Ajv draft-07 subset against the bundled generic-foundation.schema.json — do NOT add a JSON-schema crate. The TS minItems special-case (instancePath stripped of leading '/' and '/' → '.') must be applied in the command layer, NOT in the shared validator, because validate_foundation/format_errors produce the generic 'instancePath: message' form used by generate-foundation-md.
+  Reuse the existing native validator at rust/fspec-core/src/generators/foundation_schema.rs (validate_foundation + SchemaError) which already mirrors the Ajv draft-07 subset against the bundled generic-foundation.schema.json — do NOT add a JSON-schema crate. The TS minItems special-case (instancePath stripped of leading '/' and '/' → '.') must be applied in the command layer, NOT in the shared validator, because validate_foundation/format_errors produce the generic 'instancePath: message' form used by generate-foundation-md.
   minItems parity detail: the native validator emits message 'must NOT have fewer than <limit> items' (Ajv standard) but the TS validate-foundation-schema command formats minItems errors as 'Field <dotted.path> must have at least <limit> items (found <n>)'. SchemaError carries instance_path + message only (no params.limit, no data.length). The command layer must (a) detect the message prefix 'must NOT have fewer than ', (b) parse the <limit> from it, (c) re-fetch the actual array length by re-reading the offending node from the parsed foundation via instance_path, OR re-implement a small minItems-aware error mapper. Decision: parse limit from the message and resolve the actual array length by walking the parsed JSON along instance_path — keeps the shared validator untouched.
   """
 
@@ -29,9 +29,9 @@ Feature: Port validate-foundation-schema command to Rust
   #   3. Dispatch against a tempdir whose foundation.json has solutionSpace.capabilities=[] (empty) → returns success=false with error 'Field solutionSpace.capabilities must have at least 1 items (found 0)' (minItems special-case rendering)
   #   4. Dispatch against a tempdir whose foundation.json is missing the required 'solutionSpace' property → returns success=false with error '#/required: must have required property \'solutionSpace\'' (TS Ajv renders root-level required errors via instancePath||schemaPath, and instancePath is "" at root so it falls back to schemaPath '#/required' — captured byte-exact from node dist/index.js)
   #   5. Dispatch against a tempdir whose spec/foundation.json contains the malformed bytes '{ not json' → returns success=false with error beginning 'Failed to validate foundation schema:'
-  #   6. Running `./codelet/target/release/fspec validate-foundation-schema` in a directory with a valid foundation.json prints '✓ foundation.json is valid according to the schema' to stdout and exits 0
-  #   7. Running `./codelet/target/release/fspec validate-foundation-schema` in a directory with NO foundation.json prints 'Error: foundation.json not found in spec/ directory' to stderr and exits 1
-  #   8. Running `./codelet/target/release/fspec validate-foundation-schema --help` prints the formatted help block (header VALIDATE-FOUNDATION-SCHEMA, description, USAGE, EXAMPLES, RELATED COMMANDS, NOTES) byte-identical to the TS fixture and exits 0
+  #   6. Running `./rust/target/release/fspec validate-foundation-schema` in a directory with a valid foundation.json prints '✓ foundation.json is valid according to the schema' to stdout and exits 0
+  #   7. Running `./rust/target/release/fspec validate-foundation-schema` in a directory with NO foundation.json prints 'Error: foundation.json not found in spec/ directory' to stderr and exits 1
+  #   8. Running `./rust/target/release/fspec validate-foundation-schema --help` prints the formatted help block (header VALIDATE-FOUNDATION-SCHEMA, description, USAGE, EXAMPLES, RELATED COMMANDS, NOTES) byte-identical to the TS fixture and exits 0
   #
   # ========================================
   Background: User Story

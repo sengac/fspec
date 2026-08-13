@@ -19,7 +19,7 @@ Feature: RPC-012 source-shape invariants — no Mutex/RwLock/atomics/transport i
     So that future refactors cannot accidentally introduce hidden interior mutability or transport-layer coupling on the UI-side state
 
   Scenario: Source-shape regression forbids Mutex/RwLock/atomics in store/
-    Given the directory codelet/fspec-tui/src/store/
+    Given the directory rust/fspec-tui/src/store/
     When the test scans every .rs file under that directory
     Then no file contains "std::sync::Mutex"
     And no file contains "tokio::sync::Mutex"
@@ -30,15 +30,15 @@ Feature: RPC-012 source-shape invariants — no Mutex/RwLock/atomics/transport i
     And no file contains "tokio::runtime::Runtime::new"
 
   Scenario: Source-shape regression forbids transport-layer imports in store/
-    Given the directory codelet/fspec-tui/src/store/
+    Given the directory rust/fspec-tui/src/store/
     When the test scans every .rs file under that directory
     Then no file contains the import "codelet_napi::"
     And no file contains the import "codelet_core::"
     And no file contains the import "tarpc::"
     And no file contains the import "tokio_tungstenite::"
 
-  Scenario: Every file under codelet/fspec-tui/src/ is under 300 LoC
-    Given the directory codelet/fspec-tui/src/
+  Scenario: Every file under rust/fspec-tui/src/ is under 300 LoC
+    Given the directory rust/fspec-tui/src/
     When the test counts the line-count of every .rs file under that directory
     Then store/board.rs has fewer than 300 lines
     And store/agent_view.rs has fewer than 300 lines

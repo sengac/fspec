@@ -4,11 +4,11 @@
       "name": "Render a markdown attachment as an HTML page",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "30-63",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/handlers/view.rs",
+              "file": "rust/attachment-viewer/src/handlers/view.rs",
               "lines": [
                 98,
                 99,
@@ -39,11 +39,11 @@
       "name": "Render mermaid code blocks for client-side rendering",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "65-90",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
                 1,
                 2,
@@ -138,11 +138,11 @@
       "name": "Serve a binary image attachment raw with the correct content-type",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "92-121",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/handlers/view.rs",
+              "file": "rust/attachment-viewer/src/handlers/view.rs",
               "lines": [
                 73,
                 74,
@@ -169,11 +169,11 @@
       "name": "Block directory traversal outside the project directory",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "123-161",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/handlers/path.rs",
+              "file": "rust/attachment-viewer/src/handlers/path.rs",
               "lines": [
                 1,
                 2,
@@ -236,11 +236,11 @@
       "name": "Return not found for a missing file",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "163-176",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/handlers/view.rs",
+              "file": "rust/attachment-viewer/src/handlers/view.rs",
               "lines": [
                 89,
                 90,
@@ -260,11 +260,11 @@
       "name": "Report health",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "178-195",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/handlers/health.rs",
+              "file": "rust/attachment-viewer/src/handlers/health.rs",
               "lines": [
                 1,
                 2,
@@ -282,11 +282,11 @@
       "name": "Start on a random local port and stop cleanly",
       "testMappings": [
         {
-          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "file": "rust/attachment-viewer/tests/viewer_server.rs",
           "lines": "197-226",
           "implMappings": [
             {
-              "file": "codelet/attachment-viewer/src/lib.rs",
+              "file": "rust/attachment-viewer/src/lib.rs",
               "lines": [
                 1,
                 2,
@@ -384,14 +384,14 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/attachment-viewer/tests/viewer_server.rs"
+      "rust/attachment-viewer/tests/viewer_server.rs"
     ],
     "implFiles": [
-      "codelet/attachment-viewer/src/handlers/view.rs",
-      "codelet/attachment-viewer/src/markdown/render.rs",
-      "codelet/attachment-viewer/src/handlers/path.rs",
-      "codelet/attachment-viewer/src/handlers/health.rs",
-      "codelet/attachment-viewer/src/lib.rs"
+      "rust/attachment-viewer/src/handlers/view.rs",
+      "rust/attachment-viewer/src/markdown/render.rs",
+      "rust/attachment-viewer/src/handlers/path.rs",
+      "rust/attachment-viewer/src/handlers/health.rs",
+      "rust/attachment-viewer/src/lib.rs"
     ],
     "totalLinesCovered": 457
   }

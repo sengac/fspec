@@ -4,11 +4,11 @@
       "name": "Down arrow that moves focus clears the inline test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "62-80",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 78,
                 79,
@@ -30,11 +30,11 @@
       "name": "Up arrow that moves focus clears the inline test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "86-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 65,
                 66,
@@ -59,11 +59,11 @@
       "name": "Up arrow at index 0 does not clear test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "114-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 65,
                 66,
@@ -88,11 +88,11 @@
       "name": "Down arrow at last visible row does not clear test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "140-162",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 78,
                 79,
@@ -114,11 +114,11 @@
       "name": "Enter on a Provider row toggles expansion and preserves test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "168-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 88,
                 89,
@@ -165,11 +165,11 @@
       "name": "Tab in list mode emits SwitchToModels and preserves test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "195-212",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 64
               ]
@@ -182,11 +182,11 @@
       "name": "Slash activates filter mode and preserves test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "218-235",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 53,
                 54,
@@ -202,11 +202,11 @@
       "name": "Up arrow while filter_mode is true does not enter the list-mode clear path",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "241-262",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 34,
                 35,
@@ -221,11 +221,11 @@
       "name": "Down arrow that moves focus with test_result already None remains None",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "268-285",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 78,
                 79,
@@ -247,11 +247,11 @@
       "name": "Up or Down arrow with zero visible providers does not clear test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "291-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 65,
                 66,
@@ -286,11 +286,11 @@
       "name": "Down arrow that scrolls and moves focus both adjusts scroll and clears test_result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs",
           "lines": "328-354",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 78,
                 79,
@@ -314,10 +314,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs"
+      "rust/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 375
   }

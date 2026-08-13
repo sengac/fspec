@@ -4,11 +4,11 @@
       "name": "Per-session abort isolation — abort affects only the targeted session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_abort_session_isolation_test.rs",
+          "file": "rust/tools/tests/bash_abort_session_isolation_test.rs",
           "lines": "19-41",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 36,
                 37,
@@ -51,11 +51,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_abort_session_isolation_test.rs",
+          "file": "rust/tools/tests/bash_abort_session_isolation_test.rs",
           "lines": "19-41",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_abort.rs",
+              "file": "rust/tools/src/bash_abort.rs",
               "lines": [
                 1,
                 2,
@@ -112,11 +112,11 @@
       "name": "Clearing abort for one session does not affect another session",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_abort_session_isolation_test.rs",
+          "file": "rust/tools/tests/bash_abort_session_isolation_test.rs",
           "lines": "47-73",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 36,
                 37,
@@ -159,11 +159,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_abort_session_isolation_test.rs",
+          "file": "rust/tools/tests/bash_abort_session_isolation_test.rs",
           "lines": "47-73",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_abort.rs",
+              "file": "rust/tools/src/bash_abort.rs",
               "lines": [
                 1,
                 2,
@@ -220,11 +220,11 @@
       "name": "Checking abort for an unknown session returns false without error",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/bash_abort_session_isolation_test.rs",
+          "file": "rust/tools/tests/bash_abort_session_isolation_test.rs",
           "lines": "79-93",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash.rs",
+              "file": "rust/tools/src/bash.rs",
               "lines": [
                 36,
                 37,
@@ -267,11 +267,11 @@
           ]
         },
         {
-          "file": "codelet/tools/tests/bash_abort_session_isolation_test.rs",
+          "file": "rust/tools/tests/bash_abort_session_isolation_test.rs",
           "lines": "79-93",
           "implMappings": [
             {
-              "file": "codelet/tools/src/bash_abort.rs",
+              "file": "rust/tools/src/bash_abort.rs",
               "lines": [
                 1,
                 2,
@@ -330,11 +330,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/bash_abort_session_isolation_test.rs"
+      "rust/tools/tests/bash_abort_session_isolation_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/bash.rs",
-      "codelet/tools/src/bash_abort.rs"
+      "rust/tools/src/bash.rs",
+      "rust/tools/src/bash_abort.rs"
     ],
     "totalLinesCovered": 373
   }

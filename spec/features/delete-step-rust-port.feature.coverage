@@ -4,11 +4,11 @@
       "name": "Dispatcher deletes a step matched by full step text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_step.rs",
+          "file": "rust/fspec-core/tests/delete_step.rs",
           "lines": "55-86",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_step.rs",
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -229,11 +229,11 @@
       "name": "Dispatcher deletes a step matched by bare text without keyword",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_step.rs",
+          "file": "rust/fspec-core/tests/delete_step.rs",
           "lines": "92-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_step.rs",
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -454,11 +454,11 @@
       "name": "Dispatcher reports a missing step",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_step.rs",
+          "file": "rust/fspec-core/tests/delete_step.rs",
           "lines": "123-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_step.rs",
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -679,11 +679,11 @@
       "name": "Dispatcher reports a missing scenario",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_step.rs",
+          "file": "rust/fspec-core/tests/delete_step.rs",
           "lines": "155-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_step.rs",
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
               "lines": [
                 1,
                 2,
@@ -906,10 +906,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_step.rs"
+      "rust/fspec-core/tests/delete_step.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_step.rs"
+      "rust/fspec-core/src/commands/delete_step.rs"
     ],
     "totalLinesCovered": 948
   }

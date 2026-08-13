@@ -4,11 +4,11 @@
       "name": "User config profile is loaded and formatted as name then arrow then baseUrl",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "53-74",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 70,
                 71,
@@ -37,11 +37,11 @@
       "name": "Project profile overrides user profile by name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "80-101",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 26,
                 27,
@@ -86,11 +86,11 @@
       "name": "User and project profiles are merged and sorted by name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "107-134",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 70,
                 71,
@@ -119,11 +119,11 @@
       "name": "Profile without a baseUrl renders as just the name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "140-157",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 60,
                 61,
@@ -142,11 +142,11 @@
       "name": "Missing config files yield no profiles",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "163-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 29,
                 30,
@@ -162,11 +162,11 @@
       "name": "Malformed JSON yields no profiles without panicking",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "182-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
                 37,
                 38,
@@ -182,11 +182,11 @@
       "name": "A loaded profile renders as a Profile row above Add Profile in the OpenAI nav tree",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
+          "file": "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs",
           "lines": "202-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 69,
                 70,
@@ -212,11 +212,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs"
+      "rust/fspec-tui/tests/prov_100_openai_profiles_from_config_test.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
-      "codelet/fspec-tui/src/app/dispatch_provider_settings.rs"
+      "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings.rs"
     ],
     "totalLinesCovered": 252
   }

@@ -4,11 +4,11 @@
       "name": "HelpDialog renders via the tui-popup adapter at Priority::Critical",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+          "file": "rust/fspec-tui/src/components/help_dialog.rs",
           "lines": "142-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 73,
                 74,
@@ -62,11 +62,11 @@
       "name": "HelpDialog static body lists exactly the '?', ESC, and 'q' keybindings",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+          "file": "rust/fspec-tui/src/components/help_dialog.rs",
           "lines": "180-210",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 17,
                 18,
@@ -176,11 +176,11 @@
       "name": "HelpDialog rendering is byte-equal across runs (insta snapshot)",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+          "file": "rust/fspec-tui/src/components/help_dialog.rs",
           "lines": "215-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 73,
                 74,
@@ -236,10 +236,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/components/help_dialog.rs"
+      "rust/fspec-tui/src/components/help_dialog.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/help_dialog.rs"
+      "rust/fspec-tui/src/components/help_dialog.rs"
     ],
     "totalLinesCovered": 266
   }

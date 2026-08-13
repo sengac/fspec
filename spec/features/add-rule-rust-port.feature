@@ -2,7 +2,7 @@
 @RPC-189
 Feature: Port add-rule command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),
+  Core impl at rust/fspec-core/src/commands/add_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),
   io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps). RuleItem and nextRuleId live
   in WorkUnit.extra (round-tripped via #[serde(flatten)]). Two-front-doors: bridge marshals JSON {workUnitId, rule} only.
   """

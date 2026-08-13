@@ -4,11 +4,11 @@
       "name": "Anthropic browser login shows the waiting screen and connects on success",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "184-250",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 113,
                 114,
@@ -65,11 +65,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "184-250",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/oauth_login.rs",
+              "file": "rust/rpc/src/oauth_login.rs",
               "lines": [
                 41,
                 42,
@@ -93,11 +93,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "277-355",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 243,
                 244,
@@ -132,11 +132,11 @@
       "name": "Anthropic headless code entry submits the pasted code and connects",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "253-342",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 164,
                 165,
@@ -222,11 +222,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "253-342",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/oauth_login.rs",
+              "file": "rust/rpc/src/oauth_login.rs",
               "lines": [
                 58,
                 59,
@@ -287,11 +287,11 @@
       "name": "In headless code entry c copies the URL only while the input is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "349-407",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_login.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
               "lines": [
                 115,
                 116,
@@ -354,11 +354,11 @@
       "name": "Codex headless enters device-waiting and connects when authorized elsewhere",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "455-540",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 185,
                 186,
@@ -399,11 +399,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "455-540",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/oauth_login.rs",
+              "file": "rust/rpc/src/oauth_login.rs",
               "lines": [
                 107,
                 108,
@@ -459,11 +459,11 @@
       "name": "A failed codex browser login shows the error screen and retries on Enter",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "549-651",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_login.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
               "lines": [
                 81,
                 82,
@@ -496,11 +496,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "549-651",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 269,
                 270,
@@ -540,11 +540,11 @@
       "name": "Cancelling codex device-waiting drops a late poll result",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "660-714",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/oauth_login.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
               "lines": [
                 91,
                 92,
@@ -560,11 +560,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "660-714",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
               "lines": [
                 243,
                 244,
@@ -611,11 +611,11 @@
       "name": "Browser login rows are gated to the embedded transport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "724-810",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
                 122,
                 123,
@@ -641,11 +641,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs",
           "lines": "724-810",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 24,
                 25,
@@ -669,14 +669,14 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_oauth_login_prov113.rs"
+      "rust/fspec-tui/tests/provider_settings_oauth_login_prov113.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
-      "codelet/rpc/src/oauth_login.rs",
-      "codelet/fspec-tui/src/views/provider_settings/oauth_login.rs",
-      "codelet/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
-      "codelet/fspec-tui/src/app/dispatch_provider_settings.rs"
+      "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+      "rust/rpc/src/oauth_login.rs",
+      "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings.rs"
     ],
     "totalLinesCovered": 1588
   }

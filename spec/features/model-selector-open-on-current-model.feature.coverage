@@ -4,11 +4,11 @@
       "name": "Cursor lands on the current model when it is loaded",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "837-859",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 92,
                 93,
@@ -36,11 +36,11 @@
       "name": "Cursor falls back to the first selectable row when no current model is set",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "860-877",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 92,
                 93,
@@ -68,11 +68,11 @@
       "name": "Cursor falls back to the first selectable row when the current model is not found",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "878-895",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
                 131,
                 132,
@@ -100,11 +100,11 @@
       "name": "Seeded cursor on a below-the-fold model is scrolled into view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
           "lines": "896-916",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
                 98,
                 99,
@@ -128,11 +128,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/mod.rs",
-      "codelet/fspec-tui/src/views/model_selector/rows.rs"
+      "rust/fspec-tui/src/views/model_selector/mod.rs",
+      "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
     "totalLinesCovered": 138
   }

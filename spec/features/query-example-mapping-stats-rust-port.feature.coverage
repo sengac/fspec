@@ -4,11 +4,11 @@
       "name": "Returns empty stats when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "287-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -19,11 +19,11 @@
       "name": "completenessScore is 100 when rules and examples are non-empty and questions is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "319-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -34,11 +34,11 @@
       "name": "completenessScore is 0 when only questions are present",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "345-357",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -49,11 +49,11 @@
       "name": "completenessScore is 66 with rules only and no questions",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "359-371",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -64,11 +64,11 @@
       "name": "completenessScore is 67 with examples only and no questions",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "373-385",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -79,11 +79,11 @@
       "name": "Aggregate counts and averages reflect every retained work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "387-420",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -94,11 +94,11 @@
       "name": "workUnitId filter narrows the result to a single work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "422-455",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -109,11 +109,11 @@
       "name": "workUnitId filter against a missing id surfaces a structured error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "457-481",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -124,11 +124,11 @@
       "name": "hasQuestions=true keeps only units with at least one question",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "483-505",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -139,21 +139,21 @@
       "name": "hasQuestions=false keeps only units with zero questions",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "507-529",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "507-529",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -164,11 +164,11 @@
       "name": "questionsFor='alice' keeps only units mentioning @alice in any question",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "531-553",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -179,11 +179,11 @@
       "name": "Result JSON field order matches the declared TS shape",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "555-580",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -194,11 +194,11 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "582-597",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -209,11 +209,11 @@
       "name": "Per-work-unit stats record carries the work-unit title and status verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
           "lines": "599-620",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/query_example_mapping_stats.rs",
+              "file": "rust/fspec-core/src/commands/query_example_mapping_stats.rs",
               "lines": "1-378"
             }
           ]
@@ -226,7 +226,7 @@
     "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_query_example_mapping_stats.rs"
+      "rust/fspec/tests/cli_query_example_mapping_stats.rs"
     ],
     "implFiles": [],
     "totalLinesCovered": 344

@@ -4,11 +4,11 @@
       "name": "Initialize Learnings graph database with schema",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_graph_data_model_test.rs",
+          "file": "rust/napi/tests/learnings_graph_data_model_test.rs",
           "lines": "64-137",
           "implMappings": [
             {
-              "file": "codelet/napi/schemas/learnings.pg",
+              "file": "rust/napi/schemas/learnings.pg",
               "lines": [
                 1,
                 2,
@@ -132,11 +132,11 @@
       "name": "Load batch of Learning and Exploration nodes via JSONL",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_graph_data_model_test.rs",
+          "file": "rust/napi/tests/learnings_graph_data_model_test.rs",
           "lines": "142-219",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 92,
                 93,
@@ -176,11 +176,11 @@
       "name": "Load relationship edges and traverse connections",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_graph_data_model_test.rs",
+          "file": "rust/napi/tests/learnings_graph_data_model_test.rs",
           "lines": "224-314",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/database.rs",
+              "file": "rust/napi/src/graph/database.rs",
               "lines": [
                 122,
                 123,
@@ -230,11 +230,11 @@
       "name": "Learnings graph registered as named instance in registry",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/learnings_graph_data_model_test.rs",
+          "file": "rust/napi/tests/learnings_graph_data_model_test.rs",
           "lines": "319-367",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/registry.rs",
+              "file": "rust/napi/src/graph/registry.rs",
               "lines": [
                 37,
                 38,
@@ -274,12 +274,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/learnings_graph_data_model_test.rs"
+      "rust/napi/tests/learnings_graph_data_model_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/schemas/learnings.pg",
-      "codelet/napi/src/graph/database.rs",
-      "codelet/napi/src/graph/registry.rs"
+      "rust/napi/schemas/learnings.pg",
+      "rust/napi/src/graph/database.rs",
+      "rust/napi/src/graph/registry.rs"
     ],
     "totalLinesCovered": 496
   }

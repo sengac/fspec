@@ -2,10 +2,10 @@
 @KGRAPH-054
 Feature: Fix AST extractor edge quality gaps — Python/Java/Go missing Imports edges, Go missing method-body Calls, Go missing TypeRef edges
   """
-  Uses tree-sitter AST queries in Rust extractors — each extractor is in codelet/napi/src/ast_{lang}_extractor.rs
+  Uses tree-sitter AST queries in Rust extractors — each extractor is in rust/napi/src/ast_{lang}_extractor.rs
   File→File Imports edges require resolving module/package names to actual file paths using the known_files list passed to each extractor
   PHP extractor (ast_php_extractor.rs) is the gold standard — all 3 edge types working. Use as reference pattern for fixes.
-  Tests in codelet/napi/tests/ast_dead_code_test.rs and language-specific extractor tests
+  Tests in rust/napi/tests/ast_dead_code_test.rs and language-specific extractor tests
   """
 
   # ========================================

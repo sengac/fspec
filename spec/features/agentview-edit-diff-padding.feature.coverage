@@ -4,11 +4,11 @@
       "name": "Removed line is padded to a full-width red bar",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "164-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 47,
                 48,
@@ -52,11 +52,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "168-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 47,
                 48,
@@ -105,11 +105,11 @@
       "name": "Added line is padded to a full-width green bar",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "182-199",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 47,
                 48,
@@ -153,11 +153,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "186-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 47,
                 48,
@@ -206,11 +206,11 @@
       "name": "Context line is not given a colored background bar",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "200-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 47,
                 48,
@@ -242,11 +242,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "204-221",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 47,
                 48,
@@ -283,11 +283,11 @@
       "name": "Gap-marker or plain line is unchanged",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "219-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 65,
                 66,
@@ -301,11 +301,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "223-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 65,
                 66,
@@ -324,11 +324,11 @@
       "name": "Content already at or over width is not padded or truncated",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "232-248",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 74,
                 75,
@@ -345,11 +345,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "236-252",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 74,
                 75,
@@ -371,11 +371,11 @@
       "name": "Zero width does not panic and pads non-negatively",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "250-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 74,
                 75,
@@ -392,11 +392,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "254-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 74,
                 75,
@@ -418,11 +418,11 @@
       "name": "Scrollback diff branch emits full-width bars",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "90-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 136,
                 137,
@@ -441,11 +441,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "110-154",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
                 136,
                 137,
@@ -469,11 +469,11 @@
       "name": "Modal diff rows emit full-width bars while non-diff rows do not",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "157-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
                 111,
                 112,
@@ -490,11 +490,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
           "lines": "281-347",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
                 111,
                 112,
@@ -518,12 +518,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs"
+      "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
-      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-      "codelet/fspec-tui/src/views/agent/turn_modal.rs"
+      "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "rust/fspec-tui/src/views/agent/turn_modal.rs"
     ],
     "totalLinesCovered": 710
   }

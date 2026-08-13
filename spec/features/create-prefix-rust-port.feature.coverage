@@ -4,11 +4,11 @@
       "name": "Successful registration creates spec/prefixes.json with the new entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "53-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 68,
                 69,
@@ -93,11 +93,11 @@
       "name": "Lowercase prefix is rejected before any file IO occurs",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "108-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -114,11 +114,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "108-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -140,11 +140,11 @@
       "name": "Prefix shorter than two characters is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "143-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -161,11 +161,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "143-166",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -187,11 +187,11 @@
       "name": "Prefix longer than six characters is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "168-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -208,11 +208,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "168-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -234,11 +234,11 @@
       "name": "Prefix containing digits is rejected",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "193-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 85,
                 86,
@@ -260,11 +260,11 @@
       "name": "Duplicate prefix is rejected and the existing file is left untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "218-247",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 100,
                 101,
@@ -284,11 +284,11 @@
       "name": "Appending a second prefix preserves insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "249-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 109,
                 110,
@@ -317,11 +317,11 @@
       "name": "Malformed prefixes.json escalates a structured parse error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "282-308",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 97,
                 98,
@@ -336,11 +336,11 @@
       "name": "Successful dispatcher path returns the canonical JSON shape",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "310-343",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 127,
                 128,
@@ -366,11 +366,11 @@
       "name": "Shared infrastructure is reused without duplication",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "file": "rust/fspec-core/tests/create_prefix.rs",
           "lines": "345-381",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
                 37,
                 38,
@@ -388,10 +388,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/create_prefix.rs"
+      "rust/fspec-core/tests/create_prefix.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/create_prefix.rs"
+      "rust/fspec-core/src/commands/create_prefix.rs"
     ],
     "totalLinesCovered": 673
   }

@@ -4,11 +4,11 @@
       "name": "Dry-run still writes the rebuilt states",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_repair_work_units.rs",
+          "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "71-96",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/repair_work_units.rs",
+              "file": "rust/fspec/src/repair_work_units.rs",
               "lines": [
                 53,
                 54,
@@ -48,11 +48,11 @@
       "name": "CLI repairs a corrupted file and reports the count",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_repair_work_units.rs",
+          "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "98-117",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/repair_work_units.rs",
+              "file": "rust/fspec/src/repair_work_units.rs",
               "lines": [
                 53,
                 54,
@@ -92,11 +92,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_repair_work_units.rs",
+          "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "119-150",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/repair_work_units.rs",
+              "file": "rust/fspec/src/repair_work_units.rs",
               "lines": [
                 53,
                 54,
@@ -136,11 +136,11 @@
       "name": "CLI help surface matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_repair_work_units.rs",
+          "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "152-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/repair_work_units.rs",
+              "file": "rust/fspec-core/src/help/configs/repair_work_units.rs",
               "lines": [
                 1,
                 2,
@@ -197,11 +197,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_repair_work_units.rs"
+      "rust/fspec/tests/cli_repair_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/repair_work_units.rs",
-      "codelet/fspec-core/src/help/configs/repair_work_units.rs"
+      "rust/fspec/src/repair_work_units.rs",
+      "rust/fspec-core/src/help/configs/repair_work_units.rs"
     ],
     "totalLinesCovered": 230
   }

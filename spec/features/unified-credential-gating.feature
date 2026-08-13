@@ -5,8 +5,8 @@
 @ts-parity
 Feature: Unify credential gating between section availability and model population (TS parity)
   """
-  Fix location: codelet/sessions/src/cloud_models.rs::provider_has_credentials — after the existing API-key resolution chain (resolve_credential: credentials file -> env -> project .env), add an OAuth-parity fallback that reads the SAME codelet_providers::ProviderCredentials::detect() the header-availability flag uses, returning has_claude()/has_codex()/has_github_copilot() for anthropic/codex/github-copilot. This makes the population gate and the header flag one credential decision (single source of truth).
-  The header-availability flag is codelet/providers/src/custom/management.rs::list_providers_info (has_openai/has_codex/has_github_copilot via ProviderCredentials::detect). The model-population gate is handle_impl.rs::list_providers -> provider_has_credentials. Out of scope: openai->codex re-parenting/allowlist (PROV-129) and ordering (PROV-130). No unwrap/expect/panic in the production path.
+  Fix location: rust/sessions/src/cloud_models.rs::provider_has_credentials — after the existing API-key resolution chain (resolve_credential: credentials file -> env -> project .env), add an OAuth-parity fallback that reads the SAME codelet_providers::ProviderCredentials::detect() the header-availability flag uses, returning has_claude()/has_codex()/has_github_copilot() for anthropic/codex/github-copilot. This makes the population gate and the header flag one credential decision (single source of truth).
+  The header-availability flag is rust/providers/src/custom/management.rs::list_providers_info (has_openai/has_codex/has_github_copilot via ProviderCredentials::detect). The model-population gate is handle_impl.rs::list_providers -> provider_has_credentials. Out of scope: openai->codex re-parenting/allowlist (PROV-129) and ordering (PROV-130). No unwrap/expect/panic in the production path.
   """
 
   # ========================================

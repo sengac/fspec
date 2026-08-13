@@ -300,7 +300,7 @@ describe('Feature: Telegram Pause State Management - Integration', () => {
   // ========================================================================
   // @integration Scenario: Telegram endpoint receives pause request from codelet
   // ========================================================================
-  describe('@integration Scenario: Telegram endpoint receives pause request from codelet', () => {
+  describe('@integration Scenario: Telegram endpoint receives pause request from rust', () => {
     it('should set isPaused and store pauseInfo when receiving pause_request chunk', async () => {
       // @step Given the Telegram bridge is connected to a codelet session
       const { getState, handleStreamChunk } = await import(

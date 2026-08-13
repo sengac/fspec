@@ -25,7 +25,7 @@ Feature: Isolated session creation + AgentView /new isolated flow
   #   7. SlashCommandAction::Isolation (already in registry) opens the CreateSessionDialog with 'Yes - Isolated' pre-selected so /isolation is a one-keystroke shortcut for new isolated session.
   #   8. On create_isolated_session error, App::dispatch surfaces a `[error] create isolated session: <e>` notice into the current scrollback (or no-op when no session). The dialog pops regardless before the await completes (matches RPC-053 pause-dialog UX).
   #   9. The SessionFooter isolation badge is already wired (RPC-045) and lights up automatically when StreamChunk::IsolationStateChange arrives — this card does NOT modify SessionFooter.
-  #   10. Integration test in codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs validates: dialog rendering snapshot, three-option cyclic nav, Enter on 'Yes - Isolated' emits CreateSessionSubmitted{isolated:true}, dispatch wires through to backend.create_isolated_session, error path emits notice.
+  #   10. Integration test in rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs validates: dialog rendering snapshot, three-option cyclic nav, Enter on 'Yes - Isolated' emits CreateSessionSubmitted{isolated:true}, dispatch wires through to backend.create_isolated_session, error path emits notice.
   #
   # EXAMPLES:
   #   1. User opens /isolation slash command → CreateSessionDialog appears with 'Yes - Isolated' pre-selected → User presses Enter → Action::CreateSessionSubmitted{isolated:true} fires → backend.create_isolated_session(None) is called exactly once → Action::SessionCreated lands → new SessionContext appended to AgentViewStore → SessionFooter renders isolation badge after IsolationStateChange chunk arrives.

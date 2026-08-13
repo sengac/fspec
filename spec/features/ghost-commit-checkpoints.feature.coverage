@@ -4,11 +4,11 @@
       "name": "Create checkpoint capturing all file states",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "34-73",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 57,
                 58,
@@ -74,11 +74,11 @@
       "name": "Checkpoint creation preserves staging area",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "83-130",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 57,
                 58,
@@ -144,11 +144,11 @@
       "name": "Restore checkpoint replaces working tree files",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "140-175",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 365,
                 366,
@@ -241,11 +241,11 @@
       "name": "Multiple checkpoints have unique SHA identifiers",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "185-234",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 57,
                 58,
@@ -311,11 +311,11 @@
       "name": "Ghost commits are invisible to git log",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "244-276",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 57,
                 58,
@@ -381,11 +381,11 @@
       "name": "Restore checkpoint deletes files added after checkpoint",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "286-322",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 365,
                 366,
@@ -478,11 +478,11 @@
       "name": "Ghost commit preserves parent relationship to HEAD",
       "testMappings": [
         {
-          "file": "codelet/git/tests/ghost_commit_tests.rs",
+          "file": "rust/git/tests/ghost_commit_tests.rs",
           "lines": "332-365",
           "implMappings": [
             {
-              "file": "codelet/git/src/ghost_commit.rs",
+              "file": "rust/git/src/ghost_commit.rs",
               "lines": [
                 57,
                 58,
@@ -550,10 +550,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/git/tests/ghost_commit_tests.rs"
+      "rust/git/tests/ghost_commit_tests.rs"
     ],
     "implFiles": [
-      "codelet/git/src/ghost_commit.rs"
+      "rust/git/src/ghost_commit.rs"
     ],
     "totalLinesCovered": 988
   }

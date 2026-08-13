@@ -25,8 +25,8 @@ import {
   blocklistSave,
   blocklistCheck,
   blocklistClearSessionAllowances,
-} from '../../codelet/napi';
-import type { JsBlocklistConfig } from '../../codelet/napi';
+} from '../../rust/napi';
+import type { JsBlocklistConfig } from '../../rust/napi';
 
 describe('Feature: Block Notifications - NAPI Integration', () => {
   let tmpDir: string;
@@ -134,7 +134,7 @@ describe('Feature: Block Notifications - NAPI Integration', () => {
       // 4. Notification flows through global chunk callback to TypeScript
       //
       // This is tested via Rust integration tests in:
-      //   codelet/tools/tests/block_notifications_integration_test.rs
+      //   rust/tools/tests/block_notifications_integration_test.rs
       //
       // The NAPI binding for stage permissions is internal (not exported)
       // because stage checking happens inside the file tool wrapper.

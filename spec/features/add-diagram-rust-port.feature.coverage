@@ -4,11 +4,11 @@
       "name": "Dispatcher appends a new diagram when architectureDiagrams is empty",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "51-90",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -224,11 +224,11 @@
       "name": "Dispatcher replaces an existing diagram with the same title in place",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "91-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -444,11 +444,11 @@
       "name": "Dispatcher appends a new diagram alongside an existing one",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "129-163",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -664,11 +664,11 @@
       "name": "Dispatcher auto-creates spec/foundation.json when missing",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "164-197",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -884,11 +884,11 @@
       "name": "Dispatcher persists optional description when provided",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "198-230",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -1104,11 +1104,11 @@
       "name": "Dispatcher rejects empty section argument",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "231-255",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -1324,11 +1324,11 @@
       "name": "Dispatcher rejects empty title argument",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "256-280",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -1544,11 +1544,11 @@
       "name": "Dispatcher rejects empty code argument",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "281-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -1764,11 +1764,11 @@
       "name": "Dispatcher rejects diagram with quoted subgraph title (merman pre-check)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "306-334",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -1984,11 +1984,11 @@
       "name": "Dispatcher rejects diagram with invalid subgraph identifier (merman pre-check)",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "335-363",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -2204,11 +2204,11 @@
       "name": "Dispatcher preserves unknown top-level fields on write",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "364-394",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 1,
                 2,
@@ -2424,11 +2424,11 @@
       "name": "Dispatcher rejects diagram with a genuine merman syntax error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "396-428",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/utils/mermaid_validation.rs",
+              "file": "rust/fspec-core/src/utils/mermaid_validation.rs",
               "lines": [
                 38,
                 39,
@@ -2452,11 +2452,11 @@
       "name": "Dispatcher rejects code that matches no mermaid diagram type",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "file": "rust/fspec-core/tests/add_diagram.rs",
           "lines": "429-459",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "file": "rust/fspec-core/src/commands/add_diagram.rs",
               "lines": [
                 76,
                 77,
@@ -2479,11 +2479,11 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_diagram.rs"
+      "rust/fspec-core/tests/add_diagram.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_diagram.rs",
-      "codelet/fspec-core/src/utils/mermaid_validation.rs"
+      "rust/fspec-core/src/commands/add_diagram.rs",
+      "rust/fspec-core/src/utils/mermaid_validation.rs"
     ],
     "totalLinesCovered": 2673
   }

@@ -4,9 +4,9 @@
 @RPC-276
 Feature: Port remove-init-files command to Rust
   """
-  Core impl codelet/fspec-core/src/commands/remove_init_files.rs: Args {keep_config: Option<bool>} (camelCase keepConfig). Local const AGENT table (20 agents) with id/docTemplate/slashCommandPath/slashCommandFormat/detectionPaths — inlined to avoid touching shared mod.rs/lib.rs (pending supervisor confirmation).
+  Core impl rust/fspec-core/src/commands/remove_init_files.rs: Args {keep_config: Option<bool>} (camelCase keepConfig). Local const AGENT table (20 agents) with id/docTemplate/slashCommandPath/slashCommandFormat/detectionPaths — inlined to avoid touching shared mod.rs/lib.rs (pending supervisor confirmation).
   detect_installed_agent(project_root): read spec/fspec-config.json as serde_json::Value, use .agent if present/parseable; else iterate AGENT table and pick first whose any detectionPaths entry exists under project_root. File deletion uses std::fs::remove_file with ErrorKind::NotFound tolerated (force:true parity). Does NOT use ensure_* or locked_file — these are unconditional rm -f.
-  Result envelope {filesRemoved: Vec<String>} as JSON string. CLI bridge codelet/fspec/src/remove_init_files.rs marshals --keep-config / --no-keep-config into keepConfig and renders success lines (exit 0) / error (exit 1). Help config codelet/fspec-core/src/help/configs/remove_init_files.rs. Two-front-doors; dispatcher passes args_json verbatim.
+  Result envelope {filesRemoved: Vec<String>} as JSON string. CLI bridge rust/fspec/src/remove_init_files.rs marshals --keep-config / --no-keep-config into keepConfig and renders success lines (exit 0) / error (exit 1). Help config rust/fspec-core/src/help/configs/remove_init_files.rs. Two-front-doors; dispatcher passes args_json verbatim.
   """
 
   # ========================================
@@ -29,7 +29,7 @@ Feature: Port remove-init-files command to Rust
   #   5. claude detected but spec/CLAUDE.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)
   #
   # QUESTIONS (ANSWERED):
-  #   Q: @supervisor: No Rust port of AGENT_REGISTRY exists in fspec-core (init.rs is still a stub). I will create a local const agent table inside commands/remove_init_files.rs covering the needed fields (id, docTemplate, slashCommandPath, slashCommandFormat, detectionPaths) for the 20 agents — confirm this is acceptable vs. a new shared module codelet/fspec-core/src/agents.rs (which would require touching lib.rs/mod). Also confirm the headless default for an unspecified keepConfig should be false (remove config).
+  #   Q: @supervisor: No Rust port of AGENT_REGISTRY exists in fspec-core (init.rs is still a stub). I will create a local const agent table inside commands/remove_init_files.rs covering the needed fields (id, docTemplate, slashCommandPath, slashCommandFormat, detectionPaths) for the 20 agents — confirm this is acceptable vs. a new shared module rust/fspec-core/src/agents.rs (which would require touching lib.rs/mod). Also confirm the headless default for an unspecified keepConfig should be false (remove config).
   #   A: Working assumption pending supervisor confirmation: inline a local const AGENT table inside commands/remove_init_files.rs (no shared mod.rs/lib.rs changes); an unspecified keepConfig defaults to false (remove config), matching the destructive --no-keep-config default.
   #
   # ASSUMPTIONS:

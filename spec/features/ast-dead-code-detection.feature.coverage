@@ -4,11 +4,11 @@
       "name": "Extract Calls edge for cross-file function call via import",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "51-80",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 482,
                 483,
@@ -142,11 +142,11 @@
       "name": "Extract Calls edge for same-file function call",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "85-108",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 482,
                 483,
@@ -280,11 +280,11 @@
       "name": "Ignore method calls and builtins — no Calls edges for dotted expressions",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "113-139",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 482,
                 483,
@@ -355,11 +355,11 @@
       "name": "Extract TypeRef edges from function parameter and return types",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "144-175",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
               "lines": [
                 544,
                 545,
@@ -431,11 +431,11 @@
       "name": "Detect orphan files with no incoming Imports edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "180-255",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 266,
                 267,
@@ -520,11 +520,11 @@
       "name": "Detect uncalled functions with no incoming Calls edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "260-320",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 266,
                 267,
@@ -609,11 +609,11 @@
       "name": "Detect unreferenced types with no incoming TypeRef edges",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "325-386",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 266,
                 267,
@@ -698,11 +698,11 @@
       "name": "Exclude test files from dead code results by default",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "file": "rust/napi/tests/ast_dead_code_test.rs",
           "lines": "391-454",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_dispatch.rs",
+              "file": "rust/napi/src/graph/ast_dispatch.rs",
               "lines": [
                 288,
                 289,
@@ -735,11 +735,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/ast_dead_code_test.rs"
+      "rust/napi/tests/ast_dead_code_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
-      "codelet/napi/src/graph/ast_dispatch.rs"
+      "rust/napi/src/graph/ast_pipeline/ast_ts_extractor.rs",
+      "rust/napi/src/graph/ast_dispatch.rs"
     ],
     "totalLinesCovered": 977
   }

@@ -8,7 +8,7 @@
           "lines": "79-145",
           "implMappings": [
             {
-              "file": "codelet/napi/src/work_units_watcher.rs",
+              "file": "rust/napi/src/work_units_watcher.rs",
               "lines": [
                 1,
                 2,
@@ -208,7 +208,7 @@
       "src/__tests__/napi-work-units-watcher-callback.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/work_units_watcher.rs"
+      "rust/napi/src/work_units_watcher.rs"
     ],
     "totalLinesCovered": 250
   }

@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "92-112",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/restore_example.rs",
+              "file": "rust/fspec-core/src/help/configs/restore_example.rs",
               "lines": [
                 1,
                 2,
@@ -94,11 +94,11 @@
       "name": "Happy-path restore via CLI",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "114-152",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_example.rs",
+              "file": "rust/fspec/src/restore_example.rs",
               "lines": [
                 58,
                 59,
@@ -140,11 +140,11 @@
       "name": "Missing work unit exits 1 with canonical stderr",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "154-177",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_example.rs",
+              "file": "rust/fspec/src/restore_example.rs",
               "lines": [
                 69,
                 70,
@@ -174,11 +174,11 @@
       "name": "Wrong status exits 1 with the phase-guard message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "179-203",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_example.rs",
+              "file": "rust/fspec/src/restore_example.rs",
               "lines": [
                 69,
                 70,
@@ -208,11 +208,11 @@
       "name": "Non-numeric index falls through to TS parseInt NaN parity",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "205-229",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_example.rs",
+              "file": "rust/fspec/src/restore_example.rs",
               "lines": [
                 97,
                 98,
@@ -241,11 +241,11 @@
       "name": "Unknown --ids flag is rejected by clap with exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "231-257",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_example.rs",
+              "file": "rust/fspec/src/restore_example.rs",
               "lines": [
                 49,
                 50,
@@ -265,11 +265,11 @@
       "name": "CLI delegates to the same fspec_core function as the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_example.rs",
+          "file": "rust/fspec/tests/cli_restore_example.rs",
           "lines": "259-309",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_example.rs",
+              "file": "rust/fspec/src/restore_example.rs",
               "lines": [
                 58,
                 59,
@@ -313,11 +313,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_restore_example.rs"
+      "rust/fspec/tests/cli_restore_example.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/restore_example.rs",
-      "codelet/fspec/src/restore_example.rs"
+      "rust/fspec-core/src/help/configs/restore_example.rs",
+      "rust/fspec/src/restore_example.rs"
     ],
     "totalLinesCovered": 407
   }

@@ -4,11 +4,11 @@
       "name": "File edit creates CodeEntity node",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/extractors.rs",
+          "file": "rust/napi/src/graph/extractors.rs",
           "lines": "191-228",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/extractors.rs",
+              "file": "rust/napi/src/graph/extractors.rs",
               "lines": [
                 33,
                 34,
@@ -74,11 +74,11 @@
       "name": "Fspec create-story produces WorkUnit node",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/extractors.rs",
+          "file": "rust/napi/src/graph/extractors.rs",
           "lines": "233-260",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/extractors.rs",
+              "file": "rust/napi/src/graph/extractors.rs",
               "lines": [
                 89,
                 90,
@@ -128,11 +128,11 @@
       "name": "Batch queue flushes at threshold",
       "testMappings": [
         {
-          "file": "codelet/napi/src/graph/extractors.rs",
+          "file": "rust/napi/src/graph/extractors.rs",
           "lines": "265-293",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/extractors.rs",
+              "file": "rust/napi/src/graph/extractors.rs",
               "lines": [
                 153,
                 154,
@@ -170,11 +170,11 @@
       "name": "Extractors silently skip when graph is unavailable",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/graph_entity_pipeline_test.rs",
+          "file": "rust/napi/tests/graph_entity_pipeline_test.rs",
           "lines": "42-65",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/entity_pipeline.rs",
+              "file": "rust/napi/src/graph/entity_pipeline.rs",
               "lines": [
                 60,
                 61,
@@ -239,12 +239,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/src/graph/extractors.rs",
-      "codelet/napi/tests/graph_entity_pipeline_test.rs"
+      "rust/napi/src/graph/extractors.rs",
+      "rust/napi/tests/graph_entity_pipeline_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/extractors.rs",
-      "codelet/napi/src/graph/entity_pipeline.rs"
+      "rust/napi/src/graph/extractors.rs",
+      "rust/napi/src/graph/entity_pipeline.rs"
     ],
     "totalLinesCovered": 288
   }

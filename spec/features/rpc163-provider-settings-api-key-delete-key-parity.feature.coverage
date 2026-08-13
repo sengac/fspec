@@ -4,11 +4,11 @@
       "name": "Pressing Delete on a multi-character draft pops the last character",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "126-151",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 139,
                 140,
@@ -33,11 +33,11 @@
       "name": "Pressing Delete on an empty draft is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "157-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 139,
                 140,
@@ -62,11 +62,11 @@
       "name": "Pressing Delete on a single-character draft empties it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "190-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 139,
                 140,
@@ -91,11 +91,11 @@
       "name": "Backspace and Delete produce identical pops when alternated",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "209-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 139,
                 140,
@@ -120,11 +120,11 @@
       "name": "Pressing Delete must not clear the \"API key cannot be empty\" status",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "250-281",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 139,
                 140,
@@ -149,11 +149,11 @@
       "name": "Pressing Delete in Summary sub-mode is treated as unrelated",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "287-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 90,
                 91,
@@ -174,11 +174,11 @@
       "name": "Pressing Delete in OAuthNotice sub-mode does not exit the notice",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
+          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
           "lines": "328-364",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
                 179,
                 180,
@@ -203,10 +203,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs"
+      "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
     "totalLinesCovered": 294
   }

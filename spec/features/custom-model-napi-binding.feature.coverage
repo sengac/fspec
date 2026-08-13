@@ -4,11 +4,11 @@
       "name": "CustomModelDefinition round-trips through the NAPI boundary",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/custom_model_crud_napi_test.rs",
+          "file": "rust/napi/tests/custom_model_crud_napi_test.rs",
           "lines": "19-72",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "file": "rust/napi/src/models/napi_bindings.rs",
               "lines": [
                 306,
                 307,
@@ -33,10 +33,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/custom_model_crud_napi_test.rs"
+      "rust/napi/tests/custom_model_crud_napi_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/models/napi_bindings.rs"
+      "rust/napi/src/models/napi_bindings.rs"
     ],
     "totalLinesCovered": 65
   }

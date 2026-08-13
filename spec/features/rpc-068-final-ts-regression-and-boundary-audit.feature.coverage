@@ -8,7 +8,7 @@
           "lines": "39-79",
           "implMappings": [
             {
-              "file": "codelet/sessions/tests/no_napi_dependency.rs",
+              "file": "rust/sessions/tests/no_napi_dependency.rs",
               "lines": [
                 1,
                 2,
@@ -63,7 +63,7 @@
           "lines": "83-118",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 150,
                 151,
@@ -115,7 +115,7 @@
           "lines": "122-146",
           "implMappings": [
             {
-              "file": "codelet/napi/index.d.ts",
+              "file": "rust/napi/index.d.ts",
               "lines": [
                 1,
                 2,
@@ -181,7 +181,7 @@
           "lines": "150-166",
           "implMappings": [
             {
-              "file": "codelet/napi/src/persistence/mod.rs",
+              "file": "rust/napi/src/persistence/mod.rs",
               "lines": [
                 1,
                 2,
@@ -1181,10 +1181,10 @@
       "src/__tests__/rpc-068-boundary-audit.test.ts"
     ],
     "implFiles": [
-      "codelet/sessions/tests/no_napi_dependency.rs",
-      "codelet/sessions/src/session_manager.rs",
-      "codelet/napi/index.d.ts",
-      "codelet/napi/src/persistence/mod.rs",
+      "rust/sessions/tests/no_napi_dependency.rs",
+      "rust/sessions/src/session_manager.rs",
+      "rust/napi/index.d.ts",
+      "rust/napi/src/persistence/mod.rs",
       "src/tui/__tests__/watch-024-supervisor-terminology-refactoring.test.ts",
       "spec/attachments/RPC-068/boundary-audit-report.md"
     ],

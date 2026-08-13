@@ -4,11 +4,11 @@
       "name": "Clap exposes restore-architecture-note with two positional args in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "74-113",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "file": "rust/fspec/src/restore_architecture_note.rs",
               "lines": [
                 29,
                 30,
@@ -25,11 +25,11 @@
       "name": "CLI restores an architecture note and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "117-141",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "file": "rust/fspec/src/restore_architecture_note.rs",
               "lines": [
                 35,
                 36,
@@ -69,11 +69,11 @@
       "name": "CLI prints idempotent message when already active",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "143-173",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "file": "rust/fspec/src/restore_architecture_note.rs",
               "lines": [
                 44,
                 45,
@@ -98,11 +98,11 @@
       "name": "CLI rejects unknown note ID with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "175-199",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "file": "rust/fspec/src/restore_architecture_note.rs",
               "lines": [
                 57,
                 58,
@@ -118,11 +118,11 @@
       "name": "CLI rejects unknown work unit with exit 1 and stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "201-222",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "file": "rust/fspec/src/restore_architecture_note.rs",
               "lines": [
                 57,
                 58,
@@ -138,11 +138,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "224-287",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "file": "rust/fspec/src/restore_architecture_note.rs",
               "lines": [
                 35,
                 36,
@@ -164,11 +164,11 @@
       "name": "restore-architecture-note --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
           "lines": "289-315",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/restore_architecture_note.rs",
+              "file": "rust/fspec-core/src/help/configs/restore_architecture_note.rs",
               "lines": [
                 1,
                 2,
@@ -257,11 +257,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_restore_architecture_note.rs"
+      "rust/fspec/tests/cli_restore_architecture_note.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/restore_architecture_note.rs",
-      "codelet/fspec-core/src/help/configs/restore_architecture_note.rs"
+      "rust/fspec/src/restore_architecture_note.rs",
+      "rust/fspec-core/src/help/configs/restore_architecture_note.rs"
     ],
     "totalLinesCovered": 373
   }

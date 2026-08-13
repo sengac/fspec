@@ -5,7 +5,7 @@
 @RPC-239
 Feature: Port init command to Rust
   """
-  Core impl codelet/fspec-core/src/commands/init.rs: replace the NotYetPorted
+  Core impl rust/fspec-core/src/commands/init.rs: replace the NotYetPorted
   stub with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`
   dispatched through the same `poll_sync_future` path as the other ported commands.
   Args shape: `{ agent: string[] }` (camelCase; the repeatable --agent flag at the
@@ -166,7 +166,7 @@ Feature: Port init command to Rust
     Then the filesInstalled array contains '~/.codex/prompts/fspec.md'
 
   Scenario: Shares one implementation between the dispatcher and the CLI bridge
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/commands/init.rs
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/commands/init.rs
     Then init::run scaffolds files via blocking std::fs and contains the inlined agent registry table
-    Then the CLI bridge codelet/fspec/src/init.rs delegates to init::run and contains no inline scaffolding or registry logic
+    Then the CLI bridge rust/fspec/src/init.rs delegates to init::run and contains no inline scaffolding or registry logic

@@ -4,11 +4,11 @@
       "name": "Clap exposes reverse as a subcommand with all six flags and prints byte-parity help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "114-144",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -139,11 +139,11 @@
       "name": "CLI reset deletes the session and prints Session reset",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "146-166",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -274,11 +274,11 @@
       "name": "CLI status with no session prints no active session and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "168-187",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -409,11 +409,11 @@
       "name": "CLI complete with no session exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "189-208",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -544,11 +544,11 @@
       "name": "CLI initial analysis prints gap-analysis guidance and exits 0",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "210-237",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -679,11 +679,11 @@
       "name": "CLI existing session detected prints suggestions under Next steps and exits 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "239-270",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -814,11 +814,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_reverse.rs",
+          "file": "rust/fspec/tests/cli_reverse.rs",
           "lines": "272-299",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/reverse.rs",
+              "file": "rust/fspec/src/reverse.rs",
               "lines": [
                 1,
                 2,
@@ -951,10 +951,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_reverse.rs"
+      "rust/fspec/tests/cli_reverse.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/reverse.rs"
+      "rust/fspec/src/reverse.rs"
     ],
     "totalLinesCovered": 1013
   }

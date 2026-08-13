@@ -4,11 +4,11 @@
       "name": "Plain Enter on the multi-line input submits and resets the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "60-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 137,
                 138,
@@ -57,11 +57,11 @@
       "name": "Shift+Enter inserts a literal newline instead of submitting",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "85-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 147,
                 148,
@@ -77,11 +77,11 @@
       "name": "Plain Enter submits a multi-line buffer with embedded newlines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "110-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 139,
                 140,
@@ -100,11 +100,11 @@
       "name": "Pasted text with embedded newlines preserves them in the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "133-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 175,
                 176,
@@ -129,11 +129,11 @@
       "name": "MultiLineInput auto-grows up to its max visible rows cap of 6",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "150-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 115,
                 116,
@@ -149,11 +149,11 @@
       "name": "Empty MultiLineInput paints the dim placeholder hint with a green > prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "169-188",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 200,
                 201,
@@ -207,11 +207,11 @@
       "name": "Non-empty MultiLineInput hides the placeholder hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "190-205",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
                 232,
                 233,
@@ -233,11 +233,11 @@
       "name": "Shift+Up emits Action::HistoryPrev without modifying the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "207-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 129,
                 130,
@@ -291,11 +291,11 @@
       "name": "Shift+Down emits Action::HistoryNext without modifying the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "224-239",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 129,
                 130,
@@ -349,11 +349,11 @@
       "name": "Shift+Left emits Action::SessionPrev without modifying the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "241-256",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 129,
                 130,
@@ -407,11 +407,11 @@
       "name": "Shift+Right emits Action::SessionNext without modifying the buffer",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "258-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 129,
                 130,
@@ -465,11 +465,11 @@
       "name": "ESC inside AgentView emits Action::BackToBoard",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
           "lines": "275-291",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 142,
                 143,
@@ -490,11 +490,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs"
+      "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/multiline_input.rs",
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 513
   }

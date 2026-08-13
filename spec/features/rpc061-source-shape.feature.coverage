@@ -4,11 +4,11 @@
       "name": "codelet-rpc-types exposes IncomingMessageInput",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "31-77",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 715,
                 716,
@@ -31,11 +31,11 @@
       "name": "SessionManagerHandle trait declares all five supervisor methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "80-111",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 387,
                 388,
@@ -96,11 +96,11 @@
       "name": "FspecService trait declares all five supervisor methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "114-145",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 285,
                 286,
@@ -148,11 +148,11 @@
       "name": "FspecBackend trait gains the five supervisor forwarders",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "250-281",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 390,
                 391,
@@ -205,11 +205,11 @@
       "name": "codelet-sessions handle_impl wires the five supervisor methods",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "216-247",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 346,
                 347,
@@ -286,11 +286,11 @@
       "name": "components/mod.rs Action enum gains the two RPC-061 variants",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "197-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 726,
                 727,
@@ -322,11 +322,11 @@
       "name": "SessionHeader gains a subordinate_label field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "284-295",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/header.rs",
+              "file": "rust/fspec-tui/src/views/agent/header.rs",
               "lines": [
                 75,
                 76,
@@ -369,11 +369,11 @@
       "name": "SessionFooter gains a supervisor_pending_count field",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "298-309",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/footer.rs",
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
               "lines": [
                 50,
                 51,
@@ -426,11 +426,11 @@
       "name": "dispatch_supervisor_links.rs has the documented helper surface",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "148-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -549,11 +549,11 @@
       "name": "app/dispatch.rs catch-all routes through try_dispatch_supervisor_links",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "177-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
                 285,
                 286,
@@ -581,19 +581,19 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc061.rs"
+      "rust/fspec-tui/tests/source_shape_rpc061.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/sessions/src/handle_impl.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/views/agent/header.rs",
-      "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
-      "codelet/fspec-tui/src/app/dispatch.rs"
+      "rust/rpc-types/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/views/agent/header.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs",
+      "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
+      "rust/fspec-tui/src/app/dispatch.rs"
     ],
     "totalLinesCovered": 676
   }

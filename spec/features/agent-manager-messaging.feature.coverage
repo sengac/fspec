@@ -4,11 +4,11 @@
       "name": "Supervisor sends task to subordinate",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "818-873",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 301,
                 302,
@@ -67,11 +67,11 @@
       "name": "Subordinate reports results to supervisor",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "879-937",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 301,
                 302,
@@ -130,11 +130,11 @@
       "name": "Message to nonexistent session returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "941-974",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 314,
                 315,
@@ -149,11 +149,11 @@
       "name": "Channel full returns delivery failed error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "978-1023",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 339,
                 340,
@@ -172,11 +172,11 @@
       "name": "Peer-to-peer messaging between subordinates",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1027-1094",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 301,
                 302,
@@ -235,11 +235,11 @@
       "name": "Missing session_id returns invalid parameter error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1098-1112",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 30,
                 31,
@@ -256,11 +256,11 @@
       "name": "Missing message text returns invalid parameter error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1116-1130",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 30,
                 31,
@@ -277,11 +277,11 @@
       "name": "Delivered message includes sender identity",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1136-1184",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 318,
                 319,
@@ -309,11 +309,11 @@
       "name": "Sender without role delivers empty role name",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1188-1234",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 318,
                 319,
@@ -333,11 +333,11 @@
       "name": "Self-messaging is allowed",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1239-1286",
           "implMappings": [
             {
-              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "file": "rust/napi/src/agent_manager_handler.rs",
               "lines": [
                 301,
                 302,
@@ -396,11 +396,11 @@
       "name": "Message action is dispatched through AgentManagerAction enum",
       "testMappings": [
         {
-          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "file": "rust/tools/src/agent_manager/tests.rs",
           "lines": "1290-1302",
           "implMappings": [
             {
-              "file": "codelet/tools/src/agent_manager/types.rs",
+              "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
                 14,
                 15,
@@ -441,11 +441,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/agent_manager/tests.rs"
+      "rust/tools/src/agent_manager/tests.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/agent_manager_handler.rs",
-      "codelet/tools/src/agent_manager/types.rs"
+      "rust/napi/src/agent_manager_handler.rs",
+      "rust/tools/src/agent_manager/types.rs"
     ],
     "totalLinesCovered": 709
   }

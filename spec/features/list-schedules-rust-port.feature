@@ -4,7 +4,7 @@
 @RPC-250
 Feature: Port list-schedules command to Rust
   """
-  New impl file at codelet/fspec-core/src/commands/list_schedules.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
+  New impl file at rust/fspec-core/src/commands/list_schedules.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
   Schedules data is parsed using a lightweight Rust shape: `struct SchedulesFile { schedules: IndexMap<String, serde_json::Value> }` so that insertion order is preserved AND we surface each schedule entry value as-is (parity with TS `Object.values(data.schedules)`). The full ScheduleEntry union (agent vs shell) is intentionally not modelled — we re-emit the raw entry Value on the structured path.
   Error swallowing: the impl tolerates missing OR malformed `spec/schedules.json` (parity with the TS `fileManager.readJSON<SchedulesData>(file, defaultData)` semantics, which returns the default on missing/invalid file). Both paths produce the canonical `{schedules: [], columns: [...]}` payload.
   The `columns` array is a hard-coded constant: `["name","cron","timezone","type","status","lastRun","nextRun"]`. Both happy and swallow paths emit it.

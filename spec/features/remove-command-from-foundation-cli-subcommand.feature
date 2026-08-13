@@ -2,7 +2,7 @@
 @RPC-270
 Feature: fspec remove-command-from-foundation CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_command_from_foundation.rs — clap-derived struct mirroring the
+  CLI bridge: rust/fspec/src/remove_command_from_foundation.rs — clap-derived struct mirroring the
   TS Commander.js registration (src/commands/remove-command-from-foundation.ts:131-154). Surface:
   `fspec remove-command-from-foundation <context-name> <command-name>`.
   Stdout (success): '✓ Removed command "<command-name>" from "<context-name>" bounded context' (TS uses
@@ -23,7 +23,7 @@ Feature: fspec remove-command-from-foundation CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-command-from-foundation --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-command-from-foundation.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-command-from-foundation.txt
 
   Scenario: CLI successfully soft-deletes a command and prints the success line
     Given a project root tempdir with spec/foundation.json whose eventStorm has a bounded_context text='Work Management' id=0 and a command text='CreateWorkUnit' boundedContextId=0 deleted=false
@@ -46,4 +46,4 @@ Feature: fspec remove-command-from-foundation CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec remove-command-from-foundation "Work Management" "C2"` afterwards exits 0
     And spec/foundation.json on disk shows both command items C1 and C2 with deleted=true
-    And the CLI bridge module codelet/fspec/src/remove_command_from_foundation.rs contains NO inline context lookup, command match, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/remove_command_from_foundation.rs contains NO inline context lookup, command match, or file-write logic — its only computation is JSON arg marshalling

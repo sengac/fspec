@@ -8,7 +8,7 @@
           "lines": "10-56",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 8,
                 9,
@@ -160,7 +160,7 @@
           "lines": "58-102",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 95,
                 96,
@@ -192,7 +192,7 @@
           "lines": "104-145",
           "implMappings": [
             {
-              "file": "codelet/tools/src/fspec.rs",
+              "file": "rust/tools/src/fspec.rs",
               "lines": [
                 112,
                 113,
@@ -241,7 +241,7 @@
       "src/test/core-fspectool-implementation.test.ts"
     ],
     "implFiles": [
-      "codelet/tools/src/fspec.rs"
+      "rust/tools/src/fspec.rs"
     ],
     "totalLinesCovered": 318
   }

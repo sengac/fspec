@@ -4,11 +4,11 @@
       "name": "Click on scrollbar track in SlashCommandPopup jumps to that position",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
           "lines": "233-254",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 163,
                 164,
@@ -82,11 +82,11 @@
       "name": "Drag scrollbar thumb in FileSearchPopup continuously scrolls content",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
           "lines": "258-282",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
               "lines": [
                 155,
                 156,
@@ -160,11 +160,11 @@
       "name": "Quick click on scrollbar thumb in SearchHistoryView scrolls one viewport height",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
           "lines": "286-307",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
                 132,
                 133,
@@ -238,11 +238,11 @@
       "name": "Click on scrollbar track in TurnContentModal jumps to that position",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
           "lines": "311-332",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 75,
                 76,
@@ -316,11 +316,11 @@
       "name": "Scrollbar interaction is ignored when content fits in viewport",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
           "lines": "336-356",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 183,
                 184,
@@ -345,11 +345,11 @@
       "name": "Scrollbar drag state resets when popup content changes",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
           "lines": "360-380",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
               "lines": [
                 117,
                 118,
@@ -375,13 +375,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs"
+      "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/slash_command_popup.rs",
-      "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
-      "codelet/fspec-tui/src/views/agent/search_history_view.rs",
-      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs"
+      "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
+      "rust/fspec-tui/src/views/agent/file_search_popup.rs",
+      "rust/fspec-tui/src/views/agent/search_history_view.rs",
+      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs"
     ],
     "totalLinesCovered": 406
   }

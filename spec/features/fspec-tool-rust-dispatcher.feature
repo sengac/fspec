@@ -8,7 +8,7 @@
 @TOOL-019
 Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool dispatch in standalone Rust binary
   """
-  New crate codelet/fspec-core is the future home of the Rust port; this work creates the empty skeleton with stub command modules and a single dispatcher entry point
+  New crate rust/fspec-core is the future home of the Rust port; this work creates the empty skeleton with stub command modules and a single dispatcher entry point
   Dispatcher signature: fn dispatch_command(name: &str, args_json: &str, project_root: &Path) -> FspecResult — pure synchronous fn called from the registered FspecHandler closure
   Each command stub file follows the template: pub async fn run(args: &str, ctx: &Context) -> Result<String, FspecCoreError> { Err(FspecCoreError::NotYetPorted { command: "add-rule", work_unit: "RPC-XXX" }) }
   Command-name-to-stub mapping uses a static const phf::Map<&'static str, StubFn> or an exhaustive match arm. Phase 1 just maps name → (command, work_unit_id) for the canonical error message; future ports replace the stub with the real implementation.
@@ -22,7 +22,7 @@ Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Every fspec command name registered in src/cli/program.ts MUST have a corresponding Rust stub function in codelet/fspec-core/src/commands/<command-name>.rs
+  #   1. Every fspec command name registered in src/cli/program.ts MUST have a corresponding Rust stub function in rust/fspec-core/src/commands/<command-name>.rs
   #   2. Every fspec command MUST have a dedicated child work unit under RPC-003 (epic 'rust-cli-port') tracking its future port to Rust
   #   3. The stub error message MUST tell the agent (a) the command is not yet ported to Rust, (b) the work unit ID porting it, and (c) that the standalone fspec binary lacks the TypeScript runtime
   #   4. The agent loop MUST NOT hang waiting for a non-existent JS callback; FspecHandler invocations always return synchronously with a structured result
@@ -34,11 +34,11 @@ Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool
   #   2. Agent emits Fspec{command='unknown-command'}: dispatcher returns FspecResult{success=false, error='Unknown fspec command: unknown-command'}, distinct from the not-yet-ported message
   #   3. Agent emits Fspec with a hook-blocked command: pre_tool_use hook short-circuits FIRST returning ToolError::Blocked, dispatcher is never consulted
   #   4. Developer queries 'fspec list-work-units --parent RPC-003': output lists exactly the ~162 child cards, one per fspec command, each pointing back at its TypeScript source file
-  #   5. Developer opens codelet/fspec-core/src/commands/add_rule.rs: file contains a single pub async fn stub returning the canonical NotYetPorted error with the work unit ID embedded; identical skeleton for all ~162 command files
+  #   5. Developer opens rust/fspec-core/src/commands/add_rule.rs: file contains a single pub async fn stub returning the canonical NotYetPorted error with the work unit ID embedded; identical skeleton for all ~162 command files
   #   6. Agent runs in NAPI Node-hosted CLI and emits Fspec{command='add-rule'}: dispatcher detects chunk-callback present, delegates back into TypeScript via the existing protocol, command executes in TypeScript — agent receives normal success result
   #
   # QUESTIONS (ANSWERED):
-  #   Q: Should the new codelet/fspec-core crate sit at the workspace root alongside codelet/fspec, or be nested somewhere else? Naming this 'fspec-core' is aligned with rpc-003-feasibility.md §7.
+  #   Q: Should the new rust/fspec-core crate sit at the workspace root alongside rust/fspec, or be nested somewhere else? Naming this 'fspec-core' is aligned with rpc-003-feasibility.md §7.
   #   A: Leave child cards unestimated at bulk-creation time; each gets estimated when picked up during its own specifying phase.
   #
   #   Q: Should the dispatcher also be wired through the existing FspecToolFacadeWrapper for the NAPI Node path (so the same Rust dispatcher serves both)? Or strictly only as a fallback when the chunk callback is absent? Current plan: only fallback.
@@ -104,11 +104,11 @@ Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool
 
   Scenario: Every command stub file exists with the canonical template
     Given the canonical command list contains 162 names
-    When I list files matching codelet/fspec-core/src/commands/*.rs
+    When I list files matching rust/fspec-core/src/commands/*.rs
     Then exactly 162 files exist (one per command, file name = command name with hyphens replaced by underscores)
     And each file declares a "pub async fn run" returning Result<String, FspecCoreError>
     And each file's body returns Err(FspecCoreError::NotYetPorted { command, work_unit }) with the matching child work unit ID
-    And every file is registered in codelet/fspec-core/src/commands/mod.rs
+    And every file is registered in rust/fspec-core/src/commands/mod.rs
 
   Scenario: agent_loop falls back to the Rust dispatcher when the NAPI chunk callback is absent
     Given the agent_loop.rs source after this work unit is applied

@@ -4,11 +4,11 @@
       "name": "The GLOBAL_CHUNK_CALLBACK static, GlobalChunkCallback struct, and its unsafe Send/Sync impls are removed",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "1060-1099",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 70,
                 71,
@@ -47,11 +47,11 @@
       "name": "BackgroundSession::handle_output broadcasts unconditionally on the mandatory chunks_tx field",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "483-544",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 775,
                 776,
@@ -96,11 +96,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "483-544",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 326,
                 327,
@@ -121,11 +121,11 @@
       "name": "BackgroundSession::set_status emits on the new status_changes_tx broadcast when the status actually changes",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "550-614",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 741,
                 742,
@@ -162,11 +162,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "550-614",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 336,
                 337,
@@ -184,11 +184,11 @@
       "name": "BackgroundSession::new accepts chunks_tx and status_changes_tx as new trailing parameters",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "621-678",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 435,
                 436,
@@ -290,11 +290,11 @@
           ]
         },
         {
-          "file": "codelet/sessions/tests/background_session_shape.rs",
+          "file": "rust/sessions/tests/background_session_shape.rs",
           "lines": "621-678",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/background_session.rs",
+              "file": "rust/sessions/src/background_session.rs",
               "lines": [
                 326,
                 327,
@@ -324,11 +324,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/background_session_shape.rs"
+      "rust/sessions/tests/background_session_shape.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session_manager.rs",
-      "codelet/sessions/src/background_session.rs"
+      "rust/napi/src/session_manager.rs",
+      "rust/sessions/src/background_session.rs"
     ],
     "totalLinesCovered": 631
   }

@@ -2,7 +2,7 @@
 @RPC-194
 Feature: fspec add-tag-to-scenario CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/add_tag_to_scenario.rs — clap-derived struct mirroring the TS
+  CLI bridge: rust/fspec/src/add_tag_to_scenario.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-tag-to-scenario.ts:261-282). Surface:
   `fspec add-tag-to-scenario <file> <scenario> <tags...> [--validate-registry]`.
   Stdout (success): '✓ Added <tags> to scenario \'<name>\'' (TS uses output.log; ANSI tolerated
@@ -23,7 +23,7 @@ Feature: fspec add-tag-to-scenario CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec add-tag-to-scenario --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-tag-to-scenario.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/add-tag-to-scenario.txt
     And stdout starts with a blank line followed by 'ADD-TAG-TO-SCENARIO'
 
   Scenario: CLI successfully adds a tag and prints the success line
@@ -61,4 +61,4 @@ Feature: fspec add-tag-to-scenario CLI subcommand
     Then the dispatcher returns success=true
     And running `fspec add-tag-to-scenario spec/features/login.feature "Login" @critical` afterwards exits 0
     And spec/features/login.feature on disk shows '  @smoke' then '  @critical' immediately above the Scenario line
-    And the CLI bridge module codelet/fspec/src/add_tag_to_scenario.rs contains NO inline tag-format validation, scenario lookup, or file-write logic — its only computation is JSON arg marshalling
+    And the CLI bridge module rust/fspec/src/add_tag_to_scenario.rs contains NO inline tag-format validation, scenario lookup, or file-write logic — its only computation is JSON arg marshalling

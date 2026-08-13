@@ -50,7 +50,7 @@ Feature: RPC-017 cross-transport parity for FspecBackend::move_work_unit_up/_dow
     Then both calls return Err
 
   Scenario: napi::move_work_unit_up is wired through the same shared helper
-    Given codelet/napi/src/work_units_watcher.rs after RPC-017 lands
+    Given rust/napi/src/work_units_watcher.rs after RPC-017 lands
     When a developer reads the file source raw
     Then the file contains the substring "pub fn move_work_unit_up"
     And the file contains the substring "pub fn move_work_unit_down"

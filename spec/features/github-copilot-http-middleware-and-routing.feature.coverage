@@ -4,11 +4,11 @@
       "name": "Chat completion request to gpt-4o-copilot uses /chat/completions endpoint with required Copilot headers",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+          "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
           "lines": "28-89",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/header_facade.rs",
+              "file": "rust/providers/src/copilot/header_facade.rs",
               "lines": [
                 60,
                 61,
@@ -71,7 +71,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/endpoint.rs",
+              "file": "rust/providers/src/copilot/endpoint.rs",
               "lines": [
                 63,
                 64,
@@ -109,7 +109,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 82,
                 83,
@@ -158,11 +158,11 @@
       "name": "gpt-5 model is routed to the /responses endpoint with reasoning_opaque round-trip",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+          "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
           "lines": "96-148",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/endpoint.rs",
+              "file": "rust/providers/src/copilot/endpoint.rs",
               "lines": [
                 63,
                 64,
@@ -200,7 +200,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/behavior_facade.rs",
+              "file": "rust/providers/src/copilot/behavior_facade.rs",
               "lines": [
                 60,
                 61,
@@ -230,7 +230,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 119,
                 120,
@@ -255,11 +255,11 @@
       "name": "gpt-5-mini is excluded from the Responses API rule and uses /chat/completions",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+          "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
           "lines": "155-197",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/endpoint.rs",
+              "file": "rust/providers/src/copilot/endpoint.rs",
               "lines": [
                 77,
                 78,
@@ -278,11 +278,11 @@
       "name": "Image attachment triggers Copilot-Vision-Request header on claude-sonnet-4.5",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+          "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
           "lines": "204-255",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 51,
                 52,
@@ -322,7 +322,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/header_facade.rs",
+              "file": "rust/providers/src/copilot/header_facade.rs",
               "lines": [
                 103,
                 104,
@@ -349,11 +349,11 @@
       "name": "Enterprise deployment routes requests to the copilot-api enterprise subdomain",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+          "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
           "lines": "262-302",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
                 96,
                 97,
@@ -376,11 +376,11 @@
       "name": "Agent-mode workflow sets x-initiator header to agent instead of user",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/copilot_http_middleware_routing_test.rs",
+          "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
           "lines": "308-349",
           "implMappings": [
             {
-              "file": "codelet/providers/src/copilot/classifier.rs",
+              "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
                 87,
                 88,
@@ -395,7 +395,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/copilot/header_facade.rs",
+              "file": "rust/providers/src/copilot/header_facade.rs",
               "lines": [
                 88,
                 89,
@@ -419,14 +419,14 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/copilot_http_middleware_routing_test.rs"
+      "rust/providers/tests/copilot_http_middleware_routing_test.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/copilot/header_facade.rs",
-      "codelet/providers/src/copilot/endpoint.rs",
-      "codelet/providers/src/copilot/provider.rs",
-      "codelet/providers/src/copilot/behavior_facade.rs",
-      "codelet/providers/src/copilot/classifier.rs"
+      "rust/providers/src/copilot/header_facade.rs",
+      "rust/providers/src/copilot/endpoint.rs",
+      "rust/providers/src/copilot/provider.rs",
+      "rust/providers/src/copilot/behavior_facade.rs",
+      "rust/providers/src/copilot/classifier.rs"
     ],
     "totalLinesCovered": 580
   }

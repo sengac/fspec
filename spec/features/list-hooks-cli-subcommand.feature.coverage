@@ -4,11 +4,11 @@
       "name": "CLI against empty directory writes zero bytes to stdout and does not auto-create files",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "116-147",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 53,
                 54,
@@ -57,11 +57,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "116-148",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 73,
                 74,
@@ -103,11 +103,11 @@
       "name": "CLI writes zero bytes to stdout regardless of populated hooks (TS Commander.js action discards result)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "148-203",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 53,
                 54,
@@ -156,11 +156,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "150-176",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 73,
                 74,
@@ -202,11 +202,11 @@
       "name": "CLI exits 0 with zero stdout bytes when spec/fspec-hooks.json contains invalid JSON",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "204-235",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 53,
                 54,
@@ -255,11 +255,11 @@
           ]
         },
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "178-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 73,
                 74,
@@ -301,11 +301,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "236-279",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 53,
                 54,
@@ -359,11 +359,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "280-338",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/list_hooks.rs",
+              "file": "rust/fspec/src/list_hooks.rs",
               "lines": [
                 53,
                 54,
@@ -417,11 +417,11 @@
       "name": "list-hooks --help is byte-for-byte identical to TS reference output",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "file": "rust/fspec/tests/cli_list_hooks.rs",
           "lines": "63-178",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/mod.rs",
+              "file": "rust/fspec-core/src/help/mod.rs",
               "lines": [
                 1,
                 2,
@@ -693,11 +693,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_list_hooks.rs"
+      "rust/fspec/tests/cli_list_hooks.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_hooks.rs",
-      "codelet/fspec-core/src/help/mod.rs"
+      "rust/fspec/src/list_hooks.rs",
+      "rust/fspec-core/src/help/mod.rs"
     ],
     "totalLinesCovered": 990
   }

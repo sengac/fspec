@@ -8,7 +8,7 @@
           "lines": "44-56",
           "implMappings": [
             {
-              "file": "codelet/git/src/status.rs",
+              "file": "rust/git/src/status.rs",
               "lines": [
                 14,
                 15,
@@ -60,7 +60,7 @@
           "lines": "58-76",
           "implMappings": [
             {
-              "file": "codelet/git/src/status.rs",
+              "file": "rust/git/src/status.rs",
               "lines": [
                 51,
                 52,
@@ -113,7 +113,7 @@
           "lines": "78-96",
           "implMappings": [
             {
-              "file": "codelet/git/src/status.rs",
+              "file": "rust/git/src/status.rs",
               "lines": [
                 89,
                 90,
@@ -172,7 +172,7 @@
           "lines": "98-118",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 13,
                 14,
@@ -249,7 +249,7 @@
           "lines": "120-143",
           "implMappings": [
             {
-              "file": "codelet/git/src/diff.rs",
+              "file": "rust/git/src/diff.rs",
               "lines": [
                 75,
                 76,
@@ -288,7 +288,7 @@
           "lines": "145-174",
           "implMappings": [
             {
-              "file": "codelet/git/src/status.rs",
+              "file": "rust/git/src/status.rs",
               "lines": [
                 133,
                 134,
@@ -332,7 +332,7 @@
           "lines": "176-212",
           "implMappings": [
             {
-              "file": "codelet/napi/src/git.rs",
+              "file": "rust/napi/src/git.rs",
               "lines": [
                 1,
                 2,
@@ -405,9 +405,9 @@
       "src/git/__tests__/gitoxide-operations.test.ts"
     ],
     "implFiles": [
-      "codelet/git/src/status.rs",
-      "codelet/git/src/diff.rs",
-      "codelet/napi/src/git.rs"
+      "rust/git/src/status.rs",
+      "rust/git/src/diff.rs",
+      "rust/napi/src/git.rs"
     ],
     "totalLinesCovered": 447
   }

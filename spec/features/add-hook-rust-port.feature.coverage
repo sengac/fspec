@@ -4,11 +4,11 @@
       "name": "Creates spec/fspec-hooks.json when missing and writes a single entry",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "50-90",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -75,11 +75,11 @@
       "name": "Appends to an existing event array preserving previous entries",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "92-135",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -146,11 +146,11 @@
       "name": "Adds a new event key when missing from existing config",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "137-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -217,11 +217,11 @@
       "name": "Omits timeout field on disk when not supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "186-213",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -288,11 +288,11 @@
       "name": "Writes blocking=true and timeout when supplied",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "215-242",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -359,11 +359,11 @@
       "name": "Swallows invalid JSON and overwrites with the new config",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "244-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -430,11 +430,11 @@
       "name": "Preserves unknown top-level global section",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "280-323",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -501,11 +501,11 @@
       "name": "Allows duplicate hook names within the same event",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "325-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,
@@ -572,11 +572,11 @@
       "name": "Preserves event-key insertion order across writes",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_hook.rs",
+          "file": "rust/fspec-core/tests/add_hook.rs",
           "lines": "364-405",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_hook.rs",
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
               "lines": [
                 106,
                 107,

@@ -289,7 +289,7 @@
           "lines": "235-298",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 1137,
                 1138,
@@ -469,7 +469,7 @@
     ],
     "implFiles": [
       "src/tui/components/AnchorViewerDialog.tsx",
-      "codelet/napi/src/session.rs",
+      "rust/napi/src/session.rs",
       "src/tui/components/AgentView.tsx"
     ],
     "totalLinesCovered": 637

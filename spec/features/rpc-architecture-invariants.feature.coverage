@@ -4,11 +4,11 @@
       "name": "EmbeddedTransport requires a tokio runtime Handle at construction",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
           "lines": "21-69",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 33,
                 34,
@@ -32,11 +32,11 @@
       "name": "WorkUnitInfo is defined once in rpc-types and re-exported by codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
           "lines": "70-129",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 20,
                 21,
@@ -65,11 +65,11 @@
       "name": "Embedded transport uses only tarpc::transport::channel for in-process traffic",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
           "lines": "130-171",
           "implMappings": [
             {
-              "file": "codelet/rpc-embedded/src/lib.rs",
+              "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
                 52,
                 53,
@@ -97,11 +97,11 @@
       "name": "Shared service crate codelet-rpc has no dependency on codelet-core or the NAPI work_units_watcher",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
           "lines": "172-211",
           "implMappings": [
             {
-              "file": "codelet/rpc/Cargo.toml",
+              "file": "rust/rpc/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -127,11 +127,11 @@
       "name": "rpc-server binary binds to 127.0.0.1 loopback only",
       "testMappings": [
         {
-          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
           "lines": "212-242",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/src/main.rs",
+              "file": "rust/rpc-server/src/main.rs",
               "lines": [
                 29
               ]
@@ -146,13 +146,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/rpc-embedded/tests/architecture_invariants.rs"
+      "rust/rpc-embedded/tests/architecture_invariants.rs"
     ],
     "implFiles": [
-      "codelet/rpc-embedded/src/lib.rs",
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/rpc/Cargo.toml",
-      "codelet/rpc-server/src/main.rs"
+      "rust/rpc-embedded/src/lib.rs",
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc/Cargo.toml",
+      "rust/rpc-server/src/main.rs"
     ],
     "totalLinesCovered": 282
   }

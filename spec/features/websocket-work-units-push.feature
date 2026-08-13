@@ -22,13 +22,13 @@ Feature: WebSocket WorkUnitsUpdate envelope variant
   channel alongside the existing tarpc request/response surface — NOT a
   tarpc stream return. Tarpc keeps strict req/res semantics.
 
-  Server-side (`codelet/rpc-server/src/server.rs::handle_connection`):
+  Server-side (`rust/rpc-server/src/server.rs::handle_connection`):
   per-connection task subscribes to the shared watcher, sends an INITIAL
   snapshot frame immediately on connection (no explicit subscribe RPC),
   then forwards every broadcast event as a bincode-encoded
   `Envelope::WorkUnitsUpdate(snapshot)` onto the WS sink.
 
-  Client-side (`codelet/rpc-server/src/pump.rs::ClientInbound`): the
+  Client-side (`rust/rpc-server/src/pump.rs::ClientInbound`): the
   envelope pump grows a second outbound channel — `WorkUnitsUpdate` frames
   are decoded and forwarded to a `broadcast::Sender<Vec<WorkUnitInfo>>`
   exposed via `FspecWsClient::work_units_rx()`.

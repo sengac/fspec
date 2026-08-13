@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_assumption.rs",
+          "file": "rust/fspec/tests/cli_add_assumption.rs",
           "lines": "65-81",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/add_assumption.rs",
+              "file": "rust/fspec-core/src/help/configs/add_assumption.rs",
               "lines": [
                 1,
                 2,
@@ -66,11 +66,11 @@
       "name": "CLI successfully appends an assumption and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_assumption.rs",
+          "file": "rust/fspec/tests/cli_add_assumption.rs",
           "lines": "83-101",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_assumption.rs",
+              "file": "rust/fspec/src/add_assumption.rs",
               "lines": [
                 18,
                 19,
@@ -105,11 +105,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_assumption.rs",
+          "file": "rust/fspec/tests/cli_add_assumption.rs",
           "lines": "120-156",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_assumption.rs",
+              "file": "rust/fspec/src/add_assumption.rs",
               "lines": [
                 18,
                 19,
@@ -150,11 +150,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 75,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_assumption.rs"
+      "rust/fspec/tests/cli_add_assumption.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/help/configs/add_assumption.rs",
-      "codelet/fspec/src/add_assumption.rs"
+      "rust/fspec-core/src/help/configs/add_assumption.rs",
+      "rust/fspec/src/add_assumption.rs"
     ],
     "totalLinesCovered": 204
   }

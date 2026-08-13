@@ -4,11 +4,11 @@
       "name": "Default format (no format key supplied) is text",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "38-69",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 144,
                 145,
@@ -88,11 +88,11 @@
       "name": "JSON format returns exactly seven sections in canonical order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "71-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 89,
                 90,
@@ -179,11 +179,11 @@
       "name": "JSON format emits the canonical jsonPath strings for every section",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "110-164",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 89,
                 90,
@@ -270,11 +270,11 @@
       "name": "JSON format emits the canonical constraint strings for every section",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "166-220",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 89,
                 90,
@@ -361,11 +361,11 @@
       "name": "JSON format omits the examples field for sections without examples",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "222-272",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 60,
                 61,
@@ -481,11 +481,11 @@
       "name": "JSON format uses two-space indented pretty-printed payload",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "274-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 144,
                 145,
@@ -517,11 +517,11 @@
       "name": "Text format renders the header, separator, blank line, and seven section blocks",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "302-365",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 89,
                 90,
@@ -656,11 +656,11 @@
       "name": "Text format renders path, constraint, and about lines for each section row",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "367-421",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 187,
                 188,
@@ -697,11 +697,11 @@
       "name": "Text format renders the examples line only for projectType",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "423-450",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 187,
                 188,
@@ -738,11 +738,11 @@
       "name": "Text format ends with the two-line footer note about dedicated commands",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "452-492",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 187,
                 188,
@@ -779,11 +779,11 @@
       "name": "Dispatch ignores the project_root path entirely",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/list_foundation_sections.rs",
+          "file": "rust/fspec-core/tests/list_foundation_sections.rs",
           "lines": "494-532",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/list_foundation_sections.rs",
+              "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
               "lines": [
                 144,
                 145,
@@ -817,10 +817,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/list_foundation_sections.rs"
+      "rust/fspec-core/tests/list_foundation_sections.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/list_foundation_sections.rs"
+      "rust/fspec-core/src/commands/list_foundation_sections.rs"
     ],
     "totalLinesCovered": 1120
   }

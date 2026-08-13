@@ -6,7 +6,7 @@
 @CMPCT-033
 Feature: Compaction SessionStateChange drops sessionId — wrong session shows Compacting indicator
   """
-  Rust NAPI already carries session_id via GlobalChunkCallbackArgs at codelet/napi/src/session_manager.rs:67-70 and :971-972 — no ABI change needed
+  Rust NAPI already carries session_id via GlobalChunkCallbackArgs at rust/napi/src/session_manager.rs:67-70 and :971-972 — no ABI change needed
   Change SessionChunkHandler type signature in src/tui/services/globalSessionStreamManager.ts:23 from (chunk) => void to (sessionId, chunk) => void
   Update useSessionStreamManager to pass routed sessionId through to the persistentChunkHandler registered in AgentView
   Fix src/tui/handlers/persistentSessionStateHandler.ts:57-62 — accept sessionId parameter, use it instead of deps.getCurrentSessionId() for Compacting state

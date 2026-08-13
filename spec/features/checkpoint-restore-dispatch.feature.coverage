@@ -4,11 +4,11 @@
       "name": "Dispatching RestoreCheckpointFile calls the transport restore_checkpoint_file",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs",
           "lines": "40-79",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
               "lines": [
                 19,
                 20,
@@ -49,11 +49,11 @@
       "name": "Dispatching RestoreCheckpointAll calls the transport restore_checkpoint_all",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs",
+          "file": "rust/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs",
           "lines": "80-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
               "lines": [
                 51,
                 52,
@@ -89,10 +89,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs"
+      "rust/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_checkpoint_restore.rs"
+      "rust/fspec-tui/src/app/dispatch_checkpoint_restore.rs"
     ],
     "totalLinesCovered": 122
   }

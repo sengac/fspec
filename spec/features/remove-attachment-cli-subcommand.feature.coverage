@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "107-155",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -96,11 +96,11 @@
       "name": "CLI successfully removes an attachment and prints the canonical success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "157-209",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -188,11 +188,11 @@
       "name": "CLI passes --keep-file through to the core, preserving the file on disk",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "211-247",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -280,11 +280,11 @@
       "name": "CLI surfaces the \"already missing\" warning with exit 0 when file is gone",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "249-279",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -372,11 +372,11 @@
       "name": "CLI exits 2 when the workUnitId positional argument is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "281-303",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -464,11 +464,11 @@
       "name": "CLI exits 2 when the fileName positional argument is missing",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "305-327",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -556,11 +556,11 @@
       "name": "CLI exits 1 with stderr prefix when the work unit does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "329-357",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -648,11 +648,11 @@
       "name": "CLI exits 1 when work unit has no attachments",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "359-379",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -740,11 +740,11 @@
       "name": "CLI exits 1 when filename does not match any attachment",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "381-410",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -832,11 +832,11 @@
       "name": "Default combined TUI mode is preserved when no subcommand is provided",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "412-437",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -924,11 +924,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_remove_attachment.rs",
+          "file": "rust/fspec/tests/cli_remove_attachment.rs",
           "lines": "439-493",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/remove_attachment.rs",
+              "file": "rust/fspec/src/remove_attachment.rs",
               "lines": [
                 1,
                 2,
@@ -1018,10 +1018,10 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_remove_attachment.rs"
+      "rust/fspec/tests/cli_remove_attachment.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/remove_attachment.rs"
+      "rust/fspec/src/remove_attachment.rs"
     ],
     "totalLinesCovered": 1527
   }

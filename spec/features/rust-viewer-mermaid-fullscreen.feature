@@ -5,7 +5,7 @@
 @RPC-378
 Feature: Fullscreen mermaid modal with Panzoom zoom/pan and SVG download in the Rust markdown viewer
   """
-  The viewer_template (codelet/attachment-viewer src/markdown/template) emits all interactivity as static server-rendered HTML/JS strings; tests assert on the emitted string, not browser execution. Mermaid ESM v11 + Panzoom v4.5.1 are loaded from CDN. The fullscreen modal JS is split into a mermaid_modal submodule and modal CSS into a modal_styles submodule so every file stays under 300 lines. The public viewer_template(title, content_html) signature is unchanged.
+  The viewer_template (rust/attachment-viewer src/markdown/template) emits all interactivity as static server-rendered HTML/JS strings; tests assert on the emitted string, not browser execution. Mermaid ESM v11 + Panzoom v4.5.1 are loaded from CDN. The fullscreen modal JS is split into a mermaid_modal submodule and modal CSS into a modal_styles submodule so every file stays under 300 lines. The public viewer_template(title, content_html) signature is unchanged.
   """
 
   # ========================================

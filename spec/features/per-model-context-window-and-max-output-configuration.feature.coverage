@@ -4,11 +4,11 @@
       "name": "Cloud model gets per-model context window from models.dev registry",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1277-1304",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 81,
                 82,
@@ -232,11 +232,11 @@
       "name": "Copilot proxy model gets per-model context from registry",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1310-1338",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 81,
                 82,
@@ -309,11 +309,11 @@
       "name": "Claude model gets per-model context from registry",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1344-1361",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 81,
                 82,
@@ -386,11 +386,11 @@
       "name": "Profile model gets context window through NAPI parameters",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1460-1483",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6462,
                 6463,
@@ -441,11 +441,11 @@
       "name": "Codex model gets context window through NAPI parameters",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1489-1510",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6462,
                 6463,
@@ -496,11 +496,11 @@
       "name": "NAPI override takes priority over models.dev metadata",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1616-1642",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session_manager.rs",
+              "file": "rust/napi/src/session_manager.rs",
               "lines": [
                 6424,
                 6425,
@@ -549,11 +549,11 @@
       "name": "No model selected falls back to provider constant",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1367-1384",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 631,
                 632,
@@ -635,11 +635,11 @@
       "name": "Environment variable override still works when no per-model data",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1428-1453",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 631,
                 632,
@@ -721,11 +721,11 @@
       "name": "Compaction threshold uses per-model context window for large-context model",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1674-1693",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 631,
                 632,
@@ -807,11 +807,11 @@
       "name": "Compaction threshold uses per-model context window for small-context model",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1699-1717",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 631,
                 632,
@@ -893,7 +893,7 @@
       "name": "modelSelectionService passes contextWindow and maxOutput to sessionSetModel",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1724-1746",
           "implMappings": [
             {
@@ -937,7 +937,7 @@
       "name": "modelSelectionService passes contextWindow and maxOutput to sessionSetModelProfile",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1752-1773",
           "implMappings": [
             {
@@ -981,11 +981,11 @@
       "name": "with_provider_and_model accepts optional context window parameters",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1562-1583",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 156,
                 157,
@@ -1031,11 +1031,11 @@
       "name": "with_provider_and_model without context params falls back to provider constant",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1589-1610",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 156,
                 157,
@@ -1081,11 +1081,11 @@
       "name": "for_testing constructor with custom context window",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1542-1556",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 718,
                 719,
@@ -1122,11 +1122,11 @@
       "name": "Provider-level compile-time constants remain unchanged",
       "testMappings": [
         {
-          "file": "codelet/providers/src/manager.rs",
+          "file": "rust/providers/src/manager.rs",
           "lines": "1648-1667",
           "implMappings": [
             {
-              "file": "codelet/providers/src/manager.rs",
+              "file": "rust/providers/src/manager.rs",
               "lines": [
                 631,
                 632,
@@ -1210,11 +1210,11 @@
     "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/manager.rs"
+      "rust/providers/src/manager.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/manager.rs",
-      "codelet/napi/src/session_manager.rs",
+      "rust/providers/src/manager.rs",
+      "rust/napi/src/session_manager.rs",
       "src/tui/services/modelSelectionService.ts"
     ],
     "totalLinesCovered": 1303

@@ -7,7 +7,7 @@ Feature: Port list-tags command to Rust
   """
   New shared helper `io::ensure::ensure_tags_file(cwd) -> Result<TagsData, FspecCoreError>` lives alongside `ensure_prefixes_file` and uses the canonical 9-category default — Phase / Component / Feature Group / Technical / Platform / Priority / Status / Testing / Automation, in that order, each with an empty tags array. This matches `ensureTagsFile` in src/utils/ensure-files.ts:98-191 (load-or-init semantics).
 
-  New typed `TagsData` / `TagCategory` / `Tag` shapes live in codelet/fspec-core/src/types/tags.rs (new module). The `Tag` struct exposes ONLY the `tag` (a.k.a `name`) and `description` fields at the dispatcher surface — all auxiliary TS Tag-interface fields (`usage`, `scope`, `examples`, `useCases`, `whenToUse`, `criteria`, `meaning`, `testType`) are NOT projected into list-tags output. Insertion order of categories is preserved (no reordering at the dispatcher), and tags WITHIN a category are sorted alphabetically via `Ord` on the tag name (parity with the TS `a.tag.localeCompare(b.tag)` sort at src/commands/list-tags.ts:43).
+  New typed `TagsData` / `TagCategory` / `Tag` shapes live in rust/fspec-core/src/types/tags.rs (new module). The `Tag` struct exposes ONLY the `tag` (a.k.a `name`) and `description` fields at the dispatcher surface — all auxiliary TS Tag-interface fields (`usage`, `scope`, `examples`, `useCases`, `whenToUse`, `criteria`, `meaning`, `testType`) are NOT projected into list-tags output. Insertion order of categories is preserved (no reordering at the dispatcher), and tags WITHIN a category are sorted alphabetically via `Ord` on the tag name (parity with the TS `a.tag.localeCompare(b.tag)` sort at src/commands/list-tags.ts:43).
 
   The `category` arg is an exact case-sensitive match. On miss it produces a literal `Category not found: <name>. Available categories: <comma-space-joined insertion-order names>` error string, matching src/commands/list-tags.ts:48-54.
   """
@@ -117,9 +117,9 @@ Feature: Port list-tags command to Rust
     And the first tag entry has tag='@critical' and description='Critical features'
     And the DispatchResult.data uses 2-space indentation
 
-  Scenario: Shared infrastructure modules exist under codelet/fspec-core for reuse by other tag commands
-    Given the codelet/fspec-core crate is built
-    When I inspect codelet/fspec-core/src/
+  Scenario: Shared infrastructure modules exist under rust/fspec-core for reuse by other tag commands
+    Given the rust/fspec-core crate is built
+    When I inspect rust/fspec-core/src/
     Then the module io::ensure::ensure_tags_file exists and is publicly accessible from the crate root
     And types::tags::TagsData exists as a public type
     And commands/list_tags.rs no longer declares the NotYetPorted stub

@@ -4,11 +4,11 @@
       "name": "Dispatcher deletes a scenario from a two-scenario feature",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenario.rs",
+          "file": "rust/fspec-core/tests/delete_scenario.rs",
           "lines": "60-88",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenario.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -302,11 +302,11 @@
       "name": "Dispatcher reports a missing scenario name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenario.rs",
+          "file": "rust/fspec-core/tests/delete_scenario.rs",
           "lines": "94-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenario.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -600,11 +600,11 @@
       "name": "Dispatcher reports a missing feature file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenario.rs",
+          "file": "rust/fspec-core/tests/delete_scenario.rs",
           "lines": "128-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenario.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -898,11 +898,11 @@
       "name": "Dispatcher updates the coverage sidecar when present",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenario.rs",
+          "file": "rust/fspec-core/tests/delete_scenario.rs",
           "lines": "162-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenario.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -1196,11 +1196,11 @@
       "name": "Dispatcher ignores a malformed coverage sidecar",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_scenario.rs",
+          "file": "rust/fspec-core/tests/delete_scenario.rs",
           "lines": "204-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_scenario.rs",
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
               "lines": [
                 1,
                 2,
@@ -1496,10 +1496,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_scenario.rs"
+      "rust/fspec-core/tests/delete_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_scenario.rs"
+      "rust/fspec-core/src/commands/delete_scenario.rs"
     ],
     "totalLinesCovered": 1569
   }

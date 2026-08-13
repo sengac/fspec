@@ -4,11 +4,11 @@
       "name": "Generic credential store reads and writes provider auth files",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "7-11",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/credential_store.rs",
+              "file": "rust/providers/src/oauth/credential_store.rs",
               "lines": [
                 1,
                 2,
@@ -156,11 +156,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "7-11",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/credential_store.rs",
+              "file": "rust/providers/src/oauth/credential_store.rs",
               "lines": [
                 1,
                 2,
@@ -313,11 +313,11 @@
       "name": "Generic refreshing HTTP client unifies token refresh logic",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "14-17",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/http_middleware.rs",
+              "file": "rust/providers/src/oauth/http_middleware.rs",
               "lines": [
                 1,
                 2,
@@ -562,11 +562,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "13-17",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/http_middleware.rs",
+              "file": "rust/providers/src/oauth/http_middleware.rs",
               "lines": [
                 1,
                 2,
@@ -816,11 +816,11 @@
       "name": "Generic device code flow unifies RFC 8628 polling loops",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "20-23",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/device_flow.rs",
+              "file": "rust/providers/src/oauth/device_flow.rs",
               "lines": [
                 1,
                 2,
@@ -1022,11 +1022,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "19-23",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/device_flow.rs",
+              "file": "rust/providers/src/oauth/device_flow.rs",
               "lines": [
                 1,
                 2,
@@ -1233,11 +1233,11 @@
       "name": "Generic OAuth callback server unifies PKCE flows",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "26-29",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/callback_server.rs",
+              "file": "rust/providers/src/oauth/callback_server.rs",
               "lines": [
                 1,
                 2,
@@ -1489,11 +1489,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "25-29",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/callback_server.rs",
+              "file": "rust/providers/src/oauth/callback_server.rs",
               "lines": [
                 1,
                 2,
@@ -1750,11 +1750,11 @@
       "name": "Sandboxed Rhai engine enforces safety limits",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "32-35",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/engine.rs",
+              "file": "rust/providers/src/oauth/engine.rs",
               "lines": [
                 1,
                 2,
@@ -1826,11 +1826,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "31-35",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/engine.rs",
+              "file": "rust/providers/src/oauth/engine.rs",
               "lines": [
                 1,
                 2,
@@ -1907,11 +1907,11 @@
       "name": "Rhai building block modules provide OAuth primitives",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "38-41",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/building_blocks.rs",
+              "file": "rust/providers/src/oauth/building_blocks.rs",
               "lines": [
                 1,
                 2,
@@ -2189,11 +2189,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "37-41",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/building_blocks.rs",
+              "file": "rust/providers/src/oauth/building_blocks.rs",
               "lines": [
                 1,
                 2,
@@ -2476,11 +2476,11 @@
       "name": "Scripted OAuth provider executes Rhai flow functions",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "44-47",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/script_provider.rs",
+              "file": "rust/providers/src/oauth/script_provider.rs",
               "lines": [
                 1,
                 2,
@@ -2720,11 +2720,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "43-47",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/script_provider.rs",
+              "file": "rust/providers/src/oauth/script_provider.rs",
               "lines": [
                 1,
                 2,
@@ -2969,11 +2969,11 @@
       "name": "All existing provider tests pass after refactoring",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "50-54",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/mod.rs",
+              "file": "rust/providers/src/oauth/mod.rs",
               "lines": [
                 1,
                 2,
@@ -3012,11 +3012,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "49-54",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/mod.rs",
+              "file": "rust/providers/src/oauth/mod.rs",
               "lines": [
                 1,
                 2,
@@ -3060,11 +3060,11 @@
       "name": "All new shared module files comply with 300-line limit",
       "testMappings": [
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "57-59",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/token_refresh.rs",
+              "file": "rust/providers/src/oauth/token_refresh.rs",
               "lines": [
                 1,
                 2,
@@ -3167,11 +3167,11 @@
           ]
         },
         {
-          "file": "codelet/providers/src/oauth/tests.rs",
+          "file": "rust/providers/src/oauth/tests.rs",
           "lines": "56-59",
           "implMappings": [
             {
-              "file": "codelet/providers/src/oauth/mod.rs",
+              "file": "rust/providers/src/oauth/mod.rs",
               "lines": [
                 1,
                 2,
@@ -3217,18 +3217,18 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/src/oauth/tests.rs"
+      "rust/providers/src/oauth/tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/oauth/credential_store.rs",
-      "codelet/providers/src/oauth/http_middleware.rs",
-      "codelet/providers/src/oauth/device_flow.rs",
-      "codelet/providers/src/oauth/callback_server.rs",
-      "codelet/providers/src/oauth/engine.rs",
-      "codelet/providers/src/oauth/building_blocks.rs",
-      "codelet/providers/src/oauth/script_provider.rs",
-      "codelet/providers/src/oauth/mod.rs",
-      "codelet/providers/src/oauth/token_refresh.rs"
+      "rust/providers/src/oauth/credential_store.rs",
+      "rust/providers/src/oauth/http_middleware.rs",
+      "rust/providers/src/oauth/device_flow.rs",
+      "rust/providers/src/oauth/callback_server.rs",
+      "rust/providers/src/oauth/engine.rs",
+      "rust/providers/src/oauth/building_blocks.rs",
+      "rust/providers/src/oauth/script_provider.rs",
+      "rust/providers/src/oauth/mod.rs",
+      "rust/providers/src/oauth/token_refresh.rs"
     ],
     "totalLinesCovered": 3050
   }

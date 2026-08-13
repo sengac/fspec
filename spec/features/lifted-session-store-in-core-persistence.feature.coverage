@@ -4,11 +4,11 @@
       "name": "SessionManifest round-trips through {data_dir}/sessions/{uuid}.json from codelet-core",
       "testMappings": [
         {
-          "file": "codelet/core/tests/session_store_lifted_test.rs",
+          "file": "rust/core/tests/session_store_lifted_test.rs",
           "lines": "47-95",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 1,
                 2,
@@ -1095,11 +1095,11 @@
       "name": "codelet-core consumers can construct and persist sessions without depending on codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/core/tests/session_store_lifted_test.rs",
+          "file": "rust/core/tests/session_store_lifted_test.rs",
           "lines": "104-126",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 1,
                 2,
@@ -2186,11 +2186,11 @@
       "name": "fork_session preserves provider lineage and persists the new manifest",
       "testMappings": [
         {
-          "file": "codelet/core/tests/session_store_lifted_test.rs",
+          "file": "rust/core/tests/session_store_lifted_test.rs",
           "lines": "132-176",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 192,
                 193,
@@ -2309,11 +2309,11 @@
       "name": "Compaction round-trip returns the synthetic summary plus post-boundary messages",
       "testMappings": [
         {
-          "file": "codelet/core/tests/session_store_lifted_test.rs",
+          "file": "rust/core/tests/session_store_lifted_test.rs",
           "lines": "182-222",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 700,
                 701,
@@ -2496,11 +2496,11 @@
       "name": "delete_session removes the on-disk manifest through the lifted facade",
       "testMappings": [
         {
-          "file": "codelet/core/tests/session_store_lifted_test.rs",
+          "file": "rust/core/tests/session_store_lifted_test.rs",
           "lines": "228-275",
           "implMappings": [
             {
-              "file": "codelet/core/src/persistence/manifest.rs",
+              "file": "rust/core/src/persistence/manifest.rs",
               "lines": [
                 560,
                 561,
@@ -2560,10 +2560,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/tests/session_store_lifted_test.rs"
+      "rust/core/tests/session_store_lifted_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/persistence/manifest.rs"
+      "rust/core/src/persistence/manifest.rs"
     ],
     "totalLinesCovered": 2680
   }

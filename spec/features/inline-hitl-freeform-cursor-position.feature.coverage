@@ -4,11 +4,11 @@
       "name": "Freeform question with a single-row header places the cursor on the input line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
+          "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
           "lines": "85-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/cursor_anchor.rs",
+              "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
               "lines": [
                 21,
                 22,
@@ -24,7 +24,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 150,
                 151,
@@ -33,7 +33,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 100,
                 101,
@@ -49,11 +49,11 @@
       "name": "The empty-submit hint pushes the cursor down onto the input line",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
+          "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
           "lines": "125-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/cursor_anchor.rs",
+              "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
               "lines": [
                 21,
                 22,
@@ -69,7 +69,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 100,
                 101,
@@ -85,11 +85,11 @@
       "name": "The Other sub-mode places the cursor on the input line below the header",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
+          "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
           "lines": "163-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/cursor_anchor.rs",
+              "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
               "lines": [
                 21,
                 22,
@@ -105,7 +105,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 100,
                 101,
@@ -121,11 +121,11 @@
       "name": "A header wrapped to two rows offsets the cursor by two rows",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
+          "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
           "lines": "200-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/cursor_anchor.rs",
+              "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
               "lines": [
                 21,
                 22,
@@ -141,7 +141,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_prompt.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
               "lines": [
                 196,
                 197,
@@ -181,11 +181,11 @@
       "name": "An options-mode HITL prompt shows no hardware cursor",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
+          "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
           "lines": "250-276",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
                 85,
                 86,
@@ -209,7 +209,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent/hitl_keys.rs",
+              "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
                 54,
                 55,
@@ -236,11 +236,11 @@
       "name": "The normal composer anchors the cursor at the input area top",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
+          "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
           "lines": "282-305",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/cursor_anchor.rs",
+              "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
               "lines": [
                 21,
                 22,
@@ -256,7 +256,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 150,
                 151,
@@ -274,14 +274,14 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs"
+      "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/cursor_anchor.rs",
-      "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/views/agent/input_area.rs",
-      "codelet/fspec-tui/src/views/agent/hitl_prompt.rs",
-      "codelet/fspec-tui/src/views/agent/hitl_keys.rs"
+      "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/agent/input_area.rs",
+      "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
+      "rust/fspec-tui/src/views/agent/hitl_keys.rs"
     ],
     "totalLinesCovered": 332
   }

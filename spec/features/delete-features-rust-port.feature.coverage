@@ -4,11 +4,11 @@
       "name": "Dispatcher deletes features carrying a single tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_features.rs",
+          "file": "rust/fspec-core/tests/delete_features.rs",
           "lines": "57-82",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_features.rs",
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
                 1,
                 2,
@@ -184,11 +184,11 @@
       "name": "Dispatcher applies AND logic across multiple tags",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_features.rs",
+          "file": "rust/fspec-core/tests/delete_features.rs",
           "lines": "85-116",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_features.rs",
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
                 1,
                 2,
@@ -364,11 +364,11 @@
       "name": "Dispatcher dry-run leaves all files on disk",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_features.rs",
+          "file": "rust/fspec-core/tests/delete_features.rs",
           "lines": "120-148",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_features.rs",
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
                 1,
                 2,
@@ -544,11 +544,11 @@
       "name": "Dispatcher rejects an empty tag list",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_features.rs",
+          "file": "rust/fspec-core/tests/delete_features.rs",
           "lines": "151-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_features.rs",
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
                 1,
                 2,
@@ -724,11 +724,11 @@
       "name": "Dispatcher reports no matches for an unused tag",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/delete_features.rs",
+          "file": "rust/fspec-core/tests/delete_features.rs",
           "lines": "175-191",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/delete_features.rs",
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
                 1,
                 2,
@@ -906,10 +906,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/delete_features.rs"
+      "rust/fspec-core/tests/delete_features.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/delete_features.rs"
+      "rust/fspec-core/src/commands/delete_features.rs"
     ],
     "totalLinesCovered": 944
   }

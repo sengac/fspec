@@ -23,7 +23,7 @@ Feature: Stderr lines in tool cards must render red and strip the stderr sentine
   #   5. A ToolProgress chunk with is_stderr=false is folded verbatim (no marker added) and renders in the normal body color
   #   6. The STDERR_MARKER text never reaches the screen in any render path — it is stripped in both the scrollback tool-card body and the TurnContentModal
   #   7. Diff cards (is_diff=true) bypass stderr detection entirely and are unaffected
-  #   8. The marker constant value is exactly ⚠stderr⚠, matching codelet/tools bash_output.rs STDERR_MARKER and the TS reference
+  #   8. The marker constant value is exactly ⚠stderr⚠, matching rust/tools bash_output.rs STDERR_MARKER and the TS reference
   #
   # EXAMPLES:
   #   1. A settled tool card body line '⚠stderr⚠warning: unused import' renders as 'warning: unused import' in red (marker stripped)

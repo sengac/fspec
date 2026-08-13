@@ -6,10 +6,10 @@
 Feature: OpenAI profile streaming flag schema
   """
   The per-profile streaming flag lives as a flat Option<bool> on the wire type
-  ProfileDefinition (codelet/rpc-types), mirroring how the compaction-threshold
+  ProfileDefinition (rust/rpc-types), mirroring how the compaction-threshold
   override is carried as flat optional fields. A canonical streaming_enabled()
   helper returns self.streaming.unwrap_or(true) so an absent flag means
-  streaming is enabled. Verified by codelet/rpc-types/tests/prov139_streaming_flag.rs.
+  streaming is enabled. Verified by rust/rpc-types/tests/prov139_streaming_flag.rs.
   """
 
   Background: User Story

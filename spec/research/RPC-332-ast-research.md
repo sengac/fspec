@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-18
 **Tool:** AstGrep (Rust)
-**Scope:** `codelet/fspec-core/src/commands/check.rs`
+**Scope:** `rust/fspec-core/src/commands/check.rs`
 
 ## Confirmed: still relevant, correctly blocked by RPC-330
 

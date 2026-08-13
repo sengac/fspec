@@ -4,11 +4,11 @@
       "name": "Request user input with questions and options returns answers",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "403-460",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 1,
                 2,
@@ -305,11 +305,11 @@
       "name": "Request user input in headless mode returns error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "464-490",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 149,
                 150,
@@ -336,11 +336,11 @@
       "name": "Validation rejects header longer than 12 characters",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "494-525",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 95,
                 96,
@@ -378,11 +378,11 @@
       "name": "Validation rejects non-snake_case question id",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "529-560",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 83,
                 84,
@@ -404,11 +404,11 @@
       "name": "User cancellation returns cancelled response",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "564-597",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 60,
                 61,
@@ -436,11 +436,11 @@
       "name": "Validation rejects more than 3 questions",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "600-636",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 95,
                 96,
@@ -458,11 +458,11 @@
       "name": "Validation rejects fewer than 2 options per question",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "640-679",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 114,
                 115,
@@ -481,11 +481,11 @@
       "name": "Question without options accepts freeform-only input",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "683-736",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 95,
                 96,
@@ -523,11 +523,11 @@
       "name": "Handler registry lifecycle management",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "740-765",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 130,
                 131,
@@ -583,11 +583,11 @@
       "name": "Validation rejects empty questions array",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "769-800",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 95,
                 96,
@@ -603,11 +603,11 @@
       "name": "Validation rejects question with empty id",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "804-835",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 102,
                 103,
@@ -625,11 +625,11 @@
       "name": "Validation rejects question with empty header",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "839-871",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 108,
                 109,
@@ -644,11 +644,11 @@
       "name": "Validation rejects more than 3 options per question",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "874-915",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 117,
                 118,
@@ -664,11 +664,11 @@
       "name": "Validation rejects question with empty question text",
       "testMappings": [
         {
-          "file": "codelet/tools/src/request_user_input.rs",
+          "file": "rust/tools/src/request_user_input.rs",
           "lines": "878-910",
           "implMappings": [
             {
-              "file": "codelet/tools/src/request_user_input.rs",
+              "file": "rust/tools/src/request_user_input.rs",
               "lines": [
                 142,
                 143,
@@ -685,10 +685,10 @@
     "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/request_user_input.rs"
+      "rust/tools/src/request_user_input.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/request_user_input.rs"
+      "rust/tools/src/request_user_input.rs"
     ],
     "totalLinesCovered": 967
   }

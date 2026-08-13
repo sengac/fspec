@@ -4,11 +4,11 @@
       "name": "Compacting a populated session clears the conversation and kicks the agent loop",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc418_compact_session.rs",
+          "file": "rust/sessions/tests/rpc418_compact_session.rs",
           "lines": "129-194",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 261,
                 262,
@@ -101,11 +101,11 @@
       "name": "Compacting an empty session returns an error and leaves it untouched",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc418_compact_session.rs",
+          "file": "rust/sessions/tests/rpc418_compact_session.rs",
           "lines": "201-239",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 261,
                 262,
@@ -198,11 +198,11 @@
       "name": "Compacting a populated session reports real token counts",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc418_compact_session.rs",
+          "file": "rust/sessions/tests/rpc418_compact_session.rs",
           "lines": "246-293",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 261,
                 262,
@@ -304,11 +304,11 @@
       "name": "Compacting an unknown session id returns a not-found error",
       "testMappings": [
         {
-          "file": "codelet/sessions/tests/rpc418_compact_session.rs",
+          "file": "rust/sessions/tests/rpc418_compact_session.rs",
           "lines": "299-322",
           "implMappings": [
             {
-              "file": "codelet/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
                 261,
                 262,
@@ -412,10 +412,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/sessions/tests/rpc418_compact_session.rs"
+      "rust/sessions/tests/rpc418_compact_session.rs"
     ],
     "implFiles": [
-      "codelet/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl.rs"
     ],
     "totalLinesCovered": 519
   }

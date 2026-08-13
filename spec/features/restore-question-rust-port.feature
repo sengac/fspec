@@ -3,7 +3,7 @@
 Feature: Port restore-question command to Rust
   """
   Reuses shared infrastructure ensure_work_units_file (load/auto-create), write_json_atomic (atomic write), iso8601_now (timestamp). Questions live in WorkUnit.extra under 'questions' as Value::Array of objects keyed by 'id'.
-  Files: replace stub at codelet/fspec-core/src/commands/restore_question.rs; NEW codelet/fspec-core/src/help/configs/restore_question.rs; NEW codelet/fspec/src/restore_question.rs (bridge); NEW codelet/fspec-core/tests/restore_question.rs (dispatcher); NEW codelet/fspec/tests/cli_restore_question.rs; NEW codelet/fspec/tests/fixtures/help/restore-question.txt.
+  Files: replace stub at rust/fspec-core/src/commands/restore_question.rs; NEW rust/fspec-core/src/help/configs/restore_question.rs; NEW rust/fspec/src/restore_question.rs (bridge); NEW rust/fspec-core/tests/restore_question.rs (dispatcher); NEW rust/fspec/tests/cli_restore_question.rs; NEW rust/fspec/tests/fixtures/help/restore-question.txt.
   Two-front-doors: dispatcher AND clap CLI both invoke commands::restore_question::run(args_json, project_root). CLI bridge marshals positional workUnitId + index into JSON {workUnitId, index}.
   Inverse mutation of remove-question (RPC-278): clears deleted flag, REMOVES (not nullifies) the deletedAt key, idempotent when already active. Does NOT update data.meta.lastUpdated (TS parity).
   """

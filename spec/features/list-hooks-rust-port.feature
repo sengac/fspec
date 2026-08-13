@@ -4,7 +4,7 @@
 @RPC-247
 Feature: Port list-hooks command to Rust
   """
-  New impl file at codelet/fspec-core/src/commands/list_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_prefixes::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
+  New impl file at rust/fspec-core/src/commands/list_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_prefixes::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
   Hook config is parsed using a lightweight Rust shape: `struct HookConfigPartial { hooks: IndexMap<String, Vec<serde_json::Value>> }` so that insertion order is preserved AND we can pluck `.name` as `Option<String>` regardless of whether the entry has extra/missing fields. We deliberately do NOT model the full HookDefinition struct because list-hooks only needs the name field (parity with TS `hooks.map(h => h.name)`).
   Error swallowing: the impl uses a single try-block (Rust equivalent: a helper fn returning Result, then `.unwrap_or_else(|_| empty_result_with_message())`) that catches BOTH the std::fs::read_to_string IO error AND the serde_json::from_str parse error, mapping each to the canonical empty `{events:[], message:'No hooks are configured'}` shape. This is intentionally wider than list-prefixes' swallowing pattern.
   """

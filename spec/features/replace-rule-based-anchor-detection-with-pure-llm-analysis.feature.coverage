@@ -4,11 +4,11 @@
       "name": "LLM identifies meaningful moments without string pattern analysis",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/llm_anchor_detection.test.rs",
+          "file": "rust/core/src/compaction/__tests__/llm_anchor_detection.test.rs",
           "lines": "21-50",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 87,
                 88,
@@ -104,11 +104,11 @@
       "name": "Context compactor seamlessly integrates with session's LLM function",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/llm_anchor_detection.test.rs",
+          "file": "rust/core/src/compaction/__tests__/llm_anchor_detection.test.rs",
           "lines": "52-85",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/compactor.rs",
+              "file": "rust/core/src/compaction/compactor.rs",
               "lines": [
                 89,
                 90,
@@ -207,11 +207,11 @@
       "name": "LLM analysis timeout creates synthetic anchor without hanging",
       "testMappings": [
         {
-          "file": "codelet/core/src/compaction/__tests__/llm_anchor_detection.test.rs",
+          "file": "rust/core/src/compaction/__tests__/llm_anchor_detection.test.rs",
           "lines": "87-120",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/anchor.rs",
+              "file": "rust/core/src/compaction/anchor.rs",
               "lines": [
                 100,
                 101,
@@ -236,11 +236,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/core/src/compaction/__tests__/llm_anchor_detection.test.rs"
+      "rust/core/src/compaction/__tests__/llm_anchor_detection.test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/anchor.rs",
-      "codelet/core/src/compaction/compactor.rs"
+      "rust/core/src/compaction/anchor.rs",
+      "rust/core/src/compaction/compactor.rs"
     ],
     "totalLinesCovered": 280
   }

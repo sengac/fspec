@@ -9,7 +9,7 @@ Feature: Relay endpoint command flow through bridge WebSocket
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. The relay endpoint's command handler must translate relay command messages to flat InboundMessage format {type:'command', session_id, message:'', request_id, command, args_json} and forward through the codelet's bridge WebSocket — NOT call fspecCallback directly
+  #   1. The relay endpoint's command handler must translate relay command messages to flat InboundMessage format {type:'command', session_id, message:'', request_id, command, args_json} and forward through the rust's bridge WebSocket — NOT call fspecCallback directly
   #   2. relay-command-executor.ts must be deleted entirely — it directly imports fspecCallback which violates the pure protocol translator architecture
   #   3. All imports and re-exports of executeCommand must be removed from relay-endpoint.ts
   #   4. FspecInboundMessage in relay-types.ts must include optional command fields: request_id, command, args_json — to match the InboundMessage format expected by bridge_relay.rs

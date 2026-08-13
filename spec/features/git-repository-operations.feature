@@ -6,7 +6,7 @@
 @GIT-013
 Feature: Git Repository Operations
   """
-  Implements codelet/git Rust crate using gitoxide (gix) - a pure Rust git implementation. Exposes NAPI-RS bindings to TypeScript for status, diff, and branch operations. Uses gix::Repository for all git operations. No external git binary required.
+  Implements rust/git Rust crate using gitoxide (gix) - a pure Rust git implementation. Exposes NAPI-RS bindings to TypeScript for status, diff, and branch operations. Uses gix::Repository for all git operations. No external git binary required.
   """
 
   # ========================================

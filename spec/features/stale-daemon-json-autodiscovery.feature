@@ -11,7 +11,7 @@ Feature: Stale daemon.json autodiscovery hardening (verify_daemon_alive + stale-
   the URL. The function reads daemon.json, parses pid, and uses nix::sys::signal::kill(pid, None)
   on unix / GetExitCodeProcess on windows to verify the daemon is alive. On ESRCH/INVALID it
   deletes the stale file and returns Err with stable text "no daemon.json found …" so callers can
-  match. Lives in codelet/fspec/src/common.rs alongside daemon_json_path() and
+  match. Lives in rust/fspec/src/common.rs alongside daemon_json_path() and
   read_daemon_json_port(). Reused by client.rs and status.rs.
   """
 

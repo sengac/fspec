@@ -23,13 +23,13 @@ import { homedir, tmpdir } from 'os';
 import { join } from 'path';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
 
-// The runner (scripts/run-prov104-e2e.sh) stashes the huge codelet/target
+// The runner (scripts/run-prov104-e2e.sh) stashes the huge rust/target
 // tree out of CWD so tui-test's blanket transform-copy does not try to
 // duplicate 170G+ into .tui-test/cache. It copies the built binary to a
 // stable location and points us at it via FSPEC_BIN.
 const rustFspec =
   process.env.FSPEC_BIN ??
-  join(homedir(), 'projects', 'fspec', 'codelet', 'target', 'debug', 'fspec');
+  join(homedir(), 'projects', 'fspec', 'rust', 'target', 'debug', 'fspec');
 const realWorkspace = join(homedir(), 'projects', 'fspec');
 
 // Build a throwaway HOME with a local-server profile carrying enough custom

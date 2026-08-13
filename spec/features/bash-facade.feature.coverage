@@ -4,11 +4,11 @@
       "name": "Map Gemini run_shell_command parameters to internal BashTool format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "443-466",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/bash.rs",
+              "file": "rust/tools/src/facade/bash.rs",
               "lines": [
                 41,
                 42,
@@ -32,11 +32,11 @@
       "name": "GeminiRunShellCommandFacade provides flat JSON schema",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "468-486",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/bash.rs",
+              "file": "rust/tools/src/facade/bash.rs",
               "lines": [
                 24,
                 25,
@@ -64,11 +64,11 @@
       "name": "BashToolFacadeWrapper integrates with rig Tool trait",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "488-507",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 339,
                 340,
@@ -96,11 +96,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool_facade_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/bash.rs",
-      "codelet/tools/src/facade/wrapper.rs"
+      "rust/tools/src/facade/bash.rs",
+      "rust/tools/src/facade/wrapper.rs"
     ],
     "totalLinesCovered": 105
   }

@@ -4,11 +4,11 @@
       "name": "BlocklistRuleInfo is exported from codelet-rpc-types",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "26-50",
           "implMappings": [
             {
-              "file": "codelet/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/lib.rs",
               "lines": [
                 475,
                 476,
@@ -56,11 +56,11 @@
       "name": "SessionManagerHandle declares blocklist_list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "54-72",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 585,
                 586,
@@ -83,11 +83,11 @@
       "name": "StubSessionManagerHandle exposes a blocklist_list call counter",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "76-94",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 645,
                 646,
@@ -281,11 +281,11 @@
       "name": "FspecService declares blocklist_list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "98-117",
           "implMappings": [
             {
-              "file": "codelet/rpc/src/lib.rs",
+              "file": "rust/rpc/src/lib.rs",
               "lines": [
                 378,
                 379,
@@ -322,11 +322,11 @@
       "name": "FspecBackend declares blocklist_list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "121-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
                 528,
                 529,
@@ -351,11 +351,11 @@
       "name": "Both transports implement blocklist_list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "145-176",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
               "lines": [
                 578,
                 579,
@@ -368,7 +368,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
               "lines": [
                 942,
                 943,
@@ -389,11 +389,11 @@
       "name": "BlocklistView module exists with the documented entry points",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "180-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
                 1,
                 2,
@@ -785,11 +785,11 @@
       "name": "Navigator exposes a ViewMode::Blocklist variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "213-225",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 26,
                 27,
@@ -946,11 +946,11 @@
       "name": "/blocklist slash command wiring lives in dispatch_blocklist.rs",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "229-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_blocklist.rs",
               "lines": [
                 1,
                 2,
@@ -1069,18 +1069,18 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc056.rs"
+      "rust/fspec-tui/tests/source_shape_rpc056.rs"
     ],
     "implFiles": [
-      "codelet/rpc-types/src/lib.rs",
-      "codelet/core/src/session_manager_handle.rs",
-      "codelet/rpc/src/lib.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/transport/websocket.rs",
-      "codelet/fspec-tui/src/views/blocklist/mod.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/app/dispatch_blocklist.rs"
+      "rust/rpc-types/src/lib.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/views/blocklist/mod.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/app/dispatch_blocklist.rs"
     ],
     "totalLinesCovered": 1123
   }

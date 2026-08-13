@@ -173,7 +173,7 @@ When a supervisor hits an unknown, delegate research without blocking:
 # Supervisor is implementing but needs to understand a dependency
 worker = AgentManager(action='spawn', role='Research assistant')
 AgentManager(action='message', session_id=worker.session_id,
-  message='Investigate how the session persistence layer works in codelet/napi/src/persistence/. I need to know the MessageStore API.',
+  message='Investigate how the session persistence layer works in rust/napi/src/persistence/. I need to know the MessageStore API.',
   context=[{session_id: '<my-session>', query: 'persistence'}])
 
 # Supervisor continues working on other parts

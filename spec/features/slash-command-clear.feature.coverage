@@ -4,11 +4,11 @@
       "name": "/clear resets local scrollback synchronously for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "107-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -59,11 +59,11 @@
       "name": "/clear calls backend.clear_history for the focused session",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "130-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -114,11 +114,11 @@
       "name": "/clear with no current session is a silent no-op",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "212-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -169,11 +169,11 @@
       "name": "/clear only affects the focused session — background sessions are untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "248-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -219,11 +219,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
           "lines": "248-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 27,
                 28,
@@ -242,11 +242,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/slash_clear_rpc046.rs"
+      "rust/fspec-tui/tests/slash_clear_rpc046.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_clear.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_clear.rs"
     ],
     "totalLinesCovered": 520
   }

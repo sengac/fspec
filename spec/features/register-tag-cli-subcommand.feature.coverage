@@ -4,11 +4,11 @@
       "name": "CLI successfully registers a new tag and prints the multi-line success block",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_register_tag.rs",
+          "file": "rust/fspec/tests/cli_register_tag.rs",
           "lines": "44-85",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/register_tag.rs",
+              "file": "rust/fspec/src/register_tag.rs",
               "lines": [
                 49,
                 50,
@@ -54,11 +54,11 @@
       "name": "CLI rejects invalid tag format with stderr Error prefix and exit 1",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_register_tag.rs",
+          "file": "rust/fspec/tests/cli_register_tag.rs",
           "lines": "87-119",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/register_tag.rs",
+              "file": "rust/fspec/src/register_tag.rs",
               "lines": [
                 73,
                 74,
@@ -80,11 +80,11 @@
       "name": "CLI reports lowercase conversion note when tag contained uppercase characters",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_register_tag.rs",
+          "file": "rust/fspec/tests/cli_register_tag.rs",
           "lines": "121-156",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/register_tag.rs",
+              "file": "rust/fspec/src/register_tag.rs",
               "lines": [
                 67,
                 68,
@@ -102,11 +102,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_register_tag.rs",
+          "file": "rust/fspec/tests/cli_register_tag.rs",
           "lines": "158-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/register_tag.rs",
+              "file": "rust/fspec-core/src/help/configs/register_tag.rs",
               "lines": [
                 1,
                 2,
@@ -167,11 +167,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_register_tag.rs"
+      "rust/fspec/tests/cli_register_tag.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/register_tag.rs",
-      "codelet/fspec-core/src/help/configs/register_tag.rs"
+      "rust/fspec/src/register_tag.rs",
+      "rust/fspec-core/src/help/configs/register_tag.rs"
     ],
     "totalLinesCovered": 235
   }

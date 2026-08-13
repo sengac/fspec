@@ -4,11 +4,11 @@
       "name": "CLI adds a scenario and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_scenario.rs",
+          "file": "rust/fspec/tests/cli_add_scenario.rs",
           "lines": "53-79",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_scenario.rs",
+              "file": "rust/fspec/src/add_scenario.rs",
               "lines": [
                 41,
                 42,
@@ -42,11 +42,11 @@
       "name": "CLI prints a warning when the scenario name already exists",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_scenario.rs",
+          "file": "rust/fspec/tests/cli_add_scenario.rs",
           "lines": "86-108",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_scenario.rs",
+              "file": "rust/fspec/src/add_scenario.rs",
               "lines": [
                 58,
                 59,
@@ -63,11 +63,11 @@
       "name": "CLI fails with exit 1 and Error prefix for a missing file",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_scenario.rs",
+          "file": "rust/fspec/tests/cli_add_scenario.rs",
           "lines": "115-135",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_scenario.rs",
+              "file": "rust/fspec/src/add_scenario.rs",
               "lines": [
                 64,
                 65,
@@ -92,11 +92,11 @@
       "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_scenario.rs",
+          "file": "rust/fspec/tests/cli_add_scenario.rs",
           "lines": "142-162",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_scenario.rs",
+              "file": "rust/fspec/src/add_scenario.rs",
               "lines": [
                 41,
                 42,
@@ -119,11 +119,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_scenario.rs",
+          "file": "rust/fspec/tests/cli_add_scenario.rs",
           "lines": "169-211",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_scenario.rs",
+              "file": "rust/fspec/src/add_scenario.rs",
               "lines": [
                 52,
                 53,
@@ -148,10 +148,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_scenario.rs"
+      "rust/fspec/tests/cli_add_scenario.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_scenario.rs"
+      "rust/fspec/src/add_scenario.rs"
     ],
     "totalLinesCovered": 197
   }

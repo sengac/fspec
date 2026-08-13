@@ -4,11 +4,11 @@
       "name": "CLI dry-run previews deletions without removing scenarios",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "file": "rust/fspec/tests/cli_delete_scenarios.rs",
           "lines": "64-94",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "file": "rust/fspec/src/delete_scenarios.rs",
               "lines": [
                 92,
                 93,
@@ -60,11 +60,11 @@
       "name": "CLI deletes matching scenarios and prints the success message",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "file": "rust/fspec/tests/cli_delete_scenarios.rs",
           "lines": "98-122",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "file": "rust/fspec/src/delete_scenarios.rs",
               "lines": [
                 132,
                 133,
@@ -80,11 +80,11 @@
       "name": "CLI with no --tag exits 1 with stderr Error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "file": "rust/fspec/tests/cli_delete_scenarios.rs",
           "lines": "126-145",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "file": "rust/fspec/src/delete_scenarios.rs",
               "lines": [
                 43,
                 44,
@@ -101,11 +101,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "file": "rust/fspec/tests/cli_delete_scenarios.rs",
           "lines": "149-179",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "file": "rust/fspec/src/delete_scenarios.rs",
               "lines": [
                 49,
                 50,
@@ -136,11 +136,11 @@
       "name": "CLI help output matches the captured bare-Commander fixture byte-for-byte",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "file": "rust/fspec/tests/cli_delete_scenarios.rs",
           "lines": "185-206",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 3124,
                 3125,
@@ -164,11 +164,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_delete_scenarios.rs"
+      "rust/fspec/tests/cli_delete_scenarios.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/delete_scenarios.rs",
-      "codelet/fspec/src/main.rs"
+      "rust/fspec/src/delete_scenarios.rs",
+      "rust/fspec/src/main.rs"
     ],
     "totalLinesCovered": 207
   }

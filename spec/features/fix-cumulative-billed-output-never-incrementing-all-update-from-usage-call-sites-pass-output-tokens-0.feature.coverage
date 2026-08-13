@@ -4,11 +4,11 @@
       "name": "Cumulative billed output accumulates correctly across two sequential turns",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_001_cumulative_billed_output_test.rs",
+          "file": "rust/cli/tests/token_001_cumulative_billed_output_test.rs",
           "lines": "47-77",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 152,
                 153,
@@ -41,11 +41,11 @@
       "name": "Per-turn delta never underflows when the cumulative display ticks backward",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_001_cumulative_billed_output_test.rs",
+          "file": "rust/cli/tests/token_001_cumulative_billed_output_test.rs",
           "lines": "84-113",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 233,
                 234,
@@ -61,11 +61,11 @@
       "name": "Delta computation is centralized in a single helper",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/token_001_cumulative_billed_output_test.rs",
+          "file": "rust/cli/tests/token_001_cumulative_billed_output_test.rs",
           "lines": "120-189",
           "implMappings": [
             {
-              "file": "codelet/core/src/compaction/model.rs",
+              "file": "rust/core/src/compaction/model.rs",
               "lines": [
                 205,
                 206,
@@ -111,10 +111,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/token_001_cumulative_billed_output_test.rs"
+      "rust/cli/tests/token_001_cumulative_billed_output_test.rs"
     ],
     "implFiles": [
-      "codelet/core/src/compaction/model.rs"
+      "rust/core/src/compaction/model.rs"
     ],
     "totalLinesCovered": 188
   }

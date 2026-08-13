@@ -4,11 +4,11 @@
       "name": "SlashCommandAction enum contains no Providers variant",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "262-299",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/slash_commands.rs",
+              "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
               "lines": [
                 20,
                 21,
@@ -68,11 +68,11 @@
       "name": "dispatch_slash_commands.rs has no Providers arm",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "299-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 103,
                 104,
@@ -92,11 +92,11 @@
       "name": "The ProviderSettingsView module exists at the expected path",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "58-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 1,
                 2,
@@ -158,11 +158,11 @@
       "name": "ProviderSettingsView imports the canonical full-screen helpers",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "85-115",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 12,
                 13,
@@ -187,11 +187,11 @@
       "name": "ProviderSettingsView does NOT import Block / Borders",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "118-138",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 12,
                 13,
@@ -216,11 +216,11 @@
       "name": "render() starts with Clear and uses the 4-constraint Layout",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "141-167",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 210,
                 211,
@@ -263,11 +263,11 @@
       "name": "Every file under views/provider_settings/ stays under 300 lines",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "170-189",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 1,
                 2,
@@ -536,11 +536,11 @@
       "name": "components/mod.rs declares the new ConfirmDeleteProviderCredentials action",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "192-216",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/mod.rs",
               "lines": [
                 649,
                 650,
@@ -569,11 +569,11 @@
       "name": "ProviderSettingsView declares filter + filter_mode fields",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "219-228",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
                 55,
                 56,
@@ -597,11 +597,11 @@
       "name": "List mode key dispatcher routes \"/\" to enter filter mode",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "231-244",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 50,
                 51,
@@ -624,11 +624,11 @@
       "name": "Esc-cascade clears filter before closing the view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "247-264",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
                 30,
                 31,
@@ -663,14 +663,14 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/source_shape_rpc054.rs"
+      "rust/fspec-tui/tests/source_shape_rpc054.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/slash_commands.rs",
-      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-      "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+      "rust/fspec-tui/src/views/agent/slash_commands.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/views/provider_settings/mod.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
     "totalLinesCovered": 735
   }

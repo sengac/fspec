@@ -4,11 +4,11 @@
       "name": "All language extractors emit edge relationships for dead code analysis",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/cross_language_edge_extraction_test.rs",
+          "file": "rust/napi/tests/cross_language_edge_extraction_test.rs",
           "lines": "33-170",
           "implMappings": [
             {
-              "file": "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs",
+              "file": "rust/napi/src/graph/ast_pipeline/edge_helpers.rs",
               "lines": [
                 1,
                 2,
@@ -297,10 +297,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/cross_language_edge_extraction_test.rs"
+      "rust/napi/tests/cross_language_edge_extraction_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/graph/ast_pipeline/edge_helpers.rs"
+      "rust/napi/src/graph/ast_pipeline/edge_helpers.rs"
     ],
     "totalLinesCovered": 413
   }

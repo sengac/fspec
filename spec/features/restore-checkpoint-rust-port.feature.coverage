@@ -4,11 +4,11 @@
       "name": "Restore against a clean working tree",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "84-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -500,11 +500,11 @@
       "name": "Dirty working tree without a choice shows the risk options and requires a user choice",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "121-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -996,11 +996,11 @@
       "name": "Conflicts detected when working-tree files differ from the checkpoint",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "172-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -1492,11 +1492,11 @@
       "name": "Missing checkpoint ref reports not-found without erroring",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "220-246",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -1988,11 +1988,11 @@
       "name": "Reject an empty checkpoint name",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "248-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -2479,11 +2479,11 @@
           ]
         },
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "248-268",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -2975,11 +2975,11 @@
       "name": "force restore against a dirty repo succeeds without conflicts",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "270-291",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -3471,11 +3471,11 @@
       "name": "format json emits the structured payload preserving key order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/restore_checkpoint.rs",
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
           "lines": "293-337",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/restore_checkpoint.rs",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
                 1,
                 2,
@@ -3969,10 +3969,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/restore_checkpoint.rs"
+      "rust/fspec-core/tests/restore_checkpoint.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/restore_checkpoint.rs"
+      "rust/fspec-core/src/commands/restore_checkpoint.rs"
     ],
     "totalLinesCovered": 4109
   }

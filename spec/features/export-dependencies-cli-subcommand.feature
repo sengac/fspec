@@ -4,8 +4,8 @@
 @RPC-227
 Feature: Port export-dependencies command to Rust
   """
-  Core: codelet/fspec-core/src/commands/export_dependencies.rs — pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>. Args: { format: String, output: String }. Reads blocks/blockedBy/dependsOn/relatesTo from WorkUnit.extra. mermaid → string builder; else → IndexMap<String, DepEntry> serialized via to_string_pretty (insertion order, NOT BTreeMap).
-  CLI bridge: codelet/fspec/src/export_dependencies.rs (CliArgs { format, output }). clap variant Mode::ExportDependencies with two required positionals. Success: println! the returned message; Error: eprintln! ✗ Failed to export dependencies: <msg>, exit 1. Help config codelet/fspec-core/src/help/configs/export_dependencies.rs + fixture export-dependencies.txt.
+  Core: rust/fspec-core/src/commands/export_dependencies.rs — pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>. Args: { format: String, output: String }. Reads blocks/blockedBy/dependsOn/relatesTo from WorkUnit.extra. mermaid → string builder; else → IndexMap<String, DepEntry> serialized via to_string_pretty (insertion order, NOT BTreeMap).
+  CLI bridge: rust/fspec/src/export_dependencies.rs (CliArgs { format, output }). clap variant Mode::ExportDependencies with two required positionals. Success: println! the returned message; Error: eprintln! ✗ Failed to export dependencies: <msg>, exit 1. Help config rust/fspec-core/src/help/configs/export_dependencies.rs + fixture export-dependencies.txt.
   """
 
   # ========================================

@@ -12,13 +12,13 @@ Feature: RPC-014 BoardView grid pure-function helpers
   RPC-014 (slice 2 of 3) — Pure-function helpers shared by the BoardView
   orchestrator and the source-shape regressions.
 
-  The functions live in codelet/fspec-tui/src/views/board/grid.rs and are
+  The functions live in rust/fspec-tui/src/views/board/grid.rs and are
   exercised directly without any rendering — they have no `ratatui::Buffer`
   dependency. Their behaviour is a literal port of the
   `calculateColumnWidths` / `getColumnWidth` / `buildBorderRow` helpers from
   `src/tui/components/UnifiedBoardLayout.tsx`.
 
-  Pair: tests live in codelet/fspec-tui/tests/grid_unit_rpc014.rs.
+  Pair: tests live in rust/fspec-tui/tests/grid_unit_rpc014.rs.
   """
 
   Background: User Story

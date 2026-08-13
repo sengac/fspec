@@ -4,11 +4,11 @@
       "name": "CodexReadFileFacade maps mode indentation to InternalFileParams::Read",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "1205-1248",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 107,
                 108,
@@ -128,11 +128,11 @@
       "name": "CodexReadFileFacade maps mode slice without indentation",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "1249-1276",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 107,
                 108,
@@ -252,11 +252,11 @@
       "name": "CodexReadFileFacade backward compatible without mode or indentation",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "1277-1303",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 107,
                 108,
@@ -376,11 +376,11 @@
       "name": "Codex read_file schema includes mode and indentation properties",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "1304-1358",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 125,
                 126,
@@ -449,11 +449,11 @@
       "name": "Other facades provide None for mode and indentation fields",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "1359-1385",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/traits.rs",
+              "file": "rust/tools/src/facade/traits.rs",
               "lines": [
                 56,
                 57,
@@ -503,11 +503,11 @@
       "name": "CodexReadFileFacade extracts all indentation boolean and integer fields",
       "testMappings": [
         {
-          "file": "codelet/tools/src/facade/codex.rs",
+          "file": "rust/tools/src/facade/codex.rs",
           "lines": "1386-1425",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/codex.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
                 185,
                 186,
@@ -551,11 +551,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs",
-      "codelet/tools/src/facade/traits.rs"
+      "rust/tools/src/facade/codex.rs",
+      "rust/tools/src/facade/traits.rs"
     ],
     "totalLinesCovered": 670
   }

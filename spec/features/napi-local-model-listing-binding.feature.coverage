@@ -4,11 +4,11 @@
       "name": "NAPI binding exposes local model listing to TUI",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/local_model_listing_napi_test.rs",
+          "file": "rust/napi/tests/local_model_listing_napi_test.rs",
           "lines": "1-50",
           "implMappings": [
             {
-              "file": "codelet/napi/src/models.rs",
+              "file": "rust/napi/src/models.rs",
               "lines": [
                 269,
                 270,
@@ -64,10 +64,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/local_model_listing_napi_test.rs"
+      "rust/napi/tests/local_model_listing_napi_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/models.rs"
+      "rust/napi/src/models.rs"
     ],
     "totalLinesCovered": 92
   }

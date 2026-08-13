@@ -4,11 +4,11 @@
       "name": "dialog_theme module exposes the canonical public API",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "84-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 1,
                 2,
@@ -314,11 +314,11 @@
       "name": "render_dialog paints a rounded border in the accent color",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "120-156",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 125,
                 126,
@@ -458,11 +458,11 @@
       "name": "render_dialog paints an opaque black background over the dialog rect",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "159-187",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 125,
                 126,
@@ -602,11 +602,11 @@
       "name": "render_dialog paints the inner title as a bold accent-colored row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "190-231",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 125,
                 126,
@@ -746,11 +746,11 @@
       "name": "render_dialog inserts one blank row between title and body",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "234-265",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 125,
                 126,
@@ -890,11 +890,11 @@
       "name": "render_dialog paints the selected row with the full-width inverse highlight",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "268-336",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 125,
                 126,
@@ -1034,11 +1034,11 @@
       "name": "label_description_row prefixes selected rows with \"▸ \" and others with \"  \"",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "339-352",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
               "lines": [
                 1,
                 2,
@@ -1089,11 +1089,11 @@
       "name": "label_description_row dims the description text for unselected rows only",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "355-377",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
               "lines": [
                 1,
                 2,
@@ -1144,11 +1144,11 @@
       "name": "render_dialog paints the footer with Modifier::DIM and centered alignment",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "380-422",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 218,
                 219,
@@ -1195,11 +1195,11 @@
       "name": "dialog_rect centers the dialog within the available area",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "425-453",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 103,
                 104,
@@ -1225,11 +1225,11 @@
       "name": "dialog_rect clamps to the parent area when content exceeds it",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_theme.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
           "lines": "456-484",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
                 103,
                 104,
@@ -1257,11 +1257,11 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_theme.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_theme.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/dialog_theme.rs",
-      "codelet/fspec-tui/src/components/dialog_theme_rows.rs"
+      "rust/fspec-tui/src/components/dialog_theme.rs",
+      "rust/fspec-tui/src/components/dialog_theme_rows.rs"
     ],
     "totalLinesCovered": 1456
   }

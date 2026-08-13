@@ -8,7 +8,7 @@
           "lines": "53-84",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 1083,
                 1084,
@@ -115,7 +115,7 @@
           "lines": "86-126",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 1137,
                 1138,
@@ -241,7 +241,7 @@
       "src/tui/__tests__/TUI-056-anchor-viewer.test.tsx"
     ],
     "implFiles": [
-      "codelet/napi/src/session.rs",
+      "rust/napi/src/session.rs",
       "src/tui/components/AgentView.tsx"
     ],
     "totalLinesCovered": 263

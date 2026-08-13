@@ -6,12 +6,12 @@ Feature: cleanup-checkpoints CLI subcommand on the standalone fspec Rust binary
   Two-front-doors invariant (RPC-003 §7/§11): the clap subcommand
   `fspec cleanup-checkpoints <work-unit-id> --keep-last <N>` and the LLM-facing dispatcher both
   route through codelet_fspec_core::commands::cleanup_checkpoints::run. The CLI bridge
-  (codelet/fspec/src/cleanup_checkpoints.rs) parses the positional and --keep-last, validates that
+  (rust/fspec/src/cleanup_checkpoints.rs) parses the positional and --keep-last, validates that
   keepLast is a positive integer, marshals them into JSON, and resolves project_root from the
   current working directory. No list/sort/delete/render logic is duplicated in the bridge.
 
   Help parity: `fspec cleanup-checkpoints --help` (NO_COLOR, non-TTY) is byte-for-byte identical to
-  codelet/fspec/tests/fixtures/help/cleanup-checkpoints.txt.
+  rust/fspec/tests/fixtures/help/cleanup-checkpoints.txt.
   """
 
   Background: User Story
@@ -54,11 +54,11 @@ Feature: cleanup-checkpoints CLI subcommand on the standalone fspec Rust binary
     Given a git repository with several checkpoints for "AUTH-001"
     When I dispatch cleanup-checkpoints through fspec_core::dispatch::dispatch_command with format "json"
     Then the dispatcher result succeeds and reports deletedCount and preservedCount
-    And the CLI bridge module codelet/fspec/src/cleanup_checkpoints.rs contains NO inline list, sort, delete, or rendering logic — its only computation is arg parsing and JSON marshalling
+    And the CLI bridge module rust/fspec/src/cleanup_checkpoints.rs contains NO inline list, sort, delete, or rendering logic — its only computation is arg parsing and JSON marshalling
 
   Scenario: cleanup-checkpoints --help is byte-for-byte identical to TS
     Given the fspec Rust binary has been compiled
     When I run "fspec cleanup-checkpoints --help" piped to non-TTY with NO_COLOR set
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/cleanup-checkpoints.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/cleanup-checkpoints.txt
     And stdout starts with a blank line followed by "CLEANUP-CHECKPOINTS"

@@ -7,10 +7,10 @@
 Feature: RPC-007 source-shape regression invariants
   """
   Static source-level invariants that protect the architectural decisions of
-  RPC-007: (a) codelet/rpc must NOT depend on codelet-napi (preserves the
+  RPC-007: (a) rust/rpc must NOT depend on codelet-napi (preserves the
   RPC-006 source-shape rule); (b) the five lifted types — SessionId,
   SessionInfo, SessionStatus, StreamChunk, LogRecord — must each have exactly
-  ONE definition site, located in codelet/rpc-types. codelet/napi must
+  ONE definition site, located in rust/rpc-types. rust/napi must
   re-export each via the existing #[cfg_attr(feature = "napi", napi(...))]
   pattern so the TS shape sees zero change.
   """
@@ -24,9 +24,9 @@ Feature: RPC-007 source-shape regression invariants
   @source-shape
   @regression
   Scenario: Source-shape regression: rpc → napi remains forbidden and the five new types are defined exactly once
-    Given the workspace contains codelet/rpc, codelet/rpc-types, codelet/rpc-server, codelet/rpc-embedded, codelet/napi, and codelet/core
-    When cargo metadata is queried for codelet/rpc/Cargo.toml dependencies
+    Given the workspace contains rust/rpc, rust/rpc-types, rust/rpc-server, rust/rpc-embedded, rust/napi, and rust/core
+    When cargo metadata is queried for rust/rpc/Cargo.toml dependencies
     Then no dependency named codelet-napi is present
     When ast-grep searches the workspace for definitions of StreamChunk, SessionInfo, SessionStatus, SessionId, and LogRecord
-    Then each type has exactly one definition site, located in codelet/rpc-types
-    And codelet/napi re-exports each type via the existing #[cfg_attr(feature = "napi", napi(...))] pattern
+    Then each type has exactly one definition site, located in rust/rpc-types
+    And rust/napi re-exports each type via the existing #[cfg_attr(feature = "napi", napi(...))] pattern

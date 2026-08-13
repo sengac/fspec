@@ -4,11 +4,11 @@
       "name": "Read tool rejects PNG image exceeding pixel dimension limit",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_dimension_validation_test.rs",
+          "file": "rust/tools/tests/read_image_dimension_validation_test.rs",
           "lines": "80-127",
           "implMappings": [
             {
-              "file": "codelet/common/src/image_dimensions.rs",
+              "file": "rust/common/src/image_dimensions.rs",
               "lines": [
                 1,
                 2,
@@ -240,11 +240,11 @@
       "name": "Read tool accepts image within pixel dimension limit",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_dimension_validation_test.rs",
+          "file": "rust/tools/tests/read_image_dimension_validation_test.rs",
           "lines": "130-157",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 253,
                 254,
@@ -300,11 +300,11 @@
       "name": "parse_tool_result_content rejects oversized image from any tool",
       "testMappings": [
         {
-          "file": "codelet/common/src/image_dimensions.rs",
+          "file": "rust/common/src/image_dimensions.rs",
           "lines": "398-424",
           "implMappings": [
             {
-              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 28,
                 29,
@@ -322,11 +322,11 @@
       "name": "User-pasted JPEG image exceeding dimensions is rejected",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/image_content_recovery_test.rs",
+          "file": "rust/cli/tests/image_content_recovery_test.rs",
           "lines": "340-371",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 328,
                 329,
@@ -386,11 +386,11 @@
       "name": "Image exactly at pixel dimension limit is accepted",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_dimension_validation_test.rs",
+          "file": "rust/tools/tests/read_image_dimension_validation_test.rs",
           "lines": "160-183",
           "implMappings": [
             {
-              "file": "codelet/common/src/image_dimensions.rs",
+              "file": "rust/common/src/image_dimensions.rs",
               "lines": [
                 200,
                 201,
@@ -408,11 +408,11 @@
       "name": "Corrupt image with invalid header is handled gracefully",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/read_image_dimension_validation_test.rs",
+          "file": "rust/tools/tests/read_image_dimension_validation_test.rs",
           "lines": "186-215",
           "implMappings": [
             {
-              "file": "codelet/tools/src/read.rs",
+              "file": "rust/tools/src/read.rs",
               "lines": [
                 277,
                 278,
@@ -441,15 +441,15 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/read_image_dimension_validation_test.rs",
-      "codelet/common/src/image_dimensions.rs",
-      "codelet/cli/tests/image_content_recovery_test.rs"
+      "rust/tools/tests/read_image_dimension_validation_test.rs",
+      "rust/common/src/image_dimensions.rs",
+      "rust/cli/tests/image_content_recovery_test.rs"
     ],
     "implFiles": [
-      "codelet/common/src/image_dimensions.rs",
-      "codelet/tools/src/read.rs",
-      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/common/src/image_dimensions.rs",
+      "rust/tools/src/read.rs",
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 528
   }

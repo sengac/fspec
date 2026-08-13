@@ -4,11 +4,11 @@
       "name": "Cancelling the ConfirmDialog leaves the resume view untouched",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc026_confirm_dialog.rs",
+          "file": "rust/fspec-tui/tests/rpc026_confirm_dialog.rs",
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -229,10 +229,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc026_confirm_dialog.rs"
+      "rust/fspec-tui/tests/rpc026_confirm_dialog.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/confirm_dialog.rs"
+      "rust/fspec-tui/src/views/agent/confirm_dialog.rs"
     ],
     "totalLinesCovered": 407
   }

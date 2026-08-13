@@ -6,7 +6,7 @@
 @provider-abstraction
 Feature: Search Facades
   """
-  GeminiSearchFileContentFacade in codelet/tools/src/facade/search.rs implements SearchToolFacade trait. Uses tool name 'search_file_content'. Maps {pattern, path} to InternalSearchParams::Grep. GeminiGlobFacade uses tool name 'find_files'. Maps {pattern, path} to InternalSearchParams::Glob. Both wrapped with SearchToolFacadeWrapper and added to GeminiProvider.create_rig_agent().
+  GeminiSearchFileContentFacade in rust/tools/src/facade/search.rs implements SearchToolFacade trait. Uses tool name 'search_file_content'. Maps {pattern, path} to InternalSearchParams::Grep. GeminiGlobFacade uses tool name 'find_files'. Maps {pattern, path} to InternalSearchParams::Glob. Both wrapped with SearchToolFacadeWrapper and added to GeminiProvider.create_rig_agent().
   """
 
   # ========================================

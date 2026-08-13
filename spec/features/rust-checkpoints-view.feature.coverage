@@ -4,11 +4,11 @@
       "name": "Pressing C on the board opens the Checkpoints view",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "101-122",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 180,
                 181,
@@ -25,11 +25,11 @@
       "name": "Opening flips the Navigator to the Checkpoints view and closing returns to the board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "124-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
                 153,
                 154,
@@ -45,11 +45,11 @@
       "name": "Automatic checkpoints render as id and phase while manual checkpoints render their raw name",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "146-165",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
               "lines": [
                 16,
                 17,
@@ -96,11 +96,11 @@
       "name": "Tab moves focus from the Checkpoints pane to the Files pane and highlights its heading",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "167-201",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
                 277,
                 278,
@@ -124,11 +124,11 @@
       "name": "Selecting a checkpoint loads its files and selecting a file shows its colored diff",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "208-232",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_checkpoints.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
               "lines": [
                 51,
                 52,
@@ -260,11 +260,11 @@
       "name": "Arrow keys act on the focused pane",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "234-276",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
                 290,
                 291,
@@ -375,11 +375,11 @@
       "name": "Empty repo shows a no-checkpoints message and Esc returns to the board",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
           "lines": "278-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/checkpoints/render.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/render.rs",
               "lines": [
                 85,
                 86,
@@ -400,15 +400,15 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/checkpoints/tests.rs"
+      "rust/fspec-tui/src/views/checkpoints/tests.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
-      "codelet/fspec-tui/src/views/checkpoints/mod.rs",
-      "codelet/fspec-tui/src/app/dispatch_checkpoints.rs",
-      "codelet/fspec-tui/src/views/checkpoints/render.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
+      "rust/fspec-tui/src/views/checkpoints/mod.rs",
+      "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
+      "rust/fspec-tui/src/views/checkpoints/render.rs"
     ],
     "totalLinesCovered": 465
   }

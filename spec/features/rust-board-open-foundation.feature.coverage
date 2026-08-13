@@ -4,11 +4,11 @@
       "name": "Pressing uppercase D opens the foundation document",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_foundation_rpc373.rs",
+          "file": "rust/fspec-tui/tests/board_open_foundation_rpc373.rs",
           "lines": "28-47",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 184,
                 185,
@@ -25,11 +25,11 @@
       "name": "Pressing lowercase d opens the foundation document",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_foundation_rpc373.rs",
+          "file": "rust/fspec-tui/tests/board_open_foundation_rpc373.rs",
           "lines": "49-68",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/board.rs",
+              "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
                 184,
                 185,
@@ -46,11 +46,11 @@
       "name": "The foundation document opens at the viewer URL when the server is running",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_foundation_rpc373.rs",
+          "file": "rust/fspec-tui/tests/board_open_foundation_rpc373.rs",
           "lines": "70-89",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_viewer.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
               "lines": [
                 17,
                 18,
@@ -94,11 +94,11 @@
       "name": "Pressing D is a safe no-op when the viewer server is unavailable",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/board_open_foundation_rpc373.rs",
+          "file": "rust/fspec-tui/tests/board_open_foundation_rpc373.rs",
           "lines": "91-106",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_viewer.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
               "lines": [
                 34,
                 35,
@@ -139,11 +139,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/board_open_foundation_rpc373.rs"
+      "rust/fspec-tui/tests/board_open_foundation_rpc373.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/board.rs",
-      "codelet/fspec-tui/src/app/dispatch_viewer.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/app/dispatch_viewer.rs"
     ],
     "totalLinesCovered": 145
   }

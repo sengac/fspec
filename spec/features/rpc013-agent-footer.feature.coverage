@@ -4,11 +4,11 @@
       "name": "AgentView footer omits the legacy generic hint and the BoardView hint",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc013.rs",
+          "file": "rust/fspec-tui/tests/view_agent_unit_rpc013.rs",
           "lines": "89-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
                 237,
                 238,
@@ -45,10 +45,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 50,
     "testFiles": [
-      "codelet/fspec-tui/tests/view_agent_unit_rpc013.rs"
+      "rust/fspec-tui/tests/view_agent_unit_rpc013.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 79
   }

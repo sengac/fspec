@@ -23,7 +23,7 @@ Feature: RPC-014 BoardView rich box-drawing grid + work-unit details strip
   All RPC-012 actions and the RPC-013 literal footer remain intact. No
   TypeScript code is modified.
 
-  Pair: render tests live in codelet/fspec-tui/tests/view_board_unit_rpc014.rs.
+  Pair: render tests live in rust/fspec-tui/tests/view_board_unit_rpc014.rs.
   """
 
   Background: User Story

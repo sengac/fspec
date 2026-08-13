@@ -4,11 +4,11 @@
       "name": "Pause an active schedule sets its status to paused",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/pause_schedule.rs",
+          "file": "rust/fspec-core/tests/pause_schedule.rs",
           "lines": "76-97",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/pause_schedule.rs",
+              "file": "rust/fspec-core/src/commands/pause_schedule.rs",
               "lines": [
                 74,
                 75,
@@ -81,11 +81,11 @@
       "name": "Pausing a missing schedule reports it does not exist",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/pause_schedule.rs",
+          "file": "rust/fspec-core/tests/pause_schedule.rs",
           "lines": "99-125",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/pause_schedule.rs",
+              "file": "rust/fspec-core/src/commands/pause_schedule.rs",
               "lines": [
                 74,
                 75,
@@ -158,11 +158,11 @@
       "name": "Pausing an already-paused schedule reports it is already paused",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/pause_schedule.rs",
+          "file": "rust/fspec-core/tests/pause_schedule.rs",
           "lines": "127-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/pause_schedule.rs",
+              "file": "rust/fspec-core/src/commands/pause_schedule.rs",
               "lines": [
                 74,
                 75,
@@ -235,11 +235,11 @@
       "name": "Pausing one of several schedules preserves the others verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/pause_schedule.rs",
+          "file": "rust/fspec-core/tests/pause_schedule.rs",
           "lines": "155-240",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/pause_schedule.rs",
+              "file": "rust/fspec-core/src/commands/pause_schedule.rs",
               "lines": [
                 74,
                 75,
@@ -314,10 +314,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/pause_schedule.rs"
+      "rust/fspec-core/tests/pause_schedule.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/pause_schedule.rs"
+      "rust/fspec-core/src/commands/pause_schedule.rs"
     ],
     "totalLinesCovered": 406
   }

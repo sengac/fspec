@@ -4,11 +4,11 @@
       "name": "define_tools produces custom tool definitions",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "37-54",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "file": "rust/providers/src/custom/tool_resolve.rs",
               "lines": [
                 40,
                 41,
@@ -77,11 +77,11 @@
       "name": "tool_style openai preset generates snake_case tool names",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "56-87",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_presets.rs",
+              "file": "rust/providers/src/custom/tool_presets.rs",
               "lines": [
                 133,
                 134,
@@ -124,11 +124,11 @@
       "name": "Default tool_style claude generates PascalCase tool names",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "89-121",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_presets.rs",
+              "file": "rust/providers/src/custom/tool_presets.rs",
               "lines": [
                 114,
                 115,
@@ -158,11 +158,11 @@
       "name": "map_tool_params renames parameter names",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "123-158",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "file": "rust/providers/src/custom/tool_facade.rs",
               "lines": [
                 114,
                 115,
@@ -237,11 +237,11 @@
       "name": "map_tool_params returning unit uses default mapping",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "160-192",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "file": "rust/providers/src/custom/tool_facade.rs",
               "lines": [
                 155,
                 156,
@@ -275,11 +275,11 @@
       "name": "Partial tool list hides unlisted categories",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "194-213",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "file": "rust/providers/src/custom/tool_resolve.rs",
               "lines": [
                 97,
                 98,
@@ -319,11 +319,11 @@
       "name": "Rhai error in define_tools falls back to preset",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "215-237",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "file": "rust/providers/src/custom/tool_resolve.rs",
               "lines": [
                 79,
                 80,
@@ -349,11 +349,11 @@
       "name": "Unknown maps_to identifier is rejected with clear error",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "239-265",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "file": "rust/providers/src/custom/tool_resolve.rs",
               "lines": [
                 154,
                 155,
@@ -386,11 +386,11 @@
       "name": "Adapter exposes Rhai-provided name and definition",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "267-299",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "file": "rust/providers/src/custom/tool_facade.rs",
               "lines": [
                 60,
                 61,
@@ -444,11 +444,11 @@
       "name": "Resolved tools are cached for system prompt introspection",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "file": "rust/providers/tests/custom_tool_facades_tests.rs",
           "lines": "301-331",
           "implMappings": [
             {
-              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "file": "rust/providers/src/custom/tool_resolve.rs",
               "lines": [
                 40,
                 41,
@@ -519,12 +519,12 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/custom_tool_facades_tests.rs"
+      "rust/providers/tests/custom_tool_facades_tests.rs"
     ],
     "implFiles": [
-      "codelet/providers/src/custom/tool_resolve.rs",
-      "codelet/providers/src/custom/tool_presets.rs",
-      "codelet/providers/src/custom/tool_facade.rs"
+      "rust/providers/src/custom/tool_resolve.rs",
+      "rust/providers/src/custom/tool_presets.rs",
+      "rust/providers/src/custom/tool_facade.rs"
     ],
     "totalLinesCovered": 639
   }

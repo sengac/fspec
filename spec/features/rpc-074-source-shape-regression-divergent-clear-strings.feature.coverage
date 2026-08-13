@@ -4,11 +4,11 @@
       "name": "Rust source files do not contain TS-divergent /clear strings",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc074_source_shape.rs",
+          "file": "rust/fspec-tui/tests/rpc074_source_shape.rs",
           "lines": "44-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 40,
                 41,
@@ -34,7 +34,7 @@
               ]
             },
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1505,
                 1506,
@@ -63,11 +63,11 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc074_source_shape.rs"
+      "rust/fspec-tui/tests/rpc074_source_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 85
   }

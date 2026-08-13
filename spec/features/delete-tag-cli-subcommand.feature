@@ -2,7 +2,7 @@
 @RPC-222
 Feature: delete-tag CLI subcommand (Rust shell front-door)
   """
-  Files: codelet/fspec/src/delete_tag.rs (NEW CLI bridge); codelet/fspec/tests/cli_delete_tag.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/delete-tag.txt (captured fixture from `node dist/index.js delete-tag --help`)
+  Files: rust/fspec/src/delete_tag.rs (NEW CLI bridge); rust/fspec/tests/cli_delete_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/delete-tag.txt (captured fixture from `node dist/index.js delete-tag --help`)
   Bridge marshals positional <tag> + --force flag + --dry-run flag into JSON and delegates to commands::delete_tag::run. No logic in bridge — JSON marshalling only.
   Exit codes: 0 on success, 1 on FspecCoreError with 'Error:' prefix to stderr.
   """
@@ -43,4 +43,4 @@ Feature: delete-tag CLI subcommand (Rust shell front-door)
     Given the standalone fspec Rust binary is built
     When I run 'fspec delete-tag --help'
     Then the process exits with code 0
-    And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-tag.txt
+    And stdout matches the captured fixture at rust/fspec/tests/fixtures/help/delete-tag.txt

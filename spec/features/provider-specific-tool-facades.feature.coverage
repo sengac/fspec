@@ -4,11 +4,11 @@
       "name": "Map Claude web search parameters to internal format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "15-38",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/web_search.rs",
+              "file": "rust/tools/src/facade/web_search.rs",
               "lines": [
                 1,
                 2,
@@ -123,7 +123,7 @@
               ]
             },
             {
-              "file": "codelet/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
                 1,
                 2,
@@ -240,11 +240,11 @@
       "name": "Map Gemini google_web_search parameters to internal format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "40-61",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/web_search.rs",
+              "file": "rust/tools/src/facade/web_search.rs",
               "lines": [
                 112,
                 113,
@@ -305,11 +305,11 @@
       "name": "Map Gemini web_fetch URL to internal open_page format",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "63-83",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/web_search.rs",
+              "file": "rust/tools/src/facade/web_search.rs",
               "lines": [
                 162,
                 163,
@@ -380,11 +380,11 @@
       "name": "Registry returns only facades for requested provider",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "85-106",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/registry.rs",
+              "file": "rust/tools/src/facade/registry.rs",
               "lines": [
                 1,
                 2,
@@ -466,7 +466,7 @@
               ]
             },
             {
-              "file": "codelet/providers/src/gemini.rs",
+              "file": "rust/providers/src/gemini.rs",
               "lines": [
                 87,
                 88,
@@ -527,11 +527,11 @@
       "name": "Gemini facade provides flat JSON schema without oneOf",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "108-127",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/web_search.rs",
+              "file": "rust/tools/src/facade/web_search.rs",
               "lines": [
                 112,
                 113,
@@ -592,11 +592,11 @@
       "name": "Claude facade provides complex schema with action variants",
       "testMappings": [
         {
-          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "file": "rust/tools/tests/tool_facade_test.rs",
           "lines": "129-152",
           "implMappings": [
             {
-              "file": "codelet/tools/src/facade/web_search.rs",
+              "file": "rust/tools/src/facade/web_search.rs",
               "lines": [
                 1,
                 2,
@@ -720,13 +720,13 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool_facade_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/web_search.rs",
-      "codelet/tools/src/facade/wrapper.rs",
-      "codelet/tools/src/facade/registry.rs",
-      "codelet/providers/src/gemini.rs"
+      "rust/tools/src/facade/web_search.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/facade/registry.rs",
+      "rust/providers/src/gemini.rs"
     ],
     "totalLinesCovered": 741
   }

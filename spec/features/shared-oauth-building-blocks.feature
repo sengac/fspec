@@ -2,9 +2,9 @@
 @PROV-060
 Feature: Shared OAuth Building Blocks + Rhai Scripting for Custom Providers
   """
-  New shared module at codelet/providers/src/oauth/ with sub-modules: mod.rs, credential_store.rs, http_middleware.rs, device_flow.rs, callback_server.rs, token_refresh.rs, engine.rs, building_blocks.rs, script_provider.rs
+  New shared module at rust/providers/src/oauth/ with sub-modules: mod.rs, credential_store.rs, http_middleware.rs, device_flow.rs, callback_server.rs, token_refresh.rs, engine.rs, building_blocks.rs, script_provider.rs
   Existing providers refactored in-place to use generic building blocks: copilot/refreshing_client.rs, codex/refreshing_client.rs, claude_refreshing_client.rs, copilot/auth.rs, codex/codex_auth.rs, claude_auth.rs, copilot/oauth_device_code.rs, codex/codex_device_auth.rs, codex/codex_oauth_server.rs, claude_oauth_server.rs
-  Cargo.toml for codelet/providers adds rhai = { version = "1.24", features = ["sync", "serde"] } and ureq = { version = "2", features = ["json", "tls"] }
+  Cargo.toml for rust/providers adds rhai = { version = "1.24", features = ["sync", "serde"] } and ureq = { version = "2", features = ["json", "tls"] }
   """
 
   # ========================================
@@ -30,7 +30,7 @@ Feature: Shared OAuth Building Blocks + Rhai Scripting for Custom Providers
   #   2. RefreshingCodexClient and RefreshingClaudeClient are replaced by RefreshingHttpClient<CodexTokenStrategy> and RefreshingHttpClient<ClaudeTokenStrategy> sharing the same double-check locking logic
   #   3. Copilot and Codex device code polling loops are replaced by DeviceCodeFlow<CopilotDeviceCode> and DeviceCodeFlow<CodexDeviceCode> sharing the same RFC 8628 polling logic
   #   4. A .rhai script can define build_authorization_request, exchange_code, refresh_token, poll_for_token, needs_refresh and the sandboxed engine executes them via spawn_blocking
-  #   5. All 103+ unit tests and 49+ integration tests in codelet/providers continue to pass after refactoring
+  #   5. All 103+ unit tests and 49+ integration tests in rust/providers continue to pass after refactoring
   #
   # ========================================
   Background: User Story
@@ -90,7 +90,7 @@ Feature: Shared OAuth Building Blocks + Rhai Scripting for Custom Providers
   @regression
   Scenario: All existing provider tests pass after refactoring
     Given the shared OAuth building blocks have replaced provider-specific implementations
-    When the full test suite is executed with cargo test in codelet/providers
+    When the full test suite is executed with cargo test in rust/providers
     Then all unit tests pass with zero failures
     And all integration tests pass with zero failures
     And cargo clippy produces zero warnings across the entire workspace

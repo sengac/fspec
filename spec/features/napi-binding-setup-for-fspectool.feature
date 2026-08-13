@@ -6,7 +6,7 @@
 @CODE-003
 Feature: NAPI Binding Setup for FspecTool
   """
-  Implement real FspecTool in codelet/tools/src/fspec.rs and expose via NAPI callback pattern
+  Implement real FspecTool in rust/tools/src/fspec.rs and expose via NAPI callback pattern
   """
 
   # ========================================
@@ -14,7 +14,7 @@ Feature: NAPI Binding Setup for FspecTool
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. FspecTool struct must be implemented in codelet/tools/src/fspec.rs as a Rust tool
+  #   1. FspecTool struct must be implemented in rust/tools/src/fspec.rs as a Rust tool
   #   2. NAPI function must expose callFspecCommand with callback pattern to invoke TypeScript command modules
   #   3. TypeScript callback receives command name, JSON args, and project root path and returns JSON result with system reminders
   #
@@ -46,18 +46,18 @@ Feature: NAPI Binding Setup for FspecTool
     I want to call fspec commands via NAPI callback pattern
     So that I can execute fspec commands directly from Rust without process spawning or complex JavaScript execution
 
-  Scenario: Implement FspecTool struct in codelet/tools/src/fspec.rs
+  Scenario: Implement FspecTool struct in rust/tools/src/fspec.rs
     Given I need to create a new FspecTool for NAPI integration
     And I have existing tool patterns like BashTool and GrepTool
     When I implement FspecTool as a simple unit struct
     And I follow the pattern 'pub struct FspecTool;' without derive macros
-    And I add it to codelet/tools/src/lib.rs exports
+    And I add it to rust/tools/src/lib.rs exports
     Then FspecTool should be available for NAPI binding
     And it should follow existing tool implementation patterns
 
   Scenario: Expose callFspecCommand via NAPI callback pattern
-    Given FspecTool is implemented in codelet/tools/src/fspec.rs
-    And I have the NAPI binding infrastructure in codelet/napi/src/lib.rs
+    Given FspecTool is implemented in rust/tools/src/fspec.rs
+    And I have the NAPI binding infrastructure in rust/napi/src/lib.rs
     When I create callFspecCommand NAPI function with callback pattern
     And I use signature: callFspecCommand(command: String, args: String, project_root: String, callback: Function)
     Then Rust agents should be able to call fspec commands via callbacks

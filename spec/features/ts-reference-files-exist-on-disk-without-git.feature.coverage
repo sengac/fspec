@@ -4,11 +4,11 @@
       "name": "TS reference files exist on disk without consulting git",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
           "lines": "163-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
+              "file": "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs",
               "lines": [
                 163,
                 164,
@@ -74,10 +74,10 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/tests/rpc027_dialog_parity_ij.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs"
     ],
     "totalLinesCovered": 104
   }

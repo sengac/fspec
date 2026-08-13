@@ -2,7 +2,7 @@
 Feature: Structured DAG Node Format and Engine Parsing
   """
   Uses regex to parse <dag-node> blocks — no XML parser needed.
-  DagNodeMeta and DagDepth structs go in codelet/core/src/compaction/model.rs alongside existing StructuralAnnotation.
+  DagNodeMeta and DagDepth structs go in rust/core/src/compaction/model.rs alongside existing StructuralAnnotation.
   The pending_dag state is extended to an InjectSummaryState struct holding both the raw DAG string and parsed Vec<DagNodeMeta>.
   Instruction constant COMPACTION_SYSTEM_INSTRUCTION is updated to specify structured dag-node XML format.
   """

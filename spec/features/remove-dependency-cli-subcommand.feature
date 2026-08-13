@@ -2,7 +2,7 @@
 @RPC-271
 Feature: fspec remove-dependency CLI subcommand
   """
-  CLI bridge: codelet/fspec/src/remove_dependency.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/remove-dependency.ts:133-200).
+  CLI bridge: rust/fspec/src/remove_dependency.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/remove-dependency.ts:133-200).
   Surface: `fspec remove-dependency <workUnitId> [dependsOnId] [--blocks <id>] [--blocked-by <id>] [--depends-on <id>] [--relates-to <id>]`.
   Shorthand: positional [dependsOnId] equals --depends-on. If both supplied with DIFFERENT values, exit 1 with the canonical conflict message; if same value, succeed without error.
   At-least-one guard: if no relationship arg supplied (after shorthand reconciliation), exit 1 with the canonical 'Must specify at least one relationship to remove' message.
@@ -21,7 +21,7 @@ Feature: fspec remove-dependency CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec remove-dependency --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-dependency.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/remove-dependency.txt
 
   Scenario: Positional shorthand removes the dependsOn edge
     Given a project root tempdir with spec/work-units.json where AUTH-001.dependsOn=['AUTH-002']

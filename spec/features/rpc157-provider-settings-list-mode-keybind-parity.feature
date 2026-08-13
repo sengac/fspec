@@ -7,7 +7,7 @@
 @RPC-157
 Feature: Provider settings: drop Rust-only list-mode keybinds (r/R, wrap-around, PageUp/Down, Home/End) to match TS
   """
-  Implementation: surgery in codelet/fspec-tui/src/views/provider_settings/mod.rs (and any extracted list-mode handler module — see RPC-103). Remove the match arms for KeyCode::Char('r') | Char('R'), KeyCode::PageUp, KeyCode::PageDown, KeyCode::Home, KeyCode::End from the list-mode dispatcher. Replace wrap_index() usage on ↑/↓ with saturating clamp: down = (sel + 1).min(len - 1); up = sel.saturating_sub(1). Remove `wrap_index` import if no remaining callers in the file.
+  Implementation: surgery in rust/fspec-tui/src/views/provider_settings/mod.rs (and any extracted list-mode handler module — see RPC-103). Remove the match arms for KeyCode::Char('r') | Char('R'), KeyCode::PageUp, KeyCode::PageDown, KeyCode::Home, KeyCode::End from the list-mode dispatcher. Replace wrap_index() usage on ↑/↓ with saturating clamp: down = (sel + 1).min(len - 1); up = sel.saturating_sub(1). Remove `wrap_index` import if no remaining callers in the file.
 
   Dependencies: builds on top of RPC-054 (the existing view scaffolding) and indirectly on RPC-103 (flat-tree nav model — when RPC-103 lands the list-mode dispatcher will already be reshaped to operate over Vec<NavItem>; this card surgically removes excess keybinds from whatever dispatcher exists).
 

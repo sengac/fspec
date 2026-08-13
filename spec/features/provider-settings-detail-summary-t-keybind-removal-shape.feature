@@ -20,7 +20,7 @@ Feature: Provider settings api-key edit: empty-Enter cancels silently (no valida
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. handle_summary_key (codelet/fspec-tui/src/views/provider_settings/detail.rs) MUST NOT match KeyCode::Char('t') or KeyCode::Char('T') — there must be no `t` arm at all
+  #   1. handle_summary_key (rust/fspec-tui/src/views/provider_settings/detail.rs) MUST NOT match KeyCode::Char('t') or KeyCode::Char('T') — there must be no `t` arm at all
   #   2. Pressing 't' (lowercase) in Detail::Summary mode MUST return ProviderSettingsEvent::Consumed with NO Action emitted and view.mode remains Detail::Summary with last_status preserved
   #   3. Pressing 'T' (uppercase) in Detail::Summary mode MUST return ProviderSettingsEvent::Consumed with NO Action::TestProviderConnection emitted (same parity as lowercase t)
   #   4. view.status MUST NOT be set to "Testing…" by any handle_summary_key path — the only writer to that string in handle_summary_key (the `t` arm) is removed
@@ -57,13 +57,13 @@ Feature: Provider settings api-key edit: empty-Enter cancels silently (no valida
     And view.mode remains Detail::Summary for "anthropic" with last_status Some(Testing) preserved
 
   Scenario: handle_summary_key source body contains zero KeyCode::Char('t') or KeyCode::Char('T') matches
-    Given the file codelet/fspec-tui/src/views/provider_settings/detail.rs
+    Given the file rust/fspec-tui/src/views/provider_settings/detail.rs
     When the byte range delimited by "fn handle_summary_key(" through the next top-level "fn " is extracted
     Then the substring "KeyCode::Char('t')" occurs zero times in that range
     And the substring "KeyCode::Char('T')" occurs zero times in that range
 
   Scenario: handle_summary_key source body contains zero Action::TestProviderConnection construction sites
-    Given the file codelet/fspec-tui/src/views/provider_settings/detail.rs
+    Given the file rust/fspec-tui/src/views/provider_settings/detail.rs
     When the byte range delimited by "fn handle_summary_key(" through the next top-level "fn " is extracted
     Then the substring "Action::TestProviderConnection" occurs zero times in that range
     And the substring "Testing…" (the legacy status text the `t` arm wrote) occurs zero times in that range

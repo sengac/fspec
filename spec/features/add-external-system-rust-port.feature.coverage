@@ -4,11 +4,11 @@
       "name": "First add seeds the eventStorm sub-object on a clean work unit",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "70-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 177,
                 178,
@@ -37,11 +37,11 @@
       "name": "The --type option maps to the integrationType item field",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "110-129",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 80,
                 81,
@@ -56,11 +56,11 @@
       "name": "Optional timestamp and boundedContext fields are persisted in TS insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "131-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 83,
                 84,
@@ -78,11 +78,11 @@
       "name": "Second add increments nextItemId and preserves insertion order",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "176-217",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 195,
                 196,
@@ -115,11 +115,11 @@
       "name": "Missing work unit surfaces the canonical not-found error",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "219-245",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 143,
                 144,
@@ -141,11 +141,11 @@
       "name": "Done state is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "247-273",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 154,
                 155,
@@ -168,11 +168,11 @@
       "name": "Blocked state is rejected verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "275-301",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 154,
                 155,
@@ -195,11 +195,11 @@
       "name": "Missing spec/work-units.json reports the canonical not-found error without creating the file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "file": "rust/fspec-core/tests/add_external_system.rs",
           "lines": "303-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
                 119,
                 120,
@@ -220,10 +220,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/add_external_system.rs"
+      "rust/fspec-core/tests/add_external_system.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_external_system.rs"
+      "rust/fspec-core/src/commands/add_external_system.rs"
     ],
     "totalLinesCovered": 332
   }

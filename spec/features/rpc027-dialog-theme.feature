@@ -21,12 +21,12 @@ Feature: RPC-027 — Shared dialog_theme renderer fundamentals
   """
 
   Background: User Story
-    As a developer maintaining the codelet/fspec-tui Rust ratatui frontend
+    As a developer maintaining the rust/fspec-tui Rust ratatui frontend
     I want a single shared renderer that owns the canonical rounded / accent / inverse-highlight look
     So that every dialog and popup renders identically and a change to the look lands in one place
 
   Scenario: dialog_theme module exposes the canonical public API
-    Given the file codelet/fspec-tui/src/components/dialog_theme.rs exists
+    Given the file rust/fspec-tui/src/components/dialog_theme.rs exists
     When I inspect its public exports
     Then it exposes the Accent enum with variants Cyan, Yellow and Red
     And it exposes the DialogRow struct with spans, selectable, and selected fields

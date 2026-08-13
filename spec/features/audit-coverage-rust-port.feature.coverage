@@ -4,11 +4,11 @@
       "name": "Reports all files present when every referenced file exists",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/audit_coverage.rs",
+          "file": "rust/fspec-core/tests/audit_coverage.rs",
           "lines": "59-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/audit_coverage.rs",
+              "file": "rust/fspec-core/src/commands/audit_coverage.rs",
               "lines": [
                 73,
                 74,
@@ -128,11 +128,11 @@
       "name": "Detects a missing test file and recommends removing the mapping",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/audit_coverage.rs",
+          "file": "rust/fspec-core/tests/audit_coverage.rs",
           "lines": "94-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/audit_coverage.rs",
+              "file": "rust/fspec-core/src/commands/audit_coverage.rs",
               "lines": [
                 120,
                 121,
@@ -205,11 +205,11 @@
       "name": "Detects a missing implementation file",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/audit_coverage.rs",
+          "file": "rust/fspec-core/tests/audit_coverage.rs",
           "lines": "128-159",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/audit_coverage.rs",
+              "file": "rust/fspec-core/src/commands/audit_coverage.rs",
               "lines": [
                 120,
                 121,
@@ -282,11 +282,11 @@
       "name": "Reports a missing coverage file with the full path",
       "testMappings": [
         {
-          "file": "codelet/fspec-core/tests/audit_coverage.rs",
+          "file": "rust/fspec-core/tests/audit_coverage.rs",
           "lines": "161-179",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/commands/audit_coverage.rs",
+              "file": "rust/fspec-core/src/commands/audit_coverage.rs",
               "lines": [
                 90,
                 91,
@@ -311,10 +311,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-core/tests/audit_coverage.rs"
+      "rust/fspec-core/tests/audit_coverage.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/audit_coverage.rs"
+      "rust/fspec-core/src/commands/audit_coverage.rs"
     ],
     "totalLinesCovered": 359
   }

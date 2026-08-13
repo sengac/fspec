@@ -4,11 +4,11 @@
       "name": "Dragging across modal body lines copies their text and keeps the highlight",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
           "lines": "35-85",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
               "lines": [
                 113,
                 114,
@@ -57,11 +57,11 @@
       "name": "Selection tracks the visible rows after scrolling the modal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
           "lines": "88-147",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
               "lines": [
                 132,
                 133,
@@ -100,11 +100,11 @@
       "name": "Copying a wide line abutting the modal scrollbar excludes the scrollbar glyph",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
           "lines": "150-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
               "lines": [
                 132,
                 133,
@@ -194,11 +194,11 @@
       "name": "Wheel scrolling clears an active modal selection and scrolls normally",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
           "lines": "211-260",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
               "lines": [
                 80,
                 81,
@@ -239,11 +239,11 @@
       "name": "First Esc clears the selection and a second Esc closes the modal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
           "lines": "263-321",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
                 69,
                 70,
@@ -270,11 +270,11 @@
       "name": "A quick click in the modal body does not select or copy",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
+          "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
           "lines": "324-352",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
               "lines": [
                 83,
                 84,
@@ -314,12 +314,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs"
+      "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
-      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
-      "codelet/fspec-tui/src/views/agent/dispatch_select.rs"
+      "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
+      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_select.rs"
     ],
     "totalLinesCovered": 520
   }

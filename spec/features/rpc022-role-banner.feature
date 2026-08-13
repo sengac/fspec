@@ -6,7 +6,7 @@
 @header
 Feature: RoleBanner — inline one-row banner above scrollback when a session role is active
   """
-  RoleBanner lives at codelet/fspec-tui/src/views/agent/role_banner.rs
+  RoleBanner lives at rust/fspec-tui/src/views/agent/role_banner.rs
   and is the Rust port of src/tui/components/RoleBanner.tsx (TUI-081).
 
   Unlike ModelSelectorDialog / ThinkingLevelDialog, RoleBanner is NOT a
@@ -92,6 +92,6 @@ Feature: RoleBanner — inline one-row banner above scrollback when a session ro
   @line-budget
   @source-shape
   Scenario: role_banner.rs stays under 300 lines
-    Given the file codelet/fspec-tui/src/views/agent/role_banner.rs after RPC-022 lands
+    Given the file rust/fspec-tui/src/views/agent/role_banner.rs after RPC-022 lands
     When a test counts the line-count of the file
     Then the file has fewer than 300 lines

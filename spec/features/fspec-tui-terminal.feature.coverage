@@ -4,11 +4,11 @@
       "name": "TerminalGuard::init enables alt-screen + raw mode + mouse + bracketed paste",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/panic_hook.rs",
+          "file": "rust/fspec-tui/tests/panic_hook.rs",
           "lines": "25-67",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/terminal.rs",
+              "file": "rust/fspec-tui/src/terminal.rs",
               "lines": [
                 1,
                 2,
@@ -130,11 +130,11 @@
       "name": "TerminalGuard::Drop restores the terminal",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/panic_hook.rs",
+          "file": "rust/fspec-tui/tests/panic_hook.rs",
           "lines": "70-109",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/terminal.rs",
+              "file": "rust/fspec-tui/src/terminal.rs",
               "lines": [
                 1,
                 2,
@@ -256,11 +256,11 @@
       "name": "Panic mid-render restores the terminal via the registered panic hook",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/panic_hook.rs",
+          "file": "rust/fspec-tui/tests/panic_hook.rs",
           "lines": "113-152",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/terminal.rs",
+              "file": "rust/fspec-tui/src/terminal.rs",
               "lines": [
                 1,
                 2,
@@ -382,11 +382,11 @@
       "name": "Panic-hook registration is idempotent",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/panic_hook.rs",
+          "file": "rust/fspec-tui/tests/panic_hook.rs",
           "lines": "155-203",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/terminal.rs",
+              "file": "rust/fspec-tui/src/terminal.rs",
               "lines": [
                 1,
                 2,
@@ -510,10 +510,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/panic_hook.rs"
+      "rust/fspec-tui/tests/panic_hook.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/terminal.rs"
+      "rust/fspec-tui/src/terminal.rs"
     ],
     "totalLinesCovered": 612
   }

@@ -49,7 +49,7 @@ import {
 
 const rustFspec =
   process.env.FSPEC_BIN ??
-  join(homedir(), 'projects', 'fspec', 'codelet', 'target', 'debug', 'fspec');
+  join(homedir(), 'projects', 'fspec', 'rust', 'target', 'debug', 'fspec');
 const realWorkspace = join(homedir(), 'projects', 'fspec');
 
 // Throwaway HOME seeded with the models.dev cache fixture. No profiles: this

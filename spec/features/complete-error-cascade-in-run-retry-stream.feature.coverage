@@ -4,11 +4,11 @@
       "name": "MAX_COMPACTION_RETRIES constant is exposed as 3",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_error_cascade_test.rs",
+          "file": "rust/cli/tests/compaction_error_cascade_test.rs",
           "lines": "72-88",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 58,
                 59,
@@ -31,11 +31,11 @@
       "name": "Budget exhausted message mentions the attempt count",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_error_cascade_test.rs",
+          "file": "rust/cli/tests/compaction_error_cascade_test.rs",
           "lines": "90-110",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 70,
                 71,
@@ -63,11 +63,11 @@
       "name": "execute_compaction_and_capture_events runs compaction and resets token tracker",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_error_cascade_test.rs",
+          "file": "rust/cli/tests/compaction_error_cascade_test.rs",
           "lines": "112-197",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 280,
                 281,
@@ -191,11 +191,11 @@
       "name": "execute_compaction_and_capture_events emits compaction continuing event on success",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_error_cascade_test.rs",
+          "file": "rust/cli/tests/compaction_error_cascade_test.rs",
           "lines": "199-250",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
                 280,
                 281,
@@ -319,11 +319,11 @@
       "name": "The obsolete run_retry_stream function has been removed from the compaction retry module",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_error_cascade_test.rs",
+          "file": "rust/cli/tests/compaction_error_cascade_test.rs",
           "lines": "252-297",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/mod.rs",
+              "file": "rust/cli/src/interactive/mod.rs",
               "lines": [
                 6,
                 7,
@@ -398,11 +398,11 @@
       "name": "Stream loop wires in a compaction retry counter bounded by MAX_COMPACTION_RETRIES",
       "testMappings": [
         {
-          "file": "codelet/cli/tests/compaction_error_cascade_test.rs",
+          "file": "rust/cli/tests/compaction_error_cascade_test.rs",
           "lines": "299-332",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 562,
                 563,
@@ -518,12 +518,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/tests/compaction_error_cascade_test.rs"
+      "rust/cli/tests/compaction_error_cascade_test.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/recovery_compaction.rs",
-      "codelet/cli/src/interactive/mod.rs",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/recovery_compaction.rs",
+      "rust/cli/src/interactive/mod.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 672
   }

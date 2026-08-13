@@ -12,7 +12,7 @@ Feature: Embedded transport for the FspecService tarpc surface
   """
   Architecture
 
-  codelet/rpc-embedded provides an in-memory tarpc transport backed by tarpc::transport::channel. It accepts a tokio::runtime::Handle from the host and never spawns its own runtime (per resolved RPC-002 Q9). The shared FspecService implementation lives in codelet/rpc and is consumed unchanged by this transport — no business logic is inlined here.
+  rust/rpc-embedded provides an in-memory tarpc transport backed by tarpc::transport::channel. It accepts a tokio::runtime::Handle from the host and never spawns its own runtime (per resolved RPC-002 Q9). The shared FspecService implementation lives in rust/rpc and is consumed unchanged by this transport — no business logic is inlined here.
 
   Spike RPC: list_work_units(ctx) -> Vec<WorkUnitInfo>. Reads from a tiny test-only in-memory fixture in this card.
 

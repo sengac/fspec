@@ -4,11 +4,11 @@
       "name": "Embedded and WebSocket merge_session_worktree both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc057_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc057_cross_transport_parity.rs",
           "lines": "72-110",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1471,
                 1472,
@@ -95,11 +95,11 @@
       "name": "Embedded and WebSocket discard_session_worktree both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc057_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc057_cross_transport_parity.rs",
           "lines": "117-145",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1471,
                 1472,
@@ -186,11 +186,11 @@
       "name": "Embedded and WebSocket prune_orphaned_worktrees both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc057_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc057_cross_transport_parity.rs",
           "lines": "152-184",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1471,
                 1472,
@@ -277,11 +277,11 @@
       "name": "Embedded and WebSocket list_session_worktrees both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc057_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc057_cross_transport_parity.rs",
           "lines": "191-247",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1471,
                 1472,
@@ -368,11 +368,11 @@
       "name": "Embedded and WebSocket inspect_session_changes both reach the stub",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/rpc057_cross_transport_parity.rs",
+          "file": "rust/fspec-tui/tests/rpc057_cross_transport_parity.rs",
           "lines": "254-294",
           "implMappings": [
             {
-              "file": "codelet/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1471,
                 1472,
@@ -461,10 +461,10 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/rpc057_cross_transport_parity.rs"
+      "rust/fspec-tui/tests/rpc057_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "codelet/core/src/session_manager_handle.rs"
+      "rust/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 574
   }

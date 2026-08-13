@@ -4,11 +4,11 @@
       "name": "Clap exposes compact-work-unit with a positional arg and --force flag in --help",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compact_work_unit.rs",
+          "file": "rust/fspec/tests/cli_compact_work_unit.rs",
           "lines": "85-129",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compact_work_unit.rs",
+              "file": "rust/fspec/src/compact_work_unit.rs",
               "lines": [
                 40,
                 41,
@@ -50,11 +50,11 @@
       "name": "CLI compacts a done work unit and prints the removed-items summary",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compact_work_unit.rs",
+          "file": "rust/fspec/tests/cli_compact_work_unit.rs",
           "lines": "131-158",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compact_work_unit.rs",
+              "file": "rust/fspec/src/compact_work_unit.rs",
               "lines": [
                 47,
                 48,
@@ -89,11 +89,11 @@
       "name": "CLI prints the no-op sentinel when there is nothing to remove",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compact_work_unit.rs",
+          "file": "rust/fspec/tests/cli_compact_work_unit.rs",
           "lines": "160-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compact_work_unit.rs",
+              "file": "rust/fspec/src/compact_work_unit.rs",
               "lines": [
                 47,
                 48,
@@ -128,11 +128,11 @@
       "name": "CLI exits 1 when forcing is required but absent",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compact_work_unit.rs",
+          "file": "rust/fspec/tests/cli_compact_work_unit.rs",
           "lines": "183-210",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compact_work_unit.rs",
+              "file": "rust/fspec/src/compact_work_unit.rs",
               "lines": [
                 47,
                 48,
@@ -167,11 +167,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compact_work_unit.rs",
+          "file": "rust/fspec/tests/cli_compact_work_unit.rs",
           "lines": "212-263",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/compact_work_unit.rs",
+              "file": "rust/fspec/src/compact_work_unit.rs",
               "lines": [
                 47,
                 48,
@@ -206,11 +206,11 @@
       "name": "compact-work-unit --help is byte-for-byte identical to TS reference",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_compact_work_unit.rs",
+          "file": "rust/fspec/tests/cli_compact_work_unit.rs",
           "lines": "265-289",
           "implMappings": [
             {
-              "file": "codelet/fspec-core/src/help/configs/compact_work_unit.rs",
+              "file": "rust/fspec-core/src/help/configs/compact_work_unit.rs",
               "lines": [
                 1,
                 2,
@@ -294,11 +294,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_compact_work_unit.rs"
+      "rust/fspec/tests/cli_compact_work_unit.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/compact_work_unit.rs",
-      "codelet/fspec-core/src/help/configs/compact_work_unit.rs"
+      "rust/fspec/src/compact_work_unit.rs",
+      "rust/fspec-core/src/help/configs/compact_work_unit.rs"
     ],
     "totalLinesCovered": 392
   }

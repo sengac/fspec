@@ -4,11 +4,11 @@
       "name": "StreamingError::Prompt with PromptCancelled is detected via Error::from conversion",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "file": "rust/cli/src/interactive/error_classifiers.rs",
           "lines": "478-499",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 136,
                 137,
@@ -48,11 +48,11 @@
       "name": "Bare string errors are not mistaken for PromptCancelled",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "file": "rust/cli/src/interactive/error_classifiers.rs",
           "lines": "502-513",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 136,
                 137,
@@ -92,11 +92,11 @@
       "name": "Error::from path preserves downcast capability for extract_prompt_cancelled",
       "testMappings": [
         {
-          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "file": "rust/cli/src/interactive/error_classifiers.rs",
           "lines": "538-572",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
               "lines": [
                 136,
                 137,
@@ -138,10 +138,10 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/cli/src/interactive/error_classifiers.rs"
+      "rust/cli/src/interactive/error_classifiers.rs"
     ],
     "implFiles": [
-      "codelet/cli/src/interactive/error_classifiers.rs"
+      "rust/cli/src/interactive/error_classifiers.rs"
     ],
     "totalLinesCovered": 138
   }

@@ -5,7 +5,7 @@
 Feature: Z.AI GLM Provider Integration
   """
   Provider Implementation:
-  - ZAIProvider in codelet/providers/src/zai.rs uses rig's OpenAI client with custom base_url
+  - ZAIProvider in rust/providers/src/zai.rs uses rig's OpenAI client with custom base_url
   - Follows same pattern as GeminiProvider for OpenAI-compatible APIs
   - Supports two endpoints based on API key environment variable:
   - ZAI_API_KEY: Normal API (https://api.z.ai/api/paas/v4)
@@ -17,7 +17,7 @@ Feature: Z.AI GLM Provider Integration
   - May need ZAI-specific thinking config facade for reasoning_content handling
 
   Integration Points:
-  - ProviderManager in codelet/providers/src/manager.rs (add ProviderType::ZAI)
+  - ProviderManager in rust/providers/src/manager.rs (add ProviderType::ZAI)
   - provider-config.ts (add to SUPPORTED_PROVIDERS array)
   - credentials.ts (add ZAI_API_KEY and ZAI_PLAN_API_KEY handling)
   - AgentView.tsx (add zai provider ID mapping)

@@ -4,11 +4,11 @@
       "name": "Stats action returns JSON on empty graph",
       "testMappings": [
         {
-          "file": "codelet/tools/src/graph_search/tests.rs",
+          "file": "rust/tools/src/graph_search/tests.rs",
           "lines": "36-56",
           "implMappings": [
             {
-              "file": "codelet/tools/src/graph_search/handler.rs",
+              "file": "rust/tools/src/graph_search/handler.rs",
               "lines": [
                 1,
                 2,
@@ -84,11 +84,11 @@
       "name": "Search action returns matching concepts",
       "testMappings": [
         {
-          "file": "codelet/tools/src/graph_search/tests.rs",
+          "file": "rust/tools/src/graph_search/tests.rs",
           "lines": "61-85",
           "implMappings": [
             {
-              "file": "codelet/tools/src/graph_search/handler.rs",
+              "file": "rust/tools/src/graph_search/handler.rs",
               "lines": [
                 1,
                 2,
@@ -164,11 +164,11 @@
       "name": "Tool is available when agent session starts",
       "testMappings": [
         {
-          "file": "codelet/tools/src/graph_search/tests.rs",
+          "file": "rust/tools/src/graph_search/tests.rs",
           "lines": "90-107",
           "implMappings": [
             {
-              "file": "codelet/tools/src/graph_search/mod.rs",
+              "file": "rust/tools/src/graph_search/mod.rs",
               "lines": [
                 1,
                 2,
@@ -299,11 +299,11 @@
       "name": "Unregistered handler returns descriptive error",
       "testMappings": [
         {
-          "file": "codelet/tools/src/graph_search/tests.rs",
+          "file": "rust/tools/src/graph_search/tests.rs",
           "lines": "112-131",
           "implMappings": [
             {
-              "file": "codelet/tools/src/graph_search/handler.rs",
+              "file": "rust/tools/src/graph_search/handler.rs",
               "lines": [
                 48,
                 49,
@@ -330,11 +330,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/graph_search/tests.rs"
+      "rust/tools/src/graph_search/tests.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/graph_search/handler.rs",
-      "codelet/tools/src/graph_search/mod.rs"
+      "rust/tools/src/graph_search/handler.rs",
+      "rust/tools/src/graph_search/mod.rs"
     ],
     "totalLinesCovered": 428
   }

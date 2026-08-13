@@ -24,9 +24,9 @@ Feature: fspec daemon mode — headless WS server with signal handling
   • Optional `--pidfile <path>` for systemd-style PID tracking.
 
   Source artifacts:
-  • codelet/fspec/src/daemon.rs (NEW)
-  • codelet/fspec/src/common.rs (NEW)
-  • codelet/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
+  • rust/fspec/src/daemon.rs (NEW)
+  • rust/fspec/src/common.rs (NEW)
+  • rust/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
   """
 
   Background: 
@@ -38,7 +38,7 @@ Feature: fspec daemon mode — headless WS server with signal handling
   @integration-test
   Scenario: Daemon mode emits the port on STDOUT (RPC-005 contract verbatim)
     """
-    The existing `codelet/rpc-server/tests/websocket_transport.rs::spawn_rpc_server`
+    The existing `rust/rpc-server/tests/websocket_transport.rs::spawn_rpc_server`
     test harness reads exactly ONE line from stdout via BufReader::read_line
     and parses it as a bare integer port. `fspec daemon` MUST preserve
     that contract verbatim so the harness works unmodified.
@@ -53,7 +53,7 @@ Feature: fspec daemon mode — headless WS server with signal handling
 
   @smoke
   Scenario: Daemon mode does not call ratatui::init
-    Given the file `codelet/fspec/src/daemon.rs` exists
+    Given the file `rust/fspec/src/daemon.rs` exists
     Then it contains no occurrence of `ratatui::init`
     And it contains no occurrence of `crossterm::execute!`
     And it contains no construction of `TerminalGuard`
@@ -61,7 +61,7 @@ Feature: fspec daemon mode — headless WS server with signal handling
 
   @smoke
   Scenario: Daemon mode keeps stderr fmt tracing subscriber (RPC-005 pattern)
-    Given the file `codelet/fspec/src/daemon.rs` exists
+    Given the file `rust/fspec/src/daemon.rs` exists
     Then it calls `common::init_tracing_daemon()` exactly once
     And the `init_tracing_daemon()` body in `common.rs` registers a `tracing_subscriber::fmt` layer that writes to `std::io::stderr`
     And the same body also registers the LogEvent broadcast layer from `codelet_rpc::register_log_layer`

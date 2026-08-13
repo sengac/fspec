@@ -2,7 +2,7 @@
 @RPC-204
 Feature: Port clear-dependencies command to Rust
   """
-  Core impl file: codelet/fspec-core/src/commands/clear_dependencies.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` (parity with remove_dependency::run).
+  Core impl file: rust/fspec-core/src/commands/clear_dependencies.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` (parity with remove_dependency::run).
   Reuses existing shared infrastructure: io::ensure::ensure_work_units_file (load-or-init), io::locked_file::write_json_atomic (atomic write), types::work_unit::WorkUnitsData with #[serde(flatten)] extra map preserving unknown fields (blocks, blockedBy, dependsOn, relatesTo live in `extra`).
   Iteration order: blocks → blockedBy → dependsOn → relatesTo (mirrors src/commands/clear-dependencies.ts:40-87). Bidirectional cleanup filters reverse-edge entries and deletes the reverse field if empty.
   Persistence strategy: load via ensure_work_units_file, apply all mutations in memory, then a SINGLE write_json_atomic at the end. Mirrors fileManager.transaction() in TS.

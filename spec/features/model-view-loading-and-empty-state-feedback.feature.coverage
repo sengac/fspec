@@ -4,11 +4,11 @@
       "name": "Opening /model before providers load shows a loading state not a blank inert list",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_loading_empty.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_loading_empty.rs",
           "lines": "41-69",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows_render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows_render.rs",
               "lines": [
                 60,
                 61,
@@ -41,11 +41,11 @@
       "name": "Opening /model with no models shows an explicit empty state",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/src/views/model_selector/tests_loading_empty.rs",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_loading_empty.rs",
           "lines": "72-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/model_selector/rows_render.rs",
+              "file": "rust/fspec-tui/src/views/model_selector/rows_render.rs",
               "lines": [
                 60,
                 61,
@@ -80,10 +80,10 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/src/views/model_selector/tests_loading_empty.rs"
+      "rust/fspec-tui/src/views/model_selector/tests_loading_empty.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/views/model_selector/rows_render.rs"
+      "rust/fspec-tui/src/views/model_selector/rows_render.rs"
     ],
     "totalLinesCovered": 108
   }

@@ -8,7 +8,7 @@
 Feature: Reconcile RhaiToolFacadeAdapter spec with implementation
   """
   Reconcile via docs/spec updates (Option A) rather than introducing a ToolDyn wrapper, because Rhai tools have dynamic names incompatible with rig::Tool's const NAME requirement
-  A Rust integration test in codelet/providers/tests/ pins the adapter's getters-only contract (public methods, types, values) so future regressions are caught
+  A Rust integration test in rust/providers/tests/ pins the adapter's getters-only contract (public methods, types, values) so future regressions are caught
   """
 
   # ========================================

@@ -4,11 +4,11 @@
       "name": "Interrupt agent during slow tool execution",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "file": "rust/napi/tests/napi_interrupt_test.rs",
           "lines": "21-62",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 34,
                 35,
@@ -24,11 +24,11 @@
       "name": "Interrupt agent during text streaming",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "file": "rust/napi/tests/napi_interrupt_test.rs",
           "lines": "72-111",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 34,
                 35,
@@ -44,11 +44,11 @@
       "name": "Interrupt agent waiting for API response",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "file": "rust/napi/tests/napi_interrupt_test.rs",
           "lines": "120-155",
           "implMappings": [
             {
-              "file": "codelet/napi/src/session.rs",
+              "file": "rust/napi/src/session.rs",
               "lines": [
                 34,
                 35,
@@ -64,11 +64,11 @@
       "name": "CLI mode interrupt behavior unchanged",
       "testMappings": [
         {
-          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "file": "rust/napi/tests/napi_interrupt_test.rs",
           "lines": "187-238",
           "implMappings": [
             {
-              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
                 73,
                 74,
@@ -105,11 +105,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/napi/tests/napi_interrupt_test.rs"
+      "rust/napi/tests/napi_interrupt_test.rs"
     ],
     "implFiles": [
-      "codelet/napi/src/session.rs",
-      "codelet/cli/src/interactive/stream_loop.rs"
+      "rust/napi/src/session.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
     ],
     "totalLinesCovered": 205
   }

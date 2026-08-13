@@ -6,7 +6,7 @@
 Feature: RPC-073 Agent Input Typeable Chars
   """
   Bug 2: ? and q were trapped globally by App::handle_app_shortcut in
-  codelet/fspec-tui/src/app/events.rs:46-54. They were dispatched at Stage 2
+  rust/fspec-tui/src/app/events.rs:46-54. They were dispatched at Stage 2
   BEFORE the Compositor and Navigator, so the AgentView's MultiLineInput
   never received them.
 

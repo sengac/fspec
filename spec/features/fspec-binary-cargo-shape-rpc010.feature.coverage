@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "codelet/fspec is registered as a workspace member",
+      "name": "rust/fspec is registered as a workspace member",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "235-276",
           "implMappings": [
             {
-              "file": "codelet/Cargo.toml",
+              "file": "rust/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -37,14 +37,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/Cargo.toml declares a single bin named fspec",
+      "name": "rust/fspec/Cargo.toml declares a single bin named fspec",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "278-311",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -94,14 +94,14 @@
       ]
     },
     {
-      "name": "cargo build -p fspec --release produces codelet/target/release/fspec",
+      "name": "cargo build -p fspec --release produces rust/target/release/fspec",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "693-727",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -154,11 +154,11 @@
       "name": "fspec --version prints the workspace version",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "25-50",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -261,11 +261,11 @@
       "name": "fspec --help shows three subcommands",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "52-90",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -365,14 +365,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/src/ contains exactly the locked file layout",
+      "name": "rust/fspec/src/ contains exactly the locked file layout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "313-360",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -472,14 +472,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/Cargo.toml [dependencies] does NOT list codelet-napi",
+      "name": "rust/fspec/Cargo.toml [dependencies] does NOT list codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "362-385",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -529,14 +529,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/Cargo.toml [dev-dependencies] does NOT list codelet-napi",
+      "name": "rust/fspec/Cargo.toml [dev-dependencies] does NOT list codelet-napi",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "387-409",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -586,14 +586,14 @@
       ]
     },
     {
-      "name": "codelet/fspec/Cargo.toml declares the expected production dependencies",
+      "name": "rust/fspec/Cargo.toml declares the expected production dependencies",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "411-457",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -643,14 +643,14 @@
       ]
     },
     {
-      "name": "No source file under codelet/fspec/src/ constructs its own tokio runtime",
+      "name": "No source file under rust/fspec/src/ constructs its own tokio runtime",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "459-494",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -750,14 +750,14 @@
       ]
     },
     {
-      "name": "The RPC-005 source-shape invariant is widened to scan codelet/fspec/src/",
+      "name": "The RPC-005 source-shape invariant is widened to scan rust/fspec/src/",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "496-513",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/cargo_shape.rs",
+              "file": "rust/fspec/tests/cargo_shape.rs",
               "lines": [
                 496,
                 497,
@@ -787,11 +787,11 @@
       "name": "The existing codelet-rpc-server dev-helper binary stays in place",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "515-540",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/Cargo.toml",
+              "file": "rust/rpc-server/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -823,11 +823,11 @@
       "name": "Existing codelet-rpc-server test harness still works (port-line contract preserved)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "729-762",
           "implMappings": [
             {
-              "file": "codelet/rpc-server/tests/common/mod.rs",
+              "file": "rust/rpc-server/tests/common/mod.rs",
               "lines": [
                 1,
                 2,
@@ -859,11 +859,11 @@
       "name": "A new spawn_fspec_daemon helper proves the port-line contract is verbatim",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "542-691",
           "implMappings": [
             {
-              "file": "codelet/fspec/tests/common/mod.rs",
+              "file": "rust/fspec/tests/common/mod.rs",
               "lines": [
                 1,
                 2,
@@ -925,7 +925,7 @@
       "name": "package.json declares the build:rust:fspec script",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "764-792",
           "implMappings": [
             {
@@ -944,7 +944,7 @@
       "name": "npm run build:rust:fspec produces dist/fspec for parity with the TS layout",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "794-824",
           "implMappings": [
             {
@@ -963,7 +963,7 @@
       "name": "npm bin entry remains on the TS shim (no npm install path swap in this card)",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "826-857",
           "implMappings": [
             {
@@ -982,11 +982,11 @@
       "name": "--workspace defaults to CWD when omitted",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "92-133",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -1089,11 +1089,11 @@
       "name": "--workspace <path> overrides CWD for the WorkUnitsWatcher root",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "135-182",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -1196,11 +1196,11 @@
       "name": "Both `fspec` (combined) and `fspec daemon` honour the same --workspace resolution",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "184-233",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/main.rs",
+              "file": "rust/fspec/src/main.rs",
               "lines": [
                 1,
                 2,
@@ -1303,11 +1303,11 @@
       "name": "Existing Vitest smoke at napi-workunitinfo-shape.test.ts remains green",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "859-884",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -1360,11 +1360,11 @@
       "name": "Existing cargo test suites for RPC-005..009 remain green",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cargo_shape.rs",
+          "file": "rust/fspec/tests/cargo_shape.rs",
           "lines": "886-918",
           "implMappings": [
             {
-              "file": "codelet/fspec/Cargo.toml",
+              "file": "rust/fspec/Cargo.toml",
               "lines": [
                 1,
                 2,
@@ -1419,16 +1419,16 @@
     "coveredScenarios": 22,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cargo_shape.rs"
+      "rust/fspec/tests/cargo_shape.rs"
     ],
     "implFiles": [
-      "codelet/Cargo.toml",
-      "codelet/fspec/Cargo.toml",
-      "codelet/fspec/src/main.rs",
-      "codelet/fspec/tests/cargo_shape.rs",
-      "codelet/rpc-server/Cargo.toml",
-      "codelet/rpc-server/tests/common/mod.rs",
-      "codelet/fspec/tests/common/mod.rs",
+      "rust/Cargo.toml",
+      "rust/fspec/Cargo.toml",
+      "rust/fspec/src/main.rs",
+      "rust/fspec/tests/cargo_shape.rs",
+      "rust/rpc-server/Cargo.toml",
+      "rust/rpc-server/tests/common/mod.rs",
+      "rust/fspec/tests/common/mod.rs",
       "package.json"
     ],
     "totalLinesCovered": 1934

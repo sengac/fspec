@@ -4,7 +4,7 @@
 @NAPI-005
 Feature: Manual Compaction Command
   """
-  Integration: AgentModal.tsx handleSubmit intercepts /compact before session.prompt() (pattern from /debug lines 254-271). Dependency: BackgroundSession in codelet-napi/src/session.rs exposes compact() method. Dependency: compact() calls execute_compaction from codelet/cli/src/interactive_helpers.rs. Type: CompactionResult contains metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept). Display: Result shown as tool role message (yellow) in conversation. Update: Token tracker in header refreshes immediately after compaction.
+  Integration: AgentModal.tsx handleSubmit intercepts /compact before session.prompt() (pattern from /debug lines 254-271). Dependency: BackgroundSession in codelet-napi/src/session.rs exposes compact() method. Dependency: compact() calls execute_compaction from rust/cli/src/interactive_helpers.rs. Type: CompactionResult contains metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept). Display: Result shown as tool role message (yellow) in conversation. Update: Token tracker in header refreshes immediately after compaction.
   """
 
   # ========================================

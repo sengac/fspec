@@ -8,7 +8,7 @@
 @PROV-136
 Feature: Profile rename persistence
   """
-  Rename is a delete-old-key + write-new-key read-modify-write of providers.openai.profiles in fspec-config.json. A pre-write collision check rejects a rename onto an existing different profile name. customModels and sibling profiles are preserved. Implemented as rename_profile_at in codelet/sessions/src/profile_persistence.rs.
+  Rename is a delete-old-key + write-new-key read-modify-write of providers.openai.profiles in fspec-config.json. A pre-write collision check rejects a rename onto an existing different profile name. customModels and sibling profiles are preserved. Implemented as rename_profile_at in rust/sessions/src/profile_persistence.rs.
   """
 
   Background: User Story

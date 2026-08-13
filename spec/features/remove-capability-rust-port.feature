@@ -10,7 +10,7 @@ Feature: Port remove-capability command to Rust
   src/commands/register-remove-capability.ts). Removes a capability matched by
   EXACT case-sensitive name from solutionSpace.capabilities.
 
-  Core impl at codelet/fspec-core/src/commands/remove_capability.rs uses the
+  Core impl at rust/fspec-core/src/commands/remove_capability.rs uses the
   2-arg signature run(args_json, project_root). Args (camelCase JSON):
   { name: String }.
 

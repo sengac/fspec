@@ -8,7 +8,7 @@
 @PROV-132
 Feature: Flaky rpc081 restore_messages test: intra-process race on global set_data_directory / default-model state
   """
-  Isolation mechanism: a file-scoped `static DATA_DIR_GUARD: Mutex<()> = Mutex::new(())` in each offending test file (rpc081, prov101), locked at the top of every #[test] via `.lock().unwrap_or_else(PoisonError::into_inner)` and held (as `let _guard`) across the whole body. Chosen OVER per-test isolated data dir because the data directory is a single process-global (codelet/common/src/data_dir.rs `static DATA_DIRECTORY: Mutex<Option<PathBuf>>`) — swapping it is inherently non-isolatable across threads, so serialization is the only correct fix; it mirrors the proven PROV-118/119/123/127/129/130 guard pattern already in-tree.
+  Isolation mechanism: a file-scoped `static DATA_DIR_GUARD: Mutex<()> = Mutex::new(())` in each offending test file (rpc081, prov101), locked at the top of every #[test] via `.lock().unwrap_or_else(PoisonError::into_inner)` and held (as `let _guard`) across the whole body. Chosen OVER per-test isolated data dir because the data directory is a single process-global (rust/common/src/data_dir.rs `static DATA_DIRECTORY: Mutex<Option<PathBuf>>`) — swapping it is inherently non-isolatable across threads, so serialization is the only correct fix; it mirrors the proven PROV-118/119/123/127/129/130 guard pattern already in-tree.
   """
 
   # ========================================

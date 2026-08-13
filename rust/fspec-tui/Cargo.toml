@@ -1,0 +1,130 @@
+[package]
+name = "codelet-fspec-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Ratatui app shell + transport-agnostic FspecBackend trait for fspec (RPC-008)"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+# RPC seam (the consumed surfaces — see ast-research-rpc008-foundations.md)
+codelet-rpc.workspace = true
+codelet-rpc-types.workspace = true
+codelet-rpc-embedded.workspace = true
+codelet-rpc-server.workspace = true
+# PROV-114: pure host normalization (copilot::normalize_enterprise_domain) for
+# the github-copilot enterprise-host preamble (view-layer, providers-direct).
+codelet-providers.workspace = true
+# PROV-120: App::bootstrap restores the TS-parity first-available startup model
+# via resolve_startup_model + load_persisted_model_string.
+codelet-sessions.workspace = true
+# RPC-373: App::bootstrap starts the attachment viewer server; the board D key
+# opens FOUNDATION.md through it.
+codelet-attachment-viewer.workspace = true
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Terminal & UI
+ratatui.workspace = true
+crossterm.workspace = true
+tui-popup = "0.6"
+tui-input.workspace = true
+tui-textarea.workspace = true
+unicode-width.workspace = true
+
+# WebSocket transport (consumed by WebSocketFspecBackend::connect)
+tokio-tungstenite.workspace = true
+url.workspace = true
+
+# Tarpc context (for delegated RPC calls)
+tarpc.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# RPC-045: FspecCommandRequest runner serialises work-unit query results
+# back into the FspecResult.data String slot via serde_json::to_string.
+serde_json.workspace = true
+
+# RPC-059: `/loop` parser uses regex for leading/trailing interval matching.
+regex.workspace = true
+
+# RPC-390: Myers line diff for Edit/Write diff generation (workspace-pinned,
+# already used by rust/git).
+similar = "2"
+
+# RPC-373: launch the default browser for the board D key (FOUNDATION.md).
+open.workspace = true
+
+# RPC-374: percent-encode attachment paths when building the viewer /view URL.
+urlencoding.workspace = true
+
+# COPY-001: OSC 52 clipboard writer base64-encodes the payload.
+base64 = "0.22"
+
+# Logging
+tracing.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+tempfile.workspace = true
+tokio-test.workspace = true
+# RPC-079: NotificationDialog / StatusDialog auto-dismiss timer tests
+# use `#[tokio::test(start_paused = true)]` + `tokio::time::advance` to
+# exercise the countdown without sleeping in wall-clock time.
+tokio = { workspace = true, features = ["test-util"] }
+
+# Real services used by integration fixtures
+codelet-core.workspace = true
+# RPC-015: cross-transport parity tests construct real ghost-commit
+# checkpoint refs to exercise the new `FspecBackend::checkpoint_counts`
+# method against both transports.
+codelet-git.workspace = true
+# RPC-025: history-lift parity tests reach codelet_common::set_data_directory
+# directly to redirect the global DATA_DIRECTORY at the start of each test.
+codelet-common.workspace = true
+# RPC-025: tests build HistoryEntry instances directly.
+uuid = { version = "1", features = ["v4"] }
+# RPC-025: timestamp_iso assertions parse RFC3339 strings round-tripped
+# through HistoryMatch.
+chrono = { version = "0.4" }
+# RPC-037: cross-transport parity tests compare bincode-encoded chunk
+# sequences across both transports.
+bincode = { workspace = true }
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers.workspace = true
+# RPC-107: cross-transport parity tests drive the real SessionManager
+# through both transports to exercise the canonical provider catalog
+# below the wire boundary.
+codelet-sessions.workspace = true
+# RPC-107: provider_settings_canonical_order_rpc107.rs and existing
+# tests use #[serial] to serialise env-var manipulation across the
+# integration suite.
+serial_test.workspace = true
+# RPC-107: catalog unit tests reach into the static CANONICAL_PROVIDERS
+# slice exposed by codelet-providers.
+codelet-providers.workspace = true
+# RPC-420: the producer-truth display-contract test feeds the REAL
+# producer formula (interactive_helpers::compression_ratio * 100.0)
+# into the CompactionComplete display pipeline. Already in the dep
+# graph via codelet-sessions.
+codelet-cli.workspace = true
+# CONT-008: goal back-sync tests drive the REAL agent-loop
+# BackgroundOutput twin (StreamEvent::ContinueState → chrome write-back
+# → StreamChunk::ContinueStateUpdate) against a real BackgroundSession.
+# agent-loop is napi-free (its no_napi_dependency contract), so no cycle.
+codelet-agent-loop.workspace = true
+# CONT-008: resurrection tests inspect the done() registry
+# (is_continue_armed / get_session_goal) after the dispatch sync.
+codelet-tools.workspace = true
+
+[lints]
+workspace = true

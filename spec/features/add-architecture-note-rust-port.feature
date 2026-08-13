@@ -5,9 +5,9 @@
 @mutation
 Feature: Port add-architecture-note command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/add_architecture_note.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists, appends a new ArchitectureNoteItem object to workUnit.architectureNotes with the literal field order `id, text, deleted, createdAt`, increments workUnit.nextNoteId, bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic so that prefixCounters, migrationHistory and other unknown top-level fields round-trip losslessly.
-  Help config at codelet/fspec-core/src/help/configs/add_architecture_note.rs mirrors src/commands/add-architecture-note-help.ts byte-for-byte.
-  CLI bridge at codelet/fspec/src/add_architecture_note.rs marshals the two positional args (workUnitId, note) into JSON and delegates to commands::add_architecture_note::run. No domain logic is duplicated.
+  Core impl at rust/fspec-core/src/commands/add_architecture_note.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists, appends a new ArchitectureNoteItem object to workUnit.architectureNotes with the literal field order `id, text, deleted, createdAt`, increments workUnit.nextNoteId, bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic so that prefixCounters, migrationHistory and other unknown top-level fields round-trip losslessly.
+  Help config at rust/fspec-core/src/help/configs/add_architecture_note.rs mirrors src/commands/add-architecture-note-help.ts byte-for-byte.
+  CLI bridge at rust/fspec/src/add_architecture_note.rs marshals the two positional args (workUnitId, note) into JSON and delegates to commands::add_architecture_note::run. No domain logic is duplicated.
   Two-front-doors: clap CLI and LLM dispatcher both call commands::add_architecture_note::run(args_json, project_root).
   """
 

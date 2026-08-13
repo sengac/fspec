@@ -4,11 +4,11 @@
       "name": "Help output matches the captured TS fixture",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command.rs",
+          "file": "rust/fspec/tests/cli_add_command.rs",
           "lines": "83-110",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command.rs",
+              "file": "rust/fspec/src/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -102,11 +102,11 @@
       "name": "CLI successfully appends a command and prints the success line",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command.rs",
+          "file": "rust/fspec/tests/cli_add_command.rs",
           "lines": "113-147",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command.rs",
+              "file": "rust/fspec/src/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -200,11 +200,11 @@
       "name": "CLI rejects a blocked work unit with exit 1 and the TS-parity error prefix",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command.rs",
+          "file": "rust/fspec/tests/cli_add_command.rs",
           "lines": "150-181",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command.rs",
+              "file": "rust/fspec/src/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -298,11 +298,11 @@
       "name": "CLI delegates to the same fspec_core function used by the dispatcher",
       "testMappings": [
         {
-          "file": "codelet/fspec/tests/cli_add_command.rs",
+          "file": "rust/fspec/tests/cli_add_command.rs",
           "lines": "184-233",
           "implMappings": [
             {
-              "file": "codelet/fspec/src/add_command.rs",
+              "file": "rust/fspec/src/add_command.rs",
               "lines": [
                 1,
                 2,
@@ -398,10 +398,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec/tests/cli_add_command.rs"
+      "rust/fspec/tests/cli_add_command.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/add_command.rs"
+      "rust/fspec/src/add_command.rs"
     ],
     "totalLinesCovered": 473
   }

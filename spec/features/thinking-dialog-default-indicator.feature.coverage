@@ -4,11 +4,11 @@
       "name": "Default row shows the (default) marker appended to its description",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
           "lines": "78-93",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
               "lines": [
                 21,
                 22,
@@ -60,11 +60,11 @@
       "name": "No default persisted shows no (default) marker on any row",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
           "lines": "95-108",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 70,
                 71,
@@ -85,11 +85,11 @@
       "name": "Default marker is independent of the selection highlight",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
           "lines": "110-133",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 180,
                 181,
@@ -121,11 +121,11 @@
       "name": "Default equals current selection shows both the highlight and the (default) marker",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
           "lines": "135-149",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
                 180,
                 181,
@@ -157,11 +157,11 @@
       "name": "Default marker on an unselected row is dimmed on the description span",
       "testMappings": [
         {
-          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
           "lines": "151-165",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+              "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
               "lines": [
                 41,
                 42,
@@ -191,11 +191,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs"
+      "rust/fspec-tui/tests/tui094_default_indicator_parity.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
-      "codelet/fspec-tui/src/components/thinking_level_dialog.rs"
+      "rust/fspec-tui/src/components/dialog_theme_rows.rs",
+      "rust/fspec-tui/src/components/thinking_level_dialog.rs"
     ],
     "totalLinesCovered": 189
   }

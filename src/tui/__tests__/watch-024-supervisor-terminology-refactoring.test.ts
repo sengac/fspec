@@ -13,8 +13,8 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 const PROJECT_ROOT = process.cwd();
-const CODELET_NAPI_SRC = join(PROJECT_ROOT, 'codelet', 'napi', 'src');
-const CODELET_SESSIONS_SRC = join(PROJECT_ROOT, 'codelet', 'sessions', 'src');
+const CODELET_NAPI_SRC = join(PROJECT_ROOT, 'rust', 'napi', 'src');
+const CODELET_SESSIONS_SRC = join(PROJECT_ROOT, 'rust', 'sessions', 'src');
 const TUI_COMPONENTS = join(PROJECT_ROOT, 'src', 'tui', 'components');
 const TUI_TYPES = join(PROJECT_ROOT, 'src', 'tui', 'types');
 const TUI_UTILS = join(PROJECT_ROOT, 'src', 'tui', 'utils');
@@ -31,11 +31,11 @@ function readFile(filePath: string): string {
  * Helper: read multiple files (skipping missing ones) and return concatenated content.
  *
  * RPC-068: After the RPC-030 → RPC-043 chain, the original
- * `codelet/napi/src/session_manager.rs` was split across multiple crates.
+ * `rust/napi/src/session_manager.rs` was split across multiple crates.
  * Identifiers we used to assert in a single file now live across:
- *   - codelet/sessions/src/{session_manager.rs, background_session.rs,
+ *   - rust/sessions/src/{session_manager.rs, background_session.rs,
  *                          chain_of_command.rs, handle_impl.rs, navigation.rs}
- *   - codelet/napi/src/{session_bindings.rs, agent_loop.rs, bridges.rs}
+ *   - rust/napi/src/{session_bindings.rs, agent_loop.rs, bridges.rs}
  * The naming invariants this test encodes are unchanged — only the file
  * layout moved. We model the "session-manager surface" as the union of
  * these files.
@@ -103,8 +103,8 @@ function collectTsFiles(dir: string): string[] {
 }
 
 // RPC-068: After RPC-030 → RPC-043 the original
-// `codelet/napi/src/session_manager.rs` was split across `codelet-sessions`
-// and the thin `codelet/napi/src/session_bindings.rs` adapter. The
+// `rust/napi/src/session_manager.rs` was split across `codelet-sessions`
+// and the thin `rust/napi/src/session_bindings.rs` adapter. The
 // invariants this test encodes are unchanged; we just point at the new
 // places those identifiers live.
 const SESSION_MANAGER_RS = [
@@ -337,7 +337,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       expect(fileContains(chunkProcessor, "'WatcherInput'")).toBe(false);
 
       // Verify index.d.ts matches NAPI discriminant
-      const indexDts = join(PROJECT_ROOT, 'codelet', 'napi', 'index.d.ts');
+      const indexDts = join(PROJECT_ROOT, 'rust', 'napi', 'index.d.ts');
       expect(fileContains(indexDts, "'IncomingMessage'")).toBe(true);
       expect(fileContains(indexDts, "'WatcherInput'")).toBe(false);
       expect(fileContains(indexDts, "'SupervisorPendingInjection'")).toBe(true);
@@ -492,7 +492,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       // @step When the supervisor/subordinate refactoring is complete
       // @step Then work_units_watcher.rs is unchanged
       // RPC-006 lifted the real watcher into codelet-core::work_units;
-      // codelet/napi/src/work_units_watcher.rs is now a thin NAPI shim
+      // rust/napi/src/work_units_watcher.rs is now a thin NAPI shim
       // around `WorkUnitsWatcher`. The original `WatcherState` struct lives
       // in core. We assert the shim still exposes the work-units watcher
       // surface so the filesystem-watcher concept is intact.

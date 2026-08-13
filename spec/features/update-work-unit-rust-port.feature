@@ -5,9 +5,9 @@
 @RPC-317
 Feature: Port update-work-unit command to Rust
   """
-  Core impl at codelet/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.
+  Core impl at rust/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.
   WorkUnit typed fields used: title, epic, updated_at. description, parent, children arrays live in the WorkUnit.extra map and are mutated by string key (same pattern as update_prefix.rs) to avoid touching the shared work_unit.rs type. Circular-reference check is a recursive helper over the work_units IndexMap mirroring TS wouldCreateCircularReference.
-  Core returns raw error reasons (TS throws unwrapped). CLI bridge at codelet/fspec/src/update_work_unit.rs marshals --title/--description/--epic/--parent + positional workUnitId into JSON (omitting None) and prints '✗ Work unit <id> updated successfully' on success / error to stderr on failure (parity with TS chalk path). Help config at codelet/fspec-core/src/help/configs/update_work_unit.rs mirrors update-work-unit-help.ts.
+  Core returns raw error reasons (TS throws unwrapped). CLI bridge at rust/fspec/src/update_work_unit.rs marshals --title/--description/--epic/--parent + positional workUnitId into JSON (omitting None) and prints '✗ Work unit <id> updated successfully' on success / error to stderr on failure (parity with TS chalk path). Help config at rust/fspec-core/src/help/configs/update_work_unit.rs mirrors update-work-unit-help.ts.
   """
 
   # ========================================
@@ -100,5 +100,5 @@ Feature: Port update-work-unit command to Rust
   Scenario: CLI delegates to the same fspec-core function as the dispatcher
     Given spec/work-units.json contains work unit 'AUTH-001' with title 'Login'
     When I dispatch update-work-unit via the dispatcher with workUnitId='AUTH-001' and title='Same'
-    And I run `./codelet/target/release/fspec update-work-unit AUTH-001 --title Same` in an identical workspace
+    And I run `./rust/target/release/fspec update-work-unit AUTH-001 --title Same` in an identical workspace
     Then both invocations produce the same success result and the same on-disk title 'Same'

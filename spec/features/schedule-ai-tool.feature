@@ -2,9 +2,9 @@
 @SCHED-009
 Feature: Schedule AI Tool
   """
-  Create codelet/tools/src/schedule/mod.rs — ScheduleTool struct with session_id, impl Tool for ScheduleTool with ScheduleArgs (action, name, cron, timezone, job_type, role, prompt, command, overlap_policy)
-  Create codelet/tools/src/schedule/handler.rs — ScheduleHandler type alias, static SCHEDULE_HANDLERS registry, set_schedule_handler, execute_schedule_command, has_schedule_handler, clear_all_schedule_handlers
-  Create codelet/napi/src/schedule_handler.rs — create_handler function that returns a closure reading/writing spec/schedules.json, dispatching on action (add/list/pause/resume/remove)
+  Create rust/tools/src/schedule/mod.rs — ScheduleTool struct with session_id, impl Tool for ScheduleTool with ScheduleArgs (action, name, cron, timezone, job_type, role, prompt, command, overlap_policy)
+  Create rust/tools/src/schedule/handler.rs — ScheduleHandler type alias, static SCHEDULE_HANDLERS registry, set_schedule_handler, execute_schedule_command, has_schedule_handler, clear_all_schedule_handlers
+  Create rust/napi/src/schedule_handler.rs — create_handler function that returns a closure reading/writing spec/schedules.json, dispatching on action (add/list/pause/resume/remove)
   Modify session_manager.rs — register schedule handler before agent run, clean up (set to None) after agent run, following the existing pattern for SessionSearch/AgentManager/Fspec handlers
   Create facade files for multi-provider support — schedule_facade.rs with ClaudeScheduleFacade, GeminiScheduleFacade, OpenAIScheduleFacade, ZAIScheduleFacade. Register in ProviderToolRegistry
   """
