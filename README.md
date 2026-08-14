@@ -17,7 +17,7 @@
 
 This isn't another agent harness. It's a **coding factory**.
 
-### How fspec Differs from Agent Harnesses
+### How fspec differs from agent harnesses
 
 Many agent harnesses support multiple agents and basic planning. The difference is **how work gets broken down and executed**.
 
@@ -51,21 +51,13 @@ Toyota's production system revolutionized manufacturing. The Kanban board became
 
 fspec applies the same principle to software production. Work units are jobs. The Kanban board is your production floor. AI agents are workstations. Specifications are blueprints. Tests are quality control. The factory runs whether you're watching or not.
 
-### The Dark Factory
+### The dark factory
 
 The term comes from [Dan Shapiro's framework](https://www.danshapiro.com/blog/2026/01/the-five-levels-from-spicy-autocomplete-to-the-software-factory/) mapping AI-assisted coding to five levels of autonomy—borrowing from self-driving cars. Most developers operate at Levels 2-3: pair programming with AI, reviewing AI-generated code. fspec is built for **Levels 4 and 5**, where specifications become the primary human input and AI agents autonomously produce working software.
 
 The "dark factory" references the [Fanuc factory in Japan](https://en.wikipedia.org/wiki/Lights_out_(manufacturing))—a robot factory staffed by robots, running with the lights off because no humans are present. In software, it means: specs go in, code comes out. The factory runs in the dark.
 
 fspec makes this possible through **Acceptance Criteria Driven Development (ACDD)**: you describe what you want, the AI asks clarifying questions, writes Gherkin scenarios capturing your intent, generates failing tests, then writes just enough code to pass. Every line traces back to a requirement. The specification *is* the source of truth.
-
----
-
-## Supported Providers
-
-fspec works with any AI provider that supports tool calling. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list and configuration.
-
-> **⚠️ Subscription Tokens**: Some tokens (like `CLAUDE_CODE_OAUTH_TOKEN`) come from subscription services rather than pay-per-use APIs. Check your provider's terms of service before using subscription tokens with third-party tools.
 
 ---
 
@@ -76,10 +68,6 @@ fspec works with any AI provider that supports tool calling. See [docs/PROVIDERS
 ```bash
 # macOS / Linux — build and install from source:
 ./scripts/install.sh
-
-# Or build manually:
-./scripts/build.sh --package
-cp dist/fspec-*.tar.gz ~/.local/bin/
 ```
 
 ### Run
@@ -98,15 +86,13 @@ This opens the factory floor—your Kanban board with AI workstations ready to t
 
 ---
 
----
-
 ## First Run: Starting the Factory
 
 When you first run `fspec`, the production floor is empty—no jobs queued. Here's how to get the factory running:
 
-### 1. Spin Up an Agent
+### 1. Spin up an agent
 
-Press **`/`** (or **Shift+Right**) to start a new AI workstation. A dialog appears:
+Press **`.`** (or **Shift+Right**) to start a new AI workstation. A dialog appears:
 
 ```
 Start New Agent?
@@ -120,7 +106,18 @@ Mode:  Normal  / Isolated
 
 Press **Enter** on "Yes" to bring the workstation online.
 
-### 2. Use It However You Want
+### 2. Configure the provider and model
+
+Before you start coding, tell the agent which AI provider and model to use:
+
+```
+/provider anthropic
+/model claude-sonnet-4-20250514
+```
+
+Or pick any provider and model from the supported list. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for options.
+
+### 3. Use it however you want
 
 **fspec doesn't force any workflow.** Each AI agent is a full-featured coding assistant. You can:
 
@@ -130,7 +127,7 @@ Press **Enter** on "Yes" to bring the workstation online.
 
 The factory workflow is available when you want it, not required. fspec provides the infrastructure—you decide how to run your production line.
 
-### 3. Foundation Discovery (Setting Up the Factory)
+### 4. Foundation discovery (setting up the factory)
 
 To run the full factory workflow, start with **Foundation Discovery**. This establishes your product blueprint. For new projects without `spec/foundation.json`, tell the AI:
 
@@ -148,7 +145,7 @@ The AI guides you through creating your project's requirements document:
 
 This is a one-time setup that establishes the blueprint for all future production.
 
-### 4. Queue Jobs
+### 5. Queue jobs
 
 Once the foundation exists (or skip it for quick tasks), tell the AI what you want to build:
 
@@ -160,7 +157,7 @@ Once the foundation exists (or skip it for quick tasks), tell the AI what you wa
 
 The AI creates work units (stories, bugs, or tasks) and queues them in the backlog. These are your production jobs.
 
-### 5. Run the Production Line
+### 6. Run the production line
 
 Now you have jobs on the board! Work flows through the factory:
 
@@ -170,7 +167,7 @@ BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
 
 - Press **Enter** on any job to assign it to an agent
 - Agents move jobs through stages automatically
-- Each stage has quality gates (see "How the Factory Works" below)
+- Each stage has quality gates (see "How the factory works" below)
 
 Multiple agents can work different jobs simultaneously—one implements a feature while another fixes a bug. This is parallel production.
 
@@ -178,11 +175,11 @@ Or ignore the board entirely and just chat with an agent—the factory infrastru
 
 ---
 
-## Keyboard Shortcuts
+## Keyboard shortcuts
 
 | Key | Action |
 |-----|--------|
-| `/` | Spin up new AI agent |
+| `.` | Spin up new AI agent |
 | **Shift+Right** | Navigate to next session (or create new) |
 | **Shift+Left** | Navigate to previous session (or back to board) |
 | **Enter** | Assign selected job to an agent |
@@ -194,7 +191,7 @@ Or ignore the board entirely and just chat with an agent—the factory infrastru
 
 ---
 
-## How the Factory Works
+## How the factory works
 
 1. **You specify what to build** — A feature, a bug fix, a task
 2. **The agent asks questions** — Clarifies edge cases, rules, and expectations
@@ -207,28 +204,10 @@ This is **Acceptance Criteria Driven Development (ACDD)**. Specifications are bl
 
 ---
 
-## Using with External Agents
-
-fspec works as tooling for Claude Code, Cursor, Codex, or any AI agent. See [docs/EXTERNAL.md](docs/EXTERNAL.md) for setup instructions.
-
----
-
-## Security
-
-fspec agents have full access to your file system, network, and shell. See [docs/SECURITY.md](docs/SECURITY.md) for sandboxing recommendations and ExitBox integration.
-
----
-
-## Command & File Blocklist
-
-Block, allow, or prompt for approval on specific commands and file access patterns. See [docs/BLOCKLIST.md](docs/BLOCKLIST.md) for configuration details.
-
----
-
-## Key Capabilities
+## Key capabilities
 
 - **Parallel production** — Multiple agents working different jobs simultaneously
-- **Example Mapping** — Agents discover rules, examples, and edge cases by asking questions
+- **Example mapping** — Agents discover rules, examples, and edge cases by asking questions
 - **Gherkin generation** — Specs written automatically from your answers
 - **Test-first development** — Tests before code, always
 - **Kanban workflow** — Toyota-style production flow from backlog to done
@@ -238,18 +217,44 @@ Block, allow, or prompt for approval on specific commands and file access patter
 
 ---
 
-## Scaling Work
+## Supported providers
+
+fspec works with any AI provider that supports tool calling. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list and configuration.
+
+> **⚠️ Subscription Tokens**: Some tokens (like `CLAUDE_CODE_OAUTH_TOKEN`) come from subscription services rather than pay-per-use APIs. Check your provider's terms of service before using subscription tokens with third-party tools.
+
+---
+
+## Scaling work
 
 AgentManager, SessionSearch, and DeepSearch enable parallel work across multiple agents. See [docs/SCALING.md](docs/SCALING.md) for details.
 
 ---
 
-## Telegram Bridge
+## Using with external agents
+
+fspec works as tooling for Claude Code, Cursor, Codex, or any AI agent. See [docs/EXTERNAL.md](docs/EXTERNAL.md) for setup instructions.
+
+---
+
+## Telegram bridge
 
 Monitor and interact with your factory from your phone via Telegram. See [docs/TELEGRAM.md](docs/TELEGRAM.md) for setup instructions.
 
 ---
 
-## Isolated Sessions & Worktrees
+## Isolated sessions and worktrees
 
 Work in git worktrees for safe experimentation and parallel development. See [docs/WORKTREES.md](docs/WORKTREES.md) for details.
+
+---
+
+## Security
+
+fspec agents have full access to your file system, network, and shell. See [docs/SECURITY.md](docs/SECURITY.md) for sandboxing recommendations and ExitBox integration.
+
+---
+
+## Command and file blocklist
+
+Block, allow, or prompt for approval on specific commands and file access patterns. See [docs/BLOCKLIST.md](docs/BLOCKLIST.md) for configuration details.
