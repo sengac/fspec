@@ -108,14 +108,14 @@ Press **Enter** on "Yes" to bring the workstation online.
 
 ### 2. Configure the provider and model
 
-Before you start coding, tell the agent which AI provider and model to use:
+Before you start coding, choose an AI provider and model:
 
 ```
-/provider anthropic
-/model claude-sonnet-4-20250514
+/provider
+/model
 ```
 
-Or pick any provider and model from the supported list. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for options.
+Each command opens an interactive selection screen. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list of supported providers and models.
 
 ### 3. Use it however you want
 
