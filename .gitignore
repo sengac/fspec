@@ -102,8 +102,6 @@ tui-snapshots/
 # Native binary modules (distributed separately, not in git)
 *.node
 vendor/nanograph/
-lib/libpdfium.dylib
-pdfium-mac-arm64.tgz
 
 # Temporary test repos for AST indexing
 tmp/
