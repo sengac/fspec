@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="fspec-logo-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="fspec-logo-light.svg">
-  <img alt="fspec" src="fspec-logo-light.svg" width="248">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/fspec-logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/fspec-logo-light.svg">
+  <img alt="fspec" src="assets/fspec-logo-light.svg" width="248">
 </picture>
 
 **The Spec-Driven, Multi-Agent Harness**
@@ -79,7 +79,7 @@ fspec
 
 This opens the factory floor—your Kanban board with AI workstations ready to take jobs.
 
-![Interactive Kanban](interactive-kanban.png)
+![Interactive Kanban](assets/interactive-kanban.png)
 
 > **Building from source?** See [BUILD.md](docs/BUILD.md) for complete build instructions,
 > cross-compilation, and the `release-slim` profile rationale.
