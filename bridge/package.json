@@ -1,0 +1,46 @@
+{
+  "name": "@sengac/fspec-bridge",
+  "version": "0.10.0",
+  "description": "fspec bridge server — WebSocket relay hub and endpoint bridges for connecting fspec sessions to external clients (Telegram, mobile, custom apps)",
+  "scripts": {
+    "start:server": "npx tsx relay-server-cli.ts",
+    "start:server:bg": "nohup npx tsx relay-server-cli.ts > server.log 2>&1 & echo $! > server.pid && echo 'Relay server started in background (PID saved to server.pid)'",
+    "stop:server": "kill $(cat server.pid) 2>/dev/null && rm server.pid && echo 'Relay server stopped' || echo 'No running server found'",
+    "start:telegram": "npx tsx telegram-endpoint.ts",
+    "start:telegram:bg": "nohup npx tsx telegram-endpoint.ts > telegram.log 2>&1 & echo $! > telegram.pid && echo 'Telegram bridge started in background (PID saved to telegram.pid)'",
+    "stop:telegram": "kill $(cat telegram.pid) 2>/dev/null && rm telegram.pid && echo 'Telegram bridge stopped' || echo 'No running bridge found'",
+    "start:relay": "npx tsx relay-endpoint.ts",
+    "start:relay:bg": "nohup npx tsx relay-endpoint.ts > relay.log 2>&1 & echo $! > relay.pid && echo 'Relay endpoint started in background (PID saved to relay.pid)'",
+    "stop:relay": "kill $(cat relay.pid) 2>/dev/null && rm relay.pid && echo 'Relay endpoint stopped' || echo 'No running endpoint found'"
+  },
+  "keywords": [
+    "fspec",
+    "bridge",
+    "websocket",
+    "relay",
+    "telegram",
+    "mobile",
+    "ai-agent",
+    "real-time",
+    "messaging"
+  ],
+  "author": "rquast@sengac.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sengac/fspec.git"
+  },
+  "homepage": "https://github.com/sengac/fspec#readme",
+  "bugs": {
+    "url": "https://github.com/sengac/fspec/issues"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "node-telegram-bot-api": "^0.66.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {}
+}
