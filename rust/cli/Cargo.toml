@@ -4,11 +4,11 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "CLI interface for codelet - command parsing, configuration, entry points"
+description = "Shared streaming engine, session management, and compaction helpers"
 
-[[bin]]
-name = "rust"
-path = "src/main.rs"
+[lib]
+name = "codelet_cli"
+path = "src/lib.rs"
 
 [dependencies]
 codelet-common.workspace = true
