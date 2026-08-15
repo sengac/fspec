@@ -142,43 +142,6 @@ pub(super) fn emit_context_fill_from_usage<O: StreamOutput>(
 // `recovery_compaction::begin_compaction_recovery`. Tests that need to
 // flip the flag should do so directly on `TokenState::compaction_needed`.
 
-/// Run agent stream with CLI event handling
-///
-/// This is the CLI-specific entry point that wraps the generic stream function
-/// with TUI event handling for Esc key detection.
-#[allow(clippy::too_many_arguments)]
-pub(super) async fn run_agent_stream_with_interruption<M, O>(
-    agent: RigAgent<M>,
-    prompt: &str,
-    session: &mut Session,
-    event_stream: &mut (dyn futures::Stream<Item = TuiEvent> + Unpin + Send),
-    input_queue: &mut InputQueue,
-    is_interrupted: Arc<AtomicBool>,
-    compaction_in_progress: Arc<AtomicBool>,
-    output: &O,
-    session_id: uuid::Uuid,
-) -> Result<()>
-where
-    M: CompletionModel,
-    M::StreamingResponse: WasmCompatSend + GetTokenUsage,
-    O: StreamOutput,
-{
-    run_agent_stream_internal(
-        agent,
-        prompt,
-        None, // No images for CLI mode
-        session,
-        Some(event_stream),
-        Some(input_queue),
-        is_interrupted,
-        compaction_in_progress,
-        None, // CLI mode doesn't use Notify - uses keyboard event stream
-        output,
-        session_id,
-    )
-    .await
-}
-
 /// Run agent stream for NAPI (no event handling)
 ///
 /// This is the NAPI entry point - JavaScript handles keyboard input and sets

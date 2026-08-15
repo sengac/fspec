@@ -59,8 +59,7 @@ pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {
     // Validate model string contains '/' and is not empty
     if !model.contains('/') || model.is_empty() {
         return Err(format!(
-            "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-            model
+            "Invalid model string '{model}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')"
         ));
     }
 
@@ -70,10 +69,10 @@ pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {
     let (registry_provider, model_part) = if is_profile_model {
         let colon_idx = model
             .find(':')
-            .ok_or_else(|| format!("Invalid profile model string '{}': missing ':'", model))?;
+            .ok_or_else(|| format!("Invalid profile model string '{model}': missing ':'"))?;
         let slash_idx = model
             .find('/')
-            .ok_or_else(|| format!("Invalid profile model string '{}': missing '/'", model))?;
+            .ok_or_else(|| format!("Invalid profile model string '{model}': missing '/'"))?;
         // For profile models (e.g., "profile:anthropic/claude-opus-4"),
         // extract the provider between ':' and '/'
         let provider = &model[colon_idx + 1..slash_idx];
@@ -87,8 +86,7 @@ pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {
     // Validate non-empty provider and model part
     if registry_provider.is_empty() || model_part.is_empty() {
         return Err(format!(
-            "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-            model
+            "Invalid model string '{model}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')"
         ));
     }
 

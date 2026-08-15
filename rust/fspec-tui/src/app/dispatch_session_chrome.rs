@@ -85,11 +85,12 @@ impl App {
         );
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        #[allow(clippy::redundant_clone)]
         let sid = session.clone();
         let handle = tokio::spawn(async move {
             let _ = backend.set_thinking_level(sid.clone(), level).await;
             if let Ok(fresh) = backend.get_thinking_level(sid.clone()).await {
-                let _ = action_tx.send(Action::ThinkingLevelLoaded(sid, fresh));
+                let _ = action_tx.send(Action::ThinkingLevelLoaded(sid.clone(), fresh));
             }
         });
         self.pending_tasks.push(handle);
@@ -107,7 +108,7 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
-        let sid = session.clone();
+        let sid = session;
         let handle = tokio::spawn(async move {
             if let Ok(enabled) = backend.get_debug_enabled(sid.clone()).await {
                 let _ = action_tx.send(Action::DebugEnabledLoaded(sid, enabled));

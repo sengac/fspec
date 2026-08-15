@@ -208,7 +208,8 @@ impl SlashCommandPopup {
                     let visible = self.visible_rows();
                     if total > visible {
                         // TUI-103: convert absolute screen row to body-local row
-                        let body = self.last_body_origin.unwrap();
+                        #[allow(clippy::expect_used)]
+                        let body = self.last_body_origin.expect("body origin must be set when scrollbar rect is set");
                         let local_row = ev.row.saturating_sub(body.y);
                         let local_ev = MouseEvent {
                             row: local_row,

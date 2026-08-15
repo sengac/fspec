@@ -163,7 +163,7 @@ impl App {
         if self.pre_session_debug_enabled {
             let backend = self.backend.clone();
             let action_tx = self.action_tx.clone();
-            let sid = session.clone();
+            let sid = session;
             let handle = tokio::spawn(async move {
                 let _ = backend.set_debug_enabled(sid.clone(), true).await;
                 let _ = action_tx.send(Action::DebugEnabledLoaded(sid, true));

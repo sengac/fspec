@@ -31,7 +31,7 @@ fn resolve_debug_dir() -> String {
         return custom;
     }
     if let Ok(home) = std::env::var("HOME") {
-        return format!("{}/.fspec", home);
+        return format!("{home}/.fspec");
     }
     ".fspec".to_string()
 }
@@ -55,12 +55,12 @@ impl App {
         let Some(session_id) = self.agent_view_store.current_session().cloned() else {
             // No active session: toggle the pre-session flag and emit notice.
             self.pre_session_debug_enabled = !self.pre_session_debug_enabled;
-            let text = format!("[debug] capture toggled \u{2192} {}", debug_dir);
+            let text = format!("[debug] capture toggled \u{2192} {debug_dir}");
             // Emit notice to a placeholder session so the user sees feedback.
             // The notice is emitted via Custom action since there's no session.
             let _ = self
                 .action_tx
-                .send(Action::Custom(format!("[notice] {}", text)));
+                .send(Action::Custom(format!("[notice] {text}")));
             return;
         };
 

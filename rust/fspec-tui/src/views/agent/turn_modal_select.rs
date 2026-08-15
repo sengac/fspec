@@ -88,7 +88,8 @@ impl AgentView {
         // TUI-103: cache scrollbar gutter rect (rightmost column of body area)
         let show_scrollbar = geom.total_rows > geom.viewport_rows;
         self.turn_modal_scrollbar_rect = if show_scrollbar {
-            let body = self.turn_modal_body_origin.unwrap();
+            #[allow(clippy::expect_used)]
+            let body = self.turn_modal_body_origin.expect("body origin must be set when scrollbar rect is set");
             Some(Rect {
                 x: body.x + body.width - 1,
                 y: body.y,

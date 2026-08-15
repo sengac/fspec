@@ -143,7 +143,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
 
         // Load the manifest from persistence
         let manifest = codelet_core::persistence::load_session(uuid)
-            .map_err(|e| format!("Failed to load session manifest: {}", e))?;
+            .map_err(|e| format!("Failed to load session manifest: {e}"))?;
 
         tracing::info!(
             session_id = %uuid,

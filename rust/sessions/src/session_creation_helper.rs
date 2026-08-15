@@ -215,7 +215,7 @@ pub async fn create_background_session_inner(
     let initial_model_id = session
         .model_id
         .read()
-        .expect("model_id lock poisoned")
+        .map_err(|e| format!("model_id lock poisoned: {e}"))?
         .clone();
     let initial_compaction_threshold =
         codelet_cli::compaction_threshold::resolve_compaction_threshold(

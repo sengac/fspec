@@ -1049,7 +1049,7 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
                 "_compactionSummary": true
             });
             envelopes.push(serde_json::to_string(&synthetic)
-                .map_err(|e| format!("Failed to serialize synthetic envelope: {}", e))?);
+                .map_err(|e| format!("Failed to serialize synthetic envelope: {e}"))?);
             continue;
         }
 
@@ -1089,7 +1089,7 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
             "requestId": null
         });
         let envelope_str = serde_json::to_string(&envelope_json)
-            .map_err(|e| format!("Failed to serialize envelope: {}", e))?;
+            .map_err(|e| format!("Failed to serialize envelope: {e}"))?;
         let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&envelope_str)?;
         envelopes.push(rehydrated);
     }

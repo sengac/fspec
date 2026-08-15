@@ -13,8 +13,9 @@ use std::sync::LazyLock;
 /// Regex matching ANSI escape sequences (CSI, OSC, SGR).
 /// Mirrors TypeScript `ANSI_ESCAPE_REGEX`.
 static ANSI_ESCAPE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    #[allow(clippy::expect_used)]
     Regex::new(r"\x1b(?:\[[0-9;]*[A-Za-z]|\][^\x07]*\x07|[^\x1b])")
-        .expect("ANSI escape regex must compile")
+        .expect("ANSI escape regex must compile — compile-time constant pattern")
 });
 
 /// Sanitize text for safe terminal rendering.
