@@ -1309,6 +1309,18 @@
       "workUnits": [
         "TOOL-021"
       ]
+    },
+    "tui-lazy-load": {
+      "id": "tui-lazy-load",
+      "title": "TUI",
+      "createdAt": "2026-08-16T00:06:47.765Z",
+      "description": "Loading indicator + shared-loading-dialog work for the TUI lazy-load mode-views (Checkpoints 'c', Changed Files 'f')",
+      "workUnits": [
+        "TUI-106",
+        "TUI-107",
+        "TUI-108",
+        "TUI-109"
+      ]
     }
   }
 }

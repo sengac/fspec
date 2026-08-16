@@ -223,6 +223,39 @@ impl App {
         self.navigator.agent.is_input_animating()
     }
 
+    /// TUI-106: true iff the active lazy mode-view (Checkpoints or
+    /// Changed Files) has a cascade stage in flight. Plumbed as the
+    /// 4th operand of [`crate::app::tick_should_draw`] so the 16ms
+    /// tick keeps redrawing the animated loading dialog.
+    pub fn is_view_loading(&self) -> bool {
+        self.navigator.is_view_loading()
+    }
+
+    /// TUI-106: the checkpoints view's list stage has flushed AND the
+    /// view holds no checkpoints — the real "No checkpoints available"
+    /// empty state may surface (loading ≠ empty discriminator).
+    pub fn navigator_checkpoints_loaded_and_empty(&self) -> bool {
+        self.navigator.checkpoints.load.is_loaded()
+            && !self.navigator.checkpoints.load.is_loading()
+            && self.navigator.checkpoints.is_empty()
+    }
+
+    /// TUI-106: the changed-files view's scan has flushed AND the view
+    /// holds no files — the real "No changed files" empty state may
+    /// surface (loading ≠ empty discriminator).
+    pub fn navigator_changed_files_loaded_and_empty(&self) -> bool {
+        self.navigator.changed_files.load.is_loaded()
+            && !self.navigator.changed_files.load.is_loading()
+            && self.navigator.changed_files.is_empty()
+    }
+
+    /// TUI-106: the checkpoints cascade's in-flight stage label ("Loading
+    /// files for {name}…" / "Loading diff for {path}…"), or the list
+    /// label while the list is loading; `None` once the cascade idles.
+    pub fn navigator_checkpoints_active_label(&self) -> Option<String> {
+        self.navigator.checkpoints.load.active_label()
+    }
+
     /// Drain a single Action from the bus (test helper).
     pub fn try_recv_action(&mut self) -> Option<Action> {
         self.action_rx.try_recv().ok()

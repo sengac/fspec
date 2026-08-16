@@ -240,7 +240,17 @@ impl App {
                     self.navigator.agent.poll_selection_tick();
                     let is_busy = self.is_session_busy();
                     let is_animating = self.is_input_animating();
-                    if super::tick_should_draw(self.should_render, is_busy, is_animating) {
+                    // TUI-106: a lazy mode-view cascade (Checkpoints /
+                    // Changed Files) keeps the 16ms tick redrawing so the
+                    // loading dialog's 80ms-cadence braille spinner
+                    // animates on an otherwise-idle board.
+                    let is_view_loading = self.is_view_loading();
+                    if super::tick_should_draw(
+                        self.should_render,
+                        is_busy,
+                        is_animating,
+                        is_view_loading,
+                    ) {
                         let session_status = self.current_session_status();
                         guard.terminal().draw(|frame| {
                             self.navigator.render_with_stores(

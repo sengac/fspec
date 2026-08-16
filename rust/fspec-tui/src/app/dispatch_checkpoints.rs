@@ -15,6 +15,7 @@ use tokio::task::JoinHandle;
 use codelet_rpc_types::{ChangedFile, CheckpointInfo};
 
 use crate::components::Action;
+use crate::components::load_state::LoadTracker;
 
 use super::state::App;
 
@@ -49,14 +50,34 @@ impl App {
     /// Fold a `CheckpointsLoaded` response, then kick off the file load
     /// for the first (now-selected) checkpoint.
     pub(crate) fn handle_checkpoints_loaded(&mut self, list: Vec<CheckpointInfo>) {
-        self.navigator.checkpoints.set_checkpoints(list);
-        if let Some(cp) = self.navigator.checkpoints.selected_checkpoint_info() {
-            let (work_unit_id, name) = (cp.work_unit_id.clone(), cp.name.clone());
+        let view = &mut self.navigator.checkpoints;
+        view.set_checkpoints(list);
+        // TUI-106: the list stage has flushed (possibly empty); the
+        // cascade continues onto the files stage iff a checkpoint is
+        // now selected.
+        view.load.mark_list_flushed();
+        let selection = view
+            .selected_checkpoint_info()
+            .map(|cp| (cp.work_unit_id.clone(), cp.name.clone()));
+        if let Some((work_unit_id, name)) = &selection {
+            view.load.begin_stage(
+                &LoadTracker::files_stage_key(work_unit_id, name),
+                format!("Loading files for {name}…"),
+            );
+        }
+        view.sync_loading_label();
+        if let Some((work_unit_id, name)) = selection {
             self.spawn_checkpoint_files(work_unit_id, name);
         }
     }
 
     pub(crate) fn handle_load_checkpoint_files(&mut self, work_unit_id: String, name: String) {
+        // TUI-106: a selection change re-requests this checkpoint's
+        // files — the cascade stages key on (work_unit_id, name).
+        self.navigator.checkpoints.load.begin_stage(
+            &LoadTracker::files_stage_key(&work_unit_id, &name),
+            format!("Loading files for {name}…"),
+        );
         self.spawn_checkpoint_files(work_unit_id, name);
     }
 
@@ -94,19 +115,29 @@ impl App {
         name: &str,
         files: Vec<ChangedFile>,
     ) {
-        self.navigator
-            .checkpoints
-            .set_files(work_unit_id, name, files);
-        if let Some(cp) = self.navigator.checkpoints.selected_checkpoint_info() {
-            if cp.work_unit_id == work_unit_id && cp.name == name {
-                if let Some(path) = self.navigator.checkpoints.first_file_path() {
-                    self.spawn_checkpoint_file_diff(
-                        work_unit_id.to_string(),
-                        name.to_string(),
-                        path,
-                    );
-                }
-            }
+        let view = &mut self.navigator.checkpoints;
+        view.set_files(work_unit_id, name, files);
+        // TUI-106: stale-drop invariance — complete_stage is a no-op
+        // (returns false) when the folded key differs from the
+        // in-flight stage, so a late result for a de-selected
+        // checkpoint never clears a fresh stage. The view's own
+        // set_files key-match mirrors this on the data side.
+        view.load.complete_stage(&LoadTracker::files_stage_key(work_unit_id, name));
+        let next_stage = view
+            .selected_checkpoint_info()
+            .zip(view.first_file_path())
+            .filter(|(cp, _)| {
+                cp.work_unit_id == work_unit_id && cp.name == name
+            })
+            .map(|(cp, path)| (cp.work_unit_id.clone(), cp.name.clone(), path));
+        view.sync_loading_label();
+        if let Some((work_unit_id, name, path)) = next_stage {
+            view.load.begin_stage(
+                &LoadTracker::diff_stage_key(&work_unit_id, &name, &path),
+                format!("Loading diff for {path}…"),
+            );
+            view.sync_loading_label();
+            self.spawn_checkpoint_file_diff(work_unit_id, name, path);
         }
     }
 
@@ -116,6 +147,12 @@ impl App {
         name: String,
         path: String,
     ) {
+        // TUI-106: a file selection change begins a new diff stage.
+        self.navigator.checkpoints.load.begin_stage(
+            &LoadTracker::diff_stage_key(&work_unit_id, &name, &path),
+            format!("Loading diff for {path}…"),
+        );
+        self.navigator.checkpoints.sync_loading_label();
         self.spawn_checkpoint_file_diff(work_unit_id, name, path);
     }
 
@@ -153,9 +190,13 @@ impl App {
         path: &str,
         diff: Option<String>,
     ) {
-        self.navigator
-            .checkpoints
-            .set_diff(work_unit_id, name, path, diff);
+        let view = &mut self.navigator.checkpoints;
+        view.set_diff(work_unit_id, name, path, diff);
+        // TUI-106: matching-key stale-drop — a late diff for a
+        // de-selected file must NOT clear the in-flight stage.
+        view.load
+            .complete_stage(&LoadTracker::diff_stage_key(work_unit_id, name, path));
+        view.sync_loading_label();
     }
 
     /// Route the RPC-364 Action variants through their helpers. Called

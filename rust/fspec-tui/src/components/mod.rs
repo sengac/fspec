@@ -27,10 +27,13 @@ pub mod help_content;
 pub mod help_dialog;
 pub mod help_dialog_scroll;
 pub mod list_scrollbar;
+pub mod loading_dialog;
+pub mod load_state;
 pub mod model_selector_dialog_rows;
 pub mod notification_dialog;
 pub mod role_dialog;
 pub mod scroll_viewport;
+pub mod spinner;
 pub mod status_dialog;
 pub mod thinking_level_dialog;
 

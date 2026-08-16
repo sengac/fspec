@@ -15,6 +15,8 @@ use codelet_rpc_types::{ChangedFile, CheckpointInfo};
 use crossterm::event::Event;
 use ratatui::layout::Rect;
 
+use crate::components::load_state::LoadTracker;
+use crate::components::loading_dialog::LoadingDialog;
 use crate::components::scroll_viewport::{WheelDirection, WheelVelocity};
 
 mod checkpoint_row;
@@ -98,6 +100,12 @@ pub struct CheckpointsView {
     /// RPC-366: the active delete confirmation/status modal, if any.
     /// While `Some`, key events are captured by the dialog.
     delete_dialog: Option<delete_dialog::DeleteDialog>,
+    /// TUI-106: shared animated loading dialog (Pattern B, view-owned).
+    /// Mount = Some on open; dismiss (TUI-107 wiring) once `load` idles.
+    pub loading: LoadingDialog,
+    /// TUI-106: staged in-flight cascade tracker (list → files → diff).
+    /// Fed by the App dispatchers; drives `is_loading()` + the dialog.
+    pub load: LoadTracker,
 }
 
 impl Default for CheckpointsView {
@@ -132,6 +140,28 @@ impl CheckpointsView {
             last_diff_sb_rect: None,
             restore_dialog: None,
             delete_dialog: None,
+            loading: LoadingDialog::new(
+                "Loading checkpoints",
+                "Loading checkpoint list…",
+            ),
+            load: LoadTracker::new("Loading checkpoint list…"),
+        }
+    }
+
+    /// TUI-106: true while any cascade stage (list → files → diff) is
+    /// in flight. The loading dialog paints while this is true; the
+    /// real empty state ("No checkpoints available") only surfaces
+    /// AFTER the list flushes AND the cascade has settled.
+    pub fn is_loading(&self) -> bool {
+        self.load.is_loading()
+    }
+
+    /// TUI-106: copy the tracker's active stage label onto the mounted
+    /// loading dialog so the dialog names what is loading. Called by
+    /// the App dispatchers after every tracker transition.
+    pub fn sync_loading_label(&mut self) {
+        if let Some(label) = self.load.active_label() {
+            self.loading.label = label;
         }
     }
 

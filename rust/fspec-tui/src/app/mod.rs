@@ -80,9 +80,19 @@ pub use state::App;
 ///   third flag the 5 char/17ms sweep-out freezes at full captured
 ///   text because the run loop stops drawing as soon as `is_busy`
 ///   becomes false.
+/// - TUI-106: `is_view_loading=true` keeps the 16ms tick redrawing
+///   while a lazy mode-view (Checkpoints / Changed Files) cascade is
+///   in flight — without this fourth flag the loading dialog's
+///   80ms-cadence braille spinner freezes because an idle board
+///   produces no render ticks.
 #[must_use]
-pub fn tick_should_draw(should_render: bool, is_busy: bool, is_animating: bool) -> bool {
-    should_render || is_busy || is_animating
+pub fn tick_should_draw(
+    should_render: bool,
+    is_busy: bool,
+    is_animating: bool,
+    is_view_loading: bool,
+) -> bool {
+    should_render || is_busy || is_animating || is_view_loading
 }
 
 #[cfg(test)]
@@ -90,19 +100,24 @@ mod tick_should_draw_tests {
     use super::tick_should_draw;
     #[test]
     fn idle_no_event_skips() {
-        assert!(!tick_should_draw(false, false, false));
+        assert!(!tick_should_draw(false, false, false, false));
     }
     #[test]
     fn busy_bypasses_should_render() {
-        assert!(tick_should_draw(false, true, false));
+        assert!(tick_should_draw(false, true, false, false));
     }
     #[test]
     fn event_triggers_draw() {
-        assert!(tick_should_draw(true, false, false));
+        assert!(tick_should_draw(true, false, false, false));
     }
     #[test]
     fn animating_bypasses_should_render_when_not_busy() {
         // RPC-093 fix: post-busy finish animation must keep ticking.
-        assert!(tick_should_draw(false, false, true));
+        assert!(tick_should_draw(false, false, true, false));
+    }
+    #[test]
+    fn view_loading_bypasses_should_render() {
+        // TUI-106: a lazy mode-view cascade keeps the spinner ticking.
+        assert!(tick_should_draw(false, false, false, true));
     }
 }

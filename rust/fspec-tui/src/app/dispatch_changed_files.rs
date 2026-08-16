@@ -16,6 +16,7 @@ use tokio::task::JoinHandle;
 use codelet_rpc_types::ChangedFile;
 
 use crate::components::Action;
+use crate::components::load_state::LoadTracker;
 
 use super::state::App;
 
@@ -53,8 +54,18 @@ impl App {
     /// Fold a `changed_files` response into the view, then kick off the
     /// diff load for the first (now-selected) file.
     pub(crate) fn handle_changed_files_loaded(&mut self, files: Vec<ChangedFile>) {
-        self.navigator.changed_files.set_files(files);
-        if let Some(path) = self.navigator.changed_files.selected_path() {
+        let view = &mut self.navigator.changed_files;
+        view.set_files(files);
+        // TUI-106: the scan stage has flushed (possibly empty); the
+        // cascade continues onto the diff stage iff a file is selected.
+        view.load.mark_list_flushed();
+        let path = view.selected_path();
+        if let Some(path) = &path {
+            view.load
+                .begin_stage(&LoadTracker::diff_stage_key_path(path), format!("Loading diff for {path}…"));
+        }
+        view.sync_loading_label();
+        if let Some(path) = path {
             self.spawn_file_diff(path);
         }
     }
@@ -62,6 +73,11 @@ impl App {
     /// Spawn `backend.file_diff(path)` and route the result into the
     /// view via `Action::FileDiffLoaded`.
     pub(crate) fn handle_load_file_diff(&mut self, path: String) {
+        // TUI-106: a selection change begins a new diff stage.
+        let view = &mut self.navigator.changed_files;
+        view.load
+            .begin_stage(&LoadTracker::diff_stage_key_path(&path), format!("Loading diff for {path}…"));
+        view.sync_loading_label();
         self.spawn_file_diff(path);
     }
 
@@ -87,7 +103,12 @@ impl App {
     /// Fold a `file_diff` response into the view (dropped when the view
     /// has since selected a different file).
     pub(crate) fn handle_file_diff_loaded(&mut self, path: &str, diff: Option<String>) {
-        self.navigator.changed_files.set_diff(path, diff);
+        let view = &mut self.navigator.changed_files;
+        view.set_diff(path, diff);
+        // TUI-106: matching-key stale-drop — a late diff for a
+        // de-selected file must NOT clear the in-flight stage.
+        view.load.complete_stage(&LoadTracker::diff_stage_key_path(path));
+        view.sync_loading_label();
     }
 
     /// Route the RPC-356 Action variants through their helpers. Called

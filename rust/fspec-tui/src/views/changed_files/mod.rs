@@ -13,6 +13,8 @@
 //! formatting, and the pane-scrollbar gutter wrapper are shared via
 //! `crate::views::diff_common` (RPC-363).
 
+use crate::components::load_state::LoadTracker;
+use crate::components::loading_dialog::LoadingDialog;
 use crate::components::scroll_viewport::{ensure_visible, WheelVelocity};
 use codelet_rpc_types::ChangedFile;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -73,6 +75,12 @@ pub struct ChangedFilesView {
     /// TUI-101: cached scrollbar rects from last render for hit-testing.
     last_files_sb_rect: Option<Rect>,
     last_diff_sb_rect: Option<Rect>,
+    /// TUI-106: shared animated loading dialog (Pattern B, view-owned).
+    /// Mount = Some on open; dismiss (TUI-108 wiring) once `load` idles.
+    pub loading: LoadingDialog,
+    /// TUI-106: staged in-flight cascade tracker (scan → diff).
+    /// Fed by the App dispatchers; drives `is_loading()` + the dialog.
+    pub load: LoadTracker,
 }
 
 impl Default for ChangedFilesView {
@@ -98,6 +106,27 @@ impl ChangedFilesView {
             diff_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
             last_files_sb_rect: None,
             last_diff_sb_rect: None,
+            loading: LoadingDialog::new(
+                "Loading changed files",
+                "Loading changed files…",
+            ),
+            load: LoadTracker::new("Loading changed files…"),
+        }
+    }
+
+    /// TUI-106: true while any cascade stage (scan → diff) is in
+    /// flight. The real empty state ("No changed files") only surfaces
+    /// AFTER the scan flushes AND the cascade has settled.
+    pub fn is_loading(&self) -> bool {
+        self.load.is_loading()
+    }
+
+    /// TUI-106: copy the tracker's active stage label onto the mounted
+    /// loading dialog so the dialog names what is loading. Called by
+    /// the App dispatchers after every tracker transition.
+    pub fn sync_loading_label(&mut self) {
+        if let Some(label) = self.load.active_label() {
+            self.loading.label = label;
         }
     }
 

@@ -1,0 +1,341 @@
+{
+  "scenarios": [
+    {
+      "name": "Spinner frames live at components/spinner.rs and the agent view re-exports them byte-identically",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "52-95",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/spinner.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LoadingDialog extends the shared dialog base and paints a cyan loading popup over the mode view body",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "101-154",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/loading_dialog.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Loading is reported distinct from empty on both mode views",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "158-205",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/load_state.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The animated braille spinner advances between t=0 and t=80ms through the shared redraw gate",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "206-263",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Each cascade stage of the Checkpoints and Changed Files views shows its own label",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "264-344",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/load_state.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC cannot dismiss the loading contract while a load is in flight",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "345-369",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/loading_dialog.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A late stale result for a de-selected item does not clear the current stage's loading",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "370-389",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/load_state.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Open-stage cascade keys follow the existing stale-drop key shape",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
+          "lines": "390-408",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/load_state.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui106_loading_dialog.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/spinner.rs",
+      "rust/fspec-tui/src/components/loading_dialog.rs",
+      "rust/fspec-tui/src/components/load_state.rs",
+      "rust/fspec-tui/src/views/navigator.rs"
+    ],
+    "totalLinesCovered": 543
+  }
+}

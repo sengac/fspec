@@ -94,6 +94,20 @@ impl Navigator {
         "navigator"
     }
 
+    /// TUI-106: true iff the ACTIVE lazy mode-view (Checkpoints or
+    /// Changed Files) has a cascade stage in flight. Mirrors how
+    /// `App::is_input_animating` delegates to the owned agent view
+    /// (`app/state.rs`); the run loop feeds this into the 4th
+    /// `tick_should_draw` operand to keep the loading dialog's
+    /// braille spinner animated.
+    pub fn is_view_loading(&self) -> bool {
+        match self.active_view {
+            ViewMode::Checkpoints => self.checkpoints.is_loading(),
+            ViewMode::ChangedFiles => self.changed_files.is_loading(),
+            _ => false,
+        }
+    }
+
     /// Route a keyboard or mouse event to the active sub-view. RPC-023
     /// extended this from `Event::Key`-only forwarding so the BoardView
     /// mouse-handling slice sees `Event::Mouse(_)` for wheel scroll and
