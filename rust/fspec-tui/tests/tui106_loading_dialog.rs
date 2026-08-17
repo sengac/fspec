@@ -170,7 +170,7 @@ fn loading_dialog_spinner_row_and_optional_counter() {
 
 fn fresh_app() -> App {
     let mock = Arc::new(MockBackend::new());
-    let backend: Arc<dyn FspecBackend> = mock.clone();
+    let backend: Arc<dyn FspecBackend> = mock;
     App::new(backend)
 }
 
@@ -305,7 +305,7 @@ fn checkpoints_cascade_stages_show_their_own_labels() {
     let cp = checkpoint_info("TUI-107", "cp-1");
     let file = changed_file("src/a.txt");
 
-    app.dispatch(Action::CheckpointsLoaded(vec![cp.clone()]));
+    app.dispatch(Action::CheckpointsLoaded(vec![cp]));
     assert!(app.is_view_loading(), "files stage in flight");
     assert_eq!(
         app.navigator_checkpoints_active_label().as_deref(),
@@ -316,7 +316,7 @@ fn checkpoints_cascade_stages_show_their_own_labels() {
     app.dispatch(Action::CheckpointFilesLoaded {
         work_unit_id: "TUI-107".into(),
         name: "cp-1".into(),
-        files: vec![file.clone()],
+        files: vec![file],
     });
     assert!(app.is_view_loading(), "diff stage in flight");
     assert_eq!(

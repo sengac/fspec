@@ -59,9 +59,8 @@ fn scrollbar_appears_when_session_count_exceeds_visible_rows() {
     let rows = rows_of(&buf);
     // @step Then a proportional scrollbar is rendered on the rightmost column
     // The scrollbar occupies the last column (x = 79)
-    let last_col = area.width as u16 - 1;
+    let last_col = area.width - 1;
     let has_scrollbar = (0..area.height).any(|y| {
-        let y = y as u16;
         has_glyph(&buf, last_col, y, "■") || has_glyph(&buf, last_col, y, "│")
     });
     assert!(has_scrollbar, "Scrollbar should be rendered when 30 sessions exceed visible area");
@@ -89,9 +88,8 @@ fn no_scrollbar_when_session_count_fits_in_visible_area() {
     render_session_rows(area, &mut buf, &sessions, 0, 0);
     let rows = rows_of(&buf);
     // @step Then no scrollbar is rendered
-    let last_col = area.width as u16 - 1;
+    let last_col = area.width - 1;
     let has_scrollbar = (0..area.height).any(|y| {
-        let y = y as u16;
         has_glyph(&buf, last_col, y, "■") || has_glyph(&buf, last_col, y, "│")
     });
     assert!(!has_scrollbar, "Scrollbar should NOT be rendered when 5 sessions fit in 20 rows");
@@ -119,10 +117,9 @@ fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
     let mut buf = Buffer::empty(area);
     render_session_rows(area, &mut buf, &sessions, 15, scroll_offset);
     // @step Then the scrollbar thumb is positioned at approximately half the track height
-    let last_col = area.width as u16 - 1;
+    let last_col = area.width - 1;
     // Find the first thumb cell
     let thumb_start = (0..area.height)
-        .map(|y| y as u16)
         .find(|&y| has_glyph(&buf, last_col, y, "■"))
         .expect("Should find thumb glyph");
     // With scroll_offset=15, total=30, thumb should be around half the track
@@ -132,10 +129,7 @@ fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
     let actual_pos = thumb_start as usize;
     assert!(
         (actual_pos as i32 - expected_pos as i32).abs() <= 2,
-        "Thumb at row {} should be near expected position {}",
-        actual_pos,
-        expected_pos
-    );
+        "Thumb at row {actual_pos} should be near expected position {expected_pos}");
 }
 
 // ============================================================================
@@ -153,16 +147,14 @@ fn scrollbar_uses_dim_styled_glyphs_for_thumb_and_track() {
     // @step When the view renders the session rows
     let mut buf = Buffer::empty(area);
     render_session_rows(area, &mut buf, &sessions, 0, 0);
-    let last_col = area.width as u16 - 1;
+    let last_col = area.width - 1;
     // @step Then the scrollbar thumb uses the ■ glyph with DIM modifier
     let has_thumb = (0..area.height).any(|y| {
-        let y = y as u16;
         has_glyph(&buf, last_col, y, "■")
     });
     assert!(has_thumb, "Scrollbar should contain ■ thumb glyph");
     // @step And the scrollbar track uses the │ glyph with DIM modifier
     let has_track = (0..area.height).any(|y| {
-        let y = y as u16;
         has_glyph(&buf, last_col, y, "│")
     });
     assert!(has_track, "Scrollbar should contain │ track glyph");

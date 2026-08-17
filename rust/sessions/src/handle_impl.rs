@@ -105,7 +105,15 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             tokio::runtime::Handle::current()
                 .block_on(async { SessionManager::create_session(self, &model, &project).await })
         })
-        .unwrap_or_default();
+        .unwrap_or_else(|e| {
+            tracing::error!(
+                model = %model,
+                project = %project,
+                error = %e,
+                "create_session: SessionManager::create_session failed; returning empty SessionId (PROV-101 decline path)"
+            );
+            String::new()
+        });
 
         tracing::info!(
             session_id = %id_string,

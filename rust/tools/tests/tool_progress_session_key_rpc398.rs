@@ -22,11 +22,13 @@ use codelet_tools::bash::{BashArgs, BashTool};
 use codelet_tools::{set_tool_progress_callback, ToolProgressCallback};
 use rig::tool::Tool;
 use std::sync::{Arc, Mutex};
+use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
 
 /// Serialize tests that touch the shared bash abort flag / global process
 /// spawning to reduce cross-test interference.
-static RPC398_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+/// Uses an async-aware mutex so the guard can be held across await points.
+static RPC398_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 
 /// Collector for progress deliveries captured through the tool-progress
 /// registry callback.
@@ -78,7 +80,7 @@ impl ProgressCollector {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn progress_reaches_callback_registered_under_same_session_id() {
-    let _lock = RPC398_LOCK.lock().unwrap();
+    let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under a real session id S
     let s = Uuid::new_v4();
@@ -121,7 +123,7 @@ async fn progress_reaches_callback_registered_under_same_session_id() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn callback_does_not_receive_another_sessions_progress() {
-    let _lock = RPC398_LOCK.lock().unwrap();
+    let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under session id A
     let a = Uuid::new_v4();
@@ -159,7 +161,7 @@ async fn callback_does_not_receive_another_sessions_progress() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn incremental_progress_delivered_while_command_running() {
-    let _lock = RPC398_LOCK.lock().unwrap();
+    let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under a real session id S
     let s = Uuid::new_v4();
@@ -202,7 +204,7 @@ async fn incremental_progress_delivered_while_command_running() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn clearing_callback_removes_registration_for_session_id() {
-    let _lock = RPC398_LOCK.lock().unwrap();
+    let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under a real session id S
     let s = Uuid::new_v4();

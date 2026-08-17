@@ -177,70 +177,6 @@ fn render_checkpoints_pane(
     (content, sb_rect)
 }
 
-#[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-
-    /**
-     * Feature: spec/features/sanitize-file-paths-and-labels-in-changed-files-and-checkpoint-views.feature
-     */
-
-    // ── Scenario: Checkpoint labels with special characters display cleanly in the Checkpoint view ──
-
-    /// @step Given I have a checkpoint with a label containing control characters or ANSI sequences
-    fn given_checkpoint_with_control_chars_in_label() -> codelet_rpc_types::CheckpointInfo {
-        codelet_rpc_types::CheckpointInfo {
-            work_unit_id: "TUI-105".to_string(),
-            name: format!("label\x00with\x08control"),
-            timestamp: "2026-01-01T00:00:00Z".to_string(),
-            is_automatic: false,
-        }
-    }
-
-    /// @step When I open the Checkpoint view
-    /// @step Then the checkpoint list displays the label without control characters
-    fn then_checkpoint_line_removes_control_chars(cp: &codelet_rpc_types::CheckpointInfo) {
-        let line = checkpoint_line(cp, false, 40);
-        for span in &line.spans {
-            let text = span.content.as_ref();
-            assert!(
-                !text.contains('\x00'),
-                "Checkpoint line should not contain NUL, got {:?}",
-                text
-            );
-            assert!(
-                !text.contains('\x08'),
-                "Checkpoint line should not contain backspace, got {:?}",
-                text
-            );
-        }
-    }
-
-    /// @step And the terminal display is not corrupted
-    fn then_terminal_not_corrupted_checkpoint_label(cp: &codelet_rpc_types::CheckpointInfo) {
-        let line = checkpoint_line(cp, false, 40);
-        let span_texts: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
-        assert!(span_texts.contains("label"));
-        assert!(span_texts.contains("with"));
-        assert!(span_texts.contains("control"));
-    }
-
-    #[test]
-    fn checkpoint_labels_with_special_characters_display_cleanly() {
-        // @step Given I have a checkpoint with a label containing control characters or ANSI sequences
-        let cp = given_checkpoint_with_control_chars_in_label();
-
-        // @step When I open the Checkpoint view
-        // @step Then the checkpoint list displays the label without control characters
-        then_checkpoint_line_removes_control_chars(&cp);
-
-        // @step And the terminal display is not corrupted
-        then_terminal_not_corrupted_checkpoint_label(&cp);
-    }
-}
-
 fn checkpoint_line(
     cp: &codelet_rpc_types::CheckpointInfo,
     selected: bool,
@@ -262,6 +198,8 @@ fn checkpoint_line(
         Span::styled(text, style),
     ])
 }
+
+
 
 fn render_files_pane(
     area: Rect,
@@ -345,4 +283,62 @@ fn render_diff_pane(
         None
     };
     (content, sb_rect)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+    use super::*;
+
+    // Feature: spec/features/sanitize-file-paths-and-labels-in-changed-files-and-checkpoint-views.feature
+
+    // ── Scenario: Checkpoint labels with special characters display cleanly in the Checkpoint view ──
+
+    /// @step Given I have a checkpoint with a label containing control characters or ANSI sequences
+    fn given_checkpoint_with_control_chars_in_label() -> codelet_rpc_types::CheckpointInfo {
+        codelet_rpc_types::CheckpointInfo {
+            work_unit_id: "TUI-105".to_string(),
+            name: "label\x00with\x08control".to_string(),
+            timestamp: "2026-01-01T00:00:00Z".to_string(),
+            is_automatic: false,
+        }
+    }
+
+    /// @step When I open the Checkpoint view
+    /// @step Then the checkpoint list displays the label without control characters
+    fn then_checkpoint_line_removes_control_chars(cp: &codelet_rpc_types::CheckpointInfo) {
+        let line = checkpoint_line(cp, false, 40);
+        for span in &line.spans {
+            let text = span.content.as_ref();
+            assert!(
+                !text.contains('\x00'),
+                "Checkpoint line should not contain NUL, got {text:?}");
+            assert!(
+                !text.contains('\x08'),
+                "Checkpoint line should not contain backspace, got {text:?}");
+        }
+    }
+
+    /// @step And the terminal display is not corrupted
+    fn then_terminal_not_corrupted_checkpoint_label(cp: &codelet_rpc_types::CheckpointInfo) {
+        let line = checkpoint_line(cp, false, 40);
+        let span_texts: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
+        assert!(span_texts.contains("label"));
+        assert!(span_texts.contains("with"));
+        assert!(span_texts.contains("control"));
+    }
+
+    #[test]
+    fn checkpoint_labels_with_special_characters_display_cleanly() {
+        // @step Given I have a checkpoint with a label containing control characters or ANSI sequences
+        let cp = given_checkpoint_with_control_chars_in_label();
+
+        // @step When I open the Checkpoint view
+        // @step Then the checkpoint list displays the label without control characters
+        then_checkpoint_line_removes_control_chars(&cp);
+
+        // @step And the terminal display is not corrupted
+        then_terminal_not_corrupted_checkpoint_label(&cp);
+    }
 }

@@ -6,7 +6,7 @@
 //! before spawning the agent loop, matching the behavior in
 //! create_session_from_manifest and create_isolated_session_with_id.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::path::{Path, PathBuf};
 
@@ -30,7 +30,7 @@ fn session_manager_path() -> PathBuf {
 
 /// Find the body of a function in source code
 fn find_function_body(content: &str, func_name: &str) -> String {
-    let func_pattern = format!("pub async fn {}", func_name);
+    let func_pattern = format!("pub async fn {func_name}");
     if let Some(start) = content.find(&func_pattern) {
         let brace_start = content[start..].find('{').unwrap_or(0) + start;
         let rest = &content[brace_start..];
@@ -83,9 +83,7 @@ fn create_session_with_id_sets_owning_manager_before_spawn() {
         .expect("spawn_agent_loop must be called");
     assert!(
         set_owning_pos < spawn_agent_pos,
-        "set_owning_manager (pos {}) must be called BEFORE spawn_agent_loop (pos {})",
-        set_owning_pos,
-        spawn_agent_pos
+        "set_owning_manager (pos {set_owning_pos}) must be called BEFORE spawn_agent_loop (pos {spawn_agent_pos})"
     );
 }
 

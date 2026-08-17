@@ -84,14 +84,9 @@ async fn main() -> anyhow::Result<()> {
                     println!("[{:>8.3}s] [late] subscribed fresh chunks_rx", t0.elapsed().as_secs_f64());
                 }
                 if let Some(rx) = late_rx.as_mut() {
-                    loop {
-                        match rx.try_recv() {
-                            Ok((id, c)) => {
-                                if id.value == my_sid.value {
-                                    println!("[{:>8.3}s] [late-chunk] {}", t0.elapsed().as_secs_f64(), variant_name(&c));
-                                }
-                            }
-                            Err(_) => break,
+                    while let Ok((id, c)) = rx.try_recv() {
+                        if id.value == my_sid.value {
+                            println!("[{:>8.3}s] [late-chunk] {}", t0.elapsed().as_secs_f64(), variant_name(&c));
                         }
                     }
                 }

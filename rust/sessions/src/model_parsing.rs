@@ -104,6 +104,7 @@ pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::unwrap_used)]
 mod tests {
     use super::*;
 
@@ -263,8 +264,7 @@ mod tests {
         let call_count = sm_content.matches("crate::model_parsing::parse_model_string").count();
         assert!(
             call_count >= 3,
-            "session_manager.rs must call parse_model_string at least 3 times (found {})",
-            call_count
+            "session_manager.rs must call parse_model_string at least 3 times (found {call_count})"
         );
 
         // @step And create_isolated_session_with_id calls parse_model_string

@@ -54,8 +54,7 @@ async fn create_session_persists_manifest_to_disk() {
     let manifest_path = data_dir.join("sessions").join(format!("{uuid}.json"));
     assert!(
         manifest_path.exists(),
-        "manifest file should exist at {:?}",
-        manifest_path
+        "manifest file should exist at {manifest_path:?}"
     );
 
     // @step And the manifest should contain the session name, project path, and provider
@@ -113,8 +112,7 @@ async fn create_session_with_provider_persists_provider_field() {
     let provider = manifest.get("provider").expect("provider field").as_str().unwrap();
     assert_eq!(
         provider, "anthropic/claude-sonnet-4",
-        "provider should be 'anthropic/claude-sonnet-4', got '{}'",
-        provider
+        "provider should be 'anthropic/claude-sonnet-4', got '{provider}'"
     );
 }
 
@@ -271,7 +269,7 @@ async fn resume_session_restores_messages_and_token_state() {
     let result = handle.resume_session(&session_id);
 
     // @step Then the BackgroundSession should be created in memory
-    assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
+    assert!(result.is_ok(), "resume_session should succeed: {result:?}");
 
     // @step And the session's inner messages should contain the restored messages
     let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
@@ -389,7 +387,7 @@ async fn resume_session_preserves_manifest_message_references() {
         codelet_core::persistence::append_message(
             &mut session,
             if i % 2 == 0 { "user" } else { "assistant" },
-            &format!("message {}", i),
+            &format!("message {i}"),
         )
         .expect("append message");
     }
@@ -413,7 +411,7 @@ async fn resume_session_preserves_manifest_message_references() {
     let result = handle.resume_session(&session_id);
 
     // @step Then all 102 messages should be visible in the session history
-    assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
+    assert!(result.is_ok(), "resume_session should succeed: {result:?}");
 
     // @step And the session manifest should still reference all 102 messages
     let manifest_after = codelet_core::persistence::load_session(manifest.id)
@@ -476,7 +474,7 @@ async fn resume_empty_session_preserves_empty_manifest() {
     let result = handle.resume_session(&session_id);
 
     // @step Then the session should be empty with no messages
-    assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
+    assert!(result.is_ok(), "resume_session should succeed: {result:?}");
 
     let manifest_after = codelet_core::persistence::load_session(manifest.id)
         .expect("load manifest after resume");
@@ -533,7 +531,7 @@ async fn resume_session_already_in_memory_preserves_messages() {
     let result = handle.resume_session(&session_id);
 
     // @step Then the session messages remain unchanged
-    assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
+    assert!(result.is_ok(), "resume_session should succeed: {result:?}");
 
     let manifest_after = codelet_core::persistence::load_session(uuid)
         .expect("load manifest after resume");

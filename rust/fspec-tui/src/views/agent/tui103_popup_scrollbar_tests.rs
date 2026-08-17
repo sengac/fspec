@@ -371,7 +371,7 @@ fn search_history_view_handle_mouse_routes_scrollbar_events() {
     view.set_matches(
         (0..50)
             .map(|i| codelet_rpc_types::HistoryMatch {
-                text: format!("match text {}", i),
+                text: format!("match text {i}"),
                 timestamp_iso: "2026-01-01T00:00:00Z".to_string(),
                 session_id: codelet_rpc_types::SessionId::new("session-1"),
             })

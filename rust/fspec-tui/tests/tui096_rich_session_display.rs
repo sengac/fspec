@@ -22,7 +22,7 @@ fn make_session(
         status: "idle".to_string(),
         project: String::new(),
         message_count,
-        provider_id: provider_id.map(|s| s.to_string()),
+        provider_id: provider_id.map(ToString::to_string),
         model_id: None,
         is_isolated: false,
         worktree_path: None,

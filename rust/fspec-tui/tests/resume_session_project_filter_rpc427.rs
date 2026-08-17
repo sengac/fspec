@@ -5,6 +5,8 @@
 //! This test file validates that `list_sessions` now accepts a `project_path`
 //! parameter and that both transport backends pass it through correctly.
 
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
 use codelet_fspec_tui::{App, FspecBackend};
 use codelet_rpc_types::SessionInfo;
 use std::sync::Arc;

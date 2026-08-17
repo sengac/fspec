@@ -278,6 +278,7 @@ pub async fn create_background_session_inner(
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::unwrap_used)]
 mod tests {
     /// Feature: spec/features/extract-shared-session-creation.feature
     /// Scenario: Shared helper preserves all existing session setup behavior

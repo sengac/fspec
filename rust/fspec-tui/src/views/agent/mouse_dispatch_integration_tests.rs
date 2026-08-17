@@ -59,9 +59,7 @@ fn agentview_emits_scrollback_jump_to_offset_on_scrollbar_click() {
     let action = rx.blocking_recv().expect("expected ScrollbackJumpToOffset action");
     assert!(
         matches!(action, Action::ScrollbackJumpToOffset(25)),
-        "expected ScrollbackJumpToOffset(25), got {:?}",
-        action
-    );
+        "expected ScrollbackJumpToOffset(25), got {action:?}");
 }
 
 /// Integration test: AgentView does NOT emit ScrollbackJumpToOffset when
@@ -146,7 +144,5 @@ fn agentview_scrollbar_click_exits_stick_mode() {
     let action = rx.blocking_recv().expect("expected ScrollbackJumpToOffset action");
     assert!(
         matches!(action, Action::ScrollbackJumpToOffset(75)),
-        "expected ScrollbackJumpToOffset(75), got {:?}",
-        action
-    );
+        "expected ScrollbackJumpToOffset(75), got {action:?}");
 }

@@ -398,13 +398,23 @@ impl ProviderManager {
     pub async fn with_model_support() -> Result<Self, ProviderError> {
         let credentials = ProviderCredentials::detect();
 
-        if !credentials.has_any() {
-            return Err(ProviderError::auth(
-                "manager",
-                "No provider credentials found. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, \
-                 GOOGLE_GENERATIVE_AI_API_KEY, or run 'codex auth login' to authenticate.",
-            ));
-        }
+        // PROV-141: construction does NOT gate on `credentials.has_any()`.
+        // A registry-backed manager makes NO provider selection at
+        // construction — every caller immediately applies an EXPLICIT model
+        // via `select_model` / `set_model_direct`, and credential validation
+        // is per-model, not per-construction:
+        // - cloud registry models are validated in `select_model` (which
+        //   re-detects credentials and errors if the provider has none);
+        // - profile models bridge their own `apiKey`/`baseUrl` from
+        //   `fspec-config.json` into `OPENAI_*` env vars via
+        //   `apply_profile_env_vars` and intentionally skip credential
+        //   validation in `set_model_direct`;
+        // - codex/custom models resolve their own credentials.
+        //
+        // Gating construction on a global credential set broke session
+        // creation on machines with no global API keys (e.g. Linux) whenever
+        // the default model was a self-sufficient profile model — it only
+        // worked where a `.env` file happened to provide `OPENAI_API_KEY`.
 
         // PROV-101: a registry-backed manager makes NO provider selection at
         // construction — every caller of `with_model_support()` immediately

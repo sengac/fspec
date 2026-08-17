@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-16T09:59:07.754Z",
+    "lastUpdated": "2026-08-17T07:21:05.360Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -67,7 +67,7 @@
     "PATCH": 2,
     "PAUSE": 1,
     "PERF": 2,
-    "PROV": 140,
+    "PROV": 141,
     "REFAC": 18,
     "REMIND": 17,
     "RES": 22,
@@ -1637,7 +1637,8 @@
       "TUI-103",
       "TUI-104",
       "TUI-105",
-      "TUI-106"
+      "TUI-106",
+      "PROV-141"
     ],
     "blocked": [
       "QUERY-001",
@@ -224188,6 +224189,96 @@
         }
       ],
       "nextNoteId": 1
+    },
+    "PROV-141": {
+      "id": "PROV-141",
+      "title": "Session creation fails on Linux when default model is a profile model and no global provider credentials exist",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-17T07:00:54.868Z",
+      "updatedAt": "2026-08-17T07:21:05.360Z",
+      "description": "On Linux, creating a session with a profile default model (e.g. openai:spark/qwen3.8-27b) fails with 'No provider credentials found. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, ...' because ProviderManager::with_model_support() gates construction on ProviderCredentials::detect().has_any(). Profile models carry their own apiKey/baseUrl in fspec-config.json and are bridged into OPENAI_* env vars by apply_profile_env_vars AFTER manager construction — so the global credential requirement is wrong. It only worked on the Mac because a .env file happened to provide OPENAI_API_KEY. Fix: remove the has_any() gate from with_model_support(); per-model credential validation already happens in select_model (cloud models) and profile/codex/custom paths intentionally skip it.",
+      "epic": "provider-resilience",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-17T05:09:07.783Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-17T05:14:44.966Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-17T05:40:56.401Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-17T07:17:44.063Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-17T07:21:05.360Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer on a machine with no global provider credentials",
+        "action": "create a session whose default model is a local-server profile model",
+        "benefit": "the session starts using the profile's own stored credentials without needing a global API key in the environment"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "ProviderManager::with_model_support() must NOT reject construction when ProviderCredentials::detect().has_any() is false — a registry-backed manager makes no provider selection at construction; the explicit model applied immediately after is the selection.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:09:29.782Z"
+        },
+        {
+          "id": 1,
+          "text": "Credential validation remains per-model, not per-construction: cloud registry models are validated in select_model (which re-detects credentials and errors if the provider has none); profile models bridge their own apiKey/baseUrl from fspec-config.json into OPENAI_* env vars via apply_profile_env_vars; codex/custom models use their own credential paths. No global has_any() gate is required anywhere on the session-creation path.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:09:50.413Z"
+        },
+        {
+          "id": 2,
+          "text": "A cloud registry model selected without credentials for its provider must still fail loudly at selection time (select_model's has_credentials check), with an error naming the provider and listing available providers — the fix must not make uncredentialed cloud models silently succeed.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:10:05.558Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "On a fresh Linux machine with no provider API keys in the environment and no auth files, the user sets their default model to a local-server profile (openai:spark/qwen3.8-27b, whose profile stores its own baseUrl and apiKey). Starting a session succeeds and the session runs on that profile model — no 'No provider credentials found' error.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:10:54.146Z"
+        },
+        {
+          "id": 1,
+          "text": "On the same credential-less machine, the user sets their default model to a cloud registry model (anthropic/claude-opus-4-5). Starting a session still fails loudly with an error naming the provider and listing available providers — the fix does not make uncredentialed cloud models silently succeed.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:11:05.169Z"
+        },
+        {
+          "id": 2,
+          "text": "On the credential-less machine, the user sets their default model to a codex model (codex/gpt-5). Starting a session succeeds — codex models resolve their own credentials and never needed a global API key at manager construction.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:11:23.540Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix location: rust/providers/src/manager.rs ProviderManager::with_model_support() (lines ~398-436). Remove the `if !credentials.has_any() { return Err(...) }` block. The credentials snapshot is still taken and stored (select_model re-detects on each call anyway). deferred_placeholder_provider already handles the no-credentials case (falls back to OpenAI placeholder). Session creation paths (create_session_with_id, create_session_from_manifest, create_isolated_session_with_id) all construct via with_model_support() then apply the explicit model via apply_model_selection / select_model / set_model_direct — per-model credential validation is preserved there.",
+          "deleted": false,
+          "createdAt": "2026-08-17T05:11:40.306Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2
     }
   }
 }

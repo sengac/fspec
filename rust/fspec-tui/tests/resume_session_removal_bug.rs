@@ -28,7 +28,6 @@ use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_core::SessionManagerHandle;
 use codelet_fspec_tui::{Action, App, EmbeddedFspecBackend, FspecBackend};
 use codelet_rpc::SharedFspecService;
-use codelet_rpc_types::SessionId;
 use codelet_sessions::SessionManager;
 use tempfile::TempDir;
 

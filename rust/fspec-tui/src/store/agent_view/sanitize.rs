@@ -65,16 +65,14 @@ mod tests {
 
     use super::*;
 
-    /**
-     * Feature: spec/features/sanitize-bash-tool-output-before-tui-rendering-to-prevent-terminal-trashing.feature
-     */
+    // Feature: spec/features/sanitize-bash-tool-output-before-tui-rendering-to-prevent-terminal-trashing.feature
 
     // ── Scenario: ANSI color codes from ls --color are stripped before rendering ──
 
     /// @step Given a bash command outputs text with ANSI color escape sequences like "\x1b[01;34m" for colored directories
     fn given_ansi_color_sequences() -> String {
         // Simulates `ls --color=always` output
-        format!("\x1b[01;34mDocuments\x1b[0m\n\x1b[01;34mDownloads\x1b[0m\nfile.txt")
+        "\x1b[01;34mDocuments\x1b[0m\n\x1b[01;34mDownloads\x1b[0m\nfile.txt".to_string()
     }
 
     /// @step When the tool output is processed for TUI display
@@ -86,9 +84,7 @@ mod tests {
     fn then_ansi_sequences_removed(output: &str) {
         assert!(
             !output.contains('\x1b'),
-            "Output should not contain escape characters, got {:?}",
-            output
-        );
+            "Output should not contain escape characters, got {output:?}");
     }
 
     /// @step And only the plain text content (filenames) is visible in the TUI
@@ -117,28 +113,23 @@ mod tests {
     /// @step Given a bash command outputs complex ANSI sequences including cursor movement, colors, and bold formatting
     fn given_complex_ansi_sequences() -> String {
         // Simulates `neofetch` output with cursor movement, colors, bold
-        format!(
-            "\x1b[1mOS:\x1b[0m Ubuntu 24.04\n\
+        "\x1b[1mOS:\x1b[0m Ubuntu 24.04\n\
              \x1b[34mKernel:\x1b[0m 6.8.0\n\
              \x1b[2J\x1b[H\
              \x1b[32mCPU:\x1b[0m Apple M2\n\
              \x1b]0;Terminal Title\x07\
              Memory: 8GB"
-        )
+            .to_string()
     }
 
     /// @step Then all ANSI escape sequences are removed from the displayed text
     fn then_all_ansi_removed(output: &str) {
         assert!(
             !output.contains('\x1b'),
-            "No escape characters should remain, got {:?}",
-            output
-        );
+            "No escape characters should remain, got {output:?}");
         assert!(
             !output.contains('\x07'),
-            "BEL character from OSC should be removed, got {:?}",
-            output
-        );
+            "BEL character from OSC should be removed, got {output:?}");
     }
 
     /// @step And only readable plain text is visible in the TUI
@@ -173,9 +164,7 @@ mod tests {
     fn then_tabs_replaced_with_two_spaces(output: &str) {
         assert!(
             !output.contains('\t'),
-            "No tabs should remain, got {:?}",
-            output
-        );
+            "No tabs should remain, got {output:?}");
     }
 
     /// @step And the text maintains consistent visual width
@@ -210,9 +199,7 @@ mod tests {
     fn then_carriage_returns_removed(output: &str) {
         assert!(
             !output.contains('\r'),
-            "No carriage returns should remain, got {:?}",
-            output
-        );
+            "No carriage returns should remain, got {output:?}");
     }
 
     /// @step And lines are not overwritten in the TUI
@@ -245,18 +232,18 @@ mod tests {
         String::from_utf8(vec![
             0x00, // NUL
             0x08, // Backspace
-            'a' as u8,
+            b'a',
             0x0A, // Newline (should be preserved)
             0x0B, // Vertical tab
-            'b' as u8,
+            b'b',
             0x0C, // Form feed
-            'c' as u8,
+            b'c',
             0x0E, // Shift out
-            'd' as u8,
+            b'd',
             0x1F, // Unit separator
-            'e' as u8,
+            b'e',
             0x7F, // DEL
-            'f' as u8,
+            b'f',
         ])
         .expect("test string is valid UTF-8")
     }
@@ -267,9 +254,7 @@ mod tests {
             let code = c as u32;
             assert!(
                 !matches!(code, 0x00..=0x08 | 0x0B | 0x0C | 0x0E..=0x1F | 0x7F),
-                "Control character U+{:02X} should be removed, found in {:?}",
-                code, output
-            );
+                "Control character U+{code:02X} should be removed, found in {output:?}");
         }
     }
 
@@ -277,9 +262,7 @@ mod tests {
     fn then_newlines_preserved(output: &str) {
         assert!(
             output.contains('\n'),
-            "Newlines should be preserved, got {:?}",
-            output
-        );
+            "Newlines should be preserved, got {output:?}");
     }
 
     #[test]
@@ -338,9 +321,9 @@ mod tests {
     /// @step Given a bash command streams output line-by-line via ToolProgress
     fn given_streaming_chunks() -> Vec<String> {
         vec![
-            format!("\x1b[32mStep 1\x1b[0m"),
-            format!("\x1b[32mStep 2\x1b[0m"),
-            format!("\x1b[32mStep 3\x1b[0m"),
+            "\x1b[32mStep 1\x1b[0m".to_string(),
+            "\x1b[32mStep 2\x1b[0m".to_string(),
+            "\x1b[32mStep 3\x1b[0m".to_string(),
         ]
     }
 
@@ -354,10 +337,7 @@ mod tests {
         for (i, chunk) in chunks.iter().enumerate() {
             assert!(
                 !chunk.contains('\x1b'),
-                "Chunk {} should have no escape chars, got {:?}",
-                i,
-                chunk
-            );
+                "Chunk {i} should have no escape chars, got {chunk:?}");
         }
     }
 
@@ -391,7 +371,7 @@ mod tests {
     /// @step Given a bash command outputs text with ANSI color codes
     fn given_ansi_output_for_llm_and_tui() -> String {
         // Simulates raw bash output with ANSI codes
-        format!("\x1b[01;34mDocuments\x1b[0m\n\x1b[01;34mDownloads\x1b[0m")
+        "\x1b[01;34mDocuments\x1b[0m\n\x1b[01;34mDownloads\x1b[0m".to_string()
     }
 
     /// @step When the tool result is returned to both the LLM and the TUI
@@ -407,18 +387,14 @@ mod tests {
     fn then_llm_receives_raw_output(llm_output: &str) {
         assert!(
             llm_output.contains('\x1b'),
-            "LLM output should contain ANSI escape codes, got {:?}",
-            llm_output
-        );
+            "LLM output should contain ANSI escape codes, got {llm_output:?}");
     }
 
     /// @step And the TUI scrollback contains only the sanitized plain text
     fn then_tui_receives_sanitized(tui_output: &str) {
         assert!(
             !tui_output.contains('\x1b'),
-            "TUI output should not contain ANSI escape codes, got {:?}",
-            tui_output
-        );
+            "TUI output should not contain ANSI escape codes, got {tui_output:?}");
         let expected = "Documents\nDownloads";
         assert_eq!(tui_output, expected, "Only plain text should be in TUI scrollback");
     }
@@ -457,7 +433,7 @@ mod tests {
     #[test]
     fn mixed_ansi_tabs_and_control_chars_all_sanitized() {
         // Combined test: ANSI + tabs + carriage returns + control chars
-        let input = format!("\x1b[31mred\x1b[0m\twith\ttabs\r\nand\x07control");
+        let input = "\x1b[31mred\x1b[0m\twith\ttabs\r\nand\x07control".to_string();
         let output = sanitize_for_terminal(&input);
         assert_eq!(output, "red  with  tabs\nandcontrol");
     }

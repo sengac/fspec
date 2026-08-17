@@ -5,7 +5,7 @@
 //! These tests verify that the shared session creation helper exists and is used
 //! by both create_session_with_id and create_session_from_manifest.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::path::{Path, PathBuf};
 
@@ -204,14 +204,13 @@ fn both_call_sites_use_shared_helper() {
     // At least 2 call sites (create_session_with_id + create_session_from_manifest)
     assert!(
         helper_calls >= 2,
-        "create_background_session_inner should be called from both create_session_with_id and create_session_from_manifest (found {} occurrences)",
-        helper_calls
+        "create_background_session_inner should be called from both create_session_with_id and create_session_from_manifest (found {helper_calls} occurrences)"
     );
 }
 
 /// Find the body of a function in source code
 fn find_function_body(content: &str, func_name: &str) -> String {
-    let func_pattern = format!("pub async fn {}", func_name);
+    let func_pattern = format!("pub async fn {func_name}");
     if let Some(start) = content.find(&func_pattern) {
         // Find the opening brace
         let brace_start = content[start..].find('{').unwrap_or(0) + start;

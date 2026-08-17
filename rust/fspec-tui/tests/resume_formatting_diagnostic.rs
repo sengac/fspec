@@ -68,7 +68,7 @@ async fn resume_flow_renders_text_correctly() {
     assert!(result.is_ok(), "drain_pending should not timeout");
 
     // @step When I render the App into an 80x24 buffer
-    let (mut app, mut terminal) = {
+    let (mut app, _terminal) = {
         let backend: Arc<dyn FspecBackend> = mock.clone();
         test_app(backend)
     };
@@ -81,7 +81,7 @@ async fn resume_flow_renders_text_correctly() {
     let rows = buffer_to_rows(&buf);
     eprintln!("=== resume_flow_render ===");
     for (i, row) in rows.iter().enumerate() {
-        eprintln!("y={:2}: {}", i, row);
+        eprintln!("y={i:2}: {row}");
     }
 
     // @step Then the user line appears intact on one row
@@ -89,7 +89,7 @@ async fn resume_flow_renders_text_correctly() {
     for (y, row) in rows.iter().enumerate() {
         if row.contains("You: what is this card about?") {
             found_user = true;
-            eprintln!("✓ Found user line at y={}: {:?}", y, row);
+            eprintln!("✓ Found user line at y={y}: {row:?}");
             break;
         }
     }
@@ -100,7 +100,7 @@ async fn resume_flow_renders_text_correctly() {
     for (y, row) in rows.iter().enumerate() {
         if row.contains("This is a test response") {
             found_assistant = true;
-            eprintln!("✓ Found assistant line at y={}: {:?}", y, row);
+            eprintln!("✓ Found assistant line at y={y}: {row:?}");
             break;
         }
     }
@@ -144,11 +144,11 @@ async fn resume_flow_chunk_line_widths() {
     let chunks = ctx.scrollback.chunks();
     eprintln!("chunk_count = {}", chunks.len());
     for (i, chunk) in chunks.iter().enumerate() {
-        eprintln!("chunk[{}] seq={} lines={}", i, chunk.seq, chunk.lines.len());
+        eprintln!("chunk[{i}] seq={seq} lines={lines}", seq = chunk.seq, lines = chunk.lines.len());
         for (j, line) in chunk.lines.iter().enumerate() {
             let text: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
             let width = text.chars().count();
-            eprintln!("  line[{}] width={} content={:?}", j, width, text);
+            eprintln!("  line[{j}] width={width} content={text:?}");
         }
     }
 
@@ -159,8 +159,7 @@ async fn resume_flow_chunk_line_widths() {
             if !text.trim().is_empty() {
                 assert!(
                     text.chars().count() > 5,
-                    "Line too narrow: content={:?}",
-                    text
+                    "Line too narrow: content={text:?}"
                 );
             }
         }
@@ -204,7 +203,7 @@ async fn resume_flow_render_after_drain() {
     let rows = buffer_to_rows(&buf);
     eprintln!("=== resume_flow_render_after_drain ===");
     for (i, row) in rows.iter().enumerate() {
-        eprintln!("y={:2}: {}", i, row);
+        eprintln!("y={i:2}: {row}");
     }
 
     // Check that the user line is intact
@@ -212,7 +211,7 @@ async fn resume_flow_render_after_drain() {
     for (y, row) in rows.iter().enumerate() {
         if row.contains("You: All tests pass including") {
             found_user = true;
-            eprintln!("✓ Found user line at y={}: {:?}", y, row);
+            eprintln!("✓ Found user line at y={y}: {row:?}");
             break;
         }
     }
@@ -223,7 +222,7 @@ async fn resume_flow_render_after_drain() {
     for (y, row) in rows.iter().enumerate() {
         if row.contains("This is a long assistant response") {
             found_assistant = true;
-            eprintln!("✓ Found assistant line at y={}: {:?}", y, row);
+            eprintln!("✓ Found assistant line at y={y}: {row:?}");
             break;
         }
     }

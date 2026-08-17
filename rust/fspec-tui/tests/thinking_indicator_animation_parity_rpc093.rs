@@ -77,7 +77,7 @@ fn render_loop_redraws_while_busy_independent_of_should_render_flag() {
     use codelet_fspec_tui::app::tick_should_draw;
     // @step Then the terminal is drawn (terminal.draw is called once for that tick)
     assert!(
-        tick_should_draw(false, true, false),
+        tick_should_draw(false, true, false, false),
         "busy must bypass should_render"
     );
     // @step And the App should_render flag is false
@@ -94,7 +94,7 @@ fn render_loop_stays_idle_when_not_busy_and_no_events() {
     use codelet_fspec_tui::app::tick_should_draw;
     // @step Then the terminal is NOT drawn for that tick (terminal.draw is not called)
     assert!(
-        !tick_should_draw(false, false, false),
+        !tick_should_draw(false, false, false, false),
         "idle + no event must skip draw"
     );
     // @step And no input-transition finish animation is in progress (phase is Idle)
@@ -501,7 +501,7 @@ fn render_loop_ticks_during_hiding_even_when_session_idle() {
     // @step Then the terminal IS drawn for that tick (terminal.draw is called once)
     // @step And tick_should_draw(false, is_busy=false, is_animating=true) returns true
     assert!(
-        tick_should_draw(false, false, true),
+        tick_should_draw(false, false, true, false),
         "tick_should_draw must accept is_animating and return true when animating"
     );
 }
@@ -529,7 +529,7 @@ fn render_loop_ticks_during_showing_even_when_session_idle() {
     // @step Then the terminal IS drawn for that tick (terminal.draw is called once)
     // @step And tick_should_draw(false, is_busy=false, is_animating=true) returns true
     assert!(
-        tick_should_draw(false, false, true),
+        tick_should_draw(false, false, true, false),
         "tick_should_draw must accept is_animating and return true when animating"
     );
 }

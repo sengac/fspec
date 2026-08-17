@@ -9,7 +9,7 @@ use crossterm::event::{KeyCode, KeyModifiers};
 
 /// Helper: build text with `n_lines` logical lines, each `line_width` chars wide.
 fn make_wrapped_text(_body_width: u16, n_lines: usize, line_width: usize) -> String {
-    let chars: String = std::iter::repeat('x').take(line_width).collect();
+    let chars: String = "x".repeat(line_width);
     let mut result = String::new();
     for i in 0..n_lines {
         if i > 0 {

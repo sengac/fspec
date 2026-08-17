@@ -609,28 +609,9 @@ impl SessionManager {
             }
         }
 
-        let project_path = std::path::PathBuf::from(project);
-        let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
-            name,
-            project_path.clone(),
-            model,
-        );
-        manifest.id = uuid;
-        tracing::info!(
-            session_id = %uuid,
-            manifest_provider = %manifest.provider,
-            manifest_name = %manifest.name,
-            manifest_project = %manifest.project.display(),
-            "create_session_with_id: constructed manifest, about to persist to disk"
-        );
-        codelet_core::persistence::save_session(&manifest)
-            .map_err(|e| format!("Failed to persist session manifest: {}", e))?;
-        tracing::info!(
-            session_id = %uuid,
-            "create_session_with_id: manifest persisted to disk successfully"
-        );
-
-        // RPC-424: Parse model string using shared helper
+        // RPC-424: Parse model string using shared helper. Done BEFORE
+        // manifest persistence so a malformed model string does not leave
+        // an orphaned manifest on disk with no in-memory session.
         let parsed = crate::model_parsing::parse_model_string(model)?;
         let registry_provider = parsed.registry_provider;
         let model_part = parsed.model_part;
@@ -687,6 +668,33 @@ impl SessionManager {
         let session = result.session;
         let input_rx = result.input_rx;
         let mcp_injection_rx = result.mcp_injection_rx;
+
+        // Persist the manifest ONLY after the session is fully constructed
+        // in memory. This prevents orphaned manifests on disk when provider
+        // resolution or session construction fails (the Linux bug where
+        // `create_background_session_inner` returned Err after the manifest
+        // was already written, leaving a disk-only session with no in-memory
+        // counterpart and an empty SessionId returned to the caller).
+        let project_path = std::path::PathBuf::from(project);
+        let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
+            name,
+            project_path.clone(),
+            model,
+        );
+        manifest.id = uuid;
+        tracing::info!(
+            session_id = %uuid,
+            manifest_provider = %manifest.provider,
+            manifest_name = %manifest.name,
+            manifest_project = %manifest.project.display(),
+            "create_session_with_id: constructed manifest, about to persist to disk"
+        );
+        codelet_core::persistence::save_session(&manifest)
+            .map_err(|e| format!("Failed to persist session manifest: {}", e))?;
+        tracing::info!(
+            session_id = %uuid,
+            "create_session_with_id: manifest persisted to disk successfully"
+        );
 
         // BUG-154: stamp the owning-manager back-reference BEFORE spawning the
         // agent loop, so the AgentManager handler the loop registers binds to

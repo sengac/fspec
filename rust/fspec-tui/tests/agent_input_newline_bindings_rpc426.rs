@@ -1,10 +1,8 @@
-/**
- * Feature: spec/features/shift-enter-newline-doesn-t-work-in-real-terminals-terminal-eats-modifier-no-fallback-binding-no-capability-probe.feature
- *
- * This test file validates the acceptance criteria for the agent input
- * newline bindings — Ctrl+J universal fallback with Shift+Enter best-effort.
- * Scenarios map directly to Gherkin scenarios.
- */
+// Feature: spec/features/shift-enter-newline-doesn-t-work-in-real-terminals-terminal-eats-modifier-no-fallback-binding-no-capability-probe.feature
+//
+// This test file validates the acceptance criteria for the agent input
+// newline bindings — Ctrl+J universal fallback with Shift+Enter best-effort.
+// Scenarios map directly to Gherkin scenarios.
 
 use crossterm::event::{KeyCode, KeyModifiers};
 

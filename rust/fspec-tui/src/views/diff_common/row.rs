@@ -96,16 +96,14 @@ mod tests {
         assert_eq!(truncate_path("anything", 0), "");
     }
 
-    /**
-     * Feature: spec/features/sanitize-file-paths-and-labels-in-changed-files-and-checkpoint-views.feature
-     */
+    // Feature: spec/features/sanitize-file-paths-and-labels-in-changed-files-and-checkpoint-views.feature
 
     // ── Scenario: File paths with unusual characters display cleanly in the Changed Files view ──
 
     /// @step Given I have a changed file with a path containing control characters or ANSI sequences
     fn given_file_with_control_chars_in_path() -> ChangedFile {
         ChangedFile {
-            path: format!("path\x1b[31mwith\x1b[0mansi.txt"),
+            path: "path\x1b[31mwith\x1b[0mansi.txt".to_string(),
             change_type: "M".to_string(),
             staged: false,
         }
@@ -121,9 +119,7 @@ mod tests {
                 let code = c as u32;
                 assert!(
                     !matches!(code, 0x00..=0x08 | 0x0B | 0x0C | 0x0E..=0x1F | 0x7F),
-                    "File row should not contain control character U+{:02X}, found in {:?}",
-                    code, text
-                );
+                    "File row should not contain control character U+{code:02X}, found in {text:?}");
             }
         }
     }
@@ -156,7 +152,7 @@ mod tests {
     /// @step Given I have a checkpoint with a label containing control characters or ANSI sequences
     fn given_checkpoint_with_control_chars_in_label() -> ChangedFile {
         ChangedFile {
-            path: format!("file\x00with\x08control.txt"),
+            path: "file\x00with\x08control.txt".to_string(),
             change_type: "A".to_string(),
             staged: false,
         }
@@ -170,14 +166,10 @@ mod tests {
             let text = span.content.as_ref();
             assert!(
                 !text.contains('\x00'),
-                "File row should not contain NUL, got {:?}",
-                text
-            );
+                "File row should not contain NUL, got {text:?}");
             assert!(
                 !text.contains('\x08'),
-                "File row should not contain backspace, got {:?}",
-                text
-            );
+                "File row should not contain backspace, got {text:?}");
         }
     }
 

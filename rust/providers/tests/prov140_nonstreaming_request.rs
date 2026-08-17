@@ -234,10 +234,10 @@ async fn nonstreaming_text_reply_adapts_into_text_then_final_items() {
     let mut final_seen = false;
     while let Some(item) = stream.next().await {
         match item {
-            Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(t))) => {
-                if t.text.contains("Paris") {
-                    text_seen = true;
-                }
+            Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(t)))
+                if t.text.contains("Paris") =>
+            {
+                text_seen = true;
             }
             Ok(MultiTurnStreamItem::FinalResponse(_)) => final_seen = true,
             _ => {}

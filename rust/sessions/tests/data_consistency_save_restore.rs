@@ -21,7 +21,7 @@ static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
 /// Helper: create a temp data directory and return its path.
 fn make_temp_data_dir() -> PathBuf {
-    tempfile::tempdir().expect("tempdir").into_path()
+    tempfile::tempdir().expect("tempdir").keep()
 }
 
 /// Helper: set the data directory and reset stores.
@@ -50,7 +50,7 @@ async fn data_consistency_simple_text_message() {
     )
     .expect("create session");
 
-    let mut session = manifest.clone();
+    let mut session = manifest;
     let original_content = "Hello, this is a test message with multiple words.";
     append_message_with_metadata(
         &mut session,
@@ -133,7 +133,7 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
     .expect("create session");
 
     // Simulate the save path from persist_assistant_message_internal
-    let original_texts = vec![
+    let original_texts = [
         "First paragraph of the response.",
         "Second paragraph with more detail.",
     ];
@@ -157,7 +157,7 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
     let metadata_map: HashMap<String, serde_json::Value> =
         serde_json::from_str(&envelope_json.to_string()).expect("parse envelope as map");
 
-    let mut session = manifest.clone();
+    let mut session = manifest;
     append_message_with_metadata(
         &mut session,
         "assistant",
@@ -256,7 +256,7 @@ async fn data_consistency_multiline_content_in_envelope() {
 
     // Save a message with embedded newlines (simulating flattened assistant content)
     let content_with_newlines = "Line one\nLine two\nLine three\n\nParagraph two\n  Indented line";
-    let mut session = manifest.clone();
+    let mut session = manifest;
     append_message_with_metadata(
         &mut session,
         "assistant",
@@ -286,14 +286,8 @@ async fn data_consistency_multiline_content_in_envelope() {
         .and_then(|t| t.as_str())
         .expect("text field");
 
-    println!(
-        "[CHECK] Original: '{}'",
-        content_with_newlines
-    );
-    println!(
-        "[CHECK] Restored: '{}'",
-        restored_text
-    );
+    println!("[CHECK] Original: '{content_with_newlines}'");
+    println!("[CHECK] Restored: '{restored_text}'");
 
     assert_eq!(
         restored_text, content_with_newlines,
@@ -321,7 +315,7 @@ async fn data_consistency_raw_jsonl_inspection() {
 
     // Save a message with complex content
     let content = "Hello world\nThis is a second line\n\nAnd a third paragraph";
-    let mut session = manifest.clone();
+    let mut session = manifest;
     append_message_with_metadata(
         &mut session,
         "assistant",
@@ -333,10 +327,7 @@ async fn data_consistency_raw_jsonl_inspection() {
     // @step When I read the raw JSONL file
     let jsonl_path = data_dir.join("messages/messages.jsonl");
     let raw_content = std::fs::read_to_string(&jsonl_path).expect("read jsonl");
-    println!(
-        "[RAW JSONL] File content:\n{}",
-        raw_content
-    );
+    println!("[RAW JSONL] File content:\n{raw_content}");
 
     // Parse the JSONL line
     let jsonl_line = raw_content.lines().next().expect("at least one line");
@@ -378,7 +369,7 @@ async fn data_consistency_full_round_trip_with_metadata() {
     .expect("create session");
 
     // Simulate the EXACT save path from persist_assistant_message_internal
-    let assistant_content_blocks = vec![
+    let assistant_content_blocks = [
         "This is the first text block from the assistant.",
         "This is the second text block.",
         "And a third block with [Thinking: truncated...] in it.",
@@ -386,11 +377,7 @@ async fn data_consistency_full_round_trip_with_metadata() {
 
     // This is what persist_assistant_message_internal does:
     // Flatten to: "block1\nblock2\n[Thinking: truncated...]"
-    let flattened: String = assistant_content_blocks
-        .iter()
-        .cloned()
-        .collect::<Vec<_>>()
-        .join("\n");
+    let flattened: String = assistant_content_blocks.join("\n");
 
     // Create the envelope metadata
     let envelope_json = serde_json::json!({
@@ -410,7 +397,7 @@ async fn data_consistency_full_round_trip_with_metadata() {
     let metadata_map: HashMap<String, serde_json::Value> =
         serde_json::from_str(&envelope_json.to_string()).expect("parse envelope as map");
 
-    let mut session = manifest.clone();
+    let mut session = manifest;
     append_message_with_metadata(
         &mut session,
         "assistant",

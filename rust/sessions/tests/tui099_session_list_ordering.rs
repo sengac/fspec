@@ -35,7 +35,7 @@ fn set_temp_data_dir(path: PathBuf) -> PathBuf {
 fn make_session(id: &str, ts: Option<i64>) -> SessionInfo {
     SessionInfo {
         id: id.to_string(),
-        name: format!("Session {}", id),
+        name: format!("Session {id}"),
         status: "idle".to_string(),
         project: ".".to_string(),
         message_count: 0,
@@ -50,7 +50,7 @@ fn make_session(id: &str, ts: Option<i64>) -> SessionInfo {
 
 /// Helper: apply the expected sorting algorithm to a Vec<SessionInfo>.
 /// This mirrors the sorting logic that list_sessions() should implement.
-fn sort_sessions(sessions: &mut Vec<SessionInfo>) {
+fn sort_sessions(sessions: &mut [SessionInfo]) {
     sessions.sort_by(|a, b| {
         match (a.updated_at_ms, b.updated_at_ms) {
             (Some(ts_a), Some(ts_b)) => {
@@ -134,10 +134,7 @@ async fn sessions_ordered_by_most_recently_updated_first() {
         } else {
             assert!(
                 prev_ts > curr_ts,
-                "descending timestamp order violated at index {}: {} > {}",
-                i,
-                prev_ts,
-                curr_ts
+                "descending timestamp order violated at index {i}: {prev_ts} > {curr_ts}"
             );
         }
     }
@@ -159,7 +156,7 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
     let session_zulu = make_session("zzzz1111-1111-1111-1111-111111111111", Some(ts));
 
     // @step When I open the /resume view
-    let mut sessions = vec![session_zulu.clone(), session_alpha.clone()];
+    let mut sessions = vec![session_zulu, session_alpha];
     sort_sessions(&mut sessions);
 
     // @step Then the sessions are ordered alphabetically by session ID as a tiebreaker
@@ -174,7 +171,11 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
 
     // Also verify with a three-way tie
     let session_mid = make_session("mmmm1111-1111-1111-1111-111111111111", Some(ts));
-    let mut sessions = vec![session_zulu.clone(), session_mid.clone(), session_alpha.clone()];
+    let mut sessions = vec![
+        make_session("zzzz1111-1111-1111-1111-111111111111", Some(ts)),
+        session_mid,
+        make_session("aaaa1111-1111-1111-1111-111111111111", Some(ts)),
+    ];
     sort_sessions(&mut sessions);
     assert_eq!(sessions[0].id, "aaaa1111-1111-1111-1111-111111111111");
     assert_eq!(sessions[1].id, "mmmm1111-1111-1111-1111-111111111111");
@@ -205,10 +206,7 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
                 } else {
                     assert!(
                         ts_prev > ts_curr,
-                        "descending timestamp order violated at index {}: {} > {}",
-                        i,
-                        ts_prev,
-                        ts_curr
+                        "descending timestamp order violated at index {i}: {ts_prev} > {ts_curr}"
                     );
                 }
             }
@@ -248,30 +246,30 @@ async fn sessions_without_timestamp_appear_at_end() {
 
     // @step When I open the /resume view
     let mut unsorted = vec![
-        session_without_ts_second.clone(),
-        session_with_ts_earlier.clone(),
-        session_without_ts_first.clone(),
-        session_with_ts_latest.clone(),
+        session_without_ts_second,
+        session_with_ts_earlier,
+        session_without_ts_first,
+        session_with_ts_latest,
     ];
     sort_sessions(&mut unsorted);
 
     // @step Then sessions with timestamps appear first and sessions without timestamps appear last
     // Verify: sessions with timestamps come first, sorted descending by timestamp
     assert_eq!(
-        unsorted[0].id, session_with_ts_latest.id,
+        unsorted[0].id, "aaaa1111-1111-1111-1111-111111111111",
         "most recent session should be first"
     );
     assert_eq!(
-        unsorted[1].id, session_with_ts_earlier.id,
+        unsorted[1].id, "bbbb1111-1111-1111-1111-111111111111",
         "earlier session should be second"
     );
     // Then sessions without timestamps, sorted alphabetically by ID
     assert_eq!(
-        unsorted[2].id, session_without_ts_first.id,
+        unsorted[2].id, "cccc1111-1111-1111-1111-111111111111",
         "first non-timestamped session (alphabetically) should be third"
     );
     assert_eq!(
-        unsorted[3].id, session_without_ts_second.id,
+        unsorted[3].id, "dddd1111-1111-1111-1111-111111111111",
         "second non-timestamped session (alphabetically) should be last"
     );
 
@@ -297,8 +295,7 @@ async fn sessions_without_timestamp_appear_at_end() {
                 } else {
                     assert!(
                         ts_prev > ts_curr,
-                        "descending timestamp order violated at index {}",
-                        i
+                        "descending timestamp order violated at index {i}"
                     );
                 }
             }
