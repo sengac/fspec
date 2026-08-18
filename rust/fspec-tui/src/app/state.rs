@@ -256,6 +256,24 @@ impl App {
         self.navigator.checkpoints.load.active_label()
     }
 
+    /// TUI-109: a clone of the CheckpointsView's LoadingDialog (test
+    /// seam for asserting the counter row the progress fold feeds).
+    pub fn navigator_checkpoints_loading_dialog(&self) -> crate::components::loading_dialog::LoadingDialog {
+        self.navigator.checkpoints.loading.clone()
+    }
+
+    /// TUI-109: the number of checkpoints folded into the
+    /// CheckpointsView (test seam).
+    pub fn navigator_checkpoints_len(&self) -> usize {
+        self.navigator.checkpoints.checkpoints_len()
+    }
+
+    /// TUI-109: whether the CheckpointsView's list stage has flushed
+    /// (test seam for the progress stale-drop guard).
+    pub fn navigator_checkpoints_list_loaded(&self) -> bool {
+        self.navigator.checkpoints.load.is_loaded()
+    }
+
     /// Drain a single Action from the bus (test helper).
     pub fn try_recv_action(&mut self) -> Option<Action> {
         self.action_rx.try_recv().ok()

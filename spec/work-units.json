@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-17T07:21:05.360Z",
+    "lastUpdated": "2026-08-18T14:33:52.114Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -244,10 +244,7 @@
       "LANG-001",
       "PROV-009",
       "TUI-085",
-      "RIG-013",
-      "TUI-107",
-      "TUI-108",
-      "TUI-109"
+      "RIG-013"
     ],
     "testing": [
       "EXT-001"
@@ -1638,7 +1635,10 @@
       "TUI-104",
       "TUI-105",
       "TUI-106",
-      "PROV-141"
+      "PROV-141",
+      "TUI-107",
+      "TUI-108",
+      "TUI-109"
     ],
     "blocked": [
       "QUERY-001",
@@ -223992,14 +223992,15 @@
       "id": "TUI-107",
       "title": "Checkpoints view ('c') shows staged animated loading dialog via shared base instead of fake 'No checkpoints' empty state",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-08-16T00:15:36.311Z",
-      "updatedAt": "2026-08-16T00:57:46.000Z",
+      "updatedAt": "2026-08-18T08:58:41.701Z",
       "description": "Replace the fake empty state painted while CheckpointsView lazy loads with the shared LoadingDialog from TUI-106. Current behavior: board c key -> OpenCheckpointsView -> App::spawn_list_checkpoints issues backend.list_checkpoints() while the list is an empty Vec, so render.rs falls into render_empty() and prints 'No checkpoints available' - visually identical to a repo with zero checkpoints (the PROV-104 bug class already fixed in ModelSelector). After: while any of the three cascade stages is in flight (1: list_checkpoints, 2: checkpoint_diff_files for the selected checkpoint, 3: checkpoint_file_diff for the first file) the body is covered by the shared LoadingDialog (extends the canonical dialog_theme base) with a per-stage animated label: 'Loading checkpoint list...', 'Loading files for <work_unit_id>: <name>...', 'Loading diff for <path>...'. 'No checkpoints available' is only painted AFTER stage 1 completes with zero entries. Scope: CheckpointsView-specific wiring only - list_loaded flag + LoadTracker with staged keys (files_key (work_unit_id, name) and diff_key (work_unit_id, name, path) already exist and the stale-drop contract must be preserved: a CheckpointFilesLoaded for a non-selected checkpoint must NOT clear that stage's loading flag), plus paint-the-dialog-over-the-panes in CheckpointsView::render (same pattern as the RPC-365 restore modal). No per-item (idx/total) progress - that is TUI-109 (depends on this). Redraw cadence while the dialog is shown comes from the TUI-106 run-loop gate. Tests (ACDD): Gherkin scenarios in a new feature file + Rust tests in views/checkpoints/tests.rs covering (a) pre-load render shows a DISTINCT animated dialog, not the empty message, (b) loaded-but-empty shows the empty message, (c) each cascade stage shows its own label, (d) stale-key results do not clear the wrong stage.",
       "epic": "tui-lazy-load",
       "children": [],
       "attachments": [
-        "spec/attachments/TUI-107/TUI-107-checkpoints-loading-research.md"
+        "spec/attachments/TUI-107/TUI-107-checkpoints-loading-research.md",
+        "spec/attachments/TUI-107/ast-research-checkpoints-loading-wiring.md"
       ],
       "dependsOn": [
         "TUI-106"
@@ -224013,6 +224014,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-08-16T00:55:24.313Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-18T08:36:24.414Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-18T08:46:41.125Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-18T08:56:06.281Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-18T08:58:41.701Z"
         }
       ],
       "architectureNotes": [
@@ -224053,20 +224070,22 @@
           "createdAt": "2026-08-16T00:57:46.000Z"
         }
       ],
-      "nextExampleId": 1
+      "nextExampleId": 1,
+      "estimate": 5
     },
     "TUI-108": {
       "id": "TUI-108",
       "title": "Changed Files view ('f') shows staged animated loading dialog via shared base instead of fake 'No changed files' empty state",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-08-16T00:17:18.814Z",
-      "updatedAt": "2026-08-16T01:00:37.316Z",
+      "updatedAt": "2026-08-18T09:54:25.895Z",
       "description": "Replace the fake empty state painted while ChangedFilesView lazy loads with the shared LoadingDialog from TUI-106. Current behavior: board f key -> OpenChangedFilesView -> App::spawn_changed_files issues backend.changed_files() while the file list is an empty Vec, so render.rs falls into render_empty() and prints 'No changed files' (changed_files/render.rs:25,96-102) - visually identical to a clean working tree (the PROV-104 bug class already fixed for ModelSelector in views/model_selector/rows_render.rs:64-83, which uses a loaded: bool flag exactly as this card does). After: while either of the two cascade stages is in flight (1: changed_files, 2: file_diff for the selected row) the body is covered by the shared LoadingDialog (extends the canonical dialog_theme base) with a per-stage animated label: 'Loading changed files...' -> 'Loading diff for <path>...'. 'No changed files' is painted only AFTER stage 1 completes with zero entries. Scope: ChangedFilesView wiring only - files_loaded flag (model_selector already proves the pattern: model_selector/state.rs:79,132) + a LoadTracker carrying a path-keyed stage marker (the existing diff_path stale-drop field already keys the stage-2 marker; a stale FileDiffLoaded for a non-selected path must not clear stage-2 loading), plus the paint-dialog-over-panes branch in ChangedFilesView::render.rs. No new spinner/redux-gate/tracker code (TUI-106 owns it). No per-item (idx/total) progress - TUI-109. Tests (ACDD): new feature file scenarios + Rust tests in views/changed_files/ tests.rs/create cover (a) pre-load shows distinct animated dialog not empty message, (b) loaded-but-empty shows 'No changed files', (c) stage 2 label shows the actual path, (d) scroll paths do not clear stage-2.",
       "epic": "tui-lazy-load",
       "children": [],
       "attachments": [
-        "spec/attachments/TUI-108/TUI-108-changed-files-loading-research.md"
+        "spec/attachments/TUI-108/TUI-108-changed-files-loading-research.md",
+        "spec/attachments/TUI-108/ast-research-changed-files-loading-wiring.md"
       ],
       "dependsOn": [
         "TUI-106"
@@ -224080,6 +224099,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-08-16T00:58:53.605Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-18T09:22:57.900Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-18T09:30:12.957Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-18T09:54:16.019Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-18T09:54:25.895Z"
         }
       ],
       "architectureNotes": [
@@ -224120,20 +224155,22 @@
           "createdAt": "2026-08-16T01:00:37.316Z"
         }
       ],
-      "nextExampleId": 2
+      "nextExampleId": 2,
+      "estimate": 3
     },
     "TUI-109": {
       "id": "TUI-109",
       "title": "Stream per-item progress (idx/total) for checkpoint enumeration into the shared LoadingDialog counter row",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-08-16T00:37:57.715Z",
-      "updatedAt": "2026-08-16T01:05:00.779Z",
+      "updatedAt": "2026-08-18T14:33:52.114Z",
       "description": "TUI-106/107/108 deliver stage-level labels only ('Loading checkpoint list...', etc.). This card adds true per-item progress: in repos with many checkpoints the batch list_checkpoints RPC (rpc/src/checkpoints.rs: collect_checkpoints runs list_all_ghost_checkpoints + per-work-unit sidecar reads, sort, truncate at MAX_CHECKPOINTS=200) can take seconds, and the UI currently shows only a spinner. Design: (1) extend the transport traits (rust/fspec-tui/src/transport/{mod,embedded,websocket}.rs) with a streaming checkpoint-listing channel along the lines of the existing broadcast precedent work_units_rx/chunks_rx/logs_rx - e.g. checkpoints_progress_rx(): broadcast::Receiver<CheckpointsProgress> where CheckpointsProgress { loaded: usize, total: usize, done: bool }; (2) server-side, emit progress as each (work_unit_id, name) pair is collected during enumeration in collect_checkpoints - rust/rpc/src/checkpoints.rs and the git helper list_all_ghost_checkpoints gain a progress-callback/stream variant (the git-side helper is Result<Vec<(String,String)>>-driven; add a wrapping callback parameter); (3) App/subscriber fold into the LoadingDialog via set_progress(idx, total) (the slot is already built in TUI-106, and the '(idx/total)' line format is already modeled in StatusDialog); (4) view fold: when progress finishes, the existing CheckpointsLoaded fold takes precedence, and the actual final count overrides the enumeration count (cap 200). Spec: feature-scene scenarios in spec covering (a) counter starts at (0/0) and visibly grows, (b) final ring of the list shows (N/total) before CheckpointsLoaded folds, (c) non-streaming transport (websocket): dialog degrades gracefully to stage label + only (WS could forward progress events but for TUI-109 scope only embedded gets it - WS fallback = spinner only). Dependencies: TUI-106 (LoadingDialog counter slot + redraw gate). The feature files from TUI-106/TUI-107 are extended here; this card only covers the streaming half. Estimation: 8 (protocol-touching, 3 crates, multi-transport, ordering subtlety: progress events may arrive after the list - fold requires the stale-drop (keyed) discipline from TUI-106's LoadTracker).",
       "epic": "tui-lazy-load",
       "children": [],
       "attachments": [
-        "spec/attachments/TUI-109/TUI-109-streamed-progress-research.md"
+        "spec/attachments/TUI-109/TUI-109-streamed-progress-research.md",
+        "spec/attachments/TUI-109/ast-research-tui-109-streaming-checkpoint-progress.md"
       ],
       "dependsOn": [
         "TUI-106",
@@ -224143,6 +224180,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-08-16T01:01:18.171Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-18T10:44:07.767Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-18T14:33:36.888Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-18T14:33:45.489Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-18T14:33:52.114Z"
         }
       ],
       "userStory": {
@@ -224188,7 +224241,8 @@
           "createdAt": "2026-08-16T01:05:00.779Z"
         }
       ],
-      "nextNoteId": 1
+      "nextNoteId": 1,
+      "estimate": 8
     },
     "PROV-141": {
       "id": "PROV-141",

@@ -26,7 +26,7 @@
 //! the idempotent `append_session` no-op behaviour, the
 //! `MockBackend::push_session_created` test helper, and the
 //! `FspecBackend::session_created_rx()` subscriber wiring in
-//! `spawn_subscriber_tasks` (which raises `subscriber_task_count` to 5).
+//! `spawn_subscriber_tasks` (which raises `subscriber_task_count` to 6).
 //! These tests are therefore expected to FAIL until Approach A lands.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -203,7 +203,7 @@ async fn the_subscriber_recovers_from_a_lagged_broadcast_receiver() {
     // existing four (work_units / chunks / logs / status_changes).
     assert_eq!(
         app.subscriber_task_count(),
-        5,
+        6,
         "bootstrap must spawn the new session-created subscriber task"
     );
     // Overflow the session-created broadcast to force RecvError::Lagged.

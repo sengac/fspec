@@ -81,6 +81,9 @@ pub struct ChangedFilesView {
     /// TUI-106: staged in-flight cascade tracker (scan → diff).
     /// Fed by the App dispatchers; drives `is_loading()` + the dialog.
     pub load: LoadTracker,
+    /// TUI-108: when the view was opened — the spinner's elapsed-ms
+    /// origin (the run loop owns the clock; the view only reports state).
+    loading_started: std::time::Instant,
 }
 
 impl Default for ChangedFilesView {
@@ -111,7 +114,15 @@ impl ChangedFilesView {
                 "Loading changed files…",
             ),
             load: LoadTracker::new("Loading changed files…"),
+            loading_started: std::time::Instant::now(),
         }
+    }
+
+    /// TUI-108: elapsed milliseconds since the view opened — the
+    /// spinner-frame origin for the loading dialog (the 16 ms tick
+    /// repaints the view; the glyph advances at 80 ms cadence).
+    pub fn loading_elapsed_ms(&self) -> u64 {
+        self.loading_started.elapsed().as_millis() as u64
     }
 
     /// TUI-106: true while any cascade stage (scan → diff) is in
@@ -132,6 +143,11 @@ impl ChangedFilesView {
 
     /// Replace the file list from `Action::ChangedFilesLoaded`. Resets
     /// the selection + scroll and clears any stale diff.
+    ///
+    /// TUI-108: also flushes the list stage on the tracker (the load may
+    /// be empty — a failed load degrades to the real empty state). The
+    /// App dispatcher keeps its own `mark_list_flushed` call for the
+    /// diff-stage hand-off; the tracker's flag is idempotent.
     pub fn set_files(&mut self, files: Vec<ChangedFile>) {
         self.files = files;
         self.selected_index = 0;
@@ -139,6 +155,8 @@ impl ChangedFilesView {
         self.diff_scroll = 0;
         self.diff_lines.clear();
         self.diff_path = None;
+        self.load.mark_list_flushed();
+        self.sync_loading_label();
     }
 
     /// Fold a `FileDiffLoaded` response. Ignored when the loaded path no
@@ -206,6 +224,12 @@ impl ChangedFilesView {
         {
             return ChangedFilesEvent::Ignored;
         }
+        // TUI-108: while the loading dialog is active it captures input —
+        // ESC is Ignored (the view stays open; a reflex ESC mid-load must
+        // not force a re-open + re-load), every other key is swallowed.
+        if self.is_loading() {
+            return self.handle_loading_key(key);
+        }
         match key.code {
             KeyCode::Esc => ChangedFilesEvent::Close,
             KeyCode::Tab | KeyCode::BackTab => {
@@ -221,6 +245,19 @@ impl ChangedFilesView {
             KeyCode::PageDown => self.scroll_focused(self.page_step()),
             KeyCode::PageUp => self.scroll_focused(-self.page_step()),
             _ => ChangedFilesEvent::Consumed,
+        }
+    }
+
+    /// TUI-108: key routing while the loading dialog is active. ESC →
+    /// `Ignored` (the view stays open — mirrors the StatusDialog rule
+    /// that a reflex ESC during a short load must not close-with-no-data);
+    /// every other key is swallowed so no selection/scroll state mutates
+    /// mid-load.
+    fn handle_loading_key(&mut self, key: KeyEvent) -> ChangedFilesEvent {
+        if key.code == KeyCode::Esc {
+            ChangedFilesEvent::Ignored
+        } else {
+            ChangedFilesEvent::Consumed
         }
     }
 

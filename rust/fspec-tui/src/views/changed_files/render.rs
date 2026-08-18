@@ -14,6 +14,7 @@ use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
+use crate::components::loading_dialog::render_loading_dialog;
 use crate::views::full_screen_shell::render_full_screen_scaffold_raw_title;
 
 use super::{ChangedFilesView, Pane};
@@ -28,6 +29,22 @@ impl ChangedFilesView {
     /// Paint the view into `area`. Records the per-pane Rects so the
     /// event layer can hit-test the mouse wheel + compute page steps.
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        // TUI-108: while a cascade stage (scan → diff) is in flight the
+        // shared loading dialog covers the whole body — the fake "No
+        // changed files" empty state is only painted AFTER the scan
+        // flushes with zero rows. The empty-after-flush cell wins: a
+        // lingering diff-stage marker with an empty list paints the
+        // empty state (there is no diff to load — a dialog would lie).
+        let show_dialog = if self.load.is_loaded() {
+            // List flushed: the dialog only covers the body while a diff
+            // stage is in flight AND there are files to diff. An empty
+            // list after flush paints the real empty state (a dialog
+            // would be a lie — there is no diff to load).
+            self.is_loading() && !self.files.is_empty()
+        } else {
+            // List stage in flight: always show the dialog.
+            true
+        };
         let count = self.files.len();
         let title = format!("Changed Files ({count})");
         // `self` is borrowed mutably to cache rects; the scaffold takes
@@ -49,6 +66,18 @@ impl ChangedFilesView {
             &title,
             FOOTER_HINT,
             |body, buf| {
+                // TUI-108: paint the shared loading dialog over the
+                // body while a cascade stage is in flight (same
+                // paint-over pattern as the Checkpoints view).
+                if show_dialog {
+                    render_loading_dialog(
+                        body,
+                        buf,
+                        &self.loading,
+                        self.loading_elapsed_ms(),
+                    );
+                    return;
+                }
                 if files.is_empty() {
                     render_empty(body, buf);
                     return;

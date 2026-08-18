@@ -1,4 +1,6 @@
-@wip
+@tui
+@ui-refinement
+@done
 @TUI-109
 Feature: Stream per-item progress (idx/total) for checkpoint enumeration into the shared LoadingDialog counter row
 
@@ -25,3 +27,37 @@ Feature: Stream per-item progress (idx/total) for checkpoint enumeration into th
     As a fspec TUI user on a repo with many checkpoints
     I want to see the checkpoint-list loading dialog count items as they are collected
     So that know the load has real progress and won't hang - the spinner now has a (processed/total) counter
+
+  Scenario: The loading dialog counter advances from (0/…) to (N/total) before the list folds
+    Given a Checkpoints view whose list load is in flight on a transport that streams progress events
+    When the transport emits CheckpointsProgress events (1/…), (47/…), then (150/150) with done=true before the list result folds
+    Then the loading dialog counter row shows (1/…) while the total is still unknown
+    And the counter row climbs through the intermediate values as each progress event folds
+    And the counter row shows the final (150/150) just before the list appears
+    When the CheckpointsLoaded fold arrives with 150 checkpoints
+    Then the list renders and the loading dialog is dismissed
+
+  Scenario: Capped enumeration shows (200/250) - truncation does not hide progress
+    Given a repository with 250 checkpoints
+    When the streaming enumeration collects items with the 200-entry cap applied
+    Then the progress counter reaches (200/250) - loaded stops at the cap while the total reflects the full enumeration
+    And the returned list contains exactly 200 entries
+
+  Scenario: A late progress event after CheckpointsLoaded is stale-dropped
+    Given a Checkpoints view whose list has already flushed via the CheckpointsLoaded fold
+    When a late CheckpointsProgress event with done=true arrives after the fold
+    Then the view stays in the list presentation state and is not loading
+    And the loading dialog is not re-painted - progress events after the list fold are ignored
+
+  Scenario: A transport that does not forward progress degrades to spinner plus stage label
+    Given a Checkpoints view whose list load is in flight on a transport that never emits progress events
+    When the loading dialog is painted while the list load is still in flight
+    Then the dialog shows the spinner and the stage label "Loading checkpoint list…"
+    And no counter row is painted - the TUI-107 behavior is preserved with no timeout or extra logic
+
+  Scenario: The non-streaming CLI path is byte-identical
+    Given the non-streaming collect_checkpoints delegates to the streaming variant with a no-op callback
+    When the CLI list-checkpoints command runs against a repository with checkpoints
+    Then the output is byte-identical to the pre-streaming behavior
+    And the existing list_checkpoints tests pass unmodified
+

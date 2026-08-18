@@ -25,6 +25,11 @@ impl ChangedFilesView {
     /// TUI-101: scrollbar click-and-drag events are handled when the cursor
     /// lands on a scrollbar gutter.
     pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> ChangedFilesEvent {
+        // TUI-108: the loading dialog swallows all mouse input while a
+        // cascade stage is in flight (nothing is selectable mid-load).
+        if self.is_loading() {
+            return ChangedFilesEvent::Consumed;
+        }
         // TUI-101: handle scrollbar click-and-drag first.
         if matches!(
             ev.kind,

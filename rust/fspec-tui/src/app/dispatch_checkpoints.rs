@@ -71,6 +71,27 @@ impl App {
         }
     }
 
+    /// TUI-109: fold a per-item checkpoint-enumeration progress frame
+    /// into the CheckpointsView LoadingDialog's counter row. Stale-drop:
+    /// applied ONLY while the Checkpoints view is active AND the list
+    /// stage is still in flight — once `CheckpointsLoaded` has flushed
+    /// the list, a late frame (broadcast lag) must never re-open the
+    /// dialog. The `done` flag is ignored: `CheckpointsLoaded` (which
+    /// carries the authoritative, capped list) always takes precedence.
+    pub(crate) fn handle_checkpoints_progress(
+        &mut self,
+        progress: codelet_rpc_types::CheckpointsProgress,
+    ) {
+        if self.navigator.active_view != crate::views::ViewMode::Checkpoints {
+            return;
+        }
+        let view = &mut self.navigator.checkpoints;
+        if view.load.is_loaded() {
+            return;
+        }
+        view.loading.set_progress(progress.loaded as usize, progress.total as usize);
+    }
+
     pub(crate) fn handle_load_checkpoint_files(&mut self, work_unit_id: String, name: String) {
         // TUI-106: a selection change re-requests this checkpoint's
         // files — the cascade stages key on (work_unit_id, name).
@@ -141,64 +162,6 @@ impl App {
         }
     }
 
-    pub(crate) fn handle_load_checkpoint_file_diff(
-        &mut self,
-        work_unit_id: String,
-        name: String,
-        path: String,
-    ) {
-        // TUI-106: a file selection change begins a new diff stage.
-        self.navigator.checkpoints.load.begin_stage(
-            &LoadTracker::diff_stage_key(&work_unit_id, &name, &path),
-            format!("Loading diff for {path}…"),
-        );
-        self.navigator.checkpoints.sync_loading_label();
-        self.spawn_checkpoint_file_diff(work_unit_id, name, path);
-    }
-
-    fn spawn_checkpoint_file_diff(&mut self, work_unit_id: String, name: String, path: String) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            let diff = match backend
-                .checkpoint_file_diff(work_unit_id.clone(), name.clone(), path.clone())
-                .await
-            {
-                Ok(diff) => diff,
-                Err(e) => {
-                    tracing::warn!(error = %e, "checkpoint_file_diff failed");
-                    None
-                }
-            };
-            let _ = action_tx.send(Action::CheckpointFileDiffLoaded {
-                work_unit_id,
-                name,
-                path,
-                diff,
-            });
-        });
-        self.pending_tasks.push(handle);
-    }
-
-    pub(crate) fn handle_checkpoint_file_diff_loaded(
-        &mut self,
-        work_unit_id: &str,
-        name: &str,
-        path: &str,
-        diff: Option<String>,
-    ) {
-        let view = &mut self.navigator.checkpoints;
-        view.set_diff(work_unit_id, name, path, diff);
-        // TUI-106: matching-key stale-drop — a late diff for a
-        // de-selected file must NOT clear the in-flight stage.
-        view.load
-            .complete_stage(&LoadTracker::diff_stage_key(work_unit_id, name, path));
-        view.sync_loading_label();
-    }
-
     /// Route the RPC-364 Action variants through their helpers. Called
     /// from the catch-all arm of `App::dispatch`'s match.
     pub(crate) fn try_dispatch_checkpoints(&mut self, action: &Action) -> bool {
@@ -208,6 +171,13 @@ impl App {
             }
             Action::CheckpointsLoaded(list) => {
                 self.handle_checkpoints_loaded(list.clone());
+            }
+            // TUI-109: per-item progress frame from the
+            // checkpoints_progress_rx subscriber. Stale-drop: once the
+            // list stage has flushed (CheckpointsLoaded folded) the
+            // dialog is gone and late frames must never re-open it.
+            Action::CheckpointsProgress(progress) => {
+                self.handle_checkpoints_progress(*progress);
             }
             Action::LoadCheckpointFiles { work_unit_id, name } => {
                 self.handle_load_checkpoint_files(work_unit_id.clone(), name.clone());

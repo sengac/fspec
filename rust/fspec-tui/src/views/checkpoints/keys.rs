@@ -34,6 +34,13 @@ impl CheckpointsView {
         if self.delete_dialog().is_some() {
             return self.handle_delete_dialog_key(key);
         }
+        // TUI-107: while the loading dialog is active it captures input —
+        // ESC is Ignored (the view stays open; a reflex ESC mid-load must
+        // not force a re-open + re-load), every other key is swallowed.
+        // Guard order: restore/delete dialogs keep precedence (invariant).
+        if self.is_loading() {
+            return self.handle_loading_key(key);
+        }
         match key.code {
             KeyCode::Esc => CheckpointsEvent::Close,
             KeyCode::Tab | KeyCode::Right => {
@@ -58,10 +65,28 @@ impl CheckpointsView {
         }
     }
 
+    /// TUI-107: key routing while the loading dialog is active. ESC →
+    /// `Ignored` (the view stays open — mirrors the StatusDialog rule
+    /// that a reflex ESC during a short load must not close-with-no-data);
+    /// every other key is swallowed so no selection/scroll state mutates
+    /// mid-load.
+    fn handle_loading_key(&mut self, key: KeyEvent) -> CheckpointsEvent {
+        if key.code == KeyCode::Esc {
+            CheckpointsEvent::Ignored
+        } else {
+            CheckpointsEvent::Consumed
+        }
+    }
+
     pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> CheckpointsEvent {
         // RPC-365/366: the restore/delete modal swallows all mouse input
         // while active — this guard MUST run before click + wheel handling.
         if self.dialog().is_some() || self.delete_dialog().is_some() {
+            return CheckpointsEvent::Consumed;
+        }
+        // TUI-107: the loading dialog swallows all mouse input while a
+        // cascade stage is in flight (nothing is selectable mid-load).
+        if self.is_loading() {
             return CheckpointsEvent::Consumed;
         }
 

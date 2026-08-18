@@ -23,6 +23,7 @@ pub mod dispatch_agent_exit;
 pub mod dispatch_blocklist;
 pub mod dispatch_changed_files;
 pub mod dispatch_checkpoint_delete;
+pub mod dispatch_checkpoint_diff;
 pub mod dispatch_checkpoint_restore;
 pub mod dispatch_checkpoints;
 pub mod dispatch_compaction_hide;

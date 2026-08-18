@@ -28,13 +28,14 @@ use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
-    CompactionProgress, CompactionResult, CustomModelDefinition, FspecResult, HealthInfo,
-    HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
-    MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart,
-    PauseState, ProfileDefinition, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
-    RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo, SessionModel,
-    SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult,
-    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    CheckpointsProgress, CompactionProgress, CompactionResult, CustomModelDefinition,
+    FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
+    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo,
+    OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition, ProviderCredentialInfo,
+    ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
+    SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
+    StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
+    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use std::path::PathBuf;
 use std::sync::{
@@ -660,6 +661,11 @@ pub const DEFAULT_LOGS_CAPACITY: usize = 4096;
 /// snapshot replacement semantics mean a lagging subscriber simply
 /// resyncs from the latest snapshot, so a small capacity is fine.
 pub const DEFAULT_WORK_UNITS_CAPACITY: usize = 256;
+/// TUI-109 broadcast capacity for the checkpoint-enumeration progress
+/// channel — one frame per item (plus the done frame); a lagging
+/// subscriber simply drops intermediate frames (the final done frame
+/// still lands, and the list RPC itself carries the full result).
+pub const DEFAULT_CHECKPOINTS_PROGRESS_CAPACITY: usize = 256;
 
 /// RPC-011: read-only handle to per-server runtime stats so the shared
 /// service can answer `health()` from BOTH transports. The concrete
@@ -707,6 +713,13 @@ pub struct SharedFspecService {
     /// tests) — in that case `checkpoint_counts()` returns
     /// `CheckpointCounts::default()`.
     cwd: Option<PathBuf>,
+    /// TUI-109: per-process broadcast sender for checkpoint-enumeration
+    /// progress frames. `FspecServiceImpl::list_checkpoints` publishes a
+    /// frame per collected item (plus the done frame); the embedded
+    /// transport's `checkpoints_progress_rx()` surfaces the receiver to
+    /// the TUI. Transports that don't forward the frames degrade to
+    /// spinner-only automatically (no producer → no frames).
+    checkpoints_progress_tx: broadcast::Sender<CheckpointsProgress>,
 }
 
 impl SharedFspecService {
@@ -717,6 +730,8 @@ impl SharedFspecService {
     pub fn new(watcher: Arc<WorkUnitsWatcher>) -> Self {
         let (chunks_tx, _) = broadcast::channel(DEFAULT_CHUNKS_CAPACITY);
         let (logs_tx, _) = broadcast::channel(DEFAULT_LOGS_CAPACITY);
+        let (checkpoints_progress_tx, _) =
+            broadcast::channel(DEFAULT_CHECKPOINTS_PROGRESS_CAPACITY);
         Self {
             watcher: ArcSwap::new(watcher),
             session_manager: None,
@@ -726,6 +741,7 @@ impl SharedFspecService {
             started_at: Instant::now(),
             stats: AsyncMutex::new(None),
             cwd: None,
+            checkpoints_progress_tx,
         }
     }
 
@@ -739,6 +755,8 @@ impl SharedFspecService {
     ) -> Self {
         let (chunks_tx, _) = broadcast::channel(DEFAULT_CHUNKS_CAPACITY);
         let (logs_tx, _) = broadcast::channel(DEFAULT_LOGS_CAPACITY);
+        let (checkpoints_progress_tx, _) =
+            broadcast::channel(DEFAULT_CHECKPOINTS_PROGRESS_CAPACITY);
         Self {
             watcher: ArcSwap::new(watcher),
             session_manager: Some(session_manager),
@@ -748,6 +766,7 @@ impl SharedFspecService {
             started_at: Instant::now(),
             stats: AsyncMutex::new(None),
             cwd: None,
+            checkpoints_progress_tx,
         }
     }
 
@@ -877,6 +896,22 @@ impl SharedFspecService {
             Some(handle) => handle.logs_tx(),
             None => self.logs_tx.clone(),
         }
+    }
+
+    /// TUI-109: subscribe to the checkpoint-enumeration progress
+    /// broadcast. The embedded transport returns the receiver directly
+    /// to the TUI; transports that don't forward the frames (e.g. the
+    /// WebSocket transport) degrade to spinner-only automatically —
+    /// no producer on the other side, no frames, no timeout logic.
+    pub fn checkpoints_progress_rx(&self) -> broadcast::Receiver<CheckpointsProgress> {
+        self.checkpoints_progress_tx.subscribe()
+    }
+
+    /// TUI-109: cloneable handle to the checkpoint-enumeration progress
+    /// broadcast sender — `FspecServiceImpl::list_checkpoints` publishes
+    /// frames here during enumeration.
+    pub fn checkpoints_progress_tx(&self) -> broadcast::Sender<CheckpointsProgress> {
+        self.checkpoints_progress_tx.clone()
     }
 
     /// RPC-037: Subscribe to the `(SessionId, SessionStatus)` broadcast
@@ -1037,8 +1072,19 @@ impl FspecService for FspecServiceImpl {
 
     async fn list_checkpoints(self, _ctx: Context) -> Vec<CheckpointInfo> {
         // RPC-362: gated on the attached cwd exactly like checkpoint_counts.
+        // TUI-109: drive the streaming variant with a callback that
+        // publishes a progress frame on the shared broadcast; the final
+        // Vec still returns through the same RPC.
         match self.inner.cwd() {
-            Some(cwd) => checkpoints::collect_checkpoints(cwd).unwrap_or_default(),
+            Some(cwd) => {
+                let tx = self.inner.checkpoints_progress_tx();
+                checkpoints::collect_checkpoints_stream(cwd, &mut |frame| {
+                    // Best-effort: no live subscribers (or a lagging
+                    // subscriber) is a no-op, never an error.
+                    let _ = tx.send(frame);
+                })
+                .unwrap_or_default()
+            }
             None => Vec::new(),
         }
     }

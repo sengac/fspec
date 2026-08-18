@@ -16,6 +16,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
 use crate::components::checkpoint_restore_dialog::render_restore_modal;
+use crate::components::loading_dialog::render_loading_dialog;
 use crate::sanitize_for_terminal;
 use crate::views::diff_common::{
     diff_line, file_row, pane_header, render_pane_scrollbar, render_vertical_divider,
@@ -32,6 +33,11 @@ impl CheckpointsView {
     /// Paint the view into `area`, caching per-pane Rects for wheel
     /// hit-testing + page-step math.
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        // TUI-107: while any cascade stage is in flight the shared
+        // loading dialog covers the whole body (same paint-over pattern
+        // as the restore/delete modals) and the fake empty state is
+        // never painted.
+        let loading = self.is_loading();
         let count = self.checkpoints.len();
         let title = format!("Checkpoints ({count})");
         let checkpoints = std::mem::take(&mut self.checkpoints);
@@ -55,6 +61,19 @@ impl CheckpointsView {
             &title,
             FOOTER_HINT,
             |body, buf| {
+                // TUI-107: while any cascade stage (list → files → diff)
+                // is in flight the shared loading dialog covers the whole
+                // body — the fake "No checkpoints available" empty state
+                // is only painted AFTER the list flushes with zero rows.
+                if loading {
+                    render_loading_dialog(
+                        body,
+                        buf,
+                        &self.loading,
+                        self.loading_elapsed_ms(),
+                    );
+                    return;
+                }
                 if checkpoints.is_empty() {
                     render_empty(body, buf);
                     return;

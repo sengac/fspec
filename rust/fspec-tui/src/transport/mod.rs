@@ -19,13 +19,14 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
-    CompactionProgress, CompactionResult, CustomModelDefinition, FspecResult, HealthInfo,
-    HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
-    MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart,
-    PauseState, ProfileDefinition, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
-    RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo, SessionModel,
-    SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult,
-    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    CheckpointsProgress, CompactionProgress, CompactionResult, CustomModelDefinition,
+    FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
+    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo,
+    OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition, ProviderCredentialInfo,
+    ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
+    SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
+    StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
+    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use thiserror::Error;
 use tokio::sync::broadcast;
@@ -945,6 +946,21 @@ pub trait FspecBackend: Send + Sync {
     /// wire the channel compile unchanged and gracefully degrade. Full remote
     /// (tarpc/websocket) parity is an explicit OUT-OF-SCOPE RPC follow-up.
     fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
+        let (tx, rx) = broadcast::channel(1);
+        drop(tx);
+        rx
+    }
+
+    /// TUI-109: subscribe to per-item checkpoint-enumeration progress
+    /// frames (the `CheckpointsProgress` broadcast fed by
+    /// `FspecServiceImpl::list_checkpoints`). The embedded transport
+    /// forwards `SharedFspecService::checkpoints_progress_rx()`; the
+    /// default returns a closed receiver so transports that don't
+    /// forward the frames (e.g. WebSocket) degrade to spinner + stage
+    /// label only — the subscriber observes `RecvError::Closed`
+    /// immediately and the dialog never receives a counter (TUI-107
+    /// behavior, no timeout logic needed).
+    fn checkpoints_progress_rx(&self) -> broadcast::Receiver<CheckpointsProgress> {
         let (tx, rx) = broadcast::channel(1);
         drop(tx);
         rx

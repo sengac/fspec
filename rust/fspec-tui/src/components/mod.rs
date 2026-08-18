@@ -1081,6 +1081,12 @@ pub enum Action {
     OpenCheckpointsView,
     CloseCheckpointsView,
     CheckpointsLoaded(Vec<codelet_rpc_types::CheckpointInfo>),
+    /// TUI-109: per-item checkpoint-enumeration progress frame from the
+    /// `checkpoints_progress_rx()` subscriber. Folded into the
+    /// CheckpointsView LoadingDialog's counter row ONLY while the list
+    /// stage is in flight; stale-dropped once the list has flushed
+    /// (a late frame must never re-open the dialog).
+    CheckpointsProgress(codelet_rpc_types::CheckpointsProgress),
     LoadCheckpointFiles {
         work_unit_id: String,
         name: String,

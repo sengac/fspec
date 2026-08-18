@@ -87,8 +87,15 @@ pub fn render_loading_dialog(area: Rect, buf: &mut Buffer, dialog: &LoadingDialo
         selected: false,
     }];
     if let Some((idx, total)) = dialog.progress {
+        // TUI-109: the total is only known after enumeration completes,
+        // so a pending total (0) renders as "(idx/…)".
+        let counter = if total == 0 {
+            format!("({idx}/…)")
+        } else {
+            format!("({idx}/{total})")
+        };
         rows.push(DialogRow {
-            spans: vec![Span::raw(format!("({idx}/{total})"))],
+            spans: vec![Span::raw(counter)],
             selectable: false,
             selected: false,
         });

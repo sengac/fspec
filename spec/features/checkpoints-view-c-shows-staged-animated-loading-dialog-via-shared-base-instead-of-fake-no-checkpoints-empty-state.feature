@@ -1,5 +1,7 @@
-@wip
+@done
 @TUI-107
+@ui-refinement
+@tui
 Feature: Checkpoints view ('c') shows staged animated loading dialog via shared base instead of fake 'No checkpoints' empty state
 
   """
@@ -25,3 +27,47 @@ Feature: Checkpoints view ('c') shows staged animated loading dialog via shared 
     As a fspec TUI user on the board
     I want to open the Checkpoints view and see exactly which checkpoint-loading step is running instead of being told there are no checkpoints
     So that stop re-pressing 'c' on large repos because the view looked broken
+
+  Scenario: Opening the Checkpoints view before the list returns shows the loading dialog instead of the empty message
+    Given the Checkpoints view is opened
+    When the checkpoint list request has not yet returned
+    Then the body shows the animated loading dialog with the label "Loading checkpoint list…"
+    And the body does not show "No checkpoints available"
+
+  Scenario: A completed list load with zero checkpoints shows the real empty message
+    Given the Checkpoints view is opened
+    When the checkpoint list request completes with zero checkpoints
+    Then the view shows "No checkpoints available"
+    And no loading dialog is shown
+
+  Scenario: Selecting a checkpoint after the list loads shows the files stage label
+    Given the checkpoint list is loaded with at least one checkpoint
+    When a checkpoint is selected
+    Then the loading dialog shows the label "Loading files for <checkpoint label>…"
+
+  Scenario: Loading a file diff shows the diff stage label until it folds in
+    Given the checkpoint files are loaded with at least one file
+    When a file diff load is in flight
+    Then the loading dialog shows the label "Loading diff for <file path>…"
+    When the diff result folds in
+    Then the loading dialog disappears
+
+  Scenario: A stale files result for a de-selected checkpoint does not clear the current stage
+    Given the files stage is in flight for the selected checkpoint
+    When a files result arrives for a checkpoint that is no longer selected
+    Then the current stage's loading state is unchanged
+
+  Scenario: ESC is ignored while the loading dialog is active and closes the view after it flushes
+    Given the loading dialog is active
+    When the user presses ESC
+    Then the view stays open
+    When the loading has flushed
+    When the user presses ESC
+    Then the view emits CloseCheckpointsView
+
+  Scenario: The loading dialog renders through the canonical dialog theme
+    Given the loading dialog is active
+    When the view is rendered
+    Then the dialog shows a rounded border in the cyan accent
+    And the dialog title is "Loading checkpoints"
+    And the spinner glyph advances between 0 ms and 80 ms

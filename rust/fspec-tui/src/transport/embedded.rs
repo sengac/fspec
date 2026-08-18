@@ -1024,4 +1024,15 @@ impl FspecBackend for EmbeddedFspecBackend {
             }
         }
     }
+
+    /// TUI-109: subscribe to the checkpoint-enumeration progress
+    /// broadcast. The channel lives directly on the
+    /// `SharedFspecService` (not the session manager), so the embedded
+    /// path forwards it with zero cost — `FspecServiceImpl::
+    /// list_checkpoints` publishes a frame per collected item while the
+    /// final Vec still returns through the tarpc RPC.
+    fn checkpoints_progress_rx(&self) -> broadcast::Receiver<codelet_rpc_types::CheckpointsProgress>
+    {
+        self.service.checkpoints_progress_rx()
+    }
 }

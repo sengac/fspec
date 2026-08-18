@@ -635,6 +635,22 @@ pub fn list_ghost_checkpoints(dir: &Path, work_unit_id: &str) -> Result<Vec<Stri
 /// # Returns
 /// Vector of `(work_unit_id, checkpoint_name)` pairs.
 pub fn list_all_ghost_checkpoints(dir: &Path) -> Result<Vec<(String, String)>> {
+    // TUI-109: two front doors, one source of truth — the non-streaming
+    // entry point delegates to the streaming variant with a no-op
+    // callback so the CLI output cannot drift from the wire path.
+    list_all_ghost_checkpoints_stream(dir, &mut |_| {})
+}
+
+/// TUI-109: streaming variant of [`list_all_ghost_checkpoints`] —
+/// invokes `on_item` once per checkpoint ref (in ref-iteration order)
+/// and returns the same `Vec<(work_unit_id, checkpoint_name)>` pairs.
+///
+/// The git crate only *ticks*; the rpc crate *shapes* (limits, sort,
+/// done flag) the progress frames it builds from these ticks.
+pub fn list_all_ghost_checkpoints_stream(
+    dir: &Path,
+    on_item: &mut dyn FnMut(&(String, String)),
+) -> Result<Vec<(String, String)>> {
     let repo = match open_repo(dir) {
         Ok(r) => r,
         Err(_) => return Ok(Vec::new()),
@@ -655,7 +671,9 @@ pub fn list_all_ghost_checkpoints(dir: &Path) -> Result<Vec<(String, String)>> {
             // suffix == "<work_unit_id>/<checkpoint_name>". Split on the first
             // '/' so checkpoint names containing slashes stay intact.
             if let Some((work_unit_id, checkpoint_name)) = suffix.split_once('/') {
-                out.push((work_unit_id.to_string(), checkpoint_name.to_string()));
+                let pair = (work_unit_id.to_string(), checkpoint_name.to_string());
+                on_item(&pair);
+                out.push(pair);
             }
         }
     }

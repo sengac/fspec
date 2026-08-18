@@ -243,6 +243,12 @@ pub struct MockBackend {
     ///
     /// RPC-415: `Mutex<Option>` for the disconnect/reconnect swap.
     session_created_tx: Mutex<Option<broadcast::Sender<SessionInfo>>>,
+    /// TUI-109: push-driven checkpoint-enumeration progress broadcast
+    /// Sender. Tests use `push_checkpoints_progress` to drive synthetic
+    /// `CheckpointsProgress` frames without a real RPC server.
+    checkpoints_progress_tx: Mutex<
+        Option<broadcast::Sender<codelet_rpc_types::CheckpointsProgress>>,
+    >,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
@@ -695,6 +701,7 @@ impl Default for MockBackend {
         let (logs_tx, _) = broadcast::channel(64);
         let (status_changes_tx, _) = broadcast::channel(64);
         let (session_created_tx, _) = broadcast::channel(64);
+        let (checkpoints_progress_tx, _) = broadcast::channel(64);
         Self {
             work_units: Mutex::new(Vec::new()),
             sessions: Mutex::new(Vec::new()),
@@ -703,6 +710,7 @@ impl Default for MockBackend {
             logs_tx: Mutex::new(Some(logs_tx)),
             status_changes_tx: Mutex::new(Some(status_changes_tx)),
             session_created_tx: Mutex::new(Some(session_created_tx)),
+            checkpoints_progress_tx: Mutex::new(Some(checkpoints_progress_tx)),
             list_work_units_calls: AtomicUsize::new(0),
             create_session_calls: AtomicUsize::new(0),
             send_input_calls: AtomicUsize::new(0),
@@ -1031,6 +1039,23 @@ impl MockBackend {
         }
     }
 
+    /// TUI-109: push a checkpoint-enumeration progress frame so the
+    /// checkpoints-progress subscriber test can drive synthetic frames
+    /// without a real RPC server.
+    pub fn push_checkpoints_progress(
+        &self,
+        progress: codelet_rpc_types::CheckpointsProgress,
+    ) {
+        if let Some(tx) = self
+            .checkpoints_progress_tx
+            .lock()
+            .expect("MockBackend mutex")
+            .as_ref()
+        {
+            let _ = tx.send(progress);
+        }
+    }
+
     /// RPC-415: drop ALL five broadcast Senders to simulate the transport
     /// supervisor dropping the old RPC client on a WS disconnect. Every
     /// live subscriber `Receiver` then observes `RecvError::Closed` on its
@@ -1041,6 +1066,10 @@ impl MockBackend {
         *self.logs_tx.lock().expect("MockBackend mutex") = None;
         *self.status_changes_tx.lock().expect("MockBackend mutex") = None;
         *self.session_created_tx.lock().expect("MockBackend mutex") = None;
+        *self
+            .checkpoints_progress_tx
+            .lock()
+            .expect("MockBackend mutex") = None;
     }
 
     /// RPC-415: install a FRESH Sender for every broadcast stream,
@@ -1057,11 +1086,16 @@ impl MockBackend {
         let (logs_tx, _) = broadcast::channel(64);
         let (status_changes_tx, _) = broadcast::channel(64);
         let (session_created_tx, _) = broadcast::channel(64);
+        let (checkpoints_progress_tx, _) = broadcast::channel(64);
         *self.work_units_tx.lock().expect("MockBackend mutex") = Some(work_units_tx);
         *self.chunks_tx.lock().expect("MockBackend mutex") = Some(chunks_tx);
         *self.logs_tx.lock().expect("MockBackend mutex") = Some(logs_tx);
         *self.status_changes_tx.lock().expect("MockBackend mutex") = Some(status_changes_tx);
         *self.session_created_tx.lock().expect("MockBackend mutex") = Some(session_created_tx);
+        *self
+            .checkpoints_progress_tx
+            .lock()
+            .expect("MockBackend mutex") = Some(checkpoints_progress_tx);
     }
 
     /// RPC-045: per-call counter for `send_fspec_result`.
@@ -2484,6 +2518,23 @@ impl FspecBackend for MockBackend {
 
     fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
         let guard = self.session_created_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
+    }
+
+    fn checkpoints_progress_rx(
+        &self,
+    ) -> broadcast::Receiver<codelet_rpc_types::CheckpointsProgress> {
+        let guard = self
+            .checkpoints_progress_tx
+            .lock()
+            .expect("MockBackend mutex");
         match guard.as_ref() {
             Some(tx) => tx.subscribe(),
             None => {

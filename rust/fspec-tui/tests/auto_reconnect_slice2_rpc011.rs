@@ -203,8 +203,8 @@ async fn auto_reconnect_happy_path() {
     app.bootstrap().await.expect("mock App bootstrap");
     let full_stream_count = app.subscriber_task_count();
     assert_eq!(
-        full_stream_count, 5,
-        "bootstrap must spawn all five subscriber tasks"
+        full_stream_count, 6,
+        "bootstrap must spawn all six subscriber tasks"
     );
     // RPC-416: open a focused session and drop the connection so an inline
     // reconnecting line is showing in its scrollback (the presentation the

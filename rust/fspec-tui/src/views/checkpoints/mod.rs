@@ -106,6 +106,9 @@ pub struct CheckpointsView {
     /// TUI-106: staged in-flight cascade tracker (list → files → diff).
     /// Fed by the App dispatchers; drives `is_loading()` + the dialog.
     pub load: LoadTracker,
+    /// TUI-107: when the view was opened — the spinner's elapsed-ms
+    /// origin (the run loop owns the clock; the view only reports state).
+    loading_started: std::time::Instant,
 }
 
 impl Default for CheckpointsView {
@@ -145,7 +148,15 @@ impl CheckpointsView {
                 "Loading checkpoint list…",
             ),
             load: LoadTracker::new("Loading checkpoint list…"),
+            loading_started: std::time::Instant::now(),
         }
+    }
+
+    /// TUI-107: elapsed milliseconds since the view opened — the
+    /// spinner-frame origin for the loading dialog (the 16 ms tick
+    /// repaints the view; the glyph advances at 80 ms cadence).
+    pub fn loading_elapsed_ms(&self) -> u64 {
+        self.loading_started.elapsed().as_millis() as u64
     }
 
     /// TUI-106: true while any cascade stage (list → files → diff) is
@@ -167,11 +178,18 @@ impl CheckpointsView {
 
     /// Replace the checkpoint list from `Action::CheckpointsLoaded`.
     /// Resets selection/scroll and clears dependent files + diff.
+    ///
+    /// TUI-107: also flushes the list stage on the tracker (the load may
+    /// be empty — a failed load degrades to the real empty state). The
+    /// App dispatcher keeps its own `mark_list_flushed` call for the
+    /// files-stage hand-off; the tracker's flag is idempotent.
     pub fn set_checkpoints(&mut self, checkpoints: Vec<CheckpointInfo>) {
         self.checkpoints = checkpoints;
         self.selected_checkpoint = 0;
         self.checkpoint_scroll = 0;
         self.clear_files();
+        self.load.mark_list_flushed();
+        self.sync_loading_label();
     }
 
     fn clear_files(&mut self) {
@@ -263,6 +281,11 @@ impl CheckpointsView {
 
     pub fn is_empty(&self) -> bool {
         self.checkpoints.is_empty()
+    }
+
+    /// TUI-109: number of checkpoints folded into the view (test seam).
+    pub fn checkpoints_len(&self) -> usize {
+        self.checkpoints.len()
     }
 
     /// RPC-365: borrow the active restore dialog, if any. Used by the

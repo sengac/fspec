@@ -10,10 +10,10 @@
 use std::path::Path;
 
 use codelet_git::ghost_commit::{
-    delete_ghost_checkpoint, get_checkpoint_diff_files, list_all_ghost_checkpoints,
+    delete_ghost_checkpoint, get_checkpoint_diff_files, list_all_ghost_checkpoints_stream,
     restore_ghost_commit, restore_ghost_commit_file, AUTO_CHECKPOINT_PATTERN,
 };
-use codelet_rpc_types::{ChangedFile, CheckpointInfo};
+use codelet_rpc_types::{ChangedFile, CheckpointInfo, CheckpointsProgress};
 use serde_json::Value;
 
 /// Maximum number of checkpoints surfaced to the TUI. Mirrors the cap the
@@ -30,6 +30,11 @@ const CHECKPOINT_REF_PREFIX: &str = "refs/fspec-checkpoints";
 /// Returns `Err` only when the underlying ref enumeration fails; a non-repo
 /// cwd yields an empty Vec via the helper's ENOENT tolerance.
 ///
+/// TUI-109: two front doors, one source of truth — this non-streaming
+/// entry point delegates to [`collect_checkpoints_stream`] with a no-op
+/// callback, so the CLI `fspec list-checkpoints` output stays
+/// byte-identical to the wire path.
+///
 /// # Degraded timestamp-ordering contract
 /// Ordering is driven by the per-work-unit index sidecar timestamps. When the
 /// index is missing or malformed for a checkpoint, [`fallback_timestamp`]
@@ -38,29 +43,51 @@ const CHECKPOINT_REF_PREFIX: &str = "refs/fspec-checkpoints";
 /// reflection of true creation order — it only guarantees they sort after
 /// (newer than) any checkpoint that still carries a valid recorded timestamp.
 pub fn collect_checkpoints(cwd: impl AsRef<Path>) -> codelet_git::Result<Vec<CheckpointInfo>> {
-    let cwd = cwd.as_ref();
-    let pairs = list_all_ghost_checkpoints(cwd)?;
+    collect_checkpoints_stream(cwd, &mut |_| {})
+}
 
-    let mut out: Vec<CheckpointInfo> = pairs
-        .into_iter()
-        .map(|(work_unit_id, name)| {
-            let is_automatic = name.contains(AUTO_CHECKPOINT_PATTERN);
-            let timestamp = read_index(cwd, &work_unit_id)
-                .as_ref()
-                .and_then(|idx| lookup_timestamp(idx, &name))
-                .unwrap_or_else(fallback_timestamp);
-            CheckpointInfo {
-                work_unit_id,
-                name,
-                timestamp,
-                is_automatic,
-            }
-        })
-        .collect();
+/// TUI-109: streaming variant of [`collect_checkpoints`] — drives
+/// `on_progress` with a [`CheckpointsProgress`] frame per collected item
+/// (`loaded` capped at [`MAX_CHECKPOINTS`], `total` 0 until the final
+/// `done: true` frame carries the full enumeration count) and returns the
+/// same sorted, capped `Vec<CheckpointInfo>`.
+pub fn collect_checkpoints_stream(
+    cwd: impl AsRef<Path>,
+    on_progress: &mut dyn FnMut(CheckpointsProgress),
+) -> codelet_git::Result<Vec<CheckpointInfo>> {
+    let cwd = cwd.as_ref();
+    let pairs = list_all_ghost_checkpoints_stream(cwd, &mut |_| {})?;
+    let total = pairs.len();
+
+    let mut out: Vec<CheckpointInfo> = Vec::with_capacity(pairs.len().min(MAX_CHECKPOINTS));
+    for (work_unit_id, name) in pairs {
+        let is_automatic = name.contains(AUTO_CHECKPOINT_PATTERN);
+        let timestamp = read_index(cwd, &work_unit_id)
+            .as_ref()
+            .and_then(|idx| lookup_timestamp(idx, &name))
+            .unwrap_or_else(fallback_timestamp);
+        let info = CheckpointInfo {
+            work_unit_id,
+            name,
+            timestamp,
+            is_automatic,
+        };
+        out.push(info);
+        on_progress(CheckpointsProgress {
+            loaded: out.len().min(MAX_CHECKPOINTS) as u32,
+            total: 0,
+            done: false,
+        });
+    }
 
     // Newest first: ISO-8601 strings sort lexicographically by chronology.
     out.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
     out.truncate(MAX_CHECKPOINTS);
+    on_progress(CheckpointsProgress {
+        loaded: out.len() as u32,
+        total: total as u32,
+        done: true,
+    });
     Ok(out)
 }
 
@@ -139,7 +166,7 @@ pub fn delete_one(
 /// gone and a leftover index dir is harmless metadata.
 pub fn delete_all(cwd: impl AsRef<Path>) -> codelet_git::Result<()> {
     let cwd = cwd.as_ref();
-    for (work_unit_id, name) in list_all_ghost_checkpoints(cwd)? {
+    for (work_unit_id, name) in list_all_ghost_checkpoints_stream(cwd, &mut |_| {})? {
         delete_ghost_checkpoint(cwd, &work_unit_id, &name)?;
     }
     // Remove the entire index directory — every sidecar is now stale.

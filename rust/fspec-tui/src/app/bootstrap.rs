@@ -244,5 +244,31 @@ impl App {
             }
         });
         self.subscriber_tasks.push(session_created_task);
+
+        // (f) TUI-109: checkpoints_progress_rx → Action::CheckpointsProgress.
+        //     Per-item checkpoint-enumeration progress frames fed by
+        //     FspecServiceImpl::list_checkpoints on the embedded
+        //     transport. Transports that don't forward the frames
+        //     (websocket) return a closed receiver — this loop exits
+        //     immediately on RecvError::Closed and the dialog degrades
+        //     to spinner + stage label only (TUI-107 behavior, no
+        //     timeout logic). The App fold stale-drops frames that
+        //     arrive after the list stage flushed.
+        let tx = self.action_tx.clone();
+        let mut rx = self.backend.checkpoints_progress_rx();
+        let checkpoints_progress_task = tokio::spawn(async move {
+            loop {
+                match rx.recv().await {
+                    Ok(progress) => {
+                        let _ = tx.send(Action::CheckpointsProgress(progress));
+                    }
+                    Err(broadcast::error::RecvError::Lagged(n)) => {
+                        debug!("checkpoints_progress subscriber lagged by {n}; continuing");
+                    }
+                    Err(broadcast::error::RecvError::Closed) => break,
+                }
+            }
+        });
+        self.subscriber_tasks.push(checkpoints_progress_task);
     }
 }

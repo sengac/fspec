@@ -129,6 +129,31 @@ pub struct CheckpointInfo {
 }
 
 // ============================================================================
+// TUI-109: Checkpoint enumeration progress wire type
+// ============================================================================
+
+/// One per-item progress frame emitted while `FspecService::list_checkpoints`
+/// enumerates checkpoints (TUI-109).
+///
+/// The total is only known after enumeration completes, so intermediate
+/// frames carry `total: 0` (the TUI renders a pending total as
+/// `"(loaded/…)"`); the final `done: true` frame carries the full
+/// enumeration count. The final `Vec<CheckpointInfo>` still returns via
+/// the same RPC — this type only feeds the loading dialog's counter row.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CheckpointsProgress {
+    /// Checkpoints collected so far (capped at the TUI's display limit).
+    /// `u32` (not `usize`) so the napi-gated wire shape compiles —
+    /// checkpoint counts are small and this mirrors `CheckpointCounts`.
+    pub loaded: u32,
+    /// Full enumeration count (0 until enumeration completes).
+    pub total: u32,
+    /// true on the final frame of the enumeration.
+    pub done: bool,
+}
+
+// ============================================================================
 // RPC-007: Session types
 // ============================================================================
 
