@@ -208,8 +208,12 @@ build_target() {
   echo ""
   header "Building for ${target_triple}..."
 
-  # Add target if not already installed
-  ACTIVE_TOOLCHAIN="$(rustup show active-toolchain | head -1 | sed 's/ .*//')"
+  # Add target if not already installed.
+  # NOTE: resolve the active toolchain from within $CODELET_DIR so that
+  # rust/rust-toolchain.toml is respected. Running this from the repo root
+  # would resolve the user's default toolchain, which may not be the one
+  # cargo actually uses for the build (toolchain mismatch → E0463).
+  ACTIVE_TOOLCHAIN="$(cd "$CODELET_DIR" && rustup show active-toolchain | head -1 | sed 's/ .*//')"
   INSTALLED_TARGETS="$(rustup target list --installed --toolchain "$ACTIVE_TOOLCHAIN" 2>/dev/null)"
 
   if ! echo "$INSTALLED_TARGETS" | grep -q "$target_triple"; then

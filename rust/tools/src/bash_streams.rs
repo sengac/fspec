@@ -19,6 +19,8 @@ use uuid::Uuid;
 
 #[cfg(unix)]
 use crate::bash_process::ProcessGroupKiller;
+#[cfg(windows)]
+use crate::bash_process::WindowsProcessTreeKiller;
 
 /// Callback for streaming output chunks to UI.
 /// Receives each line of output as it's produced.
@@ -169,10 +171,41 @@ pub async fn wait_for_tasks_with_abort(
     }
 }
 
-/// Wait for reader tasks with abort checking (non-Unix).
+/// Wait for reader tasks with abort checking (Windows).
 ///
 /// Returns Err if aborted, Ok(()) if completed normally.
-#[cfg(not(unix))]
+/// On abort, the entire process tree (shell + children) is killed via
+/// `taskkill /PID <pid> /T /F` through the [`WindowsProcessTreeKiller`] guard.
+#[cfg(windows)]
+pub async fn wait_for_tasks_with_abort(
+    stdout_task: tokio::task::JoinHandle<()>,
+    stderr_task: tokio::task::JoinHandle<()>,
+    tree_killer: &WindowsProcessTreeKiller,
+    session_id: Uuid,
+) -> Result<(), ToolError> {
+    loop {
+        if is_bash_abort_requested(session_id) {
+            tree_killer.kill();
+            stdout_task.abort();
+            stderr_task.abort();
+            return Err(ToolError::Execution {
+                tool: "bash",
+                message: crate::bash_process::ABORT_MESSAGE.to_string(),
+            });
+        }
+
+        if stdout_task.is_finished() && stderr_task.is_finished() {
+            return Ok(());
+        }
+
+        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+    }
+}
+
+/// Wait for reader tasks with abort checking (non-Unix, non-Windows).
+///
+/// Returns Err if aborted, Ok(()) if completed normally.
+#[cfg(not(any(unix, windows)))]
 pub async fn wait_for_tasks_with_abort(
     stdout_task: tokio::task::JoinHandle<()>,
     stderr_task: tokio::task::JoinHandle<()>,

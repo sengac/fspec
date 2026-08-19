@@ -1,0 +1,113 @@
+{
+  "scenarios": [
+    {
+      "name": "The shared event stream emits key press events",
+      "testMappings": [
+        {
+          "file": "rust/tui/tests/tui110_event_stream_press_filter.rs",
+          "lines": "21-39",
+          "implMappings": [
+            {
+              "file": "rust/tui/src/events.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The shared event stream does not emit key release events",
+      "testMappings": [
+        {
+          "file": "rust/tui/tests/tui110_event_stream_press_filter.rs",
+          "lines": "40-65",
+          "implMappings": [
+            {
+              "file": "rust/tui/src/events.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The shared event stream does not emit key repeat events",
+      "testMappings": [
+        {
+          "file": "rust/tui/tests/tui110_event_stream_press_filter.rs",
+          "lines": "66-85",
+          "implMappings": [
+            {
+              "file": "rust/tui/src/events.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The shared event stream still emits paste events",
+      "testMappings": [
+        {
+          "file": "rust/tui/tests/tui110_event_stream_press_filter.rs",
+          "lines": "86-99",
+          "implMappings": [
+            {
+              "file": "rust/tui/src/events.rs",
+              "lines": [
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tui/tests/tui110_event_stream_press_filter.rs"
+    ],
+    "implFiles": [
+      "rust/tui/src/events.rs"
+    ],
+    "totalLinesCovered": 112
+  }
+}

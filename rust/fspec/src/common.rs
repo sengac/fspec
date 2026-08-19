@@ -50,7 +50,11 @@ pub struct DaemonHandshake {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShutdownReason {
     Sigint,
+    // Only constructed by the `#[cfg(unix)]` signal handlers, so these two
+    // variants are dead code on non-unix targets (e.g. Windows cross-builds).
+    #[cfg_attr(not(unix), allow(dead_code))]
     Sigterm,
+    #[cfg_attr(not(unix), allow(dead_code))]
     Sighup,
 }
 

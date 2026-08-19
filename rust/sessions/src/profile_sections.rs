@@ -18,6 +18,7 @@ use std::path::{Path, PathBuf};
 
 use codelet_rpc_types::{ModelEntry, ProviderInfo};
 use serde::{Deserialize, Serialize};
+use tracing::{debug, warn};
 
 /// Build the wire `ProviderInfo` for a cloud / custom provider. Such
 /// providers are never profile sections and are always treated as
@@ -202,10 +203,23 @@ fn coerce_u32(value: serde_json::Value) -> Option<u32> {
 }
 
 /// Resolve `~/.fspec` (parity with the TS `getFspecUserDir`).
+///
+/// Resolution order:
+/// 1. `FSPEC_USER_DIR` env var (explicit override, used by tests)
+/// 2. `dirs::home_dir()` — cross-platform (handles `USERPROFILE` on Windows,
+///    `HOME` on Unix)
+/// 3. `HOME` env var (last-resort fallback for exotic platforms)
+///
+/// Returns `None` only when no home directory can be resolved at all.
 pub(crate) fn fspec_user_dir() -> Option<PathBuf> {
-    std::env::var_os("FSPEC_USER_DIR")
-        .map(PathBuf::from)
-        .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".fspec")))
+    if let Some(override_dir) = std::env::var_os("FSPEC_USER_DIR") {
+        return Some(PathBuf::from(override_dir));
+    }
+    if let Some(home) = dirs::home_dir() {
+        return Some(home.join(".fspec"));
+    }
+    // Last-resort fallback (rarely reached on supported platforms).
+    std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".fspec"))
 }
 
 /// Load the local-server profiles for the `openai` provider from
@@ -395,15 +409,37 @@ fn delete_custom_model_at(
 }
 
 /// Read `config_path` into a JSON `Value`, returning `None` on a missing or
-/// malformed file (caller treats this as a no-op).
+/// malformed file (caller treats this as a no-op). Logs the read outcome via
+/// the shared `tracing` system so config-file access is visible in
+/// `~/.fspec/logs/`.
 pub(crate) fn read_config_value(config_path: &Path) -> Option<serde_json::Value> {
-    let content = std::fs::read_to_string(config_path).ok()?;
-    serde_json::from_str::<serde_json::Value>(&content).ok()
+    let content = match std::fs::read_to_string(config_path) {
+        Ok(content) => content,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            debug!(path = %config_path.display(), "config read: file not found (first save)");
+            return None;
+        }
+        Err(e) => {
+            warn!(path = %config_path.display(), error = %e, "config read: failed to read file");
+            return None;
+        }
+    };
+    match serde_json::from_str::<serde_json::Value>(&content) {
+        Ok(value) => {
+            debug!(path = %config_path.display(), "config read: parsed OK");
+            Some(value)
+        }
+        Err(e) => {
+            warn!(path = %config_path.display(), error = %e, "config read: malformed JSON");
+            None
+        }
+    }
 }
 
 /// Write the JSON `Value` back to `config_path` (pretty-printed with a
 /// trailing newline). With the workspace `preserve_order` serde_json feature,
-/// existing key order is retained.
+/// existing key order is retained. Logs the write outcome via the shared
+/// `tracing` system.
 pub(crate) fn write_config_value(
     config_path: &Path,
     root: &serde_json::Value,
@@ -411,7 +447,14 @@ pub(crate) fn write_config_value(
     let mut serialized = serde_json::to_string_pretty(root)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
     serialized.push('\n');
-    std::fs::write(config_path, serialized)
+    let result = std::fs::write(config_path, &serialized);
+    match &result {
+        Ok(()) => debug!(path = %config_path.display(), "config write: succeeded"),
+        Err(e) => {
+            warn!(path = %config_path.display(), error = %e, "config write: failed");
+        }
+    }
+    result
 }
 
 /// Merge the probe-discovered model ids with the profile's declared custom

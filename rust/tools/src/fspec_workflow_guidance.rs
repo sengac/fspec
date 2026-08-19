@@ -1375,10 +1375,16 @@ mod tests {
 
         // @step When I inspect the update-work-unit-status examples
         // @step Then I should see "workUnitId" as a named key
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for update-work-unit-status");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key for update-work-unit-status"
+        );
 
         // @step And I should NOT see "_": ["AUTH-001", "specifying"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"AUTH-001\", \"specifying\""), "Guidance should NOT use positional _ args for update-work-unit-status");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH-001\", \"specifying\""),
+            "Guidance should NOT use positional _ args for update-work-unit-status"
+        );
     }
 
     #[test]
@@ -1388,10 +1394,16 @@ mod tests {
 
         // @step When I inspect the show-work-unit examples
         // @step Then I should see "workUnitId" as a named key
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key"
+        );
 
         // @step And I should NOT see "_": ["AUTH-001"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"AUTH-001\"]"), "Guidance should NOT use positional _ args for show-work-unit");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH-001\"]"),
+            "Guidance should NOT use positional _ args for show-work-unit"
+        );
     }
 
     #[test]
@@ -1401,11 +1413,20 @@ mod tests {
 
         // @step When I inspect the create-story examples
         // @step Then I should see "prefix" and "title" as named keys
-        assert!(guidance.contains("\"prefix\""), "Guidance should use 'prefix' named key for create-story");
-        assert!(guidance.contains("\"title\""), "Guidance should use 'title' named key for create-story");
+        assert!(
+            guidance.contains("\"prefix\""),
+            "Guidance should use 'prefix' named key for create-story"
+        );
+        assert!(
+            guidance.contains("\"title\""),
+            "Guidance should use 'title' named key for create-story"
+        );
 
         // @step And I should NOT see "_": ["AUTH", "User Login"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"AUTH\""), "Guidance should NOT use positional _ args for create-story");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH\""),
+            "Guidance should NOT use positional _ args for create-story"
+        );
     }
 
     #[test]
@@ -1415,11 +1436,20 @@ mod tests {
 
         // @step When I inspect the add-rule examples
         // @step Then I should see "workUnitId" and "rule" as named keys
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-rule");
-        assert!(guidance.contains("\"rule\""), "Guidance should use 'rule' named key for add-rule");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key for add-rule"
+        );
+        assert!(
+            guidance.contains("\"rule\""),
+            "Guidance should use 'rule' named key for add-rule"
+        );
 
         // @step And I should NOT see "_": ["AUTH-001", "rule text"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"AUTH-001\", \"rule text\""), "Guidance should NOT use positional _ args for add-rule");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH-001\", \"rule text\""),
+            "Guidance should NOT use positional _ args for add-rule"
+        );
     }
 
     #[test]
@@ -1429,8 +1459,14 @@ mod tests {
 
         // @step When I inspect the add-example examples
         // @step Then I should see "workUnitId" and "example" as named keys
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-example");
-        assert!(guidance.contains("\"example\""), "Guidance should use 'example' named key for add-example");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key for add-example"
+        );
+        assert!(
+            guidance.contains("\"example\""),
+            "Guidance should use 'example' named key for add-example"
+        );
     }
 
     #[test]
@@ -1440,11 +1476,20 @@ mod tests {
 
         // @step When I inspect the add-dependency examples
         // @step Then I should see "workUnitId" and "dependsOn" as named keys
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-dependency");
-        assert!(guidance.contains("dependsOn"), "Guidance should use 'dependsOn' named key for add-dependency");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key for add-dependency"
+        );
+        assert!(
+            guidance.contains("dependsOn"),
+            "Guidance should use 'dependsOn' named key for add-dependency"
+        );
 
         // @step And I should NOT see "_": ["AUTH-002", "AUTH-001"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"AUTH-002\", \"AUTH-001\""), "Guidance should NOT use positional _ args for add-dependency");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH-002\", \"AUTH-001\""),
+            "Guidance should NOT use positional _ args for add-dependency"
+        );
     }
 
     #[test]
@@ -1454,11 +1499,20 @@ mod tests {
 
         // @step When I inspect the add-attachment examples
         // @step Then I should see "workUnitId" and "filePath" as named keys
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-attachment");
-        assert!(guidance.contains("filePath"), "Guidance should use 'filePath' named key for add-attachment");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key for add-attachment"
+        );
+        assert!(
+            guidance.contains("filePath"),
+            "Guidance should use 'filePath' named key for add-attachment"
+        );
 
         // @step And I should NOT see "_": ["AUTH-001", "file.png"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"AUTH-001\", \"file.png\""), "Guidance should NOT use positional _ args for add-attachment");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH-001\", \"file.png\""),
+            "Guidance should NOT use positional _ args for add-attachment"
+        );
     }
 
     #[test]
@@ -1468,10 +1522,16 @@ mod tests {
 
         // @step When I inspect the set-user-story examples
         // @step Then I should see "workUnitId" as a named key
-        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for set-user-story");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use 'workUnitId' named key for set-user-story"
+        );
 
         // @step And I should NOT see "_": ["AUTH-001"] positional pattern for work unit ID
-        assert!(!guidance.contains("\"_\": [\"AUTH-001\"]"), "Guidance should NOT use positional _ args for set-user-story");
+        assert!(
+            !guidance.contains("\"_\": [\"AUTH-001\"]"),
+            "Guidance should NOT use positional _ args for set-user-story"
+        );
     }
 
     #[test]
@@ -1481,10 +1541,16 @@ mod tests {
 
         // @step When I inspect the link-coverage examples
         // @step Then I should see "feature" as a named key
-        assert!(guidance.contains("feature"), "Guidance should use 'feature' named key for link-coverage");
+        assert!(
+            guidance.contains("feature"),
+            "Guidance should use 'feature' named key for link-coverage"
+        );
 
         // @step And I should NOT see "_": ["user-auth"] positional pattern
-        assert!(!guidance.contains("\"_\": [\"user-auth\""), "Guidance should NOT use positional _ args for link-coverage");
+        assert!(
+            !guidance.contains("\"_\": [\"user-auth\""),
+            "Guidance should NOT use positional _ args for link-coverage"
+        );
     }
 
     #[test]
@@ -1495,10 +1561,19 @@ mod tests {
         // @step When I count all occurrences of "_": [ positional pattern
         // @step Then the count should be zero
         let count = guidance.matches("\"_\": [").count();
-        assert_eq!(count, 0, "Guidance should have zero positional _ patterns, but found {count}");
+        assert_eq!(
+            count, 0,
+            "Guidance should have zero positional _ patterns, but found {count}"
+        );
 
         // @step And every command example should use named keys matching Rust Args structs
-        assert!(guidance.contains("workUnitId"), "Guidance should use named keys");
-        assert!(guidance.contains("workUnitId"), "Named keys should match Rust Args structs");
+        assert!(
+            guidance.contains("workUnitId"),
+            "Guidance should use named keys"
+        );
+        assert!(
+            guidance.contains("workUnitId"),
+            "Named keys should match Rust Args structs"
+        );
     }
 }

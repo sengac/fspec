@@ -1,0 +1,166 @@
+{
+  "scenarios": [
+    {
+      "name": "Windows command is wrapped in PowerShell for PATHEXT resolution",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bash_windows_shell_wrapping_test.rs",
+          "lines": "16-47",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Windows command falls back to cmd.exe when PowerShell is unavailable",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bash_windows_shell_wrapping_test.rs",
+          "lines": "49-75",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aborting a Windows command kills the entire process tree",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bash_windows_shell_wrapping_test.rs",
+          "lines": "77-112",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process_windows.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unix spawn path is unchanged (no regression)",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bash_windows_shell_wrapping_test.rs",
+          "lines": "114-137",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bash_windows_shell_wrapping_test.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/bash_process.rs",
+      "rust/tools/src/bash_process_windows.rs"
+    ],
+    "totalLinesCovered": 204
+  }
+}

@@ -21,6 +21,7 @@
 use std::path::Path;
 
 use serde_json::{Map, Value};
+use tracing::{debug, error, info, warn};
 
 use crate::profile_sections::{
     fspec_user_dir, read_config_value, write_config_value, CompactionThreshold,
@@ -61,10 +62,14 @@ pub fn profiles_unsupported_error(provider_id: &str) -> String {
 
 /// Create or update a profile, persisting to `~/.fspec/fspec-config.json`.
 ///
-/// Resolves the config path via the `FSPEC_USER_DIR`/`HOME` convention and
+/// Resolves the config path via the `FSPEC_USER_DIR`/home-dir convention and
 /// delegates to [`save_profile_at`]. Profiles are only supported for the
 /// `openai` provider (see [`profiles_supported`]); a non-openai call is a
 /// no-op at this layer — the `Err` is surfaced by the handle / NAPI callers.
+///
+/// Every config-file read and write is logged (path + outcome) via the shared
+/// `tracing` system so a silent failure (e.g. an unresolvable home directory)
+/// is visible in `~/.fspec/logs/` instead of vanishing.
 pub fn save_profile(
     provider_id: &str,
     profile_name: &str,
@@ -74,8 +79,11 @@ pub fn save_profile(
         return Ok(());
     }
     let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
-        return Ok(());
+        let msg = "cannot resolve the fspec user directory (~/.fspec): no home directory available";
+        error!(profile = %profile_name, "save_profile: {msg}");
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, msg));
     };
+    info!(path = %config_path.display(), profile = %profile_name, "save_profile: saving profile");
     save_profile_at(&config_path, provider_id, profile_name, def)
 }
 
@@ -85,15 +93,19 @@ pub fn save_profile(
 /// byte-identical (TS `deleteProfile` early-return parity).
 pub fn delete_profile(provider_id: &str, profile_name: &str) -> std::io::Result<()> {
     let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
+        // Deleting a profile whose config file cannot be located is a benign
+        // no-op (there is nothing to delete), so only log at debug level.
+        debug!(profile = %profile_name, "delete_profile: no fspec user directory; no-op");
         return Ok(());
     };
+    info!(path = %config_path.display(), profile = %profile_name, "delete_profile: deleting profile");
     delete_profile_at(&config_path, provider_id, profile_name)
 }
 
 /// PROV-136: rename a profile (or in-place update when the name is unchanged),
 /// persisting to `~/.fspec/fspec-config.json`.
 ///
-/// Resolves the config path via the `FSPEC_USER_DIR`/`HOME` convention and
+/// Resolves the config path via the `FSPEC_USER_DIR`/home-dir convention and
 /// delegates to [`rename_profile_at`]. A non-openai call is a no-op at this
 /// layer (the `Err` is surfaced by the handle / NAPI callers).
 pub fn rename_profile(
@@ -106,8 +118,11 @@ pub fn rename_profile(
         return Ok(());
     }
     let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
-        return Ok(());
+        let msg = "cannot resolve the fspec user directory (~/.fspec): no home directory available";
+        error!(old = %old_name, new = %new_name, "rename_profile: {msg}");
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, msg));
     };
+    info!(path = %config_path.display(), old = %old_name, new = %new_name, "rename_profile: renaming profile");
     rename_profile_at(&config_path, provider_id, old_name, new_name, def)
 }
 
@@ -180,7 +195,17 @@ pub fn save_profile_at(
     let mut root = match read_config_value(config_path) {
         Some(value @ Value::Object(_)) => value,
         // Missing, malformed, or non-object JSON: start from an empty object.
-        _ => Value::Object(Map::new()),
+        // A pre-existing file that failed to parse is a data-loss risk (its
+        // contents get replaced), so surface it at warn level.
+        _ => {
+            if config_path.exists() {
+                warn!(
+                    path = %config_path.display(),
+                    "save_profile: existing config file is missing or malformed; starting from an empty object"
+                );
+            }
+            Value::Object(Map::new())
+        }
     };
     let Some(root_obj) = root.as_object_mut() else {
         return Ok(());
@@ -198,7 +223,16 @@ pub fn save_profile_at(
         return Ok(());
     };
     merge_profile(profile, def);
-    write_config_value(config_path, &root)
+    let result = write_config_value(config_path, &root);
+    match &result {
+        Ok(()) => {
+            info!(path = %config_path.display(), profile = %profile_name, "save_profile: write succeeded");
+        }
+        Err(e) => {
+            error!(path = %config_path.display(), profile = %profile_name, error = %e, "save_profile: write failed");
+        }
+    }
+    result
 }
 
 /// Path-injectable core of [`delete_profile`]. Removes only the named profile,

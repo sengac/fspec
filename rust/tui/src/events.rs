@@ -3,7 +3,7 @@
 //! Unified event stream combining terminal events and draw requests.
 //! Based on codex event stream pattern with tokio::select!.
 
-use crossterm::event::{Event, KeyEvent};
+use crossterm::event::{Event, KeyEvent, KeyEventKind};
 use futures::Stream;
 use std::pin::Pin;
 use tokio_stream::StreamExt;
@@ -29,7 +29,14 @@ pub fn create_event_stream() -> Pin<Box<dyn Stream<Item = TuiEvent> + Send>> {
         loop {
             if let Some(Ok(event)) = crossterm_events.next().await {
                 match event {
-                    Event::Key(key_event) => {
+                    // TUI-110: Press-only filter. On Windows (cmd /
+                    // Windows Terminal) crossterm reports BOTH
+                    // KeyEventKind::Press and KeyEventKind::Release for
+                    // every key (ratatui#347, crossterm#772); Linux/macOS
+                    // only ever generate Press. Yielding only Press events
+                    // keeps consumers (the CLI interactive stream loop,
+                    // any future consumer) from seeing doubled keys.
+                    Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                         yield TuiEvent::Key(key_event);
                     }
                     Event::Paste(pasted) => {

@@ -1,0 +1,295 @@
+{
+  "scenarios": [
+    {
+      "name": "A single Down-arrow press moves the board selection exactly one row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "70-87",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A key release event is dropped by the central app event loop",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "89-103",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A key repeat event is dropped by the central app event loop",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "105-119",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A single ? press opens the Help dialog exactly once",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "121-144",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A ? release event does not open the Help dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "146-159",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A ? repeat event does not open the Help dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "161-174",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Press key events still flow to views and dialogs unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "176-190",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A repeat ? event does not trigger the app-level Help shortcut",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "192-205",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A repeat q event does not quit the Disconnect dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
+          "lines": "207-229",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/events.rs"
+    ],
+    "totalLinesCovered": 287
+  }
+}

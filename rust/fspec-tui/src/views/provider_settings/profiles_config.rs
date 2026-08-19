@@ -20,6 +20,7 @@ use std::path::Path;
 
 use codelet_rpc_types::ProfileDefinition;
 use serde_json::Value;
+use tracing::debug;
 
 /// Read `providers.openai.profiles` from a single config file (if present
 /// and parseable) into the supplied name -> baseUrl map. Later callers
@@ -28,15 +29,23 @@ use serde_json::Value;
 fn merge_profiles_from_file(path: &Path, out: &mut BTreeMap<String, Option<String>>) {
     let raw = match std::fs::read_to_string(path) {
         Ok(s) => s,
-        Err(_) => return,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return,
+        Err(e) => {
+            debug!(path = %path.display(), error = %e, "profiles_config: failed to read config file");
+            return;
+        }
     };
     if raw.trim().is_empty() {
         return;
     }
     let value: Value = match serde_json::from_str(&raw) {
         Ok(v) => v,
-        Err(_) => return,
+        Err(e) => {
+            debug!(path = %path.display(), error = %e, "profiles_config: malformed JSON in config file");
+            return;
+        }
     };
+    debug!(path = %path.display(), "profiles_config: read config file");
     let profiles = value
         .get("providers")
         .and_then(|p| p.get("openai"))
@@ -83,16 +92,16 @@ pub fn load_openai_profiles_from(user_config_dir: &Path, project_root: &Path) ->
         .collect()
 }
 
-/// Thin wrapper that resolves the real user config dir (`$HOME/.fspec`,
-/// read-only) and the current working directory, then delegates to
-/// [`load_openai_profiles_from`]. Returns an empty list when `$HOME` or the
-/// current directory cannot be resolved.
+/// Thin wrapper that resolves the real user config dir (`$HOME/.fspec` on
+/// Unix, `%USERPROFILE%\.fspec` on Windows, read-only) and the current
+/// working directory, then delegates to
+/// [`load_openai_profiles_from`]. Returns an empty list when the home
+/// directory or the current directory cannot be resolved.
 pub fn load_openai_profiles() -> Vec<String> {
-    let home = match std::env::var_os("HOME") {
-        Some(h) => h,
+    let user_config_dir = match dirs::home_dir() {
+        Some(home) => home.join(".fspec"),
         None => return Vec::new(),
     };
-    let user_config_dir = Path::new(&home).join(".fspec");
     let project_root = match std::env::current_dir() {
         Ok(p) => p,
         Err(_) => return Vec::new(),
@@ -179,15 +188,23 @@ fn parse_compaction_threshold(node: &Value) -> (Option<String>, Option<u32>) {
 fn merge_profile_configs_from_file(path: &Path, out: &mut BTreeMap<String, ProfileDefinition>) {
     let raw = match std::fs::read_to_string(path) {
         Ok(s) => s,
-        Err(_) => return,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return,
+        Err(e) => {
+            debug!(path = %path.display(), error = %e, "profiles_config: failed to read config file");
+            return;
+        }
     };
     if raw.trim().is_empty() {
         return;
     }
     let value: Value = match serde_json::from_str(&raw) {
         Ok(v) => v,
-        Err(_) => return,
+        Err(e) => {
+            debug!(path = %path.display(), error = %e, "profiles_config: malformed JSON in config file");
+            return;
+        }
     };
+    debug!(path = %path.display(), "profiles_config: read config file");
     let profiles = value
         .get("providers")
         .and_then(|p| p.get("openai"))
@@ -220,16 +237,15 @@ pub fn load_openai_profile_configs_from(
     merged
 }
 
-/// Thin wrapper resolving the real user config dir (`$HOME/.fspec`) and the
-/// current working directory, then delegating to
-/// [`load_openai_profile_configs_from`]. Returns an empty map when `$HOME` or
-/// the current directory cannot be resolved.
+/// Thin wrapper resolving the real user config dir (`$HOME/.fspec` on Unix,
+/// `%USERPROFILE%\.fspec` on Windows) and the current working directory, then
+/// delegating to [`load_openai_profile_configs_from`]. Returns an empty map
+/// when the home directory or the current directory cannot be resolved.
 pub fn load_openai_profile_configs() -> BTreeMap<String, ProfileDefinition> {
-    let home = match std::env::var_os("HOME") {
-        Some(h) => h,
+    let user_config_dir = match dirs::home_dir() {
+        Some(home) => home.join(".fspec"),
         None => return BTreeMap::new(),
     };
-    let user_config_dir = Path::new(&home).join(".fspec");
     let project_root = match std::env::current_dir() {
         Ok(p) => p,
         Err(_) => return BTreeMap::new(),

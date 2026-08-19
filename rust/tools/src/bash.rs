@@ -32,6 +32,8 @@ use serde_json::json;
 
 #[cfg(unix)]
 use crate::bash_process::ProcessGroupKiller;
+#[cfg(windows)]
+use crate::bash_process::WindowsProcessTreeKiller;
 
 // Re-export public items so external users can still use `bash::*`
 pub use crate::bash_abort::{
@@ -143,9 +145,11 @@ impl BashTool {
         // Spawn process
         let mut child = spawn_command(&args.command, cwd.as_deref())?;
 
-        // Create process group killer guard (Unix only)
+        // Create process group killer guard (Unix) / process tree killer (Windows)
         #[cfg(unix)]
         let pg_killer = ProcessGroupKiller::new(&child);
+        #[cfg(windows)]
+        let tree_killer = WindowsProcessTreeKiller::new(&child);
 
         // Take stdio handles
         let (stdout, stderr) = take_stdio_handles(&mut child)?;
@@ -167,7 +171,9 @@ impl BashTool {
         // Wait for completion with abort checking
         #[cfg(unix)]
         wait_for_tasks_with_abort(stdout_task, stderr_task, &pg_killer, self.session_id).await?;
-        #[cfg(not(unix))]
+        #[cfg(windows)]
+        wait_for_tasks_with_abort(stdout_task, stderr_task, &tree_killer, self.session_id).await?;
+        #[cfg(not(any(unix, windows)))]
         wait_for_tasks_with_abort(stdout_task, stderr_task, self.session_id).await?;
 
         // Wait for process exit
@@ -247,9 +253,11 @@ impl rig::tool::Tool for BashTool {
         // Spawn process
         let mut child = spawn_command(&args.command, cwd.as_deref())?;
 
-        // Create process group killer guard (Unix only)
+        // Create process group killer guard (Unix) / process tree killer (Windows)
         #[cfg(unix)]
         let pg_killer = ProcessGroupKiller::new(&child);
+        #[cfg(windows)]
+        let tree_killer = WindowsProcessTreeKiller::new(&child);
 
         // Take stdio handles
         let (stdout, stderr) = take_stdio_handles(&mut child)?;
@@ -271,7 +279,9 @@ impl rig::tool::Tool for BashTool {
         // Wait for completion with abort checking
         #[cfg(unix)]
         wait_for_tasks_with_abort(stdout_task, stderr_task, &pg_killer, self.session_id).await?;
-        #[cfg(not(unix))]
+        #[cfg(windows)]
+        wait_for_tasks_with_abort(stdout_task, stderr_task, &tree_killer, self.session_id).await?;
+        #[cfg(not(any(unix, windows)))]
         wait_for_tasks_with_abort(stdout_task, stderr_task, self.session_id).await?;
 
         // Wait for process exit

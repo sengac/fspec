@@ -1347,6 +1347,7 @@ dependencies = [
  "codelet-test-helpers",
  "codelet-tools",
  "crossterm",
+ "dirs 6.0.0",
  "futures",
  "insta",
  "open",

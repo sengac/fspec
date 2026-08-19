@@ -23,7 +23,9 @@
 //! `scopes_by_calls` list, prefixed with `scope::` so it's visually distinct from the
 //! pprof stack frames.
 
-use crate::profile::attribution::{attribute_samples, AttributionOutput, FrameInfo, SampleStack};
+use crate::profile::attribution::AttributionOutput;
+#[cfg(unix)]
+use crate::profile::attribution::{attribute_samples, FrameInfo, SampleStack};
 use crate::profile::channels::ChannelRegistry;
 use crate::profile::registry::{ProfileRegistry, PROFILING_ACTIVE};
 use crate::profile::result::{

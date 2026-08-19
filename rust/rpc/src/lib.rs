@@ -1441,7 +1441,13 @@ impl FspecService for FspecServiceImpl {
     ) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.save_profile(&provider_id, &profile_name, &definition),
-            None => Ok(()),
+            None => {
+                let msg = format!(
+                    "save_profile({provider_id}/{profile_name}): no session manager attached"
+                );
+                tracing::error!(%msg);
+                Err(msg)
+            }
         }
     }
 
@@ -1453,7 +1459,13 @@ impl FspecService for FspecServiceImpl {
     ) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.delete_profile(&provider_id, &profile_name),
-            None => Ok(()),
+            None => {
+                let msg = format!(
+                    "delete_profile({provider_id}/{profile_name}): no session manager attached"
+                );
+                tracing::error!(%msg);
+                Err(msg)
+            }
         }
     }
 
@@ -1467,7 +1479,13 @@ impl FspecService for FspecServiceImpl {
     ) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.rename_profile(&provider_id, &old_name, &new_name, &definition),
-            None => Ok(()),
+            None => {
+                let msg = format!(
+                    "rename_profile({provider_id}/{old_name}→{new_name}): no session manager attached"
+                );
+                tracing::error!(%msg);
+                Err(msg)
+            }
         }
     }
 

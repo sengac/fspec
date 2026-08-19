@@ -69,6 +69,9 @@ urlencoding.workspace = true
 # COPY-001: OSC 52 clipboard writer base64-encodes the payload.
 base64 = "0.22"
 
+# Cross-platform home directory resolution (Windows: USERPROFILE, Unix: HOME)
+dirs.workspace = true
+
 # Logging
 tracing.workspace = true
 

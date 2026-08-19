@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-18T14:33:52.114Z",
+    "lastUpdated": "2026-08-19T08:25:53.250Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 11,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 155,
+    "BUG": 156,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 14,
@@ -83,7 +83,7 @@
     "TOKEN": 2,
     "TOOL": 21,
     "TOOLS": 4,
-    "TUI": 109,
+    "TUI": 110,
     "UX": 2,
     "VAL": 7,
     "VID": 2,
@@ -1638,7 +1638,9 @@
       "PROV-141",
       "TUI-107",
       "TUI-108",
-      "TUI-109"
+      "TUI-109",
+      "TUI-110",
+      "BUG-156"
     ],
     "blocked": [
       "QUERY-001",
@@ -224333,6 +224335,212 @@
       ],
       "nextNoteId": 1,
       "estimate": 2
+    },
+    "TUI-110": {
+      "id": "TUI-110",
+      "title": "Key input doubles on Windows (crossterm emits Press + Release)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-18T23:34:19.879Z",
+      "updatedAt": "2026-08-19T00:52:41.260Z",
+      "description": "On Windows (cmd / Windows Terminal), crossterm reports both KeyEventKind::Press and KeyEventKind::Release for every key. On Linux/macOS only Press is generated. Our TUI forwards every Event::Key into App::handle_event without a central kind filter, so views/dialogs that match Event::Key without checking key.kind (BoardView, Checkpoints, Changed Files, all dialogs, the shared create_event_stream) process each keystroke twice — keys appear to repeat. Known issue: ratatui#347, ratatui#1810, crossterm#772. Fix: filter to KeyEventKind::Press at the central entry points (App::run event loop and tui::create_event_stream) and normalize the two `!= Release` checks in app/events.rs to `!= Press`.",
+      "epic": "rust-frontend",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-18T23:34:48.055Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-18T23:39:55.160Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-19T00:15:55.931Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-19T00:37:28.995Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-19T00:52:41.260Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user on Windows",
+        "action": "press keys in the ratatui TUI (board, dialogs, agent view) and have each keystroke registered exactly once",
+        "benefit": "the interface does not appear to have a stuck/repeat key on Windows Terminal or cmd"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The TUI processes ONLY KeyEventKind::Press key events; KeyEventKind::Release and KeyEventKind::Repeat are ignored everywhere (they are only ever generated on Windows / under the kitty enhancement protocol).",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:35:10.032Z"
+        },
+        {
+          "id": 1,
+          "text": "The central App::run event loop (fspec-tui/src/app/events.rs) drops any Event::Key whose kind is not KeyEventKind::Press before calling App::handle_event, so no view, dialog, or app-shortcut path can ever see a Release/Repeat event.",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:35:28.718Z"
+        },
+        {
+          "id": 2,
+          "text": "The shared event stream tui::create_event_stream (rust/tui/src/events.rs) yields TuiEvent::Key ONLY for KeyEventKind::Press events — Release/Repeat key events are never emitted to consumers (CLI stream loop, any future consumer).",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:35:38.036Z"
+        },
+        {
+          "id": 3,
+          "text": "The two existing `key.kind != KeyEventKind::Release` guards in fspec-tui/src/app/events.rs (app-shortcut stage and DisconnectDialog stage) are normalized to `key.kind != KeyEventKind::Press` so they match the central filter exactly (they currently also admit Repeat events).",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:35:48.180Z"
+        },
+        {
+          "id": 4,
+          "text": "Existing per-view KeyEventKind::Press filters (agent dispatch.rs RPC-402, multiline_input.rs, init_selector.rs) are PRESERVED as defense-in-depth for direct widget callers — the central filter is additive, not a replacement.",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:35:58.078Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Windows Terminal: user presses the Down arrow once in the board view and the selection moves down exactly one row (before the fix it skipped two rows, looking like the key was held down).",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:36:32.952Z"
+        },
+        {
+          "id": 1,
+          "text": "Windows Terminal: user presses ? once in the board view and the Help dialog opens exactly once (before the fix the second synthetic ? could have been seen by a lower-priority handler after the dialog consumed the first).",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:37:28.716Z"
+        },
+        {
+          "id": 2,
+          "text": "Linux/macOS: typing and navigating behaves exactly as before — no key is dropped, no new filtering side effects, since those platforms only ever generated Press events.",
+          "deleted": false,
+          "createdAt": "2026-08-18T23:37:38.349Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 2
+    },
+    "BUG-156": {
+      "id": "BUG-156",
+      "title": "Windows builds: Bash tool cannot execute Windows commands (PATHEXT / shell wrapping not handled)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-19T06:30:01.000Z",
+      "updatedAt": "2026-08-19T08:25:53.250Z",
+      "description": "On Windows builds, the Bash tool fails to execute Windows commands: e.g. `whoami` and `cmd` do not run. Root cause: commands are spawned directly without going through a Windows shell (cmd.exe / PowerShell), so PATHEXT is not taken into account and bare command names (whoami, cmd, etc.) cannot be resolved. Fix by adopting the VTCode (github.com/vinhnx/VTCode) approach:\n\n1. NEVER spawn the user's command directly on Windows. Always wrap it in a real shell:\n   - `cmd /C \"<command>\"` or `powershell -NoProfile -NonInteractive -Command \"<command>\"`\n   - The shell performs its own PATHEXT lookup, so `whoami` → `whoami.exe` resolves correctly.\n2. Shell selection: on cfg!(windows) default to a Windows shell kind (PowerShell preferred, cmd fallback). Expose a config escape hatch (e.g. preferred_shell) since Unix-only fallback lists (/bin/sh, /bin/bash) are dead on Windows.\n3. Shell flags per shell type: cmd → /C; powershell/pwsh → -Command (with -NoProfile -NonInteractive for non-interactive use).\n4. Windows quoting: PowerShell single-quote with '' escape (VTCode format_path/format_pattern pattern); do not use POSIX shell_escape on Windows.\n5. If bare program-name resolution is ever needed in Rust (e.g. 'is this binary available?'), manually walk PATH × PATHEXT (VTCode candidate_command_paths pattern in src/codex_app_server/client.rs:446-470): try the bare name first, then append each PATHEXT extension per PATH dir, pick first existing file.\n6. Process-group termination on Windows: use `taskkill /PID <pid> /T` (graceful) then `taskkill /PID <pid> /T /F` (forceful) instead of Unix killpg (VTCode vtcode-bash-runner process_group.rs:245-262, 370-397).\n7. Environment preservation: ensure subprocesses inherit PATH, PATHEXT, COMSPEC, SYSTEMROOT, POWERSHELL, PWSH, USERPROFILE, TEMP/TMP on Windows (VTCode vtcode-mcp DEFAULT_ENV_VARS pattern).\n8. Prompt/tool guidance: inform the LLM of the active shell profile so it emits PowerShell syntax (Get-ChildItem, Select-String, Get-Content) instead of Unix verbs (ls, grep, cat) on native Windows; suggest WSL for Unix-like workflows.\n\nReference implementation studied: /tmp/VTCode (cloned 2026-08-19, commit 9118afcfd):\n- crates/codegen/vtcode-bash-runner/src/executor.rs (ProcessCommandExecutor: sh -c vs powershell -Command)\n- crates/codegen/vtcode-bash-runner/src/runner.rs (ShellKind, ShellCommand builder, Windows quoting)\n- crates/codegen/vtcode-bash-runner/src/process_group.rs (taskkill-based process-group kill)\n- crates/codegen/vtcode-core/src/tools/registry/executors/exec_command.rs (shell_command_flag, should_use_windows_command_tokenizer, prepare_exec_command)\n- crates/codegen/vtcode-core/src/tools/shell.rs (resolve_fallback_shell — Unix-only, needs Windows equivalent)\n- crates/codegen/vtcode-core/src/tools/terminal_app.rs:433-475 (explicit target_os=windows cmd /C vs /bin/sh -lc branching)\n- src/codex_app_server/client.rs:422-490 (PATHEXT-aware candidate_command_paths + path_is_launchable)\n- crates/codegen/vtcode-mcp/src/lib.rs:162-191 (Windows DEFAULT_ENV_VARS incl. PATHEXT)\n- crates/codegen/vtcode-core/src/prompts/guidelines.rs:266-275 (PowerShell shell-profile prompt guidance)\n- crates/codegen/vtcode-safety/src/command_safety/windows.rs (PowerShell/CMD dangerous-command detection)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-19T06:41:52.926Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-19T06:45:58.318Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-19T06:50:52.096Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-19T07:13:58.309Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-19T07:26:34.569Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-19T07:41:18.581Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-19T08:22:52.508Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-19T08:25:53.250Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent using the Bash tool on a Windows build",
+        "action": "execute Windows shell commands (e.g. whoami, dir, PowerShell syntax) via the Bash tool",
+        "benefit": "Windows builds can actually run commands instead of failing because sh does not exist and PATHEXT is not resolved"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "On Windows, every user command MUST be wrapped in a real Windows shell before spawning: prefer `powershell -NoProfile -NonInteractive -Command <cmd>`; if PowerShell cannot be located, fall back to `cmd /C <cmd>`. The raw command string must NEVER be spawned directly via CreateProcess.",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:42:26.257Z"
+        },
+        {
+          "id": 1,
+          "text": "On Windows there are no process groups; the process tree MUST be killed with `taskkill /PID <pid> /T` (graceful) and `taskkill /PID <pid> /T /F` (forceful), mirroring the Unix ProcessGroupKiller guard pattern (guard struct with kill() and Drop impl, cfg(windows)).",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:42:56.222Z"
+        },
+        {
+          "id": 2,
+          "text": "The Unix spawn path (`sh -c` with process_group(0) + ProcessGroupKiller) MUST remain byte-for-byte unchanged — no Unix regression.",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:42:56.408Z"
+        },
+        {
+          "id": 3,
+          "text": "Because the command runs inside a real Windows shell, the shell performs PATHEXT resolution, so bare command names like `whoami` resolve to `whoami.exe` and `cmd` resolves to `cmd.exe`.",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:43:29.345Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "On Windows, the agent runs `whoami` via the Bash tool: the command is spawned as `powershell -NoProfile -NonInteractive -Command whoami` and succeeds, printing the user identity (whoami.exe resolved by PATHEXT).",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:43:29.528Z"
+        },
+        {
+          "id": 1,
+          "text": "On Windows, the agent runs `cmd /c dir` via the Bash tool and gets a directory listing instead of a \"program not found\" spawn error.",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:43:42.277Z"
+        },
+        {
+          "id": 2,
+          "text": "On Windows, the user aborts a long-running command: the entire process tree (shell plus any children it spawned) is terminated via taskkill /PID <pid> /T, and the tool returns \"Command interrupted by user\".",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:43:42.457Z"
+        },
+        {
+          "id": 3,
+          "text": "On Linux, the agent runs `echo hello` via the Bash tool exactly as before: it is spawned via `sh -c` in a new process group and prints `hello` — the Unix behavior is unchanged by this fix.",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:43:58.032Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Adopts the VTCode (github.com/vinhnx/VTCode, commit 9118afcfd) patterns: vtcode-bash-runner executor.rs (powershell -NoProfile -NonInteractive -Command vs sh -c), process_group.rs (taskkill /PID <pid> /T graceful, /T /F forceful), and terminal_app.rs (target_os=windows cmd /C vs /bin/sh -lc branching). Windows command construction is extracted into a pure, unit-testable function (build_windows_shell_invocation) plus a cfg(windows) WindowsProcessTreeKiller guard mirroring ProcessGroupKiller; wired into bash.rs and bash_streams::wait_for_tasks_with_abort. Unix path untouched.",
+          "deleted": false,
+          "createdAt": "2026-08-19T06:43:57.850Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 5
     }
   }
 }

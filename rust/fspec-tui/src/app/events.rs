@@ -51,6 +51,22 @@ impl App {
     /// LOW), where focused inputs always win against view-level
     /// shortcuts.
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
+        // TUI-110: central Press-only key filter. On Windows (cmd /
+        // Windows Terminal) crossterm reports BOTH KeyEventKind::Press and
+        // KeyEventKind::Release for every key (ratatui#347, crossterm#772);
+        // Linux/macOS only ever generate Press. Dropping non-Press key
+        // events here — the single entry point for the App::run loop AND
+        // for direct callers — guarantees no view, dialog, or app-shortcut
+        // path can ever see a Release/Repeat event, so each keystroke is
+        // registered exactly once. Per-view Press filters (RPC-402
+        // dispatch.rs / multiline_input.rs) remain as defense-in-depth for
+        // direct widget callers.
+        if let Event::Key(key) = event {
+            if key.kind != KeyEventKind::Press {
+                return EventResult::ignored();
+            }
+        }
+
         let topmost_is_critical =
             matches!(self.compositor.topmost_priority(), Some(Priority::Critical));
         let topmost_is_disconnect =
@@ -92,7 +108,9 @@ impl App {
         // focus.
         if !topmost_is_critical {
             if let Event::Key(key) = event {
-                if key.kind != KeyEventKind::Release {
+                // TUI-110: Press-only guard (was `!= Release`, which also
+                // admitted Repeat). Matches the central run-loop filter.
+                if key.kind == KeyEventKind::Press {
                     if let Some(result) = self.handle_app_shortcut(key) {
                         return result;
                     }
@@ -107,7 +125,9 @@ impl App {
         // RPC-011 CR-1 rule [2]: DisconnectDialog is topmost and honours
         // ONLY `q` (quit) and `r` (manual reconnect).
         if let Event::Key(key) = event {
-            if key.kind != KeyEventKind::Release {
+            // TUI-110: Press-only guard (was `!= Release`, which also
+            // admitted Repeat). Matches the central run-loop filter.
+            if key.kind == KeyEventKind::Press {
                 if key.code == KeyCode::Char('q') && key.modifiers == KeyModifiers::NONE {
                     self.should_quit = true;
                     let _ = self.compositor.remove(DISCONNECT_DIALOG_ID);
