@@ -149,6 +149,7 @@ fn build_definition_emits_the_current_toggle_value() {
     // @step When the form builds a profile definition
     let def = form
         .build_definition()
+        .expect("valid form must build without a rejection hint")
         .expect("valid form must build a definition");
 
     // @step Then the built definition carries streaming set to disabled

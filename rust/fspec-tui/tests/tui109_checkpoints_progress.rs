@@ -172,9 +172,9 @@ fn git_streaming_variant_ticks_the_callback_per_checkpoint_ref() {
     // (the callback fires per item — 3 ticks for 3 refs)
     assert_eq!(seen.len(), 3, "one tick per checkpoint ref");
     // @step And the counter row climbs through the intermediate values as each progress event folds
-    let mut seen_sorted = seen.clone();
+    let mut seen_sorted = seen;
     seen_sorted.sort();
-    let mut all_sorted: Vec<(String, String)> = out.iter().cloned().collect();
+    let mut all_sorted: Vec<(String, String)> = out.to_vec();
     all_sorted.sort();
     assert_eq!(seen_sorted, all_sorted, "ticks cover exactly the returned pairs");
     // @step And the counter row shows the final (150/150) just before the list appears

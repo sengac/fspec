@@ -29,6 +29,7 @@ fn def_streaming(base_url: &str, api_key: &str, streaming: Option<bool>) -> Prof
         max_output_tokens: None,
         compaction_threshold: None,
         streaming,
+        auto_continue: None,
     }
 }
 

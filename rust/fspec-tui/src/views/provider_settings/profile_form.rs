@@ -18,21 +18,25 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::components::Action;
 
-use super::profile_form_parse::{opt_num, profile_compaction_trigger, render_threshold};
+use super::profile_form_parse::{
+    opt_num, parse_auto_continue, profile_compaction_trigger, render_threshold,
+};
 use super::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 
 /// Default base URL for a brand-new profile (TS `DEFAULT_PROFILE_BASE_URL`).
 pub const DEFAULT_PROFILE_BASE_URL: &str = "http://localhost:8888";
 
 /// The connection field labels in display order (TS `PROFILE_FORM_FIELDS`).
-/// PROV-139 appends the boolean "Streaming" toggle as the 6th, last entry.
-pub const PROFILE_FORM_FIELDS: [&str; 6] = [
+/// PROV-139 appends the boolean "Streaming" toggle as the 6th entry; PROV-142
+/// appends the numeric "Auto-Continue" text field as the 7th, last entry.
+pub const PROFILE_FORM_FIELDS: [&str; 7] = [
     "Base URL",
     "API Key",
     "Context Window",
     "Max Output Tokens",
     "Compaction Threshold",
     "Streaming",
+    "Auto-Continue",
 ];
 
 /// In-progress profile form values. Number / threshold fields keep their raw
@@ -47,6 +51,9 @@ pub struct ProfileForm {
     pub compaction_threshold: String,
     /// PROV-139: the Streaming boolean toggle (true ⇒ enabled); not a text field.
     pub streaming: bool,
+    /// PROV-142: the Auto-Continue numeric text field (raw typed string,
+    /// parsed on build). Empty or `0` ⇒ off; `n >= 1` ⇒ on with budget `n`.
+    pub auto_continue: String,
     /// Focused field index into [`PROFILE_FORM_FIELDS`].
     pub field_index: usize,
     /// True while the cursor is in the name field (editable in both create and
@@ -71,6 +78,7 @@ impl ProfileForm {
             is_editing_name: true,
             is_new: true,
             streaming: true,
+            auto_continue: String::new(),
         }
     }
 
@@ -93,17 +101,20 @@ impl ProfileForm {
             is_editing_name: false,
             is_new: false,
             streaming: def.streaming_enabled(),
+            auto_continue: opt_num(def.auto_continue),
         }
     }
 
     /// Mutable handle to the focused connection field's raw string (never the
-    /// boolean Streaming field — the editing dispatch branches on it first).
+    /// boolean Streaming field — the editing dispatch branches on it first;
+    /// index 5 is only reached if the routing guard regresses).
     fn focused_text_mut(&mut self) -> &mut String {
         match self.field_index {
             0 => &mut self.base_url,
             1 => &mut self.api_key,
             2 => &mut self.context_window,
             3 => &mut self.max_output_tokens,
+            6 => &mut self.auto_continue,
             _ => &mut self.compaction_threshold,
         }
     }
@@ -153,7 +164,8 @@ impl ProfileForm {
         self.push_char(c);
     }
 
-    /// Display value for a field index (PROV-139: Streaming renders its label).
+    /// Display value for a field index (PROV-139: Streaming renders its label;
+    /// PROV-142: Auto-Continue renders its raw text).
     pub fn field_value(&self, idx: usize) -> &str {
         match idx {
             0 => &self.base_url,
@@ -161,19 +173,29 @@ impl ProfileForm {
             2 => &self.context_window,
             3 => &self.max_output_tokens,
             4 => &self.compaction_threshold,
+            6 => &self.auto_continue,
             _ => super::profile_form_streaming::streaming_label(self.streaming),
         }
     }
 
-    /// Build a [`ProfileDefinition`] from the current values, or `None` when
-    /// base URL, API key, or the trimmed name is empty (TS `handleSave` guard).
-    pub fn build_definition(&self) -> Option<ProfileDefinition> {
+    /// Build a [`ProfileDefinition`] from the current values.
+    ///
+    /// Returns `Err(hint)` when the save must be REJECTED with a visible hint:
+    /// PROV-142 — a non-numeric Auto-Continue value (mirroring `/continue`'s
+    /// invalid-argument rejection). Returns `Ok(None)` when base URL, API key,
+    /// or the trimmed name is empty (TS `handleSave` guard — the form stays
+    /// open silently). Returns `Ok(Some(def))` on success.
+    pub fn build_definition(&self) -> Result<Option<ProfileDefinition>, String> {
         if self.base_url.is_empty() || self.api_key.is_empty() || self.name.trim().is_empty() {
-            return None;
+            return Ok(None);
         }
+        // PROV-142: parse the Auto-Continue field. Empty ⇒ None (off, today's
+        // behavior); "0" ⇒ Some(0) (explicit-off sentinel); "n" (n >= 1) ⇒
+        // Some(n) (on with budget n); non-numeric ⇒ reject with a hint.
+        let auto_continue = parse_auto_continue(&self.auto_continue)?;
         let (compaction_threshold_type, compaction_threshold_value) =
             profile_compaction_trigger(&self.compaction_threshold);
-        Some(ProfileDefinition {
+        Ok(Some(ProfileDefinition {
             base_url: self.base_url.clone(),
             api_key: self.api_key.clone(),
             context_window: self.context_window.trim().parse::<u32>().ok(),
@@ -181,7 +203,8 @@ impl ProfileForm {
             compaction_threshold_type,
             compaction_threshold_value,
             streaming: Some(self.streaming),
-        })
+            auto_continue,
+        }))
     }
 }
 
@@ -223,7 +246,7 @@ pub(super) fn handle_form_key(
             ProviderSettingsEvent::Consumed
         }
         FormKey::Submit => match form.build_definition() {
-            Some(definition) => {
+            Ok(Some(definition)) => {
                 // PROV-136: the EMITTED name is the (possibly edited) form name;
                 // `old_profile_name` carries the ORIGINAL edit-mode name so the
                 // dispatch layer can detect + apply a rename. In create mode
@@ -237,7 +260,15 @@ pub(super) fn handle_form_key(
                     definition,
                 })
             }
-            None => {
+            Ok(None) => {
+                restore_mode(view, provider_id, form, profile_name);
+                ProviderSettingsEvent::Consumed
+            }
+            // PROV-142: a non-numeric Auto-Continue value rejects the save —
+            // surface the hint in the view status and keep the form open so
+            // the user can fix the value (nothing is persisted).
+            Err(hint) => {
+                view.set_status(hint);
                 restore_mode(view, provider_id, form, profile_name);
                 ProviderSettingsEvent::Consumed
             }

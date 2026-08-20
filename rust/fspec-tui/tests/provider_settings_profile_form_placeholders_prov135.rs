@@ -223,7 +223,8 @@ fn placeholder_hints_are_never_persisted() {
     // @step When the profile definition is built from the form
     let def = form
         .build_definition()
-        .expect("a form with name + base URL + api key should build a definition");
+        .expect("a form with name + base URL + api key should build a definition")
+        .expect("form must build a definition");
 
     // @step Then the saved profile has no context window value
     assert_eq!(

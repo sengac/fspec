@@ -85,6 +85,11 @@ pub async fn agent_loop(
     let mut compaction_watchdog_attempts: usize = 0;
     let mut compaction_retry_input: Option<String> = None;
 
+    // RIG-014: Loop-abort auto-continue retry counter (prevents infinite
+    // cycling if the model keeps degenerating into loops on retry).
+    let mut loop_abort_retry_count: usize = 0;
+    const RIG014_MAX_LOOP_ABORT_RETRIES: usize = 10;
+
     // HOOK-013: Fire session_start hooks
     if let Some(ref hooks) = session.lifecycle_hooks {
         let ctx = session.hook_context();
@@ -112,16 +117,21 @@ pub async fn agent_loop(
 
     loop {
         // CMPCT-020: Check for compaction watchdog retry input before waiting for user input
-        let input_to_process: Option<InputWithImages> = if let Some(retry_text) =
-            compaction_retry_input.take()
-        {
-            tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
-            Some(InputWithImages {
-                text: retry_text,
-                thinking_config: None,
-                images: None,
-            })
-        } else {
+        // RIG-014: `is_retry_input` distinguishes synthetic retry inputs (compaction
+        // watchdog / loop-abort auto-continue) from real user input so the
+        // loop-abort retry counter is only reset on genuine user turns.
+        let (input_to_process, is_retry_input): (Option<InputWithImages>, bool) =
+            if let Some(retry_text) = compaction_retry_input.take() {
+                tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
+                (
+                    Some(InputWithImages {
+                        text: retry_text,
+                        thinking_config: None,
+                        images: None,
+                    }),
+                    true,
+                )
+            } else {
             // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
             // Lock the supervisor_input_rx to use in select
             let mut supervisor_rx = session.incoming_message_rx.lock().await;
@@ -245,8 +255,14 @@ pub async fn agent_loop(
             // Drop the lock before processing to avoid holding it during agent execution
             drop(supervisor_rx);
 
-            input_to_process_inner
+            (input_to_process_inner, false)
         }; // end CMPCT-020 if/else
+
+        // RIG-014: Reset the loop-abort retry counter on real user input
+        // (not on synthetic retry inputs from the watchdog or loop-abort).
+        if !is_retry_input {
+            loop_abort_retry_count = 0;
+        }
 
         // If we got input to process, run the agent
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
@@ -504,6 +520,27 @@ pub async fn agent_loop(
             let session_for_output = session.clone();
             let output =
                 BackgroundOutput::with_provider(session_for_output, current_provider.clone());
+
+            // RIG-014: Reset the per-turn loop detectors (defensive — the
+            // BackgroundOutput is fresh per turn, but this keeps the
+            // contract explicit if the instance is ever reused).
+            output.reset_turn_loop_detectors();
+
+            // RIG-014: If the previous turn was aborted by the streaming
+            // loop detector, inject the corrective note into the turn
+            // context so the model continues with a fresh approach instead
+            // of repeating its earlier reasoning.
+            if let Some(loop_abort_note) = session.take_pending_loop_abort_note() {
+                tracing::info!(
+                    "[RIG-014] injecting loop-abort corrective note into turn context (session={})",
+                    session.id
+                );
+                inner_session.messages.push(rig::message::Message::User {
+                    content: rig::OneOrMany::one(rig::message::UserContent::text(
+                        loop_abort_note,
+                    )),
+                });
+            }
 
             let session_for_pause = session.clone();
             let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
@@ -1458,6 +1495,36 @@ Use SessionSearch to recover context.
                 // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
                 // Setting it again here is idempotent and ensures consistency
                 session.set_status(SessionStatus::Idle);
+            }
+
+            // RIG-014: If the streaming loop detector aborted this turn,
+            // auto-continue with a synthetic "Continue" input so the
+            // corrective note (staged on the session) gets injected into
+            // the next turn's context and the model gets a fresh chance
+            // to complete the task. Reuses the same retry-input mechanism
+            // as the compaction watchdog (CMPCT-020). Bounded by
+            // RIG014_MAX_LOOP_ABORT_RETRIES so a model that keeps
+            // degenerating into loops doesn't cycle forever.
+            if session.has_pending_loop_abort_note() {
+                if loop_abort_retry_count < RIG014_MAX_LOOP_ABORT_RETRIES {
+                    loop_abort_retry_count += 1;
+                    tracing::info!(
+                        "[RIG-014] Loop abort auto-continue: injecting synthetic Continue input (session={}, retry {}/{})",
+                        session.id,
+                        loop_abort_retry_count,
+                        RIG014_MAX_LOOP_ABORT_RETRIES
+                    );
+                    compaction_retry_input = Some("Continue".to_string());
+                } else {
+                    tracing::warn!(
+                        "[RIG-014] Loop abort retry limit reached (session={}) — giving up, waiting for user input",
+                        session.id
+                    );
+                    // Discard the staged note so it doesn't linger into a
+                    // future user turn (it was already consumed by the
+                    // retries that just failed).
+                    let _ = session.take_pending_loop_abort_note();
+                }
             }
         }
     }

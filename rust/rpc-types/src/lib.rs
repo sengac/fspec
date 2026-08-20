@@ -486,6 +486,14 @@ pub struct ProfileDefinition {
     /// `Option<bool>` so the `napi(object)` projection stays a plain struct,
     /// mirroring the compaction-threshold override fields above.
     pub streaming: Option<bool>,
+    /// PROV-142: per-profile auto-continue default. The value encodes both the
+    /// on/off state and the budget: `None` (key absent on disk) or `Some(0)`
+    /// means auto-continue OFF (session starts with `continue_enabled = false`,
+    /// today's behavior); `Some(n)` with `n >= 1` means ON with budget `n`
+    /// (session starts as if the user had run `/continue n`). Carried as a
+    /// flat `Option<u32>` so the `napi(object)` projection stays a plain
+    /// struct, mirroring the `context_window` / `max_output_tokens` fields.
+    pub auto_continue: Option<u32>,
 }
 
 impl ProfileDefinition {
@@ -495,6 +503,14 @@ impl ProfileDefinition {
     /// for an explicit `Some(false)`.
     pub fn streaming_enabled(&self) -> bool {
         self.streaming.unwrap_or(true)
+    }
+
+    /// PROV-142: canonical "is auto-continue on?" predicate — the single
+    /// source of truth for the "0 or absent ⇒ off" semantics. Returns `true`
+    /// only when [`auto_continue`](Self::auto_continue) is `Some(n)` with
+    /// `n >= 1`; `None` and `Some(0)` both mean off.
+    pub fn auto_continue_enabled(&self) -> bool {
+        self.auto_continue.is_some_and(|n| n >= 1)
     }
 }
 

@@ -212,6 +212,37 @@ pub async fn create_background_session_inner(
     );
     session.set_base_thinking_level(restored_thinking_level as u8);
 
+    // PROV-142: seed the session's auto-continue state from the profile's
+    // stored default (if the model is a profile model and the profile carries
+    // the field). The seed happens BEFORE the first user message is
+    // dispatched; runtime `/continue` still overrides it for the session's
+    // lifetime (the profile default is a seed, not a lock).
+    if is_profile_model {
+        let (colon_idx, slash_idx) = match (model.find(':'), model.find('/')) {
+            (Some(colon), Some(slash)) if colon < slash => (colon, slash),
+            _ => (0, 0),
+        };
+        let profile_name = &model[colon_idx + 1..slash_idx];
+        if let Some(profile) = crate::profile_sections::load_local_server_profiles()
+            .into_iter()
+            .find(|p| p.name == profile_name)
+        {
+            let budget = profile.auto_continue.unwrap_or(0);
+            let enabled = budget >= 1;
+            // CONT-002: DEFAULT_CONTINUE_BUDGET (10) when off — the same
+            // default BackgroundSession::new applies.
+            let seed_budget = if enabled { budget } else { 10 };
+            session.set_continue_state(enabled, seed_budget);
+            tracing::info!(
+                session_id = %uuid,
+                profile = %profile_name,
+                enabled,
+                budget = seed_budget,
+                "PROV-142: seeded auto-continue state from profile"
+            );
+        }
+    }
+
     let initial_model_id = session
         .model_id
         .read()

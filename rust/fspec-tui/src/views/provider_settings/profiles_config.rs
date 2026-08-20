@@ -153,6 +153,12 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
     // PROV-139: read the optional streaming toggle; an absent key stays `None`
     // (⇒ enabled) so older profiles are unaffected.
     let streaming = cfg.get("streaming").and_then(Value::as_bool);
+    // PROV-142: read the optional auto-continue default; an absent key stays
+    // `None` (⇒ off) so older profiles are unaffected.
+    let auto_continue = cfg
+        .get("autoContinue")
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok());
     ProfileDefinition {
         base_url,
         api_key,
@@ -161,6 +167,7 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
         compaction_threshold_type,
         compaction_threshold_value,
         streaming,
+        auto_continue,
     }
 }
 

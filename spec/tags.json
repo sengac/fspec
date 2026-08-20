@@ -914,6 +914,10 @@
           "description": "Strategy detection and selection for reverse ACDD workflows"
         },
         {
+          "name": "@streaming-loop-detection",
+          "description": "Streaming LLM loop detection — real-time repetition collapse detection on provider token streams (RIG-014)"
+        },
+        {
           "name": "@supervisor",
           "description": "Supervisor/subordinate session management"
         },
@@ -2334,6 +2338,10 @@
           "description": "Feature file prefill detection and CLI enforcement work unit"
         },
         {
+          "name": "@rig-015",
+          "description": "Work unit identifier for RIG-015 — behavioral loop-abort test (stream stops + corrective re-prompt)"
+        },
+        {
           "name": "@rpc-006",
           "description": "Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate)"
         },
@@ -2866,7 +2874,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-07-10T07:02:20.022Z",
+    "lastUpdated": "2026-08-19T11:49:02.601Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

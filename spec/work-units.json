@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-19T08:25:53.250Z",
+    "lastUpdated": "2026-08-20T06:11:57.363Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -67,12 +67,12 @@
     "PATCH": 2,
     "PAUSE": 1,
     "PERF": 2,
-    "PROV": 141,
+    "PROV": 142,
     "REFAC": 18,
     "REMIND": 17,
     "RES": 22,
     "REVIEW": 1,
-    "RIG": 13,
+    "RIG": 15,
     "RLM": 2,
     "RPC": 431,
     "SCHED": 14,
@@ -258,7 +258,8 @@
       "RPC-317",
       "RPC-318",
       "RPC-326",
-      "RPC-309"
+      "RPC-309",
+      "PROV-142"
     ],
     "done": [
       "SESS-002",
@@ -1640,7 +1641,9 @@
       "TUI-108",
       "TUI-109",
       "TUI-110",
-      "BUG-156"
+      "BUG-156",
+      "RIG-014",
+      "RIG-015"
     ],
     "blocked": [
       "QUERY-001",
@@ -224541,6 +224544,396 @@
       ],
       "nextNoteId": 1,
       "estimate": 5
+    },
+    "RIG-014": {
+      "id": "RIG-014",
+      "title": "Streaming LLM loop detector for thinking/text deltas",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-19T08:08:13.755Z",
+      "updatedAt": "2026-08-19T09:45:44.530Z",
+      "description": "Detect LLM repetition collapse (n-gram lock-in, token spam, verbatim paragraph loops, drifting loops) in real time while provider tokens stream. Word-level online detector fed per-delta in the agent loop's stream output path, with warn-then-abort escalation and corrective re-prompt. POC validated 2026-08-19 (see attachments).",
+      "epic": "replace-rig-core",
+      "children": [],
+      "userStory": {
+        "role": "AI agent session (operator)",
+        "action": "detect LLM repetition collapse in real time while provider tokens stream",
+        "benefit": "abort looping generations early instead of burning the full token budget on garbage output"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-19T08:08:41.107Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-19T08:29:35.780Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-19T08:44:58.160Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-19T09:23:23.329Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-19T09:45:44.530Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Detection MUST be streaming (online): the detector consumes text deltas one at a time and can fire mid-stream. It must NOT require the completed response text.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:08:53.464Z"
+        },
+        {
+          "id": 1,
+          "text": "The detector uses word-level tokenization (whitespace split, case-insensitive) because the agent loop receives text deltas, not raw provider tokens.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:09:14.119Z"
+        },
+        {
+          "id": 2,
+          "text": "The detector maintains a bounded sliding window of words (default 96) and evaluates four signals in order of specificity: (1) tail n-gram repetition — last n words for n in {3,5,8} appear >= 4 times in the window; (2) diversity collapse — unique-word ratio < 0.28 when window >= 40 words; (3) long verbatim suffix — last >= 16 words appear verbatim earlier in the window; (4) drift-tolerant periodicity — last 24 words match >= 85% of the 24 words immediately before them by word-pair ratio.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:09:42.738Z"
+        },
+        {
+          "id": 3,
+          "text": "A minimum-evidence guard prevents triggering before 12 words have accumulated in the window, so the detector cannot fire on the first few deltas of a stream.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:09:52.290Z"
+        },
+        {
+          "id": 4,
+          "text": "Detector state is per (turn, channel): thinking deltas and text deltas each get their own detector instance with independent windows. A loop in one channel must not be masked by fresh content in the other.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:10:01.609Z"
+        },
+        {
+          "id": 5,
+          "text": "Escalation policy: the FIRST trigger emits a non-fatal warning (status event) and streaming continues. A re-trigger within the 30s cooldown window, OR a second distinct signal type firing, escalates to ABORT — the provider stream is cancelled and the looping tail is truncated from persisted assistant content.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:10:10.196Z"
+        },
+        {
+          "id": 6,
+          "text": "After an abort, the next turn receives a corrective system note informing the model that its previous response was cut off due to repetitive output and instructing it to continue with a fresh approach without repeating its earlier reasoning.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:10:30.442Z"
+        },
+        {
+          "id": 7,
+          "text": "All thresholds (window size, n-gram sizes, repeat count, diversity floor, long-match length, periodicity length and similarity floor, cooldown) are configurable via a config struct with the POC-validated defaults, so per-model tuning is possible without code changes.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:10:41.339Z"
+        },
+        {
+          "id": 8,
+          "text": "Keep the content up to the loop onset (the normal part) and drop the degenerate tail. Append a short marker note to the persisted content indicating the response was cut off due to repetitive output, so the session history is honest about what happened.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:12:32.648Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A thinking stream that starts normally for ~30 words then locks into 'the model thinks that the model thinks that...' is flagged as NgramRepeat within ~15 words of loop onset, long before the thinking budget is exhausted.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:10:50.262Z"
+        },
+        {
+          "id": 1,
+          "text": "A thinking stream that degenerates into 'yes yes yes yes yes...' is aborted mid-stream; the operator sees a status notification that repetitive output was detected and the response was cut short, instead of watching the model spin for minutes.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:11:00.687Z"
+        },
+        {
+          "id": 2,
+          "text": "A normal thinking stream that mentions a short phrase twice (e.g. 'please note carefully' repeated once) is NOT flagged — the detector must resist false positives on natural, non-degenerate prose.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:11:11.950Z"
+        },
+        {
+          "id": 3,
+          "text": "A text stream that repeats the same ~30-word paragraph verbatim twice is flagged (LongSuffixMatch) and aborted, even though the loop period is much longer than any single n-gram.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:11:21.971Z"
+        },
+        {
+          "id": 4,
+          "text": "A thinking stream that repeats a ~24-word reasoning block but changes 1-2 words per cycle (a 'drifting' loop) is still flagged via the periodicity signal — exact-match-only detection would miss this.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:11:33.879Z"
+        },
+        {
+          "id": 5,
+          "text": "A text stream that produces a legitimate numbered list ('Step 1: ... Step 2: ... Step 3: ...') with distinct content per item is NOT flagged — repeated structural scaffolding is not a loop.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:11:43.133Z"
+        },
+        {
+          "id": 6,
+          "text": "INTEGRATION: the agent loop's stream output path (BackgroundOutput) feeds every Thinking and Text delta into the detector; when the detector escalates to abort, the loop cancels the in-flight provider stream and the next turn begins with the corrective note already in context.",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:11:52.265Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: When the detector aborts a looping stream, should the persisted assistant message keep the looping tail (truncated) or drop it entirely?",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:12:03.779Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Keep the content up to the loop onset (the normal part) and drop the degenerate tail. Append a short marker note to the persisted content indicating the response was cut off due to repetitive output, so the session history is honest about what happened."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New module `rust/agent-loop/src/stream_loop_detector.rs`: pure, stateless-config `StreamLoopDetector` struct with `feed(delta) -> Option<LoopSignal>` and `reset()`. Word-level tokenization (whitespace, lowercase). Four signals: tail n-gram repetition, diversity collapse, long verbatim suffix, drift-tolerant periodicity. Bounded VecDeque window (~96 words). No I/O, no async — trivially unit-testable and proptest-able. Research + POC evidence in spec/attachments (research-streaming-loop-detection.md, poc-streaming-loop-detector.md, llm-repetition-production.pdf, loopllm-energy-latency.pdf).",
+          "deleted": false,
+          "createdAt": "2026-08-19T08:12:47.616Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/RIG-014/research-streaming-loop-detection.md",
+        "spec/attachments/RIG-014/poc-streaming-loop-detector.md",
+        "spec/attachments/RIG-014/llm-repetition-production.pdf",
+        "spec/attachments/RIG-014/loopllm-energy-latency.pdf",
+        "spec/attachments/RIG-014/poc-streaming-loop-detector-source.rs",
+        "spec/attachments/RIG-014/ast-research-rig014-integration-points.md"
+      ],
+      "estimate": 8
+    },
+    "RIG-015": {
+      "id": "RIG-015",
+      "title": "Behavioral test: loop detector abort stops the stream and re-prompts the LLM",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-19T10:35:54.501Z",
+      "updatedAt": "2026-08-19T22:11:01.615Z",
+      "description": "RIG-014 shipped the detector + wiring with only structural (source-assertion) integration tests. This card adds a 100% behavioral test that drives a real looping stream through the agent loop's stream output path and proves: (1) the in-flight provider stream is actually cancelled/stopped mid-stream (not just that interrupt() is called), and (2) the next turn's context actually contains the corrective note instructing the LLM it was looping and to stop. No live provider — a synthetic looping stream source.",
+      "epic": "replace-rig-core",
+      "children": [],
+      "userStory": {
+        "role": "AI agent session operator",
+        "action": "have the loop detector abort actually stop the in-flight stream and re-prompt the LLM with a corrective note",
+        "benefit": "confidence that the RIG-014 wiring works end-to-end, not just structurally"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-19T10:54:10.556Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-19T20:46:40.020Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-19T21:07:56.568Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-19T22:08:47.628Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-19T22:11:01.615Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The test MUST be behavioral, not structural: it drives a real looping stream through the production stream output path (BackgroundOutput + stream_loop interrupt machinery) and asserts observable outcomes. Source-assertion tests (RIG-014's @integration scenarios) are NOT sufficient for this card.",
+          "deleted": false,
+          "createdAt": "2026-08-19T10:54:27.287Z"
+        },
+        {
+          "id": 1,
+          "text": "The test drives the REAL production stream driver `codelet_cli::interactive::run_agent_stream_with_images` with a synthetic looping `CompletionModel` (no live provider, no network), a real `BackgroundSession`, and a real `BackgroundOutput` as the StreamOutput sink. It must NOT be a source-assertion test.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:01:15.925Z"
+        },
+        {
+          "id": 2,
+          "text": "The synthetic looping model must emit a stream long enough that the detector's abort (session.interrupt()) fires MID-stream, and the test must prove the stream actually STOPS: the model's stream is polled fewer times than its full length, i.e. the remaining looping tokens after the abort are never consumed. This is the core 'stops the stream' guarantee the user wants.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:01:32.808Z"
+        },
+        {
+          "id": 3,
+          "text": "The test MUST assert the persisted assistant message (loaded from the session manifest via codelet_core::persistence::manifest::load_session, with the data dir pointed at a tempdir via codelet_common::set_data_directory) ends with the RIG-014 marker note ('Response cut off: repetitive output detected') and does NOT contain the degenerate looping tail — proving the truncation is observable in persisted history, not just in-memory.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:47:54.684Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Two behavioral tests, both in rust/agent-loop/tests/rig015_loop_abort_behavioral.rs, both #[cfg(feature=\"test-support\")]. TEST A (stops the stream): build a synthetic LoopingModel: CompletionModel whose stream() yields ~40 normal text deltas then an unbounded loop of 'the model thinks that' (with a poll counter). Drive codelet_cli::interactive::run_agent_stream_with_images(agent, prompt, None, &mut session, is_interrupted, compaction_in_progress, interrupt_notify, &BackgroundOutput, session.id). Assert: (1) run returns (interrupt path), (2) the poll counter is FAR below the full stream length — proving the stream was actually cancelled mid-stream, not just that interrupt() was called, (3) session.is_interrupted is true, (4) take_pending_loop_abort_note() is Some and mentions repetitive output. TEST B (re-prompts the LLM): after TEST A's abort, the corrective note is injected as a User message into the NEXT turn's context (the agent_loop.rs:517 take_pending_loop_abort_note path) — assert the note text is a valid User message containing the corrective instruction. The synthetic model's stream() reads request.chat_history so TEST B can also assert the next completion request actually carries the note.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:41:57.810Z"
+        },
+        {
+          "id": 1,
+          "text": "DESIGN DECISION (final): The test drives the FULL production agent_loop (codelet_agent_loop::agent_loop) end-to-end via a real SessionManager + BackgroundSession + the test-support 'stub' provider arm — this is the only path that constructs the real BackgroundOutput and runs the real RIG-014 detector wiring. To make the stub emit a looping stream, add a test-only configurable stream source to StubModel (codelet_providers::stub_model, behind the existing test-support feature): a static OnceLock<Option<Vec<String>>> that, when set, makes stream() yield each word as a RawStreamingChoice::Message delta (incrementing a shared Arc<AtomicUsize> poll counter) followed by FinalResponse, instead of the canned 'hi back'. The test sets the looping source + poll counter, creates a session with model 'stub/canned', installs FspecAgentHooks, spawns agent_loop, sends input, and asserts the observable outcomes. This is the minimal, production-faithful change: it touches only test-support code and adds no production logic.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:45:02.110Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A stub-provider session whose model streams 40 normal words then an unbounded 'the model thinks that' loop: the agent loop's RIG-014 detector fires, session.interrupt() cancels the in-flight stream mid-way (the model's stream is polled far fewer times than its full length), the turn ends, and the persisted assistant message ends with the 'Response cut off: repetitive output detected' marker note without the degenerate tail.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:51:38.813Z"
+        },
+        {
+          "id": 1,
+          "text": "After a loop abort, the next turn's context actually carries a corrective note telling the LLM its previous response was cut off due to repetitive output and instructing it to continue with a fresh approach without repeating its earlier reasoning — verified by the next completion request's chat history containing the note.",
+          "deleted": false,
+          "createdAt": "2026-08-19T11:51:53.659Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "attachments": [
+        "spec/attachments/RIG-015/ast-research-rig015-integration-points.md"
+      ]
+    },
+    "PROV-142": {
+      "id": "PROV-142",
+      "title": "Per-profile Auto-Continue default in OpenAI profile form",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2026-08-20T02:53:31.043Z",
+      "updatedAt": "2026-08-20T06:11:57.363Z",
+      "description": "Add an 'Auto-Continue' field to the OpenAI profile create/edit form so a profile can carry a persisted /continue default (off, or on with a budget). When a session is created against that profile, the session's auto-continue state is seeded from the profile's stored value.",
+      "epic": "provider-resilience",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-142/PROV-142-research.md",
+        "spec/attachments/PROV-142/ast-research-prov142-integration-points.md"
+      ],
+      "userStory": {
+        "role": "developer using a local OpenAI-compatible server profile",
+        "action": "persist a /continue auto-continue default on the profile via the Provider Settings form (0 = off, n >= 1 = on with budget n)",
+        "benefit": "every new session against that profile starts with the desired auto-continue behavior without re-typing /continue each time"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-20T02:58:50.715Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-20T03:57:50.118Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-20T04:27:37.592Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-20T06:11:57.363Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The OpenAI profile create/edit form gains a new 'Auto-Continue' field appended after Streaming. The field accepts: empty (no default — session starts with auto-continue off, today's behavior), 'off' (explicitly off), 'on' (on with DEFAULT_CONTINUE_BUDGET = 10), or a positive integer n >= 1 (on with budget n, e.g. '300').",
+          "deleted": true,
+          "createdAt": "2026-08-20T02:59:08.045Z",
+          "deletedAt": "2026-08-20T03:43:21.899Z"
+        },
+        {
+          "id": 1,
+          "text": "The field is a single numeric text field (not a boolean + budget pair). Value 0 (or empty) means auto-continue OFF; any positive integer n >= 1 means auto-continue ON with budget n. This mirrors /continue's semantics where /continue 0 is rejected in favor of /continue off — here 0 is the OFF sentinel.",
+          "deleted": false,
+          "createdAt": "2026-08-20T02:59:22.071Z"
+        },
+        {
+          "id": 2,
+          "text": "The new field is a single flat Option<u32> on the wire shape (ProfileDefinition.auto_continue) and on the on-disk ProfileDef. None (key absent) or Some(0) both mean OFF; Some(n) with n >= 1 means ON with budget n. The canonical predicate is ProfileDefinition::auto_continue_enabled() mirroring streaming_enabled().",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:03:10.259Z"
+        },
+        {
+          "id": 3,
+          "text": "When a session is created against a profile model (openai:<profile>/<model>), the session's auto-continue state is seeded from the profile's stored auto_continue value BEFORE the first user message is dispatched. The seed happens in the shared session creation helper (create_background_session_inner) so both create_session_with_id and create_session_from_manifest paths get it.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:03:29.105Z"
+        },
+        {
+          "id": 4,
+          "text": "The OpenAI profile create/edit form gains a new 'Auto-Continue' field appended after Streaming. The field accepts: empty (no default — session starts with auto-continue off, today's behavior), '0' (explicitly off), or a positive integer n >= 1 (on with budget n, e.g. '300'). Non-numeric input (e.g. 'abc') rejects the save with a hint mirroring /continue's invalid-argument rejection.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:43:30.599Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens the Edit Profile form for a profile with no autoContinue key. The Auto-Continue field is empty with placeholder '0 (off) or n (budget)'. User types '300' and presses Enter. The profile is saved with autoContinue: 300. A new session against that profile starts with continue_enabled=true, continue_budget=300.",
+          "deleted": true,
+          "createdAt": "2026-08-20T03:03:48.610Z",
+          "deletedAt": "2026-08-20T03:04:15.802Z"
+        },
+        {
+          "id": 1,
+          "text": "User opens the Edit Profile form for a profile that has no Auto-Continue value stored. The new Auto-Continue field appears after Streaming, empty, with a dim placeholder hint. User types 300 and presses Enter to save. The profile is saved. The next time the user starts a session against that profile, the session begins in auto-continue mode with a budget of 300 nudges — as if the user had typed /continue 300 at the start of the session.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:04:27.268Z"
+        },
+        {
+          "id": 2,
+          "text": "User opens the Edit Profile form for a profile that has no Auto-Continue value stored. The new Auto-Continue field appears after Streaming, empty, with a dim placeholder hint. User types 0 and presses Enter to save. The profile is saved. The next time the user starts a session against that profile, the session begins with auto-continue OFF — the same behavior as today, no nudging.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:04:36.949Z"
+        },
+        {
+          "id": 3,
+          "text": "User has an existing profile 'spark' with no Auto-Continue value. User opens the Edit Profile form, navigates to the new Auto-Continue field (it appears after Streaming), types 500, and saves. Re-opening the form shows 500. Starting a session against spark/qwen, the session's auto-continue indicator in the footer shows 'on (budget 500)' from the very first turn.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:05:14.133Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Single flat Option<u32> field (auto_continue) added to wire ProfileDefinition (rust/rpc-types/src/lib.rs) and on-disk ProfileDef (rust/sessions/src/profile_persistence.rs), bridged by profile_def_from_wire (rust/sessions/src/conversions.rs). None or Some(0) = OFF; Some(n>=1) = ON with budget n. Canonical predicate auto_continue_enabled() mirrors streaming_enabled().",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:48:42.685Z"
+        },
+        {
+          "id": 1,
+          "text": "Session seeding happens in create_background_session_inner (rust/sessions/src/session_creation_helper.rs) after BackgroundSession construction, so both create_session_with_id and create_session_from_manifest paths get it. The profile name is plumbed via ParsedModelInfo (parse_model_string in rust/sessions/src/model_parsing.rs) and the stored profile is looked up via load_local_server_profiles. The profile default is a seed only; runtime /continue still overrides it.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:49:02.505Z"
+        },
+        {
+          "id": 2,
+          "text": "TUI profile form (rust/fspec-tui/src/views/provider_settings/profile_form.rs) gains a 7th text field 'Auto-Continue' after Streaming (PROFILE_FORM_FIELDS 6 -> 7). It is a plain text field, so profile_form_streaming::route_edit_key routes it to the existing text-editing branch with no routing changes. Render placeholder '0 (off) or n (budget)' at index 6. build_definition() rejects non-numeric input with a hint mirroring /continue's invalid-argument rejection.",
+          "deleted": false,
+          "createdAt": "2026-08-20T03:49:02.651Z"
+        }
+      ],
+      "nextNoteId": 3
     }
   }
 }

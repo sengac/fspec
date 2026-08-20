@@ -103,6 +103,14 @@ pub struct LocalServerProfile {
     /// non-streaming request path.
     #[serde(rename = "streaming", default)]
     pub streaming: Option<bool>,
+    /// PROV-142: per-profile auto-continue default. `None` (absent) or `0`
+    /// mean OFF; `Some(n)` with `n >= 1` means ON with budget `n`.
+    #[serde(
+        rename = "autoContinue",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
+    pub auto_continue: Option<u32>,
 }
 
 /// A custom model declared on a profile (`profile.customModels[]`).

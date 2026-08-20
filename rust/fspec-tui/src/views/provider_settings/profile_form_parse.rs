@@ -48,3 +48,21 @@ pub(super) fn render_threshold(kind: Option<&str>, value: Option<u32>) -> String
         _ => String::new(),
     }
 }
+
+/// PROV-142: parse the Auto-Continue form field's raw string into the wire
+/// value. Empty ⇒ `None` (off, today's behavior); `"0"` ⇒ `Some(0)` (the
+/// explicit-off sentinel); `"n"` (n >= 1) ⇒ `Some(n)` (on with budget n).
+/// Non-numeric input is an `Err` with a user-facing hint mirroring
+/// `/continue`'s invalid-argument rejection.
+pub(super) fn parse_auto_continue(raw: &str) -> Result<Option<u32>, String> {
+    match raw.trim() {
+        "" => Ok(None),
+        text => text
+            .parse::<u32>()
+            .map(Some)
+            .map_err(|_| {
+                "Auto-Continue must be 0 (off) or a positive integer budget (e.g. 300)"
+                    .to_string()
+            }),
+    }
+}

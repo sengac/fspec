@@ -49,6 +49,7 @@ pub mod persist;
 pub mod schedule_handler;
 pub mod session_search_handler;
 pub mod stream_chunk_json;
+pub mod stream_loop_detector;
 pub mod thinking_config;
 pub mod thinking_level_detection;
 

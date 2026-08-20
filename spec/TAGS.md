@@ -246,6 +246,7 @@ Tags that categorize features by functional area.
 | `@statistics` | Statistical analysis |
 | `@status-display` | Status display in user interface |
 | `@strategy-detection` | Strategy detection and selection for reverse ACDD workflows |
+| `@streaming-loop-detection` | Streaming LLM loop detection — real-time repetition collapse detection on provider token streams (RIG-014) |
 | `@supervisor` | Supervisor/subordinate session management |
 | `@system-reminders` | System reminder and anti-drift pattern features |
 | `@tag-management` | TAGS.md Operations |
@@ -629,6 +630,7 @@ Tags tracking development status of features.
 | `@refactor` | Code refactoring and technical improvements |
 | `@refactoring` | Code that needs refactoring |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
+| `@rig-015` | Work unit identifier for RIG-015 — behavioral loop-abort test (stream stops + corrective re-prompt) |
 | `@rpc-006` | Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate) |
 | `@rpc-010` | Work unit identifier tag for RPC-010: fspec binary with combined/daemon/client subcommands replacing codelet-rpc-server for production |
 | `@rpc-022` | Work unit identifier tag for RPC-022 — modal dialogs (ModelSelector, ThinkingLevel, RoleBanner) |
@@ -736,4 +738,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-07-10T07:02:20.022Z_
+_Last updated: 2026-08-19T11:49:02.601Z_

@@ -1,0 +1,151 @@
+{
+  "scenarios": [
+    {
+      "name": "A session against a profile with autoContinue 300 starts with auto-continue on and budget 300",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov142_session_seed.rs",
+          "lines": "113-156",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A session against a profile with autoContinue 0 starts with auto-continue off",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov142_session_seed.rs",
+          "lines": "163-200",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A session against a profile without an autoContinue key starts with auto-continue off",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov142_session_seed.rs",
+          "lines": "207-243",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov142_session_seed.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_creation_helper.rs"
+    ],
+    "totalLinesCovered": 206
+  }
+}

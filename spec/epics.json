@@ -428,7 +428,9 @@
         "RIG-008",
         "RIG-009",
         "RIG-010",
-        "RIG-013"
+        "RIG-013",
+        "RIG-014",
+        "RIG-015"
       ]
     },
     "webmcp-extension": {
@@ -643,7 +645,8 @@
         "PROV-084",
         "BUG-137",
         "BUG-144",
-        "PROV-141"
+        "PROV-141",
+        "PROV-142"
       ]
     },
     "local-change-protocols": {

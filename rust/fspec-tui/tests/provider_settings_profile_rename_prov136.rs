@@ -59,6 +59,7 @@ fn stored_def() -> ProfileDefinition {
         compaction_threshold_type: None,
         compaction_threshold_value: None,
         streaming: None,
+    auto_continue: None,
     }
 }
 

@@ -31,11 +31,27 @@ use crate::inject_summary_handler::should_idle_on_done;
 use crate::persist::{
     persist_assistant_message_internal, persist_token_state, persist_tool_result_internal,
 };
+use crate::stream_loop_detector::{
+    build_loop_abort_marker_note, build_loop_abort_recovery_message, LoopEscalationOutcome,
+    LoopEscalationPolicy, StreamLoopDetector,
+};
+
+/// RIG-014: Default cooldown between loop-detector triggers before the
+/// escalation policy aborts the in-flight stream.
+pub const RIG014_LOOP_ABORT_COOLDOWN_SECS: u64 = 30;
 
 /// Output handler for background sessions that implements StreamOutput.
 ///
 /// REFAC-007: Accumulates assistant content blocks during streaming and
 /// persists the complete assistant message on Done.
+///
+/// RIG-014: Feeds every Thinking/Text delta into per-channel streaming
+/// loop detectors (`thinking_loop_detector` / `text_loop_detector`). The
+/// detectors are independent per channel so a loop in one channel cannot
+/// be masked by fresh content in the other. On escalation to abort the
+/// session's existing interrupt machinery cancels the in-flight provider
+/// stream, the degenerate tail is dropped from persisted content, and a
+/// corrective note is staged for the next turn.
 pub struct BackgroundOutput {
     pub(crate) session: Arc<BackgroundSession>,
     /// REFAC-007: Accumulated assistant content blocks for current turn
@@ -44,6 +60,18 @@ pub struct BackgroundOutput {
     provider: String,
     /// HOOK-013: Track last tool call name+args for post_tool_use hooks
     last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>,
+    /// RIG-014: Streaming loop detector for the thinking channel.
+    thinking_loop_detector: std::sync::Mutex<StreamLoopDetector>,
+    /// RIG-014: Streaming loop detector for the text channel.
+    text_loop_detector: std::sync::Mutex<StreamLoopDetector>,
+    /// RIG-014: Shared warn→abort escalation policy across both channels.
+    loop_escalation_policy: std::sync::Mutex<LoopEscalationPolicy>,
+    /// RIG-014: Wall-clock instant of the last loop trigger (elapsed-time
+    /// basis for the escalation policy).
+    loop_last_trigger_at: std::sync::Mutex<Option<std::time::Instant>>,
+    /// RIG-014: True once a loop abort has fired this turn (prevents
+    /// re-feeding deltas into the detectors after the stream is cancelled).
+    loop_abort_fired: std::sync::Mutex<bool>,
 }
 
 impl BackgroundOutput {
@@ -53,6 +81,120 @@ impl BackgroundOutput {
             assistant_content: std::sync::Mutex::new(Vec::new()),
             provider,
             last_tool_call: std::sync::Mutex::new(None),
+            thinking_loop_detector: std::sync::Mutex::new(StreamLoopDetector::new()),
+            text_loop_detector: std::sync::Mutex::new(StreamLoopDetector::new()),
+            loop_escalation_policy: std::sync::Mutex::new(LoopEscalationPolicy::new(
+                std::time::Duration::from_secs(RIG014_LOOP_ABORT_COOLDOWN_SECS),
+            )),
+            loop_last_trigger_at: std::sync::Mutex::new(None),
+            loop_abort_fired: std::sync::Mutex::new(false),
+        }
+    }
+
+    /// RIG-014: Reset the per-turn loop detectors. Called at the start of
+    /// each turn so detector windows do not carry over from the previous
+    /// turn. (The `BackgroundOutput` is created per turn, so this is a
+    /// defensive reset for the case where the same instance is reused.)
+    pub fn reset_turn_loop_detectors(&self) {
+        if let Ok(mut det) = self.thinking_loop_detector.lock() {
+            det.reset();
+        }
+        if let Ok(mut det) = self.text_loop_detector.lock() {
+            det.reset();
+        }
+        if let Ok(mut fired) = self.loop_abort_fired.lock() {
+            *fired = false;
+        }
+    }
+
+    /// RIG-014: Feed a thinking or text delta into the appropriate channel
+    /// detector and apply the escalation policy. Returns `true` if the
+    /// escalation policy escalated to abort (caller should trigger the
+    /// session interrupt).
+    fn feed_loop_detectors(&self, channel: &str, delta: &str) -> bool {
+        // Skip feeding after an abort has already fired this turn — the
+        // stream is being cancelled and further deltas are noise.
+        if let Ok(fired) = self.loop_abort_fired.lock() {
+            if *fired {
+                return false;
+            }
+        }
+
+        let det = if channel == "thinking" {
+            &self.thinking_loop_detector
+        } else {
+            &self.text_loop_detector
+        };
+
+        let signal = {
+            let Ok(mut guard) = det.lock() else {
+                return false;
+            };
+            guard.feed(delta)
+        };
+
+        let Some(signal) = signal else {
+            return false;
+        };
+
+        // Compute elapsed seconds since the previous trigger.
+        let elapsed_secs = {
+            let Ok(mut last) = self.loop_last_trigger_at.lock() else {
+                return false;
+            };
+            let elapsed = last
+                .as_ref()
+                .map(|t| t.elapsed().as_secs_f64())
+                .unwrap_or(0.0);
+            *last = Some(std::time::Instant::now());
+            elapsed
+        };
+
+        let outcome = {
+            let Ok(mut policy) = self.loop_escalation_policy.lock() else {
+                return false;
+            };
+            policy.on_trigger(signal.clone(), elapsed_secs)
+        };
+
+        match outcome {
+            LoopEscalationOutcome::Warn => {
+                tracing::warn!(
+                    session = %self.session.id,
+                    channel,
+                    ?signal,
+                    "[RIG-014] loop detector warning (streaming continues)"
+                );
+                false
+            }
+            LoopEscalationOutcome::Abort => {
+                tracing::warn!(
+                    session = %self.session.id,
+                    channel,
+                    ?signal,
+                    "[RIG-014] loop detector abort — cancelling in-flight stream"
+                );
+                // Mark the abort as fired so further deltas are ignored.
+                if let Ok(mut fired) = self.loop_abort_fired.lock() {
+                    *fired = true;
+                }
+                // Append the marker note to the persisted content (the
+                // degenerate tail is dropped because we stop accumulating
+                // further deltas and the stream is cancelled).
+                self.add_assistant_content(AssistantContent::Text {
+                    text: build_loop_abort_marker_note(),
+                });
+                // Stage the corrective note for the next turn (session-level
+                // so it survives the per-turn BackgroundOutput instance and
+                // is consumed by the agent loop at the top of the next turn).
+                let note = build_loop_abort_recovery_message(&signal, None);
+                self.session.set_pending_loop_abort_note(note);
+                // Drive the existing interrupt machinery to cancel the
+                // in-flight provider stream. The stream loop checks
+                // is_interrupted each iteration and stops.
+                self.session.interrupt();
+                true
+            }
         }
     }
 
@@ -103,16 +245,31 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
 
         let chunk = match event {
             StreamEvent::Text(ref text) => {
-                // REFAC-007: Accumulate text for later persistence
-                self.add_assistant_content(AssistantContent::Text { text: text.clone() });
+                // RIG-014: Feed the text delta into the text-channel loop
+                // detector. On abort the degenerate delta is NOT
+                // accumulated (the tail is dropped) and the in-flight
+                // stream is cancelled via the session interrupt.
+                let loop_abort = self.feed_loop_detectors("text", text);
+                if !loop_abort {
+                    // REFAC-007: Accumulate text for later persistence
+                    self.add_assistant_content(AssistantContent::Text {
+                        text: text.clone(),
+                    });
+                }
                 StreamChunk::text(text.clone())
             }
             StreamEvent::Thinking(ref thinking) => {
-                // REFAC-007: Accumulate thinking for later persistence
-                self.add_assistant_content(AssistantContent::Thinking {
-                    thinking: thinking.clone(),
-                    signature: None,
-                });
+                // RIG-014: Feed the thinking delta into the thinking-channel
+                // loop detector (independent window from the text channel).
+                // On abort the degenerate delta is NOT accumulated.
+                let loop_abort = self.feed_loop_detectors("thinking", thinking);
+                if !loop_abort {
+                    // REFAC-007: Accumulate thinking for later persistence
+                    self.add_assistant_content(AssistantContent::Thinking {
+                        thinking: thinking.clone(),
+                        signature: None,
+                    });
+                }
                 StreamChunk::thinking(thinking.clone())
             }
             StreamEvent::ToolCall(ref tc) => {

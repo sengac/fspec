@@ -1,0 +1,263 @@
+{
+  "scenarios": [
+    {
+      "name": "Looping stream is cancelled mid-stream and the turn ends",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs",
+          "lines": "181-246",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ]
+            },
+            {
+              "file": "rust/providers/src/stub_model.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Persisted assistant message is truncated with the marker note",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs",
+          "lines": "254-313",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Next turn's context carries the corrective note",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs",
+          "lines": "321-369",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/background_output.rs",
+      "rust/providers/src/stub_model.rs",
+      "rust/agent-loop/src/stream_loop_detector.rs",
+      "rust/agent-loop/src/agent_loop.rs"
+    ],
+    "totalLinesCovered": 366
+  }
+}

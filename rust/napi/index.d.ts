@@ -3465,6 +3465,16 @@ export interface ProfileDefinition {
    * mirroring the compaction-threshold override fields above.
    */
   streaming?: boolean;
+  /**
+   * PROV-142: per-profile auto-continue default. The value encodes both the
+   * on/off state and the budget: `None` (key absent on disk) or `Some(0)`
+   * means auto-continue OFF (session starts with `continue_enabled = false`,
+   * today's behavior); `Some(n)` with `n >= 1` means ON with budget `n`
+   * (session starts as if the user had run `/continue n`). Carried as a
+   * flat `Option<u32>` so the `napi(object)` projection stays a plain
+   * struct, mirroring the `context_window` / `max_output_tokens` fields.
+   */
+  autoContinue?: number;
 }
 
 /**

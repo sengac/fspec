@@ -42,6 +42,11 @@ pub struct ProfileDef {
     /// the `streaming` key is absent) means streaming is enabled; only
     /// `Some(false)` is written to disk as `"streaming": false`.
     pub streaming: Option<bool>,
+    /// PROV-142: per-profile auto-continue default. `None` (key absent) or
+    /// `Some(0)` mean OFF; `Some(n)` with `n >= 1` means ON with budget `n`.
+    /// Only `Some(_)` is written to disk (as `"autoContinue": <n>`, including
+    /// the explicit-off sentinel `0`); `None` removes the key.
+    pub auto_continue: Option<u32>,
 }
 
 /// Canonical openai-only guard predicate — the single source of truth for
@@ -178,6 +183,10 @@ fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
     // PROV-139: write the streaming toggle only when explicitly set; `None`
     // removes the key so an absent `streaming` continues to mean enabled.
     set_or_remove(profile, "streaming", def.streaming.map(Value::from));
+    // PROV-142: write the auto-continue default when set (including the
+    // explicit-off sentinel `Some(0)`); `None` removes the key so an absent
+    // `autoContinue` continues to mean off (today's behavior).
+    set_or_remove(profile, "autoContinue", def.auto_continue.map(Value::from));
 }
 
 /// Path-injectable core of [`save_profile`]. Whole-file read-modify-write that

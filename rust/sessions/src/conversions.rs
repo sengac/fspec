@@ -182,5 +182,7 @@ pub fn profile_def_from_wire(
         max_output_tokens: wire.max_output_tokens,
         compaction_threshold,
         streaming: wire.streaming,
+        // PROV-142: carry the per-profile auto-continue default through.
+        auto_continue: wire.auto_continue,
     }
 }

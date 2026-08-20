@@ -1,0 +1,994 @@
+{
+  "scenarios": [
+    {
+      "name": "Short n-gram lock-in in thinking stream is detected mid-stream",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "90-131",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single-token spam in thinking stream is detected mid-stream",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "132-156",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mild one-off phrase repetition is NOT flagged",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "158-180",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verbatim paragraph repetition in text stream is detected",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "182-203",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Drifting loop with 1-2 words changing per cycle is detected",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "205-242",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legitimate numbered list with distinct items is NOT flagged",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "244-268",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detector cannot fire before minimum evidence is accumulated",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "270-292",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Thinking and text channels have independent detector state",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "294-324",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reset clears detector state for a new turn",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "326-352",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Thresholds are configurable and override the defaults",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "354-398",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "First trigger warns without aborting",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "400-420",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Re-trigger within cooldown escalates to abort",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "422-440",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A second distinct signal type escalates to abort",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "442-463",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Re-trigger after cooldown does not escalate",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "465-493",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Abort truncates the degenerate tail and appends a marker note",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "495-528",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Next turn receives a corrective note after an abort",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "528-574",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent loop stream path feeds thinking and text deltas into the detector",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "574-604",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                508,
+                509,
+                510,
+                511
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent loop cancels the in-flight provider stream on abort",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "606-634",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 18,
+    "coveredScenarios": 18,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/rig014_streaming_loop_detection.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/stream_loop_detector.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/agent-loop/src/agent_loop.rs"
+    ],
+    "totalLinesCovered": 1211
+  }
+}

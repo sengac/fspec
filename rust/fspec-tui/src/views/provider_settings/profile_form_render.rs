@@ -57,6 +57,8 @@ fn placeholder_for(idx: usize) -> &'static str {
         2 => "128000",
         3 => "16384",
         4 => "80% or 200000",
+        // PROV-142: the Auto-Continue field (idx 6) — 0 = off, n = budget.
+        6 => "0 (off) or n (budget)",
         _ => "(empty)",
     }
 }

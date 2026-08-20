@@ -1,0 +1,67 @@
+{
+  "scenarios": [
+    {
+      "name": "The wire autoContinue predicate reports enabled only for positive budgets",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/prov142_auto_continue_flag.rs",
+          "lines": "25-49",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/lib.rs",
+              "lines": [
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The wire autoContinue value round-trips through JSON",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/prov142_auto_continue_flag.rs",
+          "lines": "52-83",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/lib.rs",
+              "lines": [
+                496
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-types/tests/prov142_auto_continue_flag.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/lib.rs"
+    ],
+    "totalLinesCovered": 76
+  }
+}

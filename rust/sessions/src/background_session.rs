@@ -467,6 +467,13 @@ pub struct BackgroundSession {
     /// self-weak), in which case `owning_manager()` returns `None` and callers
     /// fall back to `SessionManager::instance()` — preserving the NAPI path.
     owning_manager: RwLock<std::sync::Weak<crate::session_manager::SessionManager>>,
+
+    /// RIG-014: Pending loop-abort corrective note. Set by the streaming
+    /// loop detector (via `BackgroundOutput`) when a looping provider
+    /// stream is aborted mid-turn; consumed by the agent loop at the top of
+    /// the NEXT turn and injected into the turn context so the model
+    /// continues with a fresh approach instead of repeating its reasoning.
+    pending_loop_abort_note: std::sync::Mutex<Option<String>>,
 }
 
 impl BackgroundSession {
@@ -565,6 +572,8 @@ impl BackgroundSession {
             // RPC-386: no owning manager by default (empty Weak). Stamped by
             // the SessionManager creation paths when a self-weak is present.
             owning_manager: RwLock::new(std::sync::Weak::new()),
+            // RIG-014: no pending loop-abort note at creation
+            pending_loop_abort_note: std::sync::Mutex::new(None),
             // BUG-134: Per-session debug capture manager
             debug_capture: {
                 let mgr = DebugCaptureManager::new().unwrap_or_else(|e| {
@@ -1502,6 +1511,36 @@ impl BackgroundSession {
     /// is interrupted (Esc).
     pub fn get_interrupt_notify(&self) -> Arc<Notify> {
         self.interrupt_notify.clone()
+    }
+
+    /// RIG-014: Store the pending loop-abort corrective note (set by the
+    /// streaming loop detector when a looping stream is aborted).
+    pub fn set_pending_loop_abort_note(&self, note: String) {
+        if let Ok(mut guard) = self.pending_loop_abort_note.lock() {
+            *guard = Some(note);
+        }
+    }
+
+    /// RIG-014: Consume the pending loop-abort corrective note (if any).
+    ///
+    /// Called by the agent loop at the top of the next turn; the note is
+    /// injected into the turn context and cleared so it is only applied
+    /// once.
+    pub fn take_pending_loop_abort_note(&self) -> Option<String> {
+        self.pending_loop_abort_note
+            .lock()
+            .ok()
+            .and_then(|mut guard| guard.take())
+    }
+
+    /// RIG-014: Check whether a pending loop-abort corrective note exists
+    /// without consuming it. Used by the agent loop to decide whether to
+    /// auto-continue after a loop-abort interruption.
+    pub fn has_pending_loop_abort_note(&self) -> bool {
+        self.pending_loop_abort_note
+            .lock()
+            .map(|guard| guard.is_some())
+            .unwrap_or(false)
     }
 
     /// TUI-065: Clear session history and reinject context reminders

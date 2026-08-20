@@ -134,6 +134,7 @@ fn scenario_save_writes_optional_fields() {
         compaction_threshold_type: Some("percentage".to_string()),
         compaction_threshold_value: Some(80),
         streaming: None,
+    auto_continue: None,
     };
     let result = handle.save_profile("openai", "work-vllm", &def);
 

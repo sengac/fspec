@@ -37,6 +37,8 @@ use rig::message::AssistantContent;
 use rig::streaming::{RawStreamingChoice, StreamingCompletionResponse, StreamingResult};
 use rig::OneOrMany;
 use serde::{Deserialize, Serialize};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, OnceLock};
 
 /// Raw-response payload exposed to rig consumers.
 ///
@@ -132,8 +134,32 @@ impl CompletionModel for StubModel {
 
     async fn stream(
         &self,
-        _request: CompletionRequest,
+        request: CompletionRequest,
     ) -> Result<StreamingCompletionResponse<StubCompletion>, CompletionError> {
+        // RIG-015: record the request chat history (test-only seam) so a
+        // behavioral test can assert the NEXT turn's context actually
+        // carries the loop-abort corrective note. Best-effort: a poisoned
+        // lock is a no-op.
+        record_request_history(&request);
+
+        // RIG-015: if the test-only looping stream hook is active, yield
+        // each configured word as a separate text delta (incrementing the
+        // shared poll counter) followed by a FinalResponse. This lets a
+        // behavioral test drive a real looping stream through the full
+        // production agent loop and prove the RIG-014 detector abort
+        // cancels the in-flight stream mid-way.
+        let hook = LOOPING_STREAM_HOOK.lock().ok().and_then(|g| g.clone());
+        if let Some((words, poll)) = hook {
+            let rig_stream: StreamingResult<StubCompletion> = Box::pin(stream! {
+                for word in words {
+                    poll.fetch_add(1, Ordering::AcqRel);
+                    yield Ok(RawStreamingChoice::Message(word));
+                }
+                yield Ok(RawStreamingChoice::FinalResponse(StubCompletion::end_turn()));
+            });
+            return Ok(StreamingCompletionResponse::stream(rig_stream));
+        }
+
         // Streaming path: yield exactly the canned chunk sequence the
         // cross-frontend parity tests assert against. The text chunk
         // becomes a `StreamChunk::Text { text: "hi back", .. }`
@@ -148,4 +174,102 @@ impl CompletionModel for StubModel {
 
         Ok(StreamingCompletionResponse::stream(rig_stream))
     }
+}
+
+// ---------------------------------------------------------------------
+// RIG-015: test-only looping stream hook + request-history recording.
+// ---------------------------------------------------------------------
+//
+// Both seams are process-global and test-only (this whole module is
+// gated behind `test-support`). The hook lets a behavioral test make the
+// stub emit a real looping stream (instead of the canned "hi back") so
+// the RIG-014 detector can fire mid-stream; the poll counter proves the
+// stream was actually cancelled (polled fewer times than its full
+// length). The request-history recording lets a test assert the next
+// turn's completion request actually carries the corrective note.
+
+/// RIG-015: the active looping stream source, if set.
+///
+/// A `Mutex<Option<...>>` (NOT a `OnceLock`) so the hook can be set and
+/// cleared repeatedly across tests — the whole module is test-only and the
+/// behavioral tests run serially in one process.
+type LoopingStreamHook = std::sync::LazyLock<
+    std::sync::Mutex<Option<(Vec<String>, Arc<AtomicUsize>)>>,
+>;
+
+static LOOPING_STREAM_HOOK: LoopingStreamHook =
+    std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
+
+/// RIG-015: the most recent completion-request chat history (rendered as
+/// one string per message), recorded for test assertions.
+static LAST_REQUEST_HISTORY: OnceLock<std::sync::Mutex<Vec<String>>> = OnceLock::new();
+
+fn history_slot() -> &'static std::sync::Mutex<Vec<String>> {
+    LAST_REQUEST_HISTORY.get_or_init(|| std::sync::Mutex::new(Vec::new()))
+}
+
+/// RIG-015: render a rig `Message` to a plain-text string (best-effort).
+fn message_to_text(msg: &rig::message::Message) -> String {
+    match msg {
+        rig::message::Message::User { content } => {
+            let mut out = String::new();
+            for item in content.iter() {
+                if let rig::message::UserContent::Text(t) = item {
+                    out.push_str(&t.text);
+                    out.push(' ');
+                }
+            }
+            out
+        }
+        rig::message::Message::Assistant { content, .. } => {
+            let mut out = String::new();
+            for item in content.iter() {
+                if let rig::message::AssistantContent::Text(t) = item {
+                    out.push_str(&t.text);
+                    out.push(' ');
+                }
+            }
+            out
+        }
+    }
+}
+
+/// RIG-015: record the current request's chat history (best-effort).
+fn record_request_history(request: &CompletionRequest) {
+    let mut rendered = Vec::new();
+    if let Some(preamble) = &request.preamble {
+        rendered.push(preamble.clone());
+    }
+    for msg in request.chat_history.iter() {
+        rendered.push(message_to_text(msg));
+    }
+    if let Ok(mut guard) = history_slot().lock() {
+        *guard = rendered;
+    }
+}
+
+/// RIG-015: activate the looping stream source. `words` are yielded one
+/// per delta; `poll` is incremented per yielded delta so a test can prove
+/// how far the stream was consumed before cancellation.
+pub fn set_looping_stream_hook(words: Vec<String>, poll: Arc<AtomicUsize>) {
+    if let Ok(mut guard) = LOOPING_STREAM_HOOK.lock() {
+        *guard = Some((words, poll));
+    }
+}
+
+/// RIG-015: clear the looping stream hook (restores the canned stream).
+pub fn clear_looping_stream_hook() {
+    if let Ok(mut guard) = LOOPING_STREAM_HOOK.lock() {
+        *guard = None;
+    }
+}
+
+/// RIG-015: the most recent completion-request chat history (one string
+/// per message, preamble first if present). Empty when no request has
+/// been recorded yet.
+pub fn last_request_history() -> Vec<String> {
+    history_slot()
+        .lock()
+        .map(|guard| guard.clone())
+        .unwrap_or_default()
 }

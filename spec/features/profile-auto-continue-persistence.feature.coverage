@@ -1,0 +1,101 @@
+{
+  "scenarios": [
+    {
+      "name": "The wire-to-disk bridge copies the autoContinue value",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov142_auto_continue_persistence.rs",
+          "lines": "38-52",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/conversions.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving writes and removes the autoContinue key",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov142_auto_continue_persistence.rs",
+          "lines": "56-106",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_persistence.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov142_auto_continue_persistence.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/conversions.rs",
+      "rust/sessions/src/profile_persistence.rs"
+    ],
+    "totalLinesCovered": 118
+  }
+}
