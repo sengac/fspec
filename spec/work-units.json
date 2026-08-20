@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-20T06:11:57.363Z",
+    "lastUpdated": "2026-08-20T12:57:41.210Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -90,7 +90,8 @@
     "VIEW": 2,
     "VIEWNV": 1,
     "VIZ": 4,
-    "WATCH": 24
+    "WATCH": 24,
+    "UPD": 2
   },
   "states": {
     "backlog": [
@@ -244,7 +245,9 @@
       "LANG-001",
       "PROV-009",
       "TUI-085",
-      "RIG-013"
+      "RIG-013",
+      "UPD-001",
+      "UPD-002"
     ],
     "testing": [
       "EXT-001"
@@ -224934,6 +224937,238 @@
         }
       ],
       "nextNoteId": 3
+    },
+    "UPD-001": {
+      "id": "UPD-001",
+      "title": "Cross-platform release pipeline (v0.10.0) via GitHub Actions",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-08-20T12:53:47.346Z",
+      "updatedAt": "2026-08-20T13:08:48.571Z",
+      "description": "Bump workspace version 0.1.0 -> 0.10.0 and add a GitHub Actions workflow that natively builds the fspec binary for 5 targets (win x86_64, win aarch64, linux x86_64, linux aarch64, mac aarch64) and publishes them as a GitHub Release with self_update-compatible asset names.",
+      "epic": "update",
+      "children": [],
+      "userStory": {
+        "role": "fspec user on any supported platform",
+        "action": "get a prebuilt fspec binary from GitHub Releases",
+        "benefit": "install without building from source"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-20T12:54:38.666Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The pipeline MUST build exactly 5 targets: x86_64-pc-windows-msvc, aarch64-pc-windows-msvc, x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, aarch64-apple-darwin",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:54:53.942Z"
+        },
+        {
+          "id": 1,
+          "text": "The workspace version in rust/Cargo.toml [workspace.package] MUST be bumped from 0.1.0 to 0.10.0 and Cargo.lock MUST be regenerated so all member crates report 0.10.0",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:54:54.096Z"
+        },
+        {
+          "id": 2,
+          "text": "Release assets MUST be named fspec-<target-triple>.zip (Windows) or fspec-<target-triple>.tar.gz (unix) containing only the fspec binary — this naming is a contract with the UPD-002 self-updater",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:08.659Z"
+        },
+        {
+          "id": 3,
+          "text": "Each target MUST be built natively on a matching GitHub runner (no cross-compilation in CI), using the release-slim cargo profile and the pinned 1.95.0 toolchain from rust/rust-toolchain.toml",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:08.819Z"
+        },
+        {
+          "id": 4,
+          "text": "The release job MUST fail (and publish nothing) if any of the 5 build jobs fails",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:19.894Z"
+        },
+        {
+          "id": 5,
+          "text": "The release workflow MUST trigger on git tags matching v* and create/update a GitHub Release with all 5 assets attached using softprops/action-gh-release",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:20.071Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Running fspec --version on the mac aarch64 release binary prints fspec 0.10.0",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:31.423Z"
+        },
+        {
+          "id": 1,
+          "text": "Pushing tag v0.10.0 runs 5 parallel build jobs (one per target) and a final release job that publishes fspec v0.10.0 with exactly 5 assets on the GitHub Releases page",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:31.585Z"
+        },
+        {
+          "id": 2,
+          "text": "A user on Windows ARM64 downloads fspec-aarch64-pc-windows-msvc.zip, extracts fspec.exe, and it runs without installing a Rust toolchain",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:44.286Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should v0.10.0 release binaries be code-signed (macOS notarization + Windows code-signing cert), or is unsigned acceptable for now (Gatekeeper/SmartScreen warnings)?",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:44.129Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Unsigned for now. Ship unsigned v0.10.0 binaries (Gatekeeper/SmartScreen warnings accepted); code signing (macOS notarization + Windows cert) is tracked as a follow-up story."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Native matrix build (one runner per target) over cross-compilation: windows-11 (x86_64 MSVC), windows-11-arm (aarch64 MSVC), ubuntu-24.04 (x86_64 Linux), ubuntu-24.04-arm (aarch64 Linux), macos-latest (aarch64). Full plan in attachment release-pipeline-implementation.md",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:57:11.095Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/UPD-001/release-pipeline-implementation.md"
+      ],
+      "assumptions": [
+        "Unsigned for now. Ship unsigned v0.10.0 binaries (Gatekeeper/SmartScreen warnings accepted); code signing (macOS notarization + Windows cert) is tracked as a follow-up story."
+      ],
+      "estimate": 5
+    },
+    "UPD-002": {
+      "id": "UPD-002",
+      "title": "In-place self-update via /update command",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-08-20T12:54:02.683Z",
+      "updatedAt": "2026-08-20T13:08:58.648Z",
+      "description": "Add /update (TUI slash command) and `fspec update` (CLI subcommand) that download the latest platform binary from the GitHub release, verify its checksum, and replace the running binary in place so the new version activates on next launch.",
+      "epic": "update",
+      "children": [],
+      "userStory": {
+        "role": "fspec user",
+        "action": "run /update to upgrade fspec in place",
+        "benefit": "stay current without manual downloads or rebuilds"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-20T12:54:38.837Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "/update in the TUI and `fspec update` in the CLI MUST share one update engine — no duplicated download/replace logic",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:56.047Z"
+        },
+        {
+          "id": 1,
+          "text": "The downloaded binary MUST be verified against the SHA-256 digest GitHub publishes for the release asset BEFORE it replaces the installed binary",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:55:56.206Z"
+        },
+        {
+          "id": 2,
+          "text": "If the running binary is already the latest release, /update MUST report up-to-date and make no changes",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:10.128Z"
+        },
+        {
+          "id": 3,
+          "text": "The update MUST run non-interactively (no_confirm, no blocking stdin prompt) because the TUI terminal is in raw mode and has no interactive stdin",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:10.280Z"
+        },
+        {
+          "id": 4,
+          "text": "The new binary MUST be written to a temp file and only renamed into place after the checksum passes — a failed download or checksum mismatch MUST leave the installed binary untouched",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:26.614Z"
+        },
+        {
+          "id": 5,
+          "text": "The TUI MUST NOT auto-restart or exec itself after an update — it reports the new version and instructs the user to restart fspec to activate it",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:26.765Z"
+        },
+        {
+          "id": 6,
+          "text": "Latest only in v1. /update and `fspec update` always target the newest release; specific-version install (--version) is a follow-up.",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:59:39.511Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs /update while already on the latest release: the TUI shows '✓ fspec is up to date' and nothing changes",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:39.340Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs /update on v0.9.3 while v0.10.0 is the latest release: the TUI shows a checking line, then '✓ fspec v0.10.0 installed. Restart fspec to activate.' Quitting and relaunching fspec shows version 0.10.0",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:39.509Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs /update with no network: the TUI shows an error line and the installed binary is unchanged — fspec keeps working at its current version",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:55.510Z"
+        },
+        {
+          "id": 3,
+          "text": "Running `fspec update --check` on an outdated install prints the latest available version and exits with code 1; on the latest install it exits with code 0",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:56:55.679Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should `fspec update` support installing a specific version (e.g. `fspec update --version 0.9.3` for downgrades/pinning), or only 'latest' in v1?",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:57:11.253Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Latest only in v1. /update and `fspec update` always target the newest release; specific-version install (--version) is a follow-up."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Use the self_update crate (jaemk, GitHub backend, checksums+async features) with .no_confirm(true). TUI wiring mirrors the /continue (CONT-002) slash-command pattern: update_parser.rs + slash_parser route + dispatch_slash_update.rs. Shared engine in codelet-fspec-core::update. Full plan in attachment self-update-implementation.md",
+          "deleted": false,
+          "createdAt": "2026-08-20T12:57:26.118Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/UPD-002/self-update-implementation.md"
+      ],
+      "dependsOn": [
+        "UPD-001"
+      ],
+      "estimate": 8
     }
   }
 }

@@ -1326,6 +1326,16 @@
         "TUI-108",
         "TUI-109"
       ]
+    },
+    "update": {
+      "id": "update",
+      "title": "UPD",
+      "createdAt": "2026-08-20T12:45:00.965Z",
+      "description": "Update epic: cross-platform GitHub Actions release pipeline (v0.10.0) + in-place /update self-update command",
+      "workUnits": [
+        "UPD-001",
+        "UPD-002"
+      ]
     }
   }
 }
