@@ -50,6 +50,7 @@ jobs:
             os: macos-latest
             archive: tar.gz
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -62,6 +63,30 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: rust
+
+      - name: Install protoc (pinned v34.0)
+        # lance-encoding (via codelet-graph → nanograph) has a build script
+        # that runs prost-build, which requires the protoc binary.
+        # Pinned to v34.0 to match the locally tested libprotoc version.
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ "$RUNNER_ARCH" == "X64" ]]; then
+              url="protoc-34.0-linux-x86_64.zip"
+            else
+              url="protoc-34.0-linux-aarch_64.zip"
+            fi
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            url="protoc-34.0-osx-aarch_64.zip"
+          else
+            url="protoc-34.0-win64.zip"
+          fi
+          curl -sSL -o protoc.zip "https://github.com/protocolbuffers/protobuf/releases/download/v34.0/${url}"
+          unzip -o protoc.zip -d protoc-bin bin/protoc >/dev/null
+          chmod +x protoc-bin/bin/protoc
+          echo "${GITHUB_WORKSPACE}/protoc-bin/bin" >> "$GITHUB_PATH"
+          protoc --version
 
       # The workspace root is rust/ (not the repo root) — cargo build MUST
       # run there so rust/rust-toolchain.toml is respected.
