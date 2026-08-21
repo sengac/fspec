@@ -17,6 +17,7 @@ use super::continue_parser::{parse_continue_command, ContinueSubcommand};
 use super::goal_parser::{parse_goal_command, GoalSubcommand};
 use super::loop_parser::{parse_loop_command, LoopSubcommand};
 use super::schedule_parser::{parse_schedule_command, ScheduleSubcommand};
+use super::update_parser::{parse_update_command, UpdateSubcommand};
 
 /// Outcome of parsing a single submitted input line. The
 /// `handle_input_submitted` arm in `dispatch_slash_commands.rs` branches over
@@ -63,6 +64,10 @@ pub enum SlashCommandParse {
     /// (Set / Show / Verify / Clear) so the dispatcher can apply the
     /// goal state and round-trip it to the backend without re-parsing.
     GoalSubcommand(GoalSubcommand),
+    /// `/update …` — UPD-002. Carries the parsed [`UpdateSubcommand`]
+    /// (CheckAndUpdate / CheckOnly / Invalid) so the dispatcher can call
+    /// the shared update engine without re-parsing.
+    UpdateSubcommand(UpdateSubcommand),
     /// Anything else — forward to `backend.send_input` as before.
     NotASlashCommand,
 }
@@ -144,6 +149,11 @@ pub fn parse_slash_command(text: &str) -> SlashCommandParse {
     // parser. Bare `/goal` resolves to `GoalSubcommand::Show`.
     if trimmed == "/goal" || trimmed.starts_with("/goal ") {
         return SlashCommandParse::GoalSubcommand(parse_goal_command(trimmed));
+    }
+    // UPD-002: route the entire `/update …` family through the dedicated
+    // parser. Bare `/update` resolves to `UpdateSubcommand::CheckAndUpdate`.
+    if trimmed == "/update" || trimmed.starts_with("/update ") {
+        return SlashCommandParse::UpdateSubcommand(parse_update_command(trimmed));
     }
     SlashCommandParse::NotASlashCommand
 }

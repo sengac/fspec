@@ -32,6 +32,7 @@ mod help_dispatch_table;
 pub mod io;
 pub mod js_compat;
 pub mod types;
+pub mod update;
 pub mod utils;
 pub mod validators;
 pub mod virtual_hooks_exec;

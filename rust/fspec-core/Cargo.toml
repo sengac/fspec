@@ -29,10 +29,26 @@ codelet-git = { path = "../git" }
 # format_serde_error). Renders a caret-pointed snippet under the offending
 # token for corrupted fspec state files.
 codelet-fspec-json-error = { workspace = true }
+# UPD-002: in-place self-update engine (src/update/). Manual reqwest+sha2
+# download-verify-replace path (NOT the self_update crate) so the engine can
+# be pointed at a local mock GitHub API via a base_url override. tar +
+# flate2 extract the unix tar.gz assets; self-replace handles the Windows
+# locked-.exe rename; hex renders SHA-256 digests.
+reqwest.workspace = true
+tar.workspace = true
+flate2.workspace = true
+self-replace.workspace = true
+hex.workspace = true
+semver.workspace = true
+zip.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
 serial_test.workspace = true
+# UPD-002: tests/upd002_update_engine.rs serves a mock GitHub API on
+# 127.0.0.1:0 (axum is a workspace dependency).
+axum.workspace = true
 
 [lints]
 workspace = true

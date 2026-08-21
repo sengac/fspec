@@ -38,6 +38,7 @@ pub enum SlashCommandAction {
     Loop,
     Continue,
     Goal,
+    Update,
 }
 
 impl SlashCommandAction {
@@ -65,6 +66,7 @@ impl SlashCommandAction {
             SlashCommandAction::Loop => "loop",
             SlashCommandAction::Continue => "continue",
             SlashCommandAction::Goal => "goal",
+            SlashCommandAction::Update => "update",
         }
     }
 }
@@ -162,6 +164,10 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     SlashCommand {
         action: SlashCommandAction::Goal,
         description: "Set a goal gating done() acceptance",
+    },
+    SlashCommand {
+        action: SlashCommandAction::Update,
+        description: "Update fspec in place (or /update check)",
     },
 ];
 

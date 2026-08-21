@@ -141,6 +141,13 @@ impl App {
                 // Handler body lives in dispatch_slash_goal.rs.
                 self.handle_goal_subcommand(super::goal_parser::GoalSubcommand::Show);
             }
+            SlashCommandAction::Update => {
+                // UPD-002: bare palette pick checks + installs the latest
+                // release. Handler body lives in dispatch_slash_update.rs.
+                self.handle_update_subcommand(
+                    super::update_parser::UpdateSubcommand::CheckAndUpdate,
+                );
+            }
             SlashCommandAction::Isolation => {
                 // RPC-060: routed via try_dispatch_create_session_dialog in app/dispatch.rs.
                 let _ = self.action_tx.send(Action::OpenCreateSessionDialog {
@@ -257,6 +264,12 @@ impl App {
                 // CONT-003: apply directly in this dispatch tick —
                 // handler body lives in dispatch_slash_goal.rs.
                 self.handle_goal_subcommand(sub);
+                return;
+            }
+            SlashCommandParse::UpdateSubcommand(sub) => {
+                // UPD-002: apply directly in this dispatch tick —
+                // handler body lives in dispatch_slash_update.rs.
+                self.handle_update_subcommand(sub);
                 return;
             }
             SlashCommandParse::NotASlashCommand => {}

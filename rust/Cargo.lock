@@ -1094,7 +1094,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-agent-loop"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1128,7 +1128,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-attachment-viewer"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -1144,7 +1144,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-cli"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -1183,7 +1183,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-common"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1207,7 +1207,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-core"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1249,10 +1249,11 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
+ "axum",
  "clap",
  "codelet-agent-loop",
  "codelet-common",
@@ -1270,7 +1271,9 @@ dependencies = [
  "crossterm",
  "dirs 6.0.0",
  "dotenvy",
+ "flate2",
  "futures",
+ "hex",
  "nix 0.29.0",
  "portable-pty",
  "predicates",
@@ -1278,7 +1281,10 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "serde_yaml",
  "serial_test",
+ "sha2",
+ "tar",
  "tarpc",
  "tempfile",
  "tokio",
@@ -1293,31 +1299,40 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec-core"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
+ "axum",
  "chrono",
  "chrono-tz",
  "codelet-fspec-json-error",
  "codelet-git",
  "croner",
+ "flate2",
  "fs2",
  "gherkin",
+ "hex",
  "indexmap 2.13.0",
  "jsonschema",
  "merman-core",
  "regex",
+ "reqwest 0.12.28",
+ "self-replace",
+ "semver",
  "serde",
  "serde_json",
  "serial_test",
  "sha2",
+ "tar",
  "tempfile",
  "thiserror 1.0.69",
  "tokio",
+ "tracing",
+ "zip",
 ]
 
 [[package]]
 name = "codelet-fspec-json-error"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "serde_json",
  "unicode-segmentation",
@@ -1325,7 +1340,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec-tui"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1337,6 +1352,7 @@ dependencies = [
  "codelet-cli",
  "codelet-common",
  "codelet-core",
+ "codelet-fspec-core",
  "codelet-git",
  "codelet-providers",
  "codelet-rpc",
@@ -1374,7 +1390,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-git"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1394,7 +1410,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-graph"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -1423,7 +1439,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-napi"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "arrow-array",
@@ -1484,7 +1500,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-providers"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1533,7 +1549,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "arc-swap",
  "codelet-core",
@@ -1552,7 +1568,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc-embedded"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "codelet-core",
  "codelet-providers",
@@ -1568,7 +1584,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc-server"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1593,7 +1609,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc-types"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "codelet-test-helpers",
  "napi",
@@ -1604,7 +1620,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-sessions"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -1636,14 +1652,14 @@ dependencies = [
 
 [[package]]
 name = "codelet-test-helpers"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "codelet-tools"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "ast-grep-core",
@@ -1693,7 +1709,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-tui"
-version = "0.1.0"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -8514,6 +8530,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "self-replace"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03ec815b5eab420ab893f63393878d89c90fdd94c0bcc44c07abb8ad95552fb7"
+dependencies = [
+ "fastrand",
+ "tempfile",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
 name = "semver"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9313,6 +9340,17 @@ name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
+
+[[package]]
+name = "tar"
+version = "0.4.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f6221d9a6003c78398e3b239969f352578258df48c8eb051caadae0015bc840"
+dependencies = [
+ "filetime",
+ "libc",
+ "xattr",
+]
 
 [[package]]
 name = "tarpc"
@@ -11325,6 +11363,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
+]
+
+[[package]]
+name = "xattr"
+version = "1.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32e45ad4206f6d2479085147f02bc2ef834ac85886624a23575ae137c8aa8156"
+dependencies = [
+ "libc",
+ "rustix 1.1.4",
 ]
 
 [[package]]

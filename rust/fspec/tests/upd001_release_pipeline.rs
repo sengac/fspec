@@ -1,0 +1,291 @@
+//! UPD-001 — cross-platform release pipeline: version bump + workflow.
+//!
+//! Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
+//!
+//! Scenarios covered:
+//!   - "Workspace version is bumped to 0.10.0"
+//!   - "Release workflow builds all five targets"
+//!   - "Release is published with self-updater-compatible assets"
+//!   - "Release job is blocked when any build fails"
+//!   - "Release binary reports the new version"
+//!
+//! The workflow file is validated structurally (YAML parse + matrix
+//! inspection) — the actual 5-target CI run is verified by pushing the
+//! v0.10.0 tag (manual step, UPD-001 Definition of Done).
+
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+use std::fs;
+use std::process::Command;
+
+mod common;
+
+use common::{codelet_root, fspec_bin, project_root};
+
+const EXPECTED_TARGETS: [(&str, &str, &str); 5] = [
+    ("x86_64-pc-windows-msvc", "windows-11", "zip"),
+    ("aarch64-pc-windows-msvc", "windows-11-arm", "zip"),
+    ("x86_64-unknown-linux-gnu", "ubuntu-24.04", "tar.gz"),
+    ("aarch64-unknown-linux-gnu", "ubuntu-24.04-arm", "tar.gz"),
+    ("aarch64-apple-darwin", "macos-latest", "tar.gz"),
+];
+
+/// Extract the `version = "..."` value from the `[workspace.package]`
+/// section of `rust/Cargo.toml`.
+fn workspace_package_version() -> String {
+    let raw = fs::read_to_string(codelet_root().join("Cargo.toml")).expect("read rust/Cargo.toml");
+    let Some(start) = raw.find("[workspace.package]") else {
+        panic!("[workspace.package] section missing from rust/Cargo.toml");
+    };
+    let section = &raw[start..];
+    // The section is multi-line; find the first `version =` after the header line.
+    let header_end = section.find('\n').expect("header newline");
+    let body = &section[header_end..];
+    let Some(ver_line) = body.lines().find(|l| l.trim_start().starts_with("version =")) else {
+        panic!("no version key under [workspace.package]");
+    };
+    ver_line
+        .split('"')
+        .nth(1)
+        .map(str::to_string)
+        .expect("quoted version value")
+}
+
+fn workflow_yaml() -> serde_yaml::Value {
+    let path = project_root().join(".github/workflows/release.yml");
+    let raw = fs::read_to_string(&path).expect("read .github/workflows/release.yml");
+    serde_yaml::from_str(&raw).expect("parse release.yml as YAML")
+}
+
+// =============================================================================
+// Scenario: Workspace version is bumped to 0.10.0
+// =============================================================================
+
+#[test]
+fn scenario_workspace_version_is_bumped_to_0_10_0() {
+    // @step Given the workspace is at version 0.1.0
+    // (precondition — the repo history shows 0.1.0; nothing to assert here)
+
+    // @step When the version bump for v0.10.0 is applied
+    let version = workspace_package_version();
+
+    // @step Then rust/Cargo.toml [workspace.package] version is 0.10.0
+    assert_eq!(
+        version, "0.10.0",
+        "[workspace.package] version must be 0.10.0 after the bump"
+    );
+
+    // @step And Cargo.lock reports 0.10.0 for all member crates
+    let lock = fs::read_to_string(codelet_root().join("Cargo.lock")).expect("read Cargo.lock");
+    // Every workspace member package entry must carry version 0.10.0.
+    for name in ["codelet-fspec", "codelet-fspec-core", "codelet-fspec-tui", "codelet-core"] {
+        let Some(start) = lock.find(&format!("\nname = \"{name}\"\n")) else {
+            panic!("workspace member {name} missing from Cargo.lock");
+        };
+        let entry = &lock[start..start + 200];
+        assert!(
+            entry.contains("version = \"0.10.0\""),
+            "Cargo.lock entry for {name} must report version 0.10.0, got: {entry}"
+        );
+    }
+}
+
+// =============================================================================
+// Scenario: Release workflow builds all five targets
+// =============================================================================
+
+#[test]
+fn scenario_release_workflow_builds_all_five_targets() {
+    // @step Given a git tag matching v* is pushed
+    let wf = workflow_yaml();
+    let on = wf.get("on").expect("workflow must have an `on` trigger");
+    let tags = on
+        .get("push")
+        .and_then(|p| p.get("tags"))
+        .and_then(|t| t.as_sequence())
+        .expect("`on.push.tags` sequence");
+    assert!(
+        tags.iter().any(|t| t.as_str() == Some("v*")),
+        "workflow must trigger on tags matching v*: {tags:?}"
+    );
+
+    // @step When the release workflow runs
+    let jobs = wf.get("jobs").and_then(|j| j.as_mapping()).expect("jobs mapping");
+    let build = jobs.get("build").expect("a `build` job must exist");
+    let matrix = build
+        .get("strategy")
+        .and_then(|s| s.get("matrix"))
+        .and_then(|m| m.get("include"))
+        .and_then(|i| i.as_sequence())
+        .expect("strategy.matrix.include sequence");
+
+    // @step Then one build job runs natively per target (win x86_64, win arm64, linux x86_64, linux arm64, mac arm64)
+    assert_eq!(
+        matrix.len(),
+        5,
+        "exactly 5 matrix entries (rule [0]: exactly 5 targets)"
+    );
+    for (target, os, _archive) in EXPECTED_TARGETS {
+        let entry = matrix
+            .iter()
+            .find(|e| e.get("target").and_then(|t| t.as_str()) == Some(target))
+            .unwrap_or_else(|| panic!("matrix entry for {target} missing"));
+        assert_eq!(
+            entry.get("os").and_then(|o| o.as_str()),
+            Some(os),
+            "target {target} must build natively on {os} (rule [3]: no cross-compilation)"
+        );
+    }
+
+    // @step And every build uses the release-slim profile and the pinned 1.95.0 toolchain
+    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
+        .expect("read workflow");
+    assert!(
+        raw.contains("release-slim"),
+        "build step must use the release-slim profile (rule [3])"
+    );
+    assert!(
+        raw.contains("1.95.0"),
+        "workflow must pin the 1.95.0 toolchain (rule [3])"
+    );
+}
+
+// =============================================================================
+// Scenario: Release is published with self-updater-compatible assets
+// =============================================================================
+
+#[test]
+fn scenario_release_is_published_with_self_updater_compatible_assets() {
+    // @step Given all five build jobs succeeded
+    // (structural precondition — the release job runs after `needs: build`)
+
+    // @step When the release job completes
+    // (structural — the release job's contents are asserted below)
+    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
+        .expect("read workflow");
+
+    // @step Then a GitHub Release exists with exactly five assets
+    assert!(
+        raw.contains("softprops/action-gh-release"),
+        "release job must use softprops/action-gh-release (rule [5])"
+    );
+
+    // @step And Windows assets are named fspec-<target>.zip and unix assets fspec-<target>.tar.gz
+    // The packaging step must produce fspec-<target>.<ext> names (the
+    // UPD-002 self-updater contract).
+    for (target, _os, ext) in EXPECTED_TARGETS {
+        let expected = format!("fspec-{target}.{ext}");
+        assert!(
+            raw.contains(&expected) || raw.contains("fspec-${{ matrix.target }}"),
+            "workflow must package asset {expected} (asset-naming contract)"
+        );
+    }
+}
+
+// =============================================================================
+// Scenario: Release job is blocked when any build fails
+// =============================================================================
+
+#[test]
+fn scenario_release_job_is_blocked_when_any_build_fails() {
+    // @step Given one of the five build jobs fails
+    // (structural precondition — `needs` is the blocking mechanism)
+
+    // @step When the workflow reaches the release stage
+    let wf = workflow_yaml();
+    let jobs = wf.get("jobs").and_then(|j| j.as_mapping()).expect("jobs mapping");
+    let release = jobs.get("release").expect("a `release` job must exist");
+
+    // @step Then no GitHub Release is created or updated
+    let needs = release
+        .get("needs")
+        .and_then(|n| n.as_str())
+        .map(str::to_string)
+        .or_else(|| {
+            release
+                .get("needs")
+                .and_then(|n| n.as_sequence())
+                .map(|seq| {
+                    seq.iter()
+                        .filter_map(|v| v.as_str().map(str::to_string))
+                        .collect::<Vec<_>>()
+                        .join(",")
+                })
+        })
+        .expect("release job must declare `needs`");
+    assert!(
+        needs.contains("build"),
+        "release job must `needs: build` so a failed build blocks publication (rule [4])"
+    );
+}
+
+// =============================================================================
+// Scenario: Windows ARM64 user runs the prebuilt binary
+// =============================================================================
+
+#[test]
+fn scenario_windows_arm64_user_runs_the_prebuilt_binary() {
+    // @step Given a user on Windows ARM64 downloads fspec-aarch64-pc-windows-msvc.zip
+    // (structural precondition — the workflow must package the aarch64
+    // Windows asset as a zip; the download itself is a manual smoke test
+    // per UPD-001 Definition of Done)
+    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
+        .expect("read workflow");
+
+    // @step When they extract and run fspec.exe
+    // The Windows packaging step must include the .exe in the zip so the
+    // extracted artifact is a runnable fspec.exe.
+    assert!(
+        raw.contains("zip -j fspec-${{ matrix.target }}.zip fspec.exe"),
+        "Windows packaging step must zip fspec.exe into fspec-<target>.zip"
+    );
+
+    // @step Then it works without installing a Rust toolchain
+    // (structural assertion — the asset is a self-contained release-slim
+    // cargo build; the user needs no toolchain, only the binary)
+    let wf = workflow_yaml();
+    let build = wf
+        .get("jobs")
+        .and_then(|j| j.as_mapping())
+        .and_then(|j| j.get("build"))
+        .expect("build job");
+    let matrix = build
+        .get("strategy")
+        .and_then(|s| s.get("matrix"))
+        .and_then(|m| m.get("include"))
+        .and_then(|i| i.as_sequence())
+        .expect("matrix include");
+    assert!(
+        matrix
+            .iter()
+            .any(|e| e.get("target").and_then(|t| t.as_str())
+                == Some("aarch64-pc-windows-msvc")),
+        "aarch64-pc-windows-msvc must be a first-class matrix target"
+    );
+    assert!(
+        raw.contains("cargo build --profile release-slim"),
+        "the shipped artifact must be a self-contained release-slim build"
+    );
+}
+
+#[test]
+fn scenario_release_binary_reports_the_new_version() {
+    // @step Given the mac aarch64 release binary is extracted
+    // (local equivalent: the built fspec binary carries the workspace
+    // version via clap `#[command(version)]`)
+
+    // @step When fspec --version is run
+    let output = Command::new(fspec_bin())
+        .arg("--version")
+        .output()
+        .expect("spawn fspec --version");
+
+    // @step Then it prints fspec 0.10.0
+    assert!(output.status.success(), "fspec --version must exit 0");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(
+        stdout.trim(),
+        "fspec 0.10.0",
+        "fspec --version must print the bumped workspace version"
+    );
+}

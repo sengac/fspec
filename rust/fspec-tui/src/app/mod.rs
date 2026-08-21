@@ -55,6 +55,7 @@ pub mod dispatch_slash_debug;
 pub mod dispatch_slash_goal; // CONT-003: /goal apply + backend round-trip
 pub mod dispatch_slash_loop;
 pub mod dispatch_slash_schedule;
+pub mod dispatch_slash_update; // UPD-002: /update apply + shared engine round-trip
 pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
 pub mod dispatch_viewer;
@@ -66,6 +67,7 @@ pub mod schedule_parser;
 pub mod session_creation;
 pub mod slash_parser;
 pub mod state;
+pub mod update_parser; // UPD-002: /update subcommand parser + message formatting
 
 pub use events::synth_key;
 pub use slash_parser::{parse_slash_command, SlashCommandParse};

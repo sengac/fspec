@@ -87,6 +87,7 @@ mod show_test_patterns;
 mod show_work_unit;
 mod status;
 mod tag_stats;
+mod update_cmd;
 mod update_prefix;
 mod update_tag;
 // Batch 10 (2026-06-11) — attachments, virtual hooks, hooks, diagrams
@@ -261,6 +262,17 @@ enum Mode {
         /// Explicit WS URL — bypasses daemon.json autodiscovery.
         #[arg(long, value_name = "URL")]
         connect: Option<String>,
+    },
+    /// UPD-002: in-place self-update. Downloads the latest platform binary
+    /// from the GitHub release, verifies its checksum, and replaces the
+    /// running binary (activated on next launch). `--check` is scriptable:
+    /// exit 0 when current, exit 1 when a newer release is available.
+    #[command(about = "Update fspec in place (or --check for availability)")]
+    Update {
+        /// Check only: print the latest version and exit 0 (current) or 1
+        /// (update available) without downloading or replacing anything.
+        #[arg(long)]
+        check: bool,
     },
     /// RPC-253: list work units from `spec/work-units.json`. Delegates to
     /// `fspec_core::commands::list_work_units::run` for two-front-doors parity.
@@ -2382,6 +2394,7 @@ async fn main() -> std::process::ExitCode {
         Some(Mode::Daemon { bind, pidfile }) => daemon::run(cli.workspace, bind, pidfile).await,
         Some(Mode::Client { connect }) => client::run(connect).await,
         Some(Mode::Status { connect }) => status::run(connect).await,
+        Some(Mode::Update { check }) => update_cmd::run(check).await,
         Some(Mode::ListWorkUnits {
             status,
             prefix,

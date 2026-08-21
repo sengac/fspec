@@ -46,10 +46,10 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.10.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/rquast/rust"
+repository = "https://github.com/sengac/fspec"
 
 [workspace.dependencies]
 # Internal
@@ -199,6 +199,18 @@ hayro = "0.5"
 # === Codex Provider ===
 keyring = "3.3"
 sha2 = "0.10"
+hex = "0.4"
+# UPD-002: in-place self-update engine (codelet-fspec-core::update).
+# tar + flate2 extract the unix tar.gz release assets; self-replace handles
+# the Windows locked-.exe rename. flate2/hex are already in the lockfile.
+tar = "0.4"
+flate2 = "1"
+self-replace = "1"
+# UPD-002: zip extraction for the Windows release assets.
+zip = { version = "2", default-features = false, features = ["deflate"] }
+# UPD-002: semver comparison for the self-update engine's latest-vs-current
+# version check.
+semver = "1"
 
 # === Chrome DevTools (WEB-002) ===
 # Note: WITHOUT "fetch" feature to avoid auto-downloading Chrome

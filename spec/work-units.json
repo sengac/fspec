@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-20T12:57:41.210Z",
+    "lastUpdated": "2026-08-21T09:17:36.474Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -245,9 +245,7 @@
       "LANG-001",
       "PROV-009",
       "TUI-085",
-      "RIG-013",
-      "UPD-001",
-      "UPD-002"
+      "RIG-013"
     ],
     "testing": [
       "EXT-001"
@@ -1646,7 +1644,9 @@
       "TUI-110",
       "BUG-156",
       "RIG-014",
-      "RIG-015"
+      "RIG-015",
+      "UPD-001",
+      "UPD-002"
     ],
     "blocked": [
       "QUERY-001",
@@ -224942,9 +224942,9 @@
       "id": "UPD-001",
       "title": "Cross-platform release pipeline (v0.10.0) via GitHub Actions",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-08-20T12:53:47.346Z",
-      "updatedAt": "2026-08-20T13:08:48.571Z",
+      "updatedAt": "2026-08-21T05:19:26.423Z",
       "description": "Bump workspace version 0.1.0 -> 0.10.0 and add a GitHub Actions workflow that natively builds the fspec binary for 5 targets (win x86_64, win aarch64, linux x86_64, linux aarch64, mac aarch64) and publishes them as a GitHub Release with self_update-compatible asset names.",
       "epic": "update",
       "children": [],
@@ -224957,6 +224957,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-08-20T12:54:38.666Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-21T02:43:03.211Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-21T02:49:03.706Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-21T05:14:14.135Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-21T05:19:26.423Z"
         }
       ],
       "rules": [
@@ -225041,7 +225057,8 @@
       ],
       "nextNoteId": 1,
       "attachments": [
-        "spec/attachments/UPD-001/release-pipeline-implementation.md"
+        "spec/attachments/UPD-001/release-pipeline-implementation.md",
+        "spec/attachments/UPD-001/ast-research-upd001-upd002.md"
       ],
       "assumptions": [
         "Unsigned for now. Ship unsigned v0.10.0 binaries (Gatekeeper/SmartScreen warnings accepted); code signing (macOS notarization + Windows cert) is tracked as a follow-up story."
@@ -225052,9 +225069,9 @@
       "id": "UPD-002",
       "title": "In-place self-update via /update command",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-08-20T12:54:02.683Z",
-      "updatedAt": "2026-08-20T13:08:58.648Z",
+      "updatedAt": "2026-08-21T09:17:36.474Z",
       "description": "Add /update (TUI slash command) and `fspec update` (CLI subcommand) that download the latest platform binary from the GitHub release, verify its checksum, and replace the running binary in place so the new version activates on next launch.",
       "epic": "update",
       "children": [],
@@ -225067,6 +225084,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-08-20T12:54:38.837Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-21T06:40:43.586Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-21T09:16:04.234Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-21T09:16:31.909Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-21T09:17:36.474Z"
         }
       ],
       "rules": [
@@ -225163,7 +225196,8 @@
       ],
       "nextNoteId": 1,
       "attachments": [
-        "spec/attachments/UPD-002/self-update-implementation.md"
+        "spec/attachments/UPD-002/self-update-implementation.md",
+        "spec/attachments/UPD-002/ast-research-upd002.md"
       ],
       "dependsOn": [
         "UPD-001"

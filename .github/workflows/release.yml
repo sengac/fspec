@@ -1,0 +1,114 @@
+# UPD-001 — cross-platform release pipeline.
+#
+# Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
+#
+# Native matrix build (one runner per target — NO cross-compilation in CI):
+#   x86_64-pc-windows-msvc    → windows-11        (zip)
+#   aarch64-pc-windows-msvc   → windows-11-arm    (zip)
+#   x86_64-unknown-linux-gnu  → ubuntu-24.04      (tar.gz)
+#   aarch64-unknown-linux-gnu → ubuntu-24.04-arm  (tar.gz)
+#   aarch64-apple-darwin      → macos-latest      (tar.gz)
+#
+# Asset names are a contract with the UPD-002 self-updater:
+#   fspec-<target-triple>.zip (Windows) / fspec-<target-triple>.tar.gz (unix)
+# containing only the fspec binary. Do not rename these.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: # manual trigger for testing
+
+permissions:
+  contents: write # required to create releases
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            os: windows-11
+            archive: zip
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
+            archive: zip
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-24.04
+            archive: tar.gz
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            archive: tar.gz
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            archive: tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (pinned)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.95.0"
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      # The workspace root is rust/ (not the repo root) — cargo build MUST
+      # run there so rust/rust-toolchain.toml is respected.
+      - name: Build (release-slim)
+        working-directory: rust
+        run: cargo build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+
+      - name: Package
+        working-directory: rust/target/${{ matrix.target }}/release-slim
+        shell: bash
+        run: |
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            zip -j fspec-${{ matrix.target }}.zip fspec.exe
+          else
+            tar -czf fspec-${{ matrix.target }}.tar.gz fspec
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fspec-${{ matrix.target }}
+          path: |
+            rust/target/${{ matrix.target }}/release-slim/fspec-${{ matrix.target }}.zip
+            rust/target/${{ matrix.target }}/release-slim/fspec-${{ matrix.target }}.tar.gz
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten into release dir
+        run: |
+          mkdir -p release
+          find dist -name 'fspec-*.zip' -o -name 'fspec-*.tar.gz' | xargs -I{} cp {} release/
+          ls -lh release/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: fspec ${{ github.ref_name }}
+          files: release/fspec-*
+          generate_release_notes: true

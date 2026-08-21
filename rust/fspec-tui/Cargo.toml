@@ -24,6 +24,11 @@ codelet-sessions.workspace = true
 # RPC-373: App::bootstrap starts the attachment viewer server; the board D key
 # opens FOUNDATION.md through it.
 codelet-attachment-viewer.workspace = true
+# UPD-002: the /update slash command calls the shared download-verify-replace
+# engine (codelet-fspec-core::update) — the SAME engine the `fspec update` CLI
+# subcommand uses (rule [0]: one engine, no duplication). fspec-tui does NOT
+# depend on codelet-core/codelet-napi, so this adds no forbidden arrow.
+codelet-fspec-core.workspace = true
 
 # Async
 tokio.workspace = true

@@ -1,0 +1,306 @@
+{
+  "scenarios": [
+    {
+      "name": "/update reports up-to-date when already on the latest release",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/upd002_update_command_test.rs",
+          "lines": "32-55",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/update_parser.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/update installs the latest release in place",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/upd002_update_command_test.rs",
+          "lines": "57-90",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_update.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/update fails safely with no network",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/upd002_update_command_test.rs",
+          "lines": "96-131",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_update.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/update never prompts for confirmation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/upd002_update_command_test.rs",
+          "lines": "133-157",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_update.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/update does not restart the running TUI",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/upd002_update_command_test.rs",
+          "lines": "159-183",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_update.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/upd002_update_command_test.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/update_parser.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_update.rs"
+    ],
+    "totalLinesCovered": 353
+  }
+}

@@ -83,6 +83,17 @@ serial_test.workspace = true
 codelet-providers.workspace = true
 assert_cmd.workspace = true
 predicates.workspace = true
+# UPD-001: tests/upd001_release_pipeline.rs structurally validates
+# .github/workflows/release.yml (YAML parse + matrix inspection).
+serde_yaml = "0.9"
+# UPD-002: tests/upd002_update_cli.rs serves a mock GitHub API on
+# 127.0.0.1:0 (axum) and builds tar.gz release assets (tar + flate2),
+# computing SHA-256 digests (sha2 + hex).
+axum.workspace = true
+tar.workspace = true
+flate2.workspace = true
+sha2.workspace = true
+hex.workspace = true
 tokio-tungstenite.workspace = true
 futures.workspace = true
 serde_json.workspace = true
