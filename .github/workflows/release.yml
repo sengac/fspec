@@ -66,6 +66,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: "1.95.0"
+          # cargo-xwin/cargo-zigbuild need the TARGET's std library, which
+          # rustup does not install by default (E0463: can't find crate
+          # for `core`).
+          targets: ${{ matrix.target }}
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -93,7 +97,7 @@ jobs:
           # NOTE: zig >= 0.14.1 uses the zig-<arch>-<os>-<version> naming.
           ZIG_VERSION="0.14.1"
           curl -sSL "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz" -o zig.tar.xz
-          tar -xJf zig.tar.xz -C /usr/local --strip-components=1
+          sudo tar -xJf zig.tar.xz -C /usr/local --strip-components=1
           zig version
           cargo install --locked cargo-zigbuild
 
