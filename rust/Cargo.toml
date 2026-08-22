@@ -343,14 +343,24 @@ codegen-units = 1
 
 # Slimmed release profile for distribution of the standalone `fspec` Rust
 # ELF/Mach-O binary (rust/fspec). Inherits everything from
-# [profile.release] (LTO, codegen-units, opt-level) but drops the embedded
-# DWARF + symbol table that the macOS-SEA pprof contract requires for the
-# `codelet-napi` `.node` artifact.
+# [profile.release] (opt-level) but drops the embedded DWARF + symbol table
+# that the macOS-SEA pprof contract requires for the `codelet-napi` `.node`
+# artifact.
 #
 # Rationale: the standalone `fspec` binary is NOT packed into a Node SEA
 # and is NOT the pprof sampling target. Keeping `debug = 1` in
 # `[profile.release]` for it inflates the Linux/macOS ELF/Mach-O artifact
 # from ~150 MB to ~800 MB (81% DWARF) for no operational benefit.
+#
+# `lto = "thin"` + `codegen-units = 16` override the inherited fat-LTO /
+# single-codegen-unit settings. Fat LTO merges the entire dependency graph
+# (rig-core, lance, ratatui, axum, ...) into one monolithic LLVM module at
+# the final link — that peak memory exceeds the 16 GB ceiling of GitHub's
+# standard ARM runners and the OOM killer SIGTERMs the build (exit 143,
+# "runner has received a shutdown signal"). Thin LTO keeps cross-crate
+# optimization at a small fraction of the memory, and 16 codegen units
+# parallelize codegen. The max-opt fat-LTO profile is retained on
+# `[profile.release]` where the napi `.node` artifact needs it.
 #
 # Use this profile when shipping the standalone CLI:
 #   cargo build --profile release-slim -p codelet-fspec
@@ -361,6 +371,8 @@ codegen-units = 1
 # pprof + backtrace-rs symbolisation path documented above keeps working.
 [profile.release-slim]
 inherits = "release"
+lto = "thin"
+codegen-units = 16
 strip = "symbols"
 debug = false
 split-debuginfo = "off"
