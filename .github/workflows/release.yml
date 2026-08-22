@@ -3,7 +3,7 @@
 # Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
 #
 # Native matrix build (one runner per target — NO cross-compilation in CI):
-#   x86_64-pc-windows-msvc    → windows-11        (zip)
+#   x86_64-pc-windows-msvc    → windows-2025      (zip)
 #   aarch64-pc-windows-msvc   → windows-11-arm    (zip)
 #   x86_64-unknown-linux-gnu  → ubuntu-24.04      (tar.gz)
 #   aarch64-unknown-linux-gnu → ubuntu-24.04-arm  (tar.gz)
@@ -35,7 +35,7 @@ jobs:
       matrix:
         include:
           - target: x86_64-pc-windows-msvc
-            os: windows-11
+            os: windows-2025
             archive: zip
           - target: aarch64-pc-windows-msvc
             os: windows-11-arm
