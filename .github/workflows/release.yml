@@ -2,15 +2,18 @@
 #
 # Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
 #
-# Build strategy:
-#   x86_64-pc-windows-msvc    → ubuntu-24.04   (cargo-xwin)      (zip)
-#   aarch64-pc-windows-msvc   → windows-11-arm (native MSVC)     (zip)
-#   x86_64-unknown-linux-gnu  → ubuntu-20.04   (native)          (tar.gz)
-#   aarch64-unknown-linux-gnu → ubuntu-24.04-arm (native)        (tar.gz)
-#   aarch64-apple-darwin      → macos-latest   (native)          (tar.gz)
+# Build strategy (native matrix build — the approach that worked in v0.10.0):
+#   x86_64-pc-windows-msvc    → ubuntu-24.04      (cargo-xwin)     (zip)
+#   aarch64-pc-windows-msvc   → windows-11-arm    (native MSVC)    (zip)
+#   x86_64-unknown-linux-gnu  → ubuntu-24.04      (static musl)    (tar.gz)
+#   aarch64-unknown-linux-gnu → ubuntu-24.04-arm  (native)         (tar.gz)
+#   aarch64-apple-darwin      → macos-latest      (native)         (tar.gz)
 #
-# x86_64 Linux uses ubuntu-20.04 (glibc 2.31) so the binary runs on any
-# x86_64 distro with glibc >= 2.31 (Ubuntu 18.04+, Debian 10+, CentOS 8+).
+# x86_64 Linux is built as a fully static musl binary (plain native cargo
+# build on the x86_64 host, musl libc, crt-static) so it has NO glibc
+# dependency and runs on any x86_64 Linux distro. The asset keeps the name
+# fspec-x86_64-unknown-linux-gnu.tar.gz (the UPD-002 self-updater contract
+# is the filename, not the build target).
 #
 # Asset names are a contract with the UPD-002 self-updater:
 #   fspec-<target-triple>.zip (Windows) / fspec-<target-triple>.tar.gz (unix)
@@ -37,23 +40,30 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # target = asset name; build_target = the cargo target actually
+          # built (differs only for the static-musl x86_64 Linux build).
           - target: x86_64-pc-windows-msvc
+            build_target: x86_64-pc-windows-msvc
             os: ubuntu-24.04
             tool: xwin
             archive: zip
           - target: aarch64-pc-windows-msvc
+            build_target: aarch64-pc-windows-msvc
             os: windows-11-arm
             tool: native
             archive: zip
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-20.04
-            tool: native
+            build_target: x86_64-unknown-linux-musl
+            os: ubuntu-24.04
+            tool: musl
             archive: tar.gz
           - target: aarch64-unknown-linux-gnu
+            build_target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
             tool: native
             archive: tar.gz
           - target: aarch64-apple-darwin
+            build_target: aarch64-apple-darwin
             os: macos-latest
             tool: native
             archive: tar.gz
@@ -66,7 +76,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: "1.95.0"
-          targets: ${{ matrix.target }}
+          # cargo-xwin / musl need the TARGET's std library, which rustup
+          # does not install by default (E0463: can't find crate for `core`).
+          targets: ${{ matrix.build_target }}
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -85,6 +97,14 @@ jobs:
       - name: Install cargo-xwin
         if: matrix.tool == 'xwin'
         run: cargo install --locked cargo-xwin
+
+      # ── Static musl prerequisites (x86_64 Linux) ──────────────────────────
+      - name: Install musl-tools (static libc)
+        if: matrix.tool == 'musl'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq musl-tools
+          musl-gcc --version
 
       # ── protoc (required by lance-encoding build script) ──────────────────
       - name: Install protoc (pinned v34.0)
@@ -113,16 +133,22 @@ jobs:
       - name: Build (release-slim)
         working-directory: rust
         shell: bash
+        env:
+          # Static musl: link the C runtime statically so the binary has no
+          # dynamic libc (glibc) dependency.
+          RUSTFLAGS: ${{ matrix.tool == 'musl' && '-C target-feature=+crt-static' || '' }}
         run: |
           if [ "${{ matrix.tool }}" = "xwin" ]; then
-            cargo xwin build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+            cargo xwin build --profile release-slim --target ${{ matrix.build_target }} -p codelet-fspec
           else
-            cargo build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+            cargo build --profile release-slim --target ${{ matrix.build_target }} -p codelet-fspec
           fi
 
       # ── Package ───────────────────────────────────────────────────────────
+      # The binary lands under the build_target dir; the asset is named after
+      # the (asset) target so the self-updater contract is preserved.
       - name: Package
-        working-directory: rust/target/${{ matrix.target }}/release-slim
+        working-directory: rust/target/${{ matrix.build_target }}/release-slim
         shell: bash
         run: |
           if [ "${{ matrix.archive }}" = "zip" ]; then
@@ -145,8 +171,8 @@ jobs:
         with:
           name: fspec-${{ matrix.target }}
           path: |
-            rust/target/${{ matrix.target }}/release-slim/fspec-${{ matrix.target }}.zip
-            rust/target/${{ matrix.target }}/release-slim/fspec-${{ matrix.target }}.tar.gz
+            rust/target/${{ matrix.build_target }}/release-slim/fspec-${{ matrix.target }}.zip
+            rust/target/${{ matrix.build_target }}/release-slim/fspec-${{ matrix.target }}.tar.gz
 
   release:
     name: Create GitHub Release
