@@ -27,12 +27,15 @@ use common::{codelet_root, fspec_bin, project_root};
 
 /// (target, runner OS, build tool, archive extension)
 ///
-/// Cross-compilation pipeline: Windows targets are built with cargo-xwin
-/// on ubuntu-24.04, Linux targets with cargo-zigbuild on ubuntu-24.04,
-/// and the macOS target natively on macos-latest.
+/// x86_64 Windows cross-compiles with cargo-xwin on ubuntu-24.04.
+/// aarch64 Windows builds natively on windows-11-arm (cargo-xwin cannot
+/// cross-compile aarch64-pc-windows-msvc from a Linux host — ring's
+/// build.rs forces plain clang, and the windows-msvc-sysroot headers
+/// conflict with clang's ARM64 codegen). Linux targets cross-compile with
+/// cargo-zigbuild on ubuntu-24.04; macOS builds natively on macos-latest.
 const EXPECTED_TARGETS: [(&str, &str, &str, &str); 5] = [
     ("x86_64-pc-windows-msvc", "ubuntu-24.04", "xwin", "zip"),
-    ("aarch64-pc-windows-msvc", "ubuntu-24.04", "xwin", "zip"),
+    ("aarch64-pc-windows-msvc", "windows-11-arm", "native", "zip"),
     ("x86_64-unknown-linux-gnu", "ubuntu-24.04", "zigbuild", "tar.gz"),
     ("aarch64-unknown-linux-gnu", "ubuntu-24.04", "zigbuild", "tar.gz"),
     ("aarch64-apple-darwin", "macos-latest", "native", "tar.gz"),
@@ -157,7 +160,7 @@ fn scenario_release_workflow_builds_all_five_targets() {
         .expect("read workflow");
     assert!(
         raw.contains("cargo xwin build"),
-        "Windows targets must be built with cargo-xwin (rule [4])"
+        "x86_64 Windows must be built with cargo-xwin (rule [4])"
     );
     assert!(
         raw.contains("cargo zigbuild"),
@@ -166,6 +169,10 @@ fn scenario_release_workflow_builds_all_five_targets() {
     assert!(
         raw.contains("TARGET_GLIBC_VERSION"),
         "Linux targets must pin TARGET_GLIBC_VERSION for old-glibc compatibility (rule [4])"
+    );
+    assert!(
+        raw.contains("-march=native"),
+        "x86_64 Linux must use -march=native so lance-linalg's hardcoded -march=native dist_table matches the f16/bf16 kernels (AVX-512 undefined-symbol fix)"
     );
 
     // @step And every build uses the release-slim profile and the pinned 1.95.0 toolchain
