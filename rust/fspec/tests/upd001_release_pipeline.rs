@@ -28,16 +28,15 @@ use common::{codelet_root, fspec_bin, project_root};
 /// (target, runner OS, build tool, archive extension)
 ///
 /// x86_64 Windows cross-compiles with cargo-xwin on ubuntu-24.04.
-/// aarch64 Windows builds natively on windows-11-arm (cargo-xwin cannot
-/// cross-compile aarch64-pc-windows-msvc from a Linux host — ring's
-/// build.rs forces plain clang, and the windows-msvc-sysroot headers
-/// conflict with clang's ARM64 codegen). Linux targets cross-compile with
-/// cargo-zigbuild on ubuntu-24.04; macOS builds natively on macos-latest.
+/// aarch64 Windows builds natively on windows-11-arm. Linux targets build
+/// natively on matching runners (x86_64 on ubuntu-20.04 for a glibc 2.31
+/// floor, aarch64 on ubuntu-24.04-arm); macOS builds natively on
+/// macos-latest.
 const EXPECTED_TARGETS: [(&str, &str, &str, &str); 5] = [
     ("x86_64-pc-windows-msvc", "ubuntu-24.04", "xwin", "zip"),
     ("aarch64-pc-windows-msvc", "windows-11-arm", "native", "zip"),
-    ("x86_64-unknown-linux-gnu", "ubuntu-24.04", "zigbuild", "tar.gz"),
-    ("aarch64-unknown-linux-gnu", "ubuntu-24.04", "zigbuild", "tar.gz"),
+    ("x86_64-unknown-linux-gnu", "ubuntu-20.04", "native", "tar.gz"),
+    ("aarch64-unknown-linux-gnu", "ubuntu-24.04-arm", "native", "tar.gz"),
     ("aarch64-apple-darwin", "macos-latest", "native", "tar.gz"),
 ];
 
@@ -153,8 +152,8 @@ fn scenario_release_workflow_builds_all_five_targets() {
         );
     }
 
-    // @step And Windows targets are cross-compiled with cargo-xwin on ubuntu-24.04
-    // @step And Linux targets are cross-compiled with cargo-zigbuild on ubuntu-24.04 with TARGET_GLIBC_VERSION=2.17
+    // @step And x86_64 Windows is cross-compiled with cargo-xwin on ubuntu-24.04
+    // @step And Linux targets are built natively on matching runners
     // @step And the macOS target is built natively on macos-latest
     let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
         .expect("read workflow");
@@ -163,16 +162,8 @@ fn scenario_release_workflow_builds_all_five_targets() {
         "x86_64 Windows must be built with cargo-xwin (rule [4])"
     );
     assert!(
-        raw.contains("cargo zigbuild"),
-        "Linux targets must be built with cargo-zigbuild (rule [4])"
-    );
-    assert!(
-        raw.contains("TARGET_GLIBC_VERSION"),
-        "Linux targets must pin TARGET_GLIBC_VERSION for old-glibc compatibility (rule [4])"
-    );
-    assert!(
-        raw.contains("-march=native"),
-        "x86_64 Linux must use -march=native so lance-linalg's hardcoded -march=native dist_table matches the f16/bf16 kernels (AVX-512 undefined-symbol fix)"
+        raw.contains("ubuntu-20.04"),
+        "x86_64 Linux must build natively on ubuntu-20.04 (glibc 2.31 floor) (rule [4])"
     );
 
     // @step And every build uses the release-slim profile and the pinned 1.95.0 toolchain
@@ -338,17 +329,17 @@ fn scenario_linux_binary_runs_on_old_glibc_distros() {
     let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
         .expect("read workflow");
 
-    // @step When the binary is run on a system with glibc 2.17
-    // The zigbuild invocation must pin TARGET_GLIBC_VERSION so the linker
-    // refuses to emit references to symbols newer than the pinned floor.
+    // @step When the binary is run on a system with glibc 2.31
+    // The x86_64 Linux build runs natively on ubuntu-20.04 (glibc 2.31),
+    // so the binary links against at most glibc 2.31 symbols.
     assert!(
-        raw.contains("2.17"),
-        "Linux cross-builds must pin TARGET_GLIBC_VERSION=2.17 (rule [4])"
+        raw.contains("ubuntu-20.04"),
+        "x86_64 Linux must build natively on ubuntu-20.04 (glibc 2.31 floor) (rule [4])"
     );
 
     // @step Then it runs without "version GLIBC_2.39 not found" or similar symbol version errors
-    // (structural assertion — with the pinned floor, zig's bundled linker
-    // errors at build time if any dependency requires a newer glibc)
+    // (structural assertion — building on ubuntu-20.04 caps the glibc
+    // requirement at 2.31, so the binary runs on any distro with glibc >= 2.31)
     let wf = workflow_yaml();
     let build = wf
         .get("jobs")
@@ -361,15 +352,20 @@ fn scenario_linux_binary_runs_on_old_glibc_distros() {
         .and_then(|m| m.get("include"))
         .and_then(|i| i.as_sequence())
         .expect("matrix include");
-    for target in ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"] {
-        assert!(
-            matrix
-                .iter()
-                .any(|e| e.get("target").and_then(|t| t.as_str()) == Some(target)
-                    && e.get("tool").and_then(|t| t.as_str()) == Some("zigbuild")),
-            "{target} must be built with cargo-zigbuild so the glibc floor applies"
-        );
-    }
+    let x64_linux = matrix
+        .iter()
+        .find(|e| e.get("target").and_then(|t| t.as_str()) == Some("x86_64-unknown-linux-gnu"))
+        .expect("x86_64-unknown-linux-gnu matrix entry");
+    assert_eq!(
+        x64_linux.get("os").and_then(|o| o.as_str()),
+        Some("ubuntu-20.04"),
+        "x86_64 Linux must build on ubuntu-20.04 for the glibc floor"
+    );
+    assert_eq!(
+        x64_linux.get("tool").and_then(|t| t.as_str()),
+        Some("native"),
+        "x86_64 Linux must build natively (cargo build, not cross-compile)"
+    );
 }
 
 // =============================================================================

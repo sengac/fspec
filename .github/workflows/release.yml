@@ -2,28 +2,15 @@
 #
 # Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
 #
-# Build strategy (verified 2026-08-22):
+# Build strategy:
 #   x86_64-pc-windows-msvc    → ubuntu-24.04   (cargo-xwin)      (zip)
 #   aarch64-pc-windows-msvc   → windows-11-arm (native MSVC)     (zip)
-#   x86_64-unknown-linux-gnu  → ubuntu-24.04   (cargo-zigbuild)  (tar.gz)
-#   aarch64-unknown-linux-gnu → ubuntu-24.04   (cargo-zigbuild)  (tar.gz)
+#   x86_64-unknown-linux-gnu  → ubuntu-20.04   (native)          (tar.gz)
+#   aarch64-unknown-linux-gnu → ubuntu-24.04-arm (native)        (tar.gz)
 #   aarch64-apple-darwin      → macos-latest   (native)          (tar.gz)
 #
-# Why aarch64 Windows is native: cargo-xwin cannot cross-compile
-# aarch64-pc-windows-msvc from a Linux host. ring's build.rs forces plain
-# clang (GCC mode) for aarch64-windows, which rejects clang-cl's /imsvc
-# flags; the clang backend instead fails in zstd-sys/blake3 because the
-# windows-msvc-sysroot headers conflict with clang's ARM64 codegen.
-# x86_64 Windows cross-compiles cleanly via cargo-xwin.
-#
-# Linux glibc compatibility: TARGET_GLIBC_VERSION=2.17 ensures the binary
-# works on any x86_64/aarch64 Linux distro with glibc >= 2.17 (CentOS 7+).
-#
-# Linux AVX-512: lance-linalg's build.rs compiles the AVX-512 dist_table
-# with a hardcoded -march=native while the f16/bf16 kernels use
-# -march=sapphirerapids. On a x86_64 host, TARGET_CFLAGS=-march=native
-# makes every C compile target the host arch consistently (appended after
-# the per-kernel flag, so the last -march wins), matching the Rust cfg.
+# x86_64 Linux uses ubuntu-20.04 (glibc 2.31) so the binary runs on any
+# x86_64 distro with glibc >= 2.31 (Ubuntu 18.04+, Debian 10+, CentOS 8+).
 #
 # Asset names are a contract with the UPD-002 self-updater:
 #   fspec-<target-triple>.zip (Windows) / fspec-<target-triple>.tar.gz (unix)
@@ -59,12 +46,12 @@ jobs:
             tool: native
             archive: zip
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-24.04
-            tool: zigbuild
+            os: ubuntu-20.04
+            tool: native
             archive: tar.gz
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-24.04
-            tool: zigbuild
+            os: ubuntu-24.04-arm
+            tool: native
             archive: tar.gz
           - target: aarch64-apple-darwin
             os: macos-latest
@@ -79,9 +66,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: "1.95.0"
-          # cargo-xwin/cargo-zigbuild need the TARGET's std library, which
-          # rustup does not install by default (E0463: can't find crate
-          # for `core`).
           targets: ${{ matrix.target }}
 
       - name: Cache cargo
@@ -102,27 +86,17 @@ jobs:
         if: matrix.tool == 'xwin'
         run: cargo install --locked cargo-xwin
 
-      # ── Linux cross-compile prerequisites (cargo-zigbuild) ────────────────
-      - name: Install zig + cargo-zigbuild
-        if: matrix.tool == 'zigbuild'
-        run: |
-          # Install zig via the official tarball (pinned version).
-          # NOTE: zig >= 0.14.1 uses the zig-<arch>-<os>-<version> naming
-          # and extracts into a zig-<arch>-<os>-<version>/ directory.
-          ZIG_VERSION="0.14.1"
-          curl -sSL "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz" -o zig.tar.xz
-          sudo tar -xJf zig.tar.xz -C /usr/local
-          sudo ln -sf "/usr/local/zig-x86_64-linux-${ZIG_VERSION}/zig" /usr/local/bin/zig
-          zig version
-          cargo install --locked cargo-zigbuild
-
       # ── protoc (required by lance-encoding build script) ──────────────────
       - name: Install protoc (pinned v34.0)
         shell: bash
         run: |
           set -euo pipefail
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            url="protoc-34.0-linux-x86_64.zip"
+            if [[ "$RUNNER_ARCH" == "X64" ]]; then
+              url="protoc-34.0-linux-x86_64.zip"
+            else
+              url="protoc-34.0-linux-aarch_64.zip"
+            fi
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             url="protoc-34.0-osx-aarch_64.zip"
           else
@@ -136,27 +110,12 @@ jobs:
           protoc --version
 
       # ── Build ─────────────────────────────────────────────────────────────
-      # The workspace root is rust/ (not the repo root) — cargo build MUST
-      # run there so rust/rust-toolchain.toml is respected.
       - name: Build (release-slim)
         working-directory: rust
         shell: bash
-        env:
-          # Linux cross-build env (mirrors scripts/build-cross.sh):
-          #   TARGET_CC="zig cc"
-          #   x86_64: -march=native (host is x86_64 with AVX-512)
-          #   aarch64: no AVX-512 flags (NEON handles SIMD)
-          #   TARGET_GLIBC_VERSION=2.17 for broad distro compatibility
-          #   RUSTFLAGS=-C codegen-units=1 to reduce object-file count
-          TARGET_CC: ${{ matrix.tool == 'zigbuild' && 'zig cc' || '' }}
-          TARGET_CFLAGS: ${{ matrix.target == 'x86_64-unknown-linux-gnu' && '-march=native' || '' }}
-          TARGET_GLIBC_VERSION: ${{ matrix.tool == 'zigbuild' && '2.17' || '' }}
-          RUSTFLAGS: ${{ matrix.tool == 'zigbuild' && '-C codegen-units=1' || '' }}
         run: |
           if [ "${{ matrix.tool }}" = "xwin" ]; then
             cargo xwin build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
-          elif [ "${{ matrix.tool }}" = "zigbuild" ]; then
-            cargo zigbuild --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
           else
             cargo build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
           fi
@@ -168,19 +127,13 @@ jobs:
         run: |
           if [ "${{ matrix.archive }}" = "zip" ]; then
             if [ "$RUNNER_OS" = "Windows" ]; then
-              # Native Windows runner: no Info-ZIP `zip`, and the Git-Bash
-              # `tar` is GNU tar, which CANNOT create zip archives (it writes
-              # a plain tar — this is what corrupted v0.10.0). Use the
-              # built-in PowerShell Compress-Archive, which writes a real zip.
               powershell.exe -NoProfile -Command "Compress-Archive -Path fspec.exe -DestinationPath fspec-${{ matrix.target }}.zip"
             else
-              # Cross-compiled on Linux: Info-ZIP `zip` is available.
               zip -j fspec-${{ matrix.target }}.zip fspec.exe
             fi
           else
             tar -czf fspec-${{ matrix.target }}.tar.gz fspec
           fi
-          # Verify the archive is a valid archive of the correct type.
           if [ "${{ matrix.archive }}" = "zip" ]; then
             unzip -t fspec-${{ matrix.target }}.zip
           else
