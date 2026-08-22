@@ -140,6 +140,7 @@ jobs:
       # run there so rust/rust-toolchain.toml is respected.
       - name: Build (release-slim)
         working-directory: rust
+        shell: bash
         env:
           # Linux cross-build env (mirrors scripts/build-cross.sh):
           #   TARGET_CC="zig cc"
