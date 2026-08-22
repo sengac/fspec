@@ -66,9 +66,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: "1.95.0"
-          # cargo-xwin/cargo-zigbuild need the TARGET's std library, which
-          # rustup does not install by default (E0463: can't find crate
-          # for `core`).
           targets: ${{ matrix.target }}
 
       - name: Cache cargo
@@ -122,17 +119,21 @@ jobs:
       # ── Build ─────────────────────────────────────────────────────────────
       # The workspace root is rust/ (not the repo root) — cargo build MUST
       # run there so rust/rust-toolchain.toml is respected.
+      #
+      # Mirrors scripts/build-cross.sh exactly:
+      #   - xwin: cargo xwin build (aarch64 uses XWIN_CROSS_COMPILER=clang
+      #     because ring's build.rs forces plain clang for aarch64-windows,
+      #     which is incompatible with clang-cl's /imsvc flags)
+      #   - zigbuild: TARGET_CC="zig cc", TARGET_CFLAGS for x86_64 AVX-512,
+      #     TARGET_GLIBC_VERSION=2.17, RUSTFLAGS="-C codegen-units=1"
       - name: Build (release-slim)
         working-directory: rust
         env:
-          # For x86_64 Linux: override CC to zig with AVX-512 support.
-          # lance-linalg's build.rs uses -march=native which targets the host
-          # CPU. zig cc can cross-compile AVX-512 code but needs explicit flags.
-          # For aarch64 Linux: no AVX-512 flags needed (NEON handles SIMD).
-          # TARGET_GLIBC_VERSION=2.17 ensures broad distro compatibility.
+          XWIN_CROSS_COMPILER: ${{ matrix.target == 'aarch64-pc-windows-msvc' && 'clang' || 'clang-cl' }}
           TARGET_CC: ${{ matrix.tool == 'zigbuild' && 'zig cc' || '' }}
           TARGET_CFLAGS: ${{ matrix.target == 'x86_64-unknown-linux-gnu' && '-mcpu=sapphirerapids -mavx512bw' || '' }}
           TARGET_GLIBC_VERSION: ${{ matrix.tool == 'zigbuild' && '2.17' || '' }}
+          RUSTFLAGS: ${{ matrix.tool == 'zigbuild' && '-C codegen-units=1' || '' }}
         run: |
           if [ "${{ matrix.tool }}" = "xwin" ]; then
             cargo xwin build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
