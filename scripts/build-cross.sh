@@ -235,6 +235,15 @@ build_target() {
     # targets the host CPU (ARM64 on macOS), not the target (x86_64 Linux).
     # zig cc can cross-compile AVX-512 code from ARM64, but needs explicit CPU flags.
     # For aarch64 Linux, no AVX-512 flags needed (NEON handles SIMD).
+    #
+    # TARGET_GLIBC_VERSION=2.17 pins the glibc floor so the binary runs on any
+    # x86_64/aarch64 Linux distro with glibc >= 2.17 (CentOS 7+). Without this,
+    # zig links against the newest glibc symbols it knows about (e.g. 2.39),
+    # which breaks on older distros.
+    #
+    # RUSTFLAGS="-C codegen-units=1" reduces the object-file count at link time.
+    # On macOS this is required to avoid ProcessFdQuotaExceeded / UnableToSpawnSelf
+    # linker failures with the default 16 codegen units.
     local zig_cc="zig cc"
     local zig_cflags=""
     if [[ "$target_triple" == "x86_64"* ]]; then
@@ -242,7 +251,9 @@ build_target() {
     fi
     (
       cd "$CODELET_DIR"
-      TARGET_CC="$zig_cc" TARGET_CFLAGS="$zig_cflags" cargo zigbuild --profile "$BUILD_PROFILE" --target "$target_triple" -p codelet-fspec
+      TARGET_CC="$zig_cc" TARGET_CFLAGS="$zig_cflags" TARGET_GLIBC_VERSION=2.17 \
+        RUSTFLAGS="-C codegen-units=1" \
+        cargo zigbuild --profile "$BUILD_PROFILE" --target "$target_triple" -p codelet-fspec
     )
   fi
 

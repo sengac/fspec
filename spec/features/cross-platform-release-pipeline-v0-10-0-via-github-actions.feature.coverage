@@ -1,11 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "Workspace version is bumped to 0.10.0",
+      "name": "Workspace version is bumped to 0.10.1",
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "65-96",
+          "lines": "73-99",
           "implMappings": [
             {
               "file": "rust/Cargo.toml",
@@ -24,7 +24,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "98-156",
+          "lines": "106-180",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
@@ -85,23 +85,8 @@
                 83,
                 84,
                 85,
-                86
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Release is published with self-updater-compatible assets",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "158-188",
-          "implMappings": [
-            {
-              "file": ".github/workflows/release.yml",
-              "lines": [
+                86,
+                87,
                 88,
                 89,
                 90,
@@ -131,7 +116,210 @@
                 114,
                 115,
                 116,
-                117
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Linux binary runs on old glibc distros",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
+          "lines": "327-366",
+          "implMappings": [
+            {
+              "file": ".github/workflows/release.yml",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Windows archive is a valid zip",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
+          "lines": "373-402",
+          "implMappings": [
+            {
+              "file": ".github/workflows/release.yml",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Release is published with self-updater-compatible assets",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
+          "lines": "187-212",
+          "implMappings": [
+            {
+              "file": ".github/workflows/release.yml",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
               ]
             }
           ]
@@ -143,14 +331,45 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "190-225",
+          "lines": "219-249",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                90,
-                91,
-                92
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
               ]
             }
           ]
@@ -162,7 +381,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "272-290",
+          "lines": "301-320",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
@@ -192,7 +411,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "227-270",
+          "lines": "256-298",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
@@ -253,18 +472,111 @@
                 83,
                 84,
                 85,
-                86
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
               ]
             }
           ]
         }
       ]
+    },
+    {
+      "name": "Workspace version is bumped to 0.10.1",
+      "testMappings": []
+    },
+    {
+      "name": "Release workflow builds all five targets",
+      "testMappings": []
+    },
+    {
+      "name": "Linux binary runs on old glibc distros",
+      "testMappings": []
+    },
+    {
+      "name": "Windows archive is a valid zip",
+      "testMappings": []
+    },
+    {
+      "name": "Release is published with self-updater-compatible assets",
+      "testMappings": []
+    },
+    {
+      "name": "Release job is blocked when any build fails",
+      "testMappings": []
+    },
+    {
+      "name": "Release binary reports the new version",
+      "testMappings": []
+    },
+    {
+      "name": "Windows ARM64 user runs the prebuilt binary",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
-    "coveragePercent": 100,
+    "totalScenarios": 16,
+    "coveredScenarios": 8,
+    "coveragePercent": 50,
     "testFiles": [
       "rust/fspec/tests/upd001_release_pipeline.rs"
     ],
@@ -273,6 +585,6 @@
       ".github/workflows/release.yml",
       "rust/fspec/src/main.rs"
     ],
-    "totalLinesCovered": 385
+    "totalLinesCovered": 704
   }
 }

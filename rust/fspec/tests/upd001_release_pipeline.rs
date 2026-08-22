@@ -3,15 +3,18 @@
 //! Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
 //!
 //! Scenarios covered:
-//!   - "Workspace version is bumped to 0.10.0"
+//!   - "Workspace version is bumped to 0.10.1"
 //!   - "Release workflow builds all five targets"
 //!   - "Release is published with self-updater-compatible assets"
 //!   - "Release job is blocked when any build fails"
 //!   - "Release binary reports the new version"
+//!   - "Linux binary runs on old glibc distros"
+//!   - "Windows archive is a valid zip"
+//!   - "Windows ARM64 user runs the prebuilt binary"
 //!
 //! The workflow file is validated structurally (YAML parse + matrix
 //! inspection) — the actual 5-target CI run is verified by pushing the
-//! v0.10.0 tag (manual step, UPD-001 Definition of Done).
+//! release tag (manual step, UPD-001 Definition of Done).
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -22,12 +25,17 @@ mod common;
 
 use common::{codelet_root, fspec_bin, project_root};
 
-const EXPECTED_TARGETS: [(&str, &str, &str); 5] = [
-    ("x86_64-pc-windows-msvc", "windows-11", "zip"),
-    ("aarch64-pc-windows-msvc", "windows-11-arm", "zip"),
-    ("x86_64-unknown-linux-gnu", "ubuntu-24.04", "tar.gz"),
-    ("aarch64-unknown-linux-gnu", "ubuntu-24.04-arm", "tar.gz"),
-    ("aarch64-apple-darwin", "macos-latest", "tar.gz"),
+/// (target, runner OS, build tool, archive extension)
+///
+/// Cross-compilation pipeline: Windows targets are built with cargo-xwin
+/// on ubuntu-24.04, Linux targets with cargo-zigbuild on ubuntu-24.04,
+/// and the macOS target natively on macos-latest.
+const EXPECTED_TARGETS: [(&str, &str, &str, &str); 5] = [
+    ("x86_64-pc-windows-msvc", "ubuntu-24.04", "xwin", "zip"),
+    ("aarch64-pc-windows-msvc", "ubuntu-24.04", "xwin", "zip"),
+    ("x86_64-unknown-linux-gnu", "ubuntu-24.04", "zigbuild", "tar.gz"),
+    ("aarch64-unknown-linux-gnu", "ubuntu-24.04", "zigbuild", "tar.gz"),
+    ("aarch64-apple-darwin", "macos-latest", "native", "tar.gz"),
 ];
 
 /// Extract the `version = "..."` value from the `[workspace.package]`
@@ -58,34 +66,34 @@ fn workflow_yaml() -> serde_yaml::Value {
 }
 
 // =============================================================================
-// Scenario: Workspace version is bumped to 0.10.0
+// Scenario: Workspace version is bumped to 0.10.1
 // =============================================================================
 
 #[test]
-fn scenario_workspace_version_is_bumped_to_0_10_0() {
+fn scenario_workspace_version_is_bumped_to_0_10_1() {
     // @step Given the workspace is at version 0.1.0
     // (precondition — the repo history shows 0.1.0; nothing to assert here)
 
-    // @step When the version bump for v0.10.0 is applied
+    // @step When the version bump for v0.10.1 is applied
     let version = workspace_package_version();
 
-    // @step Then rust/Cargo.toml [workspace.package] version is 0.10.0
+    // @step Then rust/Cargo.toml [workspace.package] version is 0.10.1
     assert_eq!(
-        version, "0.10.0",
-        "[workspace.package] version must be 0.10.0 after the bump"
+        version, "0.10.1",
+        "[workspace.package] version must be 0.10.1 after the bump"
     );
 
-    // @step And Cargo.lock reports 0.10.0 for all member crates
+    // @step And Cargo.lock reports 0.10.1 for all member crates
     let lock = fs::read_to_string(codelet_root().join("Cargo.lock")).expect("read Cargo.lock");
-    // Every workspace member package entry must carry version 0.10.0.
+    // Every workspace member package entry must carry version 0.10.1.
     for name in ["codelet-fspec", "codelet-fspec-core", "codelet-fspec-tui", "codelet-core"] {
         let Some(start) = lock.find(&format!("\nname = \"{name}\"\n")) else {
             panic!("workspace member {name} missing from Cargo.lock");
         };
         let entry = &lock[start..start + 200];
         assert!(
-            entry.contains("version = \"0.10.0\""),
-            "Cargo.lock entry for {name} must report version 0.10.0, got: {entry}"
+            entry.contains("version = \"0.10.1\""),
+            "Cargo.lock entry for {name} must report version 0.10.1, got: {entry}"
         );
     }
 }
@@ -119,13 +127,13 @@ fn scenario_release_workflow_builds_all_five_targets() {
         .and_then(|i| i.as_sequence())
         .expect("strategy.matrix.include sequence");
 
-    // @step Then one build job runs natively per target (win x86_64, win arm64, linux x86_64, linux arm64, mac arm64)
+    // @step Then one build job runs per target (win x86_64, win arm64, linux x86_64, linux arm64, mac arm64)
     assert_eq!(
         matrix.len(),
         5,
         "exactly 5 matrix entries (rule [0]: exactly 5 targets)"
     );
-    for (target, os, _archive) in EXPECTED_TARGETS {
+    for (target, os, tool, _archive) in EXPECTED_TARGETS {
         let entry = matrix
             .iter()
             .find(|e| e.get("target").and_then(|t| t.as_str()) == Some(target))
@@ -133,20 +141,41 @@ fn scenario_release_workflow_builds_all_five_targets() {
         assert_eq!(
             entry.get("os").and_then(|o| o.as_str()),
             Some(os),
-            "target {target} must build natively on {os} (rule [3]: no cross-compilation)"
+            "target {target} must build on {os} (rule [4])"
+        );
+        assert_eq!(
+            entry.get("tool").and_then(|t| t.as_str()),
+            Some(tool),
+            "target {target} must use build tool {tool} (rule [4])"
         );
     }
 
-    // @step And every build uses the release-slim profile and the pinned 1.95.0 toolchain
+    // @step And Windows targets are cross-compiled with cargo-xwin on ubuntu-24.04
+    // @step And Linux targets are cross-compiled with cargo-zigbuild on ubuntu-24.04 with TARGET_GLIBC_VERSION=2.17
+    // @step And the macOS target is built natively on macos-latest
     let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
         .expect("read workflow");
     assert!(
+        raw.contains("cargo xwin build"),
+        "Windows targets must be built with cargo-xwin (rule [4])"
+    );
+    assert!(
+        raw.contains("cargo zigbuild"),
+        "Linux targets must be built with cargo-zigbuild (rule [4])"
+    );
+    assert!(
+        raw.contains("TARGET_GLIBC_VERSION"),
+        "Linux targets must pin TARGET_GLIBC_VERSION for old-glibc compatibility (rule [4])"
+    );
+
+    // @step And every build uses the release-slim profile and the pinned 1.95.0 toolchain
+    assert!(
         raw.contains("release-slim"),
-        "build step must use the release-slim profile (rule [3])"
+        "build step must use the release-slim profile (rule [4])"
     );
     assert!(
         raw.contains("1.95.0"),
-        "workflow must pin the 1.95.0 toolchain (rule [3])"
+        "workflow must pin the 1.95.0 toolchain (rule [4])"
     );
 }
 
@@ -173,7 +202,7 @@ fn scenario_release_is_published_with_self_updater_compatible_assets() {
     // @step And Windows assets are named fspec-<target>.zip and unix assets fspec-<target>.tar.gz
     // The packaging step must produce fspec-<target>.<ext> names (the
     // UPD-002 self-updater contract).
-    for (target, _os, ext) in EXPECTED_TARGETS {
+    for (target, _os, _tool, ext) in EXPECTED_TARGETS {
         let expected = format!("fspec-{target}.{ext}");
         assert!(
             raw.contains(&expected) || raw.contains("fspec-${{ matrix.target }}"),
@@ -280,12 +309,94 @@ fn scenario_release_binary_reports_the_new_version() {
         .output()
         .expect("spawn fspec --version");
 
-    // @step Then it prints fspec 0.10.0
+    // @step Then it prints fspec 0.10.1
     assert!(output.status.success(), "fspec --version must exit 0");
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert_eq!(
         stdout.trim(),
-        "fspec 0.10.0",
+        "fspec 0.10.1",
         "fspec --version must print the bumped workspace version"
+    );
+}
+
+// =============================================================================
+// Scenario: Linux binary runs on old glibc distros
+// =============================================================================
+
+#[test]
+fn scenario_linux_binary_runs_on_old_glibc_distros() {
+    // @step Given the fspec-x86_64-unknown-linux-gnu release asset is downloaded
+    // (structural precondition — the CI build pins the glibc floor; the
+    // actual old-distro smoke test is a manual step per UPD-001 DoD)
+    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
+        .expect("read workflow");
+
+    // @step When the binary is run on a system with glibc 2.17
+    // The zigbuild invocation must pin TARGET_GLIBC_VERSION so the linker
+    // refuses to emit references to symbols newer than the pinned floor.
+    assert!(
+        raw.contains("2.17"),
+        "Linux cross-builds must pin TARGET_GLIBC_VERSION=2.17 (rule [4])"
+    );
+
+    // @step Then it runs without "version GLIBC_2.39 not found" or similar symbol version errors
+    // (structural assertion — with the pinned floor, zig's bundled linker
+    // errors at build time if any dependency requires a newer glibc)
+    let wf = workflow_yaml();
+    let build = wf
+        .get("jobs")
+        .and_then(|j| j.as_mapping())
+        .and_then(|j| j.get("build"))
+        .expect("build job");
+    let matrix = build
+        .get("strategy")
+        .and_then(|s| s.get("matrix"))
+        .and_then(|m| m.get("include"))
+        .and_then(|i| i.as_sequence())
+        .expect("matrix include");
+    for target in ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"] {
+        assert!(
+            matrix
+                .iter()
+                .any(|e| e.get("target").and_then(|t| t.as_str()) == Some(target)
+                    && e.get("tool").and_then(|t| t.as_str()) == Some("zigbuild")),
+            "{target} must be built with cargo-zigbuild so the glibc floor applies"
+        );
+    }
+}
+
+// =============================================================================
+// Scenario: Windows archive is a valid zip
+// =============================================================================
+
+#[test]
+fn scenario_windows_archive_is_a_valid_zip() {
+    // @step Given the fspec-x86_64-pc-windows-msvc release asset is downloaded
+    // (structural precondition — the packaging step is asserted below)
+    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
+        .expect("read workflow");
+
+    // @step When unzip -t is run on the archive
+    // The packaging step must use the real `zip` binary (NOT `tar -a`,
+    // which produces a tar archive with a .zip extension) and verify the
+    // result with `unzip -t` before uploading.
+    assert!(
+        raw.contains("zip -j fspec-${{ matrix.target }}.zip fspec.exe"),
+        "Windows packaging must use the zip binary to create a real ZIP archive (rule [7])"
+    );
+    assert!(
+        raw.contains("unzip -t"),
+        "packaging must verify the zip archive with unzip -t before upload (rule [7])"
+    );
+    assert!(
+        !raw.contains("tar -a -cf"),
+        "tar -a must not be used to create .zip assets (it produces tar archives)"
+    );
+
+    // @step Then it reports no errors and contains fspec.exe
+    // (the release job re-verifies every archive before publishing)
+    assert!(
+        raw.contains("Verify all archives"),
+        "release job must re-verify all archives before publishing (rule [7])"
     );
 }

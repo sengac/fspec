@@ -2,12 +2,15 @@
 #
 # Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
 #
-# Native matrix build (one runner per target — NO cross-compilation in CI):
-#   x86_64-pc-windows-msvc    → windows-2025      (zip)
-#   aarch64-pc-windows-msvc   → windows-11-arm    (zip)
-#   x86_64-unknown-linux-gnu  → ubuntu-24.04      (tar.gz)
-#   aarch64-unknown-linux-gnu → ubuntu-24.04-arm  (tar.gz)
-#   aarch64-apple-darwin      → macos-latest      (tar.gz)
+# Cross-compilation from Linux/macOS hosts (no Windows runners):
+#   x86_64-pc-windows-msvc    → ubuntu-24.04  (cargo-xwin)   (zip)
+#   aarch64-pc-windows-msvc   → ubuntu-24.04  (cargo-xwin)   (zip)
+#   x86_64-unknown-linux-gnu  → ubuntu-24.04  (cargo-zigbuild) (tar.gz)
+#   aarch64-unknown-linux-gnu → ubuntu-24.04  (cargo-zigbuild) (tar.gz)
+#   aarch64-apple-darwin      → macos-latest  (native)       (tar.gz)
+#
+# Linux glibc compatibility: TARGET_GLIBC_VERSION=2.17 ensures the binary
+# works on any x86_64/aarch64 Linux distro with glibc >= 2.17 (CentOS 7+).
 #
 # Asset names are a contract with the UPD-002 self-updater:
 #   fspec-<target-triple>.zip (Windows) / fspec-<target-triple>.tar.gz (unix)
@@ -35,19 +38,24 @@ jobs:
       matrix:
         include:
           - target: x86_64-pc-windows-msvc
-            os: windows-2025
+            os: ubuntu-24.04
+            tool: xwin
             archive: zip
           - target: aarch64-pc-windows-msvc
-            os: windows-11-arm
+            os: ubuntu-24.04
+            tool: xwin
             archive: zip
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-24.04
+            tool: zigbuild
             archive: tar.gz
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-24.04-arm
+            os: ubuntu-24.04
+            tool: zigbuild
             archive: tar.gz
           - target: aarch64-apple-darwin
             os: macos-latest
+            tool: native
             archive: tar.gz
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
@@ -64,48 +72,87 @@ jobs:
         with:
           workspaces: rust
 
+      # ── Windows cross-compile prerequisites (cargo-xwin) ──────────────────
+      - name: Install LLVM + lld (cargo-xwin prerequisites)
+        if: matrix.tool == 'xwin'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq llvm lld
+          llvm-lib --version
+          lld-link --version
+
+      - name: Install cargo-xwin
+        if: matrix.tool == 'xwin'
+        run: cargo install --locked cargo-xwin
+
+      # ── Linux cross-compile prerequisites (cargo-zigbuild) ────────────────
+      - name: Install zig + cargo-zigbuild
+        if: matrix.tool == 'zigbuild'
+        run: |
+          # Install zig via the official tarball (pinned version).
+          # NOTE: zig >= 0.14.1 uses the zig-<arch>-<os>-<version> naming.
+          ZIG_VERSION="0.14.1"
+          curl -sSL "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz" -o zig.tar.xz
+          tar -xJf zig.tar.xz -C /usr/local --strip-components=1
+          zig version
+          cargo install --locked cargo-zigbuild
+
+      # ── protoc (required by lance-encoding build script) ──────────────────
       - name: Install protoc (pinned v34.0)
-        # lance-encoding (via codelet-graph → nanograph) has a build script
-        # that runs prost-build, which requires the protoc binary.
-        # Pinned to v34.0 to match the locally tested libprotoc version.
-        shell: bash
         run: |
           set -euo pipefail
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            if [[ "$RUNNER_ARCH" == "X64" ]]; then
-              url="protoc-34.0-linux-x86_64.zip"
-            else
-              url="protoc-34.0-linux-aarch_64.zip"
-            fi
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            url="protoc-34.0-osx-aarch_64.zip"
+            url="protoc-34.0-linux-x86_64.zip"
           else
-            url="protoc-34.0-win64.zip"
+            url="protoc-34.0-osx-aarch_64.zip"
           fi
           curl -sSL -o protoc.zip "https://github.com/protocolbuffers/protobuf/releases/download/v34.0/${url}"
           unzip -o protoc.zip -d protoc-bin >/dev/null
           chmod +x protoc-bin/bin/protoc* 2>/dev/null || true
-          # GITHUB_PATH only applies to *subsequent* steps — export PATH for this step too.
           echo "${GITHUB_WORKSPACE}/protoc-bin/bin" >> "$GITHUB_PATH"
           export PATH="${GITHUB_WORKSPACE}/protoc-bin/bin:$PATH"
           protoc --version
 
+      # ── Build ─────────────────────────────────────────────────────────────
       # The workspace root is rust/ (not the repo root) — cargo build MUST
       # run there so rust/rust-toolchain.toml is respected.
       - name: Build (release-slim)
         working-directory: rust
-        run: cargo build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+        env:
+          # For x86_64 Linux: override CC to zig with AVX-512 support.
+          # lance-linalg's build.rs uses -march=native which targets the host
+          # CPU. zig cc can cross-compile AVX-512 code but needs explicit flags.
+          # For aarch64 Linux: no AVX-512 flags needed (NEON handles SIMD).
+          # TARGET_GLIBC_VERSION=2.17 ensures broad distro compatibility.
+          TARGET_CC: ${{ matrix.tool == 'zigbuild' && 'zig cc' || '' }}
+          TARGET_CFLAGS: ${{ matrix.target == 'x86_64-unknown-linux-gnu' && '-mcpu=sapphirerapids -mavx512bw' || '' }}
+          TARGET_GLIBC_VERSION: ${{ matrix.tool == 'zigbuild' && '2.17' || '' }}
+        run: |
+          if [ "${{ matrix.tool }}" = "xwin" ]; then
+            cargo xwin build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+          elif [ "${{ matrix.tool }}" = "zigbuild" ]; then
+            cargo zigbuild --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+          else
+            cargo build --profile release-slim --target ${{ matrix.target }} -p codelet-fspec
+          fi
 
+      # ── Package ───────────────────────────────────────────────────────────
       - name: Package
         working-directory: rust/target/${{ matrix.target }}/release-slim
         shell: bash
         run: |
           if [ "${{ matrix.archive }}" = "zip" ]; then
-            # Windows runners have no Info-ZIP `zip` binary; use the built-in
-            # bsdtar (`tar -a` infers zip format from the .zip extension).
-            tar -a -cf fspec-${{ matrix.target }}.zip fspec.exe
+            # Use the `zip` binary (available on ubuntu-24.04) to create
+            # a proper ZIP archive. (tar -a does NOT create zip files.)
+            zip -j fspec-${{ matrix.target }}.zip fspec.exe
           else
             tar -czf fspec-${{ matrix.target }}.tar.gz fspec
+          fi
+          # Verify the archive is valid
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            unzip -t fspec-${{ matrix.target }}.zip
+          else
+            tar -tzf fspec-${{ matrix.target }}.tar.gz
           fi
 
       - name: Upload artifact
@@ -133,6 +180,17 @@ jobs:
           mkdir -p release
           find dist -name 'fspec-*.zip' -o -name 'fspec-*.tar.gz' | xargs -I{} cp {} release/
           ls -lh release/
+
+      - name: Verify all archives
+        run: |
+          for f in release/fspec-*; do
+            if [[ "$f" == *.zip ]]; then
+              unzip -t "$f" > /dev/null
+            else
+              tar -tzf "$f" > /dev/null
+            fi
+            echo "✓ $f is valid"
+          done
 
       - name: Create release
         uses: softprops/action-gh-release@v2
