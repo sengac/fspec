@@ -1,0 +1,16 @@
+name: Runner Probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe-windows-x64:
+    name: probe windows-11
+    runs-on: windows-11
+    timeout-minutes: 5
+    steps:
+      - name: echo
+        shell: bash
+        run: |
+          echo "windows-11 x86_64 runner acquired"
+          echo "RUNNER_ARCH=$RUNNER_ARCH RUNNER_OS=$RUNNER_OS"
