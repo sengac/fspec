@@ -101,7 +101,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.archive }}" = "zip" ]; then
-            zip -j fspec-${{ matrix.target }}.zip fspec.exe
+            # Windows runners have no Info-ZIP `zip` binary; use the built-in
+            # bsdtar (`tar -a` infers zip format from the .zip extension).
+            tar -a -cf fspec-${{ matrix.target }}.zip fspec.exe
           else
             tar -czf fspec-${{ matrix.target }}.tar.gz fspec
           fi
