@@ -118,6 +118,7 @@ jobs:
 
       # ── protoc (required by lance-encoding build script) ──────────────────
       - name: Install protoc (pinned v34.0)
+        shell: bash
         run: |
           set -euo pipefail
           if [[ "$RUNNER_OS" == "Linux" ]]; then
