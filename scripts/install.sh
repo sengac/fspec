@@ -13,6 +13,12 @@ set -euo pipefail
 # ── Defaults ────────────────────────────────────────────────────────────────
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 BUILD_PROFILE="${BUILD_PROFILE:-release-slim}"
+# Cap parallel rustc processes to bound peak memory. This mirrors the 2-4 vCPU
+# ceiling of GitHub's runners (where this build succeeds without OOM). On a
+# 20-core machine the default -j 20 spawns 20 concurrent rustc processes on
+# heavy crates (lance, datafusion, arrow, tantivy) and OOMs.
+# Override with BUILD_JOBS for faster builds on machines with headroom.
+BUILD_JOBS="${BUILD_JOBS:-4}"
 
 # Detect whether we're running from a file or piped
 if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
@@ -61,6 +67,7 @@ Options:
 Environment variables:
   INSTALL_DIR        Installation directory (overrides --dir)
   BUILD_PROFILE      Cargo build profile (overrides --profile)
+  BUILD_JOBS         Max parallel rustc processes (default: 4, bounds peak memory)
 
 Examples:
   ./scripts/install.sh
@@ -122,7 +129,7 @@ fi
 
 (
   cd "$CODELET_DIR"
-  cargo build --profile "$BUILD_PROFILE" -p codelet-fspec
+  cargo build --profile "$BUILD_PROFILE" -p codelet-fspec -j "$BUILD_JOBS"
 )
 
 BINARY="$CODELET_DIR/target/$BUILD_PROFILE/fspec"

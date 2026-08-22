@@ -51,6 +51,7 @@ Options:
 
 Environment variables:
   BUILD_PROFILE      Cargo build profile (overrides --profile)
+  BUILD_JOBS         Max parallel rustc processes (default: 4, bounds peak memory)
 
 Supported targets:
   Windows:
@@ -224,10 +225,20 @@ build_target() {
 
   # Build
   info "Building with $build_tool..."
+  # Cap parallel rustc processes to bound peak memory. This mirrors the 2-4
+  # vCPU ceiling of GitHub's runners (where this build succeeds without OOM).
+  # On a 20-core machine the default -j 20 spawns 20 concurrent rustc
+  # processes on heavy crates (lance, datafusion, arrow, tantivy) and OOMs.
+  # Override with BUILD_JOBS for faster builds on machines with headroom.
+  local jobs="${BUILD_JOBS:-4}"
+  # Raise the FD limit instead of forcing codegen-units=1: the old
+  # RUSTFLAGS="-C codegen-units=1" made every heavy dep crate compile as one
+  # giant CGU, spiking rustc memory far above the profile's 16-CGU setting.
+  ulimit -n 65535 2>/dev/null || true
   if [[ "$build_tool" == "cargo-xwin" ]]; then
     (
       cd "$CODELET_DIR"
-      cargo xwin build --profile "$BUILD_PROFILE" --target "$target_triple" -p codelet-fspec
+      cargo xwin build --profile "$BUILD_PROFILE" --target "$target_triple" -p codelet-fspec -j "$jobs"
     )
   else
     # For x86_64 Linux targets, override CC and CFLAGS to use zig with AVX-512 support
@@ -241,9 +252,9 @@ build_target() {
     # zig links against the newest glibc symbols it knows about (e.g. 2.39),
     # which breaks on older distros.
     #
-    # RUSTFLAGS="-C codegen-units=1" reduces the object-file count at link time.
-    # On macOS this is required to avoid ProcessFdQuotaExceeded / UnableToSpawnSelf
-    # linker failures with the default 16 codegen units.
+    # Parallelism is capped via -j "$jobs" (see above) to bound peak memory.
+    # The release-slim profile keeps codegen-units=16 so heavy dep crates
+    # never compile as a single giant CGU.
     local zig_cc="zig cc"
     local zig_cflags=""
     if [[ "$target_triple" == "x86_64"* ]]; then
@@ -252,8 +263,7 @@ build_target() {
     (
       cd "$CODELET_DIR"
       TARGET_CC="$zig_cc" TARGET_CFLAGS="$zig_cflags" TARGET_GLIBC_VERSION=2.17 \
-        RUSTFLAGS="-C codegen-units=1" \
-        cargo zigbuild --profile "$BUILD_PROFILE" --target "$target_triple" -p codelet-fspec
+        cargo zigbuild --profile "$BUILD_PROFILE" --target "$target_triple" -p codelet-fspec -j "$jobs"
     )
   fi
 
