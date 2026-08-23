@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T07:39:29.972Z",
+    "lastUpdated": "2026-08-23T07:56:42.671Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -261,8 +261,7 @@
       "RPC-318",
       "RPC-326",
       "RPC-309",
-      "PROV-142",
-      "TOKEN-003"
+      "PROV-142"
     ],
     "done": [
       "SESS-002",
@@ -1649,7 +1648,8 @@
       "RIG-015",
       "UPD-001",
       "UPD-002",
-      "UPD-003"
+      "UPD-003",
+      "TOKEN-003"
     ],
     "blocked": [
       "QUERY-001",
@@ -225211,9 +225211,9 @@
       "id": "TOKEN-003",
       "title": "SessionHeader reasoning (🧠) tokens do not accumulate — each API usage overwrites the last value",
       "type": "bug",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-08-23T00:58:37.908Z",
-      "updatedAt": "2026-08-23T07:39:29.972Z",
+      "updatedAt": "2026-08-23T07:56:42.671Z",
       "description": "The AgentView SessionHeader reasoning-token counter (N🧠) displays only the latest API-reported reasoning value instead of accumulating across segments/turns like the output (↑) counter. Every layer in the pipeline (StreamingTokenDisplay, session TokenTracker, persistence) overwrites reasoning_tokens instead of accumulating, the value is zeroed at the end of every turn, and it is never persisted to the session manifest. Full root-cause research attached to this card.",
       "epic": "token-tracking",
       "children": [],
@@ -225237,6 +225237,10 @@
         {
           "state": "validating",
           "timestamp": "2026-08-23T07:39:29.972Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-23T07:56:42.671Z"
         }
       ],
       "userStory": {
@@ -225286,35 +225290,21 @@
       "examples": [
         {
           "id": 0,
-          "text": "A turn with two API segments (tool loop): segment 1 reports 500 reasoning tokens, segment 2 reports 300 reasoning tokens. After the turn the session reasoning total is 800 and the header shows 800🧠 (not 300🧠)",
-          "deleted": true,
-          "createdAt": "2026-08-23T01:06:27.539Z",
-          "deletedAt": "2026-08-23T01:07:10.861Z"
-        },
-        {
-          "id": 1,
           "text": "Turn 1 uses 800 reasoning tokens. Turn 2 uses 200 reasoning tokens. After turn 2 the header shows 1000🧠 — the previous turn's value is kept and accumulated, not replaced",
           "deleted": false,
           "createdAt": "2026-08-23T01:06:39.517Z"
         },
         {
-          "id": 2,
+          "id": 1,
           "text": "A session accumulates 1000 reasoning tokens across several turns, is closed, and is restored via /resume — the header shows 1000🧠 again (the value was persisted to the session manifest)",
           "deleted": false,
           "createdAt": "2026-08-23T01:07:26.664Z"
         },
         {
-          "id": 3,
+          "id": 2,
           "text": "A provider that reports no reasoning tokens (e.g. a non-thinking model) shows no 🧠 suffix at all — the counter stays 0 and the suffix is omitted, exactly as today",
           "deleted": false,
           "createdAt": "2026-08-23T01:07:36.875Z"
-        },
-        {
-          "id": 4,
-          "text": "A provider that reports no reasoning tokens (e.g. a non-thinking model) shows no 🧠 suffix at all — the counter stays 0 and the suffix is omitted, exactly as today",
-          "deleted": true,
-          "createdAt": "2026-08-23T01:13:54.563Z",
-          "deletedAt": "2026-08-23T01:15:04.876Z"
         }
       ],
       "nextExampleId": 5,
