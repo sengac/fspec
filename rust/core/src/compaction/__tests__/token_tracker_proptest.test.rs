@@ -187,19 +187,20 @@ proptest! {
         let mut prev = tracker.reasoning_tokens;
         for op in &ops {
             match op {
-                Op::Update { usage, .. } => {
+                Op::Update { usage, cumulative_delta } => {
                     // Production callers pass the session-cumulative value.
                     cumulative_reasoning =
                         cumulative_reasoning.saturating_add(usage.reasoning_tokens);
-                    let cumulative_usage =
-                        usage.clone().with_reasoning_tokens(cumulative_reasoning);
-                    apply(&mut tracker, &Op::Update {
-                        usage: cumulative_usage,
-                        cumulative_delta: 0,
-                    });
+                    let cumulative = tracker
+                        .output_tokens
+                        .saturating_add(*cumulative_delta);
+                    tracker.update_from_usage(
+                        &usage.with_reasoning_tokens(cumulative_reasoning),
+                        cumulative,
+                    );
                 }
                 Op::Compact => {
-                    apply(&mut tracker, op);
+                    tracker.reset_after_compaction();
                 }
             }
             prop_assert!(

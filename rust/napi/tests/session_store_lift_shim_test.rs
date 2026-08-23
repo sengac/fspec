@@ -134,7 +134,7 @@ fn napi_reexport_paths_route_through_core_for_session_types() {
     let session_id = session.id;
     append_message_with_metadata(&mut session, "user", "shim hello", HashMap::new())
         .expect("append_message_with_metadata via NAPI alias");
-    update_session_tokens(&mut session, 42, 21, 0, 0)
+    update_session_tokens(&mut session, 42, 21, 0, 0, 0)
         .expect("update_session_tokens via NAPI alias");
     save_session(&session).expect("save_session via NAPI alias");
 

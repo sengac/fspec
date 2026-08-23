@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T06:09:09.829Z",
+    "lastUpdated": "2026-08-23T07:39:29.972Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -253,8 +253,7 @@
     ],
     "implementing": [
       "RPC-165",
-      "RPC-225",
-      "TOKEN-003"
+      "RPC-225"
     ],
     "validating": [
       "RPC-174",
@@ -262,7 +261,8 @@
       "RPC-318",
       "RPC-326",
       "RPC-309",
-      "PROV-142"
+      "PROV-142",
+      "TOKEN-003"
     ],
     "done": [
       "SESS-002",
@@ -225211,9 +225211,9 @@
       "id": "TOKEN-003",
       "title": "SessionHeader reasoning (🧠) tokens do not accumulate — each API usage overwrites the last value",
       "type": "bug",
-      "status": "implementing",
+      "status": "validating",
       "createdAt": "2026-08-23T00:58:37.908Z",
-      "updatedAt": "2026-08-23T02:05:28.639Z",
+      "updatedAt": "2026-08-23T07:39:29.972Z",
       "description": "The AgentView SessionHeader reasoning-token counter (N🧠) displays only the latest API-reported reasoning value instead of accumulating across segments/turns like the output (↑) counter. Every layer in the pipeline (StreamingTokenDisplay, session TokenTracker, persistence) overwrites reasoning_tokens instead of accumulating, the value is zeroed at the end of every turn, and it is never persisted to the session manifest. Full root-cause research attached to this card.",
       "epic": "token-tracking",
       "children": [],
@@ -225233,6 +225233,10 @@
           "state": "implementing",
           "timestamp": "2026-08-23T02:05:28.639Z",
           "reason": "Failing tests consolidated into single file rust/core/tests/token_003_reasoning_accumulation_test.rs (9 tests covering all 6 scenarios); confirmed failing (red phase: missing with_prev_reasoning API, missing TokenUsage.reasoning_tokens field, persist_token_state 3-arg signature)"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-23T07:39:29.972Z"
         }
       ],
       "userStory": {
