@@ -21,6 +21,7 @@
 mod config;
 mod matcher;
 mod middleware;
+mod template;
 
 pub use config::{BlocklistAction, BlocklistConfig, BlocklistRule};
 pub use matcher::{BlocklistMatcher, CheckResult};
@@ -29,6 +30,8 @@ pub use middleware::{
     clear_session_allowances, init_blocklist, is_session_allowed, load_blocklist_config,
     project_config_path, reload_blocklist, system_config_path, BlockedError,
 };
+pub use template::{default_blocklist_config, install_default_system_blocklist,
+    DEFAULT_BLOCKLIST_TEMPLATE};
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]

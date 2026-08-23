@@ -1,0 +1,481 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "git-checkout-block",
+      "pattern": "\\bgit\\s+checkout\\b",
+      "action": "prompt",
+      "reason": "git checkout can destructively overwrite uncommitted changes you may have forgotten about",
+      "guidance": "Use 'git switch <branch>' for branches. Use 'git diff <file>' to see what changed before discarding."
+    },
+    {
+      "id": "git-restore-block",
+      "pattern": "\\bgit\\s+restore\\b",
+      "action": "prompt",
+      "reason": "git restore can destructively overwrite uncommitted changes you may have forgotten about",
+      "guidance": "Use 'git diff <file>' to see what changed first. If you truly need to discard changes, confirm with the user before proceeding."
+    },
+    {
+      "id": "rm-rf-root-block",
+      "pattern": "rm\\s+-rf\\s+/[^.]",
+      "action": "block",
+      "reason": "Recursive delete of root directory is not allowed",
+      "guidance": "Use specific paths like ./directory instead of absolute paths from root"
+    },
+    {
+      "id": "rm-rf-home-block",
+      "pattern": "rm\\s+-rf\\s+~",
+      "action": "block",
+      "reason": "Recursive delete of home directory is not allowed",
+      "guidance": "Use specific paths within your project directory"
+    },
+    {
+      "id": "git-force-push-prompt",
+      "pattern": "git\\s+push\\s+.*--force",
+      "action": "prompt",
+      "reason": "Force push can overwrite remote history and affect collaborators",
+      "guidance": "Consider using --force-with-lease for safer force pushes"
+    },
+    {
+      "id": "git-hard-reset-prompt",
+      "pattern": "git\\s+reset\\s+--hard",
+      "action": "prompt",
+      "reason": "Hard reset discards all uncommitted changes permanently",
+      "guidance": "Use 'git reset --soft' to keep changes staged. Never use --hard without explicit user approval."
+    },
+    {
+      "id": "chmod-777-prompt",
+      "pattern": "chmod\\s+777",
+      "action": "prompt",
+      "reason": "chmod 777 grants overly permissive file permissions (world-writable)",
+      "guidance": "Use more restrictive permissions like 755 for directories or 644 for files"
+    },
+    {
+      "id": "disk-device-write-block",
+      "pattern": ">\\s*/dev/sd[a-z]",
+      "action": "block",
+      "reason": "Writing directly to disk device will destroy data",
+      "guidance": "Never write directly to /dev/sd* devices"
+    },
+    {
+      "id": "env-file-prompt",
+      "pattern": "\\.env",
+      "action": "prompt",
+      "reason": "Environment files often contain secrets and API keys",
+      "guidance": "Review the content carefully before allowing access"
+    },
+    {
+      "id": "pem-file-block",
+      "pattern": "\\.pem$",
+      "action": "block",
+      "reason": "PEM files contain private keys and certificates",
+      "guidance": "Private keys should never be read or modified by AI agents"
+    },
+    {
+      "id": "ssh-private-key-block",
+      "pattern": "id_rsa|id_ed25519|id_ecdsa|id_dsa",
+      "action": "block",
+      "reason": "SSH private keys must remain confidential",
+      "guidance": "Never expose SSH private keys to any external system"
+    },
+    {
+      "id": "ssh-directory-prompt",
+      "pattern": "\\.ssh/",
+      "action": "prompt",
+      "reason": "SSH directory contains private keys and sensitive configuration",
+      "guidance": "Only allow access if absolutely necessary for SSH configuration"
+    },
+    {
+      "id": "gnupg-directory-prompt",
+      "pattern": "\\.gnupg/",
+      "action": "prompt",
+      "reason": "GPG directory contains encryption keys",
+      "guidance": "GPG keys are sensitive - only allow if needed for signing operations"
+    },
+    {
+      "id": "aws-credentials-block",
+      "pattern": "\\.aws/credentials",
+      "action": "block",
+      "reason": "AWS credentials file contains access keys",
+      "guidance": "Use IAM roles or environment variables instead of credential files"
+    },
+    {
+      "id": "git-credentials-block",
+      "pattern": "\\.git-credentials",
+      "action": "block",
+      "reason": "Git credentials file contains authentication tokens",
+      "guidance": "Use SSH keys or credential helpers instead"
+    },
+    {
+      "id": "netrc-block",
+      "pattern": "\\.netrc",
+      "action": "block",
+      "reason": "Netrc file contains login credentials for network services",
+      "guidance": "Never expose network credentials to AI agents"
+    },
+    {
+      "id": "docker-config-prompt",
+      "pattern": "\\.docker/config\\.json",
+      "action": "prompt",
+      "reason": "Docker config may contain registry authentication",
+      "guidance": "Review if registry credentials are present before allowing"
+    },
+    {
+      "id": "kube-config-prompt",
+      "pattern": "\\.kube/config",
+      "action": "prompt",
+      "reason": "Kubernetes config contains cluster access credentials",
+      "guidance": "Only allow if needed for Kubernetes operations"
+    },
+    {
+      "id": "npm-token-block",
+      "pattern": "\\.npmrc",
+      "action": "prompt",
+      "reason": "NPM config may contain authentication tokens",
+      "guidance": "Review if auth tokens are present before allowing"
+    },
+    {
+      "id": "history-file-block",
+      "pattern": "\\.(bash_history|zsh_history|history)",
+      "action": "block",
+      "reason": "Shell history may contain sensitive commands and secrets",
+      "guidance": "Shell history should remain private"
+    },
+    {
+      "id": "passwd-shadow-block",
+      "pattern": "/etc/(passwd|shadow|sudoers)",
+      "action": "block",
+      "reason": "System authentication files are restricted",
+      "guidance": "Never allow access to system authentication files"
+    },
+    {
+      "id": "rm-rf-prompt",
+      "pattern": "rm\\s+-rf",
+      "action": "prompt",
+      "reason": "Recursive force delete can remove important files",
+      "guidance": "Verify the path before allowing recursive deletion"
+    },
+    {
+      "id": "git-commit-prompt",
+      "pattern": "\\bgit\\s+commit\\b",
+      "action": "prompt",
+      "reason": "Commits create permanent history entries that may be difficult to undo",
+      "guidance": "Review staged changes with 'git diff --cached' before committing. Ensure commit message is appropriate."
+    },
+    {
+      "id": "git-revert-prompt",
+      "pattern": "\\bgit\\s+revert\\b",
+      "action": "prompt",
+      "reason": "Revert creates a new commit that undoes previous changes",
+      "guidance": "Verify which commit is being reverted and understand its impact on the codebase."
+    },
+    {
+      "id": "git-clean-prompt",
+      "pattern": "\\bgit\\s+clean\\b",
+      "action": "prompt",
+      "reason": "git clean permanently removes untracked files that cannot be recovered",
+      "guidance": "Use 'git clean -n' (dry-run) first to see what will be deleted. Untracked files are not in git history."
+    },
+    {
+      "id": "git-stash-block",
+      "pattern": "\\bgit\\s+stash\\b",
+      "action": "block",
+      "reason": "git stash manipulates the working tree and index behind the user's back. Agents must never touch git stash.",
+      "guidance": "Do not use git stash for any reason. If you need to compare before/after, use git diff. If you need a clean tree, ask the user."
+    },
+    {
+      "id": "git-branch-delete-prompt",
+      "pattern": "\\bgit\\s+branch\\s+(-d|-D|--delete)\\b",
+      "action": "prompt",
+      "reason": "Deleting branches removes references to commits which may become unreachable",
+      "guidance": "Ensure the branch has been merged or its changes are no longer needed. Use -d (safe) instead of -D (force) when possible."
+    },
+    {
+      "id": "git-tag-delete-prompt",
+      "pattern": "\\bgit\\s+tag\\s+(-d|--delete)\\b",
+      "action": "prompt",
+      "reason": "Deleting tags removes version markers that may be referenced by releases",
+      "guidance": "Verify the tag is not associated with a published release before deleting."
+    },
+    {
+      "id": "git-push-delete-prompt",
+      "pattern": "\\bgit\\s+push\\s+.*(-d|--delete|:\\w)\\b",
+      "action": "prompt",
+      "reason": "Deleting remote branches or tags affects all collaborators",
+      "guidance": "Ensure no one else is working on the branch and it has been merged if needed."
+    },
+    {
+      "id": "git-rebase-prompt",
+      "pattern": "\\bgit\\s+rebase\\b",
+      "action": "prompt",
+      "reason": "Rebase rewrites commit history which can cause issues if commits were already pushed",
+      "guidance": "Never rebase commits that have been pushed to a shared repository. Use 'git merge' for shared branches."
+    },
+    {
+      "id": "git-cherry-pick-prompt",
+      "pattern": "\\bgit\\s+cherry-pick\\b",
+      "action": "prompt",
+      "reason": "Cherry-pick copies commits which can create duplicate changes in history",
+      "guidance": "Understand why the commit is being cherry-picked and consider if merge would be more appropriate."
+    },
+    {
+      "id": "git-merge-prompt",
+      "pattern": "\\bgit\\s+merge\\b",
+      "action": "prompt",
+      "reason": "Merge combines branches and creates merge commits that affect history",
+      "guidance": "Review the changes being merged with 'git diff' and resolve any conflicts carefully."
+    },
+    {
+      "id": "git-am-prompt",
+      "pattern": "\\bgit\\s+am\\b",
+      "action": "prompt",
+      "reason": "git am applies patches as commits, modifying repository history",
+      "guidance": "Review the patch content before applying. Use --dry-run to test first."
+    },
+    {
+      "id": "work-units-json-block",
+      "pattern": "\\bwork-units\\.json\\b",
+      "action": "prompt",
+      "reason": "Direct access to work-units.json bypasses fspec workflow rules and can corrupt work unit state.",
+      "guidance": "Use the Fspec tool instead: 'list-work-units' to browse, 'show-work-unit' to inspect, and 'update-work-unit' or 'update-work-unit-status' to modify work units. Do not read or edit spec/work-units.json directly."
+    },
+    {
+      "id": "tags-json-block",
+      "pattern": "\\btags\\.json\\b",
+      "action": "block",
+      "reason": "Direct access to tags.json bypasses fspec tag validation and registration workflows.",
+      "guidance": "Use the Fspec tool instead: 'list-tags' to inspect tags, 'register-tag' to add tags, and 'add-tag-to-feature' or 'add-tag-to-scenario' to apply them. Do not read or edit spec/tags.json directly."
+    },
+    {
+      "id": "cargo-test-pipe-filter-block",
+      "pattern": "cargo\\s+test.*\\|\\s*(head|tail|grep)",
+      "action": "block",
+      "reason": "Do NOT pipe cargo test output through head/tail/grep. Tests are expensive to run — re-running them just to see a different slice of the output is wasteful and slow.",
+      "guidance": "Tee the output to a file and then read it: 'cargo test ... 2>&1 | tee /tmp/test-output.txt' then use the Read tool on /tmp/test-output.txt. This way you run the tests ONCE and can inspect the full output as many times as needed."
+    },
+    {
+      "id": "npm-test-pipe-filter-block",
+      "pattern": "npm\\s+(run\\s+)?test.*\\|\\s*(head|tail|grep)",
+      "action": "block",
+      "reason": "Do NOT pipe npm test output through head/tail/grep. Tests are expensive to run — re-running them just to see a different slice of the output is wasteful and slow.",
+      "guidance": "Tee the output to a file and then read it: 'npm test 2>&1 | tee /tmp/test-output.txt' then use the Read tool on /tmp/test-output.txt. This way you run the tests ONCE and can inspect the full output as many times as needed."
+    },
+    {
+      "id": "vitest-pipe-filter-block",
+      "pattern": "vitest.*\\|\\s*(head|tail|grep)",
+      "action": "block",
+      "reason": "Do NOT pipe vitest output through head/tail/grep. Tests are expensive to run — re-running them just to see a different slice of the output is wasteful and slow.",
+      "guidance": "Tee the output to a file and then read it: 'vitest ... 2>&1 | tee /tmp/test-output.txt' then use the Read tool on /tmp/test-output.txt. This way you run the tests ONCE and can inspect the full output as many times as needed."
+    },
+    {
+      "id": "h2-database-prompt",
+      "pattern": "h2_database(/|\\\\|$)",
+      "action": "prompt",
+      "reason": "The h2_database directory contains database files that must not be read, modified, or deleted without caution",
+      "guidance": "Use application-level database tools or queries instead of direct file access. Only access if you need to debug database issues."
+    },
+    {
+      "id": "foundation-json-block",
+      "pattern": "\\bfoundation\\.json",
+      "action": "block",
+      "reason": "Direct access to foundation.json bypasses fspec foundation management and can corrupt project state.",
+      "guidance": "Use the Fspec tool instead: 'show-foundation' to view, and use 'update-foundation' with section names to modify. Do not read or edit spec/foundation.json directly."
+    },
+    {
+      "id": "grep-recursive-block",
+      "pattern": "\\bgrep\\s+(-[a-zA-Z]*r[a-zA-Z]*n?|-[a-zA-Z]*n[a-zA-Z]*r|-rn|-nr|-r|--recursive)\\b",
+      "action": "block",
+      "reason": "Do NOT use 'grep -rn' / 'grep -r' via Bash. Recursive grep is slow, doesn't respect .gitignore, and floods the context with output.",
+      "guidance": "Use the Grep tool instead — it uses ripgrep under the hood, respects .gitignore, is faster, and supports glob/type filters and output modes. Example: Grep(pattern='foo', glob='*.rs', output_mode='content')."
+    },
+    {
+      "id": "fspec-command-block",
+      "pattern": "(^|[\\s;&|])fspec([\\s;&|]|$)",
+      "action": "block",
+      "reason": "YOU MUST USE THE FSPEC TOOL",
+      "guidance": "Use the Fspec tool for all fspec operations. Do NOT run fspec CLI commands via Bash."
+    },
+    {
+      "id": "fspec-dist-index-block",
+      "pattern": "fspec\\s*&&\\s*\\./dist/index\\.js",
+      "action": "block",
+      "reason": "YOU MUST USE THE FSPEC TOOL",
+      "guidance": "Use the Fspec tool for all fspec operations. Do NOT invoke 'fspec && ./dist/index.js' via Bash."
+    },
+    {
+      "id": "http-server-agent-loop-block",
+      "pattern": "http-server.*&",
+      "action": "block",
+      "reason": "Running http-server in the background with & can hang the agent loop",
+      "guidance": "Use GNU screen to run http-server: 'screen -dmS <session-name> npx http-server <options>'. This properly manages the process and prevents hanging the agent loop."
+    },
+    {
+      "id": "cargo-test-workspace-block",
+      "pattern": "cargo\\s+test\\b[^;|&]*--(workspace|all)([\\s;|&\"']|$)",
+      "action": "block",
+      "reason": "Unscoped workspace test runs can compile hundreds of large binaries with full debug info, fill the disk, and crash the machine. Previously caused a 300 GB target/ directory and a mid-link crash.",
+      "guidance": "Scope the run by package and target: 'cargo test -p <crate> --test <name>'. For broader runs, list packages explicitly and drop debug info: 'CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 cargo test -p <a> -p <b> -j 12'. Tee long output to a file instead of re-running."
+    },
+    {
+      "id": "cargo-test-unscoped-prompt",
+      "pattern": "cargo\\s+test\\s*($|[;&|)>]|2>)",
+      "action": "prompt",
+      "reason": "A bare 'cargo test' run from a workspace root is equivalent to --workspace: it tests EVERY member crate. This has previously compiled hundreds of multi-GB test binaries, filled the disk and crashed the machine.",
+      "guidance": "Only proceed if the current directory is a single small crate, NOT a workspace root. Otherwise scope the run: 'cargo test -p <crate> [--test <name>]', optionally with CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0."
+    },
+    {
+      "id": "rmdir-root-block",
+      "pattern": "\\b(rm|rmdir|rd)\\s+(/s\\s+)?/q\\s+C:\\\\",
+      "action": "block",
+      "reason": "Recursive delete of the system drive root is not allowed",
+      "guidance": "Use specific subdirectory paths like C:\\Users\\<username>\\project instead of the drive root"
+    },
+    {
+      "id": "rmdir-home-block",
+      "pattern": "\\b(rm|rmdir|rd)\\s+(/s\\s+)?/q\\s+%USERPROFILE%",
+      "action": "block",
+      "reason": "Recursive delete of the user home directory is not allowed",
+      "guidance": "Use specific paths within your project directory"
+    },
+    {
+      "id": "rmdir-recursive-prompt",
+      "pattern": "\\b(rm|rmdir|rd)\\s+/s\\s+/q\\b",
+      "action": "prompt",
+      "reason": "Recursive force delete (rmdir /s /q) can remove important files and directories",
+      "guidance": "Verify the target path before allowing recursive deletion. Use 'dir <path>' first to confirm what will be deleted."
+    },
+    {
+      "id": "del-recursive-prompt",
+      "pattern": "\\b(del|erase)\\s+/s\\s+/q\\b",
+      "action": "prompt",
+      "reason": "Recursive force delete (del /s /q) can remove important files",
+      "guidance": "Verify the target path and file patterns before allowing recursive deletion. Use 'dir <path>' first to confirm what will be deleted."
+    },
+    {
+      "id": "powershell-remove-recursive-prompt",
+      "pattern": "Remove-Item\\s+.*-Recurse\\s+.*-Force",
+      "action": "prompt",
+      "reason": "PowerShell Remove-Item -Recurse -Force can remove important files and directories",
+      "guidance": "Verify the target path before allowing recursive deletion. Use 'Get-ChildItem <path>' first to confirm what will be deleted."
+    },
+    {
+      "id": "powershell-remove-root-block",
+      "pattern": "Remove-Item\\s+.*-Path\\s+(C:\\\\|\\\\\\\\\\\\\\\\)\\s+.*-Recurse",
+      "action": "block",
+      "reason": "Recursive delete of the system drive root via PowerShell is not allowed",
+      "guidance": "Use specific subdirectory paths instead of the drive root"
+    },
+    {
+      "id": "format-disk-block",
+      "pattern": "\\bformat\\s+[A-Z]:($|\\s)",
+      "action": "block",
+      "reason": "Formatting a disk volume destroys all data on that partition",
+      "guidance": "Never format system or data drives. If formatting a USB/removable drive is truly needed, confirm with the user first."
+    },
+    {
+      "id": "diskpart-clean-block",
+      "pattern": "diskpart.*\\bclean\\b",
+      "action": "block",
+      "reason": "diskpart 'clean' command wipes all partitions and data from a disk",
+      "guidance": "Never use diskpart clean. If disk management is needed, use 'diskpart list disk' to inspect first and confirm with the user."
+    },
+    {
+      "id": "clear-disk-block",
+      "pattern": "Clear-Disk",
+      "action": "block",
+      "reason": "Clear-Disk PowerShell cmdlet wipes all partitions and data from a disk",
+      "guidance": "Never use Clear-Disk. If disk management is needed, use 'Get-PhysicalDisk' to inspect first and confirm with the user."
+    },
+    {
+      "id": "format-volume-block",
+      "pattern": "Format-Volume",
+      "action": "block",
+      "reason": "Format-Volume PowerShell cmdlet formats a volume and destroys all data",
+      "guidance": "Never use Format-Volume. If volume management is needed, use 'Get-Volume' to inspect first and confirm with the user."
+    },
+    {
+      "id": "windows-sam-block",
+      "pattern": "C:\\\\Windows\\\\System32\\\\config\\\\(SAM|SYSTEM|SECURITY|SOFTWARE)",
+      "action": "block",
+      "reason": "Windows system configuration files (SAM, SYSTEM, SECURITY, SOFTWARE) contain authentication data and system settings",
+      "guidance": "Never allow access to Windows system configuration files. Use 'reg query' for specific registry lookups if needed."
+    },
+    {
+      "id": "cmdkey-block",
+      "pattern": "\\bcmdkey\\b",
+      "action": "block",
+      "reason": "cmdkey manages Windows stored credentials (passwords, tokens) which must remain confidential",
+      "guidance": "Never list or manipulate Windows stored credentials. Use application-specific credential managers instead."
+    },
+    {
+      "id": "powershell-history-block",
+      "pattern": "Get-History|powershell.*-NoExit.*history|\\$histfile",
+      "action": "block",
+      "reason": "PowerShell history may contain sensitive commands, credentials, and secrets",
+      "guidance": "Shell history should remain private. Do not read or export PowerShell history."
+    },
+    {
+      "id": "start-background-block",
+      "pattern": "start\\s+/b\\s+\\S",
+      "action": "block",
+      "reason": "Running processes in the background with 'start /b' can hang the agent loop",
+      "guidance": "Use 'Start-Process -WindowStyle Hidden <command>' in PowerShell, or run the process in a dedicated terminal session."
+    },
+    {
+      "id": "powershell-start-process-hidden-block",
+      "pattern": "Start-Process\\s+.*-WindowStyle\\s+Hidden",
+      "action": "block",
+      "reason": "Running processes hidden via Start-Process -WindowStyle Hidden can hang the agent loop and hide errors",
+      "guidance": "Run processes in the foreground or use a dedicated terminal. If a background process is truly needed, use 'Start-Process -PassThru' and track the PID."
+    },
+    {
+      "id": "icacls-full-control-prompt",
+      "pattern": "icacls\\s+.*:(OI)(CI)?F",
+      "action": "prompt",
+      "reason": "Granting Full Control (F) via icacls can make files accessible to unauthorized users",
+      "guidance": "Use more restrictive permissions like 'R' (Read) or 'M' (Modify) instead of 'F' (Full Control) unless explicitly required."
+    },
+    {
+      "id": "windows-ssh-directory-prompt",
+      "pattern": "C:\\\\Users\\\\[^/]+\\\\\\.ssh[\\\\/]",
+      "action": "prompt",
+      "reason": "Windows SSH directory contains private keys and sensitive configuration",
+      "guidance": "Only allow access if absolutely necessary for SSH configuration"
+    },
+    {
+      "id": "windows-aws-credentials-block",
+      "pattern": "C:\\\\Users\\\\[^/]+\\\\\\.aws\\\\credentials",
+      "action": "block",
+      "reason": "AWS credentials file on Windows contains access keys",
+      "guidance": "Use IAM roles or environment variables instead of credential files"
+    },
+    {
+      "id": "windows-git-credentials-block",
+      "pattern": "C:\\\\Users\\\\[^/]+\\\\\\.git-credentials",
+      "action": "block",
+      "reason": "Git credentials file on Windows contains authentication tokens",
+      "guidance": "Use SSH keys or credential helpers instead"
+    },
+    {
+      "id": "windows-npmrc-prompt",
+      "pattern": "C:\\\\Users\\\\[^/]+\\\\\\.npmrc",
+      "action": "prompt",
+      "reason": "NPM config on Windows may contain authentication tokens",
+      "guidance": "Review if auth tokens are present before allowing"
+    },
+    {
+      "id": "reg-delete-block",
+      "pattern": "\\breg\\s+delete\\s+HKLM\\\\",
+      "action": "block",
+      "reason": "Deleting registry keys under HKEY_LOCAL_MACHINE affects the entire system and can cause instability",
+      "guidance": "Never delete HKLM registry keys. Use 'reg query' to inspect first. If a specific key must be removed, confirm with the user and use 'reg delete' with a specific key path."
+    },
+    {
+      "id": "reg-delete-prompt",
+      "pattern": "\\breg\\s+delete\\s+HKCU\\\\",
+      "action": "prompt",
+      "reason": "Deleting registry keys under HKEY_CURRENT_USER can affect user settings and application behavior",
+      "guidance": "Use 'reg query' to inspect the key and its subkeys before deleting. Confirm with the user which specific key is being removed."
+    }
+  ]
+}

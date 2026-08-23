@@ -1,0 +1,198 @@
+{
+  "scenarios": [
+    {
+      "name": "Embedded template is valid and complete",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/block012_default_template_install.rs",
+          "lines": "78-108",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/template.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Template is installed and active on first check when no system blocklist exists",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/block012_default_template_install.rs",
+          "lines": "110-153",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Install creates the ~/.fspec parent directory when it is missing",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/block012_default_template_install.rs",
+          "lines": "156-183",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/config.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing user blocklist is never overwritten",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/block012_default_template_install.rs",
+          "lines": "186-229",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleted system blocklist is re-installed on the next check",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/block012_default_template_install.rs",
+          "lines": "232-262",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Install failure degrades gracefully without breaking command checking",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/block012_default_template_install.rs",
+          "lines": "265-285",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/template.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/block012_default_template_install.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/blocklist/template.rs",
+      "rust/tools/src/blocklist/middleware.rs",
+      "rust/tools/src/blocklist/config.rs"
+    ],
+    "totalLinesCovered": 283
+  }
+}

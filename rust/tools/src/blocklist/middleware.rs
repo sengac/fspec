@@ -4,6 +4,7 @@
 
 use super::config::BlocklistConfig;
 use super::matcher::{BlocklistMatcher, CheckResult};
+use super::template::install_default_system_blocklist;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, RwLock};
@@ -57,8 +58,13 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
     let mut system_config = BlocklistConfig::empty();
     let mut project_config = BlocklistConfig::empty();
 
-    // Load system config if it exists
+    // Load system config if it exists (BLOCK-012: install the embedded
+    // default template first when the file is missing, so the fresh file
+    // is loaded and matched in this same call)
     if let Some(system_path) = system_config_path() {
+        if !system_path.exists() {
+            install_default_system_blocklist(&system_path);
+        }
         if system_path.exists() {
             match BlocklistConfig::load_from_file(&system_path) {
                 Ok(config) => system_config = config,

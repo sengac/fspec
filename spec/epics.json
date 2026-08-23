@@ -1348,6 +1348,15 @@
       "workUnits": [
         "TOKEN-003"
       ]
+    },
+    "blocklist": {
+      "id": "blocklist",
+      "title": "BLOCK",
+      "createdAt": "2026-08-23T11:21:10.532Z",
+      "description": "Command and file access blocklist/allowlist filtering system — dangerous command blocking, sensitive path prompts, and default template provisioning",
+      "workUnits": [
+        "BLOCK-012"
+      ]
     }
   }
 }

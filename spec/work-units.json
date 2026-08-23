@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T10:38:52.155Z",
+    "lastUpdated": "2026-08-23T12:22:28.059Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -23,7 +23,7 @@
   "prefixCounters": {
     "AGENT": 22,
     "AMGR": 18,
-    "BLOCK": 11,
+    "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
     "BUG": 158,
@@ -1650,7 +1650,8 @@
       "UPD-003",
       "TOKEN-003",
       "BUG-157",
-      "BUG-158"
+      "BUG-158",
+      "BLOCK-012"
     ],
     "blocked": [
       "QUERY-001",
@@ -225581,6 +225582,136 @@
       ],
       "nextExampleId": 3,
       "estimate": 3
+    },
+    "BLOCK-012": {
+      "id": "BLOCK-012",
+      "title": "Auto-install default system blocklist template when ~/.fspec/blocklist.json is missing",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-23T11:21:25.275Z",
+      "updatedAt": "2026-08-23T12:22:28.059Z",
+      "description": "Embed the default blocklist JSON (68 rules covering Windows and Linux dangerous commands, sensitive file paths, and agent-loop protection) into the binary via include_str!. When load_blocklist_config() checks for ~/.fspec/blocklist.json and the file does not exist, write the embedded template to that path, then load and use it in the same process. This ensures every user gets sensible default protections on first run without any manual setup.",
+      "epic": "blocklist",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-23T11:21:34.773Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-23T11:41:40.560Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-23T11:47:54.508Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-23T12:11:48.906Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-23T12:22:28.059Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer (or AI agent operator)",
+        "action": "have a default ~/.fspec/blocklist.json auto-installed from the embedded template the first time the blocklist is loaded",
+        "benefit": "sensible default protections for dangerous commands and sensitive files are active on every machine without any manual setup"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The default blocklist template (the contents of ~/blocklist.json: version 1.0.0 with 68 rules covering Windows and Linux dangerous commands, sensitive file paths, and agent-loop protection) is embedded in the codelet-tools binary at compile time via include_str! of a bundled data file (rust/tools/data/default-blocklist.json), so no external file is needed at runtime",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:22:18.825Z"
+        },
+        {
+          "id": 1,
+          "text": "The template is written to ~/.fspec/blocklist.json ONLY when that file does not already exist — an existing user-edited blocklist is never overwritten",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:22:33.085Z"
+        },
+        {
+          "id": 2,
+          "text": "The check-then-write happens inside load_blocklist_config() (the single chokepoint every check_bash_command/check_file_path call passes through) — the moment the system path is checked and found missing, the template is written and then loaded, so the new rules are active in the very same process and the very same check call",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:22:57.381Z"
+        },
+        {
+          "id": 3,
+          "text": "The embedded template must be valid BlocklistConfig JSON — a unit test asserts it deserializes via serde_json into BlocklistConfig with version \"1.0.0\" and exactly 68 rules, so a broken template fails the build's test suite rather than silently degrading at runtime",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:23:09.325Z"
+        },
+        {
+          "id": 4,
+          "text": "Write failures (missing home dir, read-only filesystem, permission errors) degrade gracefully: the install is skipped with a tracing::warn! log and the check proceeds with whatever configs could be loaded — a failed template install must never break command checking",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:23:27.928Z"
+        },
+        {
+          "id": 5,
+          "text": "Because load_blocklist_config() hot-reloads on every check, the missing-file check is re-evaluated on each call: if the user deletes ~/.fspec/blocklist.json mid-session, the next check re-installs the template — the check-then-write is idempotent and safe to repeat",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:23:40.968Z"
+        },
+        {
+          "id": 6,
+          "text": "The install creates the ~/.fspec parent directory if it does not exist (create_dir_all on the parent) before writing the file, so first-run users who have never had a ~/.fspec dir still get the template",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:24:08.222Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "First run on a fresh machine: HOME points at an empty temp dir with no ~/.fspec/blocklist.json. load_blocklist_config() is called (via init_blocklist or check_bash_command). The template is written to ~/.fspec/blocklist.json and the returned config contains all 68 default rules — a command matching 'git checkout' is blocked in that same call",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:24:46.425Z"
+        },
+        {
+          "id": 1,
+          "text": "User already has a custom ~/.fspec/blocklist.json (e.g., 3 rules they edited). load_blocklist_config() is called. The file is NOT overwritten — the config loaded contains exactly the user's 3 rules, and the file on disk is byte-identical to before",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:24:57.351Z"
+        },
+        {
+          "id": 2,
+          "text": "User deletes ~/.fspec/blocklist.json mid-session. The next check_bash_command() call re-detects the missing file, re-installs the template, and blocking works again without a process restart",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:25:06.595Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "attachments": [
+        "spec/attachments/BLOCK-012/default-blocklist-template-research.md",
+        "spec/attachments/BLOCK-012/ast-research-blocklist-chokepoint.md"
+      ],
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Template embedded via include_str! of rust/tools/data/default-blocklist.json in a new codelet-tools module (blocklist/template.rs), mirroring the codex_allowlist.rs precedent (bundled JSON + user override at ~/.fspec).",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:36:03.239Z"
+        },
+        {
+          "id": 1,
+          "text": "Check-then-write lives in middleware.rs::load_blocklist_config — the single chokepoint every check_bash_command/check_file_path/init_blocklist/reload_blocklist call funnels through. If system_config_path() does not exist, install_default_system_blocklist() writes the template (create_dir_all on parent) BEFORE the load, so the fresh file is loaded and matched in the same synchronous call — no startup-only seam, no restart needed.",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:36:12.600Z"
+        },
+        {
+          "id": 2,
+          "text": "Install failures (no HOME, read-only fs, unparseable template) are tracing::warn! and swallowed — a failed install must never break command checking. Existing user file is never touched (guarded by !exists()). Because load_blocklist_config hot-reloads on every check, deleting the file mid-session re-triggers install on the next check (idempotent).",
+          "deleted": false,
+          "createdAt": "2026-08-23T11:36:22.177Z"
+        }
+      ],
+      "nextNoteId": 3
     }
   }
 }
