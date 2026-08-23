@@ -1094,7 +1094,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-agent-loop"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1128,7 +1128,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-attachment-viewer"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "axum",
@@ -1144,7 +1144,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-cli"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -1183,7 +1183,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-common"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1207,7 +1207,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-core"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1250,7 +1250,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -1300,7 +1300,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec-core"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "axum",
  "chrono",
@@ -1333,7 +1333,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec-json-error"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "serde_json",
  "unicode-segmentation",
@@ -1341,7 +1341,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-fspec-tui"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1391,7 +1391,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-git"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1411,7 +1411,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-graph"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -1440,7 +1440,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-napi"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "arrow-array",
@@ -1501,7 +1501,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-providers"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1550,7 +1550,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "arc-swap",
  "codelet-core",
@@ -1569,7 +1569,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc-embedded"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "codelet-core",
  "codelet-providers",
@@ -1585,7 +1585,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc-server"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1610,7 +1610,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-rpc-types"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "codelet-test-helpers",
  "napi",
@@ -1621,7 +1621,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-sessions"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -1653,14 +1653,14 @@ dependencies = [
 
 [[package]]
 name = "codelet-test-helpers"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "codelet-tools"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "ast-grep-core",
@@ -1710,7 +1710,7 @@ dependencies = [
 
 [[package]]
 name = "codelet-tui"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "anyhow",
  "async-stream",
