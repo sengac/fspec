@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T07:56:42.671Z",
+    "lastUpdated": "2026-08-23T08:33:03.048Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -229,8 +229,7 @@
       "RPC-384",
       "PROV-126",
       "BUG-152",
-      "RPC-428",
-      "BUG-157"
+      "RPC-428"
     ],
     "specifying": [
       "BROWSE-001",
@@ -1649,7 +1648,8 @@
       "UPD-001",
       "UPD-002",
       "UPD-003",
-      "TOKEN-003"
+      "TOKEN-003",
+      "BUG-157"
     ],
     "blocked": [
       "QUERY-001",
@@ -225467,15 +225467,38 @@
       "id": "BUG-157",
       "title": "fspec format duplicates all scenarios when a feature file has a Background section",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-08-23T04:19:59.853Z",
-      "updatedAt": "2026-08-23T04:59:33.788Z",
+      "updatedAt": "2026-08-23T08:33:03.048Z",
       "description": "Running `fspec format` on a feature file that contains a `Background:` section re-appends every scenario block (indented under the Background), doubling the scenario count. Reproduced with a minimal 2-scenario file: after format, `grep -c 'Scenario:'` reports 4 instead of 2. Files without a Background section are unaffected (2 scenarios stay 2). This blocks the format check for any feature that uses the standard `Background: User Story` layout, which is the layout generate-scenarios produces.",
       "epic": "rust-cli-port",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-157/formatter-background-duplication-repro.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-23T08:03:19.578Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-23T08:10:25.704Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-23T08:13:04.165Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-23T08:20:43.291Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-23T08:33:03.048Z"
+        }
+      ],
+      "estimate": 2
     }
   }
 }

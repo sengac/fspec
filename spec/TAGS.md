@@ -324,6 +324,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@budget-thinking` | Budget-based thinking mode for Claude models |
 | `@buffer-overflow` | Buffer overflow handling scenarios |
 | `@bug-144` | Bug fix work unit BUG-144 - PromptCancelled error chain preservation |
+| `@bug-157` | Bug fix work unit BUG-157 - fspec format duplicates scenarios when a Background section is present |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -739,4 +740,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-23T01:16:15.627Z_
+_Last updated: 2026-08-23T08:10:09.131Z_

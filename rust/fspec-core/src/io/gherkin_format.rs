@@ -269,7 +269,14 @@ fn format_feature_into(
         push_blank_before_child(lines);
         // Insert comments before Background.
         insert_comments_before(bg.position.line, comment_map, lines);
-        format_background(bg, source, lines, 0, comment_map);
+        // Bound the prose-only Background description by the first sibling
+        // construct (BUG-157).
+        let next_sibling = feature
+            .scenarios
+            .first()
+            .map(|s| s.position.line)
+            .or_else(|| feature.rules.first().map(|r| r.position.line));
+        format_background(bg, source, lines, 0, comment_map, next_sibling);
     }
 
     for scenario in &feature.scenarios {
@@ -312,21 +319,36 @@ fn push_blank_before_child(lines: &mut Vec<String>) {
     lines.push(String::new());
 }
 
+/// Format a Background block.
+///
+/// `next_sibling_line` is the 1-based line of the first construct that
+/// follows the Background at the same nesting level (the next scenario or
+/// rule). It bounds the verbatim description extraction when the Background
+/// has no steps of its own: without a bound, a prose-only Background would
+/// swallow every trailing scenario into its description and re-emit them
+/// nested under the Background (BUG-157).
 fn format_background(
     bg: &Background,
     source: &str,
     lines: &mut Vec<String>,
     base_indent: usize,
     comment_map: &mut Vec<CommentEntry>,
+    next_sibling_line: Option<usize>,
 ) {
     let ind = indent(base_indent + 1);
     lines.push(format!("{ind}Background: {}", bg.name));
 
-    // Description ends at the first step of the Background.
+    // Description ends at the first step of the Background, or — when the
+    // Background is prose-only — at the next sibling construct.
+    let desc_end = bg
+        .steps
+        .first()
+        .map(|s| s.position.line)
+        .or(next_sibling_line);
     format_description_block(
         source,
         bg.position.line,
-        bg.steps.first().map(|s| s.position.line),
+        desc_end,
         bg.description.as_ref(),
         lines,
         base_indent + 2,
@@ -425,7 +447,10 @@ fn format_rule(
             lines.push(String::new());
         }
         insert_comments_before(bg.position.line, comment_map, lines);
-        format_background(bg, source, lines, base_indent + 1, comment_map);
+        // Bound the prose-only Background description by the first sibling
+        // scenario inside the Rule (BUG-157).
+        let next_sibling = rule.scenarios.first().map(|s| s.position.line);
+        format_background(bg, source, lines, base_indent + 1, comment_map, next_sibling);
         idx += 1;
     }
 
@@ -988,6 +1013,111 @@ mod tests {
         assert!(
             out.contains("    # Indented comment"),
             "indented comment was lost or had wrong indentation, got:\n{out}"
+        );
+    }
+
+    // ====================================================================
+    // BUG-157: Background section must not duplicate scenarios
+    //
+    // Feature: spec/features/gherkin-background-formatting.feature
+    //
+    // The gherkin-0.16.0 parser stores Background prose in
+    // `Background.description`, so the formatter must NOT re-extract the
+    // Background description verbatim from raw source without bounding the
+    // extraction by the Background's own content. An unbounded extraction
+    // swallows the trailing top-level scenarios and re-emits them nested
+    // under the Background, duplicating every scenario block.
+    // ====================================================================
+
+    /// Feature: spec/features/gherkin-background-formatting.feature
+    #[test]
+    fn bug157_background_prose_does_not_duplicate_scenarios() {
+        // @step Given a feature file with a Background section followed by two scenarios
+        let src = "@test\nFeature: Formatter Background duplication repro\n\n  Background: User Story\n    As a user\n    I want to test\n    So that I can verify\n\n  Scenario: First scenario\n    Given a precondition\n    When I do the action\n    Then I see the result\n\n  Scenario: Second scenario\n    Given another precondition\n    When I do another action\n    Then I see another result\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the formatted output contains exactly two Scenario lines
+        let scenario_count = out
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Scenario:"))
+            .count();
+        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
+
+        // @step And every scenario is indented at the top level (two spaces)
+        for line in out.lines() {
+            if line.trim_start().starts_with("Scenario:") {
+                assert_eq!(
+                    line,
+                    format!("  {}", line.trim_start()),
+                    "scenario must be 2-space top-level indented, got:\n{out}"
+                );
+            }
+        }
+    }
+
+    /// Feature: spec/features/gherkin-background-formatting.feature
+    #[test]
+    fn bug157_background_prose_formatting_is_idempotent() {
+        // @step Given a feature file with a Background section and two scenarios
+        let src = "Feature: Background idempotent\n\n  Background: User Story\n    As a user\n    I want to test\n    So that I can verify\n\n  Scenario: First scenario\n    Given a precondition\n\n  Scenario: Second scenario\n    Given another precondition\n";
+        let once = format_feature(&parse(src), src);
+
+        // @step When the formatter formats the file twice
+        let twice = format_feature(&parse(&once), &once);
+
+        // @step Then the output of the second run is byte-identical to the output of the first run
+        assert_eq!(once, twice, "formatting must be idempotent, got:\n{once}\n---\n{twice}");
+    }
+
+    /// Feature: spec/features/gherkin-background-formatting.feature
+    #[test]
+    fn bug157_background_with_steps_is_formatted() {
+        // @step Given a feature file with a Background section containing a Given step and one scenario
+        let src = "Feature: Background with steps\n\n  Background: Setup\n    Given the app is loaded\n\n  Scenario: A scenario\n    Given a precondition\n    Then I see the result\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the Background step is emitted under the Background
+        assert!(
+            out.contains("  Background: Setup\n    Given the app is loaded"),
+            "background step missing, got:\n{out}"
+        );
+
+        // @step And the scenario is emitted exactly once at the top level
+        let scenario_count = out
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Scenario:"))
+            .count();
+        assert_eq!(scenario_count, 1, "scenario was duplicated, got:\n{out}");
+        assert!(
+            out.contains("  Scenario: A scenario"),
+            "scenario must be 2-space indented, got:\n{out}"
+        );
+    }
+
+    /// Feature: spec/features/gherkin-background-formatting.feature
+    #[test]
+    fn bug157_rule_with_background_is_formatted_without_duplication() {
+        // @step Given a feature file with a Rule containing a Background and one scenario
+        let src = "Feature: Rule with background\n\n  Rule: My rule\n    Background: Setup\n      Given the app is loaded\n\n    Scenario: A scenario\n      Given a precondition\n      Then I see the result\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the scenario is emitted exactly once
+        let scenario_count = out
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Scenario:"))
+            .count();
+        assert_eq!(scenario_count, 1, "scenario was duplicated, got:\n{out}");
+
+        // @step And the Background step is emitted under the Rule's Background
+        assert!(
+            out.contains("    Background: Setup\n      Given the app is loaded"),
+            "rule background step missing, got:\n{out}"
         );
     }
 

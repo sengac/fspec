@@ -1198,6 +1198,10 @@
           "description": "Bug fix work unit BUG-144 - PromptCancelled error chain preservation"
         },
         {
+          "name": "@bug-157",
+          "description": "Bug fix work unit BUG-157 - fspec format duplicates scenarios when a Background section is present"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -2878,7 +2882,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-23T01:16:15.627Z",
+    "lastUpdated": "2026-08-23T08:10:09.131Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
