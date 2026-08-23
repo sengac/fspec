@@ -2206,6 +2206,10 @@
           "description": "macOS-Specific"
         },
         {
+          "name": "@unix",
+          "description": "Unix-specific (macOS + Linux) requirement"
+        },
+        {
           "name": "@windows",
           "description": "Windows-Specific"
         }
@@ -2882,7 +2886,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-23T08:10:09.131Z",
+    "lastUpdated": "2026-08-23T21:52:13.191Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

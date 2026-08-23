@@ -1,0 +1,50 @@
+{
+  "scenarios": [
+    {
+      "name": "Engine installs an executable binary on Unix",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/upd004_update_executable_permissions.rs",
+          "lines": "137-168",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/update/replace.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/upd004_update_executable_permissions.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/update/replace.rs"
+    ],
+    "totalLinesCovered": 50
+  }
+}

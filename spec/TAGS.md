@@ -583,6 +583,7 @@ Tags for platform-specific scenarios or cross-platform requirements.
 | `@cross-platform` | Cross-Platform Requirement |
 | `@linux` | Linux-Specific |
 | `@macos` | macOS-Specific |
+| `@unix` | Unix-specific (macOS + Linux) requirement |
 | `@windows` | Windows-Specific |
 
 **Rule**: Use platform tags when a scenario has platform-specific behavior or requirements.
@@ -740,4 +741,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-23T08:10:09.131Z_
+_Last updated: 2026-08-23T21:52:13.191Z_

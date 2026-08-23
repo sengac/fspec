@@ -11,6 +11,61 @@
 
 ---
 
+## Install
+
+**macOS / Linux** — install the latest prebuilt binary from GitHub Releases:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+```
+
+**Windows (PowerShell):**
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
+```
+
+**Building from source** (requires a Rust toolchain):
+
+```bash
+./scripts/build-install.sh
+```
+
+See [BUILD.md](docs/BUILD.md) for complete build instructions, cross-compilation, and the `release-slim` profile rationale.
+
+---
+
+## Update
+
+fspec updates **in place** — it replaces the binary it was installed from, so there's no second copy to manage and no PATH juggling. The same engine powers both the TUI slash command and the CLI subcommand.
+
+**In the TUI:**
+
+```
+/update          # check for the latest release and install it if newer
+/update check    # just report the latest version, don't download
+```
+
+**From the shell:**
+
+```bash
+fspec update          # download, verify, and replace the installed binary
+fspec update --check  # query only; exits 0 if current, 1 if an update is available
+```
+
+`--check` is scriptable — wire it into a cron job or CI step to detect stale installs.
+
+### How it works
+
+1. **Check** — queries the GitHub API for the latest release and finds the asset matching your platform (e.g. `aarch64-apple-darwin`)
+2. **Download** — fetches the release archive to a temp file next to the installed binary
+3. **Verify** — computes the SHA-256 of the download and compares it (constant-time) against the digest GitHub publishes for that asset
+4. **Replace** — extracts the binary and atomically renames it into place (on Windows the rename is scheduled after the process exits, since the running `.exe` is locked)
+
+If any step fails — network error, missing asset, checksum mismatch — the installed binary is **left untouched**. A restart is required after a successful update to activate the new version.
+
+---
+
 ## What is fspec?
 
 **fspec** (Factory Spec) is infrastructure for running a software factory—multiple AI agents working jobs in parallel, driven by specifications, managed on a Kanban board.
@@ -62,20 +117,6 @@ fspec makes this possible through **Acceptance Criteria Driven Development (ACDD
 ---
 
 ## Quick Start
-
-### Install
-
-```bash
-# macOS / Linux — install the latest prebuilt binary from GitHub Releases:
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
-
-# Windows (PowerShell):
-powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
-```
-
-> **Building from source?** Run `./scripts/build-install.sh` (requires a Rust
-> toolchain). See [BUILD.md](docs/BUILD.md) for complete build instructions,
-> cross-compilation, and the `release-slim` profile rationale.
 
 ### Run
 

@@ -32,6 +32,16 @@ pub async fn extract_binary(
     } else {
         extract_targz(archive, &extracted)?;
     }
+    // UPD-004: the extracted temp file inherits the default umask (0o644),
+    // and `std::fs::rename` preserves the source file's permissions. Apply
+    // the executable bit BEFORE the rename so the rename lands an
+    // already-executable file into place (rule [0]).
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&extracted, std::fs::Permissions::from_mode(0o755))
+            .map_err(|e| UpdateError::ReplaceFailed(format!("chmod extracted binary: {e}")))?;
+    }
     debug!(?extracted, "update engine: binary extracted");
     Ok(extracted)
 }

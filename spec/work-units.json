@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T12:22:28.059Z",
+    "lastUpdated": "2026-08-23T22:01:07.522Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -91,7 +91,7 @@
     "VIEWNV": 1,
     "VIZ": 4,
     "WATCH": 24,
-    "UPD": 3
+    "UPD": 4
   },
   "states": {
     "backlog": [
@@ -1651,7 +1651,8 @@
       "TOKEN-003",
       "BUG-157",
       "BUG-158",
-      "BLOCK-012"
+      "BLOCK-012",
+      "UPD-004"
     ],
     "blocked": [
       "QUERY-001",
@@ -225712,6 +225713,74 @@
         }
       ],
       "nextNoteId": 3
+    },
+    "UPD-004": {
+      "id": "UPD-004",
+      "title": "Updater does not set executable permissions on the replaced binary (unix)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-23T21:49:50.715Z",
+      "updatedAt": "2026-08-23T22:01:07.522Z",
+      "description": "On macOS/Linux the self-update engine (codelet-fspec-core::update) extracts the binary to a temp file with default umask permissions (0o644) and renames it into place. std::fs::rename preserves the source permissions, so after a successful update the installed binary is not executable and the next fspec invocation fails with 'permission denied'. The tar entry mode (0o755) is never read, and no set_permissions/chmod is performed anywhere in the update module. Windows is unaffected (self_replace path).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-23T21:50:06.415Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-23T21:52:37.085Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-23T21:55:44.911Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-23T21:59:11.152Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-23T22:01:07.522Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec user on macOS or Linux",
+        "action": "self-update fspec in place",
+        "benefit": "the installed binary remains executable after the update"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The executable permission MUST be applied to the extracted temp binary before the atomic rename, so the rename lands an already-executable file into place (rename preserves source permissions; chmod-ing the install path after rename would briefly leave a non-executable window)",
+          "deleted": false,
+          "createdAt": "2026-08-23T21:50:52.949Z"
+        },
+        {
+          "id": 1,
+          "text": "On Unix (macOS/Linux), after a successful in-place update the installed binary MUST be executable (owner/user/other execute bits set, i.e. mode 0o755) — the kernel refuses to exec a non-+x file, so a non-executable install bricked the CLI until a manual chmod",
+          "deleted": false,
+          "createdAt": "2026-08-23T21:50:53.173Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Regression case (the reported bug): the extracted temp binary was created with default umask (0o644) and std::fs::rename preserved that mode, so the installed binary was non-executable and the next fspec invocation failed with 'permission denied'",
+          "deleted": false,
+          "createdAt": "2026-08-23T21:51:14.493Z"
+        },
+        {
+          "id": 1,
+          "text": "Engine on v0.9.3 with v0.10.0 latest: after perform_update the installed fspec binary has mode 0o755 (executable) — the next fspec invocation runs without 'permission denied'",
+          "deleted": false,
+          "createdAt": "2026-08-23T21:51:14.718Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 2
     }
   }
 }
