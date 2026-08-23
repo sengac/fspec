@@ -259,7 +259,7 @@ fn persist_token_state_updates_session_manifest() {
     let (session_id, _guard) = fresh_session("token-state");
 
     // @step When persist_token_state is invoked with input_tokens 100, output_tokens 50
-    persist_token_state(&session_id, 100, 50).expect("persist_token_state must succeed");
+    persist_token_state(&session_id, 100, 50, 0).expect("persist_token_state must succeed");
 
     // @step Then the manifest's persisted token state shows input_tokens 100 and output_tokens 50
     let manifest = load_session(session_id).expect("reload manifest");
@@ -415,11 +415,11 @@ fn background_output_done_arm_persists_assistant_then_token_state() {
         .expect("Done arm must call self.persist_assistant_message_with_stop_reason(stop_reason)");
 
     // @step And the same arm subsequently calls
-    // persist_token_state(&self.session.id, input_tokens, output_tokens)
+    // persist_token_state(&self.session.id, input_tokens, output_tokens, reasoning)
     let token_pos = arm
-        .find("persist_token_state(&self.session.id, input_tokens, output_tokens)")
+        .find("persist_token_state(&self.session.id, input_tokens, output_tokens, reasoning_tokens.unwrap_or(0))")
         .expect(
-            "Done arm must call persist_token_state(&self.session.id, input_tokens, output_tokens)",
+            "Done arm must call persist_token_state(&self.session.id, input_tokens, output_tokens, reasoning_tokens.unwrap_or(0))",
         );
 
     assert!(

@@ -118,7 +118,10 @@ where
         current_display.cache_read_tokens,
         current_display.cache_creation_tokens,
         0,
-    );
+    )
+    // TOKEN-003: carry the session-cumulative reasoning value so
+    // update_display_only does not zero it.
+    .with_reasoning_tokens(current_display.reasoning_tokens);
     session
         .token_tracker
         .update_display_only(&turn_usage, current_display.output_tokens);
@@ -166,7 +169,11 @@ where
         current_display.output_tokens,
         current_display.cache_read_tokens,
         current_display.cache_creation_tokens,
-    );
+    )
+    // TOKEN-003: the snapshot's reasoning value is already the
+    // session-cumulative total; seed it as the base so the continuation
+    // segment accumulates on top instead of restarting at 0.
+    .with_prev_reasoning(current_display.reasoning_tokens);
 
     let result = run_continuation_loop(
         agent,
@@ -351,7 +358,10 @@ where
                         cont_final.output_tokens,
                         cont_final.cache_read_tokens,
                         cont_final.cache_creation_tokens,
-                    );
+                    )
+                    // TOKEN-003: the snapshot's reasoning value is the
+                    // session-cumulative total; seed it as the base.
+                    .with_prev_reasoning(cont_final.reasoning_tokens);
                     continue;
                 }
 
@@ -367,7 +377,10 @@ where
                     cont_final.cache_read_tokens,
                     cont_final.cache_creation_tokens,
                     per_turn_output_delta,
-                );
+                )
+                // TOKEN-003: carry the session-cumulative reasoning value so
+                // the tracker is not zeroed at end of continuation.
+                .with_reasoning_tokens(cont_final.reasoning_tokens);
                 session
                     .token_tracker
                     .update_from_usage(&cont_usage, cont_final.output_tokens);
@@ -477,7 +490,10 @@ fn update_token_tracker(session: &mut Session, display: &StreamingTokenDisplay) 
         current.cache_read_tokens,
         current.cache_creation_tokens,
         per_turn_output_delta,
-    );
+    )
+    // TOKEN-003: carry the session-cumulative reasoning value so the
+    // tracker is not zeroed.
+    .with_reasoning_tokens(current.reasoning_tokens);
     session
         .token_tracker
         .update_from_usage(&usage, current.output_tokens);

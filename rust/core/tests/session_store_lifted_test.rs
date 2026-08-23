@@ -64,7 +64,7 @@ fn session_manifest_round_trips_via_sessions_json_from_core() {
         .expect("append_message_with_metadata");
 
     // @step And update_session_tokens is called with input 120 output 60 cache_read 0 cache_create 0
-    update_session_tokens(&mut session, 120, 60, 0, 0).expect("update_session_tokens");
+    update_session_tokens(&mut session, 120, 60, 0, 0, 0).expect("update_session_tokens");
 
     // @step And the SESSION_STORE singleton is reset so the next load_session reads from disk
     codelet_core::persistence::reset_stores_for_tests();

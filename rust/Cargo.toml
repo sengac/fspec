@@ -427,6 +427,11 @@ opt-level = 0
 #   3. Or use the dedicated profile below:
 #        cargo test --profile ci-test -p <crate>
 #
+# Parallelism is bounded by default via .cargo/config.toml (build.jobs = 4)
+# so every cargo invocation — build, test, check, clippy — caps concurrent
+# rustc processes. Override with CARGO_BUILD_JOBS=<n> or -j <n> for faster
+# builds on machines with headroom. See that file for the full rationale.
+#
 # The agent-side guard for this lives in ~/.fspec/blocklist.json
 # (rules: cargo-test-workspace-block, cargo-test-unscoped-prompt).
 # ─────────────────────────────────────────────────────────────────────

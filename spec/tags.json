@@ -574,6 +574,10 @@
           "description": "Installation and setup functionality"
         },
         {
+          "name": "@installer",
+          "description": "Installation scripts and binary distribution features (install.sh, build-install.sh, release assets)"
+        },
+        {
           "name": "@inter-agent-coordination",
           "description": "Inter-agent coordination patterns including discover-inspect-communicate-verify loops, bidirectional messaging, and context-referenced communication"
         },
@@ -2874,7 +2878,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-19T11:49:02.601Z",
+    "lastUpdated": "2026-08-23T01:16:15.627Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

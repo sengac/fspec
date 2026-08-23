@@ -1,78 +1,61 @@
 #!/usr/bin/env bash
-# fspec Rust Installer (macOS / Linux)
-# Builds the Rust binary from source and installs it.
+# fspec Native Installer (macOS / Linux)
+# Downloads and installs the latest fspec binary from GitHub Releases.
 #
 # Usage:
+#   curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
 #   ./scripts/install.sh                     # Run from repo root
-#   curl ... | bash                           # Piped (auto-clones repo)
 #   ./scripts/install.sh --dir /usr/local/bin
-#   BUILD_PROFILE=release ./scripts/install.sh
+#   INSTALL_DIR=/usr/local/bin ./scripts/install.sh
+#
+# Requires only: curl, tar, and a sha256 tool (sha256sum/shasum/sha256).
+# To build from source instead, use scripts/build-install.sh.
 
 set -euo pipefail
 
-# ── Defaults ────────────────────────────────────────────────────────────────
+# ── Configuration ────────────────────────────────────────────────────────────
+REPO="sengac/fspec"
+BIN_NAME="fspec"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
-BUILD_PROFILE="${BUILD_PROFILE:-release-slim}"
-# Cap parallel rustc processes to bound peak memory. This mirrors the 2-4 vCPU
-# ceiling of GitHub's runners (where this build succeeds without OOM). On a
-# 20-core machine the default -j 20 spawns 20 concurrent rustc processes on
-# heavy crates (lance, datafusion, arrow, tantivy) and OOMs.
-# Override with BUILD_JOBS for faster builds on machines with headroom.
-BUILD_JOBS="${BUILD_JOBS:-4}"
+GITHUB_API="https://api.github.com/repos/$REPO/releases?per_page=10"
+GITHUB_RELEASES="https://github.com/$REPO/releases/download"
 
-# Detect whether we're running from a file or piped
-if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
-  # Running from a file — derive repo root from script location
-  REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-else
-  # Piped or sourced — try to find repo root from cwd
-  if [[ -d "$(pwd)/rust" ]]; then
-    REPO_ROOT="$(pwd)"
-  else
-    # Not in a repo — clone it
-    REPO_ROOT=""
-  fi
-fi
-
-CODELET_DIR="$REPO_ROOT/rust"
-
-# ── Color helpers ────────────────────────────────────────────────────────────
-if [[ -t 1 ]]; then
-  RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'
+# ── Color helpers (stderr only, so piped stdout stays clean) ─────────────────
+if [[ -t 2 ]]; then
+  RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
   CYAN='\033[0;36m'; MAGENTA='\033[0;35m'; NC='\033[0m'
 else
   RED=''; GREEN=''; YELLOW=''; CYAN=''; MAGENTA=''; NC=''
 fi
 
-info()     { echo -e "${CYAN}INFO: $*${NC}" >&2; }
-success()  { echo -e "${GREEN}✓ $*${NC}" >&2; }
-warning()  { echo -e "${YELLOW}⚠ $*${NC}" >&2; }
-error()    { echo -e "${RED}✗ $*${NC}" >&2; }
-header()   { echo -e "${MAGENTA}$*${NC}" >&2; }
+info()    { echo -e "${CYAN}INFO: $*${NC}" >&2; }
+success() { echo -e "${GREEN}✓ $*${NC}" >&2; }
+warning() { echo -e "${YELLOW}⚠ $*${NC}" >&2; }
+error()   { echo -e "${RED}✗ $*${NC}" >&2; }
+header()  { echo -e "${MAGENTA}$*${NC}" >&2; }
 
-# ── Usage ─────────────────────────────────────────────────────────────────────
+# ── Usage ────────────────────────────────────────────────────────────────────
 usage() {
   cat <<EOF
-fspec Rust Installer (macOS / Linux)
+fspec Native Installer (macOS / Linux)
 
-Builds the fspec Rust binary from source and installs it.
+Downloads the latest prebuilt fspec binary from GitHub Releases.
+Requires only curl, tar, and a sha256 tool — no Rust toolchain needed.
 
 Usage: install.sh [options]
 
 Options:
-  --dir <path>       Installation directory (default: ~/.local/bin)
-  --profile <name>   Cargo build profile (default: release-slim)
-  --help             Show this help message
+  --dir <path>   Installation directory (default: ~/.local/bin)
+  --help         Show this help message
 
 Environment variables:
-  INSTALL_DIR        Installation directory (overrides --dir)
-  BUILD_PROFILE      Cargo build profile (overrides --profile)
-  BUILD_JOBS         Max parallel rustc processes (default: 4, bounds peak memory)
+  INSTALL_DIR    Installation directory (overrides --dir)
 
 Examples:
-  ./scripts/install.sh
+  curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
   ./scripts/install.sh --dir /usr/local/bin
-  BUILD_PROFILE=release ./scripts/install.sh
+
+To build from source instead, use: scripts/build-install.sh
 EOF
   exit 0
 }
@@ -80,14 +63,13 @@ EOF
 # ── Parse arguments ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dir)    INSTALL_DIR="$2"; shift 2 ;;
-    --profile) BUILD_PROFILE="$2"; shift 2 ;;
-    --help)   usage ;;
-    *)        error "Unknown option: $1"; exit 1 ;;
+    --dir)  INSTALL_DIR="$2"; shift 2 ;;
+    --help) usage ;;
+    *)      error "Unknown option: $1"; usage; exit 1 ;;
   esac
 done
 
-# ── Prerequisites ─────────────────────────────────────────────────────────────
+# ── Prerequisites ────────────────────────────────────────────────────────────
 check_prereq() {
   local cmd="$1" msg="$2"
   if ! command -v "$cmd" &>/dev/null; then
@@ -96,54 +78,190 @@ check_prereq() {
   fi
 }
 
-header "fspec Rust Installer"
-echo ""
+header "fspec Native Installer"
+echo "" >&2
 
 info "Checking prerequisites..."
-check_prereq cargo "Rust (cargo) is required. Install via https://rustup.rs/"
-check_prereq git   "git is required"
+check_prereq curl "curl is required for installation"
+check_prereq tar  "tar is required to extract the release archive"
 
-# Check protoc (required by build.rs for protobuf compilation)
-if ! command -v protoc &>/dev/null; then
-  warning "protoc not found — the build may fail without it."
-  warning "Install via: brew install protobuf (macOS) or apt install protobuf-compiler (Linux)"
+# ── Platform detection ───────────────────────────────────────────────────────
+# Maps the host to the release asset target triple (UPD-002 contract:
+# asset filename is fspec-<target-triple>.tar.gz, no version segment).
+detect_platform() {
+  local uname_s uname_m
+  uname_s=$(uname -s)
+  uname_m=$(uname -m)
+
+  case "$uname_s" in
+    Darwin)
+      case "$uname_m" in
+        arm64)  echo "aarch64-apple-darwin" ;;
+        x86_64) echo "x86_64-apple-darwin" ;;
+        *)      error "Unsupported macOS architecture: $uname_m"; exit 1 ;;
+      esac
+      ;;
+    Linux)
+      case "$uname_m" in
+        x86_64)   echo "x86_64-unknown-linux-gnu" ;;
+        aarch64|arm64) echo "aarch64-unknown-linux-gnu" ;;
+        *)        error "Unsupported Linux architecture: $uname_m"; exit 1 ;;
+      esac
+      ;;
+    MINGW*|MSYS*)
+      error "Windows native is not supported by this script."
+      error "Use WSL (then run this script), or the PowerShell installer:"
+      error "  powershell -ExecutionPolicy ByPass -c \"irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex\""
+      exit 1
+      ;;
+    *)
+      error "Unsupported OS: $uname_s"
+      exit 1
+      ;;
+  esac
+}
+
+PLATFORM="$(detect_platform)"
+info "Detected platform: $PLATFORM"
+
+# ── Release resolution ───────────────────────────────────────────────────────
+# Asset URL for a given tag (tag keeps its v prefix in the URL path).
+asset_url() {
+  local tag="$1"
+  echo "${GITHUB_RELEASES}/${tag}/fspec-${PLATFORM}.tar.gz"
+}
+
+# HEAD-check whether a release has an asset for this platform.
+asset_exists() {
+  local url="$1"
+  curl -fIsL --connect-timeout 10 "$url" >/dev/null 2>&1
+}
+
+# Fallback: follow the releases/latest redirect to get the tag.
+fetch_latest_tag_fallback() {
+  local location
+  location=$(curl -fsSIL --connect-timeout 10 "https://github.com/$REPO/releases/latest" \
+    | tr -d '\r' \
+    | awk '/^location:/ {print $2}' \
+    | tail -n1)
+  [[ -z "$location" ]] && return 1
+  echo "$location" | sed -nE 's|.*/tag/([^/]+)$|\1|p'
+}
+
+# Find the most recent release that has an asset for this platform.
+find_release_tag() {
+  local response_file
+  response_file=$(mktemp)
+  local tags=""
+
+  if curl -fsSL --connect-timeout 10 "$GITHUB_API" > "$response_file" 2>/dev/null; then
+    tags=$(grep -oE '"tag_name":[[:space:]]*"[^"]+"' "$response_file" | cut -d'"' -f4)
+  fi
+  rm -f "$response_file"
+
+  if [[ -n "$tags" ]]; then
+    local tag
+    for tag in $tags; do
+      if asset_exists "$(asset_url "$tag")"; then
+        echo "$tag"
+        return 0
+      fi
+    done
+  else
+    warning "GitHub API unavailable — falling back to the releases/latest redirect"
+  fi
+
+  # Fallback: latest release tag only.
+  local fallback_tag
+  fallback_tag=$(fetch_latest_tag_fallback) || return 1
+  if asset_exists "$(asset_url "$fallback_tag")"; then
+    echo "$fallback_tag"
+    return 0
+  fi
+  return 1
+}
+
+info "Resolving latest release with a $PLATFORM asset..."
+RELEASE_TAG="$(find_release_tag)" || {
+  error "No release with a $PLATFORM asset found"
+  exit 1
+}
+success "Found release: $RELEASE_TAG ($PLATFORM)"
+
+# ── Download ─────────────────────────────────────────────────────────────────
+TEMP_DIR="$(mktemp -d 2>/dev/null || mktemp -d -t fspec)"
+trap 'rm -rf "$TEMP_DIR"' EXIT INT TERM
+
+ARCHIVE="$TEMP_DIR/fspec-${PLATFORM}.tar.gz"
+DOWNLOAD_URL="$(asset_url "$RELEASE_TAG")"
+
+info "Downloading $DOWNLOAD_URL ..."
+if ! curl -fSL -# -o "$ARCHIVE" "$DOWNLOAD_URL"; then
+  error "Failed to download $DOWNLOAD_URL"
+  exit 1
 fi
+success "Downloaded $(du -h "$ARCHIVE" | cut -f1)"
 
-# ── Build ─────────────────────────────────────────────────────────────────────
-echo ""
-info "Building fspec (profile: $BUILD_PROFILE)..."
+# ── Checksum verification ────────────────────────────────────────────────────
+verify_checksum() {
+  local archive="$1"
+  local release_tag="$2"
+  local basename_file
+  basename_file=$(basename "$archive")
 
-# If repo not found (piped without being in the repo), clone it
-if [[ -z "$REPO_ROOT" ]]; then
-  info "Cloning fspec repository..."
-  REPO_ROOT="$(mktemp -d)"
-  git clone --depth 1 https://github.com/sengac/fspec.git "$REPO_ROOT" >/dev/null 2>&1
-  CODELET_DIR="$REPO_ROOT/rust"
-fi
+  local checksums_url="${GITHUB_RELEASES}/${release_tag}/checksums.txt"
+  local checksums_file="$TEMP_DIR/checksums.txt"
 
-if [[ ! -d "$CODELET_DIR" ]]; then
-  error "rust/ directory not found at $CODELET_DIR"
-  error "This script must be run from within the fspec repository."
+  if ! curl -fsSL --connect-timeout 10 -o "$checksums_file" "$checksums_url" 2>/dev/null; then
+    warning "checksums.txt not found on release $release_tag — skipping checksum verification"
+    return 0
+  fi
+
+  # checksums.txt format: <hash>  <filename> (sha256sum, two spaces)
+  local expected
+  expected=$(grep -F "$basename_file" "$checksums_file" 2>/dev/null | awk '{print $1}' | head -n1)
+  if [[ -z "$expected" ]]; then
+    warning "No checksum entry for $basename_file — skipping checksum verification"
+    return 0
+  fi
+
+  local actual=""
+  if command -v sha256sum &>/dev/null; then
+    actual=$(sha256sum "$archive" | awk '{print $1}')
+  elif command -v shasum &>/dev/null; then
+    actual=$(shasum -a 256 "$archive" | awk '{print $1}')
+  elif command -v sha256 &>/dev/null; then
+    actual=$(sha256 -q "$archive")
+  else
+    warning "No checksum tool (sha256sum/shasum/sha256) found — skipping checksum verification"
+    return 0
+  fi
+
+  if [[ "$actual" != "$expected" ]]; then
+    error "Checksum mismatch for $basename_file!"
+    error "Expected: $expected"
+    error "Got:      $actual"
+    exit 1
+  fi
+
+  success "Checksum verified: $expected"
+}
+
+info "Verifying binary integrity..."
+verify_checksum "$ARCHIVE" "$RELEASE_TAG"
+
+# ── Extract ──────────────────────────────────────────────────────────────────
+info "Extracting binary..."
+tar -xzf "$ARCHIVE" -C "$TEMP_DIR"
+
+EXTRACTED_BINARY="$(find "$TEMP_DIR" -type f -name "$BIN_NAME" | head -1)"
+if [[ -z "$EXTRACTED_BINARY" ]]; then
+  error "Binary not found in archive"
   exit 1
 fi
 
-(
-  cd "$CODELET_DIR"
-  cargo build --profile "$BUILD_PROFILE" -p codelet-fspec -j "$BUILD_JOBS"
-)
-
-BINARY="$CODELET_DIR/target/$BUILD_PROFILE/fspec"
-
-if [[ ! -f "$BINARY" ]]; then
-  error "Build artifact not found at $BINARY"
-  error "The build may have failed. Check the output above."
-  exit 1
-fi
-
-success "Build complete: $BINARY"
-
-# ── Install ───────────────────────────────────────────────────────────────────
-echo ""
+# ── Install ──────────────────────────────────────────────────────────────────
+echo "" >&2
 info "Installing to $INSTALL_DIR..."
 
 if [[ ! -d "$INSTALL_DIR" ]]; then
@@ -151,33 +269,36 @@ if [[ ! -d "$INSTALL_DIR" ]]; then
   mkdir -p "$INSTALL_DIR"
 fi
 
-cp "$BINARY" "$INSTALL_DIR/fspec"
-chmod +x "$INSTALL_DIR/fspec"
+if ! cp "$EXTRACTED_BINARY" "$INSTALL_DIR/$BIN_NAME"; then
+  error "Failed to install binary to $INSTALL_DIR/$BIN_NAME"
+  info "You may need to use: sudo cp $EXTRACTED_BINARY $INSTALL_DIR/$BIN_NAME"
+  exit 1
+fi
+chmod +x "$INSTALL_DIR/$BIN_NAME"
+success "Installed to $INSTALL_DIR/$BIN_NAME"
 
-success "Installed to $INSTALL_DIR/fspec"
-
-# ── PATH check ────────────────────────────────────────────────────────────────
+# ── PATH check ───────────────────────────────────────────────────────────────
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-  echo ""
+  echo "" >&2
   warning "Installation directory is not in PATH"
-  echo ""
+  echo "" >&2
   info "Add the following to your shell config (~/.zshrc or ~/.bashrc):"
-  echo ""
+  echo "" >&2
   echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
-  echo ""
+  echo "" >&2
   info "Then run: source ~/.zshrc  (or ~/.bashrc)"
-  echo ""
+  echo "" >&2
 fi
 
-# ── Verify ────────────────────────────────────────────────────────────────────
-echo ""
-if "$INSTALL_DIR/fspec" --version &>/dev/null; then
-  VERSION=$("$INSTALL_DIR/fspec" --version 2>&1)
+# ── Verify ───────────────────────────────────────────────────────────────────
+echo "" >&2
+if "$INSTALL_DIR/$BIN_NAME" --version &>/dev/null; then
+  VERSION=$("$INSTALL_DIR/$BIN_NAME" --version 2>&1)
   success "Version check passed: $VERSION"
 else
   warning "Could not verify installation, but binary is in place"
 fi
 
-echo ""
+echo "" >&2
 success "Installation complete!"
-info "Run 'fspec' to start the factory."
+info "Run 'fspec' to start."

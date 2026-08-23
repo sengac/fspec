@@ -1,0 +1,74 @@
+{
+  "scenarios": [
+    {
+      "name": "Reasoning tokens accumulate across API segments within a single turn",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
+          "lines": "46-93",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reasoning tokens accumulate across turns",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
+          "lines": "99-131",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reasoning tokens persist across session restore",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
+          "lines": "344-390",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "No reasoning suffix when the provider reports no reasoning tokens",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
+          "lines": "137-167",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reasoning counter never ticks backward within a session",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
+          "lines": "173-208",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cumulative reasoning does not affect compaction threshold math",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
+          "lines": "214-246",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/token_003_reasoning_accumulation_test.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 228
+  }
+}

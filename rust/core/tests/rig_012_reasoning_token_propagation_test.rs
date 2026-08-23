@@ -185,7 +185,9 @@ fn test_compaction_token_tracker_update_from_usage_preserves_reasoning() {
 }
 
 #[test]
-fn test_compaction_token_tracker_reset_after_compaction_clears_reasoning() {
+fn test_compaction_token_tracker_reset_after_compaction_preserves_reasoning() {
+    // TOKEN-003: reasoning_tokens is a session-spend metric (like
+    // cumulative_billed_*), so compaction PRESERVES the cumulative value.
     let mut tracker = TokenTracker {
         input_tokens: 100_000,
         output_tokens: 25_000,
@@ -198,8 +200,8 @@ fn test_compaction_token_tracker_reset_after_compaction_clears_reasoning() {
 
     tracker.reset_after_compaction();
 
-    // reasoning_tokens should be cleared after compaction
-    assert_eq!(tracker.reasoning_tokens, 0);
+    // reasoning_tokens must survive compaction (TOKEN-003)
+    assert_eq!(tracker.reasoning_tokens, 8_000);
     // output_tokens should also be 0
     assert_eq!(tracker.output_tokens, 0);
     // billing should be preserved

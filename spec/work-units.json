@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-21T09:17:36.474Z",
+    "lastUpdated": "2026-08-23T06:09:09.829Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 11,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 156,
+    "BUG": 157,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 14,
@@ -80,7 +80,7 @@
     "TAG": 4,
     "TECH": 3,
     "TEST": 40,
-    "TOKEN": 2,
+    "TOKEN": 3,
     "TOOL": 21,
     "TOOLS": 4,
     "TUI": 110,
@@ -91,7 +91,7 @@
     "VIEWNV": 1,
     "VIZ": 4,
     "WATCH": 24,
-    "UPD": 2
+    "UPD": 3
   },
   "states": {
     "backlog": [
@@ -229,7 +229,8 @@
       "RPC-384",
       "PROV-126",
       "BUG-152",
-      "RPC-428"
+      "RPC-428",
+      "BUG-157"
     ],
     "specifying": [
       "BROWSE-001",
@@ -252,7 +253,8 @@
     ],
     "implementing": [
       "RPC-165",
-      "RPC-225"
+      "RPC-225",
+      "TOKEN-003"
     ],
     "validating": [
       "RPC-174",
@@ -1646,7 +1648,8 @@
       "RIG-014",
       "RIG-015",
       "UPD-001",
-      "UPD-002"
+      "UPD-002",
+      "UPD-003"
     ],
     "blocked": [
       "QUERY-001",
@@ -225203,6 +225206,282 @@
         "UPD-001"
       ],
       "estimate": 8
+    },
+    "TOKEN-003": {
+      "id": "TOKEN-003",
+      "title": "SessionHeader reasoning (🧠) tokens do not accumulate — each API usage overwrites the last value",
+      "type": "bug",
+      "status": "implementing",
+      "createdAt": "2026-08-23T00:58:37.908Z",
+      "updatedAt": "2026-08-23T02:05:28.639Z",
+      "description": "The AgentView SessionHeader reasoning-token counter (N🧠) displays only the latest API-reported reasoning value instead of accumulating across segments/turns like the output (↑) counter. Every layer in the pipeline (StreamingTokenDisplay, session TokenTracker, persistence) overwrites reasoning_tokens instead of accumulating, the value is zeroed at the end of every turn, and it is never persisted to the session manifest. Full root-cause research attached to this card.",
+      "epic": "token-tracking",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TOKEN-003/root-cause-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-23T01:02:59.845Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-23T01:21:51.668Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-23T02:05:28.639Z",
+          "reason": "Failing tests consolidated into single file rust/core/tests/token_003_reasoning_accumulation_test.rs (9 tests covering all 6 scenarios); confirmed failing (red phase: missing with_prev_reasoning API, missing TokenUsage.reasoning_tokens field, persist_token_state 3-arg signature)"
+        }
+      ],
+      "userStory": {
+        "role": "developer using extended-thinking models",
+        "action": "see a session-cumulative reasoning (🧠) token counter in the SessionHeader that accumulates across API segments and turns",
+        "benefit": "I can monitor total reasoning spend per session with the same semantics as the output (↑) counter, and the value survives /resume"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The displayed reasoning token count is SESSION-CUMULATIVE: it accumulates across API segments within a turn (tool loops) and across turns, matching the output (↑) counter semantics and the Codex reference implementation",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:03:41.202Z"
+        },
+        {
+          "id": 1,
+          "text": "StreamingTokenDisplay must track reasoning tokens with the same cumulative structure as output tokens: a cumulative base plus a current-segment value, where start_new_segment() accumulates the previous segment's reasoning into the base before resetting the current-segment value",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:03:51.025Z"
+        },
+        {
+          "id": 2,
+          "text": "The end-of-turn session tracker update (stream_loop.rs ~2252 and gemini_continuation.rs update_token_tracker) must carry the turn's cumulative reasoning value into ApiTokenUsage (via with_reasoning_tokens or an equivalent builder) so session.token_tracker.reasoning_tokens holds the session cumulative instead of being zeroed to 0",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:05:02.089Z"
+        },
+        {
+          "id": 3,
+          "text": "Every StreamingTokenDisplay seed site (the 6 from_cache_inclusive_total sites in stream_loop.rs and the 2 sites in gemini_continuation.rs) must seed the previous session reasoning value from session.token_tracker.reasoning_tokens so the new turn continues from the correct cumulative value",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:05:14.562Z"
+        },
+        {
+          "id": 4,
+          "text": "The reasoning token value must be persisted to the session manifest (TokenUsage struct) and restored on /resume, matching how input/output tokens are persisted via persist_token_state",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:05:23.947Z"
+        },
+        {
+          "id": 5,
+          "text": "The 🧠 counter must be monotonically non-decreasing within a session (never ticks backward), and must not leak into compaction threshold math — threshold checks use physical context occupancy (input + current-segment output + current-segment reasoning), not the cumulative reasoning display value",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:05:38.931Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A turn with two API segments (tool loop): segment 1 reports 500 reasoning tokens, segment 2 reports 300 reasoning tokens. After the turn the session reasoning total is 800 and the header shows 800🧠 (not 300🧠)",
+          "deleted": true,
+          "createdAt": "2026-08-23T01:06:27.539Z",
+          "deletedAt": "2026-08-23T01:07:10.861Z"
+        },
+        {
+          "id": 1,
+          "text": "Turn 1 uses 800 reasoning tokens. Turn 2 uses 200 reasoning tokens. After turn 2 the header shows 1000🧠 — the previous turn's value is kept and accumulated, not replaced",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:06:39.517Z"
+        },
+        {
+          "id": 2,
+          "text": "A session accumulates 1000 reasoning tokens across several turns, is closed, and is restored via /resume — the header shows 1000🧠 again (the value was persisted to the session manifest)",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:07:26.664Z"
+        },
+        {
+          "id": 3,
+          "text": "A provider that reports no reasoning tokens (e.g. a non-thinking model) shows no 🧠 suffix at all — the counter stays 0 and the suffix is omitted, exactly as today",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:07:36.875Z"
+        },
+        {
+          "id": 4,
+          "text": "A provider that reports no reasoning tokens (e.g. a non-thinking model) shows no 🧠 suffix at all — the counter stays 0 and the suffix is omitted, exactly as today",
+          "deleted": true,
+          "createdAt": "2026-08-23T01:13:54.563Z",
+          "deletedAt": "2026-08-23T01:15:04.876Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "assumptions": [
+        "reset_after_compaction() keeps the cumulative reasoning value (like cumulative_billed_*), because it is a session-spend metric rather than a context metric; the TUI context-fill recompute uses the wire cumulative reasoning but the backend emit_context_fill_from_usage remains authoritative for the [X%] badge",
+        "Estimating reasoning tokens from ReasoningDelta text for Anthropic/Gemini (where the API folds thinking tokens into output_tokens) is OUT OF SCOPE for this card — it becomes a separate follow-up work unit"
+      ],
+      "estimate": 5,
+      "virtualHooks": [
+        {
+          "name": "cd",
+          "event": "pre-validating",
+          "command": "cd rust && cargo clippy -p codelet-core -p codelet-cli -p codelet-agent-loop -p codelet-napi --tests 2>&1 | tail -5",
+          "blocking": true
+        }
+      ]
+    },
+    "UPD-003": {
+      "id": "UPD-003",
+      "title": "GitHub-release binary installer (install.sh) + source build installer (build-install.sh)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-23T01:06:04.903Z",
+      "updatedAt": "2026-08-23T06:09:09.829Z",
+      "description": "Split scripts/install.sh into two: install.sh downloads the latest prebuilt release binary for the current platform from GitHub Releases (vtcode-style), and build-install.sh builds from source and installs. Release pipeline publishes checksums.txt so both installers can verify integrity.",
+      "epic": "update",
+      "children": [],
+      "userStory": {
+        "role": "fspec user on macOS or Linux",
+        "action": "install fspec with a one-line curl command",
+        "benefit": "get a verified prebuilt binary in seconds without a Rust toolchain, while developers can still build from source via build-install.sh"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-23T01:07:05.519Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-23T02:00:55.850Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-23T02:14:18.645Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-23T02:27:05.697Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-23T06:09:09.829Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "scripts/install.sh MUST be a pure download installer: it detects the host platform, finds the latest GitHub release with a matching asset, downloads it, verifies its checksum, extracts the fspec binary, and installs it to the install directory. It MUST NOT require a Rust toolchain, cargo, or git, and MUST NOT build anything from source.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:07:20.759Z"
+        },
+        {
+          "id": 1,
+          "text": "scripts/build-install.sh MUST contain the existing from-source build behavior currently in scripts/install.sh: prerequisite checks (cargo, git, protoc warning), cargo build of codelet-fspec with the release-slim profile, and installation of the built binary. It MUST support the same --dir, --profile, and INSTALL_DIR/BUILD_PROFILE/BUILD_JOBS options.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:11:06.453Z"
+        },
+        {
+          "id": 2,
+          "text": "install.sh MUST detect the host platform via uname (Darwin/arm64, Darwin/x86_64, Linux/x86_64, Linux/aarch64) and map it to the release asset target triple: aarch64-apple-darwin, x86_64-apple-darwin, x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu. Unsupported OS or architecture MUST fail with a clear error message.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:11:22.356Z"
+        },
+        {
+          "id": 3,
+          "text": "install.sh MUST resolve the release to install by listing recent releases (GitHub API, up to 10) and picking the most recent one that has an asset matching the detected platform. Asset filenames MUST follow the UPD-002 contract: fspec-<target-triple>.tar.gz for unix, downloaded from the tag URL https://github.com/sengac/fspec/releases/download/<tag>/fspec-<target-triple>.tar.gz. If the API is unavailable, it MUST fall back to following the releases/latest redirect to get the tag.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:12:35.532Z"
+        },
+        {
+          "id": 4,
+          "text": "install.sh MUST verify the downloaded archive against the release's checksums.txt asset (sha256sum format: hash, two spaces, filename). If checksums.txt is not present on the release, it MUST print a warning and continue without verification rather than failing. A checksum mismatch MUST abort the installation with an error showing expected and actual hashes.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:12:49.803Z"
+        },
+        {
+          "id": 5,
+          "text": "install.sh MUST install the extracted binary to $INSTALL_DIR (default ~/.local/bin), making it executable, and MUST verify the installation by running fspec --version. If the install directory is not on PATH, it MUST print instructions for adding it to the user's shell config.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:13:43.076Z"
+        },
+        {
+          "id": 6,
+          "text": "The release pipeline (.github/workflows/release.yml) MUST publish a checksums.txt asset alongside the 5 binary archives. checksums.txt MUST contain one line per archive in sha256sum format (64-hex-char hash, two spaces, filename) so install.sh and install.ps1 can verify integrity.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:14:03.976Z"
+        },
+        {
+          "id": 7,
+          "text": "install.sh MUST work when piped (curl ... | bash) as well as when run from a file, and MUST support a --dir <path> option (and INSTALL_DIR environment variable) to override the default install directory, plus --help for usage.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:14:24.142Z"
+        },
+        {
+          "id": 8,
+          "text": "The README quick-start MUST document the one-line curl install command for macOS/Linux and the PowerShell command for Windows, and MUST reference build-install.sh for the from-source build path.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:16:02.253Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A user on Apple Silicon Mac runs: curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash — the script detects aarch64-apple-darwin, downloads the matching tar.gz from the latest release, verifies the checksum, installs fspec to ~/.local/bin/fspec, and prints the version. No Rust toolchain is needed.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:14:34.396Z"
+        },
+        {
+          "id": 1,
+          "text": "A user on an x86_64 Linux distro runs the installer — it detects x86_64-unknown-linux-gnu, downloads fspec-x86_64-unknown-linux-gnu.tar.gz (the static-musl asset), and the installed binary runs without glibc version errors.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:14:49.158Z"
+        },
+        {
+          "id": 2,
+          "text": "A developer who wants a from-source build runs scripts/build-install.sh — it checks for cargo and git, builds codelet-fspec with the release-slim profile, and installs the built binary to ~/.local/bin/fspec exactly as the old install.sh did.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:15:13.037Z"
+        },
+        {
+          "id": 3,
+          "text": "A user on a 32-bit or otherwise unsupported Linux architecture runs the installer — it fails immediately with a clear error naming the unsupported architecture and does not download anything.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:15:22.545Z"
+        },
+        {
+          "id": 4,
+          "text": "A release without a checksums.txt asset is installed — the script prints a warning that checksum verification was skipped and completes the installation successfully.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:15:37.901Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "install.sh mirrors the vtcode installer pattern: detect_platform (uname -s/-m → target triple), fetch releases via GitHub API with a releases/latest redirect fallback, HEAD-check each tag's asset (fspec-<target-triple>.tar.gz per the UPD-002 self-updater filename contract), download to mktemp -d, verify sha256 against the checksums.txt asset (warn+skip if absent), tar -xzf, cp+chmod to $INSTALL_DIR (default ~/.local/bin), PATH hint, fspec --version verify. Requires only curl/tar/sha256sum — no cargo/git. All logs to stderr so piped usage stays clean.",
+          "deleted": false,
+          "createdAt": "2026-08-23T01:20:32.140Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/UPD-003/ast-research-installer-scripts.md"
+      ]
+    },
+    "BUG-157": {
+      "id": "BUG-157",
+      "title": "fspec format duplicates all scenarios when a feature file has a Background section",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-08-23T04:19:59.853Z",
+      "updatedAt": "2026-08-23T04:59:33.788Z",
+      "description": "Running `fspec format` on a feature file that contains a `Background:` section re-appends every scenario block (indented under the Background), doubling the scenario count. Reproduced with a minimal 2-scenario file: after format, `grep -c 'Scenario:'` reports 4 instead of 2. Files without a Background section are unaffected (2 scenarios stay 2). This blocks the format check for any feature that uses the standard `Background: User Story` layout, which is the layout generate-scenarios produces.",
+      "epic": "rust-cli-port",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-157/formatter-background-duplication-repro.md"
+      ]
     }
   }
 }

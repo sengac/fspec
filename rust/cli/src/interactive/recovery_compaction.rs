@@ -194,7 +194,10 @@ pub fn flush_partial_state_before_compaction(
         current.cache_read_tokens,
         current.cache_creation_tokens,
         per_turn_output_delta,
-    );
+    )
+    // TOKEN-003: carry the session-cumulative reasoning value so the
+    // pre-cancel flush does not zero the tracker's 🧠 counter.
+    .with_reasoning_tokens(current.reasoning_tokens);
     session
         .token_tracker
         .update_from_usage(&usage, current.output_tokens);

@@ -100,8 +100,12 @@ pub struct StreamingTokenDisplay {
     cache_creation_tokens: u64,
     /// Previous input tokens (for OpenAI-compatible fallback)
     prev_input_tokens: u64,
-    /// Reasoning/thinking tokens (last known value)
-    reasoning_tokens: u64,
+    /// Cumulative reasoning tokens from completed segments / previous turns
+    /// (TOKEN-003: session-spend metric, mirrors `OutputTokenTracker::cumulative_base`)
+    reasoning_cumulative_base: u64,
+    /// Reasoning tokens for the current API segment (monotonic within a
+    /// segment — mirrors `OutputTokenTracker`'s max(estimate, authoritative))
+    reasoning_current: u64,
     /// Rate calculation
     rate: TokPerSecCalculator,
     /// Display throttling
@@ -128,7 +132,8 @@ impl StreamingTokenDisplay {
             cache_read_tokens: prev_cache_read,
             cache_creation_tokens: prev_cache_creation,
             prev_input_tokens: prev_input,
-            reasoning_tokens: 0,
+            reasoning_cumulative_base: 0,
+            reasoning_current: 0,
             rate: TokPerSecCalculator::new(),
             throttle: DisplayThrottle::with_default_interval(),
         }
@@ -192,6 +197,16 @@ impl StreamingTokenDisplay {
         display
     }
 
+    /// Seed the session-cumulative reasoning base (TOKEN-003).
+    ///
+    /// Threaded from `session.token_tracker.reasoning_tokens` at every
+    /// turn-start seed site so the new turn's 🧠 counter continues from the
+    /// previous session's cumulative value instead of restarting at 0.
+    pub fn with_prev_reasoning(mut self, prev: u64) -> Self {
+        self.reasoning_cumulative_base = prev;
+        self
+    }
+
     /// Record a text chunk during streaming.
     ///
     /// Updates output estimate and rate calculation.
@@ -228,8 +243,10 @@ impl StreamingTokenDisplay {
         if let Some(cc) = usage.cache_creation_input_tokens {
             self.cache_creation_tokens = cc;
         }
-        // Update reasoning tokens from Usage
-        self.reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
+        // Update reasoning tokens from Usage (TOKEN-003: current-segment
+        // value, monotonic within a segment so the display never ticks back)
+        let reported = usage.reasoning_tokens.unwrap_or(0);
+        self.reasoning_current = self.reasoning_current.max(reported);
 
         // Always emit on Usage events (authoritative data)
         Some(self.current_display(self.rate.current_rate()))
@@ -244,6 +261,11 @@ impl StreamingTokenDisplay {
     pub fn start_new_segment(&mut self, usage: &Usage) {
         // Accumulate previous segment before reset
         self.output.start_new_segment();
+
+        // TOKEN-003: accumulate the previous segment's reasoning into the
+        // session-cumulative base, mirroring the output accumulation.
+        self.reasoning_cumulative_base += self.reasoning_current;
+        self.reasoning_current = 0;
 
         // Update input and cache from new segment
         // Only update input_tokens if the new value is > 0, otherwise keep previous
@@ -278,8 +300,10 @@ impl StreamingTokenDisplay {
         if let Some(cc) = usage.cache_creation_input_tokens {
             self.cache_creation_tokens = cc;
         }
-        // Update reasoning tokens from final response
-        self.reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
+        // Update reasoning tokens from final response (TOKEN-003:
+        // current-segment value, monotonic within a segment)
+        let reported = usage.reasoning_tokens.unwrap_or(0);
+        self.reasoning_current = self.reasoning_current.max(reported);
 
         self.current_display(self.rate.current_rate())
     }
@@ -292,7 +316,8 @@ impl StreamingTokenDisplay {
             cache_read_tokens: self.cache_read_tokens,
             cache_creation_tokens: self.cache_creation_tokens,
             tokens_per_second: rate,
-            reasoning_tokens: self.reasoning_tokens,
+            // TOKEN-003: session-cumulative reasoning (base + current segment)
+            reasoning_tokens: self.reasoning_cumulative_base + self.reasoning_current,
         }
     }
 

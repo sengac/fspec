@@ -66,9 +66,16 @@ fspec makes this possible through **Acceptance Criteria Driven Development (ACDD
 ### Install
 
 ```bash
-# macOS / Linux — build and install from source:
-./scripts/install.sh
+# macOS / Linux — install the latest prebuilt binary from GitHub Releases:
+curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+
+# Windows (PowerShell):
+powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
 ```
+
+> **Building from source?** Run `./scripts/build-install.sh` (requires a Rust
+> toolchain). See [BUILD.md](docs/BUILD.md) for complete build instructions,
+> cross-compilation, and the `release-slim` profile rationale.
 
 ### Run
 
@@ -80,9 +87,6 @@ fspec
 This opens the factory floor—your Kanban board with AI workstations ready to take jobs.
 
 ![Interactive Kanban](assets/interactive-kanban.png)
-
-> **Building from source?** See [BUILD.md](docs/BUILD.md) for complete build instructions,
-> cross-compilation, and the `release-slim` profile rationale.
 
 ---
 

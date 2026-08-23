@@ -58,6 +58,12 @@ pub struct TokenUsage {
     /// Cache creation tokens from current API call.
     #[serde(default)]
     pub cache_creation_tokens: u64,
+    /// Session-cumulative reasoning tokens (TOKEN-003).
+    ///
+    /// STORED (not added) on each persist — the caller passes the
+    /// session-wide 🧠 cumulative so /resume can re-seed the SessionHeader.
+    #[serde(default)]
+    pub reasoning_tokens: u64,
 }
 
 /// Record of a merge operation for audit trail.
@@ -1098,14 +1104,20 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
 }
 
 /// Update session token usage (ADDS to existing).
+///
+/// TOKEN-003: `reasoning_tokens` is STORED (not added) — the caller passes
+/// the session-cumulative 🧠 value each turn, so adding would double-count.
+/// Input/output remain per-turn deltas that add to `cumulative_billed_*`.
 pub fn update_session_tokens(
     session: &mut SessionManifest,
     input: u64,
     output: u64,
     cache_read: u64,
     cache_create: u64,
+    reasoning_tokens: u64,
 ) -> Result<(), String> {
     session.update_token_usage(input, output, cache_read, cache_create);
+    session.token_usage.reasoning_tokens = reasoning_tokens;
 
     init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
@@ -1126,12 +1138,16 @@ pub fn set_session_tokens(
     cache_create: u64,
     cumulative_input: u64,
     cumulative_output: u64,
+    reasoning_tokens: u64,
 ) -> Result<(), String> {
     session.token_usage.current_context_tokens = input;
     session.token_usage.cumulative_billed_input = cumulative_input;
     session.token_usage.cumulative_billed_output = cumulative_output;
     session.token_usage.cache_read_tokens = cache_read;
     session.token_usage.cache_creation_tokens = cache_create;
+    // TOKEN-003: restore the session-cumulative reasoning value so the
+    // SessionHeader re-displays the 🧠 counter after /resume.
+    session.token_usage.reasoning_tokens = reasoning_tokens;
 
     init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;

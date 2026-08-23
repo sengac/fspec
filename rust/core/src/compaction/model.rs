@@ -72,6 +72,12 @@ pub struct TokenTracker {
     /// Cache creation tokens (from Anthropic API)
     pub cache_creation_input_tokens: Option<u64>,
     /// Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking)
+    ///
+    /// TOKEN-003: SESSION-CUMULATIVE total — callers pass the turn's
+    /// cumulative display value (via `ApiTokenUsage::with_reasoning_tokens`)
+    /// so this holds the session-wide 🧠 counter, not the last per-request
+    /// value. Like `cumulative_billed_*`, it survives
+    /// [`Self::reset_after_compaction`] (session-spend metric).
     #[serde(default)]
     pub reasoning_tokens: u64,
 }
@@ -164,7 +170,8 @@ impl TokenTracker {
         // Cache tokens are per-request, not cumulative (use latest values)
         self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
         self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
-        // Reasoning tokens from the latest request
+        // TOKEN-003: store the session-cumulative reasoning value supplied by
+        // the caller (via with_reasoning_tokens), not a per-request value.
         self.reasoning_tokens = usage.reasoning_tokens;
     }
 
@@ -191,7 +198,8 @@ impl TokenTracker {
         // Cache tokens are per-request values
         self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
         self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
-        // Reasoning tokens from the latest request
+        // TOKEN-003: store the session-cumulative reasoning value supplied by
+        // the caller (via with_reasoning_tokens).
         self.reasoning_tokens = usage.reasoning_tokens;
     }
 
@@ -201,10 +209,11 @@ impl TokenTracker {
     /// preserving cumulative billing (which tracks total spend across session).
     pub fn reset_after_compaction(&mut self) {
         self.output_tokens = 0;
-        self.reasoning_tokens = 0;
         self.cache_read_input_tokens = None;
         self.cache_creation_input_tokens = None;
         // Note: cumulative_billed_* is NOT reset - it tracks total session spend
+        // Note: reasoning_tokens is NOT reset (TOKEN-003) - it is a
+        // session-spend metric like cumulative_billed_*
         // Note: input_tokens is set by execute_compaction, not reset here
     }
 

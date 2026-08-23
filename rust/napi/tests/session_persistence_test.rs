@@ -539,6 +539,7 @@ fn test_token_state_persisted_and_restored() {
         2000, // output_tokens (cumulative)
         1000, // cache_read
         500,  // cache_creation
+        0,    // reasoning_tokens (TOKEN-003)
     )
     .expect("update tokens should succeed");
 
@@ -684,6 +685,7 @@ fn test_resumed_session_has_accurate_token_counts() {
         2000, // output_tokens (cumulative)
         1500, // cache_read
         800,  // cache_creation
+        0,    // reasoning_tokens (TOKEN-003)
     )
     .expect("update tokens should succeed");
 
@@ -841,6 +843,7 @@ fn test_session_manifest_integrity() {
         500,  // output (cumulative)
         100,  // cache_read
         50,   // cache_creation
+        0,    // reasoning_tokens (TOKEN-003)
     )
     .expect("update tokens should succeed");
 

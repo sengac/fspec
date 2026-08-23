@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# OOM guard (follow-up to 91b94675 "fix(build): bound rustc parallelism")
+#
+# This machine has 20 cores, so cargo defaults to -j 20 — spawning 20
+# concurrent rustc/link processes on the heavy dep crates (lance,
+# datafusion, arrow, tantivy). That OOMs both `cargo build` and
+# `cargo test` (each integration-test binary statically links the full
+# crate graph). GitHub's 2-4 vCPU runners never hit this because the
+# vCPU ceiling bounds peak memory.
+#
+# Setting build.jobs = 4 here bounds EVERY cargo invocation in this
+# workspace — build, test, check, clippy — without needing -j flags in
+# every script or agent command.
+#
+# Precedence (highest wins):
+#   1. -j <n> on the command line
+#   2. CARGO_BUILD_JOBS=<n> environment variable
+#   3. This config file
+#
+# Override for faster builds on machines with headroom:
+#   CARGO_BUILD_JOBS=8 cargo test -p codelet-core
+# ─────────────────────────────────────────────────────────────────────────────
+[build]
+jobs = 4

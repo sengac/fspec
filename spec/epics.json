@@ -1176,7 +1176,8 @@
         "RPC-333",
         "RPC-334",
         "RPC-414",
-        "TOOL-020"
+        "TOOL-020",
+        "BUG-157"
       ]
     },
     "provider-settings-parity": {
@@ -1334,7 +1335,17 @@
       "description": "Update epic: cross-platform GitHub Actions release pipeline (v0.10.0) + in-place /update self-update command",
       "workUnits": [
         "UPD-001",
-        "UPD-002"
+        "UPD-002",
+        "UPD-003"
+      ]
+    },
+    "token-tracking": {
+      "id": "token-tracking",
+      "title": "TOKEN",
+      "createdAt": "2026-08-23T00:57:48.095Z",
+      "description": "Token tracking and billing accumulation bugs — reasoning token accumulation, persistence, and display",
+      "workUnits": [
+        "TOKEN-003"
       ]
     }
   }

@@ -1214,6 +1214,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "chrono-tz",
+ "codelet-agent-loop",
  "codelet-common",
  "codelet-providers",
  "codelet-rpc-types",

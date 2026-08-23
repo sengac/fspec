@@ -1790,6 +1790,8 @@ export interface NapiTokenUsage {
   cacheReadTokens: number;
   /** Cache creation tokens from current API call */
   cacheCreationTokens: number;
+  /** Session-cumulative reasoning tokens (TOKEN-003) */
+  reasoningTokens: number;
 }
 
 /** TUI-056: Tool call info for turn details */
@@ -2042,7 +2044,8 @@ export declare function persistenceSetSessionTokens(
   cacheRead: number,
   cacheCreate: number,
   cumulativeInput: number,
-  cumulativeOutput: number
+  cumulativeOutput: number,
+  reasoningTokens: number
 ): NapiSessionManifest;
 
 /** Store content in blob storage */
@@ -2065,7 +2068,8 @@ export declare function persistenceUpdateSessionTokens(
   input: number,
   output: number,
   cacheRead: number,
-  cacheCreate: number
+  cacheCreate: number,
+  reasoningTokens: number
 ): NapiSessionManifest;
 
 /**

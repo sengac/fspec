@@ -50,7 +50,7 @@ one sig TokenTracker {
     var cumulativeBilledOutput  : one Int,   // monotone — sum of output
     var cacheRead               : lone Int,  // latest value (Option<u64>)
     var cacheCreation           : lone Int,  // latest value (Option<u64>)
-    var reasoningTokens         : one Int    // latest value
+    var reasoningTokens         : one Int    // SESSION-CUMULATIVE (TOKEN-003)
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -132,9 +132,15 @@ fun totalContext[u: ApiTokenUsage]: Int {
  * The `cumulativeOutput` parameter must be >= the previous outputTokens
  * (the streaming display reports running total). Saturating subtraction in
  * Rust means it never goes negative.
+ *
+ * TOKEN-003: `usage.reasoning` is the SESSION-CUMULATIVE reasoning value
+ * supplied by the caller (via `with_reasoning_tokens`), not a per-request
+ * value. Callers must pass a value >= the previous reasoningTokens, so the
+ * 🧠 counter is monotonically non-decreasing.
  */
 pred updateFromUsage[u: ApiTokenUsage, cumulativeOutput: Int] {
     cumulativeOutput >= 0
+    u.reasoning >= TokenTracker.reasoningTokens
     TokenTracker.inputTokens'            = totalInput[u]
     TokenTracker.outputTokens'           = cumulativeOutput
     TokenTracker.cumulativeBilledInput'  = plus[TokenTracker.cumulativeBilledInput, u.input]
@@ -148,21 +154,21 @@ pred updateFromUsage[u: ApiTokenUsage, cumulativeOutput: Int] {
  * `reset_after_compaction()` per Rust impl:
  *
  *   self.output_tokens   = 0
- *   self.reasoning_tokens = 0
  *   self.cache_read_input_tokens     = None
  *   self.cache_creation_input_tokens = None
  *   // cumulative_billed_* preserved
+ *   // reasoning_tokens preserved (TOKEN-003: session-spend metric)
  *   // input_tokens set later by execute_compaction (modeled separately)
  */
 pred resetAfterCompaction {
     TokenTracker.outputTokens'           = 0
-    TokenTracker.reasoningTokens'        = 0
     no TokenTracker.cacheRead'
     no TokenTracker.cacheCreation'
     // preserved fields
     TokenTracker.inputTokens'            = TokenTracker.inputTokens
     TokenTracker.cumulativeBilledInput'  = TokenTracker.cumulativeBilledInput
     TokenTracker.cumulativeBilledOutput' = TokenTracker.cumulativeBilledOutput
+    TokenTracker.reasoningTokens'        = TokenTracker.reasoningTokens
 }
 
 /*
@@ -259,18 +265,30 @@ check CompactionPreservesCumulativeBilling for 5 but 10 steps
 /*
  * INV-6: After reset_after_compaction, output_tokens is zero and cache
  * values are cleared.
+ *
+ * TOKEN-003: reasoning_tokens is a session-spend metric (like
+ * cumulative_billed_*), so compaction PRESERVES it.
  */
 assert CompactionClearsTransientState {
     always (
         resetAfterCompaction implies (
             TokenTracker.outputTokens' = 0
-            and TokenTracker.reasoningTokens' = 0
+            and TokenTracker.reasoningTokens' = TokenTracker.reasoningTokens
             and no TokenTracker.cacheRead'
             and no TokenTracker.cacheCreation'
         )
     )
 }
 check CompactionClearsTransientState for 5 but 10 steps
+
+/*
+ * INV-9 (TOKEN-003): reasoning_tokens is monotonically non-decreasing
+ * across any trace.
+ */
+assert ReasoningTokensMonotonic {
+    always TokenTracker.reasoningTokens' >= TokenTracker.reasoningTokens
+}
+check ReasoningTokensMonotonic for 5 but 10 steps
 
 /*
  * INV-7: cumulativeBilledInput >= sum of fresh-input portions of all

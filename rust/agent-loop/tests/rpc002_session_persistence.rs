@@ -123,7 +123,7 @@ async fn resume_restores_token_state() {
 
     // Persist a message and token state
     persist_user_message(&session_uuid, "hello").expect("persist user");
-    persist_token_state(&session_uuid, 100, 50).expect("persist tokens");
+    persist_token_state(&session_uuid, 100, 50, 0).expect("persist tokens");
 
     // Verify token state is in manifest
     let manifest = load_session(session_uuid).expect("load manifest");

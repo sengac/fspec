@@ -413,8 +413,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.persist_assistant_message_with_stop_reason(stop_reason);
 
                 // REFAC-007 Rule [31]: Persist token state on Done chunk
-                let (input_tokens, output_tokens, _reasoning_tokens) = self.session.get_tokens();
-                if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens) {
+                // TOKEN-003: carry the session-cumulative reasoning value
+                let (input_tokens, output_tokens, reasoning_tokens) = self.session.get_tokens();
+                if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens, reasoning_tokens.unwrap_or(0)) {
                     tracing::error!("REFAC-007: Failed to persist token state: {}", e);
                 }
 

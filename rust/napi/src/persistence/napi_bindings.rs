@@ -326,6 +326,9 @@ pub fn persistence_search_history(
 // ============================================================================
 
 /// Update session token usage (ADDS to existing)
+///
+/// TOKEN-003: `reasoningTokens` is STORED (not added) — callers pass the
+/// session-cumulative 🧠 value.
 #[napi]
 pub fn persistence_update_session_tokens(
     session_id: String,
@@ -333,6 +336,7 @@ pub fn persistence_update_session_tokens(
     output: u32,
     cache_read: u32,
     cache_create: u32,
+    reasoning_tokens: u32,
 ) -> Result<NapiSessionManifest> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let mut session = load_session(uuid).map_err(Error::from_reason)?;
@@ -342,6 +346,7 @@ pub fn persistence_update_session_tokens(
         output as u64,
         cache_read as u64,
         cache_create as u64,
+        reasoning_tokens as u64,
     )
     .map_err(Error::from_reason)?;
     Ok(session.into())
@@ -357,6 +362,7 @@ pub fn persistence_set_session_tokens(
     cache_create: u32,
     cumulative_input: u32,
     cumulative_output: u32,
+    reasoning_tokens: u32,
 ) -> Result<NapiSessionManifest> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let mut session = load_session(uuid).map_err(Error::from_reason)?;
@@ -368,6 +374,7 @@ pub fn persistence_set_session_tokens(
         cache_create as u64,
         cumulative_input as u64,
         cumulative_output as u64,
+        reasoning_tokens as u64,
     )
     .map_err(Error::from_reason)?;
     Ok(session.into())
@@ -521,6 +528,8 @@ pub struct NapiTokenUsage {
     pub cache_read_tokens: u32,
     /// Cache creation tokens from current API call
     pub cache_creation_tokens: u32,
+    /// Session-cumulative reasoning tokens (TOKEN-003)
+    pub reasoning_tokens: u32,
 }
 
 impl From<TokenUsage> for NapiTokenUsage {
@@ -531,6 +540,7 @@ impl From<TokenUsage> for NapiTokenUsage {
             cumulative_billed_output: t.cumulative_billed_output as u32,
             cache_read_tokens: t.cache_read_tokens as u32,
             cache_creation_tokens: t.cache_creation_tokens as u32,
+            reasoning_tokens: t.reasoning_tokens as u32,
         }
     }
 }

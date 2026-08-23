@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc df4afb7428e140e44c3238b21c8963c46a8621bfd2e7142ad7465ebb4257421e # shrinks to ops = [Update { usage: ApiTokenUsage { input_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0, output_tokens: 0, reasoning_tokens: 169478 }, cumulative_delta: 0 }, Update { usage: ApiTokenUsage { input_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0, output_tokens: 0, reasoning_tokens: 0 }, cumulative_delta: 0 }]

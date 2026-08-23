@@ -203,10 +203,18 @@ jobs:
             echo "✓ $f is valid"
           done
 
+      - name: Generate checksums.txt
+        run: |
+          cd release
+          sha256sum fspec-* > checksums.txt
+          cat checksums.txt
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: fspec ${{ github.ref_name }}
-          files: release/fspec-*
+          files: |
+            release/fspec-*
+            release/checksums.txt
           generate_release_notes: true

@@ -81,6 +81,11 @@ proptest.workspace = true
 # RPC-067: shared no-codelet-napi dependency-rule helpers used by
 # tests/no_napi_dependency.rs.
 codelet-test-helpers.workspace = true
+# TOKEN-003: persistence tests drive codelet-agent-loop's persist_token_state
+# against a hermetic manifest (dev-dep only — no cycle in the build graph).
+codelet-agent-loop.workspace = true
+codelet-common.workspace = true
+uuid.workspace = true
 
 [lints]
 workspace = true

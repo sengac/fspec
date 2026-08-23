@@ -567,6 +567,9 @@ where
         .token_tracker
         .cache_creation_input_tokens
         .unwrap_or(0);
+    // TOKEN-003: seed the session-cumulative reasoning base so the 🧠 counter
+    // continues from the previous turn's value instead of restarting at 0.
+    let prev_reasoning = session.token_tracker.reasoning_tokens;
 
     // STREAMING-DISPLAY: Use StreamingTokenDisplay to track tokens during streaming
     // This encapsulates:
@@ -583,7 +586,8 @@ where
         prev_output_tokens,
         prev_cache_read,
         prev_cache_creation,
-    );
+    )
+    .with_prev_reasoning(prev_reasoning);
 
     // Emit initial token state at start of prompt so display shows current session state
     // (prevents flash to 0 when starting new prompt)
@@ -719,12 +723,15 @@ where
 
             // CMPCT-041: audited seed constructor (cache args are 0 here —
             // post-compaction tracker cache fields are reset/stale).
+            // TOKEN-003: seed the session-cumulative reasoning base so the
+            // 🧠 counter survives the compaction restart.
             streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
                 session.token_tracker.input_tokens,
                 0,
                 0,
                 0,
-            );
+            )
+            .with_prev_reasoning(prev_reasoning);
         }};
     }
 
@@ -1380,6 +1387,7 @@ where
                                 tool_execution_in_progress = false;
 
                                 // STREAMING-DISPLAY: Reset display for retry
+                                // TOKEN-003: keep the session-cumulative reasoning base.
                                 streaming_display =
                                     StreamingTokenDisplay::from_cache_inclusive_total(
                                         session.token_tracker.input_tokens,
@@ -1389,7 +1397,8 @@ where
                                             .token_tracker
                                             .cache_creation_input_tokens
                                             .unwrap_or(0),
-                                    );
+                                    )
+                                    .with_prev_reasoning(prev_reasoning);
 
                                 debug!("[stream_loop] PROV-041: Created new stream for thinking exhaustion retry");
                                 continue;
@@ -1637,6 +1646,7 @@ where
                                 last_tool_name = None;
                                 turn_tool_infos.clear();
                                 tool_execution_in_progress = false;
+                                // TOKEN-003: keep the session-cumulative reasoning base.
                                 streaming_display =
                                     StreamingTokenDisplay::from_cache_inclusive_total(
                                         session.token_tracker.input_tokens,
@@ -1646,7 +1656,8 @@ where
                                             .token_tracker
                                             .cache_creation_input_tokens
                                             .unwrap_or(0),
-                                    );
+                                    )
+                                    .with_prev_reasoning(prev_reasoning);
                                 continue;
                             }
                         }
@@ -1937,6 +1948,7 @@ where
                             tool_execution_in_progress = false;
 
                             // STREAMING-DISPLAY: Reset display for retry
+                            // TOKEN-003: keep the session-cumulative reasoning base.
                             streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
                                 session.token_tracker.input_tokens,
                                 session.token_tracker.output_tokens,
@@ -1945,7 +1957,8 @@ where
                                     .token_tracker
                                     .cache_creation_input_tokens
                                     .unwrap_or(0),
-                            );
+                            )
+                            .with_prev_reasoning(prev_reasoning);
 
                             continue;
                         }
@@ -2041,6 +2054,7 @@ where
                             tool_execution_in_progress = false;
 
                             // Reset streaming display for retry
+                            // TOKEN-003: keep the session-cumulative reasoning base.
                             streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
                                 session.token_tracker.input_tokens,
                                 session.token_tracker.output_tokens,
@@ -2049,7 +2063,8 @@ where
                                     .token_tracker
                                     .cache_creation_input_tokens
                                     .unwrap_or(0),
-                            );
+                            )
+                            .with_prev_reasoning(prev_reasoning);
 
                             debug!("[stream_loop] NET-001: Created new stream for network retry");
                             continue;
@@ -2254,7 +2269,11 @@ where
             final_display.cache_read_tokens,
             final_display.cache_creation_tokens,
             per_turn_output_delta,
-        );
+        )
+        // TOKEN-003: carry the session-cumulative reasoning value (base +
+        // current segment) into the tracker so it is NOT zeroed at end of
+        // turn — the next turn seeds from this cumulative value.
+        .with_reasoning_tokens(final_display.reasoning_tokens);
         tracing::debug!(
             "CMPCT-001: Before update: cumulative_billed_input={}, final_display.input_tokens={}",
             session.token_tracker.cumulative_billed_input,

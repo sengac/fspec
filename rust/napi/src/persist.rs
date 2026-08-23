@@ -188,10 +188,15 @@ pub(crate) fn persist_tool_result_internal(
 }
 
 /// REFAC-007 Rule [31]: Persist token state to session manifest
+///
+/// TOKEN-003: `reasoning_tokens` carries the session-cumulative 🧠 value.
+/// It is STORED (not added) in the manifest so /resume can re-seed the
+/// SessionHeader from the persisted cumulative.
 pub(crate) fn persist_token_state(
     session_id: &uuid::Uuid,
     input_tokens: u32,
     output_tokens: u32,
+    reasoning_tokens: u32,
 ) -> std::result::Result<(), String> {
     // Load the session manifest
     let mut session_manifest = load_session(*session_id)?;
@@ -203,13 +208,15 @@ pub(crate) fn persist_token_state(
         output_tokens as u64,
         0, // cache_read - not tracked per-turn
         0, // cache_create - not tracked per-turn
+        reasoning_tokens as u64,
     )?;
 
     tracing::debug!(
-        "REFAC-007: Persisted token state for session {} (input={}, output={})",
+        "REFAC-007: Persisted token state for session {} (input={}, output={}, reasoning={})",
         session_id,
         input_tokens,
-        output_tokens
+        output_tokens,
+        reasoning_tokens
     );
     Ok(())
 }

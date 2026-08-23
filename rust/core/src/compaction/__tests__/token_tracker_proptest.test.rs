@@ -149,6 +149,10 @@ proptest! {
     }
 
     /// INV-6 (Alloy: CompactionClearsTransientState).
+    ///
+    /// TOKEN-003: `reasoning_tokens` is a session-spend metric (like
+    /// `cumulative_billed_*`), so compaction PRESERVES it — it is no longer
+    /// cleared. The remaining transient state (output, cache values) is.
     #[test]
     fn compaction_clears_transient_state(ops in arb_op_sequence()) {
         let mut tracker = TokenTracker::new();
@@ -156,12 +160,55 @@ proptest! {
             apply(&mut tracker, op);
         }
 
+        let reasoning_before = tracker.reasoning_tokens;
+
         tracker.reset_after_compaction();
 
         prop_assert_eq!(tracker.output_tokens, 0);
-        prop_assert_eq!(tracker.reasoning_tokens, 0);
+        prop_assert_eq!(
+            tracker.reasoning_tokens, reasoning_before,
+            "TOKEN-003: cumulative reasoning must survive compaction (session-spend metric)"
+        );
         prop_assert!(tracker.cache_read_input_tokens.is_none());
         prop_assert!(tracker.cache_creation_input_tokens.is_none());
+    }
+
+    /// TOKEN-003: reasoning_tokens is monotonically non-decreasing when
+    /// callers pass session-cumulative values (the real contract — see
+    /// TOKEN-003 rule 2/3). Compaction preserves the value.
+    ///
+    /// The generator mirrors the production call sites: each update carries
+    /// the running session-cumulative reasoning total, never a per-request
+    /// value.
+    #[test]
+    fn reasoning_tokens_monotonic(ops in arb_op_sequence()) {
+        let mut tracker = TokenTracker::new();
+        let mut cumulative_reasoning = 0u64;
+        let mut prev = tracker.reasoning_tokens;
+        for op in &ops {
+            match op {
+                Op::Update { usage, .. } => {
+                    // Production callers pass the session-cumulative value.
+                    cumulative_reasoning =
+                        cumulative_reasoning.saturating_add(usage.reasoning_tokens);
+                    let cumulative_usage =
+                        usage.clone().with_reasoning_tokens(cumulative_reasoning);
+                    apply(&mut tracker, &Op::Update {
+                        usage: cumulative_usage,
+                        cumulative_delta: 0,
+                    });
+                }
+                Op::Compact => {
+                    apply(&mut tracker, op);
+                }
+            }
+            prop_assert!(
+                tracker.reasoning_tokens >= prev,
+                "reasoning_tokens regressed: {} -> {}",
+                prev, tracker.reasoning_tokens
+            );
+            prev = tracker.reasoning_tokens;
+        }
     }
 
     /// INV-7 (Alloy: CumulativeBilledLowerBound).

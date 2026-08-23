@@ -161,6 +161,7 @@ Tags that categorize features by functional area.
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
 | `@install` | Installation and setup functionality |
+| `@installer` | Installation scripts and binary distribution features (install.sh, build-install.sh, release assets) |
 | `@inter-agent-coordination` | Inter-agent coordination patterns including discover-inspect-communicate-verify loops, bidirectional messaging, and context-referenced communication |
 | `@interaction` | User interaction and input handling features |
 | `@interactive-cli` | Interactive CLI features and TUI workflows |
@@ -738,4 +739,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-19T11:49:02.601Z_
+_Last updated: 2026-08-23T01:16:15.627Z_
