@@ -279,7 +279,8 @@ fn format_feature_into(
         format_background(bg, source, lines, 0, comment_map, next_sibling);
     }
 
-    for scenario in &feature.scenarios {
+    let scenarios = &feature.scenarios;
+    for (idx, scenario) in scenarios.iter().enumerate() {
         push_blank_before_child(lines);
         // Insert comments before scenario (tags or keyword line).
         let scenario_line = if !scenario.tags.is_empty() {
@@ -293,7 +294,13 @@ fn format_feature_into(
             scenario.position.line
         };
         insert_comments_before(scenario_line, comment_map, lines);
-        format_scenario(scenario, source, lines, 0, comment_map);
+        // Bound a step-less scenario's description by the next sibling
+        // construct (BUG-158).
+        let next_sibling = scenarios
+            .get(idx + 1)
+            .map(|s| s.position.line)
+            .or_else(|| feature.rules.first().map(|r| r.position.line));
+        format_scenario(scenario, source, lines, 0, comment_map, next_sibling);
     }
 
     for rule in &feature.rules {
@@ -365,6 +372,7 @@ fn format_scenario(
     lines: &mut Vec<String>,
     base_indent: usize,
     comment_map: &mut Vec<CommentEntry>,
+    next_sibling_line: Option<usize>,
 ) {
     let ind = indent(base_indent + 1);
 
@@ -382,11 +390,17 @@ fn format_scenario(
 
     // Description ends at the first step (or first Examples table when the
     // scenario has no steps), re-extracted verbatim to keep blank lines.
+    // When the scenario has neither steps nor Examples (a step-less
+    // scenario — e.g. one whose step lines use lowercase keywords the
+    // Rust gherkin parser does not recognize, or genuinely prose-only),
+    // the description is bounded by the next sibling construct so the
+    // verbatim extraction cannot swallow the trailing scenarios (BUG-158).
     let scenario_desc_end = scenario
         .steps
         .first()
         .map(|s| s.position.line)
-        .or_else(|| scenario.examples.first().map(|e| e.position.line));
+        .or_else(|| scenario.examples.first().map(|e| e.position.line))
+        .or(next_sibling_line);
     format_description_block(
         source,
         scenario.position.line,
@@ -454,7 +468,8 @@ fn format_rule(
         idx += 1;
     }
 
-    for scenario in &rule.scenarios {
+    let rule_scenarios = &rule.scenarios;
+    for (sidx, scenario) in rule_scenarios.iter().enumerate() {
         if idx > 0 || has_desc {
             lines.push(String::new());
         }
@@ -469,7 +484,10 @@ fn format_rule(
             scenario.position.line
         };
         insert_comments_before(scenario_line, comment_map, lines);
-        format_scenario(scenario, source, lines, base_indent + 1, comment_map);
+        // Bound a step-less scenario's description by the next sibling
+        // scenario inside the Rule (BUG-158).
+        let next_sibling = rule_scenarios.get(sidx + 1).map(|s| s.position.line);
+        format_scenario(scenario, source, lines, base_indent + 1, comment_map, next_sibling);
         idx += 1;
     }
 }
@@ -1118,6 +1136,100 @@ mod tests {
         assert!(
             out.contains("    Background: Setup\n      Given the app is loaded"),
             "rule background step missing, got:\n{out}"
+        );
+    }
+
+    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
+    #[test]
+    fn bug158_stepless_scenario_does_not_duplicate_scenarios() {
+        // @step Given a feature file where the first scenario is prose-only (no steps) followed by a second scenario with steps
+        let src = "Feature: Step-less scenario\n\n  Scenario: First\n    just some prose here\n\n  Scenario: Second\n    Given a precondition\n    When I do the action\n    Then I see the result\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the formatted output contains exactly two Scenario lines
+        let scenario_count = out
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Scenario:"))
+            .count();
+        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
+
+        // @step And every scenario is indented at the top level (two spaces)
+        for line in out.lines() {
+            if line.trim_start().starts_with("Scenario:") {
+                assert_eq!(
+                    line,
+                    format!("  {}", line.trim_start()),
+                    "scenario must be 2-space top-level indented, got:\n{out}"
+                );
+            }
+        }
+    }
+
+    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
+    #[test]
+    fn bug158_stepless_scenario_formatting_is_idempotent() {
+        // @step Given a feature file where the first scenario is prose-only (no steps) followed by a second scenario
+        let src = "Feature: Step-less idempotent\n\n  Scenario: First\n    just some prose here\n\n  Scenario: Second\n    Given a precondition\n    When I do the action\n    Then I see the result\n";
+        let once = format_feature(&parse(src), src);
+
+        // @step When the formatter formats the file twice
+        let twice = format_feature(&parse(&once), &once);
+
+        // @step Then the output of the second run is byte-identical to the output of the first run
+        assert_eq!(once, twice, "formatting must be idempotent, got:\n{once}\n---\n{twice}");
+    }
+
+    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
+    #[test]
+    fn bug158_lowercase_step_keywords_are_formatted_without_duplication() {
+        // @step Given a feature file whose scenarios use lowercase step keywords (given, when, then)
+        let src = "Feature: Lowercase keywords\n\n  Scenario: One\n    given a precondition\n    when I do the action\n    then I see the result\n\n  Scenario: Two\n    given another precondition\n    when I do another action\n    then I see another result\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the formatted output contains exactly the original number of Scenario lines
+        let scenario_count = out
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Scenario:"))
+            .count();
+        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
+
+        // @step And the lowercase step lines are preserved verbatim under their scenario
+        assert!(
+            out.contains("    given a precondition"),
+            "lowercase step line was lost or rewritten, got:\n{out}"
+        );
+        assert!(
+            out.contains("    then I see another result"),
+            "lowercase step line was lost or rewritten, got:\n{out}"
+        );
+    }
+
+    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
+    #[test]
+    fn bug158_rule_with_stepless_scenario_is_formatted_without_duplication() {
+        // @step Given a feature file with a Rule containing a prose-only scenario followed by a second scenario
+        let src = "Feature: Rule with step-less scenario\n\n  Rule: My rule\n    Scenario: First\n      just some prose here\n\n    Scenario: Second\n      Given a precondition\n      Then I see the result\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then both scenarios are emitted exactly once at the Rule nesting level
+        let scenario_count = out
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Scenario:"))
+            .count();
+        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
+        assert!(
+            out.contains("    Scenario: First"),
+            "first scenario must be 4-space Rule-nested, got:\n{out}"
+        );
+        assert!(
+            out.contains("    Scenario: Second"),
+            "second scenario must be 4-space Rule-nested, got:\n{out}"
         );
     }
 

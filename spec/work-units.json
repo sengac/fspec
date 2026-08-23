@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T08:33:03.048Z",
+    "lastUpdated": "2026-08-23T10:38:52.155Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 11,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 157,
+    "BUG": 158,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 14,
@@ -1649,7 +1649,8 @@
       "UPD-002",
       "UPD-003",
       "TOKEN-003",
-      "BUG-157"
+      "BUG-157",
+      "BUG-158"
     ],
     "blocked": [
       "QUERY-001",
@@ -225499,6 +225500,87 @@
         }
       ],
       "estimate": 2
+    },
+    "BUG-158": {
+      "id": "BUG-158",
+      "title": "Formatter duplicates scenarios when a scenario has no steps (prose-only or unrecognized lowercase step keywords)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-23T10:19:36.672Z",
+      "updatedAt": "2026-08-23T10:39:43.175Z",
+      "description": "The BUG-157 fix bounded the prose-only Background description by its next sibling, but the same unbounded verbatim description extraction exists in format_scenario: when a Scenario has no steps (either genuinely prose-only, or because the Rust gherkin-0.16.0 parser only recognizes capitalized step keywords so lowercase 'given/when/then' lines are stored in Scenario.description), scenario_desc_end is None and extract_description_verbatim swallows every subsequent scenario into the description, re-emitting them nested under the scenario and duplicating them. Reproduced: a 2-scenario file where the first scenario is prose-only formats to 3 Scenario lines. Three real repo feature files (add-domain-event-rust-port, add-hotspot-rust-port, interactive-agent-selector-for-init) use lowercase step keywords and duplicate 8->21, 6->11, 6->11 scenarios on format. The TS @cucumber/gherkin reference has the same case-sensitive keyword behavior, so the formatter must bound scenario description extraction by the next sibling construct (same fix pattern as BUG-157 for Background).",
+      "epic": "rust-cli-port",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-23T10:19:46.108Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-23T10:22:22.535Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-23T10:25:30.832Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-23T10:37:52.605Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-23T10:38:52.155Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the standalone fspec Rust binary",
+        "action": "format feature files whose scenarios have no recognized steps",
+        "benefit": "my feature files are formatted correctly without scenario duplication"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When a Scenario has no steps and no Examples, the formatter must bound the verbatim description extraction by the next sibling construct (the next Scenario or Rule at the same nesting level), mirroring the BUG-157 Background fix",
+          "deleted": false,
+          "createdAt": "2026-08-23T10:20:22.324Z"
+        },
+        {
+          "id": 1,
+          "text": "A scenario's description is the prose between the Scenario header and its first step (or first Examples table); it never includes subsequent sibling scenarios or rules",
+          "deleted": false,
+          "createdAt": "2026-08-23T10:20:22.438Z"
+        },
+        {
+          "id": 2,
+          "text": "Every scenario in the parsed AST is emitted exactly once at its original indentation level; formatting is idempotent for files containing step-less scenarios",
+          "deleted": false,
+          "createdAt": "2026-08-23T10:20:22.547Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A file whose first scenario uses lowercase step keywords (given/when/then) — which the Rust gherkin parser stores as description — formats to exactly the original scenario count",
+          "deleted": false,
+          "createdAt": "2026-08-23T10:20:35.839Z"
+        },
+        {
+          "id": 1,
+          "text": "Formatting a step-less-scenario file twice produces byte-identical output (idempotent)",
+          "deleted": false,
+          "createdAt": "2026-08-23T10:20:35.948Z"
+        },
+        {
+          "id": 2,
+          "text": "A 2-scenario file where the first scenario is prose-only (no steps) formats to exactly 2 Scenario lines, each at 2-space top-level indentation",
+          "deleted": false,
+          "createdAt": "2026-08-23T10:20:36.056Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 3
     }
   }
 }

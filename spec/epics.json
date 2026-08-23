@@ -1177,7 +1177,8 @@
         "RPC-334",
         "RPC-414",
         "TOOL-020",
-        "BUG-157"
+        "BUG-157",
+        "BUG-158"
       ]
     },
     "provider-settings-parity": {
