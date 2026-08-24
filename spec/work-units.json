@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-23T22:01:07.522Z",
+    "lastUpdated": "2026-08-24T10:35:18.136Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -91,7 +91,8 @@
     "VIEWNV": 1,
     "VIZ": 4,
     "WATCH": 24,
-    "UPD": 4
+    "UPD": 4,
+    "BOARD": 21
   },
   "states": {
     "backlog": [
@@ -1652,7 +1653,8 @@
       "BUG-157",
       "BUG-158",
       "BLOCK-012",
-      "UPD-004"
+      "UPD-004",
+      "BOARD-021"
     ],
     "blocked": [
       "QUERY-001",
@@ -225781,6 +225783,98 @@
       ],
       "nextExampleId": 2,
       "estimate": 2
+    },
+    "BOARD-021": {
+      "id": "BOARD-021",
+      "title": "Display fspec version under the board logo",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-24T09:03:56.931Z",
+      "updatedAt": "2026-08-24T10:35:18.136Z",
+      "description": "The Rust TUI BoardView header paints the 4-row FSPEC ASCII logo in the top-left corner, but the 4th row is blank so the build version baked into the binary (workspace 0.10.x) is never visible. Paint the version string (e.g. 'v0.10.3', from env!(\"CARGO_PKG_VERSION\")) on the 4th row of the logo block, dim-styled, left-aligned under the logo glyphs.",
+      "children": [],
+      "userStory": {
+        "role": "developer using the fspec TUI",
+        "action": "see the installed fspec build version in the board header",
+        "benefit": "confirm at a glance which binary is running without leaving the TUI or running fspec --version"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-24T09:06:07.234Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-24T09:16:09.379Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-24T09:23:50.993Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-24T10:30:26.477Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-24T10:35:18.136Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The version string is sourced from env!(\"CARGO_PKG_VERSION\") at compile time (the workspace version, e.g. 0.10.3) — no runtime file reads, no RPC/backend calls, no new BoardStore field.",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:06:23.014Z"
+        },
+        {
+          "id": 1,
+          "text": "The version is painted on row index 3 (the 4th row) of the logo block — the currently blank row — as 'v' + version (e.g. 'v0.10.3'), left-aligned at the logo's left edge, styled with the theme's dim color.",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:06:23.120Z"
+        },
+        {
+          "id": 2,
+          "text": "The existing 3 logo glyph rows, the right-hand header widgets (checkpoint status, divider, keybinding chord), and all BoardView row geometry are unchanged — the change is confined to the logo widget's 4th row.",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:06:39.628Z"
+        },
+        {
+          "id": 3,
+          "text": "The version text is clipped to the logo block width (12 cells) — it must never overflow into the right-hand header column (checkpoint status / divider / keybinding chord).",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:06:39.743Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "The version line appears on the same terminal row as the right-hand keybinding chord ('C Checkpoints ◆ F Changed Files ...'), i.e. the 4th row of the header strip, left-aligned at the logo's x position.",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:07:00.057Z"
+        },
+        {
+          "id": 1,
+          "text": "With workspace version 0.10.3, the board header's 4th logo row contains the substring 'v0.10.3' while rows 1-3 still show the '┏┓┏┓┏┓┏┓┏┓' / '┣ ┗┓┃┃┣ ┃' / '┻ ┗┛┣┛┗┛┗┛' glyphs.",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:07:00.164Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation lives in rust/fspec-tui/src/views/board/logo.rs: the 4th entry of LOGO_ROWS becomes format!(\"v{}\", env!(\"CARGO_PKG_VERSION\")) and render() gains a theme parameter so the version row paints with theme.dim while the glyph rows keep Style::default(). Call site is views/board/header.rs (logo::render(left, buf, theme)).",
+          "deleted": false,
+          "createdAt": "2026-08-24T09:07:13.776Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2,
+      "attachments": [
+        "spec/attachments/BOARD-021/ast-research-board-logo-render.json"
+      ]
     }
   }
 }

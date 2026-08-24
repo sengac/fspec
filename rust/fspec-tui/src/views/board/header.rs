@@ -50,7 +50,9 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) {
         width: logo_w,
         height: padded.height,
     };
-    logo::render(left, buf);
+    // BOARD-021: pass the theme so the logo's 4th row (build version)
+    // paints in the dim color.
+    logo::render(left, buf, theme);
     // The right column begins immediately after the logo block. The TS
     // logo glyph row already ends with a trailing space, so no extra
     // padding cell is needed here.

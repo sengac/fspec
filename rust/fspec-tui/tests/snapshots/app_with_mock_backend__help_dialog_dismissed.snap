@@ -1,13 +1,13 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend.rs
-assertion_line: 157
+assertion_line: 177
 expression: rows_dismissed
 ---
 - ┌──────────────────────────────────────────────────────────────────────────────┐
 - "│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                │"
 - │ ┣ ┗┓┃┃┣ ┃                                                                    │
 - │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────── │
-- │             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent  │
+- │   v0.10.3   C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent  │
 - ├──────────────────────────────────────────────────────────────────────────────┤
 - │                                                                              │
 - │                                                                              │

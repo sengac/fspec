@@ -1,13 +1,13 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend_repl.rs
-assertion_line: 84
+assertion_line: 82
 expression: rows
 ---
 - ┌──────────────────────────────────────────────────────────────────────────────┐
 - "│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                │"
 - │ ┣ ┗┓┃┃┣ ┃                                                                    │
 - │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────── │
-- │             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent  │
+- │   v0.10.3   C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent  │
 - ├──────────────────────────────────────────────────────────────────────────────┤
 - │                                                                              │
 - │                                                                              │

@@ -1,0 +1,42 @@
+{
+  "workUnit": "BOARD-021",
+  "tool": "astgrep",
+  "pattern": "pub fn render($$$ARGS) { $$$BODY }",
+  "language": "rust",
+  "path": "rust/fspec-tui/src/views/board",
+  "results": [
+    {
+      "file": "rust/fspec-tui/src/views/board/checkpoint_status.rs",
+      "line": 21,
+      "signature": "pub fn render(area: Rect, buf: &mut Buffer, counts: CheckpointCounts)"
+    },
+    {
+      "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+      "line": 23,
+      "signature": "pub fn render(area: Rect, buf: &mut Buffer, theme: &Theme)"
+    },
+    {
+      "file": "rust/fspec-tui/src/views/board/footer.rs",
+      "line": 22,
+      "signature": "pub(crate) fn render(area: Rect, buf: &mut Buffer, theme: &Theme)"
+    },
+    {
+      "file": "rust/fspec-tui/src/views/board/details_strip.rs",
+      "line": 32,
+      "signature": "pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>)"
+    },
+    {
+      "file": "rust/fspec-tui/src/views/board/logo.rs",
+      "line": 32,
+      "signature": "pub fn render(area: Rect, buf: &mut Buffer)"
+    }
+  ],
+  "findings": [
+    "logo::render is the ONLY board header widget that does not take a &Theme — adding one is consistent with the sibling widgets (checkpoint_status, keybinding_shortcuts, footer).",
+    "logo::render paints LOGO_ROWS[0..4] into area; row 3 is currently the blank string \" \".",
+    "Call site: rust/fspec-tui/src/views/board/header.rs line 53 — logo::render(left, buf); `theme` is already in scope there (header::paint takes theme: &Theme).",
+    "Version source precedent: env!(\"CARGO_PKG_VERSION\") is already used in rust/fspec-tui/src/app/dispatch_slash_update.rs:69 (UpdateConfig::for_production) and rust/fspec/src/update_cmd.rs:22 — the workspace version (0.10.3) is baked in at compile time.",
+    "Existing render tests: rust/fspec-tui/tests/view_board_unit_rpc015.rs drives BoardView::render_with_store against a 120x24 TestBackend and asserts substrings of the joined buffer — the same harness works for BOARD-021.",
+    "insta snapshots that will change: rust/fspec-tui/tests/snapshots/app_with_mock_backend__help_dialog_visible.snap, app_with_mock_backend__help_dialog_dismissed.snap, app_with_mock_backend_repl__repl_bootstrap_rpc012.snap (row 4 of the header strip gains the version string)."
+  ]
+}
