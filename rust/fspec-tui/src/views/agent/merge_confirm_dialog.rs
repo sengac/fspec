@@ -208,6 +208,7 @@ impl MergeConfirmDialog {
             rows: vec![self.build_summary_row(), spacer, self.build_button_row()],
             footer: "Tab / ←→: focus  Enter: confirm  Esc: cancel",
             min_width: 50,
+query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

@@ -1,10 +1,9 @@
 @BUG-153
 Feature: TS reference files exist on disk without consulting git
-
   """
   Architecture notes:
   - rpc027_dialog_parity_ij.rs: typescript_ink_dialog_files_are_not_modified_by_this_refactor
-    Remove git status invocation. Replace with direct file existence checks.
+  Remove git status invocation. Replace with direct file existence checks.
   - Test must pass regardless of git branch or working-tree state
   """
 

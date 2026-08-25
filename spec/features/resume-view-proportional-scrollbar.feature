@@ -3,7 +3,6 @@
 @resume
 @scrollbar
 Feature: Resume view proportional scrollbar
-
   """
   Architecture notes:
   - Use crate::views::diff_common::render_pane_scrollbar for scrollbar rendering

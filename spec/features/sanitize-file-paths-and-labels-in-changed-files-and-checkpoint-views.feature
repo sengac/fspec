@@ -1,6 +1,5 @@
 @TUI-105
 Feature: Sanitize file paths and labels in Changed Files and Checkpoint views
-
   """
   Apply sanitization in file_row() for file.path and file.change_type before truncate_path() and Span::styled(). Apply sanitization in checkpoint_line() for the checkpoint label before truncate_path(). Both depend on sanitize_for_terminal() being accessible from the views/ module (same shared module as TUI-104).
   """

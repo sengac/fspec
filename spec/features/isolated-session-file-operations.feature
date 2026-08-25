@@ -92,12 +92,12 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should return an error containing "blocked from original project"
     And the file should NOT be read
 
-  # ========================================
-  # ALLOWED SCENARIOS - Read Tool (Within Worktree)
-  # ========================================
   @read
   @allowed
   Scenario: Isolated session Read tool ALLOWED for relative path within worktree
+  # ========================================
+  # ALLOWED SCENARIOS - Read Tool (Within Worktree)
+  # ========================================
     Given a git repository at "/project"
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     And the worktree contains file "src/app.ts" with content "worktree content"
@@ -115,13 +115,13 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should succeed
     And the content should be "worktree content"
 
-  # ========================================
-  # ALLOWED SCENARIOS - Read Tool (Outside Project - /tmp, /etc)
-  # ========================================
   @read
   @allowed
   @filesystem-access
   Scenario: Isolated session Read tool ALLOWED for /tmp (not in original project)
+  # ========================================
+  # ALLOWED SCENARIOS - Read Tool (Outside Project - /tmp, /etc)
+  # ========================================
     Given an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     And a file exists at "/tmp/test-file.txt" with content "temp content"
     When the Read tool is invoked with file_path "/tmp/test-file.txt"
@@ -147,13 +147,13 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should succeed
     And the results should include matches from /tmp
 
-  # ========================================
-  # BLOCKING SCENARIOS - Write Tool (Original Project)
-  # ========================================
   @write
   @blocking
   @critical
   Scenario: Isolated session Write tool BLOCKED from writing to original project
+  # ========================================
+  # BLOCKING SCENARIOS - Write Tool (Original Project)
+  # ========================================
     Given a git repository at "/project"
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the Write tool is invoked with file_path "/project/src/malicious.ts" and content "injected code"
@@ -180,13 +180,13 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should succeed
     And the file should exist at "/tmp/test-write.txt" with content "written content"
 
-  # ========================================
-  # BLOCKING SCENARIOS - Edit Tool (Original Project)
-  # ========================================
   @edit
   @blocking
   @critical
   Scenario: Isolated session Edit tool BLOCKED from editing original project file
+  # ========================================
+  # BLOCKING SCENARIOS - Edit Tool (Original Project)
+  # ========================================
     Given a git repository at "/project" with file "/project/src/config.ts" containing "original"
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the Edit tool is invoked with file_path "/project/src/config.ts" replacing "original" with "modified"
@@ -194,13 +194,13 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     And the file at "/project/src/config.ts" should still contain "original"
     And a block notification should be emitted
 
-  # ========================================
-  # BLOCKING SCENARIOS - Ls Tool (Original Project)
-  # ========================================
   @ls
   @blocking
   @critical
   Scenario: Isolated session Ls tool BLOCKED from listing original project directory
+  # ========================================
+  # BLOCKING SCENARIOS - Ls Tool (Original Project)
+  # ========================================
     Given a git repository at "/project" with directory "/project/src/" containing files
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the Ls tool is invoked with path "/project/src/"
@@ -216,13 +216,13 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should succeed
     And the output should list files in the worktree src/ directory
 
-  # ========================================
-  # BLOCKING SCENARIOS - Grep Tool (Original Project)
-  # ========================================
   @grep
   @blocking
   @critical
   Scenario: Isolated session Grep tool BLOCKED from searching original project
+  # ========================================
+  # BLOCKING SCENARIOS - Grep Tool (Original Project)
+  # ========================================
     Given a git repository at "/project" with files containing searchable content
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the Grep tool is invoked with pattern "TODO" and path "/project/src/"
@@ -238,13 +238,13 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should succeed
     And the results should include matches from worktree
 
-  # ========================================
-  # BLOCKING SCENARIOS - Glob Tool (Original Project)
-  # ========================================
   @glob
   @blocking
   @critical
   Scenario: Isolated session Glob tool BLOCKED from globbing original project
+  # ========================================
+  # BLOCKING SCENARIOS - Glob Tool (Original Project)
+  # ========================================
     Given a git repository at "/project" with TypeScript files
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the Glob tool is invoked with pattern "**/*.ts" and path "/project/"
@@ -260,37 +260,37 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Then the tool should succeed
     And the results should only include worktree files
 
-  # ========================================
-  # BLOCKING SCENARIOS - AstGrep Tool (Original Project)
-  # ========================================
   @astgrep
   @blocking
   @critical
   Scenario: Isolated session AstGrep tool BLOCKED from searching original project
+  # ========================================
+  # BLOCKING SCENARIOS - AstGrep Tool (Original Project)
+  # ========================================
     Given a git repository at "/project" with TypeScript files
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the AstGrep tool is invoked with pattern "function $NAME()" language "typescript" and path "/project/"
     Then the tool should return an error containing "blocked from original project"
 
-  # ========================================
-  # BLOCKING SCENARIOS - AstGrepRefactor Tool (Original Project)
-  # ========================================
   @astgrep-refactor
   @blocking
   @critical
   Scenario: Isolated session AstGrepRefactor tool BLOCKED from refactoring original project
+  # ========================================
+  # BLOCKING SCENARIOS - AstGrepRefactor Tool (Original Project)
+  # ========================================
     Given a git repository at "/project" with file "/project/src/refactor-me.ts"
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     When the AstGrepRefactor tool is invoked with source_file "/project/src/refactor-me.ts"
     Then the tool should return an error containing "blocked from original project"
     And the file at "/project/src/refactor-me.ts" should be unchanged
 
-  # ========================================
-  # BACKWARD COMPATIBILITY - Non-Isolated Sessions
-  # ========================================
   @backward-compatible
   @non-isolated
   Scenario: Non-isolated session Read tool ALLOWED for all paths including original project
+  # ========================================
+  # BACKWARD COMPATIBILITY - Non-Isolated Sessions
+  # ========================================
     Given a git repository at "/project" with file "/project/src/main.ts" containing "main content"
     And a non-isolated session is created via sessionManagerCreateWithId NAPI binding
     When the Read tool is invoked with file_path "/project/src/main.ts"

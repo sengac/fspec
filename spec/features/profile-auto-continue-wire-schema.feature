@@ -3,7 +3,6 @@
 @rust
 @rpc
 Feature: Per-profile autoContinue wire schema
-
   """
   The wire-portable ProfileDefinition (rust/rpc-types/src/lib.rs) carries a
   single flat Option<u32> field `auto_continue` (camelCase `autoContinue` on

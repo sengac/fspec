@@ -53,6 +53,9 @@ pub use components::hello::HelloComponent;
 pub use components::help_dialog::HelpDialog;
 pub use components::role_dialog::{RoleDialog, ROLE_DIALOG_ID};
 pub use components::thinking_level_dialog::{ThinkingLevelDialog, THINKING_LEVEL_DIALOG_ID};
+pub use components::work_unit_search_dialog::{
+    WorkUnitSearchDialog, WORK_UNIT_SEARCH_DIALOG_ID,
+};
 pub use components::{Action, Callback, Component, EventResult, Priority};
 pub use compositor::Compositor;
 pub use store::agent_view::extract_tool_args_display;

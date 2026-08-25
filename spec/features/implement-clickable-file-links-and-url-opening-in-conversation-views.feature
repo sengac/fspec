@@ -110,11 +110,11 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
     When the message is rendered in the conversation view
     Then the URI "vscode://file/home/user/file.ts:42:10" should be displayed as a clickable link
 
+  @integration
+  Scenario: Open file at specific line and column
   # ===========================================
   # LINK OPENING SCENARIOS
   # ===========================================
-  @integration
-  Scenario: Open file at specific line and column
     Given the user is viewing a conversation with file link "/home/user/file.ts:42:10"
     When the user clicks on the file link
     Then the file should open at line 42, column 10
@@ -151,11 +151,11 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
     When the user clicks on the mailto link
     Then the system default email client should open
 
+  @error-handling
+  Scenario: Show error for non-existent file path
   # ===========================================
   # ERROR HANDLING SCENARIOS
   # ===========================================
-  @error-handling
-  Scenario: Show error for non-existent file path
     Given a conversation message contains file link "/nonexistent/path/file.ts"
     And the file does not exist
     When the user clicks on the file link
@@ -168,11 +168,11 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
     And the URL cannot be reached
     Then an error message "Unable to open URL" should be displayed
 
+  @styling
+  Scenario: File links displayed in blue color
   # ===========================================
   # VISUAL STYLING SCENARIOS
   # ===========================================
-  @styling
-  Scenario: File links displayed in blue color
     Given a conversation message contains file path "/path/to/file.ts"
     When the message is rendered
     Then the file link should be displayed in blue color
@@ -196,21 +196,21 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
     When the user hovers over the link
     Then a tooltip should show the full resolved path
 
+  @wrapping
+  Scenario: Long URL preserves link boundary across line wrap
   # ===========================================
   # LINE WRAPPING SCENARIOS
   # ===========================================
-  @wrapping
-  Scenario: Long URL preserves link boundary across line wrap
     Given a conversation message contains "https://github.com/user/repo/blob/main/src/very/long/path/file.ts"
     And the terminal width requires the URL to wrap to the next line
     When the message is rendered
     Then the entire URL should remain a single clickable link
 
+  @keyboard
+  Scenario: Tab navigates between links
   # ===========================================
   # KEYBOARD NAVIGATION SCENARIOS
   # ===========================================
-  @keyboard
-  Scenario: Tab navigates between links
     Given a conversation message contains multiple links
     When the user presses Tab
     Then focus should move to the next link in the message
@@ -221,21 +221,21 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
     When the user presses Enter
     Then the focused link should be activated
 
+  @performance
+  Scenario: Limit maximum clickable links per message
   # ===========================================
   # PERFORMANCE SCENARIOS
   # ===========================================
-  @performance
-  Scenario: Limit maximum clickable links per message
     Given the configuration has "links.maxLinksPerMessage" set to 50
     And a conversation message contains 100 URLs
     When the message is rendered
     Then only the first 50 URLs should be rendered as clickable links
 
+  @component
+  Scenario: Links work in AgentView component
   # ===========================================
   # COMPONENT COVERAGE SCENARIOS
   # ===========================================
-  @component
-  Scenario: Links work in AgentView component
     Given the user is viewing conversations in AgentView
     And a message contains file path "/path/to/file.ts"
     When the message is rendered

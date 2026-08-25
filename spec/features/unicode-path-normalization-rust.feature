@@ -65,31 +65,31 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
     Then the tool should return base64-encoded image data
     And the media_type should be "image/png"
 
+  @integration
+  Scenario: Edit tool edits file with U+202F when user provides regular space path
   # ========================================
   # Integration: Edit tool end-to-end
   # ========================================
-  @integration
-  Scenario: Edit tool edits file with U+202F when user provides regular space path
     Given a text file on disk named with U+202F containing "old content"
     When I call EditTool.call() with file_path using regular space and old_string "old content" new_string "new content"
     Then the edit should succeed
     And the file on disk should contain "new content"
 
+  @integration
+  Scenario: Write tool normalizes Unicode whitespace in file path for new files
   # ========================================
   # Integration: Write tool normalizes Unicode in new file path
   # ========================================
-  @integration
-  Scenario: Write tool normalizes Unicode whitespace in file path for new files
     Given a target directory exists
     When I call WriteTool.call() with file_path containing U+00A0 NO-BREAK SPACE and some content
     Then the file should be created with regular ASCII spaces in its name
     And the file content should be written correctly
 
+  @integration
+  Scenario: Ls tool lists directory when path contains Unicode whitespace
   # ========================================
   # Integration: Ls tool with Unicode path
   # ========================================
-  @integration
-  Scenario: Ls tool lists directory when path contains Unicode whitespace
     Given a directory on disk whose path contains U+202F
     When I call LsTool with the path using regular ASCII space
     Then the directory listing should be returned successfully

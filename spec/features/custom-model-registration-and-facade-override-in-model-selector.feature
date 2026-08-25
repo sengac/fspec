@@ -149,11 +149,11 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     And the "[C]" badge is no longer displayed
     And the context window shows the default "[128k]"
 
+  @resilience
+  Scenario: Custom models appear when /v1/models endpoint is unreachable
   # ========================================
   # Unreachable Server with Custom Models
   # ========================================
-  @resilience
-  Scenario: Custom models appear when /v1/models endpoint is unreachable
     Given I have a profile "work-vllm" configured with baseUrl "http://localhost:8888"
     And the profile has 3 custom models defined
     And the server /v1/models endpoint is unreachable
@@ -171,12 +171,12 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     Then the section shows exactly 2 models (the custom models)
     And the section header shows "openai: work-vllm" without any error indicator
 
-  # ========================================
-  # Facade Override — Tool Schema Selection
-  # ========================================
   @facade
   @integration
   Scenario: Facade override to Codex changes tool schemas
+  # ========================================
+  # Facade Override — Tool Schema Selection
+  # ========================================
     Given I have a custom model "Qwen/Qwen3-80B" with facade set to "codex"
     When I select the custom model and start a session
     Then the Rust agent loop dispatches Codex-native tool schemas
@@ -216,11 +216,11 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     And the Rust ProviderManager stores the facade override alongside the selected model
     And the agent loop checks the facade override before defaulting to provider-type dispatch
 
+  @tui
+  Scenario: Add custom model via 'a' keybind on profile section
   # ========================================
   # TUI Keybinds and Form Flow
   # ========================================
-  @tui
-  Scenario: Add custom model via 'a' keybind on profile section
     Given the Model Selector is open and focused on the "openai: work-vllm" profile section header
     When I press the "a" key
     Then a custom model form opens with empty fields

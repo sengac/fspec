@@ -246,6 +246,18 @@ impl BoardStore {
         self.work_units.len()
     }
 
+    /// BOARD-022: borrow the full work-units slice (board order). Used to
+    /// seed the search dialog with a snapshot of all units.
+    pub fn work_units(&self) -> &[WorkUnitInfo] {
+        &self.work_units
+    }
+
+    /// BOARD-022: look up a work unit by id. Returns `None` when the id
+    /// is not present in the current snapshot.
+    pub fn find(&self, id: &str) -> Option<&WorkUnitInfo> {
+        self.work_units.iter().find(|u| u.id == id)
+    }
+
     /// RPC-015: read the aggregate manual + auto checkpoint counts.
     /// Returns the default `{0,0}` until the bootstrap RPC populates
     /// the field via `Action::CheckpointCountsLoaded`.

@@ -83,6 +83,8 @@ Feature: Generate FOUNDATION.md from foundation.json
       **IMPORTANT NOTE:** This is a legitimate developer tool...
       """
 
+      # fspec Project Foundation Document
+      # fspec Project Foundation Document
   Scenario: Architecture diagrams are preserved with Mermaid formatting
     Given I have "spec/foundation.json" with an architecture diagram:
       """json
@@ -107,6 +109,8 @@ Feature: Generate FOUNDATION.md from foundation.json
       ```
       """
 
+      ### fspec System Context
+      ### fspec System Context
   Scenario: Command tables are generated with proper markdown syntax
     Given I have "spec/foundation.json" with commands:
       """json

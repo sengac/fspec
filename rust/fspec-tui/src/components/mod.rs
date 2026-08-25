@@ -18,6 +18,7 @@ pub mod board_exit_confirmation_dialog;
 pub mod checkpoint_restore_dialog;
 pub mod create_session_dialog;
 pub mod dialog_theme;
+pub mod dialog_theme_paint;
 pub mod dialog_theme_rows;
 pub mod disconnect_dialog;
 pub mod error_dialog;
@@ -36,6 +37,11 @@ pub mod scroll_viewport;
 pub mod spinner;
 pub mod status_dialog;
 pub mod thinking_level_dialog;
+pub mod work_unit_search_dialog;
+pub mod work_unit_search_dialog_accessors;
+pub mod work_unit_search_dialog_mouse;
+pub mod work_unit_search_filter;
+pub mod work_unit_search_rows;
 
 /// Event-handling priority for layered components (RPC-002 doc 09 §A.1).
 ///
@@ -1063,6 +1069,12 @@ pub enum Action {
     // launches the browser at the viewer URL (no-op when unavailable).
     OpenAttachmentPicker,
     OpenAttachment(String),
+
+    // BOARD-022: BoardView `/` opens the work-unit search dialog (client-side
+    // filter over the BoardStore snapshot — no RPC surface); selecting a
+    // match emits `SelectWorkUnit(id)` which focuses the board's column + row.
+    OpenWorkUnitSearch,
+    SelectWorkUnit(String),
 
     // RPC-356: Dual-pane ChangedFilesView (BoardView `F` opens; selection →
     // LoadFileDiff → FileDiffLoaded; Esc → close).

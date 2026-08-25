@@ -43,11 +43,11 @@ Feature: Relay endpoint command flow through bridge WebSocket
     And forward the translated InboundMessage to the codelet WebSocket for session "session-X"
     And the endpoint should NOT call fspecCallback directly
 
+  @error
+  Scenario: Drop command message for unknown session
   # ========================================
   # Unknown Session Handling for Commands
   # ========================================
-  @error
-  Scenario: Drop command message for unknown session
     Given the relay endpoint is authenticated and running
     And no codelet session with id "unknown-session" is connected
     When the relay sends a command message targeting session_id "unknown-session"
@@ -55,11 +55,11 @@ Feature: Relay endpoint command flow through bridge WebSocket
     And the command message should be silently dropped
     And no message should be sent to the relay
 
+  @happy-path
+  Scenario: Forward commandResponse from codelet to relay unchanged
   # ========================================
   # commandResponse Passthrough (codelet → relay)
   # ========================================
-  @happy-path
-  Scenario: Forward commandResponse from codelet to relay unchanged
     Given the relay endpoint is authenticated and running
     And a codelet session "session-X" is connected via the local WebSocket server
     When the codelet sends a commandResponse message with type "commandResponse", session_id "session-X", request_id "R1", and data containing command "board", success true, and result
@@ -67,11 +67,11 @@ Feature: Relay endpoint command flow through bridge WebSocket
     And the forwarded message should preserve the request_id "R1"
     And the forwarded message should preserve the data fields
 
+  @architecture
+  Scenario: No bridge TypeScript files import fspecCallback
   # ========================================
   # Architecture Constraints
   # ========================================
-  @architecture
-  Scenario: No bridge TypeScript files import fspecCallback
     Given the relay endpoint refactoring is complete
     When searching for imports of "fspec-callback" in the bridge directory
     Then no TypeScript file in the bridge directory should import from "src/utils/fspec-callback"

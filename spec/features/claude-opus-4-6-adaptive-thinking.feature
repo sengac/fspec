@@ -99,11 +99,11 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     Then the request should contain thinking configuration with type "adaptive"
     And the request should NOT contain a budget_tokens field
 
+  @budget-thinking
+  Scenario: Opus 4.5 uses budget-based thinking
   # ===========================================
   # BUDGETED THINKING SCENARIOS (Opus 4.5, Sonnet 4.5, etc.)
   # ===========================================
-  @budget-thinking
-  Scenario: Opus 4.5 uses budget-based thinking
     Given I have configured the Claude provider with model "claude-opus-4-5"
     And I have set a thinking budget of 16000 tokens
     When I make an API request with thinking enabled
@@ -118,12 +118,12 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     Then the request should contain thinking configuration with type "enabled"
     And the request should contain budget_tokens of 16000
 
-  # ===========================================
-  # BETA HEADER SCENARIOS - ADAPTIVE MODELS
-  # ===========================================
   @beta-headers
   @adaptive-thinking
   Scenario: Opus 4.6 uses correct beta headers
+  # ===========================================
+  # BETA HEADER SCENARIOS - ADAPTIVE MODELS
+  # ===========================================
     Given I have configured the Claude provider with model "claude-opus-4-6"
     When I make an API request
     Then the anthropic-beta header should include "prompt-caching-2024-07-31"
@@ -139,12 +139,12 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     And the anthropic-beta header should NOT include "context-1m-2025-08-07"
     And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
 
-  # ===========================================
-  # BETA HEADER SCENARIOS - BUDGETED MODELS
-  # ===========================================
   @beta-headers
   @budget-thinking
   Scenario: Opus 4.5 uses correct beta headers without 1M context
+  # ===========================================
+  # BETA HEADER SCENARIOS - BUDGETED MODELS
+  # ===========================================
     Given I have configured the Claude provider with model "claude-opus-4-5"
     When I make an API request
     Then the anthropic-beta header should include "prompt-caching-2024-07-31"
@@ -160,12 +160,12 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     And the anthropic-beta header should include "interleaved-thinking-2025-05-14"
     And the anthropic-beta header should NOT include "context-1m-2025-08-07"
 
-  # ===========================================
-  # DEFAULT-ADAPTIVE SCENARIOS (future models)
-  # ===========================================
   @model-detection
   @default-adaptive
   Scenario: Unknown future model defaults to adaptive thinking
+  # ===========================================
+  # DEFAULT-ADAPTIVE SCENARIOS (future models)
+  # ===========================================
     Given I have configured the Claude provider with model "claude-opus-4-8"
     When I make an API request with thinking enabled
     Then the request should contain thinking configuration with type "adaptive"
@@ -181,12 +181,12 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     And the request should NOT contain a budget_tokens field
     And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
 
-  # ===========================================
-  # THINKING LEVEL SCENARIOS (low/med/high → adaptive, off → disabled)
-  # ===========================================
   @thinking-levels
   @adaptive-thinking
   Scenario: Thinking level 'high' defaults to adaptive for Opus 4.6
+  # ===========================================
+  # THINKING LEVEL SCENARIOS (low/med/high → adaptive, off → disabled)
+  # ===========================================
     Given I have configured the Claude provider with model "claude-opus-4-6"
     And I have set the thinking level to "high"
     When I make an API request with thinking enabled

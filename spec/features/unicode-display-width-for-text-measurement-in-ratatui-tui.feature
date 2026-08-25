@@ -1,12 +1,11 @@
 @done
 @RPC-431
 Feature: Unicode display width for text measurement in ratatui TUI
-
   """
   Replace .chars().count() with unicode_width::UnicodeWidthStr::width() in all display-width measurement functions across rust/fspec-tui/src/. The unicode-width crate is already in the workspace. Text selection/copy, animation, and secret masking intentionally keep .chars().count() since they operate on character counts, not display width.
   """
 
-  Background:
+  Background: 
     Given the fspec ratatui TUI is running
     And the terminal supports wide Unicode characters
 

@@ -133,6 +133,8 @@ codelet-agent-loop.workspace = true
 # CONT-008: resurrection tests inspect the done() registry
 # (is_continue_armed / get_session_goal) after the dispatch sync.
 codelet-tools.workspace = true
+# BOARD-022: property-based tests for the pure filter_work_units helper.
+proptest.workspace = true
 
 [lints]
 workspace = true

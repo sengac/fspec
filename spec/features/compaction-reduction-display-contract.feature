@@ -6,7 +6,6 @@
 @store
 @RPC-420
 Feature: Compaction reduction display contract — COMPACTED badge and [compaction] notice consume percent-unit compression_ratio directly
-
   """
   Display fixes: rust/fspec-tui/src/app/dispatch_stream_chunks.rs:141-142 (badge reduction) and dispatch_slash_commands.rs:287-296 format_compaction_notice — both replace (1.0 - ratio) * 100.0 with the wire value used directly as percent. Backend producers (sessions/handle_impl.rs:335, agent-loop/inject_summary_handler.rs:92, napi twins, background_output.rs:306) already ship percent and are NOT touched.
   Collateral realignment: doc-comment the percent unit on rpc-types CompactionResult.compression_ratio (lib.rs:897); fix stale doc comments in store/agent_view/chrome_state.rs:86-91; keep .abs() at views/agent/header_build.rs:161 with a defensive-parity comment; StubSessionManagerHandle canned 0.5→50.0 (core/src/session_manager_handle.rs:1673) + rpc037_cross_transport_parity.rs assertions; tests/common/mod.rs:749 MockBackend default 1.0→0.0; convert fixtures in slash_compact_rpc047.rs / agentview_session_header_compaction_percentage_rpc100.rs / agentview_compaction_badge_auto_hide_rpc417.rs from fraction-remaining to percent-removed (0.4→60.0, 0.3→70.0, 0.25→75.0, 0.5→50.0) with unchanged asserted display strings. transport/mod.rs:468 default 0.0 stays (renders 0%). Do NOT touch inject_summary_handler measurement basis (CMPCT-038) or the /compact double-notice (RPC-421).
@@ -33,7 +32,6 @@ Feature: Compaction reduction display contract — COMPACTED badge and [compacti
   #   5. Producer truth: a real compaction of 10000 → 4000 tokens (compression_ratio helper × 100 = 60.0 on the wire) flows through CompactionComplete and the user sees COMPACTED 60% — end-to-end from producer formula to badge
   #
   # ========================================
-
   Background: User Story
     As a developer using the Rust ratatui TUI
     I want to see the COMPACTED header badge and the [compaction] scrollback notice display the wire compression_ratio directly as the percent of tokens removed

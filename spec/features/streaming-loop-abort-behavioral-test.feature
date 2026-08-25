@@ -7,7 +7,6 @@
 @high
 @RIG-015
 Feature: Streaming loop abort behavioral test
-
   """
   RIG-015: Behavioral proof that the RIG-014 streaming loop detector
   ABORT actually stops the in-flight provider stream and re-prompts the
@@ -19,18 +18,18 @@ Feature: Streaming loop abort behavioral test
   the observable outcomes:
 
   1. The in-flight stream is actually CANCELLED mid-stream — the
-     synthetic model's stream is polled far fewer times than its full
-     length (the remaining looping tokens are never consumed).
+  synthetic model's stream is polled far fewer times than its full
+  length (the remaining looping tokens are never consumed).
   2. The turn ends via the existing interrupt machinery
-     (session.is_interrupted is true; StreamChunk::Interrupted/Done
-     arrive on the chunks broadcast).
+  (session.is_interrupted is true; StreamChunk::Interrupted/Done
+  arrive on the chunks broadcast).
   3. The persisted assistant message ends with the RIG-014 marker note
-     ("Response cut off: repetitive output detected") and does NOT
-     contain the degenerate looping tail.
+  ("Response cut off: repetitive output detected") and does NOT
+  contain the degenerate looping tail.
   4. The NEXT turn's context actually carries the corrective note
-     (injected as a User message by agent_loop.rs's
-     take_pending_loop_abort_note path) — verified by the next
-     completion request's chat history containing the note.
+  (injected as a User message by agent_loop.rs's
+  take_pending_loop_abort_note path) — verified by the next
+  completion request's chat history containing the note.
 
   No live provider, no network: the stub provider's StubModel gains a
   test-only configurable stream source (behind the existing
@@ -54,13 +53,14 @@ Feature: Streaming loop abort behavioral test
   #   2. After a loop abort, the next turn's context actually carries a corrective note telling the LLM its previous response was cut off due to repetitive output and instructing it to continue with a fresh approach without repeating its earlier reasoning — verified by the next completion request's chat history containing the note.
   #
   # ========================================
-
   Background: User Story
     As a AI agent session operator
     I want to have the loop detector abort actually stop the in-flight stream and re-prompt the LLM with a corrective note
     So that confidence that the RIG-014 wiring works end-to-end, not just structurally
 
-  @RIG-015 @streaming-loop-detection @end-to-end
+  @RIG-015
+  @streaming-loop-detection
+  @end-to-end
   Scenario: Looping stream is cancelled mid-stream and the turn ends
     Given a stub-provider session whose model streams 40 normal words then an unbounded "the model thinks that" loop
     When the agent loop processes the turn
@@ -69,7 +69,9 @@ Feature: Streaming loop abort behavioral test
     And the session reports interrupted
     And the turn completes with an interrupted/done chunk on the chunks broadcast
 
-  @RIG-015 @streaming-loop-detection @end-to-end
+  @RIG-015
+  @streaming-loop-detection
+  @end-to-end
   Scenario: Persisted assistant message is truncated with the marker note
     Given a stub-provider session whose model streams 40 normal words then an unbounded "the model thinks that" loop
     When the agent loop processes the turn and the loop detector aborts
@@ -77,7 +79,9 @@ Feature: Streaming loop abort behavioral test
     And the persisted assistant message ends with the marker note stating the response was cut off due to repetitive output
     And the persisted assistant message does NOT contain the degenerate looping tail
 
-  @RIG-015 @streaming-loop-detection @end-to-end
+  @RIG-015
+  @streaming-loop-detection
+  @end-to-end
   Scenario: Next turn's context carries the corrective note
     Given a session whose previous turn was aborted by the streaming loop detector
     When the agent loop starts the next turn

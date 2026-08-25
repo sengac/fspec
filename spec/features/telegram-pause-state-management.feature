@@ -117,9 +117,9 @@ Feature: Telegram Pause State Management Commands
     And the endpoint should store the pause info
     And a pause notification should be sent to Telegram
 
-  # Integration: Pause response sent via control channel (tests all action values)
   @integration
   Scenario: Pause response with allow_once sent through WebSocket control channel
+  # Integration: Pause response sent via control channel (tests all action values)
     Given the Telegram bridge is connected to a codelet session
     And the session is currently paused
     When the user sends "/allowonce"

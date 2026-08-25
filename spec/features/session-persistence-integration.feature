@@ -1,6 +1,5 @@
 @RPC-422
 Feature: Session Persistence Integration
-
   """
   Mirrors TypeScript sessionService.ts two-step pattern: persistenceCreateSessionWithProvider() creates manifest, then sessionManagerCreateWithId() creates BackgroundSession. Rust code must follow the same order in SessionManager::create_session_with_id()
   """

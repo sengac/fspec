@@ -5,7 +5,6 @@
 @session-resume
 @RPC-427
 Feature: Filter /resume session list by current project
-
   """
   The project path is resolved at the TUI layer via std::env::current_dir().
   All call sites of list_sessions must be updated to pass the project path.

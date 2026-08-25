@@ -2,7 +2,6 @@
 @done
 @TUI-103
 Feature: Popup and full-screen view scrollbar click-and-drag integration
-
   """
   Each popup view (SlashCommandPopup, FileSearchPopup) adds scrollbar_drag: ScrollbarDrag and last_scrollbar_rect: Option<Rect> fields. SearchHistoryView adds the same. TurnContentModal scrollbar handling is wired through mouse_dispatch.rs handle_turn_modal_mouse. All follow the same pattern as ResumeSessionView (TUI-101) and AgentView scrollback (TUI-102).
   """
@@ -27,7 +26,6 @@ Feature: Popup and full-screen view scrollbar click-and-drag integration
   #   4. User opens a turn content modal with 200 lines of text. User clicks on the scrollbar track near the bottom. The modal jumps to show content near the bottom of the turn.
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to click and drag scrollbars in popup and full-screen views

@@ -1,0 +1,358 @@
+{
+  "scenarios": [
+    {
+      "name": "Typing a query paints the query text on a pinned row under the title",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs",
+          "lines": "92-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/dialog_theme_paint.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The dialog frame is invariant as the match list grows",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs",
+          "lines": "138-173",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The query row is visible when the body is at maximum height",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs",
+          "lines": "175-201",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
+              "lines": [
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The body viewport accounts for the query row in compact layout",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs",
+          "lines": "203-223",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
+              "lines": [
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dialogs without a query row render unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs",
+          "lines": "225-259",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty query still shows the pinned query row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs",
+          "lines": "261-279",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/dialog_theme.rs",
+              "lines": [
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug159_pinned_query_row_fixed_frame.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/dialog_theme_paint.rs",
+      "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+      "rust/fspec-tui/src/components/dialog_theme.rs",
+      "rust/fspec-tui/src/components/dialog_theme_rows.rs"
+    ],
+    "totalLinesCovered": 426
+  }
+}

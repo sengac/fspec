@@ -124,9 +124,6 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     Then it waits for the code block to complete before flushing
     And does not split at the paragraph boundary inside the code block
 
-  # ===========================================
-  # CONTENT SUMMARIZATION SCENARIOS
-  # ===========================================
   @summarization
   @thinking
   @summarization
@@ -136,6 +133,9 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
   @summarization
   @tool
   Scenario: Tool call displays formatted invocation
+  # ===========================================
+  # CONTENT SUMMARIZATION SCENARIOS
+  # ===========================================
     Given Claude invokes the Fspec tool with command "create-story"
     When the tool_call chunk is processed
     Then Telegram shows "🔧 Running: Fspec(create-story)"
@@ -162,12 +162,12 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     When the tool_call chunk is processed
     Then Telegram shows "🔧 Running: Read(file_path: /home/user/file.ts)"
 
-  # ===========================================
-  # MARKDOWN VALIDATION SCENARIOS
-  # ===========================================
   @validation
   @limit
   Scenario: Message respects 4096 character limit
+  # ===========================================
+  # MARKDOWN VALIDATION SCENARIOS
+  # ===========================================
     Given the buffer contains 5000 characters of text
     When the buffer is flushed
     Then no single Telegram message exceeds 4096 characters

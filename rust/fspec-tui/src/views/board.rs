@@ -270,6 +270,13 @@ impl BoardView {
                 self.emit(Action::OpenAgentView(target));
                 return EventResult::consumed();
             }
+            // BOARD-022: '/' opens the work-unit search dialog. Always
+            // consumes the key; modifier-free so Ctrl-chorded keys (e.g.
+            // the terminal's Ctrl+/ toggle) fall through.
+            KeyCode::Char('/') if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.emit(Action::OpenWorkUnitSearch);
+                return EventResult::consumed();
+            }
             _ => {}
         }
 

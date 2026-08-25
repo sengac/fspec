@@ -77,11 +77,11 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And the required array contains only "command"
     And command property type is "array" with items type "string"
 
+  @exec_command
+  Scenario: CodexExecCommandFacade maps exec_command with PTY to InternalExecParams::Run
   # ==============================
   # exec_command facade
   # ==============================
-  @exec_command
-  Scenario: CodexExecCommandFacade maps exec_command with PTY to InternalExecParams::Run
     Given a CodexExecCommandFacade instance
     When the Codex model calls exec_command with cmd "python3" tty true and yield_time_ms 5000
     Then the facade maps to InternalExecParams::Run with command as string "python3"
@@ -131,11 +131,11 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And the required array contains only "cmd"
     And the schema has properties for cmd workdir shell tty yield_time_ms max_output_tokens and login
 
+  @integration
+  Scenario: Both facades are registered in Codex create_rig_agent
   # ==============================
   # Integration (verified via codex provider tests)
   # ==============================
-  @integration
-  Scenario: Both facades are registered in Codex create_rig_agent
     Given a CodexShellFacade and CodexExecCommandFacade instance
     When the Codex tool name list is inspected
     Then "shell" is present and maps command as array type

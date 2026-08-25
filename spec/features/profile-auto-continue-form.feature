@@ -4,7 +4,6 @@
 @tui
 @provider-settings
 Feature: Per-profile autoContinue form field
-
   """
   The Rust ratatui /provider Provider Settings profile create/edit form
   (rust/fspec-tui/src/views/provider_settings/profile_form.rs) exposes a 7th

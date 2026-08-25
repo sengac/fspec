@@ -1,6 +1,9 @@
-@UPD-002 @cli @update @cross-platform @high
+@UPD-002
+@cli
+@update
+@cross-platform
+@high
 Feature: In-place self-update engine
-
   """
   The shared download-verify-replace engine lives in codelet-fspec-core::update.
   It is the single source of truth for both the `fspec update` CLI subcommand
@@ -40,7 +43,6 @@ Feature: In-place self-update engine
   #      a ChecksumMismatch error, installed binary untouched
   #
   # ========================================
-
   Background: User Story
     As a fspec user
     I want the update engine to safely upgrade fspec in place

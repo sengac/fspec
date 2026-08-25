@@ -33,7 +33,6 @@ impl App {
                     &mut self.agent_view_store,
                     format!("[error] unknown /update argument: {arg}"),
                 );
-                return;
             }
             UpdateSubcommand::CheckOnly => {
                 self.spawn_update_task(session_id, false);

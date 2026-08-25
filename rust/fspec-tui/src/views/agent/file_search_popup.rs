@@ -312,6 +312,7 @@ impl FileSearchPopup {
             rows: self.build_rows(),
             footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
             min_width: 45,
+query_row: None,
         };
 
         // TUI-103: compute the dialog rect so we can derive the body area

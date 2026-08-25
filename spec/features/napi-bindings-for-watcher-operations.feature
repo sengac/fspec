@@ -45,9 +45,9 @@ Feature: NAPI Bindings for Watcher Operations
     Then a new watcher session should be created and returned
     And the watcher should be registered in WatchGraph with parent "parent-uuid"
 
-    # Note: Broadcast subscription happens lazily when watcher loop starts
   @wip
   Scenario: Get parent of a watcher session
+    # Note: Broadcast subscription happens lazily when watcher loop starts
     Given a watcher session "watcher-uuid" watching parent "parent-uuid"
     When I call session_get_parent with "watcher-uuid"
     Then it should return "parent-uuid"

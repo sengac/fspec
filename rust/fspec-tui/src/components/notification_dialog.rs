@@ -301,6 +301,7 @@ impl Component for NotificationDialog {
             rows,
             footer: self.build_footer(),
             min_width: 40,
+query_row: None,
         };
         render_dialog(area, buf, &dialog);
 

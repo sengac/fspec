@@ -4,7 +4,6 @@
 @formatter
 @BUG-158
 Feature: Formatter duplicates scenarios when a scenario has no steps (prose-only or unrecognized lowercase step keywords)
-
   """
   The AST-based Gherkin formatter (rust/fspec-core/src/io/gherkin_format.rs) must emit every scenario exactly once when a scenario has no steps. The Rust gherkin-0.16.0 parser only recognizes capitalized step keywords (Given/When/Then/And/But/*), so a scenario whose step lines use lowercase keywords (given/when/then) — or a genuinely prose-only scenario — has zero parsed steps and its prose is stored in Scenario.description. format_scenario must bound the verbatim description extraction by the next sibling construct (next scenario or rule at the same nesting level) when the scenario has neither steps nor Examples, mirroring the BUG-157 Background fix; an unbounded extraction swallows the trailing sibling scenarios into the description and re-emits them nested under the scenario, duplicating every scenario block. Formatting must be idempotent for such files. The TypeScript @cucumber/gherkin reference has the same case-sensitive keyword behavior, so this is a formatter-side fix, not a parser-side fix.
   """
@@ -24,7 +23,6 @@ Feature: Formatter duplicates scenarios when a scenario has no steps (prose-only
   #   3. A 2-scenario file where the first scenario is prose-only (no steps) formats to exactly 2 Scenario lines, each at 2-space top-level indentation
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to format feature files whose scenarios have no recognized steps

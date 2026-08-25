@@ -14,12 +14,12 @@ Feature: Bridge Tool Integration Tests
     I want to connect my session to external WebSocket endpoints using the Bridge tool
     So that I can relay my responses to platforms like Telegram and receive remote input
 
-  # -------------------------------------------
-  # Connect Action (Integration)
-  # -------------------------------------------
   @connect
   @integration
   Scenario: Connect to a valid WebSocket endpoint
+  # -------------------------------------------
+  # Connect Action (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And a WebSocket server is listening at "ws://localhost:8080"
     When the agent calls Bridge with action "connect" and url "ws://localhost:8080"
@@ -34,24 +34,24 @@ Feature: Bridge Tool Integration Tests
     When the agent calls Bridge with action "connect" and url "ws://invalid:9999"
     Then the tool should return an error containing "Connection refused"
 
-  # -------------------------------------------
-  # Disconnect Action (Integration)
-  # -------------------------------------------
   @disconnect
   @integration
   Scenario: Disconnect from a connected endpoint
+  # -------------------------------------------
+  # Disconnect Action (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the agent calls Bridge with action "disconnect" and url "ws://localhost:8080"
     Then the tool should return "Disconnected from ws://localhost:8080"
     And the WebSocket connection should be closed
 
-  # -------------------------------------------
-  # List Action (Integration)
-  # -------------------------------------------
   @list
   @integration
   Scenario: List active bridge connections
+  # -------------------------------------------
+  # List Action (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the agent calls Bridge with action "list"
@@ -71,12 +71,12 @@ Feature: Bridge Tool Integration Tests
       | url                 | state        |
       | ws://localhost:8080 | reconnecting |
 
-  # -------------------------------------------
-  # Multiple Bridges (Integration)
-  # -------------------------------------------
   @multiple
   @integration
   Scenario: Connect to multiple endpoints simultaneously
+  # -------------------------------------------
+  # Multiple Bridges (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And a WebSocket server is listening at "ws://localhost:8080"
     And a WebSocket server is listening at "ws://localhost:9090"
@@ -87,12 +87,12 @@ Feature: Bridge Tool Integration Tests
     Then "ws://localhost:8080" should receive a JSON chunk with the text "Hello"
     And "ws://localhost:9090" should receive a JSON chunk with the text "Hello"
 
-  # -------------------------------------------
-  # Outbound Messages (Integration)
-  # -------------------------------------------
   @outbound
   @integration
   Scenario: Relay StreamChunks to connected endpoint as JSON
+  # -------------------------------------------
+  # Outbound Messages (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the agent produces a text response "I can help with that"
@@ -103,12 +103,12 @@ Feature: Bridge Tool Integration Tests
       | data.type  | text                 |
       | data.text  | I can help with that |
 
-  # -------------------------------------------
-  # Inbound Messages (Integration)
-  # -------------------------------------------
   @inbound
   @integration
   Scenario: Receive input from endpoint and inject into session
+  # -------------------------------------------
+  # Inbound Messages (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the endpoint sends a JSON message:
@@ -117,12 +117,12 @@ Feature: Bridge Tool Integration Tests
       """
     Then the agent should receive "build the app" as user input
 
-  # -------------------------------------------
-  # Reconnection & Buffering (Integration)
-  # -------------------------------------------
   @reconnect
   @integration
   Scenario: Auto-reconnect and deliver buffered messages
+  # -------------------------------------------
+  # Reconnection & Buffering (Integration)
+  # -------------------------------------------
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the WebSocket connection drops unexpectedly

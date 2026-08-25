@@ -48,24 +48,6 @@ fn make_fake_archive(tmp: &Path, name: &str) -> PathBuf {
     archive
 }
 
-/// Write stub binaries (name → body) into a temp dir, chmod +x, and return
-/// the dir. The tempdir is leaked so the stubs stay alive for the test.
-fn make_stub_dir(stubs: &[(&str, &str)]) -> PathBuf {
-    let tmp = tempfile::tempdir().expect("tempdir");
-    let stub_dir = tmp.path().to_path_buf();
-    for (name, body) in stubs {
-        let p = stub_dir.join(name);
-        fs::write(&p, body).expect("write stub");
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            fs::set_permissions(&p, fs::Permissions::from_mode(0o755)).expect("chmod stub");
-        }
-    }
-    std::mem::forget(tmp);
-    stub_dir
-}
-
 /// curl stub body. `$1` selects the checksums.txt behavior:
 ///   ok      → serve a correct checksum for $FAKE_ARCHIVE
 ///   missing → exit 22 (simulated 404, like real `curl -f`)

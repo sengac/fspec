@@ -45,12 +45,12 @@ Feature: Isolated session worktree initialization
     Then "git status" in the worktree should show "nothing to commit, working tree clean"
     And there should be no staged changes
 
-  # ========================================
-  # Part B: Session Diff Accuracy
-  # ========================================
   @rust
   @gitoxide
   Scenario: Session Management Panel shows accurate file change count
+  # ========================================
+  # Part B: Session Diff Accuracy
+  # ========================================
     Given I have an isolated session with a worktree
     When I modify a file in the worktree
     And I open the Session Management Panel

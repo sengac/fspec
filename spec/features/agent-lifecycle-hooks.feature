@@ -128,9 +128,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the running session should not see the new user_prompt_submit hook
     And only a new session should pick up the config change
 
-  # --- Hook Group Format (pre_tool_use / post_tool_use) ---
   @HOOK-014
   Scenario: pre_tool_use hook group with regex matcher filters by tool name
+  # --- Hook Group Format (pre_tool_use / post_tool_use) ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group with matcher "Bash"
     And a hook command that exits with code 0
     When the agent invokes the "Bash" tool
@@ -153,9 +153,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent invokes a tool named "BashExtended"
     Then the pre_tool_use hook should not execute because "BashExtended" does not match "^(?:Bash)$"
 
-  # --- HookDefinition Format (session/prompt/notification events) ---
   @HOOK-014
   Scenario: session_start hooks use HookDefinition format
+  # --- HookDefinition Format (session/prompt/notification events) ---
     Given a spec/fspec-hooks.json with a "session_start" entry using HookDefinition format
       """
       {
@@ -175,9 +175,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When a user submits a prompt
     Then the user_prompt_submit hooks should execute sequentially with JSON payload on stdin
 
-  # --- Command Execution ---
   @HOOK-015
   Scenario: Hook command receives JSON payload on stdin
+  # --- Command Execution ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that echoes stdin to a file
     When the agent invokes the "Bash" tool with input "ls -la"
     Then the hook should receive a JSON payload on stdin containing:
@@ -215,9 +215,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the session ends because the user cancelled it
     Then the hook payload should include reason "cancelled"
 
-  # --- Timeout Handling ---
   @HOOK-015
   Scenario: Hook command killed on timeout
+  # --- Timeout Handling ---
     Given a spec/fspec-hooks.json with a "session_start" hook with timeout 1 second
     And the hook command sleeps for 10 seconds
     When the session_start hook executes
@@ -240,9 +240,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the hook process should be killed after 1 second
     And a warning should be emitted but execution should continue
 
-  # --- Exit Code Interpretation ---
   @HOOK-015
   Scenario: Exit code 0 means success
+  # --- Exit Code Interpretation ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that exits with code 0
     When the agent invokes a tool
     Then the hook outcome should be Continue (no opinion)
@@ -269,9 +269,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then a warning should be emitted about the hook failure
     And the tool call should continue
 
-  # --- JSON Response Interpretation (Claude Code Compatible) ---
   @HOOK-015
   Scenario: pre_tool_use hook returns JSON with permissionDecision allow
+  # --- JSON Response Interpretation (Claude Code Compatible) ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that outputs JSON:
       """
       { "hookSpecificOutput": { "permissionDecision": "allow" } }
@@ -332,9 +332,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent completes a Write tool call
     Then "Lint warning: unused import on line 5" should be injected as a system message
 
-  # --- pre_tool_use Short-Circuit ---
   @HOOK-017
   Scenario: pre_tool_use short-circuits on Allow decision
+  # --- pre_tool_use Short-Circuit ---
     Given a spec/fspec-hooks.json with two "pre_tool_use" hook groups:
       | group  | matcher | decision |
       | first  | Bash    | Allow    |
@@ -373,9 +373,9 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then both hook groups should execute
     And the final decision should be Continue (fall through to normal permission checks)
 
-  # --- user_prompt_submit Blocking ---
   @HOOK-016
   Scenario: user_prompt_submit hook blocks forbidden prompt
+  # --- user_prompt_submit Blocking ---
     Given a spec/fspec-hooks.json with a "user_prompt_submit" hook that exits code 2 with stderr "Policy violation: prompt contains forbidden content"
     When the user submits a prompt
     Then the prompt should be rejected
@@ -402,25 +402,25 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the prompt should be allowed through to the agent
     And "User is an admin" should be injected as additional context
 
-  # --- session_end ---
   @HOOK-016
   Scenario: session_end hook receives termination reason and executes
+  # --- session_end ---
     Given a spec/fspec-hooks.json with a "session_end" hook named "notify-slack"
     When the agent session ends with reason "completed"
     Then the "notify-slack" hook should execute
     And the hook payload should include session_id, cwd, reason "completed", and transcript_path
 
-  # --- notification ---
   @HOOK-016
   Scenario: notification hook fires via global engine
+  # --- notification ---
     Given a spec/fspec-hooks.json with a "notification" hook
     When a notification event fires with type "permission_prompt" and title "Tool Permission"
     Then the notification hook should execute
     And the hook payload should include notification_type, title, and message
 
-  # --- Sequential Execution Within Hook Groups ---
   @HOOK-016
   Scenario: Multiple commands in a hook group execute sequentially
+  # --- Sequential Execution Within Hook Groups ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group containing two commands
     When the agent invokes a tool matching the group
     Then the first command should complete before the second command starts

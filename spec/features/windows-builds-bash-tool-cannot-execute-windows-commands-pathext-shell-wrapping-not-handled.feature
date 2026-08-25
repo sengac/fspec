@@ -30,20 +30,20 @@ Feature: Windows builds: Bash tool cannot execute Windows commands (PATHEXT / sh
     I want to execute Windows shell commands (e.g. whoami, dir, PowerShell syntax) via the Bash tool
     So that Windows builds can actually run commands instead of failing because sh does not exist and PATHEXT is not resolved
 
-    Scenario: Windows command is wrapped in PowerShell for PATHEXT resolution
+  Scenario: Windows command is wrapped in PowerShell for PATHEXT resolution
     Given the Bash tool is built for Windows
     When the agent executes the command `whoami`
     Then the command is spawned as `powershell -NoProfile -NonInteractive -Command whoami`
     And the raw command string is never spawned directly via CreateProcess
 
-    Scenario: Windows command falls back to cmd.exe when PowerShell is unavailable
+  Scenario: Windows command falls back to cmd.exe when PowerShell is unavailable
     Given the Bash tool is built for Windows
     And PowerShell cannot be located on the system
     When the agent executes the command `cmd /c dir`
     Then the command is spawned as `cmd /C cmd /c dir`
     And the command succeeds with a directory listing instead of a "program not found" spawn error
 
-    Scenario: Aborting a Windows command kills the entire process tree
+  Scenario: Aborting a Windows command kills the entire process tree
     Given the Bash tool is built for Windows
     And a long-running command is executing in a spawned Windows shell
     When the user aborts the command
@@ -51,9 +51,8 @@ Feature: Windows builds: Bash tool cannot execute Windows commands (PATHEXT / sh
     And the forceful variant uses `taskkill /PID <pid> /T /F`
     And the tool returns "Command interrupted by user"
 
-    Scenario: Unix spawn path is unchanged (no regression)
+  Scenario: Unix spawn path is unchanged (no regression)
     Given the Bash tool is built for Unix
     When the agent executes the command `echo hello`
     Then the command is spawned as `sh -c echo hello`
     And the command runs in a new process group with the Unix ProcessGroupKiller guard
-

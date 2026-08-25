@@ -88,13 +88,13 @@ Feature: Per-Model Context Window and Max Output Configuration
     Then model_context_window should be 200000
     And context_window() should return 200000
 
-  # ---------------------------------------------------------------------------
-  # Profile-based model selection (set_model_direct path via NAPI)
-  # ---------------------------------------------------------------------------
   @rust
   @provider-manager
   @napi
   Scenario: Profile model gets context window through NAPI parameters
+  # ---------------------------------------------------------------------------
+  # Profile-based model selection (set_model_direct path via NAPI)
+  # ---------------------------------------------------------------------------
     Given a vLLM profile model with ModelSelection.contextWindow=32000 and maxOutput=4096
     When sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
     Then set_model_direct stores model_context_window=32000 and model_max_output_tokens=4096
@@ -110,24 +110,24 @@ Feature: Per-Model Context Window and Max Output Configuration
     Then set_model_direct stores model_context_window=272000 and model_max_output_tokens=4096
     And context_window() should return 272000
 
-  # ---------------------------------------------------------------------------
-  # NAPI override takes priority over models.dev data
-  # ---------------------------------------------------------------------------
   @rust
   @provider-manager
   @napi
   Scenario: NAPI override takes priority over models.dev metadata
+  # ---------------------------------------------------------------------------
+  # NAPI override takes priority over models.dev data
+  # ---------------------------------------------------------------------------
     Given the model registry contains "openai/gpt-4o" with context=128000 and max_output=16384
     When session_set_model is called with context_window=64000 and max_output_tokens=8192
     Then context_window() should return 64000
     And max_output_tokens() should return 8192
 
-  # ---------------------------------------------------------------------------
-  # Backward compatibility: fallback to provider constants
-  # ---------------------------------------------------------------------------
   @rust
   @provider-manager
   Scenario: No model selected falls back to provider constant
+  # ---------------------------------------------------------------------------
+  # Backward compatibility: fallback to provider constants
+  # ---------------------------------------------------------------------------
     Given a fresh ProviderManager with Claude as the current provider
     And no model has been selected
     Then model_context_window should be None
@@ -145,12 +145,12 @@ Feature: Per-Model Context Window and Max Output Configuration
     And context_window() should return 32000
     And max_output_tokens() should return 8192
 
-  # ---------------------------------------------------------------------------
-  # Compaction threshold correctly uses per-model values
-  # ---------------------------------------------------------------------------
   @rust
   @compaction
   Scenario: Compaction threshold uses per-model context window for large-context model
+  # ---------------------------------------------------------------------------
+  # Compaction threshold correctly uses per-model values
+  # ---------------------------------------------------------------------------
     Given a ProviderManager with model_context_window=200000 and model_max_output_tokens=100000
     When the compaction threshold is calculated
     Then calculate_usable_context(200000, 100000) should return 168000
@@ -164,12 +164,12 @@ Feature: Per-Model Context Window and Max Output Configuration
     Then calculate_usable_context(32000, 4096) should return 27904
     And compaction triggers when effective tokens exceed 27904
 
-  # ---------------------------------------------------------------------------
-  # TypeScript integration: modelSelectionService passes values to NAPI
-  # ---------------------------------------------------------------------------
   @typescript
   @integration
   Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModel
+  # ---------------------------------------------------------------------------
+  # TypeScript integration: modelSelectionService passes values to NAPI
+  # ---------------------------------------------------------------------------
     Given a ModelSelection with providerId="openai" and modelId="o3" and contextWindow=200000 and maxOutput=100000
     And an active session exists
     When selectModel is called
@@ -183,12 +183,12 @@ Feature: Per-Model Context Window and Max Output Configuration
     When selectModel is called
     Then sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
 
-  # ---------------------------------------------------------------------------
-  # with_provider_and_model constructor supports optional context params
-  # ---------------------------------------------------------------------------
   @rust
   @provider-manager
   Scenario: with_provider_and_model accepts optional context window parameters
+  # ---------------------------------------------------------------------------
+  # with_provider_and_model constructor supports optional context params
+  # ---------------------------------------------------------------------------
     Given I create a ProviderManager via with_provider_and_model("claude", "claude-sonnet-4", context_window=200000, max_output_tokens=8192)
     Then context_window() should return 200000
     And max_output_tokens() should return 8192
@@ -200,22 +200,22 @@ Feature: Per-Model Context Window and Max Output Configuration
     Then context_window() should return 200000
     And max_output_tokens() should return 8192
 
-  # ---------------------------------------------------------------------------
-  # for_testing constructor supports optional context params
-  # ---------------------------------------------------------------------------
   @rust
   @provider-manager
   Scenario: for_testing constructor with custom context window
+  # ---------------------------------------------------------------------------
+  # for_testing constructor supports optional context params
+  # ---------------------------------------------------------------------------
     Given I create a test ProviderManager via for_testing(OpenAI, context_window=200000, max_output_tokens=100000)
     Then context_window() should return 200000
     And max_output_tokens() should return 100000
 
-  # ---------------------------------------------------------------------------
-  # Provider constants remain as fallback defaults
-  # ---------------------------------------------------------------------------
   @rust
   @provider-manager
   Scenario: Provider-level compile-time constants remain unchanged
+  # ---------------------------------------------------------------------------
+  # Provider constants remain as fallback defaults
+  # ---------------------------------------------------------------------------
     Then claude::CONTEXT_WINDOW should be 200000
     And openai::CONTEXT_WINDOW should be 128000
     And gemini::CONTEXT_WINDOW should be 1000000

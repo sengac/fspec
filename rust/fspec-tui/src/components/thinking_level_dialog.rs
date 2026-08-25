@@ -199,6 +199,7 @@ impl Component for ThinkingLevelDialog {
             rows,
             footer: FOOTER,
             min_width: 50,
+query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

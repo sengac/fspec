@@ -88,6 +88,7 @@ impl Component for ErrorDialog {
             rows,
             footer: "Press ESC to dismiss",
             min_width: 40,
+query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

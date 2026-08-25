@@ -6,7 +6,6 @@
 @debug
 @session-management
 Feature: /debug command parity with TypeScript TUI
-
   """
   Fixes four critical gaps in the Rust TUI's /debug command compared to the TypeScript TUI:
   1. Debug directory path: ~/.fspec instead of .fspec/debug
@@ -27,7 +26,6 @@ Feature: /debug command parity with TypeScript TUI
   #   5. The debug_enabled_by_session HashMap in AgentViewStore serves as both the live state AND the pending state buffer. When a DebugStateChange stream chunk arrives for any session (active or not), the value is stored in the map.
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI user
     I want to toggle debug capture with /debug
@@ -36,7 +34,6 @@ Feature: /debug command parity with TypeScript TUI
   # ========================================
   # SCENARIO GROUP: Debug Directory Path
   # ========================================
-
   Scenario: /debug resolves debug directory to ~/.fspec by default
     Given the HOME environment variable is set to "/home/testuser"
     And the FSPEC_DEBUG_DIR environment variable is NOT set
@@ -51,7 +48,6 @@ Feature: /debug command parity with TypeScript TUI
   # ========================================
   # SCENARIO GROUP: Pre-Session Toggle
   # ========================================
-
   Scenario: /debug toggles pre-session debug state when no active session exists
     Given an App with NO current session and pre_session_debug_enabled is false
     When SlashCommandSelected(SlashCommandAction::Debug) is dispatched
@@ -66,7 +62,6 @@ Feature: /debug command parity with TypeScript TUI
   # ========================================
   # SCENARIO GROUP: Debug Hydration on Session Attach
   # ========================================
-
   Scenario: Session attach hydrates debug state from backend
     Given an App with NO sessions and a MockBackend whose get_debug_enabled returns Ok(true) for session s-1
     When AttachToSession(s-1) is dispatched
@@ -76,7 +71,6 @@ Feature: /debug command parity with TypeScript TUI
   # ========================================
   # SCENARIO GROUP: Debug Propagation on Session Creation
   # ========================================
-
   Scenario: Session creation propagates pre-session debug state when enabled
     Given an App with pre_session_debug_enabled set to true
     And a MockBackend whose create_session returns Ok(s-1)
@@ -93,7 +87,6 @@ Feature: /debug command parity with TypeScript TUI
   # ========================================
   # SCENARIO GROUP: Existing /debug with active session (regression check)
   # ========================================
-
   Scenario: /debug with active session calls toggle_debug with correct directory
     Given an App with an open session s-1
     And the HOME environment variable is set to "/home/testuser"

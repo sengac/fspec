@@ -1,10 +1,9 @@
 @BUG-153
 Feature: index.d.ts exports required NAPI symbols without consulting git
-
   """
   Architecture notes:
   - session_bindings_shape.rs: scenario_index_dts_is_byte_identical_to_pre_rpc043_baseline
-    Remove git diff invocation. Keep direct symbol assertions.
+  Remove git diff invocation. Keep direct symbol assertions.
   - Test must pass regardless of git branch or working-tree state
   """
 

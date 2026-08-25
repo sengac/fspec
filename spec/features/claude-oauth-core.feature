@@ -138,11 +138,11 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
     And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
     And the anthropic-beta header should contain "prompt-caching-2024-07-31"
 
+  @core
+  Scenario: Tool names prefixed with mcp_ in OAuth mode
   # Architecture: mcp_ prefixing is a parity reference — codelet uses native tools
   # (not MCP), so prefixing is not applied in the production request path. These
   # functions exist for parity verification against opencode and future MCP support.
-  @core
-  Scenario: Tool names prefixed with mcp_ in OAuth mode
     Given a tool named "Bash"
     When the tool name is prefixed for OAuth mode
     Then the prefixed name should be "mcp_Bash"

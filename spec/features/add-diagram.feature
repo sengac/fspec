@@ -135,6 +135,8 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
       ```
       """
 
+      ### Flow
+      ### Flow
   Scenario: Handle multi-line diagram code
     Given I have a FOUNDATION.md
     When I run `fspec add-diagram Architecture "Complex" "graph TD\n  A-->B\n  B-->C\n  C-->D"`

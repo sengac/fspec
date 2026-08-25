@@ -107,6 +107,7 @@ fn dialog_theme_module_exposes_the_canonical_public_api() {
         rows: vec![],
         footer: "",
         min_width: 40,
+query_row: None,
     };
     assert_eq!(dialog.title, "T");
 
@@ -139,6 +140,7 @@ fn render_dialog_paints_a_rounded_border_in_the_accent_color() {
         }],
         footer: "esc",
         min_width: 40,
+query_row: None,
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
@@ -179,6 +181,7 @@ fn render_dialog_paints_an_opaque_black_background_over_the_dialog_rect() {
         }],
         footer: "",
         min_width: 40,
+query_row: None,
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
@@ -207,6 +210,7 @@ fn render_dialog_paints_the_inner_title_as_a_bold_accent_colored_row() {
         rows: vec![],
         footer: "",
         min_width: 40,
+query_row: None,
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
@@ -254,6 +258,7 @@ fn render_dialog_inserts_one_blank_row_between_title_and_body() {
         }],
         footer: "",
         min_width: 40,
+query_row: None,
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
@@ -299,6 +304,7 @@ fn render_dialog_paints_the_selected_row_with_the_full_width_inverse_highlight()
         rows,
         footer: "",
         min_width: 40,
+query_row: None,
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
@@ -401,6 +407,7 @@ fn render_dialog_paints_the_footer_with_dim_modifier_and_centered_alignment() {
         }],
         footer,
         min_width: 50,
+query_row: None,
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
@@ -449,6 +456,7 @@ fn dialog_rect_centers_the_dialog_within_the_available_area() {
             .collect(),
         footer: "ESC",
         min_width: 46,
+query_row: None,
     };
 
     // @step When I call dialog_rect(area, &dialog)
@@ -481,6 +489,7 @@ fn dialog_rect_clamps_to_the_parent_area_when_content_exceeds_it() {
             .collect(),
         footer: "footer",
         min_width: 100,
+query_row: None,
     };
     let area = Rect::new(0, 0, 60, 20);
 

@@ -1,0 +1,354 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing '/' on the board opens the work-unit search dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "106-135",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board.rs",
+              "lines": [
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Searching by id filters the result list live",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "138-160",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selecting a match focuses its card on the board and closes the dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "163-215",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_search.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_viewport.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Tab toggles the search mode and re-filters with the same query",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "218-249",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Tab cycles through all three modes and returns to Id",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "252-270",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Description mode never matches a unit without a description",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "273-296",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A unit with a matching description appears in Description mode",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "299-326",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Esc closes the dialog without changing the board selection",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "329-356",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing '/' while the dialog is open does not re-open it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "359-387",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_search.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A query with no matches shows the empty-state row and Enter is a no-op",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "390-420",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opening the dialog on an empty board shows the board-is-empty state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "423-448",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board header chord shows the '/' search shortcut",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "451-464",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+              "lines": [
+                33
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board help dialog lists the '/' search shortcut",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
+          "lines": "467-482",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/help_content.rs",
+              "lines": [
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/board_search_dialog_board022.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_work_unit_search.rs",
+      "rust/fspec-tui/src/store/board_viewport.rs",
+      "rust/fspec-tui/src/components/work_unit_search_rows.rs",
+      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+      "rust/fspec-tui/src/components/help_content.rs"
+    ],
+    "totalLinesCovered": 472
+  }
+}

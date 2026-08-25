@@ -74,17 +74,17 @@ Feature: Move Credential Management to Rust
     When credential resolution is requested for provider "anthropic"
     Then no API key should be returned
 
-  # Provider Extraction Tests
   @unit
   Scenario: Extract provider from model string
+  # Provider Extraction Tests
     Given a model string "anthropic/claude-sonnet-4-20250514"
     When a session is created with this model
     Then the provider "anthropic" should be extracted
     And credential resolution should use "anthropic" as the provider ID
 
-  # Mtime-based Caching Tests (Rule 4)
   @unit
   Scenario: Cache credentials when file unchanged
+  # Mtime-based Caching Tests (Rule 4)
     Given the CredentialStore has loaded credentials from disk
     And the credentials file mtime has not changed
     When credential resolution is requested
@@ -98,9 +98,9 @@ Feature: Move Credential Management to Rust
     Then the credentials should be reloaded from disk
     And the new API key should be returned
 
-  # Session Resume Tests (Rule 3)
   @integration
   Scenario: Session resume picks up credential changes
+  # Session Resume Tests (Rule 3)
     Given a Rust session exists with provider "anthropic"
     And the session was created with API key "old-key"
     And the credentials file is updated with API key "new-key"
@@ -108,33 +108,33 @@ Feature: Move Credential Management to Rust
     Then credential resolution should be re-executed
     And the new API key "new-key" should be used
 
-  # TypeScript Coordination Tests (Rules 5, 6)
   @integration
   Scenario: TypeScript saveCredential triggers Rust reload
+  # TypeScript Coordination Tests (Rules 5, 6)
     Given TypeScript saves a new API key to the credentials file
     When credentials_reload() NAPI function is called
     Then the CredentialStore should reload from disk
     And subsequent credential resolutions should return the new key
 
-  # Session Creation Without API Key Parameter (Rule 5)
   @integration
   Scenario: Session creation resolves credentials internally
+  # Session Creation Without API Key Parameter (Rule 5)
     Given a credentials file exists with an API key for provider "anthropic"
     When sessionManagerCreateWithId is called without an api_key parameter
     Then Rust should resolve the credential internally
     And the session should be created with the resolved API key
 
-  # Security Test (Rule 7)
   @unit
   Scenario: Credentials never returned to TypeScript via NAPI
+  # Security Test (Rule 7)
     Given credentials_resolve NAPI function exists
     When the API checks for functions that return credentials to TypeScript
     Then no NAPI function should return the actual API key value
 
-  # OAuth Token Detection by Prefix (Rule 14)
   @integration
   @unit
   Scenario: Detect OAuth token from prefix and use Bearer authentication
+  # OAuth Token Detection by Prefix (Rule 14)
     Given a credential with value "sk-ant-oat01-abc123" is available
     When ClaudeProvider initializes with this credential
     Then the auth mode should be detected as OAuth from the "sk-ant-oat" prefix

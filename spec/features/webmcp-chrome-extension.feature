@@ -113,12 +113,12 @@ Feature: fspec Browser Agent Chrome Extension
     When a POST /mcp request arrives with an Mcp-Session-Id that does not match any active session
     Then the server responds with status 404 Not Found
 
-  # -----------------------------------------------------------
-  # Service Worker & Content Script Message Routing
-  # -----------------------------------------------------------
   @messaging
   @EXT-004
   Scenario: Service worker connects to native messaging host on startup
+  # -----------------------------------------------------------
+  # Service Worker & Content Script Message Routing
+  # -----------------------------------------------------------
     Given the fspec Browser Agent Chrome extension is installed
     When the service worker activates
     Then the service worker calls chrome.runtime.connectNative with host name "com.fspec.browser.agent"
@@ -172,12 +172,12 @@ Feature: fspec Browser Agent Chrome Extension
     When the popup sends a message with type "FSPEC_GET_STATUS"
     Then the service worker responds with connection status, tool count, and native messaging state
 
-  # -----------------------------------------------------------
-  # Native Browser Control Tools
-  # -----------------------------------------------------------
   @browser-control
   @EXT-005
   Scenario: Navigate browser tab to URL
+  # -----------------------------------------------------------
+  # Native Browser Control Tools
+  # -----------------------------------------------------------
     Given the agent has an active MCP connection to the extension
     When the agent calls mcp__ext__browser_navigate with url "https://example.com"
     Then the extension navigates the active tab to "https://example.com"
@@ -294,12 +294,12 @@ Feature: fspec Browser Agent Chrome Extension
     Then the response includes all 11 native browser control tools
     And each tool has a name, description, and inputSchema
 
-  # -----------------------------------------------------------
-  # Bidirectional Browser Events (Server → Agent)
-  # -----------------------------------------------------------
   @events
   @EXT-007
   Scenario: Receive navigation event when user navigates to new URL
+  # -----------------------------------------------------------
+  # Bidirectional Browser Events (Server → Agent)
+  # -----------------------------------------------------------
     Given the agent has an active MCP connection to the extension
     And a GET /mcp SSE stream is open for notifications
     When the user clicks a link that navigates tab 123 to "https://new-page.com"
@@ -316,12 +316,12 @@ Feature: fspec Browser Agent Chrome Extension
     Then the extension sends a "notifications/tools/list_changed" MCP notification via SSE
     And the agent's next tools/list call includes the newly discovered WebMCP tool
 
-  # -----------------------------------------------------------
-  # WebMCP Tool Discovery
-  # -----------------------------------------------------------
   @webmcp
   @EXT-006
   Scenario: Discover WebMCP tool registered by website
+  # -----------------------------------------------------------
+  # WebMCP Tool Discovery
+  # -----------------------------------------------------------
     Given the agent has an active MCP connection to the extension
     And the user navigates to a WebMCP-enabled site at "https://travel-demo.bandarra.me"
     When the site calls navigator.modelContext.registerTool with name "searchFlights"
@@ -340,12 +340,12 @@ Feature: fspec Browser Agent Chrome Extension
     And the agent receives a "notifications/tools/list_changed" notification via SSE
     And the agent's next tools/list call no longer includes "webmcp__example.com__oldTool"
 
-  # -----------------------------------------------------------
-  # WebMCP Tool Invocation
-  # -----------------------------------------------------------
   @webmcp
   @EXT-006
   Scenario: Invoke a WebMCP tool registered by a website
+  # -----------------------------------------------------------
+  # WebMCP Tool Invocation
+  # -----------------------------------------------------------
     Given the agent has an active MCP connection to the extension
     And the website at "https://example.com" has registered a WebMCP tool "submitForm"
     When the agent calls webmcp__example.com__submitForm with params name "John" and email "john@test.com"
@@ -355,12 +355,12 @@ Feature: fspec Browser Agent Chrome Extension
     And the content script forwards the result to the service worker via chrome.runtime
     And the agent receives the structured result from the tool call
 
-  # -----------------------------------------------------------
-  # Extension Popup UI
-  # -----------------------------------------------------------
   @popup
   @EXT-008
   Scenario: Popup displays connection status and available tools
+  # -----------------------------------------------------------
+  # Extension Popup UI
+  # -----------------------------------------------------------
     Given the fspec Browser Agent Chrome extension is installed
     When the user opens the extension popup
     Then the popup shows the server status as "listening" or "stopped"
@@ -368,12 +368,12 @@ Feature: fspec Browser Agent Chrome Extension
     And the popup shows the count of connected clients
     And the popup shows available tools grouped by source as native and WebMCP per tab
 
-  # -----------------------------------------------------------
-  # Extension Structure
-  # -----------------------------------------------------------
   @structure
   @EXT-002
   Scenario: Extension source code lives in extension directory
+  # -----------------------------------------------------------
+  # Extension Structure
+  # -----------------------------------------------------------
     Given the fspec repository is cloned
     When I inspect the extension directory at project root
     Then the extension directory contains its own package.json

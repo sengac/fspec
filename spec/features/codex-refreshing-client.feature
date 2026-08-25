@@ -114,10 +114,10 @@ Feature: Codex Custom Fetch - Token Refresh and API Rewriting
     Then the dummy Authorization header should be stripped
     And replaced with "Bearer {current_access_token}"
 
-  # Note: This tests Rust-level type integration, NOT TUI agent loop dispatch.
-  # TUI wiring (adding "codex" branch to run_with_provider!) is tracked by PROV-017.
   @integration
   Scenario: CodexProvider uses RefreshingCodexClient for OAuth mode
+  # Note: This tests Rust-level type integration, NOT TUI agent loop dispatch.
+  # TUI wiring (adding "codex" branch to run_with_provider!) is tracked by PROV-017.
     Given OAuth tokens with access_token, refresh_token, and account_id
     When CodexProvider::from_oauth_tokens() is called
     Then a RefreshingCodexClient should be created with OAuth TokenMode

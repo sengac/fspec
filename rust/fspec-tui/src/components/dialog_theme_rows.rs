@@ -9,10 +9,17 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::Span;
+use unicode_width::UnicodeWidthStr;
 
 use super::dialog_theme::{DialogRow, FspecDialog, MARKER_SELECTED, MARKER_UNSELECTED};
 use crate::components::dialog_theme::Accent;
 use crate::views::agent::text_wrap::wrap_to_width;
+
+/// Display width of a single line (shared by the dialog theme's width
+/// math and the footer painter).
+pub fn line_width(line: &str) -> u16 {
+    line.width() as u16
+}
 
 /// RPC-383: the resolved scroll geometry of the full-screen
 /// `TurnContentModal` for a given `(area, body)`. The render path and
@@ -47,7 +54,7 @@ pub fn wrap_row_count(text: &str, width: usize) -> usize {
 pub fn turn_modal_geometry(area: Rect, body: &str) -> TurnModalGeometry {
     let rect = fixed_dialog_rect(area);
     let full_inner = rect.width.saturating_sub(4).max(1) as usize;
-    let viewport_rows = body_content_rows(rect.height, 1).max(1);
+    let viewport_rows = body_content_rows(rect.height, 1, false).max(1);
     let probe = wrap_row_count(body, full_inner);
     let content_width = if probe > viewport_rows {
         full_inner.saturating_sub(1).max(1)
@@ -208,14 +215,19 @@ pub fn fixed_dialog_rect(area: Rect) -> Rect {
 /// spacious/compact fallback as `dialog_theme::render_dialog_at`. The
 /// full-screen `TurnContentModal` calls this to size its scroll viewport
 /// so the reducer clamps offset against exactly what is painted.
-pub fn body_content_rows(rect_height: u16, footer_h: u16) -> usize {
+/// BUG-159: `has_query_row` reserves one extra content row for the
+/// pinned query row painted by `render_dialog_at` — returns one less
+/// when true, in both the spacious and the compact fallback.
+pub fn body_content_rows(rect_height: u16, footer_h: u16, has_query_row: bool) -> usize {
     // border(2) + padding(2) consumed before the body block.
     let body_h = rect_height.saturating_sub(4);
     if body_h == 0 {
         return 0;
     }
     let raw_footer_h = footer_h;
-    let spacious_min = 3 + if raw_footer_h > 0 {
+    // BUG-159: the pinned query row consumes one content row.
+    let query_h = if has_query_row { 1 } else { 0 };
+    let spacious_min = 3 + query_h + if raw_footer_h > 0 {
         raw_footer_h + 1
     } else {
         0
@@ -238,5 +250,5 @@ pub fn body_content_rows(rect_height: u16, footer_h: u16) -> usize {
     } else {
         0
     };
-    (body_h.saturating_sub(reserved)).saturating_sub(content_start) as usize
+    (body_h.saturating_sub(reserved)).saturating_sub(content_start + query_h) as usize
 }

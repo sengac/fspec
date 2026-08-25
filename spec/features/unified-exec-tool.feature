@@ -63,13 +63,13 @@ Feature: Unified Exec Tool with PTY Session Management
     And the response should contain output with file listing
     And the response should not contain a session_id
 
-  # ========================================
-  # Run Action — Session Creation (Yield-and-Resume)
-  # ========================================
   @run
   @session
   @pty
   Scenario: Run an interactive process with tty returns session_id
+  # ========================================
+  # Run Action — Session Creation (Yield-and-Resume)
+  # ========================================
     Given the unified exec tool is available
     When I call the run action with command "cat" and tty true and yield_time_ms 500
     Then the response should contain a session_id
@@ -102,12 +102,12 @@ Feature: Unified Exec Tool with PTY Session Management
     When I call the run action with yield_time_ms 60000
     Then the yield_time_ms used should be at most 30000ms
 
-  # ========================================
-  # Write Action — Send Input to Running Session
-  # ========================================
   @write
   @session
   Scenario: Write input to a running session and receive output
+  # ========================================
+  # Write Action — Send Input to Running Session
+  # ========================================
     Given a running session with session_id from command "cat" and tty true
     When I call the write action with that session_id and input "hello\n"
     Then the response should contain output with "hello"
@@ -123,12 +123,12 @@ Feature: Unified Exec Tool with PTY Session Management
     Then the response should contain exit_code
     And the response should not contain a session_id
 
-  # ========================================
-  # Poll Action — Check for Output
-  # ========================================
   @poll
   @session
   Scenario: Poll a running session returns new output
+  # ========================================
+  # Poll Action — Check for Output
+  # ========================================
     Given a running session with session_id that is producing output
     When I call the poll action with that session_id
     Then the response should contain any new output since last read
@@ -141,11 +141,11 @@ Feature: Unified Exec Tool with PTY Session Management
     When I call the poll action with yield_time_ms 1000
     Then the effective yield_time_ms should be at least 5000ms
 
+  @list
+  Scenario: List active sessions returns session metadata
   # ========================================
   # List Action — Enumerate Active Sessions
   # ========================================
-  @list
-  Scenario: List active sessions returns session metadata
     Given there are 3 running sessions in the ProcessStore
     When I call the list action
     Then the response should contain 3 sessions
@@ -157,12 +157,12 @@ Feature: Unified Exec Tool with PTY Session Management
     When I call the list action
     Then the response should contain 0 sessions
 
-  # ========================================
-  # Close Action — Terminate a Session
-  # ========================================
   @close
   @session
   Scenario: Close a running session kills the process
+  # ========================================
+  # Close Action — Terminate a Session
+  # ========================================
     Given a running session with session_id
     When I call the close action with that session_id
     Then the process should be terminated
@@ -176,12 +176,12 @@ Feature: Unified Exec Tool with PTY Session Management
     When I call the close action with session_id "nonexistent"
     Then the response should contain an error about unknown session
 
-  # ========================================
-  # ProcessStore — Capacity and LRU Eviction
-  # ========================================
   @processstore
   @lru
   Scenario: LRU eviction when ProcessStore is full
+  # ========================================
+  # ProcessStore — Capacity and LRU Eviction
+  # ========================================
     Given 64 running sessions in the ProcessStore
     When I call the run action to spawn a 65th process
     Then the least recently used session not in the 8 most recent should be evicted
@@ -201,11 +201,11 @@ Feature: Unified Exec Tool with PTY Session Management
     When the output exceeds 1 MiB
     Then the oldest output should be discarded to maintain the 1 MiB cap
 
+  @blocklist
+  Scenario: Blocked command is rejected before execution
   # ========================================
   # Integration — Blocklist and Session Isolation
   # ========================================
-  @blocklist
-  Scenario: Blocked command is rejected before execution
     Given the unified exec tool is available
     And the command "rm -rf /" is on the blocklist
     When I call the run action with command "rm -rf /"

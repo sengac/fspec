@@ -44,9 +44,9 @@ Feature: Dart AST extractor produces excessive false positives in dead code dete
     Then functions in test files should not appear in the uncalled_functions results
     And functions in non-test files that are genuinely uncalled should still appear
 
-  # Rule: Generated Dart files must be excluded from dead code analysis entirely
   @critical
   Scenario: Exclude generated .g.dart and .freezed.dart files from dead code
+  # Rule: Generated Dart files must be excluded from dead code analysis entirely
     Given a Dart project with generated files ending in ".g.dart" and ".freezed.dart"
     And those generated files contain types and functions from code generation
     When I run ast_dead_code detection on the indexed project
@@ -54,54 +54,54 @@ Feature: Dart AST extractor produces excessive false positives in dead code dete
     And no entities from ".freezed.dart" files should appear in dead code results
     And entities from regular ".dart" files that are genuinely dead should still appear
 
-  # Rule: Flutter platform directories must be excluded from dead code
   @critical
   Scenario: Exclude Flutter platform directories from dead code for Flutter projects
+  # Rule: Flutter platform directories must be excluded from dead code
     Given a Flutter project with platform directories "ios/", "android/", "macos/", "linux/", and "windows/"
     And the project has a pubspec.yaml with a "flutter" dependency
     When I run ast_dead_code detection on the indexed project
     Then no files from platform directories should appear in the orphan files results
     And non-platform orphan files should still be detected
 
-  # Rule: Dart main.dart entry point must not be flagged as orphan file
   @high
   Scenario: Do not flag main.dart entry point as orphan file
+  # Rule: Dart main.dart entry point must not be flagged as orphan file
     Given a Dart project with "lib/main.dart" containing a top-level main() function
     And no other file imports main.dart
     When I run ast_dead_code detection on the indexed project
     Then "lib/main.dart" should not appear in the orphan files results
     And other files that are genuinely orphaned should still appear
 
-  # Rule: Extension declarations must be linked to target type or excluded from unreferenced_types
   @high
   Scenario: Exclude Dart extension declarations from unreferenced types
+  # Rule: Extension declarations must be linked to target type or excluded from unreferenced_types
     Given a Dart file with "extension StringExt on String" and "extension UserPatterns on User"
     And a class "User" is defined and referenced by other functions
     When I run ast_dead_code detection on the indexed project
     Then extension types should not appear in the unreferenced_types results
     And genuinely unreferenced types like an unused class should still appear
 
-  # Rule: Qualified/static method calls must produce Calls edges
   @high
   Scenario: Resolve qualified static method calls as Calls edges
+  # Rule: Qualified/static method calls must produce Calls edges
     Given a Dart file with a call "BoardFixtures.connectedInstance()" in a function body
     And "BoardFixtures" is a class with static method "connectedInstance" in an imported file
     When I run the Dart AST extractor on both files
     Then a Calls edge should exist from the calling function to "connectedInstance"
     And "connectedInstance" should not appear as an uncalled function in dead code
 
-  # Rule: Constructor invocations must produce TypeRef edges
   @medium
   Scenario: Recognize constructor invocations as TypeRef edges in function bodies
+  # Rule: Constructor invocations must produce TypeRef edges
     Given a Dart function body containing "final repo = InMemoryConnectionRepository()"
     And "InMemoryConnectionRepository" is a class defined in an imported file
     When I run the Dart AST extractor on both files
     Then a TypeRef edge should exist from the calling function to "InMemoryConnectionRepository"
     And "InMemoryConnectionRepository" should not appear as unreferenced in dead code
 
-  # Rule: Flutter StatefulWidget State classes must be recognized as used
   @medium
   Scenario: Recognize StatefulWidget State classes as used by parent widget
+  # Rule: Flutter StatefulWidget State classes must be recognized as used
     Given a Dart file with "class MyScreen extends StatefulWidget" and "class _MyScreenState extends State<MyScreen>"
     And "_MyScreenState" is only referenced in the createState() method
     When I run ast_dead_code detection on the indexed project

@@ -1,6 +1,5 @@
 @TUI-099
 Feature: Sessions in /resume view are not ordered by most recent to oldest
-
   """
   Architecture:
   - Sort in SessionManager::list_sessions() (rust/sessions/src/session_manager.rs) by updated_at_ms descending with session ID as tiebreaker

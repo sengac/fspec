@@ -35,6 +35,7 @@ pub(crate) fn board_help_lines() -> Vec<String> {
         "c             Checkpoints",
         "d             FOUNDATION.md",
         "a             Attachments",
+        "/             Search work units",
         "?             Show this help",
         "ESC           Exit (confirm)",
         "Ctrl+D        Quit",

@@ -1202,6 +1202,22 @@
           "description": "Bug fix work unit BUG-157 - fspec format duplicates scenarios when a Background section is present"
         },
         {
+          "name": "@bug-159",
+          "description": "Bug fix work unit BUG-159 - board search dialog: pinned query row + fixed frame rect"
+        },
+        {
+          "name": "@bug-160",
+          "description": "Bug fix work unit BUG-160 - board search dialog: result rows show a dimmed title/description snippet"
+        },
+        {
+          "name": "@bug-161",
+          "description": "Bug fix work unit BUG-161 - board search dialog: modal keyboard blocking (unhandled keys must not leak to the board)"
+        },
+        {
+          "name": "@bug-162",
+          "description": "Bug fix work unit BUG-162 - board search dialog: list does not scroll with the mouse wheel"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -2886,7 +2902,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-23T21:52:13.191Z",
+    "lastUpdated": "2026-08-25T05:30:48.298Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -1,6 +1,9 @@
-@UPD-002 @tui @slash-commands @update @high
+@UPD-002
+@tui
+@slash-commands
+@update
+@high
 Feature: In-place self-update via /update TUI command
-
   """
   The /update slash command in the TUI. Mirrors the /continue (CONT-002)
   slash-command pattern: update_parser.rs + slash_parser route +
@@ -33,7 +36,6 @@ Feature: In-place self-update via /update TUI command
   #      the installed binary is unchanged
   #
   # ========================================
-
   Background: User Story
     As a fspec user
     I want to run /update in the TUI to upgrade fspec in place

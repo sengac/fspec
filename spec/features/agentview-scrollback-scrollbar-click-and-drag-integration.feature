@@ -1,6 +1,5 @@
 @TUI-102
 Feature: AgentView scrollback scrollbar click-and-drag integration
-
   """
   AgentView gains scrollbar_drag: ScrollbarDrag field and last_scrollback_total_rows: usize field for geometry caching
   New Action::ScrollbackJumpToOffset(usize) variant added to components/mod.rs Action enum
@@ -26,7 +25,6 @@ Feature: AgentView scrollback scrollbar click-and-drag integration
   #   4. User quickly clicks on the scrollbar thumb without dragging. The scrollback scrolls down by one viewport height.
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to click and drag the scrollback scrollbar

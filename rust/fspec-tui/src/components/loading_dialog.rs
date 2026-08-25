@@ -106,6 +106,7 @@ pub fn render_loading_dialog(area: Rect, buf: &mut Buffer, dialog: &LoadingDialo
         rows,
         footer: "",
         min_width: 40,
+query_row: None,
     };
     render_dialog(area, buf, &spec);
 }

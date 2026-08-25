@@ -280,6 +280,6 @@ fn scenario_install_failure_degrades_gracefully_without_breaking_command_checkin
     );
 
     // @step And no panic or install failure propagates to the caller
-    // (reaching this assertion proves the call returned normally)
-    assert!(true);
+    // (reaching this point proves the call returned normally — the
+    // `result.is_ok()` assertion above already covers it)
 }

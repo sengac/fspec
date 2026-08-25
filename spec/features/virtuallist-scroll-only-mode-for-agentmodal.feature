@@ -166,11 +166,11 @@ Feature: VirtualList scroll-only mode for AgentModal
     When the user presses the down arrow key
     Then the scroll offset should remain at the maximum position
 
+  @item-mode
+  Scenario: Arrow keys move selection in item mode
   # ========================================
   # ITEM MODE SCENARIOS (BACKWARDS COMPATIBILITY)
   # ========================================
-  @item-mode
-  Scenario: Arrow keys move selection in item mode
     Given a VirtualList with default selectionMode
     And the list contains 50 items
     And the first item is selected
@@ -186,11 +186,11 @@ Feature: VirtualList scroll-only mode for AgentModal
     Then individual checkpoints should be selectable
     And the selected checkpoint should be highlighted
 
+  @integration
+  Scenario: AgentModal uses scroll mode for conversation
   # ========================================
   # AGENTMODAL INTEGRATION SCENARIOS
   # ========================================
-  @integration
-  Scenario: AgentModal uses scroll mode for conversation
     Given the AgentModal is open
     And it contains a conversation with multiple messages
     When the user scrolls through the conversation

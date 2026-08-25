@@ -1,6 +1,5 @@
 @TUI-104
 Feature: Sanitize diff output in Changed Files and Checkpoint views
-
   """
   Move sanitize_for_terminal() from store/agent_view/sanitize.rs to a shared location (e.g., utils/sanitize.rs or crate root) so views/diff_common can import it. Apply sanitization inside diff_line() in views/diff_common/diff_render.rs before creating the Span.
   """

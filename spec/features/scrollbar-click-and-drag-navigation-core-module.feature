@@ -1,6 +1,5 @@
 @TUI-101
 Feature: Scrollbar click-and-drag navigation core module
-
   """
   Architecture notes:
   - Pure Rust module in rust/fspec-tui/src/mouse/scrollbar_drag.rs

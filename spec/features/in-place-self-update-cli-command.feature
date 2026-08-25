@@ -1,6 +1,8 @@
-@UPD-002 @cli @update @high
+@UPD-002
+@cli
+@update
+@high
 Feature: In-place self-update via fspec update CLI subcommand
-
   """
   The `fspec update` CLI subcommand. It calls the SAME shared
   codelet-fspec-core::update engine as the TUI `/update` command (rule [0]:
@@ -29,7 +31,6 @@ Feature: In-place self-update via fspec update CLI subcommand
   #      prints a success line naming the new version
   #
   # ========================================
-
   Background: User Story
     As a fspec user
     I want to run `fspec update` to upgrade fspec in place from the CLI

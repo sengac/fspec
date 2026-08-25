@@ -1,7 +1,6 @@
 @done
 @RPC-425
 Feature: Extract shared session creation logic into common helper
-
   """
   create_session_with_id and create_session_from_manifest share ~200 lines of nearly identical code:
   - Provider manager creation

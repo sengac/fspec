@@ -96,6 +96,8 @@ Feature: Generate TAGS.md from tags.json
       - Part of feature management functionality
       """
 
+      ### Example 1: Phase 1 Feature File Creation
+      ### Example 1: Phase 1 Feature File Creation
   Scenario: Tag statistics tables are generated
     Given I have "spec/tags.json" with statistics:
       """json

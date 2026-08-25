@@ -39,8 +39,8 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
     Given Anthropic is configured with OAuth connected and an API key from env
     When I expand the Anthropic provider
     Then I see the following nav items:
-      | item                               |
-      | ✓ OAuth [Claude]                   |
+      | item                              |
+      | ✓ OAuth [Claude]                  |
       | 🔑 Login with Claude (browser)     |
       | 🔑 Login with Claude (headless)    |
       | 🔑 API key ✓ sk-ant-••••Qr7K [env] |
@@ -69,10 +69,10 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
     Given OpenAI API has 2 profiles configured
     When I expand the OpenAI API provider
     Then I see the following nav items:
-      | item                                    |
+      | item                                   |
       | 📁 work-vllm → http://10.0.1.5:8080     |
       | 📁 home-ollama → http://localhost:11434 |
-      | + Create new profile                    |
+      | + Create new profile                   |
     And I do NOT see a "🔑 API key" row
     And the header shows "(2 profiles)"
 

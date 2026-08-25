@@ -294,6 +294,7 @@ impl Component for ExitConfirmationDialog {
             rows: vec![description_row, button_row],
             footer: FOOTER,
             min_width: MIN_WIDTH,
+query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

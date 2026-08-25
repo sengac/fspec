@@ -2,9 +2,7 @@
 @rust
 @agent-view
 @tui
-
 Feature: Agent input newline bindings — Ctrl+J universal fallback with Shift+Enter best-effort
-
   """
   Ctrl+J (Emacs-style) is the universal newline binding — works on every terminal because it uses character codes, not modifier detection. Shift+Enter is best-effort (only on terminals with kitty keyboard enhancement). Alt+Enter is legacy fallback.
   """

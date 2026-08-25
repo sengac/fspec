@@ -96,12 +96,12 @@ Feature: Refactor session-work unit state management
     And fspecStore should NOT have a getCurrentWorkUnitId method
     And fspecStore should still have sessionAttachments for multi-session tracking
 
-  # ========================================
-  # SESSION SERVICE FACADE SCENARIOS
-  # ========================================
   @unit
   @service
   Scenario: destroySession orchestrates all cleanup atomically
+  # ========================================
+  # SESSION SERVICE FACADE SCENARIOS
+  # ========================================
     Given I have an active session "session-123" attached to work unit "TOOL-014"
     When I call destroySession("session-123")
     Then sessionManagerDestroy should be called with "session-123"
@@ -147,12 +147,12 @@ Feature: Refactor session-work unit state management
     And destroySession should be called with "session-123"
     And the worktree changes should NOT be applied to main
 
-  # ========================================
-  # COMPONENT INTEGRATION SCENARIOS
-  # ========================================
   @integration
   @agentview
   Scenario: AgentView uses sessionService facade for all session-work unit lifecycle operations
+  # ========================================
+  # COMPONENT INTEGRATION SCENARIOS
+  # ========================================
     Given I inspect AgentView.tsx imports
     Then AgentView should import from sessionService
     And AgentView should NOT directly import sessionManagerDestroy from codelet-napi

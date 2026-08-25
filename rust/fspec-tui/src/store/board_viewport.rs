@@ -8,7 +8,8 @@
 
 use codelet_rpc_types::WorkUnitInfo;
 
-use super::board::BoardStore;
+use super::board::{column_index, BoardStore};
+use super::COLUMN_ORDER;
 
 impl BoardStore {
     /// RPC-016: read the current `scroll_offset` for `column`. Defaults
@@ -114,6 +115,28 @@ impl BoardStore {
             return;
         }
         adjust_scroll_offset(self, &column, clamped, viewport_height, len);
+    }
+
+    /// BOARD-022: focus the column containing work unit `id` and select
+    /// it (viewport-aware), so a search-dialog pick lands the cursor on
+    /// the target card with the column scrolled so it is visible. No-op
+    /// when the id is not present in the snapshot or its column is empty.
+    pub fn select_work_unit(&mut self, id: &str, viewport_height: usize) {
+        let Some(unit) = self.work_units.iter().find(|u| u.id == id) else {
+            return;
+        };
+        let Some(column) = column_index(&unit.status) else {
+            return;
+        };
+        let column_name = unit.status.clone();
+        self.set_focused_column(COLUMN_ORDER[column]);
+        let Some(indices) = self.by_column.get(&column_name) else {
+            return;
+        };
+        let Some(pos) = indices.iter().position(|i| self.work_units[*i].id == id) else {
+            return;
+        };
+        self.select_index_in_focused(pos, viewport_height);
     }
 }
 

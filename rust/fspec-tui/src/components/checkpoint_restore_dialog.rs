@@ -32,6 +32,7 @@ pub fn render_restore_modal(area: Rect, buf: &mut Buffer, title: &str, body_line
         rows,
         footer: "",
         min_width: 40,
+query_row: None,
     };
     render_dialog(area, buf, &dialog);
 }

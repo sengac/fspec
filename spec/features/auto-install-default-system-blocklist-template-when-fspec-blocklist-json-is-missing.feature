@@ -6,7 +6,6 @@
 @rust
 @BLOCK-012
 Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.json is missing
-
   """
   Template embedded via include_str! of rust/tools/data/default-blocklist.json in a new codelet-tools module (blocklist/template.rs) mirroring the codex_allowlist.rs precedent. Check-then-write lives in middleware.rs::load_blocklist_config (the single chokepoint every check_bash_command/check_file_path/init_blocklist call funnels through): if system_config_path() exists() is false, install_default_system_blocklist() writes the template (create_dir_all on parent) BEFORE the load, so the fresh file is loaded and matched in the same synchronous call. install failures (no HOME, read-only fs) are tracing::warn! and swallowed so checking never breaks. Existing user file is never touched (guarded by !exists()). Because load_blocklist_config hot-reloads on every check, deleting the file mid-session re-triggers install on the next check (idempotent). Tests use a HomeGuard RAII (redirect HOME to a fresh tempdir; on drop restore HOME + clear_session_allowances + init_blocklist(None)) and are #[serial], mirroring blocklist_init_tests.rs (RPC-407).
   """
@@ -30,7 +29,6 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   #   3. User deletes ~/.fspec/blocklist.json mid-session. The next check_bash_command() call re-detects the missing file, re-installs the template, and blocking works again without a process restart
   #
   # ========================================
-
   Background: User Story
     As a developer (or AI agent operator)
     I want to have a default ~/.fspec/blocklist.json auto-installed from the embedded template the first time the blocklist is loaded
@@ -39,7 +37,6 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   # ========================================
   # TEMPLATE EMBEDDING
   # ========================================
-
   Scenario: Embedded template is valid and complete
     Given the codelet-tools crate compiles with the bundled default blocklist template
     When the template is parsed as a BlocklistConfig
@@ -50,7 +47,6 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   # ========================================
   # FIRST-RUN INSTALL
   # ========================================
-
   Scenario: Template is installed and active on first check when no system blocklist exists
     Given a fresh environment where "~/.fspec/blocklist.json" does not exist
     When the AI runs "git stash" via Bash
@@ -68,7 +64,6 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   # ========================================
   # EXISTING FILE SAFETY
   # ========================================
-
   Scenario: Existing user blocklist is never overwritten
     Given a user blocklist at "~/.fspec/blocklist.json" containing a single block rule for pattern "sentinel-block012"
     When the blocklist is loaded
@@ -79,7 +74,6 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   # ========================================
   # IDEMPOTENT RE-INSTALL
   # ========================================
-
   Scenario: Deleted system blocklist is re-installed on the next check
     Given a fresh environment where the first check already installed "~/.fspec/blocklist.json"
     When the system blocklist file is deleted
@@ -90,7 +84,6 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   # ========================================
   # GRACEFUL DEGRADATION
   # ========================================
-
   Scenario: Install failure degrades gracefully without breaking command checking
     Given a fresh environment where "~/.fspec" exists as a regular file so the template write fails
     When the AI runs "echo hello" via Bash

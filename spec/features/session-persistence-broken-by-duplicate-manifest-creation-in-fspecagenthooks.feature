@@ -1,7 +1,6 @@
 @done
 @RPC-423
 Feature: Session persistence broken by duplicate manifest creation in FspecAgentHooks
-
   """
   Remove the duplicate manifest creation block (lines 44-92) from FspecAgentHooks::spawn_agent_loop.
   The manifest is already created by SessionManager::create_session_with_id at line 571 before

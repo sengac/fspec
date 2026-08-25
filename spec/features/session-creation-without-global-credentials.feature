@@ -5,7 +5,6 @@
 @bug
 @PROV-141
 Feature: Session creation fails on Linux when default model is a profile model and no global provider credentials exist
-
   """
   Fix location: rust/providers/src/manager.rs ProviderManager::with_model_support() (lines ~398-436). Remove the `if !credentials.has_any() { return Err(...) }` block. The credentials snapshot is still taken and stored (select_model re-detects on each call anyway). deferred_placeholder_provider already handles the no-credentials case (falls back to OpenAI placeholder). Session creation paths (create_session_with_id, create_session_from_manifest, create_isolated_session_with_id) all construct via with_model_support() then apply the explicit model via apply_model_selection / select_model / set_model_direct — per-model credential validation is preserved there.
   """
@@ -25,7 +24,6 @@ Feature: Session creation fails on Linux when default model is a profile model a
   #   3. On the credential-less machine, the user sets their default model to a codex model (codex/gpt-5). Starting a session succeeds — codex models resolve their own credentials and never needed a global API key at manager construction.
   #
   # ========================================
-
   Background: User Story
     As a developer on a machine with no global provider credentials
     I want to create a session whose default model is a local-server profile model

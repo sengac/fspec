@@ -7,7 +7,6 @@
 @ui-enhancement
 @BOARD-021
 Feature: Display fspec version under the board logo
-
   """
   Implementation lives in rust/fspec-tui/src/views/board/logo.rs: the 4th entry of LOGO_ROWS becomes format!("v{}", env!("CARGO_PKG_VERSION")) and render() gains a theme parameter so the version row paints with theme.dim while the glyph rows keep Style::default(). Call site is views/board/header.rs (logo::render(left, buf, theme)).
   """
@@ -27,7 +26,6 @@ Feature: Display fspec version under the board logo
   #   2. With workspace version 0.10.3, the board header's 4th logo row contains the substring 'v0.10.3' while rows 1-3 still show the '┏┓┏┓┏┓┏┓┏┓' / '┣ ┗┓┃┃┣ ┃' / '┻ ┗┛┣┛┗┛┗┛' glyphs.
   #
   # ========================================
-
   Background: User Story
     As a developer using the fspec TUI
     I want to see the installed fspec build version in the board header

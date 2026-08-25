@@ -72,12 +72,12 @@ Feature: Provider Configuration Persistence and TUI Display
     When I load profiles for "anthropic"
     Then I should receive an empty object
 
-  # ============================================
-  # /PROVIDER SCREEN - PROFILE MANAGEMENT
-  # ============================================
   @provider-screen
   @crud
   Scenario: View list of profiles for a provider
+  # ============================================
+  # /PROVIDER SCREEN - PROFILE MANAGEMENT
+  # ============================================
     Given I have profiles "work-vllm" and "home-ollama" configured for "openai" provider
     When I run the "/provider" command
     And I select the "openai" provider
@@ -120,12 +120,12 @@ Feature: Provider Configuration Persistence and TUI Display
     Then the config file should not contain "providers.openai.profiles.home-ollama"
     And the profile should no longer appear in /model selector
 
-  # ============================================
-  # PROFILE CONFIG STRUCTURE
-  # ============================================
   @config
   @structure
   Scenario: Profile config structure
+  # ============================================
+  # PROFILE CONFIG STRUCTURE
+  # ============================================
     Given I create a profile for "openai" provider
     Then the config file structure should be:
       | path                                        | type   | description                    |
@@ -135,12 +135,12 @@ Feature: Provider Configuration Persistence and TUI Display
       | providers.openai.profiles.*.contextWindow   | number | Context window size (optional) |
       | providers.openai.profiles.*.maxOutputTokens | number | Max output tokens (optional)   |
 
-  # ============================================
-  # INTEGRATION
-  # ============================================
   @integration
   @rust
   Scenario: Profile settings flow through to Rust provider
+  # ============================================
+  # INTEGRATION
+  # ============================================
     Given I have a profile "work-vllm" configured for "openai" provider:
       | setting         | value            |
       | baseUrl         | http://work:8888 |

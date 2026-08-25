@@ -1,7 +1,6 @@
 @done
 @TUI-100
 Feature: Sanitize bash tool output before TUI rendering to prevent terminal trashing
-
   """
   Create a new module `sanitize.rs` in `rust/fspec-tui/src/store/agent_view/` with a `sanitize_for_terminal(text: &str) -> String` function that mirrors TypeScript's `sanitizeForTerminal()` from `stringWidth.ts`. Uses regex for ANSI stripping and char filtering for control characters.
   """
@@ -26,7 +25,6 @@ Feature: Sanitize bash tool output before TUI rendering to prevent terminal tras
   #   4. Command `echo 'hello\tworld'` outputs a tab character; after sanitization the tab is replaced with two spaces
   #
   # ========================================
-
   Background: User Story
     As a user running the Rust TUI
     I want to execute bash commands that emit ANSI escape sequences

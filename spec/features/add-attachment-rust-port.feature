@@ -146,4 +146,3 @@ Feature: Port add-attachment command to Rust
     Then the command should fail with an "already exists" error
     And the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
     And the work unit's registered attachments must be unchanged on disk
-

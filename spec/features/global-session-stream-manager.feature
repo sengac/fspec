@@ -57,43 +57,43 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
     Then the fspec command in Session A should complete successfully
     And Session A should not deadlock
 
+  @integration
+  Scenario: Multiple detached sessions can invoke fspec tools concurrently
   # ===========================================
   # Scenario 2: Multiple concurrent fspec invocations
   # ===========================================
-  @integration
-  Scenario: Multiple detached sessions can invoke fspec tools concurrently
     Given I have 3 detached sessions running agents
     And each session sends a message invoking the fspec tool
     When I am viewing the BoardView
     Then all 3 fspec commands should complete successfully
     And no sessions should deadlock
 
+  @unit
+  Scenario: GlobalSessionStreamManager subscribes to new sessions automatically
   # ===========================================
   # Scenario 3: Auto-subscription on session creation
   # ===========================================
-  @unit
-  Scenario: GlobalSessionStreamManager subscribes to new sessions automatically
     Given the GlobalSessionStreamManager is initialized
     When a new session is created
     Then the GlobalSessionStreamManager should subscribe to the new session
     And the session should be tracked in the subscriptions map
 
+  @unit
+  Scenario: GlobalSessionStreamManager unsubscribes when session is destroyed
   # ===========================================
   # Scenario 4: Auto-unsubscription on session destruction
   # ===========================================
-  @unit
-  Scenario: GlobalSessionStreamManager unsubscribes when session is destroyed
     Given the GlobalSessionStreamManager is initialized
     And a session exists with an active subscription
     When the session is destroyed
     Then the GlobalSessionStreamManager should unsubscribe from the session
     And the session should be removed from the subscriptions map
 
+  @unit
+  Scenario: AgentView receives UI chunks but not FspecCommandRequest
   # ===========================================
   # Scenario 5: AgentView receives only UI events
   # ===========================================
-  @unit
-  Scenario: AgentView receives UI chunks but not FspecCommandRequest
     Given the GlobalSessionStreamManager is handling events for a session
     And AgentView is displaying that session
     When the session emits a Text chunk
@@ -102,11 +102,11 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
     Then AgentView should NOT receive the FspecCommandRequest chunk
     And the GlobalSessionStreamManager should handle the FspecCommandRequest
 
+  @unit
+  Scenario: Tests use real NAPI bindings without mocks
   # ===========================================
   # Scenario 6: Tests use real NAPI bindings without mocks
   # ===========================================
-  @unit
-  Scenario: Tests use real NAPI bindings without mocks
     Given the test environment using universal-test-setup.ts for temp directories
     When a test creates a session via persistenceCreateSessionWithProvider
     And subscribes to it via GlobalSessionStreamManager

@@ -6,7 +6,6 @@
 @tokens
 @TOKEN-003
 Feature: SessionHeader reasoning (🧠) tokens do not accumulate — each API usage overwrites the last value
-
   """
   Fix is backend-only (TUI last-value mirror is correct per RPC-099 and must not change). StreamingTokenDisplay (rust/core/src/streaming_display/streaming_token_display.rs) gains a reasoning cumulative structure mirroring OutputTokenTracker: reasoning_cumulative_base + current-segment reasoning; start_new_segment() accumulates the previous segment's reasoning into the base. Constructors gain a prev_reasoning seed (threaded from session.token_tracker.reasoning_tokens at the 6 from_cache_inclusive_total sites in stream_loop.rs and 2 sites in gemini_continuation.rs). End-of-turn updates (stream_loop.rs ~2252, gemini_continuation.rs update_token_tracker) carry final_display.reasoning_tokens into ApiTokenUsage via with_reasoning_tokens so session.token_tracker.reasoning_tokens holds the session cumulative. TokenTracker::reset_after_compaction() keeps the cumulative reasoning (session-spend metric). Persistence: add reasoning_tokens to manifest TokenUsage (rust/core/src/persistence/manifest.rs:44) and extend persist_token_state/update_session_tokens/set_session_tokens in both rust/agent-loop/src/persist.rs and rust/napi/src/persist.rs; restore on /resume. Compaction threshold math is unchanged (uses current-segment physical context).
   """
@@ -33,7 +32,6 @@ Feature: SessionHeader reasoning (🧠) tokens do not accumulate — each API us
   #   2. Estimating reasoning tokens from ReasoningDelta text for Anthropic/Gemini (where the API folds thinking tokens into output_tokens) is OUT OF SCOPE for this card — it becomes a separate follow-up work unit
   #
   # ========================================
-
   Background: User Story
     As a developer using extended-thinking models
     I want to see a session-cumulative reasoning (🧠) token counter in the SessionHeader that accumulates across API segments and turns

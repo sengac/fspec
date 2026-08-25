@@ -86,12 +86,12 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     And trigger test job after build succeeds
     And trigger publish job after test succeeds
 
-  # ============================================================
-  # BUILD JOB SCENARIOS
-  # ============================================================
   @build
   @native
   Scenario: Native builds for x64 platforms
+  # ============================================================
+  # BUILD JOB SCENARIOS
+  # ============================================================
     Given the build job runs with matrix strategy
     When building for x86_64-apple-darwin
     Then it should run on macos-13 runner
@@ -135,24 +135,24 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     Then it should compile using the patched rig-core
     And the build should succeed
 
-  # ============================================================
-  # TEST JOB SCENARIOS
-  # ============================================================
   @test
   @smoke
   Scenario: Smoke test verifies binary loads correctly
+  # ============================================================
+  # TEST JOB SCENARIOS
+  # ============================================================
     Given the test job downloads build artifacts
     And Node.js 20 is installed
     When running a smoke test that imports codelet-napi
     Then the BackgroundSession class should be accessible
     And no native module loading errors should occur
 
-  # ============================================================
-  # PUBLISH JOB SCENARIOS
-  # ============================================================
   @publish
   @npm
   Scenario: Publish generates platform-specific packages
+  # ============================================================
+  # PUBLISH JOB SCENARIOS
+  # ============================================================
     Given all 6 build artifacts are downloaded
     And NPM_TOKEN secret is configured
     When the publish job runs "napi prepublish -t npm"
@@ -174,12 +174,12 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     Then optionalDependencies should include all 6 platform packages
     And each platform package should have the same version
 
-  # ============================================================
-  # END-USER EXPERIENCE SCENARIOS (Acceptance Criteria)
-  # ============================================================
   @acceptance
   @install
   Scenario Outline: Users on any platform get correct binary automatically
+  # ============================================================
+  # END-USER EXPERIENCE SCENARIOS (Acceptance Criteria)
+  # ============================================================
     Given @sengac/codelet-napi is published to npm with all platform packages
     And I am on a <platform> system
     When I run "npm install -g @sengac/fspec"

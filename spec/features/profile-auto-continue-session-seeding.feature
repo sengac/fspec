@@ -4,7 +4,6 @@
 @session
 @providers
 Feature: Per-profile autoContinue session seeding
-
   """
   When a session is created against a profile model
   (openai:<profile>/<model>), the session's auto-continue state is seeded

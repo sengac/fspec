@@ -58,11 +58,11 @@ Feature: Session Header Work Unit Status Display
     Then AgentView should call sessionStore setCurrentWorkUnit with those values
     And SessionHeader should re-render with the new values
 
+  @unit
+  Scenario: BoardView has singleton file watcher for work-units.json
   # ----------------------------------------
   # Singleton File Watcher
   # ----------------------------------------
-  @unit
-  Scenario: BoardView has singleton file watcher for work-units.json
     Given BoardView is rendered
     Then it should start the Rust file watcher for spec/work-units.json
     And the watcher should call fspecStore loadData on file changes
@@ -74,11 +74,11 @@ Feature: Session Header Work Unit Status Display
     And AgentView should NOT create any file watchers
     And there should be exactly ONE watcher for work-units.json total
 
+  @integration
+  Scenario: Status change via fspec command updates header in realtime
   # ----------------------------------------
   # Integration Scenarios
   # ----------------------------------------
-  @integration
-  Scenario: Status change via fspec command updates header in realtime
     Given I am in AgentView with session #1
     And work unit "TUI-060" with status "specifying" is attached
     And the header displays "#1 (TUI-060: specifying): claude-sonnet-4"

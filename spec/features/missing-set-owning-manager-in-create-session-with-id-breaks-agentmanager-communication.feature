@@ -1,6 +1,5 @@
 @BUG-154
 Feature: Missing set_owning_manager in create_session_with_id breaks AgentManager communication
-
   """
   The fix adds session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default()) call in SessionManager::create_session_with_id() after create_background_session_inner() returns, mirroring the existing call in create_session_from_manifest(). This ensures the AgentManager handler registered by register_agent_manager_handler() captures a non-None owning manager reference, enabling correct session lookup for spawn/list/close/message operations.
   """
@@ -20,7 +19,6 @@ Feature: Missing set_owning_manager in create_session_with_id breaks AgentManage
   #   3. When session_creation_helper returns a session, the caller (create_session_with_id) must call set_owning_manager before inserting the session into the sessions map
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI session manager
     I want to ensure set_owning_manager is called in create_session_with_id

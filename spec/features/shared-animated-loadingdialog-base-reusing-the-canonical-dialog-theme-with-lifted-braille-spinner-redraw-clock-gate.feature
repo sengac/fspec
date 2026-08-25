@@ -3,7 +3,6 @@
 @done
 @TUI-106
 Feature: Shared animated LoadingDialog base reusing the canonical dialog_theme with lifted braille spinner + redraw-clock gate
-
   """
   UI/UX:
   - UI/UX: The loading indicator MUST be a dialog that extends the shared base dialog used by every other dialog in the program: components/dialog_theme.rs (RPC-027) FspecDialog + render_dialog — the rounded/black/accent visual contract. The LoadingDialog type builds a FspecDialog (Accent::Cyan, title, spinner row, optional '(idx/total)' counter row) and delegates pixel paint to render_dialog — the same way components/status_dialog.rs and components/checkpoint_restore_dialog.rs already do.
@@ -33,7 +32,6 @@ Feature: Shared animated LoadingDialog base reusing the canonical dialog_theme w
   #   3. While the mode-view reports loading, the run loop redraws every tick even with no input event; when the last stage flushes the clock goes idle again
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user on the board
     I want the open lazy mode-view (Checkpoints/Changed Files) to report clearly — via one shared loading dialog base — that it is loading, which stage of the cascade is running, and to animate while it does

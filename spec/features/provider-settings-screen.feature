@@ -107,12 +107,12 @@ Feature: Create ProviderSettingsScreen component
     When the user presses the "r" key
     Then the providers are reloaded
 
-  # ========================================
-  # DELETE CONFIRMATION MODE
-  # ========================================
   @keyboard
   @delete-mode
   Scenario: Confirm profile deletion with y key
+  # ========================================
+  # DELETE CONFIRMATION MODE
+  # ========================================
     Given ProviderSettingsScreen is in delete-profile mode for profile "my-server"
     When the user presses the "y" key
     Then removeProfile is called with the profile name
@@ -126,12 +126,12 @@ Feature: Create ProviderSettingsScreen component
     Then removeProfile is NOT called
     And mode returns to list
 
-  # ========================================
-  # API KEY EDIT MODE
-  # ========================================
   @keyboard
   @api-key-mode
   Scenario: Save API key with Enter
+  # ========================================
+  # API KEY EDIT MODE
+  # ========================================
     Given ProviderSettingsScreen is in edit-api-key mode
     And the editing API key is "sk-12345"
     When the user presses the Enter key
@@ -147,12 +147,12 @@ Feature: Create ProviderSettingsScreen component
     Then saveApiKey is NOT called
     And mode returns to list
 
-  # ========================================
-  # PROFILE FORM MODE
-  # ========================================
   @keyboard
   @profile-form-mode
   Scenario: Navigate to next field with Down arrow
+  # ========================================
+  # PROFILE FORM MODE
+  # ========================================
     Given ProviderSettingsScreen is in create-profile mode
     And formFieldIndex is 0
     When the user presses the Down arrow key
@@ -166,12 +166,12 @@ Feature: Create ProviderSettingsScreen component
     Then saveProfileConfig is NOT called
     And mode returns to list
 
-  # ========================================
-  # FILTER MODE
-  # ========================================
   @keyboard
   @filter-mode
   Scenario: Exit filter mode keeping filter with Enter
+  # ========================================
+  # FILTER MODE
+  # ========================================
     Given ProviderSettingsScreen is in filter mode
     And the filter is "anth"
     When the user presses the Enter key
@@ -187,11 +187,11 @@ Feature: Create ProviderSettingsScreen component
     Then isFilterMode becomes false
     And the filter is cleared
 
+  @structure
+  Scenario: ProviderSettingsScreen uses useProviderSettingsState hook
   # ========================================
   # COMPONENT STRUCTURE
   # ========================================
-  @structure
-  Scenario: ProviderSettingsScreen uses useProviderSettingsState hook
     Given ProviderSettingsScreen component is implemented
     Then it uses the useProviderSettingsState hook for state management
     And it does NOT declare its own provider/navigation state

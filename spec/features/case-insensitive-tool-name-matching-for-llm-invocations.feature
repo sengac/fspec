@@ -1,6 +1,5 @@
 @TOOL-021
 Feature: Case-insensitive tool name matching for LLM invocations
-
   """
   Architecture notes:
   - ToolSet normalizes all tool names to lowercase in the HashMap key. ToolServer normalizes names for CallTool and RemoveTool messages.

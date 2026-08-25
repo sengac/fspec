@@ -41,13 +41,13 @@ Feature: Cross-platform release pipeline (v0.10.0) via GitHub Actions
     I want to get a prebuilt fspec binary from GitHub Releases
     So that install without building from source
 
-    Scenario: Workspace version is bumped to 0.10.1
+  Scenario: Workspace version is bumped to 0.10.1
     Given the workspace is at version 0.1.0
     When the version bump for v0.10.1 is applied
     Then rust/Cargo.toml [workspace.package] version is 0.10.1
     And Cargo.lock reports 0.10.1 for all member crates
 
-    Scenario: Release workflow builds all five targets
+  Scenario: Release workflow builds all five targets
     Given a git tag matching v* is pushed
     When the release workflow runs
     Then one build job runs per target (win x86_64, win arm64, linux x86_64, linux arm64, mac arm64)
@@ -56,33 +56,33 @@ Feature: Cross-platform release pipeline (v0.10.0) via GitHub Actions
     And the macOS target is built natively on macos-latest
     And every build uses the release-slim profile and the pinned 1.95.0 toolchain
 
-    Scenario: Linux binary runs on old glibc distros
+  Scenario: Linux binary runs on old glibc distros
     Given the fspec-x86_64-unknown-linux-gnu release asset is downloaded
     When the binary is run on a system with glibc 2.17
     Then it runs without "version GLIBC_2.39 not found" or similar symbol version errors
 
-    Scenario: Windows archive is a valid zip
+  Scenario: Windows archive is a valid zip
     Given the fspec-x86_64-pc-windows-msvc release asset is downloaded
     When unzip -t is run on the archive
     Then it reports no errors and contains fspec.exe
 
-    Scenario: Release is published with self-updater-compatible assets
+  Scenario: Release is published with self-updater-compatible assets
     Given all five build jobs succeeded
     When the release job completes
     Then a GitHub Release exists with exactly five assets
     And Windows assets are named fspec-<target>.zip and unix assets fspec-<target>.tar.gz
 
-    Scenario: Release job is blocked when any build fails
+  Scenario: Release job is blocked when any build fails
     Given one of the five build jobs fails
     When the workflow reaches the release stage
     Then no GitHub Release is created or updated
 
-    Scenario: Release binary reports the new version
+  Scenario: Release binary reports the new version
     Given the mac aarch64 release binary is extracted
     When fspec --version is run
     Then it prints fspec 0.10.1
 
-    Scenario: Windows ARM64 user runs the prebuilt binary
+  Scenario: Windows ARM64 user runs the prebuilt binary
     Given a user on Windows ARM64 downloads fspec-aarch64-pc-windows-msvc.zip
     When they extract and run fspec.exe
     Then it works without installing a Rust toolchain

@@ -83,12 +83,12 @@ Feature: Anthropic OAuth parity with opencode behavior
     Then the provider should report OAuth mode for cost zeroing
     And API key mode providers should not be flagged for cost zeroing
 
-  # ==========================================================================
-  # REGRESSION SCENARIOS — Token refresh and credential fallback
-  # ==========================================================================
   @regression
   @token-refresh
   Scenario: Tokens loaded from disk force immediate refresh on first API call
+  # ==========================================================================
+  # REGRESSION SCENARIOS — Token refresh and credential fallback
+  # ==========================================================================
     Given claude_auth.json contains week-old tokens with expired access_token
     When the provider creates a RefreshingClaudeClient from disk tokens
     Then expires_in_secs should be Some(0) to force immediate refresh

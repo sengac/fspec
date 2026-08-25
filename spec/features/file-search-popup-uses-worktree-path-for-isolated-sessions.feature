@@ -66,12 +66,12 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
     Then the file search popup should show "package.json"
     And the search results should reflect the worktree's current state
 
-  # ========================================
-  # NON-ISOLATED SESSION SCENARIOS
-  # ========================================
   @non-isolated
   @file-search
   Scenario: File search in non-isolated session searches project root
+  # ========================================
+  # NON-ISOLATED SESSION SCENARIOS
+  # ========================================
     Given I have an active non-isolated session "def-456"
     And sessionGetEffectiveCwd("def-456") returns the project root path
     And "src/config.ts" exists in the project root
@@ -79,12 +79,12 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
     Then the file search popup should show "src/config.ts"
     And the glob search should have used the project root path
 
-  # ========================================
-  # FALLBACK SCENARIOS
-  # ========================================
   @no-session
   @file-search
   Scenario: File search before session creation uses project root fallback
+  # ========================================
+  # FALLBACK SCENARIOS
+  # ========================================
     Given no session has been created yet
     And sessionId is null
     And "README.md" exists in the project root

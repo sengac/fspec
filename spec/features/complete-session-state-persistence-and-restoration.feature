@@ -196,13 +196,13 @@ Feature: Complete Session State Persistence and Restoration
     When the session is saved and restored
     Then the restored message stop_reason equals "max_tokens"
 
+  @content-type
+  @text
+  Scenario: Text content persisted and restored
   # ==========================================================================
   # CONTENT TYPE PERSISTENCE
   # Each content type from rig::message must be persisted and restored
   # ==========================================================================
-  @content-type
-  @text
-  Scenario: Text content persisted and restored
     Given a session with an assistant message containing text "Hello, world"
     When the session is saved and restored
     Then the restored message has content type "text"
@@ -366,13 +366,13 @@ Feature: Complete Session State Persistence and Restoration
     And the restored document source type equals "url"
     And the restored document url equals "https://example.com/report.pdf"
 
+  @structure
+  @multi-part
+  Scenario: Multi-part assistant message preserves structure and order
   # ==========================================================================
   # STRUCTURE PRESERVATION
   # Multi-part messages and ordering must be preserved
   # ==========================================================================
-  @structure
-  @multi-part
-  Scenario: Multi-part assistant message preserves structure and order
     Given a session with an assistant message containing:
       | index | type     | summary                    |
       | 0     | text     | Let me check that file...  |
@@ -417,13 +417,13 @@ Feature: Complete Session State Persistence and Restoration
     And message 1 has role "assistant"
     And the message sequence alternates user-assistant
 
+  @blob
+  @threshold
+  Scenario: Content above 10KB threshold stored in blob
   # ==========================================================================
   # BLOB STORAGE
   # Large content uses content-addressed storage with deduplication
   # ==========================================================================
-  @blob
-  @threshold
-  Scenario: Content above 10KB threshold stored in blob
     Given a session with a tool result containing 15000 bytes of content
     When the session is saved
     Then the content is stored in blob storage
@@ -455,13 +455,13 @@ Feature: Complete Session State Persistence and Restoration
     Then the blob content is retrieved from storage
     And the restored tool result content matches the original
 
+  @state
+  @tokens
+  Scenario: Aggregate token tracker state restored
   # ==========================================================================
   # SESSION STATE RESTORATION
   # Token tracking and turn boundaries for compaction
   # ==========================================================================
-  @state
-  @tokens
-  Scenario: Aggregate token tracker state restored
     Given a session with cumulative token usage:
       | field                       | value  |
       | input_tokens                | 150000 |
@@ -509,13 +509,13 @@ Feature: Complete Session State Persistence and Restoration
     And compaction summarizes the oldest turns
     And recent turns are preserved verbatim
 
+  @equivalence
+  @critical
+  Scenario: Restored session indistinguishable from continuous session
   # ==========================================================================
   # FUNCTIONAL EQUIVALENCE
   # Restored sessions must behave identically to continuous sessions
   # ==========================================================================
-  @equivalence
-  @critical
-  Scenario: Restored session indistinguishable from continuous session
     Given two sessions with identical initial prompts
     And session A continues without interruption for 3 turns
     And session B is saved after 3 turns and restored
@@ -534,13 +534,13 @@ Feature: Complete Session State Persistence and Restoration
     Then the restored session contains the full tool result with host=localhost
     And the follow-up can be answered without re-reading the file
 
+  @edge-case
+  @empty
+  Scenario: Session with only text messages (no tools)
   # ==========================================================================
   # EDGE CASES
   # Boundary conditions and error handling
   # ==========================================================================
-  @edge-case
-  @empty
-  Scenario: Session with only text messages (no tools)
     Given a session with 3 text-only exchanges
     And no tool uses or results
     When the session is saved and restored

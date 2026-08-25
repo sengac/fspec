@@ -3,7 +3,6 @@
 @resume
 @session-display
 Feature: Resume view rich session display
-
   """
   Architecture notes:
   - Add updated_at_ms: Option<i64> to SessionInfo in rust/rpc-types/src/lib.rs

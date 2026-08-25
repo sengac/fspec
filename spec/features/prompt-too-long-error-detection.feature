@@ -52,11 +52,11 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
     When the error is checked by is_prompt_too_long_error
     Then the function should return false
 
+  @integration
+  Scenario: Prompt too long with zero conversation turns does not trigger compaction
   # ========================================
   # Bug Fix 2: Empty Turn History Guard
   # ========================================
-  @integration
-  Scenario: Prompt too long with zero conversation turns does not trigger compaction
     Given a session with only system prompt messages
     And the session has zero user/assistant conversation turns
     When an API error "prompt is too long" is received
@@ -73,11 +73,11 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
     And compaction should be triggered
     And the context should be reduced
 
+  @unit
+  Scenario: Actual prompt too long error is correctly detected
   # ========================================
   # Regression: Ensure legitimate errors still detected
   # ========================================
-  @unit
-  Scenario: Actual prompt too long error is correctly detected
     Given an error message "prompt is too long"
     When the error is checked by is_prompt_too_long_error
     Then the function should return true
@@ -108,20 +108,20 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
     When the error is checked by is_prompt_too_long_error
     Then the function should return true
 
+  @unit
+  Scenario: Error message with both budget_tokens and context_length is NOT classified as prompt-too-long
   # ========================================
   # Edge Cases
   # ========================================
-  @unit
-  Scenario: Error message with both budget_tokens and context_length is NOT classified as prompt-too-long
     Given an error message containing "invalid_request_error"
     And the error message contains "budget_tokens"
     And the error message contains "context_length"
     When the error is checked by is_prompt_too_long_error
     Then the function should return false
 
-    # budget_tokens exclusion takes precedence
   @integration
   Scenario: Configuration error propagates to user with clear message
+    # budget_tokens exclusion takes precedence
     Given a session with any number of conversation turns
     When an API error "max_tokens must be greater than thinking.budget_tokens" is received
     Then the error should NOT be classified as prompt-too-long

@@ -1,0 +1,357 @@
+{
+  "scenarios": [
+    {
+      "name": "A result row shows the id followed by a title snippet",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs",
+          "lines": "88-111",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "In Description mode the snippet is the unit description",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs",
+          "lines": "114-142",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_filter.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A unit without a description falls back to the title as snippet",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs",
+          "lines": "145-168",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_filter.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A long title is truncated with a trailing ellipsis and the frame stays fixed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs",
+          "lines": "171-210",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The selected row snippet is not dimmed but unselected rows are",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs",
+          "lines": "211-249",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The match order and selection math are unchanged by the richer matches",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs",
+          "lines": "250-285",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_filter.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug160_search_dialog_snippet.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/work_unit_search_rows.rs",
+      "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+      "rust/fspec-tui/src/components/work_unit_search_filter.rs",
+      "rust/fspec-tui/src/components/dialog_theme_rows.rs"
+    ],
+    "totalLinesCovered": 419
+  }
+}

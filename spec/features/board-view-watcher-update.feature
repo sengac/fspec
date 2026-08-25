@@ -62,12 +62,12 @@ Feature: BoardView does not fully update when work-units.json changes — global
     And the file watcher triggers a WorkUnitsUpdate event
     Then the backlog column should show "AUTH-002" at position 1 and "AUTH-001" at position 2
 
-  # ========================================
-  # GAP 2: stateHistory for last-changed indicator
-  # ========================================
   @bug-fix
   @regression
   Scenario: Last-changed indicator updates when status changes externally
+  # ========================================
+  # GAP 2: stateHistory for last-changed indicator
+  # ========================================
     Given the TUI board is open with work units loaded
     And the last-changed indicator is showing on "AUTH-002"
     When an external process changes the status of "AUTH-001" to specifying
@@ -75,60 +75,60 @@ Feature: BoardView does not fully update when work-units.json changes — global
     And the file watcher triggers a WorkUnitsUpdate event
     Then the last-changed indicator should move to "AUTH-001"
 
-  # ========================================
-  # GAP 3: Attachments visible after external change
-  # ========================================
   @bug-fix
   @regression
   Scenario: Attachment added externally appears in details panel
+  # ========================================
+  # GAP 3: Attachments visible after external change
+  # ========================================
     Given the TUI board is open with work units loaded
     And work unit "TOOL-014" has no attachments
     When an external process adds an attachment to "TOOL-014"
     And the file watcher triggers a WorkUnitsUpdate event
     Then the details panel for "TOOL-014" should show the attachment
 
-  # ========================================
-  # GAP 4: Deleted work units removed
-  # ========================================
   @bug-fix
   @regression
   Scenario: Deleted work unit disappears from the board
+  # ========================================
+  # GAP 4: Deleted work units removed
+  # ========================================
     Given the TUI board is open with work units loaded
     And "AUTH-003" is visible in the backlog column
     When an external process deletes "AUTH-003" from work-units.json
     And the file watcher triggers a WorkUnitsUpdate event
     Then "AUTH-003" should no longer appear on the board
 
-  # ========================================
-  # GAP 6: loadData called instead of updateWorkUnitsFromWatcher
-  # ========================================
   @bug-fix
   @regression
   @unit
   Scenario: globalStreamListener calls loadData on WorkUnitsUpdate event
+  # ========================================
+  # GAP 6: loadData called instead of updateWorkUnitsFromWatcher
+  # ========================================
     Given the globalStreamListener is initialized
     When a WorkUnitsUpdate stream chunk is received
     Then loadData should be called on fspecStore
     And updateWorkUnitsFromWatcher should NOT be called
 
-  # ========================================
-  # GAP 7: Watcher event used only as signal
-  # ========================================
   @bug-fix
   @regression
   @unit
   Scenario: Watcher event chunk data is not used for store updates
+  # ========================================
+  # GAP 7: Watcher event used only as signal
+  # ========================================
     Given the globalStreamListener is initialized
     When a WorkUnitsUpdate stream chunk is received with partial work unit data
     Then the store should be updated from the full file re-read via loadData
     And the chunk.workUnits data should not be passed to any store update function
 
-  # ========================================
-  # GAP 8: Session context cleared for deleted work unit
-  # ========================================
   @bug-fix
   @regression
   Scenario: Session context cleared when attached work unit is deleted externally
+  # ========================================
+  # GAP 8: Session context cleared for deleted work unit
+  # ========================================
     Given the TUI board is open with work units loaded
     And a session is attached to work unit "TOOL-014"
     And sessionStore.currentWorkUnitId is "TOOL-014"
@@ -138,12 +138,12 @@ Feature: BoardView does not fully update when work-units.json changes — global
     And sessionStore.currentWorkUnitId should be null
     And sessionStore.currentWorkUnitStatus should be null
 
-  # ========================================
-  # Session header status sync still works
-  # ========================================
   @bug-fix
   @regression
   Scenario: Session header status syncs from store data after watcher reload
+  # ========================================
+  # Session header status sync still works
+  # ========================================
     Given the TUI board is open with work units loaded
     And a session is attached to work unit "AUTH-001"
     And sessionStore.currentWorkUnitStatus is "backlog"
@@ -152,12 +152,12 @@ Feature: BoardView does not fully update when work-units.json changes — global
     Then sessionStore.currentWorkUnitStatus should be "implementing"
     And the status should be read from the store's reloaded data not from chunk.workUnits
 
-  # ========================================
-  # New work unit appears correctly
-  # ========================================
   @bug-fix
   @regression
   Scenario: New work unit created externally appears on the board
+  # ========================================
+  # New work unit appears correctly
+  # ========================================
     Given the TUI board is open with work units loaded
     And "INFRA-001" does not exist on the board
     When an external process creates "INFRA-001" with status "backlog"

@@ -246,6 +246,7 @@ impl Component for StatusDialog {
                     rows,
                     footer: "",
                     min_width: 50,
+query_row: None,
                 };
                 render_dialog(area, buf, &dialog);
             }
@@ -263,6 +264,7 @@ impl Component for StatusDialog {
                     }],
                     footer: &footer_buf,
                     min_width: 50,
+query_row: None,
                 };
                 render_dialog(area, buf, &dialog);
                 // Repaint title row to GREEN (border stays Cyan).
@@ -281,6 +283,7 @@ impl Component for StatusDialog {
                     rows,
                     footer: "Press ESC to dismiss",
                     min_width: 50,
+query_row: None,
                 };
                 render_dialog(area, buf, &dialog);
             }

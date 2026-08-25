@@ -1,6 +1,5 @@
 @TOOL-020
 Feature: Replace positional `_` args with named keys in fspec tool guidance
-
   """
   This is a documentation-only change to rust/tools/src/fspec_workflow_guidance.rs - no Rust code changes needed
   """
@@ -19,7 +18,6 @@ Feature: Replace positional `_` args with named keys in fspec tool guidance
   #   2. Before: args: {"_": ["AUTH", "User Login"]} for create-story → After: args: {"prefix": "AUTH", "title": "User Login"}
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to call fspec commands with named keys instead of positional args

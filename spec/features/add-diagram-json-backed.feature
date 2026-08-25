@@ -67,6 +67,8 @@ Feature: Add Diagram to JSON-Backed Foundation
         A-->B
       ```
       """
+      ### New System Flow
+      ### New System Flow
     And the output should display "✓ Added diagram 'New System Flow' to 'Architecture Diagrams'"
     And the output should display "✓ Regenerated spec/FOUNDATION.md"
 

@@ -71,11 +71,11 @@ Feature: Orphan Detection and Pruning
     When I check if "session-4" is orphaned
     Then the session should NOT be detected as orphaned
 
+  @prune
+  Scenario: Prune all orphaned worktrees
   # ===========================================
   # PRUNE SCENARIOS
   # ===========================================
-  @prune
-  Scenario: Prune all orphaned worktrees
     Given a git repository with 3 isolated session worktrees
     And all 3 sessions have no manifest files
     And none of the sessions are active

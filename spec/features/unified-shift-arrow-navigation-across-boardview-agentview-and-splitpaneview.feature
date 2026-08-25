@@ -96,11 +96,11 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Left
     Then I should remain on the BoardView
 
+  @AgentView
+  Scenario: Shift+Left from first session returns to BoardView
   # ===========================================
   # Session Navigation Scenarios
   # ===========================================
-  @AgentView
-  Scenario: Shift+Left from first session returns to BoardView
     Given I am viewing "Session A" in AgentView
     And "Session A" is the first session (oldest)
     When I press Shift+Left
@@ -137,11 +137,11 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should see a create session dialog
 
+  @SplitSessionView
+  Scenario: Shift+Left from first watcher returns to parent session
   # ===========================================
   # Watcher Navigation Scenarios
   # ===========================================
-  @SplitSessionView
-  Scenario: Shift+Left from first watcher returns to parent session
     Given I am viewing watcher "W1" in SplitSessionView
     And "W1" is the first watcher of "Session A"
     When I press Shift+Left
@@ -187,11 +187,11 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should see a create session dialog
 
+  @CreateSessionDialog
+  Scenario: Confirming create session dialog creates new unattached session
   # ===========================================
   # Create Session Dialog Scenarios
   # ===========================================
-  @CreateSessionDialog
-  Scenario: Confirming create session dialog creates new unattached session
     Given I see a create session dialog
     When I confirm the dialog
     Then a new session should be created
@@ -206,11 +206,11 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     Then the dialog should close
     And I should remain viewing "Session C" in AgentView
 
+  @BackwardCompatibility
+  Scenario: /parent command still works alongside Shift+Left navigation
   # ===========================================
   # Backward Compatibility Scenario
   # ===========================================
-  @BackwardCompatibility
-  Scenario: /parent command still works alongside Shift+Left navigation
     Given I am viewing watcher "W1" in SplitSessionView
     And "W1" is a watcher of "Session A"
     When I type "/parent" and press Enter

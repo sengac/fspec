@@ -52,11 +52,11 @@ Feature: Session Work Unit Attachment via IPC
     Then no IPC message "work-unit-changed" should be sent
     And the session should remain attached to TUI-060
 
+  @unit
+  Scenario: workUnitStatusHook sends IPC message on context change
   # ----------------------------------------
   # IPC Implementation Scenarios
   # ----------------------------------------
-  @unit
-  Scenario: workUnitStatusHook sends IPC message on context change
     Given the workUnitStatusHook is called with workUnitId "AUTH-001"
     And the active session has workUnitId "TUI-060" attached
     When the hook detects a work unit context change

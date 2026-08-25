@@ -13,11 +13,11 @@ Feature: Session Management Panel
     I want to create and manage isolated sessions from the TUI
     So that I can safely run AI agents in git worktrees and review/merge/discard their changes
 
+  @tui
+  Scenario: Create session with isolated toggle disabled (default)
   # ========================================
   # Part A: Session Creation
   # ========================================
-  @tui
-  Scenario: Create session with isolated toggle disabled (default)
     Given the TUI session creation dialog is open
     And the "Isolated" toggle is OFF
     When I submit the session creation form
@@ -33,11 +33,11 @@ Feature: Session Management Panel
     And a worktree should be created at ".fspec/worktrees/<session-id>/"
     And the session info should display the worktree path
 
+  @tui
+  Scenario: View Session Management Panel with pending sessions
   # ========================================
   # Part B: Session Management Panel
   # ========================================
-  @tui
-  Scenario: View Session Management Panel with pending sessions
     Given there are completed isolated sessions with worktrees
     When I open the Session Management Panel
     Then I should see a list of sessions

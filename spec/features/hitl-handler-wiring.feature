@@ -75,9 +75,9 @@ Feature: HITL request_user_input handler wired via pause pattern
     And get_hitl_request should return the stored questions
     And clear_hitl_request should remove the stored questions
 
-  # === NAPI: Getter + response sender ===
   @BUG-118
   Scenario: NAPI getter returns HITL request when session is paused
+  # === NAPI: Getter + response sender ===
     Given a session is paused with hitl_request state containing questions
     When TypeScript calls session_get_hitl_request with the session ID
     Then it should return the questions array with id, header, question, and options
@@ -97,9 +97,9 @@ Feature: HITL request_user_input handler wired via pause pattern
     Then the NAPI function should convert to HitlResponse Cancelled
     And send the cancellation via the session hitl_response_tx channel
 
-  # === TypeScript: State polling ===
   @BUG-118
   Scenario: useRustSessionState includes hitlRequest in snapshot when paused
+  # === TypeScript: State polling ===
     Given a session is paused and has HITL request state
     When useRustSessionState fetches the snapshot
     Then snapshot.hitlRequest should contain the questions array
@@ -111,10 +111,10 @@ Feature: HITL request_user_input handler wired via pause pattern
     When useRustSessionState fetches the snapshot
     Then snapshot.hitlRequest should be null
 
-  # === TypeScript: Inline rendering ===
   @integration
   @BUG-118
   Scenario: InputTransition renders HITL question with options inline
+  # === TypeScript: Inline rendering ===
     Given isPaused is true and hitlRequest contains a question with options
     When InputTransition renders
     Then it should show the question header and question text
@@ -138,10 +138,10 @@ Feature: HITL request_user_input handler wired via pause pattern
     Then InputTransition should advance to question 2 of 2
     And the first question answer should be stored
 
-  # === TypeScript: Keyboard handling ===
   @integration
   @BUG-118
   Scenario: AgentView HITL keyboard handler navigates options
+  # === TypeScript: Keyboard handling ===
     Given a session is paused with HITL questions containing options
     When the user presses up arrow
     Then the selected option should move up
@@ -164,9 +164,9 @@ Feature: HITL request_user_input handler wired via pause pattern
     Then sessionSendHitlResponse should be called with cancelled true
     And the handler should unblock and return Cancelled
 
-  # === Cleanup: Remove wrong pattern ===
   @BUG-118
   Scenario: HitlRequest StreamChunk variant removed
+  # === Cleanup: Remove wrong pattern ===
     Given the codebase previously had a HitlRequest StreamChunk variant
     Then the HitlRequest variant should not exist in StreamChunk
     And GlobalSessionStreamManager should not have setHitlHandler method

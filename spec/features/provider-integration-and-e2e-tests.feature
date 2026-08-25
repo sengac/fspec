@@ -56,10 +56,10 @@ Feature: Provider Integration and E2E Tests
     Then I find 10 tools registered with Gemini-native names
     And each tool has the expected flat schema without oneOf
 
-  # Rule 4: E2E tests marked with ignore
   @e2e
   @integration
   Scenario: E2E tests are marked with ignore attribute for CI
+  # Rule 4: E2E tests marked with ignore
     Given E2E test files in rust/tests/
     When the tests are compiled
     Then tests requiring real API keys have #[ignore] attribute

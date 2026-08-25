@@ -101,12 +101,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     Then the FinalAssistantMessagePersisted event should fire
     And all messages should be in storage in order: user, assistant, tool_result, assistant
 
-  # ===========================================
-  # MULTIPLE TOOL SEQUENCES (32% BUG FIX)
-  # ===========================================
   @integration
   @napi
   Scenario: Multiple tool uses in single assistant response are all persisted
+  # ===========================================
+  # MULTIPLE TOOL SEQUENCES (32% BUG FIX)
+  # ===========================================
     Given a session with user prompt "Read file A and file B"
     When the assistant streams text with two tool_use blocks (read file A, read file B)
     Then the assistant message should be persisted with both tool_use blocks
@@ -123,12 +123,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     And no "orphaned" tool_results should exist without following assistant responses
     And the session should never end with tool_result as the last message
 
-  # ===========================================
-  # ERROR HANDLING
-  # ===========================================
   @integration
   @napi
   Scenario: API error mid-stream persists accumulated content
+  # ===========================================
+  # ERROR HANDLING
+  # ===========================================
     Given a session with user message persisted
     And the assistant has streamed partial text content
     When an API error occurs before the Done chunk
@@ -137,12 +137,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     And the error should propagate to the user
     And resuming the session should show the partial assistant response
 
-  # ===========================================
-  # INTERRUPT HANDLING
-  # ===========================================
   @integration
   @napi
   Scenario: User interrupt preserves accumulated assistant content via NAPI
+  # ===========================================
+  # INTERRUPT HANDLING
+  # ===========================================
     Given a NAPI session with an active streaming response
     And the assistant has streamed partial content "I am currently working on..."
     When the user interrupts the stream (Ctrl+C or escape)
@@ -150,12 +150,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     And the accumulated assistant content should be persisted before the Interrupted chunk
     And resuming the session should show "I am currently working on..."
 
-  # ===========================================
-  # SESSION RESUME
-  # ===========================================
   @integration
   @napi
   Scenario: Resumed session contains all messages including final responses
+  # ===========================================
+  # SESSION RESUME
+  # ===========================================
     Given a completed session exists with messages: user, assistant+tool_use, tool_result, final_assistant
     When the user runs /resume and selects the session
     Then the MessagesRestored event should fire
@@ -163,12 +163,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     And no messages should be truncated or missing
     And the conversation should be fully visible
 
-  # ===========================================
-  # COMPACTION STATE
-  # ===========================================
   @integration
   @napi
   Scenario: Manual compaction persists compaction state to session manifest
+  # ===========================================
+  # COMPACTION STATE
+  # ===========================================
     Given a session with enough messages to compact
     When the user runs /compact command via NAPI session_manager.rs
     Then the CompactionSummaryGenerated event should fire
@@ -188,12 +188,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     And only post-compaction messages should be loaded after the summary
     And the context should be efficient (not reloading pre-compaction messages)
 
-  # ===========================================
-  # TOKEN STATE PERSISTENCE
-  # ===========================================
   @integration
   @napi
   Scenario: Token state is persisted by Rust on Done chunk via NAPI
+  # ===========================================
+  # TOKEN STATE PERSISTENCE
+  # ===========================================
     Given a NAPI session with an active streaming response
     When the Done chunk is emitted with usage data (input_tokens=5000, output_tokens=2000)
     Then the TokenStatePersisted event should fire in Rust
@@ -209,12 +209,12 @@ Feature: Migrate session message persistence from TypeScript to Rust
     And the context fill percentage should be calculated correctly
     And the context usage display should be accurate
 
-  # ===========================================
-  # PERSISTENCE FAILURE HANDLING
-  # ===========================================
   @integration
   @napi
   Scenario: Invalid session operations fail gracefully
+  # ===========================================
+  # PERSISTENCE FAILURE HANDLING
+  # ===========================================
     Given an invalid session ID
     When attempting to load the session
     Then the operation should fail with a clear error

@@ -15,7 +15,8 @@ use ratatui::text::Span;
 use ratatui::widgets::{Block, BorderType, Borders, Clear, Widget};
 use unicode_width::UnicodeWidthStr;
 
-use super::dialog_theme_rows::{paint_left_aligned, paint_text};
+use super::dialog_theme_paint::{paint_footer, paint_query_row};
+use super::dialog_theme_rows::{line_width, paint_left_aligned};
 
 /// One canonical accent color per dialog kind. The accent drives the
 /// border, the inner title, and the selection-row inverse highlight.
@@ -51,6 +52,9 @@ pub struct DialogRow {
 
 /// Per-render dialog input. `min_width` is the minimum body width in
 /// columns (before border + padding). Pass 0 for "shrink-to-content".
+/// BUG-159: `query_row` is an optional pinned input row painted by
+/// `render_dialog_at` as the FIRST content row (above the body rows) —
+/// dialogs that leave it `None` render byte-identically to before.
 #[derive(Default)]
 pub struct FspecDialog<'a> {
     pub accent: Accent,
@@ -58,6 +62,14 @@ pub struct FspecDialog<'a> {
     pub rows: Vec<DialogRow>,
     pub footer: &'a str,
     pub min_width: u16,
+    pub query_row: Option<&'a str>,
+}
+
+impl FspecDialog<'_> {
+    /// BUG-159: whether the pinned query row reserves a content row.
+    pub fn has_query_row(&self) -> bool {
+        self.query_row.is_some()
+    }
 }
 
 /// `▸ ` (U+25B8 BLACK RIGHT-POINTING SMALL TRIANGLE + space). Used as
@@ -80,12 +92,12 @@ fn row_width(row: &DialogRow) -> u16 {
     row.spans.iter().map(span_width).sum()
 }
 
-fn line_width(line: &str) -> u16 {
-    line.width() as u16
-}
-
 fn inner_content_width(dialog: &FspecDialog<'_>) -> u16 {
     let mut w = line_width(dialog.title);
+    if let Some(q) = dialog.query_row {
+        // BUG-159: the pinned query row is "▸ <query>▏" (marker + cursor).
+        w = w.max(line_width(q) + 3);
+    }
     for row in &dialog.rows {
         w = w.max(row_width(row));
     }
@@ -111,9 +123,11 @@ pub fn dialog_rect(area: Rect, dialog: &FspecDialog<'_>) -> Rect {
     let width = (content_w + 4).min(area.width);
     let footer_h = footer_line_count(dialog.footer);
     let body_h = dialog.rows.len() as u16;
+    // BUG-159: the pinned query row reserves one extra content row.
+    let query_h = if dialog.has_query_row() { 1 } else { 0 };
     // 2 border + 2 padding + 1 title + 1 gap-after-title + body + (1 gap + footer if footer)
     let footer_block = if footer_h == 0 { 0 } else { 1 + footer_h };
-    let natural = 2 + 2 + 1 + 1 + body_h + footer_block;
+    let natural = 2 + 2 + 1 + 1 + body_h + query_h + footer_block;
     let height = natural.min(area.height);
     let x = area.x + area.width.saturating_sub(width) / 2;
     let y = area.y + area.height.saturating_sub(height) / 2;
@@ -210,9 +224,11 @@ pub fn render_dialog_at(rect: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) 
         .fg(Color::Black)
         .add_modifier(Modifier::BOLD);
     let raw_footer_h = footer_line_count(dialog.footer);
+    // BUG-159: the pinned query row reserves one content row.
+    let query_h = if dialog.has_query_row() { 1 } else { 0 };
     // Spacious needs: title(1) + gap(1) + >=1 content + (gap(1)+footer if
     // any). Use it whenever it yields at least one visible content row.
-    let spacious_min = 3 + if raw_footer_h > 0 {
+    let spacious_min = 3 + query_h + if raw_footer_h > 0 {
         raw_footer_h + 1
     } else {
         0
@@ -233,7 +249,17 @@ pub fn render_dialog_at(rect: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) 
     } else {
         body.y + body.height
     };
-    for (y, row) in (content_start..).zip(dialog.rows.iter()) {
+    // BUG-159: paint the pinned query row as the FIRST content row (in
+    // accent color with a trailing block cursor); the body rows start one
+    // row below it. Dialogs without a query row are unaffected.
+    let mut rows_y = content_start;
+    if let Some(query) = dialog.query_row {
+        if rows_y < body_row_end {
+            paint_query_row(buf, body, rows_y, query, accent, bg_style);
+            rows_y += 1;
+        }
+    }
+    for (y, row) in (rows_y..).zip(dialog.rows.iter()) {
         if y >= body_row_end {
             break;
         }
@@ -264,37 +290,5 @@ pub fn render_dialog_at(rect: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) 
     }
 
     // Footer pinned to the bottom of the body block.
-    if footer_h > 0 && body.height >= footer_h {
-        let footer_y = body.y + body.height - footer_h;
-        for (i, line) in dialog.footer.lines().enumerate() {
-            let r = Rect {
-                x: body.x,
-                y: footer_y + i as u16,
-                width: body.width,
-                height: 1,
-            };
-            let dim_style = Style::default()
-                .add_modifier(Modifier::DIM)
-                .bg(Color::Black);
-            // Center horizontally.
-            let line_len = line_width(line);
-            let offset = if r.width > line_len {
-                (r.width - line_len) / 2
-            } else {
-                0
-            };
-            for x in r.x..r.x + r.width {
-                buf[(x, r.y)].set_style(bg_style);
-                buf[(x, r.y)].set_symbol(" ");
-            }
-            paint_text(
-                buf,
-                r.x + offset,
-                r.y,
-                r.width.saturating_sub(offset),
-                line,
-                dim_style,
-            );
-        }
-    }
+    paint_footer(buf, body, footer_h, dialog.footer, bg_style);
 }

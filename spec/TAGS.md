@@ -325,6 +325,10 @@ Tags for specific technical concerns or architectural patterns.
 | `@buffer-overflow` | Buffer overflow handling scenarios |
 | `@bug-144` | Bug fix work unit BUG-144 - PromptCancelled error chain preservation |
 | `@bug-157` | Bug fix work unit BUG-157 - fspec format duplicates scenarios when a Background section is present |
+| `@bug-159` | Bug fix work unit BUG-159 - board search dialog: pinned query row + fixed frame rect |
+| `@bug-160` | Bug fix work unit BUG-160 - board search dialog: result rows show a dimmed title/description snippet |
+| `@bug-161` | Bug fix work unit BUG-161 - board search dialog: modal keyboard blocking (unhandled keys must not leak to the board) |
+| `@bug-162` | Bug fix work unit BUG-162 - board search dialog: list does not scroll with the mouse wheel |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -741,4 +745,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-23T21:52:13.191Z_
+_Last updated: 2026-08-25T05:30:48.298Z_

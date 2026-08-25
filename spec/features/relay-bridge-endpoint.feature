@@ -101,11 +101,11 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
     Then it should exit with a clear error message explaining the required configuration
     And the error message should list RELAY_URL as a required variable
 
+  @happy-path
+  Scenario: Codelet BridgeTool establishes session connection
   # ========================================
   # Session Connection (codelet BridgeTool)
   # ========================================
-  @happy-path
-  Scenario: Codelet BridgeTool establishes session connection
     Given the relay endpoint is authenticated and running
     And the local WebSocket server is listening
     When a codelet BridgeTool connects to the local WebSocket server
@@ -122,33 +122,33 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
     And messages for session-A should be routed to session-A's WebSocket only
     And messages for session-B should be routed to session-B's WebSocket only
 
+  @happy-path
+  Scenario: Translate relay input message to fspec format
   # ========================================
   # Input Translation (relay → fspec)
   # ========================================
-  @happy-path
-  Scenario: Translate relay input message to fspec format
     Given the relay endpoint is authenticated and a codelet session is connected
     When the relay sends an input message with type "input", session_id, and data containing message and images
     Then the endpoint should translate it to fspec flat InboundMessage format
     And unwrap the data envelope so message and images are top-level fields
     And forward the translated message to the codelet WebSocket connection
 
+  @happy-path
+  Scenario: Translate relay sessionControl to fspec control format
   # ========================================
   # Session Control Translation (relay → fspec)
   # ========================================
-  @happy-path
-  Scenario: Translate relay sessionControl to fspec control format
     Given the relay endpoint is authenticated and a codelet session is connected
     When the relay sends a message with type "sessionControl" and data containing action "interrupt"
     Then the endpoint should rename the type from "sessionControl" to "control"
     And unwrap the data envelope so the action field is at top level
     And forward the translated control message to the codelet WebSocket connection
 
+  @error
+  Scenario: Drop messages for unknown session
   # ========================================
   # Unknown Session Handling
   # ========================================
-  @error
-  Scenario: Drop messages for unknown session
     Given the relay endpoint is authenticated
     And no codelet session with id "unknown-session" is connected
     When the relay sends an input message targeting session_id "unknown-session"
@@ -156,11 +156,11 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
     And the message should be silently dropped
     And no error response should be sent to the relay
 
+  @happy-path
+  Scenario: Execute fspec command via StreamChunk pipeline and return result
   # ========================================
   # Command Execution (relay → bridge WS → Rust → StreamChunk → fspecCallback → relay)
   # ========================================
-  @happy-path
-  Scenario: Execute fspec command via StreamChunk pipeline and return result
     Given the relay endpoint is authenticated and a codelet session is connected
     When the relay sends a command message with session_id, request_id, command "board", and args
     Then the endpoint should translate it to an InboundMessage with type "command" and forward to the codelet WebSocket
@@ -191,11 +191,11 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
     And bridge_relay.rs should send a commandResponse with success false and a timeout error message
     And the original request_id should be preserved in the response
 
+  @happy-path
+  Scenario: Forward StreamChunk from codelet to relay without transformation
   # ========================================
   # Chunk Passthrough (fspec → relay)
   # ========================================
-  @happy-path
-  Scenario: Forward StreamChunk from codelet to relay without transformation
     Given the relay endpoint is authenticated and a codelet session is connected
     When the codelet session sends a chunk message with StreamChunk data
     Then the endpoint should forward it to the relay as-is with no transformation
@@ -209,11 +209,11 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
     Then bridge_relay.rs should intercept it and format it as a commandResponse OutboundMessage
     And the FspecCommandResult should NOT be forwarded to the relay as a regular chunk message
 
+  @resilience
+  Scenario: Reconnect to relay after connection drops
   # ========================================
   # Reconnection
   # ========================================
-  @resilience
-  Scenario: Reconnect to relay after connection drops
     Given the relay endpoint is authenticated and operating normally
     When the relay connection drops unexpectedly
     Then the endpoint should log a warning about the disconnection
@@ -221,11 +221,11 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
     And re-authenticate with the relay upon successful reconnection
     And resume normal message routing after re-authentication
 
+  @happy-path
+  Scenario: Send periodic heartbeat to relay
   # ========================================
   # Heartbeat
   # ========================================
-  @happy-path
-  Scenario: Send periodic heartbeat to relay
     Given the relay endpoint is authenticated
     When 30 seconds elapse since the last ping
     Then the endpoint should send a ping message to the relay

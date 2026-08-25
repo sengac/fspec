@@ -2,7 +2,6 @@
 @done
 @TUI-098
 Feature: Double-click to resume session in /resume view
-
   """
   Add a DoubleClickDetector struct to ResumeSessionView that tracks the last click timestamp and row index. On a second click within 300ms on the same row, emit ResumeSessionViewOutcome::Selected
   """
@@ -25,7 +24,6 @@ Feature: Double-click to resume session in /resume view
   #   3. User clicks on session 'Alpha' at row 2, then quickly clicks on session 'Beta' at row 5: both are treated as single-clicks because the clicks are on different rows, no session is resumed
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user
     I want to double-click a session in the /resume picker

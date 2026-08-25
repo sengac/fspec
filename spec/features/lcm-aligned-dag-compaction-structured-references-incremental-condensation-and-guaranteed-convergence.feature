@@ -91,11 +91,11 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
     Then only messages within turns 80-120 that match "error" are returned
     And matches outside the turn range are excluded
 
+  @incremental-condensation
+  Scenario: First compaction uses fresh instruction to build DAG from scratch
   # ========================================
   # Gap 2: Incremental Condensation
   # ========================================
-  @incremental-condensation
-  Scenario: First compaction uses fresh instruction to build DAG from scratch
     Given a session has no existing compaction-dag system reminder
     When compaction triggers
     Then execute_compaction injects the COMPACTION_INSTRUCTION_FRESH variant
@@ -121,11 +121,11 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
     And new D0 nodes are written for turns 140-160
     And the complete updated DAG is passed to inject_summary
 
+  @convergence
+  Scenario: Level 2 escalation fires after first failed stream attempt
   # ========================================
   # Gap 3: Guaranteed Convergence
   # ========================================
-  @convergence
-  Scenario: Level 2 escalation fires after first failed stream attempt
     Given compaction has been triggered and the agent is building a DAG
     And the first stream attempt completes without the agent calling inject_summary
     When the watchdog detects compaction_in_progress is still true
@@ -158,11 +158,11 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
     Then no escalation occurs because inject_summary was called before any retry
     And the watchdog counter is reset
 
+  @file-tracking
+  Scenario: Engine appends dag-files block when agent omits file references
   # ========================================
   # Gap 5: File ID Propagation Through DAG
   # ========================================
-  @file-tracking
-  Scenario: Engine appends dag-files block when agent omits file references
     Given the compacted turns contain FileModification annotations for src/auth.rs and src/middleware.rs
     And the agent's DAG content does not contain a <dag-files> block
     When inject_summary handler processes the content

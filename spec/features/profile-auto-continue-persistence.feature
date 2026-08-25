@@ -4,7 +4,6 @@
 @persistence
 @providers
 Feature: Per-profile autoContinue persistence
-
   """
   The autoContinue value round-trips through the on-disk ProfileDef
   (rust/sessions/src/profile_persistence.rs) and the wire-to-disk bridge

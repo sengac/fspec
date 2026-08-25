@@ -3,7 +3,6 @@
 @done
 @TUI-109
 Feature: Stream per-item progress (idx/total) for checkpoint enumeration into the shared LoadingDialog counter row
-
   """
   Implementation:
   - Wire type CheckpointsProgress{loaded,total,done} in rpc-types; transport traits (transport/mod.rs) gain checkpoints_progress_rx() - a broadcast receiver alongside work_units_rx/chunks_rx/logs_rx (embedded: direct broadcast; websocket: forward a new message kind). Server: git's list_all_ghost_checkpoints gains a streaming/callback variant; rpc/src/checkpoints.rs gains collect_checkpoints_stream wired to FspecServiceImpl::list_checkpoints emitting progress; the CLI's non-streaming collect_checkpoints delegates to it with a no-op callback. App: subscriber task folds CheckpointsProgress into the CheckpointsView LoadingDialog via set_progress (slot provided by TUI-106), stale-dropped once list stage flushes. Scenarios extend TUI-107's feature file (checkpoints-view-c-shows-staged-animated-loading-dialog-via-shared-base-instead-of-fake-no-checkpoints-empty-state.feature).
@@ -22,7 +21,6 @@ Feature: Stream per-item progress (idx/total) for checkpoint enumeration into th
   #   1. I open the Checkpoints view on a repo with 150 checkpoints across 10 work units; the loading dialog's counter starts at (1/…), climbs visibly as enumeration proceeds, and shows the final (150/150) just before the list appears
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user on a repo with many checkpoints
     I want to see the checkpoint-list loading dialog count items as they are collected
@@ -60,4 +58,3 @@ Feature: Stream per-item progress (idx/total) for checkpoint enumeration into th
     When the CLI list-checkpoints command runs against a repository with checkpoints
     Then the output is byte-identical to the pre-streaming behavior
     And the existing list_checkpoints tests pass unmodified
-

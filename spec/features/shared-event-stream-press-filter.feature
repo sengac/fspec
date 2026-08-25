@@ -3,7 +3,6 @@
 @tui
 @TUI-110
 Feature: Shared TUI event stream filters to Press-only key events
-
   """
   Shared stream filter in tui::create_event_stream (rust/tui/src/events.rs): the Event::Key match arm only yields TuiEvent::Key for KeyEventKind::Press events; Paste and Resize pass through unchanged. Known upstream references: ratatui#347, ratatui#1810, crossterm#772 — Windows console delivers both Press and Release; the documented fix is a Press-only filter at the event source.
   """
@@ -21,7 +20,6 @@ Feature: Shared TUI event stream filters to Press-only key events
   #   2. Linux/macOS: the shared stream behaves exactly as before since those platforms only ever generated Press events.
   #
   # ========================================
-
   Background: User Story
     As a TUI user on Windows
     I want the shared event stream to deliver each keystroke exactly once
@@ -30,7 +28,6 @@ Feature: Shared TUI event stream filters to Press-only key events
   # ========================================
   # SHARED EVENT STREAM (tui::create_event_stream)
   # ========================================
-
   Scenario: The shared event stream emits key press events
     Given the shared TUI event stream is running
     When a key event with kind Press is delivered by the terminal

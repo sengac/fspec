@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-24T10:35:18.136Z",
+    "lastUpdated": "2026-08-25T06:24:49.741Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 158,
+    "BUG": 162,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 14,
@@ -92,7 +92,7 @@
     "VIZ": 4,
     "WATCH": 24,
     "UPD": 4,
-    "BOARD": 21
+    "BOARD": 22
   },
   "states": {
     "backlog": [
@@ -1654,7 +1654,12 @@
       "BUG-158",
       "BLOCK-012",
       "UPD-004",
-      "BOARD-021"
+      "BOARD-021",
+      "BOARD-022",
+      "BUG-159",
+      "BUG-160",
+      "BUG-161",
+      "BUG-162"
     ],
     "blocked": [
       "QUERY-001",
@@ -225875,6 +225880,509 @@
       "attachments": [
         "spec/attachments/BOARD-021/ast-research-board-logo-render.json"
       ]
+    },
+    "BOARD-022": {
+      "id": "BOARD-022",
+      "title": "Board '/' search dialog with Tab-toggled id/title/description modes",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-24T12:04:35.947Z",
+      "updatedAt": "2026-08-24T13:35:25.060Z",
+      "description": "Pressing '/' on the Rust TUI board opens a centered search dialog (same visual contract as the AgentView @file popup) that filters the board's work units by work-unit ID, title, or description. Tab toggles the active search mode (id → title → description → id). Up/Down navigate matches, Enter selects a match (focusing its column + row on the board) and closes the dialog, Esc closes. Filtering is client-side over BoardStore (no new RPC surface).",
+      "epic": "rust-frontend",
+      "children": [
+        "BUG-161",
+        "BUG-162",
+        "BUG-160",
+        "BUG-159"
+      ],
+      "userStory": {
+        "role": "Rust TUI board user",
+        "action": "press '/' to open a search dialog that finds a work unit by ID, title, or description, toggling the search mode with Tab",
+        "benefit": "I can jump to any card in a large board without scrolling through all seven columns"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-24T12:05:18.856Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-24T12:21:07.420Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-24T12:43:06.611Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-24T13:30:37.174Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-24T13:35:25.060Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Pressing '/' (modifier-free) on the board opens the work-unit search dialog and consumes the key; the dialog is a Priority::Foreground modal on the Compositor, rendered with the canonical dialog_theme (cyan accent, like the AgentView @file popup)",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:05:30.126Z"
+        },
+        {
+          "id": 1,
+          "text": "The dialog has three search modes — Id, Title, Description — cycled by pressing Tab (id → title → description → id). The active mode is displayed in the dialog (e.g. in the title row or a mode indicator) and switching modes re-runs the filter with the current query text and resets the selection to the first match",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:05:41.453Z"
+        },
+        {
+          "id": 2,
+          "text": "Filtering is client-side over the BoardStore's in-memory work units (no new RPC/backend surface): case-insensitive substring match of the query against the active mode's field — Id mode matches work-unit id, Title mode matches title, Description mode matches description (units with no description never match in Description mode). An empty query lists all work units in the active mode's ordering",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:05:50.613Z"
+        },
+        {
+          "id": 3,
+          "text": "Inside the dialog: printable characters and Backspace edit the query (re-filtering live); Up/Down/PageUp/PageDown/Home/End navigate matches with wrap-around; Enter selects the highlighted match — the board's focused column switches to the match's status column, the row selection moves to the match (viewport-aware so it is visible), the dialog closes; Esc closes the dialog with no selection change; '/' while the dialog is open is ignored (no re-open)",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:06:04.870Z"
+        },
+        {
+          "id": 4,
+          "text": "When the filter yields zero matches, the dialog shows a single non-selectable '(no work units match \"<query>\")' row (mirroring the @file popup empty state) and Enter is a no-op; when the board has zero work units, the dialog shows '(board is empty)' and Enter is a no-op",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:06:16.969Z"
+        },
+        {
+          "id": 5,
+          "text": "The board header keybinding chord gains a '/ Search' segment and the board HelpDialog keybinding list gains a '/' row, so the shortcut is discoverable (parity with the '.' New Agent / 'a' Attachments hints added in RPC-395 / RPC-374)",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:06:34.757Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board has AUTH-001 (backlog), RPC-100 (implementing), TUI-110 (done). User presses '/', types 'auth' in Id mode → one row 'AUTH-001'; Enter moves focus to the backlog column on AUTH-001 and closes the dialog",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:06:44.474Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses '/', types 'search', presses Tab → the mode indicator switches from Id to Title and the same query 'search' is re-matched against titles, so the result list changes to units whose titles contain 'search'",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:06:54.053Z"
+        },
+        {
+          "id": 2,
+          "text": "A unit with no description never appears in Description-mode results, no matter what the query is",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:07:02.590Z"
+        },
+        {
+          "id": 3,
+          "text": "The board header chord row displays '/ Search' as a segment, and the board help dialog lists '/' with the description 'Search work units'",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:07:13.553Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New component rust/fspec-tui/src/components/work_unit_search_dialog.rs (Component, Priority::Foreground, dialog_theme cyan accent, id 'work-unit-search-dialog'), modeled on attachment_picker_dialog.rs. BoardView::handle_event gains a modifier-free Char('/') arm emitting Action::OpenWorkUnitSearch (always consumed). App::dispatch gains handle_open_work_unit_search() (new file app/dispatch_work_unit_search.rs, mirroring dispatch_viewer.rs) which pushes the dialog seeded with the current BoardStore units. Selection emits a new Action::SelectWorkUnit(String) handled in App::dispatch: BoardStore::set_focused_column(status) + a new BoardStore::select_work_unit(id, viewport_height) helper (store/board_viewport.rs) that sets the column selection index and scroll offset so the unit is visible. Dialog owns query + mode enum (Id/Title/Description) + matches (Vec<String> of unit ids) + selected_index + scroll_offset; filtering is a pure fn filter_work_units(&[WorkUnitInfo], mode, query) -> Vec<String> unit-tested with proptest. All files <300 lines.",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:07:33.911Z"
+        },
+        {
+          "id": 1,
+          "text": "RPC architecture: NO new FspecService/FspecBackend RPC methods are introduced. The dialog filters the BoardStore's in-memory snapshot, which is already kept fresh by the existing list_work_units RPC + work_units_rx broadcast (RPC-006). This mirrors the @file popup's transport split: its search_files RPC exists because file data is NOT in the TUI, whereas work units ARE in the TUI. Cross-transport parity is preserved automatically because both embedded and WebSocket transports serve the same work-units snapshot; a source-shape test pins that no new search_work_units RPC appears in rpc/src/lib.rs, transport/mod.rs, embedded.rs, or websocket.rs.",
+          "deleted": false,
+          "createdAt": "2026-08-24T12:07:52.661Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/BOARD-022/board-022-implementation-plan.md",
+        "spec/attachments/BOARD-022/board-022-design-and-rpc-rationale.md",
+        "spec/attachments/BOARD-022/ast-research-board-search-dialog.md"
+      ],
+      "estimate": 5
+    },
+    "BUG-159": {
+      "id": "BUG-159",
+      "title": "Board search dialog: query input not visible; results push it out of view",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-24T22:16:06.814Z",
+      "updatedAt": "2026-08-25T01:36:25.510Z",
+      "description": "The BOARD-022 work-unit search dialog never paints the typed query, and its shrink-to-content centering re-centers the frame as the match list grows, so there is no stable visible input line. Add a pinned query row and switch to a fixed-rect render.",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-159/bug159-query-row-not-painted-and-shrink-to-content.md"
+      ],
+      "parent": "BOARD-022",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-24T23:01:49.624Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-24T23:52:33.377Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-25T00:03:42.958Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-25T00:42:59.775Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-25T01:36:25.510Z"
+        }
+      ],
+      "userStory": {
+        "role": "Rust TUI board user",
+        "action": "type a query into the board '/' search dialog and see it echoed on a pinned row while the dialog frame stays put",
+        "benefit": "I can tell what query is active and where the match list is scrolling without the dialog jumping around as results grow or shrink"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The dialog paints the live query text on a dedicated query row pinned immediately under the title (above the match rows), visible at all times while the dialog is open, including with an empty query (an empty query row still occupies the pinned slot)",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:02:08.198Z"
+        },
+        {
+          "id": 1,
+          "text": "The dialog frame is a FIXED rect computed by fixed_dialog_rect(area) (area.width-4 x area.height-6, centered) and painted via render_dialog_at, so the frame top-left corner and size are invariant as the match list grows or shrinks; only the body rows scroll",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:02:16.077Z"
+        },
+        {
+          "id": 2,
+          "text": "The query row is a first-class part of the FspecDialog descriptor (query_row: Option<&str>) painted by render_dialog_at itself — the visual contract stays in dialog_theme, and dialogs that do not set query_row render byte-identically to before",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:02:26.967Z"
+        },
+        {
+          "id": 3,
+          "text": "The visible-rows window for the match list is sized by body_content_rows(rect.height, footer_lines) — the same helper render_dialog_at uses — so the scroll window and the painted body always agree; the ad-hoc (area.height - 8).clamp(1, 20) heuristic is removed",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:03:57.546Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "body_content_rows(20, 1, has_query_row=true) == body_content_rows(20, 1, has_query_row=false) - 1 — the pinned query row consumes exactly one content row from the body viewport",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:15:10.862Z"
+        },
+        {
+          "id": 1,
+          "text": "80x24 terminal, dialog open, user types 'auth' → the buffer row at fixed_dialog_rect(area).y + 2 (border + title) contains '▸ auth'; the match rows start one row below that, and the dialog's top border row is at fixed_dialog_rect(area).y for both 1-match and 20-match states",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:15:10.979Z"
+        },
+        {
+          "id": 2,
+          "text": "A dialog that does not set a query row (e.g. the ConfirmDialog) renders byte-identically to before BUG-159 — no extra blank row, no shifted body",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:15:27.055Z"
+        },
+        {
+          "id": 3,
+          "text": "User types 'zzz' (zero matches) on an 80x24 terminal → the query row still shows '▸ zzz' directly under the title and the '(no work units match \"zzz\")' row appears below it; the dialog frame border is at the same top row as when 3 matches were visible",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:15:27.174Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "FspecDialog gains query_row: Option<&str> (Default = None). render_dialog_at paints it as the FIRST content row (spacious: body.y+2, compact: body.y+1) in accent color with a trailing block cursor '▏'; match rows start one row below it. dialog_rect natural height +1 when Some. body_content_rows(rect_height, footer_h, has_query_row) reserves that row (returns one less when true); spacious_min +1 when true. Existing 2-arg callers (turn_modal_geometry) pass false. WorkUnitSearchDialog::render uses fixed_dialog_rect + render_dialog_at + body_content_rows(rect.height, footer_lines, true) for the visible-rows window and sets query_row to the live query.",
+          "deleted": false,
+          "createdAt": "2026-08-24T23:49:12.422Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 5
+    },
+    "BUG-160": {
+      "id": "BUG-160",
+      "title": "Board search dialog: result rows show no title/description snippet",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-24T22:16:59.148Z",
+      "updatedAt": "2026-08-25T03:25:01.113Z",
+      "description": "BOARD-022 search dialog rows show only the work-unit id. Add a dimmed snippet of the title (or description in Description mode) per row so the user can disambiguate matches while typing.",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-160/bug160-rows-show-no-title-description-snippet.md"
+      ],
+      "parent": "BOARD-022",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-25T02:09:59.539Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-25T02:37:21.563Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-25T02:43:21.742Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-25T03:20:03.289Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-25T03:25:01.113Z"
+        }
+      ],
+      "userStory": {
+        "role": "board user",
+        "action": "see a dimmed title/description snippet next to each work-unit id in the search dialog",
+        "benefit": "disambiguate matches while typing without memorizing which id maps to which title"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Every result row shows the work-unit id first, followed by a ' - ' separator and a snippet, built via the shared label_description_row primitive (marker + label + dimmed description)",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:10:27.355Z"
+        },
+        {
+          "id": 1,
+          "text": "The snippet is mode-aware: the title in Id and Title modes, the description in Description mode (falling back to the title when a unit has no description, so the snippet is never empty)",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:10:27.993Z"
+        },
+        {
+          "id": 2,
+          "text": "The selected row's snippet is not dimmed; unselected rows' snippets carry Modifier::DIM (label_description_row semantics)",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:10:40.722Z"
+        },
+        {
+          "id": 3,
+          "text": "The snippet is width-bounded with truncate_to so a long title/description cannot widen the fixed dialog frame (BUG-159); the budget is derived from the fixed body width (inner width minus marker, id width and the ' - ' separator)",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:10:41.320Z"
+        },
+        {
+          "id": 4,
+          "text": "filter_work_units returns richer matches (id + snippet pairs) in board order; the existing selection/scroll math (move_by, ensure_visible, wrap_index) operates on the match count only and is unchanged",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:10:55.151Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Typing 'auth' in Id mode with unit AUTH-001 titled 'User login' shows a row '▸ AUTH-001 - User login' (snippet not dimmed on the selected row)",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:10:55.689Z"
+        },
+        {
+          "id": 1,
+          "text": "In Description mode, unit DOC-001 (title 'Docs', description 'Open the attachment viewer') shows the row '  DOC-001 - Open the attachment viewer' with the snippet dimmed because the row is not selected",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:11:10.641Z"
+        },
+        {
+          "id": 2,
+          "text": "A unit with a 60-character title shows a snippet truncated to the row width budget with a trailing '…', and the dialog frame width stays at the fixed rect (BUG-159)",
+          "deleted": false,
+          "createdAt": "2026-08-25T02:11:10.756Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 3
+    },
+    "BUG-161": {
+      "id": "BUG-161",
+      "title": "Board search dialog: board keyboard shortcuts leak through the modal",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-24T22:22:49.443Z",
+      "updatedAt": "2026-08-25T04:44:43.147Z",
+      "description": "While the BOARD-022 search dialog is open, keys the dialog does not handle (j/k/h/l, [, ], f, c, d, a, ., ?, Shift+Right, Enter with zero matches) return Ignored and reach the BoardView behind it, moving selection or opening other views. Make the dialog a true modal by consuming unhandled keys.",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-161/bug161-dialog-leaks-board-keyboard-shortcuts.md"
+      ],
+      "parent": "BOARD-022",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-25T03:43:55.107Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-25T04:18:30.724Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-25T04:26:25.551Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-25T04:34:19.816Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-25T04:44:43.147Z"
+        }
+      ],
+      "userStory": {
+        "role": "board user",
+        "action": "have the board '/' search dialog fully own the keyboard while it is open",
+        "benefit": "stop accidentally moving the board selection or opening other views while typing in the search box"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "While the search dialog is open, any key it does not explicitly handle (j/k/h/l, [, ], f, c, d, a, ., ?, and any other unhandled key) is CONSUMED as a no-op so the BoardView behind the modal is frozen",
+          "deleted": false,
+          "createdAt": "2026-08-25T03:44:22.452Z"
+        },
+        {
+          "id": 1,
+          "text": "SHIFT/CTRL-chorded keys are CONSUMED by the dialog (the modifier guard returns Consumed instead of Ignored), so chords like Shift+Right cannot reach the board or the App-level handler",
+          "deleted": false,
+          "createdAt": "2026-08-25T03:44:36.804Z"
+        },
+        {
+          "id": 2,
+          "text": "The dialog's own explicit arms (Esc, Tab, Backspace, '/', printable chars, Up/Down/PageUp/PageDown/Home/End, Enter) keep their current behavior unchanged — the fix only changes the catch-all and the modifier guard to Consumed",
+          "deleted": false,
+          "createdAt": "2026-08-25T03:44:46.126Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With the search dialog open and zero matches, pressing 'j' does not move the board selection — the dialog consumes the key and the board stays frozen",
+          "deleted": false,
+          "createdAt": "2026-08-25T03:44:54.796Z"
+        },
+        {
+          "id": 1,
+          "text": "While typing in the search box, pressing 'f' does not open the Changed Files view and pressing 'd' does not open the Foundation doc — the board shortcuts stay frozen behind the modal",
+          "deleted": false,
+          "createdAt": "2026-08-25T03:45:05.800Z"
+        },
+        {
+          "id": 2,
+          "text": "The dialog's own keys still work while the board is frozen: Tab still cycles the search mode and a printable character still edits the query",
+          "deleted": false,
+          "createdAt": "2026-08-25T03:45:24.995Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 2
+    },
+    "BUG-162": {
+      "id": "BUG-162",
+      "title": "Board search dialog: list does not scroll with the mouse wheel",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-24T22:23:23.866Z",
+      "updatedAt": "2026-08-25T06:24:49.741Z",
+      "description": "The BOARD-022 search dialog ignores Event::Mouse, so the mouse wheel scrolls the board column behind it instead of the match list. Reuse the existing WheelVelocity + ensure_visible + ScrollbarDrag primitives (as FileSearchPopup does) so the dialog scrolls with the mouse like the board and AgentView.",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-162/bug162-dialog-does-not-scroll-with-mouse-wheel.md"
+      ],
+      "parent": "BOARD-022",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-25T05:28:46.937Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-25T05:38:39.540Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-25T06:21:44.606Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-25T06:22:11.730Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-25T06:24:49.741Z"
+        }
+      ],
+      "userStory": {
+        "role": "board user",
+        "action": "scroll the search dialog's match list with the mouse wheel",
+        "benefit": "navigate long match lists without reaching for the keyboard"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "ScrollDown/ScrollUp mouse events INSIDE the dialog's last-rendered rect move the highlighted match by the WheelVelocity step (ramping 1x-5x) and update scroll_offset via ensure_visible; the event is Consumed",
+          "deleted": false,
+          "createdAt": "2026-08-25T05:29:37.022Z"
+        },
+        {
+          "id": 1,
+          "text": "Mouse events OUTSIDE the dialog's last-rendered rect are Ignored so they bubble to the BoardView behind the modal",
+          "deleted": false,
+          "createdAt": "2026-08-25T05:29:46.023Z"
+        },
+        {
+          "id": 2,
+          "text": "Left-button press/drag/release on the scrollbar gutter is routed through the shared ScrollbarDrag state machine with ScrollbarGeometry (absolute row converted to body-local row); the returned offset is applied to scroll_offset",
+          "deleted": false,
+          "createdAt": "2026-08-25T05:29:55.817Z"
+        },
+        {
+          "id": 3,
+          "text": "When matches exceed the visible rows, a proportional scrollbar (render_list_scrollbar) is painted in the rightmost body column and its gutter rect is cached for hit-testing; wheel/scrollbar-drag state is reset when the query or mode changes (re_filter)",
+          "deleted": false,
+          "createdAt": "2026-08-25T05:30:07.929Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Scrolling the mouse wheel down inside the search dialog moves the highlighted match down and the scroll offset follows it",
+          "deleted": false,
+          "createdAt": "2026-08-25T05:30:16.137Z"
+        },
+        {
+          "id": 1,
+          "text": "A wheel event outside the dialog rect is ignored so it bubbles to the board behind the modal",
+          "deleted": false,
+          "createdAt": "2026-08-25T05:30:24.894Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 3
     }
   }
 }

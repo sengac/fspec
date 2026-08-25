@@ -1,6 +1,5 @@
 @RPC-429
 Feature: MultiLineInput Up/Down arrow keys skip wrapped visual rows and jump to scrollback
-
   """
   Fix uses existing functions from multiline_wrap.rs: total_visual_rows() and cursor_visual_position(). MultiLineInput needs a cached last_body_width field updated by sync_viewport/render. The boundary check in handle_key_gated replaces logical row/line_count with visual row/total_visual_rows.
   """

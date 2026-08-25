@@ -1,0 +1,309 @@
+{
+  "scenarios": [
+    {
+      "name": "Scrolling the mouse wheel down inside the dialog moves the selection down",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
+          "lines": "82-117",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrolling the mouse wheel up inside the dialog moves the selection up",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
+          "lines": "119-149",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rapid wheel notches ramp the wheel velocity",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
+          "lines": "151-174",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A wheel event outside the dialog rect is ignored so it bubbles to the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
+          "lines": "176-204",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Repeated wheel-down reaches the last match and keeps it on screen",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
+          "lines": "206-239",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A proportional scrollbar gutter is painted when matches overflow the visible rows",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
+          "lines": "241-287",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
+      "rust/fspec-tui/src/components/work_unit_search_dialog.rs"
+    ],
+    "totalLinesCovered": 387
+  }
+}

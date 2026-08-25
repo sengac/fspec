@@ -60,6 +60,7 @@ pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
 pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
+pub mod dispatch_work_unit_search;
 pub mod events;
 pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;

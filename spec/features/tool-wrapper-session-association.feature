@@ -69,9 +69,9 @@ Feature: Tool Wrappers Should Store Session ID Instead of Using Thread-Local Cur
     And the correct handler for "session-A" should be invoked
     And the command should execute successfully
 
-  # Example 2: Async boundary - session_id survives where thread-local would fail
   @unit
   Scenario: Fspec tool call succeeds across async boundaries
+  # Example 2: Async boundary - session_id survives where thread-local would fail
     Given a session manager has created a session with ID "session-B"
     And a handler has been registered for session "session-B"
     And an Fspec tool has been created with session_id "session-B"
@@ -80,9 +80,9 @@ Feature: Tool Wrappers Should Store Session ID Instead of Using Thread-Local Cur
     And the handler lookup should succeed
     And the command should execute on the correct session
 
-  # Example 3: Multi-session isolation - no cross-contamination
   @unit
   Scenario: Concurrent sessions use their own isolated tool instances
+  # Example 3: Multi-session isolation - no cross-contamination
     Given session "session-A" exists with its own registered handler
     And session "session-B" exists with its own registered handler
     When session A creates its Fspec tool with claude_fspec_tool(session_id_A)
@@ -95,18 +95,18 @@ Feature: Tool Wrappers Should Store Session ID Instead of Using Thread-Local Cur
     Then handler for session B should be called
     And there should be no cross-contamination between sessions
 
-  # Example 4: Standalone CLI creates session_id before building agent
   @integration
   Scenario: Rust CLI creates session UUID before building agent
+  # Example 4: Standalone CLI creates session_id before building agent
     Given the Rust CLI is running in single-shot mode
     When the CLI prepares to build a rig agent
     Then the CLI should generate a new session_id with Uuid::new_v4()
     And the CLI should call create_rig_agent(session_id, None, None)
     And the Fspec tool in the agent should have the generated session_id
 
-  # Example 5: Watcher session and parent session have isolated handlers
   @integration
   Scenario: Watcher session and parent session use separate Fspec tool instances
+  # Example 5: Watcher session and parent session have isolated handlers
     Given parent session "parent-P" exists with its Fspec tool
     And watcher session "watcher-W" is monitoring "parent-P"
     And watcher session "watcher-W" has its own Fspec tool
@@ -116,9 +116,9 @@ Feature: Tool Wrappers Should Store Session ID Instead of Using Thread-Local Cur
     Then the handler for "watcher-W" should be used
     And each session operates independently with no confusion
 
-  # Bridge tool follows same pattern
   @unit
   Scenario: Bridge tool wrapper stores session_id at construction
+  # Bridge tool follows same pattern
     Given a session manager has created a session with ID "session-C"
     And bridge session context has been set for "session-C"
     When the session manager creates a Bridge tool with claude_bridge_tool(session_id)
@@ -127,18 +127,18 @@ Feature: Tool Wrappers Should Store Session ID Instead of Using Thread-Local Cur
     Then the Bridge tool should use self.session_id for context lookup
     And the correct session context for "session-C" should be used
 
-  # API signature change
   @unit
   Scenario: create_rig_agent accepts session_id as first parameter
+  # API signature change
     Given a provider instance (Claude, Gemini, OpenAI, or ZAI)
     When I call create_rig_agent(session_id, preamble, thinking_config)
     Then the method should accept session_id as the first parameter
     And the Fspec tool in the agent should be constructed with session_id
     And the Bridge tool in the agent should be constructed with session_id
 
-  # Deprecated functions - no longer needed but kept for backward compatibility
   @unit
   Scenario: Thread-local current session functions are no longer needed
+  # Deprecated functions - no longer needed but kept for backward compatibility
     Given the new session-at-construction architecture is implemented
     Then tools work without calling set_current_fspec_session()
     And tools work without calling set_current_bridge_session()

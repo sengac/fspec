@@ -132,12 +132,12 @@ Feature: Telegram Bridge Endpoint
     Then the endpoint should accept new connections
     And a new codelet session should be able to connect
 
-  # -------------------------------------------
-  # Outbound: StreamChunk → Telegram
-  # -------------------------------------------
   @outbound
   @text
   Scenario: Relay text chunk to Telegram with MarkdownV2 formatting
+  # -------------------------------------------
+  # Outbound: StreamChunk → Telegram
+  # -------------------------------------------
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
     When the codelet sends a text chunk "Hello, I can help"
@@ -191,11 +191,11 @@ Feature: Telegram Bridge Endpoint
     When the codelet sends a done chunk
     Then a "✓" completion marker should be sent to the linked Telegram chat
 
+  @truncation
+  Scenario: Truncate long messages to fit Telegram limit
   # -------------------------------------------
   # Message Formatting & Truncation
   # -------------------------------------------
-  @truncation
-  Scenario: Truncate long messages to fit Telegram limit
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
     When the codelet sends a text chunk with 10000 characters
@@ -223,11 +223,11 @@ Feature: Telegram Bridge Endpoint
     Then the code block should be preserved with the language marker
     And the message should be formatted as valid MarkdownV2
 
+  @inbound
+  Scenario: Relay Telegram message to codelet as input
   # -------------------------------------------
   # Inbound: Telegram → Codelet
   # -------------------------------------------
-  @inbound
-  Scenario: Relay Telegram message to codelet as input
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
     When a user sends "build the app" in Telegram
@@ -255,12 +255,12 @@ Feature: Telegram Bridge Endpoint
     Then both messages should be routed to the connected codelet session
     And the most recent chat ID "222" should become the active chat for responses
 
-  # -------------------------------------------
-  # Error Handling
-  # -------------------------------------------
   @error-handling
   @telegram-api
   Scenario: Handle Telegram API errors gracefully
+  # -------------------------------------------
+  # Error Handling
+  # -------------------------------------------
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
     When the codelet sends a text chunk "Hello"

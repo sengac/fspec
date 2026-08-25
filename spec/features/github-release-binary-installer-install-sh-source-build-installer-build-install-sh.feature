@@ -37,6 +37,7 @@ Feature: GitHub-release binary installer (install.sh) + source build installer (
     As a fspec user on macOS or Linux
     I want to install fspec with a one-line curl command
     So that get a verified prebuilt binary in seconds without a Rust toolchain, while developers can still build from source via build-install.sh
+
   Scenario: One-line curl install on Apple Silicon Mac
     Given a user on an aarch64 macOS host
     When they run curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash

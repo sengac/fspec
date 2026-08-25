@@ -1,6 +1,5 @@
 @RPC-424
 Feature: Extract model parsing into shared helper function
-
   """
   The model parsing logic (is_profile_model, is_codex_model, registry_provider, model_part extraction)
   is copy-pasted across three functions in session_manager.rs:

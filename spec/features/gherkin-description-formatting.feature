@@ -106,7 +106,7 @@ Feature: Gherkin Description Blank-Line Preservation in Formatter
     Given a feature file whose feature description separates "Paragraph one." and "Paragraph two." by four consecutive blank lines
     When the formatter formats the feature file
     Then the two paragraphs are separated by exactly two blank lines:
-      ```
+      """
       Feature: Excessive blanks
         Paragraph one.
 
@@ -115,11 +115,11 @@ Feature: Gherkin Description Blank-Line Preservation in Formatter
 
         Scenario: A
           Given x
-      ```
+      """
 
   Scenario: Step doc string with an internal blank line is not regressed
     Given a feature file with a step doc string whose body contains a blank line:
-      ```
+      """
       Feature: Docstring intact
 
         Scenario: A
@@ -130,10 +130,10 @@ Feature: Gherkin Description Blank-Line Preservation in Formatter
             line three
             """
           Then ok
-      ```
+      """
     When the formatter formats the feature file
     Then the step doc string body is emitted unchanged with no spurious blanks added or removed:
-      ```
+      """
       Feature: Docstring intact
 
         Scenario: A
@@ -144,7 +144,7 @@ Feature: Gherkin Description Blank-Line Preservation in Formatter
             line three
             """
           Then ok
-      ```
+      """
 
   Scenario: Formatting a multi-paragraph description is idempotent
     Given a feature file with a two-paragraph feature description that has already been formatted once
