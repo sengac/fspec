@@ -29,7 +29,7 @@ pub const LOGO_WIDTH: u16 = 12;
 pub const LOGO_GLYPH_ROWS: [&str; 3] = ["┏┓┏┓┏┓┏┓┏┓ ", "┣ ┗┓┃┃┣ ┃ ", "┻ ┗┛┣┛┗┛┗┛ "];
 
 /// The build version painted on the 4th logo row (BOARD-021): the
-/// compile-time workspace version prefixed with `v` (e.g. `v0.10.3`).
+/// compile-time workspace version prefixed with `v` (e.g. `v0.10.4`).
 pub const VERSION_LINE: &str = concat!("v", env!("CARGO_PKG_VERSION"));
 
 /// Paint the 4-row FSPEC logo into the supplied area.
