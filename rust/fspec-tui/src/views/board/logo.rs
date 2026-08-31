@@ -68,11 +68,7 @@ fn paint_row(area: Rect, buf: &mut Buffer, row_index: u16, text: &str, style: St
         width: area.width.min(LOGO_WIDTH),
         height: 1,
     };
-    Paragraph::new(Line::from(Span::styled(
-        text.to_string(),
-        style,
-    )))
-    .render(row_area, buf);
+    Paragraph::new(Line::from(Span::styled(text.to_string(), style))).render(row_area, buf);
 }
 
 /// Center `text` in a `width`-cell block (ASCII; the version string is

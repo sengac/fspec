@@ -18,7 +18,9 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_fspec_tui::components::dialog_theme::{render_dialog_at, Accent, DialogRow, FspecDialog};
+use codelet_fspec_tui::components::dialog_theme::{
+    render_dialog_at, Accent, DialogRow, FspecDialog,
+};
 use codelet_fspec_tui::components::dialog_theme_rows::{
     body_content_rows, build_dialog, fixed_dialog_rect,
 };
@@ -147,20 +149,27 @@ fn the_dialog_frame_is_invariant_as_the_match_list_grows() {
 
     // @step When I open the search dialog and type "a"
     let _ = dialog.handle_event(&char_key('a'));
-    assert_eq!(dialog.matches().len(), 20, "query 'a' must match all 20 units");
+    assert_eq!(
+        dialog.matches().len(),
+        20,
+        "query 'a' must match all 20 units"
+    );
     let buf_a = render_80x24(&mut dialog);
 
     // @step Then the dialog frame top-left corner is at the fixed_dialog_rect position
     let top_a = first_row_with(&rows(&buf_a), "╭").expect("rounded top border");
     assert_eq!(
-        top_a,
-        rect.y as usize,
+        top_a, rect.y as usize,
         "frame top border must sit at fixed_dialog_rect y"
     );
 
     // @step When I type "b" so the query is "ab" leaving only 1 match
     let _ = dialog.handle_event(&char_key('b'));
-    assert_eq!(dialog.matches().len(), 1, "query 'ab' must match exactly one unit");
+    assert_eq!(
+        dialog.matches().len(),
+        1,
+        "query 'ab' must match exactly one unit"
+    );
     let buf_b = render_80x24(&mut dialog);
 
     // @step Then the dialog frame top-left corner is unchanged

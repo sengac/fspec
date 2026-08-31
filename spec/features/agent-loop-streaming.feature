@@ -40,7 +40,7 @@ Feature: Agent loop streaming via run_agent_stream_with_images + all 19+ StreamC
     When I locate the "openai" match arm body
     Then the arm contains exactly one direct call to `codelet_cli::interactive::run_agent_stream_with_images`
     And the call appears after `codelet_core::RigAgent::with_default_depth(agent)`
-    And the call is positioned between line 950 and line 1050
+    And the call is positioned between line 950 and line 1080
 
   Scenario: Custom-provider fallthrough arm wraps the rig agent and calls run_agent_stream_with_images
     Given the source file rust/agent-loop/src/agent_loop.rs

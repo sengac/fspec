@@ -140,7 +140,10 @@ mod tests {
         let t = LoadTracker::new("Loading checkpoint list…");
         assert!(t.is_loading());
         assert!(!t.is_loaded());
-        assert_eq!(t.active_label().as_deref(), Some("Loading checkpoint list…"));
+        assert_eq!(
+            t.active_label().as_deref(),
+            Some("Loading checkpoint list…")
+        );
     }
 
     #[test]

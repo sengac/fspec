@@ -31,6 +31,10 @@ use crate::common::{self, ShutdownReason};
 pub async fn run(workspace: Option<PathBuf>) -> Result<()> {
     common::install_panic_hook();
 
+    // CLI-015: this process hosts a native agent session with the AstGrep
+    // rig tool, so core prompts render their harness (capture) variants.
+    std::env::set_var("FSPEC_CAPTURE_MODE", "1");
+
     let workspace = common::resolve_workspace(workspace)?;
     let service = common::build_service(&workspace)?;
     common::init_tracing_combined(&service)?;

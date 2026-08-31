@@ -708,16 +708,14 @@ Use: fspec add-architecture-note <work-unit-id> <note> to add architectural note
 /// NAPI callback; direct CLI invocation is never in capture mode. The Rust
 /// core's NAPI delegation (TOOL-019) sets `FSPEC_CAPTURE_MODE=1` when it serves
 /// an agent request, so the CLI binary defaults to `false` — matching the TS
-/// CLI default exactly.
+/// CLI default exactly. Delegates to the shared [`crate::utils::mode::in_capture_mode`].
 fn is_in_capture_mode() -> bool {
-    std::env::var("FSPEC_CAPTURE_MODE")
-        .map(|v| v == "1")
-        .unwrap_or(false)
+    crate::utils::mode::in_capture_mode()
 }
 
 /// Mirrors `buildASTResearchErrorMessage()` (`src/utils/review-validation.ts`).
 /// In capture mode the agent has the AstGrep tool natively, so it is directed
-/// there; in CLI mode the user is directed to `fspec research --tool=ast`.
+/// there; in CLI mode the user is directed to `fspec astgrep` (CLI-015).
 fn ast_research_error_message(capture: bool) -> &'static str {
     if capture {
         "Cannot transition to testing - no AST research performed during discovery. \
@@ -726,8 +724,8 @@ Save output to file matching pattern: ast-research-<description>.json or ast-res
 Then attach: fspec add-attachment <work-unit-id> spec/attachments/<work-unit-id>/ast-research-<description>.{json|md}"
     } else {
         "Cannot transition to testing - no AST research performed during discovery. \
-FIRST run: fspec research --tool=ast --help (to learn HOW to use the AST tool). \
-THEN use: fspec research --tool=ast --file <path> --operation <op> to analyze relevant code. \
+FIRST run: fspec astgrep --help (to learn HOW to use the astgrep tool). \
+THEN use: fspec astgrep --pattern <pattern> --lang <language> [--path <path>] to analyze relevant code. \
 Save output to file matching pattern: ast-research-<description>.json or ast-research-<description>.md. \
 Then attach: fspec add-attachment <work-unit-id> spec/attachments/<work-unit-id>/ast-research-<description>.{json|md}"
     }
@@ -1385,32 +1383,38 @@ mod tests {
     // `buildASTResearchErrorMessage()` in `src/utils/review-validation.ts`.
 
     #[test]
-    fn ast_research_message_cli_variant_directs_to_research_tool() {
-        // @step Given the CLI (non-capture) execution context
+    fn ast_research_message_cli_variant_directs_to_astgrep_command() {
+        // @step Given a work unit with an ast-research attachment requirement and FSPEC_CAPTURE_MODE is not set
+        // @step When I dispatch update-work-unit-status for it with status "testing" without the required attachment
         let message = ast_research_error_message(false);
 
-        // @step Then the message directs the user to fspec research --tool=ast
+        // @step Then the error message says to run `fspec astgrep --help` first
         assert!(message.contains(
             "Cannot transition to testing - no AST research performed during discovery."
         ));
-        assert!(message.contains("FIRST run: fspec research --tool=ast --help"));
-        assert!(
-            message.contains("THEN use: fspec research --tool=ast --file <path> --operation <op>")
-        );
+        assert!(message.contains("FIRST run: fspec astgrep --help"));
+        // @step And the error message says to use `fspec astgrep --pattern <pattern> --lang <language> [--path <path>]`
+        assert!(message.contains(
+            "THEN use: fspec astgrep --pattern <pattern> --lang <language> [--path <path>]"
+        ));
+        // @step And the error message does not mention `fspec research --tool=ast`
         assert!(!message.contains("Use the AstGrep tool"));
+        assert!(!message.contains("fspec research --tool=ast"));
     }
 
     #[test]
     fn ast_research_message_capture_variant_directs_to_astgrep() {
-        // @step Given the capture-mode (agent NAPI) execution context
+        // @step Given a work unit with an ast-research attachment requirement and FSPEC_CAPTURE_MODE is set to "1"
+        // @step When I dispatch update-work-unit-status for it with status "testing" without the required attachment
         let message = ast_research_error_message(true);
 
-        // @step Then the message directs the agent to the AstGrep tool
+        // @step Then the error message says to use the AstGrep tool to analyze relevant code
         assert!(message.contains(
             "Cannot transition to testing - no AST research performed during discovery."
         ));
         assert!(message.contains("Use the AstGrep tool to analyze relevant code in the codebase."));
-        assert!(!message.contains("fspec research --tool=ast --help"));
+        // @step And the error message does not mention `fspec astgrep`
+        assert!(!message.contains("fspec astgrep"));
     }
 
     #[test]

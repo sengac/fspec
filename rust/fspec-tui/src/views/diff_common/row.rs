@@ -119,7 +119,8 @@ mod tests {
                 let code = c as u32;
                 assert!(
                     !matches!(code, 0x00..=0x08 | 0x0B | 0x0C | 0x0E..=0x1F | 0x7F),
-                    "File row should not contain control character U+{code:02X}, found in {text:?}");
+                    "File row should not contain control character U+{code:02X}, found in {text:?}"
+                );
             }
         }
     }
@@ -166,10 +167,12 @@ mod tests {
             let text = span.content.as_ref();
             assert!(
                 !text.contains('\x00'),
-                "File row should not contain NUL, got {text:?}");
+                "File row should not contain NUL, got {text:?}"
+            );
             assert!(
                 !text.contains('\x08'),
-                "File row should not contain backspace, got {text:?}");
+                "File row should not contain backspace, got {text:?}"
+            );
         }
     }
 

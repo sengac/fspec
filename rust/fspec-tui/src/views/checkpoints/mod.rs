@@ -143,10 +143,7 @@ impl CheckpointsView {
             last_diff_sb_rect: None,
             restore_dialog: None,
             delete_dialog: None,
-            loading: LoadingDialog::new(
-                "Loading checkpoints",
-                "Loading checkpoint list…",
-            ),
+            loading: LoadingDialog::new("Loading checkpoints", "Loading checkpoint list…"),
             load: LoadTracker::new("Loading checkpoint list…"),
             loading_started: std::time::Instant::now(),
         }

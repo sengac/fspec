@@ -122,7 +122,10 @@ fn scrolling_the_mouse_wheel_up_inside_the_dialog_moves_the_selection_up() {
     // offset is non-zero, then wheel back up.
     use crossterm::event::{KeyCode, KeyEvent};
     for _ in 0..2 {
-        let _ = dialog.handle_event(&Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::NONE)));
+        let _ = dialog.handle_event(&Event::Key(KeyEvent::new(
+            KeyCode::Down,
+            KeyModifiers::NONE,
+        )));
     }
     assert_eq!(dialog.selected_index(), 2);
     let (x, y) = inside_point(&dialog);
@@ -275,8 +278,7 @@ fn a_proportional_scrollbar_gutter_is_painted_when_matches_overflow_the_visible_
         }
     }
     assert_eq!(
-        painted,
-        gutter.height as usize,
+        painted, gutter.height as usize,
         "every gutter row must be painted with the scrollbar glyphs"
     );
 }

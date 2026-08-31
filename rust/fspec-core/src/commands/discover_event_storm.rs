@@ -15,8 +15,11 @@
 //!
 //! ## Inlined helpers (per port decisions)
 //!
-//! * `EVENT_STORM_GUIDANCE` — the verbatim guidance string returned by the TS
-//!   `getEventStormSection()` (`src/utils/slashCommandSections/eventStorm.ts`).
+//! * `EVENT_STORM_GUIDANCE_PREFIX` / `EVENT_STORM_GUIDANCE_SUFFIX` +
+//!   `event_storm_guidance()` — the guidance string returned by the TS
+//!   `getEventStormSection()` (`src/utils/slashCommandSections/eventStorm.ts`),
+//!   split around the Research-First Workflow block which is rendered
+//!   per-mode (CLI-015).
 //! * [`wrap_in_system_reminder`] — private analog of the TS
 //!   `wrapInSystemReminder` (`src/utils/system-reminder.ts`).
 //!
@@ -48,29 +51,26 @@ fn wrap_in_system_reminder(content: &str) -> String {
     format!("<system-reminder>\n{content}\n</system-reminder>")
 }
 
-/// Verbatim guidance returned by the TS `getEventStormSection()`
-/// (`src/utils/slashCommandSections/eventStorm.ts`).
-const EVENT_STORM_GUIDANCE: &str = r####"## Step 4: Feature Event Storm (BEFORE Example Mapping)
+/// CLI-015: the Research-First Workflow block, rendered per mode. Harness
+/// (capture) mode names the native AstGrep tool; CLI mode names the
+/// `fspec astgrep` subcommand.
+fn ast_research_block(in_capture: bool) -> String {
+    if in_capture {
+        r#"**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using the AstGrep tool to understand the domain structure.
 
-**WHEN TO USE FEATURE EVENT STORM**: STOP and assess domain complexity before jumping to Example Mapping.
-
-### Research-First Workflow
-
-**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using AST analysis to understand the domain structure.
-
-```bash
-# Step 1: Research relevant code using AST pattern matching
+```
+# Step 1: Research relevant code using the AstGrep tool
 # Find all functions in the domain area:
-fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/auth/
+AstGrep(language="typescript", pattern="function $NAME($$$ARGS) { $$$BODY }", path="src/auth/")
 
 # Find classes to understand domain entities:
-fspec research --tool=ast --pattern="class $NAME" --lang=typescript --path=src/auth/
+AstGrep(language="typescript", pattern="class $NAME { $$$FIELDS }", path="src/auth/")
 
 # Find interfaces to understand data structures:
-fspec research --tool=ast --pattern="interface $NAME" --lang=typescript --path=src/auth/
+AstGrep(language="typescript", pattern="interface $NAME { $$$FIELDS }", path="src/auth/")
 
 # Find async functions (often indicate external integrations or events):
-fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/auth/
+AstGrep(language="typescript", pattern="async function $NAME($$$ARGS) { $$$BODY }", path="src/auth/")
 
 # Step 2: Analyze findings to understand domain
 # - What domain events exist in the code?
@@ -85,13 +85,69 @@ fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --p
 # Step 4: Proceed with chosen approach
 # - Feature Event Storm (if complex/unfamiliar)
 # - Example Mapping (if simple/clear)
-```
+```"#
+            .to_string()
+    } else {
+        r#"**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using the `fspec astgrep` command to understand the domain structure.
 
-**AST Pattern Tips:**
+```
+# Step 1: Research relevant code using fspec astgrep
+# Find all functions in the domain area:
+fspec astgrep --pattern 'function $NAME($$$ARGS) { $$$BODY }' --lang typescript --path src/auth/
+
+# Find classes to understand domain entities:
+fspec astgrep --pattern 'class $NAME { $$$FIELDS }' --lang typescript --path src/auth/
+
+# Find interfaces to understand data structures:
+fspec astgrep --pattern 'interface $NAME { $$$FIELDS }' --lang typescript --path src/auth/
+
+# Find async functions (often indicate external integrations or events):
+fspec astgrep --pattern 'async function $NAME($$$ARGS) { $$$BODY }' --lang typescript --path src/auth/
+
+# Step 2: Analyze findings to understand domain
+# - What domain events exist in the code?
+# - What commands trigger those events?
+# - What business rules/policies are present?
+
+# Step 3: If uncertain after research, ASK USER
+# Share your findings and let the user decide:
+# "I found 3 domain events: UserRegistered, LoginAttempted, SessionExpired.
+#  Should we do Feature Event Storm to map the full authentication flow?"
+
+# Step 4: Proceed with chosen approach
+# - Feature Event Storm (if complex/unfamiliar)
+# - Example Mapping (if simple/clear)
+```"#
+            .to_string()
+    }
+}
+
+/// Assembles the full event-storm guidance for the current mode
+/// ([`crate::utils::mode::in_capture_mode`]).
+fn event_storm_guidance() -> String {
+    EVENT_STORM_GUIDANCE_PREFIX
+        .replace(
+            "__AST_RESEARCH_BLOCK__",
+            &ast_research_block(crate::utils::mode::in_capture_mode()),
+        )
+        + EVENT_STORM_GUIDANCE_SUFFIX
+}
+const EVENT_STORM_GUIDANCE_PREFIX: &str = r####"## Step 4: Feature Event Storm (BEFORE Example Mapping)
+
+**WHEN TO USE FEATURE EVENT STORM**: STOP and assess domain complexity before jumping to Example Mapping.
+
+### Research-First Workflow
+
+__AST_RESEARCH_BLOCK__
+"####;
+
+const EVENT_STORM_GUIDANCE_SUFFIX: &str = r####"
+**AstGrep Pattern Tips:**
 - Use `$NAME` as a wildcard to match any identifier
 - Use `$$$ARGS` to match multiple arguments or body content
-- Adjust `--lang` for your codebase: typescript, tsx, javascript, rust, python, go, etc.
-- Adjust `--path` to focus on the relevant domain area
+- Patterns must match a COMPLETE AST node (e.g. `function $NAME()` without a body will not match — include `{ $$$BODY }`)
+- Set `language` for your codebase: typescript, tsx, javascript, rust, python, go, etc.
+- Set `path` to focus on the relevant domain area
 
 **Decision is SUBJECTIVE and COLLABORATIVE** - emphasize no guessing, always ask if unsure. Research builds familiarity before judgment.
 
@@ -331,7 +387,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let reminder = wrap_in_system_reminder(&format!(
         "EVENT STORM DISCOVERY - {id}\n\n{guidance}\n\nWork unit: {id}\n\nUse the commands listed above to capture Event Storm artifacts.\nWhen done, run: fspec generate-example-mapping-from-event-storm {id}",
         id = args.work_unit_id,
-        guidance = EVENT_STORM_GUIDANCE
+        guidance = event_storm_guidance()
     ));
 
     Ok(format!(
@@ -362,6 +418,29 @@ mod tests {
 
     #[test]
     fn guidance_is_non_empty() {
-        assert!(EVENT_STORM_GUIDANCE.contains("Feature Event Storm"));
+        assert!(event_storm_guidance().contains("Feature Event Storm"));
+    }
+
+    // Feature: spec/features/event-storm-discovery-guidance-mode-aware.feature
+
+    #[test]
+    fn event_storm_discovery_guidance_is_mode_aware() {
+        // @step Given a work unit is in specifying status and FSPEC_CAPTURE_MODE is not set
+        // @step When I dispatch discover-event-storm for it
+        if crate::utils::mode::in_capture_mode() {
+            return; // environment explicitly opts in; nothing to assert
+        }
+        let cli_guidance = event_storm_guidance();
+        // @step Then the emitted guidance references `fspec astgrep` for the research-first step
+        assert!(cli_guidance.contains("fspec astgrep --pattern"));
+        assert!(!cli_guidance.contains("AstGrep(language="));
+
+        // @step And when FSPEC_CAPTURE_MODE is set to "1" I dispatch discover-event-storm for it
+        std::env::set_var("FSPEC_CAPTURE_MODE", "1");
+        let capture_guidance = event_storm_guidance();
+        std::env::remove_var("FSPEC_CAPTURE_MODE");
+        // @step Then the emitted guidance references the `AstGrep` tool for the research-first step
+        assert!(capture_guidance.contains("AstGrep(language="));
+        assert!(!capture_guidance.contains("fspec astgrep"));
     }
 }

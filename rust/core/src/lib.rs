@@ -7,6 +7,7 @@ pub mod compaction;
 pub mod compaction_hook;
 pub mod file_search;
 pub mod gemini_history_hook;
+pub mod history_strip;
 pub mod lifecycle_hooks;
 pub mod loops;
 pub mod message_estimator;
@@ -25,6 +26,7 @@ pub use gemini_history_hook::{
     ensure_thought_signatures, GeminiHistoryHook, SYNTHETIC_THOUGHT_SIGNATURE,
 };
 pub use message_estimator::estimate_messages_tokens;
+pub use history_strip::strip_reasoning_from_history;
 pub use rig_agent::{RigAgent, DEFAULT_MAX_DEPTH};
 pub use streaming_display::{
     DisplayThrottle, OutputTokenTracker, StreamingTokenDisplay, TokPerSecCalculator,

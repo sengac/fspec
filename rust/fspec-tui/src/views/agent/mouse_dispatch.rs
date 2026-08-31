@@ -185,8 +185,8 @@ impl AgentView {
             | MouseEventKind::Drag(MouseButton::Left)
             | MouseEventKind::Up(MouseButton::Left) => {
                 // TUI-102: check if gutter is reserved (scrollbar visible)
-                let gutter_reserved = self.last_scrollback_total_rows
-                    > self.last_scrollback_viewport as usize;
+                let gutter_reserved =
+                    self.last_scrollback_total_rows > self.last_scrollback_viewport as usize;
                 let scrollbar_col = rect.x.saturating_add(rect.width).saturating_sub(1);
 
                 // Down: decide whether the press targets the scrollbar gutter.

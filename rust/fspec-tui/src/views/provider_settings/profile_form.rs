@@ -28,8 +28,9 @@ pub const DEFAULT_PROFILE_BASE_URL: &str = "http://localhost:8888";
 
 /// The connection field labels in display order (TS `PROFILE_FORM_FIELDS`).
 /// PROV-139 appends the boolean "Streaming" toggle as the 6th entry; PROV-142
-/// appends the numeric "Auto-Continue" text field as the 7th, last entry.
-pub const PROFILE_FORM_FIELDS: [&str; 7] = [
+/// appends the numeric "Auto-Continue" text field as the 7th; PROV-143
+/// appends the boolean "Preserve Thinking" toggle as the 8th, last entry.
+pub const PROFILE_FORM_FIELDS: [&str; 8] = [
     "Base URL",
     "API Key",
     "Context Window",
@@ -37,6 +38,7 @@ pub const PROFILE_FORM_FIELDS: [&str; 7] = [
     "Compaction Threshold",
     "Streaming",
     "Auto-Continue",
+    "Preserve Thinking",
 ];
 
 /// In-progress profile form values. Number / threshold fields keep their raw
@@ -54,6 +56,10 @@ pub struct ProfileForm {
     /// PROV-142: the Auto-Continue numeric text field (raw typed string,
     /// parsed on build). Empty or `0` ⇒ off; `n >= 1` ⇒ on with budget `n`.
     pub auto_continue: String,
+    /// PROV-143: the Preserve Thinking boolean toggle. `false` (default) ⇒
+    /// thinking blocks are STRIPPED from the chat history sent back to the LLM;
+    /// `true` ⇒ preserved. Not a text field (Space/Left/Right flip it).
+    pub preserve_thinking: bool,
     /// Focused field index into [`PROFILE_FORM_FIELDS`].
     pub field_index: usize,
     /// True while the cursor is in the name field (editable in both create and
@@ -79,6 +85,9 @@ impl ProfileForm {
             is_new: true,
             streaming: true,
             auto_continue: String::new(),
+            // PROV-143: default to DISABLED — thinking blocks are stripped
+            // from the outgoing chat history unless the user opts in.
+            preserve_thinking: false,
         }
     }
 
@@ -102,6 +111,8 @@ impl ProfileForm {
             is_new: false,
             streaming: def.streaming_enabled(),
             auto_continue: opt_num(def.auto_continue),
+            // PROV-143: prefill the stored toggle; an absent key ⇒ disabled.
+            preserve_thinking: def.preserve_thinking_enabled(),
         }
     }
 
@@ -165,7 +176,8 @@ impl ProfileForm {
     }
 
     /// Display value for a field index (PROV-139: Streaming renders its label;
-    /// PROV-142: Auto-Continue renders its raw text).
+    /// PROV-142: Auto-Continue renders its raw text; PROV-143: Preserve
+    /// Thinking renders its Enabled/Disabled label).
     pub fn field_value(&self, idx: usize) -> &str {
         match idx {
             0 => &self.base_url,
@@ -174,6 +186,7 @@ impl ProfileForm {
             3 => &self.max_output_tokens,
             4 => &self.compaction_threshold,
             6 => &self.auto_continue,
+            7 => super::profile_form_streaming::streaming_label(self.preserve_thinking),
             _ => super::profile_form_streaming::streaming_label(self.streaming),
         }
     }
@@ -204,6 +217,9 @@ impl ProfileForm {
             compaction_threshold_value,
             streaming: Some(self.streaming),
             auto_continue,
+            // PROV-143: always carry the explicit toggle so the on-disk
+            // profile reflects the form (true ⇒ preserved, false ⇒ stripped).
+            preserve_thinking: Some(self.preserve_thinking),
         }))
     }
 }

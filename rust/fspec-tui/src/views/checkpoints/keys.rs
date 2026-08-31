@@ -100,7 +100,10 @@ impl CheckpointsView {
             // Hit-test checkpoints scrollbar
             if let Some(sb_rect) = self.last_cp_sb_rect {
                 if rect_contains(sb_rect, ev.column, ev.row) {
-                    let visible = self.last_checkpoints_rect.map(|r| r.height as usize).unwrap_or(0);
+                    let visible = self
+                        .last_checkpoints_rect
+                        .map(|r| r.height as usize)
+                        .unwrap_or(0);
                     let total = self.checkpoints.len();
                     if total > visible {
                         let geom = ScrollbarGeometry {

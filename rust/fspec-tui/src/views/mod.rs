@@ -28,6 +28,7 @@ pub mod checkpoints;
 pub mod diff_common;
 pub mod full_screen_shell;
 pub mod model_selector;
+pub mod multiplex;
 pub mod navigator;
 pub mod navigator_events;
 pub mod provider_settings;

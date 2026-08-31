@@ -47,6 +47,12 @@ pub struct ProfileDef {
     /// Only `Some(_)` is written to disk (as `"autoContinue": <n>`, including
     /// the explicit-off sentinel `0`); `None` removes the key.
     pub auto_continue: Option<u32>,
+    /// PROV-143: per-profile preserve-thinking toggle. `None` (key absent) or
+    /// `Some(false)` mean thinking blocks are STRIPPED from the chat history
+    /// sent back to the LLM (the default); `Some(true)` preserves them. Only
+    /// `Some(_)` is written to disk (as `"preserveThinking": true|false`);
+    /// `None` removes the key.
+    pub preserve_thinking: Option<bool>,
 }
 
 /// Canonical openai-only guard predicate — the single source of truth for
@@ -187,6 +193,14 @@ fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
     // explicit-off sentinel `Some(0)`); `None` removes the key so an absent
     // `autoContinue` continues to mean off (today's behavior).
     set_or_remove(profile, "autoContinue", def.auto_continue.map(Value::from));
+    // PROV-143: write the preserve-thinking toggle when set (including the
+    // explicit `false`); `None` removes the key so an absent
+    // `preserveThinking` continues to mean stripped (the default).
+    set_or_remove(
+        profile,
+        "preserveThinking",
+        def.preserve_thinking.map(Value::from),
+    );
 }
 
 /// Path-injectable core of [`save_profile`]. Whole-file read-modify-write that

@@ -26,10 +26,7 @@ use super::multiline_input::{InputEventOutcome, InputGate, MultiLineInput};
 
 /// Insert a newline at the cursor position. Used by Ctrl+J, Shift+Enter,
 /// and Alt+Enter handlers. Gated by `block_edits` while Compacting.
-fn insert_newline_gated(
-    input: &mut MultiLineInput,
-    gate: InputGate,
-) -> InputEventOutcome {
+fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {
     if gate.block_edits {
         return InputEventOutcome::Continued;
     }

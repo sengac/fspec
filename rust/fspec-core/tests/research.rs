@@ -61,7 +61,7 @@ fn is_configured(tools: &[Value], name: &str) -> bool {
 // ---------- scenarios ----------
 
 #[test]
-fn list_mode_enumerates_bundled_registry_with_ast_configured_by_default() {
+fn list_mode_enumerates_bundled_registry_without_ast() {
     // @step Given an empty project root tempdir with no spec/fspec-config.json and no research env vars
     let tmp = TempDir::new().expect("tempdir");
 
@@ -72,11 +72,6 @@ fn list_mode_enumerates_bundled_registry_with_ast_configured_by_default() {
     assert!(result.success, "expected success; got {result:?}");
     let tools = tools_of(&result.data);
 
-    // @step And the result lists the tool "ast"
-    assert!(
-        tool_named(&tools, "ast").is_some(),
-        "missing ast: {tools:?}"
-    );
     // @step And the result lists the tool "perplexity"
     assert!(
         tool_named(&tools, "perplexity").is_some(),
@@ -95,10 +90,11 @@ fn list_mode_enumerates_bundled_registry_with_ast_configured_by_default() {
         "missing stakeholder"
     );
 
-    // @step And the tool "ast" is reported as configured
+    // @step And the result does not list the tool "ast"
+    // (CLI-015: ast moved to the AstGrep tool / `fspec astgrep`)
     assert!(
-        is_configured(&tools, "ast"),
-        "ast must be configured: {tools:?}"
+        tool_named(&tools, "ast").is_none(),
+        "ast must not be a research tool: {tools:?}"
     );
     // @step And the tool "perplexity" is reported as not configured
     assert!(
@@ -201,6 +197,35 @@ fn execute_mode_rejects_unknown_tool_before_doing_work() {
 }
 
 #[test]
+fn execute_mode_rejects_ast_tool_and_points_to_fspec_astgrep() {
+    // @step Given an empty project root tempdir
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step When I dispatch research with tool="ast"
+    let result = dispatch_command(req(tmp.path(), json!({ "tool": "ast" })));
+
+    // @step Then the dispatcher returns an error
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message contains "Research tool not found: ast"
+    let err = result.error.unwrap_or_default();
+    assert!(
+        err.contains("Research tool not found: ast"),
+        "error message mismatch: {err}"
+    );
+    // @step And the error message lists "perplexity, jira, confluence, stakeholder" as the available bundled tools
+    assert!(
+        err.contains("Available bundled tools: perplexity, jira, confluence, stakeholder"),
+        "bundled-tools list mismatch: {err}"
+    );
+    // @step And the error points at the `fspec astgrep` command for AST code search
+    assert!(
+        err.contains("For AST code search, use the `fspec astgrep` command instead"),
+        "astgrep pointer missing: {err}"
+    );
+}
+
+#[test]
 fn both_front_doors_converge_on_same_function() {
     // @step Given an empty project root tempdir
     let tmp = TempDir::new().expect("tempdir");
@@ -212,12 +237,14 @@ fn both_front_doors_converge_on_same_function() {
     assert!(result.success, "dispatcher path failed: {result:?}");
     let tools = tools_of(&result.data);
 
-    // @step Then both invocations enumerate the same five bundled research tools
+    // @step Then both invocations enumerate the same four bundled research tools
+    // (CLI-015: `ast` is no longer bundled — AST search moved to the AstGrep
+    // tool / `fspec astgrep`.)
     let mut names: Vec<&str> = tools.iter().filter_map(|t| t["name"].as_str()).collect();
     names.sort_unstable();
     assert_eq!(
         names,
-        vec!["ast", "confluence", "jira", "perplexity", "stakeholder"],
+        vec!["confluence", "jira", "perplexity", "stakeholder"],
         "tool set mismatch: {names:?}"
     );
 }

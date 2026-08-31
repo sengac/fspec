@@ -66,10 +66,7 @@ async fn session_list_filtered_to_current_project_on_resume() {
         "list_sessions should have been called with a project path"
     );
     let project = project.unwrap();
-    assert!(
-        !project.is_empty(),
-        "project path should not be empty"
-    );
+    assert!(!project.is_empty(), "project path should not be empty");
 
     // @step And sessions from project B should not appear in the list
     let sessions = app
@@ -259,7 +256,10 @@ async fn cross_transport_parity_list_sessions_accepts_project_path() {
     // @step When I call list_sessions with a project path via WebSocketFspecBackend
     // Both transports use the same trait method, so the same mock verification applies
     let result2 = backend.list_sessions("/project/b".to_string()).await;
-    assert!(result2.is_ok(), "list_sessions should succeed for second call");
+    assert!(
+        result2.is_ok(),
+        "list_sessions should succeed for second call"
+    );
 
     // @step Then the WebSocketFspecBackend should pass the project path to the tarpc client
     let project2 = mock.list_sessions_project();

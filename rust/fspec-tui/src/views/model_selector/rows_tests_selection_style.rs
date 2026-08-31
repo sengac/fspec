@@ -27,7 +27,7 @@ fn render_cells(
     term.draw(|f| {
         let _ = render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, current);
     })
-        .expect("draw");
+    .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut cells = Vec::new();
     for y in 0..buf.area.height {

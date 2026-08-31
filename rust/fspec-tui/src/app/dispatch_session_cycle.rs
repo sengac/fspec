@@ -124,7 +124,9 @@ impl App {
 
     /// RPC-024 contract: snapshot outgoing draft, focus `idx`, restore
     /// incoming draft, refresh supervisor badge (RPC-061 rule [9]).
-    fn switch_to_session_index(&mut self, idx: usize) {
+    /// BUG-163: also used by `sync_mux_focus_to_session` (mux focus
+    /// tracking) — `pub(crate)` so the mux dispatch module can reuse it.
+    pub(crate) fn switch_to_session_index(&mut self, idx: usize) {
         let outgoing_idx = self.agent_view_store.current_session_index();
         let outgoing_draft = self.navigator.agent.input.value();
         self.agent_view_store

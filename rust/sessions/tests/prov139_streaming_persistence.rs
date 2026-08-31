@@ -30,6 +30,7 @@ fn def_streaming(base_url: &str, api_key: &str, streaming: Option<bool>) -> Prof
         compaction_threshold: None,
         streaming,
         auto_continue: None,
+        preserve_thinking: None,
     }
 }
 

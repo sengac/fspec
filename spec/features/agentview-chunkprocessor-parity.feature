@@ -161,8 +161,7 @@ Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/
       | index | visible text (after render)    |
       | 0     | You: what cards are open?      |
       | 1     | ● Let me check the board       |
-      | 2     | ● Fspec(board)
-ok              |
+      | 2     | ● Fspec(board) ok             |
       | 3     | ● Here are the open work units |
     And the SessionContext in_flight_assistant slot is None
     And no chunk has a bullet baked into its stored source.text

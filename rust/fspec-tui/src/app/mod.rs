@@ -36,6 +36,8 @@ pub mod dispatch_hitl_prompt;
 pub mod dispatch_merge_worktree;
 pub mod dispatch_model_selector;
 pub mod dispatch_model_thinking_dialogs;
+pub mod dispatch_mux; // MUX-001: mux mode Action arms + /mux apply
+pub mod dispatch_mux_config; // MUX-004: MuxConfigDialog open helper
 pub mod dispatch_pause_hitl;
 pub mod dispatch_pending_input;
 pub mod dispatch_provider_settings;
@@ -64,6 +66,7 @@ pub mod dispatch_work_unit_search;
 pub mod events;
 pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;
+pub mod mux_parser; // MUX-001: /mux slash-command grammar
 pub mod schedule_parser;
 pub mod session_creation;
 pub mod slash_parser;
@@ -89,14 +92,20 @@ pub use state::App;
 ///   in flight — without this fourth flag the loading dialog's
 ///   80ms-cadence braille spinner freezes because an idle board
 ///   produces no render ticks.
+/// - MUX-006: `is_mux_flash_active=true` keeps the 16ms tick redrawing
+///   while the mux focus flash is inside its 350ms window — without
+///   this fifth flag the right-to-left scan strip freezes after the
+///   focus-change event's own redraw because an idle session produces no
+///   render ticks.
 #[must_use]
 pub fn tick_should_draw(
     should_render: bool,
     is_busy: bool,
     is_animating: bool,
     is_view_loading: bool,
+    is_mux_flash_active: bool,
 ) -> bool {
-    should_render || is_busy || is_animating || is_view_loading
+    should_render || is_busy || is_animating || is_view_loading || is_mux_flash_active
 }
 
 #[cfg(test)]
@@ -104,24 +113,30 @@ mod tick_should_draw_tests {
     use super::tick_should_draw;
     #[test]
     fn idle_no_event_skips() {
-        assert!(!tick_should_draw(false, false, false, false));
+        assert!(!tick_should_draw(false, false, false, false, false));
     }
     #[test]
     fn busy_bypasses_should_render() {
-        assert!(tick_should_draw(false, true, false, false));
+        assert!(tick_should_draw(false, true, false, false, false));
     }
     #[test]
     fn event_triggers_draw() {
-        assert!(tick_should_draw(true, false, false, false));
+        assert!(tick_should_draw(true, false, false, false, false));
     }
     #[test]
     fn animating_bypasses_should_render_when_not_busy() {
         // RPC-093 fix: post-busy finish animation must keep ticking.
-        assert!(tick_should_draw(false, false, true, false));
+        assert!(tick_should_draw(false, false, true, false, false));
     }
     #[test]
     fn view_loading_bypasses_should_render() {
         // TUI-106: a lazy mode-view cascade keeps the spinner ticking.
-        assert!(tick_should_draw(false, false, false, true));
+        assert!(tick_should_draw(false, false, false, true, false));
+    }
+    #[test]
+    fn mux_flash_bypasses_should_render() {
+        // MUX-006: the focus flash must keep the 16ms tick redrawing
+        // while idle.
+        assert!(tick_should_draw(false, false, false, false, true));
     }
 }

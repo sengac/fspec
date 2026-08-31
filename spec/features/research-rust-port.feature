@@ -49,22 +49,24 @@ Feature: Port research command to Rust
   #
   # BUSINESS RULES:
   #   1. With no --tool flag the command operates in LIST mode: it emits the static research tool registry
-  #      (ast, perplexity, jira, confluence, stakeholder) each annotated with a configuration status derived
+  #      (perplexity, jira, confluence, stakeholder) each annotated with a configuration status derived
   #      from resolveConfig (ENV vars → ~/.fspec/fspec-config.json → spec/fspec-config.json → defaults).
-  #   2. The 'ast' tool has no required config fields, so it is always reported CONFIGURED ('✓'); the other
-  #      tools are reported NOT CONFIGURED ('✗') unless all their required fields resolve to non-empty values.
-  #   3. perplexity requires apiKey; jira and confluence require url+token; stakeholder requires at least one
+  #      CLI-015 removed the 'ast' tool from this registry — AST code search is served by the native
+  #      AstGrep tool (harness mode) and the `fspec astgrep` subcommand (CLI mode).
+  #   2. perplexity requires apiKey; jira and confluence require url+token; stakeholder requires at least one
   #      platform webhook/token. Required fields satisfied via env vars or config file flip the indicator to ✓.
   #   4. LIST mode performs only blocking file/env reads and never spawns a process or opens a socket, so it is
   #      safe under the single-poll sync dispatcher used by the LLM front-door.
   #   5. EXECUTE mode (--tool given) first validates inputs BEFORE any tool work: an unknown tool name yields a
   #      'Research tool not found: <name>' error; the deterministic pre-execution validation path is in scope.
+  #      CLI-015: `ast` is no longer a bundled tool, so `--tool=ast` is rejected here too, and the error
+  #      message points users at the `fspec astgrep` command for AST code search.
   #   6. Actual execution of network/NAPI/dynamic-JS research tools is OUT OF SCOPE for this port pending a
   #      supervisor scope decision (see SCOPE FLAG docstring); the dispatcher must not return Poll::Pending.
   #
   # EXAMPLES:
-  #   1. Empty project, no config: dispatching research with no flags returns the five bundled tools with ast
-  #      marked configured and the remaining four marked not-configured.
+  #   1. Empty project, no config: dispatching research with no flags returns the four bundled tools, all
+  #      marked not-configured.
   #   2. Configured perplexity: with PERPLEXITY_API_KEY set (or spec/fspec-config.json research.perplexity.apiKey),
   #      perplexity is reported CONFIGURED.
   #   3. Unknown tool: dispatching research --tool=does-not-exist returns a 'Research tool not found' error.
@@ -76,16 +78,15 @@ Feature: Port research command to Rust
     So that the standalone Rust binary and the dispatcher can enumerate research tools and their configuration
     status without falling back to TypeScript
 
-  Scenario: List mode enumerates the bundled tool registry with ast configured by default
+  Scenario: List mode enumerates the bundled tool registry without ast
     Given an empty project root tempdir with no spec/fspec-config.json and no research env vars
     When I dispatch research with no flags
     Then the dispatcher returns success
-    And the result lists the tool "ast"
     And the result lists the tool "perplexity"
     And the result lists the tool "jira"
     And the result lists the tool "confluence"
     And the result lists the tool "stakeholder"
-    And the tool "ast" is reported as configured
+    And the result does not list the tool "ast"
     And the tool "perplexity" is reported as not configured
 
   Scenario: List mode reflects a configured perplexity api key from project config

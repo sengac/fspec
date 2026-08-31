@@ -805,7 +805,10 @@ async fn create_isolated_session_appears_in_list_sessions() {
     assert!(!em_info.base_commit.is_empty());
 
     // @step And backend.list_sessions().await contains a SessionInfo with id == iso_info.session_id.value and is_isolated == true
-    let em_list = embedded.list_sessions(String::new()).await.expect("em list_sessions");
+    let em_list = embedded
+        .list_sessions(String::new())
+        .await
+        .expect("em list_sessions");
     assert!(em_list
         .iter()
         .any(|s| s.id == em_info.session_id.value && s.is_isolated));
@@ -815,7 +818,10 @@ async fn create_isolated_session_appears_in_list_sessions() {
         .create_isolated_session(Some("reviewer".to_string()))
         .await
         .expect("ws create_isolated_session");
-    let ws_list = websocket.list_sessions(String::new()).await.expect("ws list_sessions");
+    let ws_list = websocket
+        .list_sessions(String::new())
+        .await
+        .expect("ws list_sessions");
     assert!(ws_list
         .iter()
         .any(|s| s.id == ws_info.session_id.value && s.is_isolated));

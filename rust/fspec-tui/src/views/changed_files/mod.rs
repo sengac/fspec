@@ -109,10 +109,7 @@ impl ChangedFilesView {
             diff_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
             last_files_sb_rect: None,
             last_diff_sb_rect: None,
-            loading: LoadingDialog::new(
-                "Loading changed files",
-                "Loading changed files…",
-            ),
+            loading: LoadingDialog::new("Loading changed files", "Loading changed files…"),
             load: LoadTracker::new("Loading changed files…"),
             loading_started: std::time::Instant::now(),
         }

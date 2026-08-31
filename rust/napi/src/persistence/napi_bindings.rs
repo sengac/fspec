@@ -368,13 +368,14 @@ pub fn persistence_set_session_tokens(
     let mut session = load_session(uuid).map_err(Error::from_reason)?;
     set_session_tokens(
         &mut session,
-        input as u64,
-        output as u64,
-        cache_read as u64,
-        cache_create as u64,
-        cumulative_input as u64,
-        cumulative_output as u64,
-        reasoning_tokens as u64,
+        &TokenUsage {
+            current_context_tokens: input as u64,
+            cumulative_billed_input: cumulative_input as u64,
+            cumulative_billed_output: cumulative_output as u64,
+            cache_read_tokens: cache_read as u64,
+            cache_creation_tokens: cache_create as u64,
+            reasoning_tokens: reasoning_tokens as u64,
+        },
     )
     .map_err(Error::from_reason)?;
     Ok(session.into())

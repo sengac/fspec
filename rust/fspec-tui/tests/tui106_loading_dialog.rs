@@ -14,15 +14,13 @@ use std::sync::Arc;
 
 use codelet_fspec_tui::app::{synth_key, tick_should_draw};
 use codelet_fspec_tui::components::dialog_theme::Accent;
-use codelet_fspec_tui::components::loading_dialog::{render_loading_dialog, LoadingDialog};
 use codelet_fspec_tui::components::load_state::LoadTracker;
-use codelet_fspec_tui::components::spinner::{
-    current_frame_glyph, DOTS_FRAMES, DOTS_INTERVAL_MS,
-};
+use codelet_fspec_tui::components::loading_dialog::{render_loading_dialog, LoadingDialog};
+use codelet_fspec_tui::components::spinner::{current_frame_glyph, DOTS_FRAMES, DOTS_INTERVAL_MS};
 use codelet_fspec_tui::components::status_dialog::StatusDialog;
-use codelet_fspec_tui::Component;
-use codelet_fspec_tui::components::{EventResult};
+use codelet_fspec_tui::components::EventResult;
 use codelet_fspec_tui::views::agent::spinner as agent_spinner;
+use codelet_fspec_tui::Component;
 use codelet_fspec_tui::{Action, App, FspecBackend, Navigator, Theme, ViewMode};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -73,15 +71,18 @@ fn spinner_frames_live_in_components_module_and_advance() {
 #[test]
 fn agent_view_reexports_the_shared_spinner_byte_identical() {
     assert_eq!(
-        agent_spinner::DOTS_FRAMES, DOTS_FRAMES,
+        agent_spinner::DOTS_FRAMES,
+        DOTS_FRAMES,
         "table identical via re-export"
     );
     assert_eq!(
-        agent_spinner::DOTS_INTERVAL_MS, DOTS_INTERVAL_MS,
+        agent_spinner::DOTS_INTERVAL_MS,
+        DOTS_INTERVAL_MS,
         "interval identical"
     );
     assert_eq!(
-        agent_spinner::current_frame_glyph(160), current_frame_glyph(160),
+        agent_spinner::current_frame_glyph(160),
+        current_frame_glyph(160),
         "glyph picker identical via re-export"
     );
 
@@ -89,7 +90,11 @@ fn agent_view_reexports_the_shared_spinner_byte_identical() {
     let mut buf = Buffer::empty(area);
     agent_spinner::paint_spinner_line(area, &mut buf, 1, "Thinking", "(Esc to stop)");
     let cell = &buf[(0, 0)];
-    assert_eq!(cell.symbol(), DOTS_FRAMES[1], "agent path paints same glyph");
+    assert_eq!(
+        cell.symbol(),
+        DOTS_FRAMES[1],
+        "agent path paints same glyph"
+    );
     assert!(
         cell.style().add_modifier.contains(Modifier::DIM),
         "DIM modifier carried through the re-export"
@@ -117,7 +122,10 @@ fn loading_dialog_paints_cyan_popup_on_shared_base_over_body() {
     let text = buf_text(&buf);
     assert!(text.contains("Loading checkpoints"), "dialog title painted");
     assert!(text.contains("⠋"), "braille spinner glyph painted at t=0");
-    assert!(text.contains("Loading checkpoint list…"), "stage label painted");
+    assert!(
+        text.contains("Loading checkpoint list…"),
+        "stage label painted"
+    );
 
     // Rounded border in the accent (cyan) color — the dialog_theme contract.
     let corner: Vec<_> = buf
@@ -232,15 +240,24 @@ fn flushed_empty_list_clears_loading_so_empty_state_surfaces() {
 /// @step And when the active mode view reports loading the same gate reports a redraw
 #[test]
 fn redraw_gate_runs_while_view_is_loading_and_only_then() {
-    assert!(!tick_should_draw(false, false, false, false), "idle → no redraw");
-    assert!(tick_should_draw(false, false, false, true), "view loading → redraw");
-    assert!(tick_should_draw(false, true, false, false), "busy → redraw (unchanged)");
     assert!(
-        tick_should_draw(false, false, true, false),
+        !tick_should_draw(false, false, false, false, false),
+        "idle → no redraw"
+    );
+    assert!(
+        tick_should_draw(false, false, false, true, false),
+        "view loading → redraw"
+    );
+    assert!(
+        tick_should_draw(false, true, false, false, false),
+        "busy → redraw (unchanged)"
+    );
+    assert!(
+        tick_should_draw(false, false, true, false, false),
         "animating → redraw (unchanged)"
     );
     assert!(
-        tick_should_draw(true, false, false, false),
+        tick_should_draw(true, false, false, false, false),
         "pending render (unchanged)"
     );
 }
@@ -273,7 +290,10 @@ fn spinner_glyph_advances_between_zero_and_eighty_ms() {
     let buf0 = draw_loading("No checkpoints available", &dialog, 0);
     let buf80 = draw_loading("No checkpoints available", &dialog, 80);
     assert!(buf_text(&buf0).contains("⠋"), "t=0 → first glyph");
-    assert!(!buf_text(&buf0).contains("⠙"), "t=0 → NOT yet the second glyph");
+    assert!(
+        !buf_text(&buf0).contains("⠙"),
+        "t=0 → NOT yet the second glyph"
+    );
     assert!(buf_text(&buf80).contains("⠙"), "t=80ms → second glyph");
 }
 
@@ -295,7 +315,10 @@ fn checkpoints_cascade_stages_show_their_own_labels() {
         Some("Loading checkpoint list…")
     );
 
-    t.begin_stage(&LoadTracker::files_stage_key("TUI-107", "cp-1"), "Loading files for X…");
+    t.begin_stage(
+        &LoadTracker::files_stage_key("TUI-107", "cp-1"),
+        "Loading files for X…",
+    );
     assert_eq!(t.active_label().as_deref(), Some("Loading files for X…"));
 
     // Cascade the full checkpoints sequence through App::dispatch: the
@@ -341,14 +364,14 @@ fn checkpoints_cascade_stages_show_their_own_labels() {
 #[test]
 fn changed_files_cascade_stages_show_their_own_labels() {
     let mut t = LoadTracker::new("Loading changed files…");
-    assert_eq!(
-        t.active_label().as_deref(),
-        Some("Loading changed files…")
-    );
+    assert_eq!(t.active_label().as_deref(), Some("Loading changed files…"));
     assert!(t.is_loading());
 
     let flushed = t.mark_list_flushed();
-    assert!(flushed, "list stage complete, no cascading stage → dismissable");
+    assert!(
+        flushed,
+        "list stage complete, no cascading stage → dismissable"
+    );
 
     let key = LoadTracker::diff_stage_key_path("b.txt");
     t.begin_stage(&key, "Loading diff for b.txt…");

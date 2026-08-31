@@ -632,8 +632,9 @@ fn diff_stage_shows_its_label_until_the_diff_folds_in() {
     // @step When the diff result folds in
     view.set_diff("AUTH-001", "baseline", "a.txt", Some("+new".to_string()));
     assert!(
-        view.load
-            .complete_stage(&LoadTracker::diff_stage_key("AUTH-001", "baseline", "a.txt")),
+        view.load.complete_stage(&LoadTracker::diff_stage_key(
+            "AUTH-001", "baseline", "a.txt"
+        )),
         "matching-key stage must complete"
     );
     view.sync_loading_label();
@@ -674,7 +675,8 @@ fn stale_files_result_does_not_clear_the_current_stage() {
     // The dispatcher folds the stale result: set_files is a no-op on
     // selection mismatch and complete_stage is a no-op on key mismatch.
     view.set_files("AUTH-002", "second", vec![cf("stale.txt", "M")]);
-    let completed = view.load
+    let completed = view
+        .load
         .complete_stage(&LoadTracker::files_stage_key("AUTH-002", "second"));
     assert!(!completed, "stale key must not complete the stage");
 
@@ -761,11 +763,22 @@ fn loading_dialog_renders_through_the_canonical_dialog_theme() {
     let area = Rect::new(0, 0, 60, 14);
     let mut buf0 = ratatui::buffer::Buffer::empty(area);
     render_loading_dialog(area, &mut buf0, &view.loading, 0);
-    let out0: String = buf0.content.iter().map(|c| c.symbol().to_string()).collect();
+    let out0: String = buf0
+        .content
+        .iter()
+        .map(|c| c.symbol().to_string())
+        .collect();
     let mut buf80 = ratatui::buffer::Buffer::empty(area);
     render_loading_dialog(area, &mut buf80, &view.loading, 80);
-    let out80: String = buf80.content.iter().map(|c| c.symbol().to_string()).collect();
-    assert!(out0.contains("⠋") && !out0.contains("⠙"), "t=0 → first glyph only");
+    let out80: String = buf80
+        .content
+        .iter()
+        .map(|c| c.symbol().to_string())
+        .collect();
+    assert!(
+        out0.contains("⠋") && !out0.contains("⠙"),
+        "t=0 → first glyph only"
+    );
     assert!(out80.contains("⠙"), "t=80 → second glyph");
 }
 

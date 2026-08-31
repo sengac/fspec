@@ -66,12 +66,7 @@ impl CheckpointsView {
                 // body — the fake "No checkpoints available" empty state
                 // is only painted AFTER the list flushes with zero rows.
                 if loading {
-                    render_loading_dialog(
-                        body,
-                        buf,
-                        &self.loading,
-                        self.loading_elapsed_ms(),
-                    );
+                    render_loading_dialog(body, buf, &self.loading, self.loading_elapsed_ms());
                     return;
                 }
                 if checkpoints.is_empty() {
@@ -101,23 +96,11 @@ impl CheckpointsView {
                 );
                 cp_rect = Some(cr);
                 cp_sb_rect = csb;
-                let (fr, fsb) = render_files_pane(
-                    top[2],
-                    buf,
-                    &files,
-                    selected_file,
-                    file_scroll,
-                    focused,
-                );
+                let (fr, fsb) =
+                    render_files_pane(top[2], buf, &files, selected_file, file_scroll, focused);
                 files_rect = Some(fr);
                 files_sb_rect = fsb;
-                let (dr, dsb) = render_diff_pane(
-                    rows[1],
-                    buf,
-                    &diff_lines,
-                    diff_scroll,
-                    focused,
-                );
+                let (dr, dsb) = render_diff_pane(rows[1], buf, &diff_lines, diff_scroll, focused);
                 diff_rect = Some(dr);
                 diff_sb_rect = dsb;
             },
@@ -217,8 +200,6 @@ fn checkpoint_line(
         Span::styled(text, style),
     ])
 }
-
-
 
 fn render_files_pane(
     area: Rect,
@@ -332,10 +313,12 @@ mod tests {
             let text = span.content.as_ref();
             assert!(
                 !text.contains('\x00'),
-                "Checkpoint line should not contain NUL, got {text:?}");
+                "Checkpoint line should not contain NUL, got {text:?}"
+            );
             assert!(
                 !text.contains('\x08'),
-                "Checkpoint line should not contain backspace, got {text:?}");
+                "Checkpoint line should not contain backspace, got {text:?}"
+            );
         }
     }
 

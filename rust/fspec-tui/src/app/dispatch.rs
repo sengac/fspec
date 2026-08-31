@@ -9,6 +9,10 @@ impl App {
     /// Dispatch an [`Action`] into the App. Updates the BoardStore /
     /// AgentViewStore / Navigator + Compositor in lockstep.
     pub fn dispatch(&mut self, action: Action) {
+        // MUX-001: capture the mux enabled-flag before this action so
+        // the post-apply sync can detect a mux EXIT and auto-save
+        // (R6) with the post-exit config.
+        let mux_enabled_before = self.navigator.mux.config().enabled;
         match &action {
             Action::Quit => {
                 self.should_quit = true;
@@ -81,7 +85,14 @@ impl App {
                     .map(|u| u.status.clone());
                 self.agent_view_store
                     .set_current_work_unit(Some(id.clone()), status);
-                self.navigator.active_view = ViewMode::Agent;
+                // MUX-001 R8: in mux mode, Enter on a board work unit
+                // binds the unit + focuses the agent pane WITHOUT
+                // flipping the whole view.
+                if self.navigator.mux.config().enabled {
+                    let _ = self.action_tx.send(Action::MuxEnterWorkUnit(id.clone()));
+                } else {
+                    self.navigator.active_view = ViewMode::Agent;
+                }
                 // RPC-050: bind work unit to current session via the
                 // attach action; lazy SessionCreated re-dispatches below.
                 let _ = self
@@ -109,7 +120,22 @@ impl App {
                 self.handle_open_agent_view(target.clone());
             }
             Action::BackToBoard => {
-                self.navigator.active_view = ViewMode::Board;
+                // BUG-164: when the mux grid is active, "back to board"
+                // means focus the board pane WITHIN the grid — never
+                // flip the whole view out of Mux (session close /
+                // detach must retain the mux layout).
+                if self.navigator.mux.config().enabled {
+                    let board_idx = self
+                        .navigator
+                        .mux
+                        .effective_panes()
+                        .iter()
+                        .position(|k| *k == crate::views::multiplex::MuxPaneKind::Board)
+                        .unwrap_or(0);
+                    self.navigator.mux.set_focus(board_idx);
+                } else {
+                    self.navigator.active_view = ViewMode::Board;
+                }
             }
             Action::NavigationTargetSet(target) => {
                 self.agent_view_store.set_navigation_target(target.clone());
@@ -285,6 +311,8 @@ impl App {
                 self.agent_view_store
                     .set_debug_enabled(session_id.clone(), *enabled);
             }
+            // MUX-001: mux mode — handler body lives in dispatch_mux.rs.
+            a if App::is_mux_action(a) => self.dispatch_mux(a),
             // Capability dispatchers: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
                 let _ = self.try_dispatch_model_selector(&action)
@@ -306,6 +334,17 @@ impl App {
         }
         self.navigator.apply_action(&action);
         let _ = self.compositor.update(action);
+        // MUX-001: keep the persisted MuxState config in lockstep with
+        // the live Navigator mux layout so `app.mux_state().config()`
+        // always reflects the current grid (tests + /mux save read it).
+        self.mux_state
+            .config_mut()
+            .clone_from(self.navigator.mux.config());
+        // R6: auto-save on mux exit — persist the post-exit config
+        // (enabled=false) so a restart comes back with mux off.
+        if mux_enabled_before && !self.navigator.mux.config().enabled {
+            let _ = self.save_mux_config();
+        }
         self.should_render = true;
     }
 }

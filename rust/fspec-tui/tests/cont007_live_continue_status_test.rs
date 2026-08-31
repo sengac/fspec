@@ -172,7 +172,9 @@ fn continue_state_update_chunk_round_trips_and_stays_out_of_the_transcript() {
 
     // @step Then the JSON payload uses the camelCase field names nudgesUsed, goalActive and effectiveBudget
     assert!(
-        json.contains("nudgesUsed") && json.contains("goalActive") && json.contains("effectiveBudget"),
+        json.contains("nudgesUsed")
+            && json.contains("goalActive")
+            && json.contains("effectiveBudget"),
         "wire JSON must be camelCase; got: {json}"
     );
 
@@ -272,7 +274,9 @@ fn accepted_done_teardown_emits_a_reset_counter_state_from_the_shared_teardown()
     let events = output.events();
     let status_pos = events
         .iter()
-        .position(|e| matches!(e, StreamEvent::Status(s) if s.starts_with("\u{1F3AF} goal satisfied:")))
+        .position(
+            |e| matches!(e, StreamEvent::Status(s) if s.starts_with("\u{1F3AF} goal satisfied:")),
+        )
         .expect("goal teardown must announce the satisfied goal");
     let state_pos = events
         .iter()
@@ -358,7 +362,10 @@ fn footer_paints_the_real_nudge_counter_from_a_live_update() {
         .expect("s-1 context")
         .scrollback
         .chunk_count();
-    assert_eq!(after, before, "state-only chunk must not touch the transcript");
+    assert_eq!(
+        after, before,
+        "state-only chunk must not touch the transcript"
+    );
 
     // @step And the painted footer shows "⏩ auto-continue (2/10)"
     let text = painted_footer(&app, &sid("s-1"));

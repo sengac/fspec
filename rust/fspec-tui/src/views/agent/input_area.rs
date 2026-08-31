@@ -29,7 +29,7 @@ use crate::store::AgentViewStore;
 use super::hitl_prompt;
 use super::input_transition::paint_input_or_spinner;
 use super::pause_prompt;
-use super::{multiline_input_render, transition_driver, AgentView};
+use super::{multiline_input_render, transition_driver, AgentView, INPUT_PLACEHOLDER_HINT};
 
 /// RPC-406 — the padded body width the pause prompt renders into:
 /// the input-area width minus the 1-col pad on each side (mirrors
@@ -133,5 +133,38 @@ impl AgentView {
         if let Some(line) = transition_driver::cached_spinner_line(&self.input_transition_state) {
             self.last_spinner_line = Some(line);
         }
+    }
+
+    /// BUG-163 — read-only ghost input row for UNfocused mux agent
+    /// panes: paints the session's persisted `input_draft` (or the dim
+    /// placeholder hint when empty) into the same padded input-area
+    /// geometry the live composer uses, WITHOUT touching the shared
+    /// `MultiLineInput` / viewport state. The focused pane is the only
+    /// one that paints the live composer.
+    pub(super) fn paint_ghost_input_row(
+        &mut self,
+        input_area: Rect,
+        buf: &mut ratatui::buffer::Buffer,
+        store: &AgentViewStore,
+        sid: Option<&SessionId>,
+    ) {
+        // Mirror `paint_input_area`'s padding (RPC-029 paddingX=1).
+        let pad = input_area.width.min(1);
+        let padded = Rect {
+            x: input_area.x + pad,
+            y: input_area.y,
+            width: input_area.width.saturating_sub(pad * 2),
+            height: input_area.height.max(1),
+        };
+        let draft = sid
+            .and_then(|s| store.session_context_for(s))
+            .map(|c| c.input_draft.clone())
+            .unwrap_or_default();
+        self.input
+            .render_ghost_draft(padded, buf, &draft, INPUT_PLACEHOLDER_HINT);
+        // BUG-163: no pause/HITL prompt is painted in a ghost pane — the
+        // focused pane's `paint_input_area` owns those caches.
+        self.last_pause = None;
+        self.last_hitl = None;
     }
 }

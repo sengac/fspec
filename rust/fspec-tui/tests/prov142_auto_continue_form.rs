@@ -108,7 +108,8 @@ fn typing_a_budget_in_the_auto_continue_field_and_saving_persists_it() {
     // @step When the user types 300 and saves the profile
     type_chars(&mut view, "300");
     assert_eq!(
-        form_of(&view).auto_continue, "300",
+        form_of(&view).auto_continue,
+        "300",
         "typed chars must land in the Auto-Continue field"
     );
     let def = form_of(&view)
@@ -118,7 +119,8 @@ fn typing_a_budget_in_the_auto_continue_field_and_saving_persists_it() {
 
     // @step Then the profile is saved with autoContinue set to 300
     assert_eq!(
-        def.auto_continue, Some(300),
+        def.auto_continue,
+        Some(300),
         "the built definition must carry auto_continue = Some(300)"
     );
 }
@@ -195,7 +197,8 @@ fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() {
     // @step When the user types abc and saves the profile
     type_chars(&mut view, "abc");
     assert_eq!(
-        form_of(&view).auto_continue, "abc",
+        form_of(&view).auto_continue,
+        "abc",
         "the raw (invalid) text must be visible before the save attempt"
     );
     let event = view.handle_key(key(KeyCode::Enter));
@@ -204,12 +207,17 @@ fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() {
     use codelet_fspec_tui::views::ProviderSettingsEvent;
     let rejected = match &event {
         // No SaveProfile action may be emitted for an invalid value.
-        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile { .. }) => {
+        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile {
+            ..
+        }) => {
             panic!("an invalid Auto-Continue value must NOT emit a SaveProfile action")
         }
         _ => true,
     };
-    assert!(rejected, "the save must be rejected (no SaveProfile emitted)");
+    assert!(
+        rejected,
+        "the save must be rejected (no SaveProfile emitted)"
+    );
     assert!(
         !view.status.is_empty()
             && view.status.contains("Auto-Continue")

@@ -167,8 +167,12 @@ impl AstGrepTool {
         }
     }
 
-    /// Internal execute method for rig tool delegation
-    async fn execute(&self, args: Value) -> Result<ToolOutput> {
+    /// Internal execute method for rig tool delegation.
+    ///
+    /// Exposed publicly so the `fspec astgrep` CLI bridge (CLI-015) can
+    /// delegate to the exact same search implementation with a nil session
+    /// id (no worktree isolation), keeping one source of truth.
+    pub async fn execute(&self, args: Value) -> Result<ToolOutput> {
         // Extract required parameters
         let pattern = match args.get("pattern").and_then(|v| v.as_str()) {
             Some(p) if !p.is_empty() => p,

@@ -131,7 +131,13 @@ fn unselected_session_renders_without_selection_marker() {
     // @step Given the resume view has a session with name "Project Beta", 5 messages, provider "anthropic/claude-3", and updated 1 day ago
     let one_day_ms = 24 * 60 * 60 * 1000;
     let sessions = vec![
-        make_session("s-0", "Project Alpha", 12, Some("openai/gpt-4"), Some(one_day_ms)),
+        make_session(
+            "s-0",
+            "Project Alpha",
+            12,
+            Some("openai/gpt-4"),
+            Some(one_day_ms),
+        ),
         make_session(
             "s-1",
             "Project Beta",
@@ -239,7 +245,15 @@ fn empty_session_list_renders_placeholder() {
 fn scroll_offset_accounts_for_two_visual_rows_per_session() {
     // @step Given the resume view has 10 sessions
     let sessions: Vec<SessionInfo> = (0..10)
-        .map(|i| make_session(&format!("s-{i}"), &format!("Session {i}"), i as u32 + 1, None, None))
+        .map(|i| {
+            make_session(
+                &format!("s-{i}"),
+                &format!("Session {i}"),
+                i as u32 + 1,
+                None,
+                None,
+            )
+        })
         .collect();
     // @step And the body area height is 10 rows
     let area = Rect::new(0, 0, 80, 10);

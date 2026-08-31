@@ -1,0 +1,132 @@
+{
+  "scenarios": [
+    {
+      "name": "specifying-to-testing error directs CLI users to fspec astgrep",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+          "lines": "1386-1403",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730,
+                731,
+                732,
+                733,
+                734,
+                735
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specifying-to-testing error directs harness agents to the AstGrep tool",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+          "lines": "1406-1418",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730,
+                731,
+                732,
+                733,
+                734,
+                735
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status.rs"
+    ],
+    "totalLinesCovered": 115
+  }
+}

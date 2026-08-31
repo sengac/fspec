@@ -31,6 +31,17 @@ fn fill(template: &str, id: &str) -> String {
     template.replace("__ID__", id)
 }
 
+/// CLI-015: the AST-search block of the specifying reminder, rendered per
+/// mode. Harness (capture) mode names the native AstGrep tool; CLI mode
+/// names the `fspec astgrep` subcommand.
+fn ast_research_block(in_capture: bool) -> &'static str {
+    if in_capture {
+        "For AST code search and refactoring, use the AstGrep and AstGrepRefactor tools:\n  AstGrep(language=\"typescript\", pattern=\"function $NAME($$$ARGS) { $$$BODY }\", path=\"src/\")"
+    } else {
+        "For AST code search and refactoring, use the `fspec astgrep` command:\n  fspec astgrep --pattern 'function $NAME($$$ARGS) { $$$BODY }' --lang typescript [--path src/]"
+    }
+}
+
 /// Mirrors `consolidateReminders`: strip individual wrapper tags, trim, drop
 /// empties, join with a blank line, and re-wrap once.
 pub(super) fn consolidate(reminders: &[String]) -> Option<String> {
@@ -546,16 +557,12 @@ INTEGRATION THINKING: WHO CALLS THIS? Ask during discovery.
 RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
   fspec research                                  # List available research tools
 
-CRITICAL: BEFORE using AST research tool, learn HOW to use it:
-  fspec research --tool=ast --help                # Run this FIRST to understand usage
-
-Then use AST research:
-  fspec research --tool=ast --query="pattern"     # Search codebase using AST analysis
+__AST_RESEARCH_BLOCK__
 
 Or stakeholder research:
   fspec research --tool=stakeholder --platform=teams --question="question" --work-unit=__ID__
 
-Available research tools (--tool=ast or --tool=stakeholder):"#;
+Available research tools (--tool=stakeholder, plus AST search via AstGrep):"#;
 
 const SPEC_MID: &str = r#"Configuration:
   - Project config: spec/fspec-config.json
@@ -572,8 +579,6 @@ Common commands for SPECIFYING state:
   fspec remove-example <id> <index>
   fspec add-question <id> "@human: question?"
   fspec answer-question <id> <index> --answer "..."
-  fspec research --tool=ast --help                # ALWAYS run this FIRST to learn AST usage
-  fspec research --tool=ast --query="pattern"     # Then use AST research
   fspec research --tool=stakeholder --platform=teams --question="..." --work-unit=<id>
   fspec generate-scenarios <id>
 
@@ -682,7 +687,7 @@ fn tool_configured(config: &Value, tool: &str) -> bool {
 fn specifying_reminder(id: &str, project_root: &Path) -> String {
     let config = load_config(project_root);
 
-    // ast is always configured; the rest follow registry order.
+    // ast is no longer a research tool (AstGrep tool provides that); the rest follow registry order.
     let tools: &[(&str, &str)] = &[
         ("perplexity", PERPLEXITY_EXAMPLE),
         ("jira", JIRA_EXAMPLE),
@@ -690,7 +695,7 @@ fn specifying_reminder(id: &str, project_root: &Path) -> String {
         ("stakeholder", STAKEHOLDER_EXAMPLE),
     ];
 
-    let mut tool_lines: Vec<String> = vec!["  ✓ ast (ready)".to_string()];
+    let mut tool_lines: Vec<String> = Vec::new();
     let mut config_examples: Vec<String> = Vec::new();
     for (name, example) in tools {
         let configured = tool_configured(&config, name);
@@ -708,7 +713,10 @@ fn specifying_reminder(id: &str, project_root: &Path) -> String {
 
     let mut reminder = format!(
         "{}\n{}\n\n{}",
-        fill(SPEC_HEAD, id),
+        fill(SPEC_HEAD, id).replace(
+            "__AST_RESEARCH_BLOCK__",
+            ast_research_block(crate::utils::mode::in_capture_mode()),
+        ),
         tool_lines.join("\n"),
         SPEC_MID
     );
@@ -821,4 +829,54 @@ pub(super) fn check_quality_commands(project_root: &Path) -> String {
         },
     };
     format_agent_output(&agent, &content)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+    use super::{ast_research_block, specifying_reminder};
+
+    // Feature: spec/features/specifying-reminder-names-ast-search-tool-per-mode.feature
+
+    #[test]
+    fn specifying_reminder_cli_mode_points_at_fspec_astgrep() {
+        // @step Given a work unit exists in specifying-relevant state and FSPEC_CAPTURE_MODE is not set
+        // @step When I dispatch update-work-unit-status for it with status "specifying"
+        let tmp = tempfile::TempDir::new().unwrap();
+        if crate::utils::mode::in_capture_mode() {
+            return; // environment explicitly opts in; nothing to assert
+        }
+        let reminder = specifying_reminder("AUTH-001", tmp.path());
+        // @step Then the specifying reminder in the response references `fspec astgrep`
+        assert!(reminder.contains("fspec astgrep"));
+        // @step And the specifying reminder does not reference `fspec research --tool=ast`
+        assert!(!reminder.contains("fspec research --tool=ast"));
+        assert!(!reminder.contains("AstGrep(language="));
+    }
+
+    #[test]
+    fn specifying_reminder_capture_mode_points_at_astgrep_tool() {
+        // @step Given a work unit exists in specifying-relevant state and FSPEC_CAPTURE_MODE is set to "1"
+        // @step When I dispatch update-work-unit-status for it with status "specifying"
+        let tmp = tempfile::TempDir::new().unwrap();
+        std::env::set_var("FSPEC_CAPTURE_MODE", "1");
+        let reminder = specifying_reminder("AUTH-001", tmp.path());
+        std::env::remove_var("FSPEC_CAPTURE_MODE");
+        // @step Then the specifying reminder in the response references the AstGrep tool
+        assert!(reminder.contains("AstGrep(language="));
+        // @step And the specifying reminder does not reference `fspec astgrep`
+        assert!(!reminder.contains("fspec astgrep"));
+    }
+
+    #[test]
+    fn ast_research_block_variants_are_mode_specific() {
+        // @step Given both capture and CLI execution contexts
+        // @step Then each names only its own tool
+        let cli = ast_research_block(false);
+        let harness = ast_research_block(true);
+        assert!(cli.contains("fspec astgrep"));
+        assert!(!cli.contains("AstGrep("));
+        assert!(harness.contains("AstGrep and AstGrepRefactor"));
+        assert!(!harness.contains("fspec astgrep"));
+    }
 }

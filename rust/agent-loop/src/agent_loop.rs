@@ -1046,7 +1046,10 @@ pub async fn agent_loop(
                                 session.id,
                                 agent.tool_server_handle.clone(),
                             );
-                            let agent = codelet_core::RigAgent::with_default_depth(agent);
+                            let agent = codelet_core::RigAgent::with_default_depth(agent)
+                                .with_preserve_thinking(
+                                    inner_session.preserve_thinking_enabled,
+                                );
                             codelet_cli::interactive::run_agent_stream_with_images(
                                 agent,
                                 input,

@@ -43,7 +43,7 @@ pub fn sanitize_for_terminal(text: &str) -> String {
             '\t' => result.push_str("  "), // tab → two spaces
             '\r' => {}                     // carriage return → removed
             '\n' => result.push('\n'),     // newline → preserved
-            c if is_control_char(c) => {} // control chars → removed
+            c if is_control_char(c) => {}  // control chars → removed
             _ => result.push(c),           // everything else → kept
         }
     }
@@ -84,13 +84,17 @@ mod tests {
     fn then_ansi_sequences_removed(output: &str) {
         assert!(
             !output.contains('\x1b'),
-            "Output should not contain escape characters, got {output:?}");
+            "Output should not contain escape characters, got {output:?}"
+        );
     }
 
     /// @step And only the plain text content (filenames) is visible in the TUI
     fn then_only_plain_text_visible(output: &str) {
         let expected = "Documents\nDownloads\nfile.txt";
-        assert_eq!(output, expected, "Only plain text should remain, got {output:?}");
+        assert_eq!(
+            output, expected,
+            "Only plain text should remain, got {output:?}"
+        );
     }
 
     #[test]
@@ -126,16 +130,21 @@ mod tests {
     fn then_all_ansi_removed(output: &str) {
         assert!(
             !output.contains('\x1b'),
-            "No escape characters should remain, got {output:?}");
+            "No escape characters should remain, got {output:?}"
+        );
         assert!(
             !output.contains('\x07'),
-            "BEL character from OSC should be removed, got {output:?}");
+            "BEL character from OSC should be removed, got {output:?}"
+        );
     }
 
     /// @step And only readable plain text is visible in the TUI
     fn then_only_readable_text(output: &str) {
         let expected = "OS: Ubuntu 24.04\nKernel: 6.8.0\nCPU: Apple M2\nMemory: 8GB";
-        assert_eq!(output, expected, "Only readable text should remain, got {output:?}");
+        assert_eq!(
+            output, expected,
+            "Only readable text should remain, got {output:?}"
+        );
     }
 
     #[test]
@@ -164,13 +173,17 @@ mod tests {
     fn then_tabs_replaced_with_two_spaces(output: &str) {
         assert!(
             !output.contains('\t'),
-            "No tabs should remain, got {output:?}");
+            "No tabs should remain, got {output:?}"
+        );
     }
 
     /// @step And the text maintains consistent visual width
     fn then_consistent_visual_width(output: &str) {
         let expected = "hello  world\nname  value";
-        assert_eq!(output, expected, "Tabs should be two spaces, got {output:?}");
+        assert_eq!(
+            output, expected,
+            "Tabs should be two spaces, got {output:?}"
+        );
     }
 
     #[test]
@@ -199,13 +212,17 @@ mod tests {
     fn then_carriage_returns_removed(output: &str) {
         assert!(
             !output.contains('\r'),
-            "No carriage returns should remain, got {output:?}");
+            "No carriage returns should remain, got {output:?}"
+        );
     }
 
     /// @step And lines are not overwritten in the TUI
     fn then_lines_not_overwritten(output: &str) {
         let expected = "line1\nline2line3\nline4";
-        assert_eq!(output, expected, "Lines should not be overwritten, got {output:?}");
+        assert_eq!(
+            output, expected,
+            "Lines should not be overwritten, got {output:?}"
+        );
     }
 
     #[test]
@@ -232,17 +249,12 @@ mod tests {
         String::from_utf8(vec![
             0x00, // NUL
             0x08, // Backspace
-            b'a',
-            0x0A, // Newline (should be preserved)
+            b'a', 0x0A, // Newline (should be preserved)
             0x0B, // Vertical tab
-            b'b',
-            0x0C, // Form feed
-            b'c',
-            0x0E, // Shift out
-            b'd',
-            0x1F, // Unit separator
-            b'e',
-            0x7F, // DEL
+            b'b', 0x0C, // Form feed
+            b'c', 0x0E, // Shift out
+            b'd', 0x1F, // Unit separator
+            b'e', 0x7F, // DEL
             b'f',
         ])
         .expect("test string is valid UTF-8")
@@ -254,7 +266,8 @@ mod tests {
             let code = c as u32;
             assert!(
                 !matches!(code, 0x00..=0x08 | 0x0B | 0x0C | 0x0E..=0x1F | 0x7F),
-                "Control character U+{code:02X} should be removed, found in {output:?}");
+                "Control character U+{code:02X} should be removed, found in {output:?}"
+            );
         }
     }
 
@@ -262,7 +275,8 @@ mod tests {
     fn then_newlines_preserved(output: &str) {
         assert!(
             output.contains('\n'),
-            "Newlines should be preserved, got {output:?}");
+            "Newlines should be preserved, got {output:?}"
+        );
     }
 
     #[test]
@@ -337,18 +351,15 @@ mod tests {
         for (i, chunk) in chunks.iter().enumerate() {
             assert!(
                 !chunk.contains('\x1b'),
-                "Chunk {i} should have no escape chars, got {chunk:?}");
+                "Chunk {i} should have no escape chars, got {chunk:?}"
+            );
         }
     }
 
     /// @step And the user sees clean output in real-time as it streams
     fn then_clean_streaming_output(chunks: &[String]) {
         let expected = vec!["Step 1", "Step 2", "Step 3"];
-        assert_eq!(
-            chunks,
-            &expected,
-            "Each chunk should contain clean text"
-        );
+        assert_eq!(chunks, &expected, "Each chunk should contain clean text");
     }
 
     #[test]
@@ -387,16 +398,21 @@ mod tests {
     fn then_llm_receives_raw_output(llm_output: &str) {
         assert!(
             llm_output.contains('\x1b'),
-            "LLM output should contain ANSI escape codes, got {llm_output:?}");
+            "LLM output should contain ANSI escape codes, got {llm_output:?}"
+        );
     }
 
     /// @step And the TUI scrollback contains only the sanitized plain text
     fn then_tui_receives_sanitized(tui_output: &str) {
         assert!(
             !tui_output.contains('\x1b'),
-            "TUI output should not contain ANSI escape codes, got {tui_output:?}");
+            "TUI output should not contain ANSI escape codes, got {tui_output:?}"
+        );
         let expected = "Documents\nDownloads";
-        assert_eq!(tui_output, expected, "Only plain text should be in TUI scrollback");
+        assert_eq!(
+            tui_output, expected,
+            "Only plain text should be in TUI scrollback"
+        );
     }
 
     #[test]

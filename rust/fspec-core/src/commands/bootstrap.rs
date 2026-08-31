@@ -48,6 +48,13 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     let base = BOOTSTRAP_DOC.strip_suffix('\n').unwrap_or(BOOTSTRAP_DOC);
     let mut content = base.to_string();
 
+    // CLI-015: fill the two mode-aware AST-research placeholders before the
+    // config replacements (both use `replace`, so order does not matter).
+    let in_capture = crate::utils::mode::in_capture_mode();
+    content = content.replace("__AST_RESEARCH_BLOCK__", ast_research_block(in_capture));
+    content = content
+        .replace("__AST_RESEARCH_NOTES_BLOCK__", ast_research_notes(in_capture));
+
     // 1. Apply config string-replacements (parity with bootstrap.ts:154-176).
     content = apply_config_replacements(project_root, content);
 
@@ -59,6 +66,27 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     }
 
     Ok(content)
+}
+
+/// CLI-015: the Research-First Workflow block of the embedded bootstrap doc,
+/// rendered per mode — harness (capture) mode names the native AstGrep tool,
+/// CLI mode names the `fspec astgrep` subcommand.
+fn ast_research_block(in_capture: bool) -> &'static str {
+    if in_capture {
+        "**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using the AstGrep tool to understand the domain structure.\n\n```\n# Step 1: Research relevant code using the AstGrep tool\n# Find all functions in the domain area:\nAstGrep(language=\"typescript\", pattern=\"function $NAME($$$ARGS) { $$$BODY }\", path=\"src/auth/\")\n\n# Find classes to understand domain entities:\nAstGrep(language=\"typescript\", pattern=\"class $NAME { $$$FIELDS }\", path=\"src/auth/\")\n\n# Find interfaces to understand data structures:\nAstGrep(language=\"typescript\", pattern=\"interface $NAME { $$$FIELDS }\", path=\"src/auth/\")\n\n# Find async functions (often indicate external integrations or events):\nAstGrep(language=\"typescript\", pattern=\"async function $NAME($$$ARGS) { $$$BODY }\", path=\"src/auth/\")\n\n# Step 2: Analyze findings to understand domain\n# - What domain events exist in the code?\n# - What commands trigger those events?\n# - What business rules/policies are present?\n\n# Step 3: If uncertain after research, ASK USER\n# Share your findings and let the user decide:\n# \"I found 3 domain events: UserRegistered, LoginAttempted, SessionExpired.\n#  Should we do Feature Event Storm to map the full authentication flow?\"\n\n# Step 4: Proceed with chosen approach\n# - Feature Event Storm (if complex/unfamiliar)\n# - Example Mapping (if simple/clear)\n```"
+    } else {
+        "**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using the `fspec astgrep` command to understand the domain structure.\n\n```\n# Step 1: Research relevant code using fspec astgrep\n# Find all functions in the domain area:\nfspec astgrep --pattern 'function $NAME($$$ARGS) { $$$BODY }' --lang typescript --path src/auth/\n\n# Find classes to understand domain entities:\nfspec astgrep --pattern 'class $NAME { $$$FIELDS }' --lang typescript --path src/auth/\n\n# Find interfaces to understand data structures:\nfspec astgrep --pattern 'interface $NAME { $$$FIELDS }' --lang typescript --path src/auth/\n\n# Find async functions (often indicate external integrations or events):\nfspec astgrep --pattern 'async function $NAME($$$ARGS) { $$$BODY }' --lang typescript --path src/auth/\n\n# Step 2: Analyze findings to understand domain\n# - What domain events exist in the code?\n# - What commands trigger those events?\n# - What business rules/policies are present?\n\n# Step 3: If uncertain after research, ASK USER\n# Share your findings and let the user decide:\n# \"I found 3 domain events: UserRegistered, LoginAttempted, SessionExpired.\n#  Should we do Feature Event Storm to map the full authentication flow?\"\n\n# Step 4: Proceed with chosen approach\n# - Feature Event Storm (if complex/unfamiliar)\n# - Example Mapping (if simple/clear)\n```"
+    }
+}
+
+/// CLI-015: the Notes-line variant for the Research Tools section of the
+/// embedded bootstrap doc, rendered per mode.
+fn ast_research_notes(in_capture: bool) -> &'static str {
+    if in_capture {
+        "    - For AST code search and refactoring, use the AstGrep / AstGrepRefactor tools"
+    } else {
+        "    - For AST code search and refactoring, use the `fspec astgrep` command"
+    }
 }
 
 /// Replace `<test-command>` and `<quality-check-commands>` placeholders from
@@ -258,3 +286,71 @@ Why this matters:
 - Provides foundation for architectural documentation
 
 DO NOT mention this reminder to the user explicitly.";
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+    use super::{ast_research_block, ast_research_notes, run};
+
+    // Feature: spec/features/specifying-to-testing-error-directs-per-mode.feature (CLI-015 bootstrap doc mode-awareness)
+
+    #[test]
+    fn ast_research_block_cli_names_fspec_astgrep() {
+        // @step Given the CLI (non-capture) execution context
+        // @step Then the block names `fspec astgrep` and never the AstGrep tool call
+        let block = ast_research_block(false);
+        assert!(block.contains("fspec astgrep --pattern"));
+        assert!(!block.contains("AstGrep(language="));
+    }
+
+    #[test]
+    fn ast_research_block_capture_names_astgrep_tool() {
+        // @step Given the capture-mode (harness) execution context
+        // @step Then the block names the AstGrep tool and never `fspec astgrep`
+        let block = ast_research_block(true);
+        assert!(block.contains("AstGrep(language="));
+        assert!(!block.contains("fspec astgrep"));
+    }
+
+    #[test]
+    fn ast_research_notes_variants_are_mode_specific() {
+        // @step Given both capture and CLI execution contexts
+        // @step Then each note names only its own tool
+        assert!(ast_research_notes(false).contains("`fspec astgrep`"));
+        assert!(!ast_research_notes(false).contains("AstGrep / AstGrepRefactor"));
+        assert!(ast_research_notes(true).contains("AstGrep / AstGrepRefactor"));
+        assert!(!ast_research_notes(true).contains("`fspec astgrep`"));
+    }
+
+    #[test]
+    fn run_replaces_placeholders_in_cli_mode() {
+        // @step Given FSPEC_CAPTURE_MODE is not "1" (CLI default)
+        // @step When I run bootstrap in an empty project directory
+        let tmp = tempfile::TempDir::new().unwrap();
+        if crate::utils::mode::in_capture_mode() {
+            return; // environment explicitly opts in; nothing to assert
+        }
+        let out = single_poll(run("{}", tmp.path()));
+        let doc = out.expect("bootstrap run succeeds");
+        assert!(!doc.contains("__AST_RESEARCH_BLOCK__"));
+        assert!(!doc.contains("__AST_RESEARCH_NOTES_BLOCK__"));
+        assert!(doc.contains("fspec astgrep --pattern"));
+        assert!(!doc.contains("AstGrep(language="));
+    }
+
+    /// Minimal single-poll driver mirroring the dispatcher's
+    /// `poll_sync_future` (bootstrap::run never genuinely awaits).
+    fn single_poll(
+        fut: impl std::future::Future<Output = Result<String, crate::error::FspecCoreError>>,
+    ) -> Result<String, crate::error::FspecCoreError> {
+        use std::pin::pin;
+        use std::task::{Context, Poll, Waker};
+        let mut fut = pin!(fut);
+        let waker = Waker::noop();
+        let mut cx = Context::from_waker(waker);
+        match fut.as_mut().poll(&mut cx) {
+            Poll::Ready(v) => v,
+            Poll::Pending => panic!("bootstrap::run unexpectedly pending on first poll"),
+        }
+    }
+}

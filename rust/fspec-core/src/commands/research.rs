@@ -13,12 +13,14 @@
 //! dispatcher-only path.
 //!
 //! What IS ported:
-//!   * LIST mode (no `tool`): enumerate the five bundled registry tools
-//!     (`ast`, `perplexity`, `jira`, `confluence`, `stakeholder`) with a
+//!   * LIST mode (no `tool`): enumerate the four bundled registry tools
+//!     (`perplexity`, `jira`, `confluence`, `stakeholder`) with a
 //!     resolved `configured` status, using the same config-resolution
 //!     precedence as the TS `resolveConfig` (ENV → user `~/.fspec/
 //!     fspec-config.json` → project `spec/fspec-config.json` → defaults).
-//!     BLOCKING `std::fs` + static tables only.
+//!     BLOCKING `std::fs` + static tables only. AST code search is NO LONGER
+//!     a research tool (CLI-015): the native AstGrep tool (harness mode) and
+//!     the `fspec astgrep` subcommand (CLI mode) provide that capability.
 //!   * Pre-execution validation: a selected tool that is not in the bundled
 //!     registry is rejected with the same 3-line message the TS
 //!     `getResearchTool` throws (`Research tool not found: <name>` + the
@@ -48,16 +50,21 @@ use crate::error::FspecCoreError;
 /// required-fields)` mirrors the TS `TOOL_REGISTRY`
 /// (`src/commands/research-tool-list.ts:29-56`); a tool is *configured* iff
 /// every required field resolves to a non-empty value.
+///
+/// CLI-015: the `ast` tool is no longer part of this registry — AST code
+/// search is served by the native `AstGrep` tool (harness mode) and the
+/// `fspec astgrep` subcommand (CLI mode), so it is neither listed here nor
+/// accepted via `--tool`.
 struct RegistryTool {
     name: &'static str,
     description: &'static str,
     /// Config keys that must all resolve non-empty for the tool to be
-    /// reported as configured (`[]` ⇒ always configured, e.g. `ast`).
+    /// reported as configured.
     required: &'static [&'static str],
 }
 
 /// The bundled research-tool registry, in TS `TOOL_REGISTRY` declaration
-/// order (`perplexity`, `jira`, `confluence`, `stakeholder`, `ast`). The list
+/// order (`perplexity`, `jira`, `confluence`, `stakeholder`). The list
 /// scenarios assert membership (and a sorted set), so order here only affects
 /// the rendered text ordering — kept matching the TS object insertion order.
 const REGISTRY: &[RegistryTool] = &[
@@ -80,11 +87,6 @@ const REGISTRY: &[RegistryTool] = &[
         name: "stakeholder",
         description: "Stakeholder communication tool for Teams/Slack/Discord",
         required: &["teamsWebhook"],
-    },
-    RegistryTool {
-        name: "ast",
-        description: "AST code analysis tool for pattern detection and deep code analysis",
-        required: &[],
     },
 ];
 
@@ -122,8 +124,8 @@ struct ResearchArgs {
     tool: Option<String>,
     /// Show all tools (configured + unconfigured). Reserved; LIST mode always
     /// enumerates the full registry regardless of this flag (the dispatcher
-    /// tests assert all five tools are present), matching the CLI `--help`
-    /// fixture which lists every tool.
+    /// tests assert all four bundled tools are present), matching the CLI
+    /// `--help` fixture which lists every tool.
     #[allow(dead_code)]
     all: Option<bool>,
     #[allow(dead_code)]
@@ -183,16 +185,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     if let Some(tool) = args.tool.as_deref() {
         if !REGISTRY.iter().any(|t| t.name == tool) {
             // Bundled tool names in the TS `BUNDLED_TOOLS` Map insertion order
-            // (`ast, perplexity, jira, confluence, stakeholder`), which differs
-            // from this module's REGISTRY render order.
-            let bundled = "ast, perplexity, jira, confluence, stakeholder";
+            // (CLI-015: `ast` removed — AST search moved to the AstGrep tool /
+            // `fspec astgrep`), which differs from this module's REGISTRY
+            // render order.
+            let bundled = "perplexity, jira, confluence, stakeholder";
             return Err(FspecCoreError::InvalidArgs {
                 command: "research",
                 reason: format!(
                     "Research tool not found: {tool}\n\n\
                      Available bundled tools: {bundled}\n\
                      To use custom tools: create spec/research-tools/{tool}.ts \
-                     and run 'fspec build-tool {tool}'"
+                     and run 'fspec build-tool {tool}'\n\
+                     For AST code search, use the `fspec astgrep` command instead"
                 ),
             });
         }
@@ -382,24 +386,23 @@ mod tests {
     }
 
     #[test]
-    fn list_mode_enumerates_all_five_tools() {
+    fn list_mode_enumerates_all_four_tools_without_ast() {
         let tmp = TempDir::new().unwrap();
         let out = futures_poll(run("{}", tmp.path()));
         let tools = tools_of(&out);
         let mut names: Vec<&str> = tools.iter().filter_map(|t| t["name"].as_str()).collect();
         names.sort_unstable();
-        assert_eq!(
-            names,
-            vec!["ast", "confluence", "jira", "perplexity", "stakeholder"]
-        );
+        assert_eq!(names, vec!["confluence", "jira", "perplexity", "stakeholder"]);
     }
 
     #[test]
-    fn ast_is_configured_by_default_perplexity_is_not() {
+    fn ast_is_not_a_research_tool_anymore_perplexity_is_not_configured() {
         let tmp = TempDir::new().unwrap();
         let out = futures_poll(run("{}", tmp.path()));
         let tools = tools_of(&out);
-        assert!(is_configured(&tools, "ast"));
+        // CLI-015: `ast` moved to the AstGrep tool / `fspec astgrep` — it must
+        // not appear in the research registry listing.
+        assert!(!tools.iter().any(|t| t["name"].as_str() == Some("ast")));
         assert!(!is_configured(&tools, "perplexity"));
     }
 
@@ -444,12 +447,26 @@ mod tests {
             "msg={msg}"
         );
         // Parity with the TS 3-line message: bundled-tools list + custom-tool hint.
+        // CLI-015: `ast` is no longer bundled — it is rejected like any
+        // unknown tool and the message points at `fspec astgrep`.
         assert!(
-            msg.contains("Available bundled tools: ast, perplexity, jira, confluence, stakeholder"),
+            msg.contains("Available bundled tools: perplexity, jira, confluence, stakeholder"),
             "msg={msg}"
         );
         assert!(
             msg.contains("create spec/research-tools/does-not-exist.ts and run 'fspec build-tool does-not-exist'"),
+            "msg={msg}"
+        );
+    }
+
+    #[test]
+    fn ast_tool_is_rejected_and_points_to_fspec_astgrep() {
+        let tmp = TempDir::new().unwrap();
+        let err = futures_poll_err(run(r#"{"tool":"ast"}"#, tmp.path()));
+        let msg = err.to_string();
+        assert!(msg.contains("Research tool not found: ast"), "msg={msg}");
+        assert!(
+            msg.contains("For AST code search, use the `fspec astgrep` command instead"),
             "msg={msg}"
         );
     }

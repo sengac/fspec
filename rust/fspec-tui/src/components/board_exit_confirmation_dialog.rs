@@ -276,7 +276,7 @@ impl Component for BoardExitConfirmationDialog {
             rows: vec![description_row, button_row],
             footer: FOOTER,
             min_width: MIN_WIDTH,
-query_row: None,
+            query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

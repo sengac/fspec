@@ -1,0 +1,5 @@
+---
+source: fspec-tui/tests/mux001.rs
+expression: "MuxError::UnknownPaneKind(\"zzz\".to_string()).to_string()"
+---
+/mux: unknown pane kind: zzz

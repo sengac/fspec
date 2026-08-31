@@ -15,7 +15,7 @@ use ratatui::Terminal;
 use tokio::time::timeout;
 
 mod common;
-use common::{MockBackend, buffer_to_rows, render_one_frame, test_app};
+use common::{buffer_to_rows, render_one_frame, test_app, MockBackend};
 
 fn sid(s: &str) -> SessionId {
     SessionId::new(s)
@@ -144,7 +144,11 @@ async fn resume_flow_chunk_line_widths() {
     let chunks = ctx.scrollback.chunks();
     eprintln!("chunk_count = {}", chunks.len());
     for (i, chunk) in chunks.iter().enumerate() {
-        eprintln!("chunk[{i}] seq={seq} lines={lines}", seq = chunk.seq, lines = chunk.lines.len());
+        eprintln!(
+            "chunk[{i}] seq={seq} lines={lines}",
+            seq = chunk.seq,
+            lines = chunk.lines.len()
+        );
         for (j, line) in chunk.lines.iter().enumerate() {
             let text: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
             let width = text.chars().count();
@@ -226,5 +230,8 @@ async fn resume_flow_render_after_drain() {
             break;
         }
     }
-    assert!(found_assistant, "Assistant line should be intact on one row");
+    assert!(
+        found_assistant,
+        "Assistant line should be intact on one row"
+    );
 }

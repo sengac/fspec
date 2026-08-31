@@ -908,10 +908,7 @@ fn loaded_but_empty_shows_real_empty_message() {
 
     // @step Then the view shows "No changed files"
     let (joined, _cells) = render_grid(&mut view, 100, 20);
-    assert!(
-        joined.contains("No changed files"),
-        "joined:\n{joined}"
-    );
+    assert!(joined.contains("No changed files"), "joined:\n{joined}");
 
     // @step And no loading dialog is shown
     assert!(
@@ -931,8 +928,10 @@ fn diff_stage_shows_its_label_until_the_diff_folds_in() {
     view.load.mark_list_flushed();
 
     // @step When a file diff load is in flight
-    view.load
-        .begin_stage(&LoadTracker::diff_stage_key_path("src/foo.rs"), "Loading diff for src/foo.rs…");
+    view.load.begin_stage(
+        &LoadTracker::diff_stage_key_path("src/foo.rs"),
+        "Loading diff for src/foo.rs…",
+    );
     view.sync_loading_label();
 
     // @step Then the loading dialog shows the label "Loading diff for <file path>…"
@@ -973,8 +972,10 @@ fn stale_diff_result_does_not_clear_the_current_stage() {
     let mut view = ChangedFilesView::new();
     view.set_files(vec![cf("a.txt", "M", false), cf("b.txt", "A", false)]);
     view.load.mark_list_flushed();
-    view.load
-        .begin_stage(&LoadTracker::diff_stage_key_path("a.txt"), "Loading diff for a.txt…");
+    view.load.begin_stage(
+        &LoadTracker::diff_stage_key_path("a.txt"),
+        "Loading diff for a.txt…",
+    );
     view.sync_loading_label();
     assert!(view.is_loading());
 
@@ -982,7 +983,8 @@ fn stale_diff_result_does_not_clear_the_current_stage() {
     // The dispatcher folds the stale result: set_diff is a no-op on
     // selection mismatch and complete_stage is a no-op on key mismatch.
     view.set_diff("b.txt", Some("+stale".to_string()));
-    let completed = view.load
+    let completed = view
+        .load
         .complete_stage(&LoadTracker::diff_stage_key_path("b.txt"));
     assert!(!completed, "stale key must not complete the stage");
 
@@ -1065,11 +1067,22 @@ fn loading_dialog_renders_through_the_canonical_dialog_theme() {
     let area = Rect::new(0, 0, 60, 14);
     let mut buf0 = ratatui::buffer::Buffer::empty(area);
     render_loading_dialog(area, &mut buf0, &view.loading, 0);
-    let out0: String = buf0.content.iter().map(|c| c.symbol().to_string()).collect();
+    let out0: String = buf0
+        .content
+        .iter()
+        .map(|c| c.symbol().to_string())
+        .collect();
     let mut buf80 = ratatui::buffer::Buffer::empty(area);
     render_loading_dialog(area, &mut buf80, &view.loading, 80);
-    let out80: String = buf80.content.iter().map(|c| c.symbol().to_string()).collect();
-    assert!(out0.contains("⠋") && !out0.contains("⠙"), "t=0 → first glyph only");
+    let out80: String = buf80
+        .content
+        .iter()
+        .map(|c| c.symbol().to_string())
+        .collect();
+    assert!(
+        out0.contains("⠋") && !out0.contains("⠙"),
+        "t=0 → first glyph only"
+    );
     assert!(out80.contains("⠙"), "t=80 → second glyph");
 }
 
@@ -1090,13 +1103,20 @@ fn arrowing_while_a_diff_is_in_flight_is_swallowed_so_the_selection_stays_put() 
     // @step And the diff for the first file has folded in
     // (the dispatcher begins the diff stage for the first file, then
     // its result folds in and completes the stage)
-    view.load
-        .begin_stage(&LoadTracker::diff_stage_key_path("a.txt"), "Loading diff for a.txt…");
+    view.load.begin_stage(
+        &LoadTracker::diff_stage_key_path("a.txt"),
+        "Loading diff for a.txt…",
+    );
     view.sync_loading_label();
     view.set_diff("a.txt", Some("+a".to_string()));
-    assert!(view.load.complete_stage(&LoadTracker::diff_stage_key_path("a.txt")));
+    assert!(view
+        .load
+        .complete_stage(&LoadTracker::diff_stage_key_path("a.txt")));
     view.sync_loading_label();
-    assert!(!view.is_loading(), "settled before the user starts arrowing");
+    assert!(
+        !view.is_loading(),
+        "settled before the user starts arrowing"
+    );
 
     // @step When the user presses Down
     let outcome = view.handle_event(&key(KeyCode::Down));
@@ -1105,8 +1125,10 @@ fn arrowing_while_a_diff_is_in_flight_is_swallowed_so_the_selection_stays_put() 
         other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
     }
     // The dispatcher folds the emit by beginning the diff stage.
-    view.load
-        .begin_stage(&LoadTracker::diff_stage_key_path("b.txt"), "Loading diff for b.txt…");
+    view.load.begin_stage(
+        &LoadTracker::diff_stage_key_path("b.txt"),
+        "Loading diff for b.txt…",
+    );
     view.sync_loading_label();
 
     // @step Then the second file is selected and its diff load is in flight
@@ -1126,11 +1148,7 @@ fn arrowing_while_a_diff_is_in_flight_is_swallowed_so_the_selection_stays_put() 
         matches!(outcome, ChangedFilesEvent::Consumed),
         "Down while a diff is in flight must be swallowed, got {outcome:?}"
     );
-    assert_eq!(
-        view.selected_index(),
-        1,
-        "the selection must stay on b.txt"
-    );
+    assert_eq!(view.selected_index(), 1, "the selection must stay on b.txt");
     assert!(
         view.is_loading(),
         "the b.txt diff stage must still be in flight"
@@ -1138,7 +1156,9 @@ fn arrowing_while_a_diff_is_in_flight_is_swallowed_so_the_selection_stays_put() 
 
     // @step When the diff result for the second file arrives
     view.set_diff("b.txt", Some("+b".to_string()));
-    assert!(view.load.complete_stage(&LoadTracker::diff_stage_key_path("b.txt")));
+    assert!(view
+        .load
+        .complete_stage(&LoadTracker::diff_stage_key_path("b.txt")));
     view.sync_loading_label();
 
     // @step Then the loading dialog disappears

@@ -19,10 +19,10 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
-    CheckpointsProgress, CompactionProgress, CompactionResult, CustomModelDefinition,
-    FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo,
-    OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition, ProviderCredentialInfo,
+    CheckpointsProgress, CompactionProgress, CompactionResult, CustomModelDefinition, FspecResult,
+    HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo,
+    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, OAuthDeviceStart,
+    OAuthHeadlessStart, PauseState, ProfileDefinition, ProviderCredentialInfo,
     ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
     SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
     StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,

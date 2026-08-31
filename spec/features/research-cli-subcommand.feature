@@ -33,15 +33,16 @@ Feature: Research CLI subcommand
     When I run `fspec research` in that directory
     Then the command exits with code 0
     And stdout contains "Available Research Tools:"
-    And stdout contains "ast"
+    And stdout contains "jira"
     And stdout contains "perplexity"
     And stdout contains "stakeholder"
+    And stdout does not contain "--tool=ast"
 
   Scenario: CLI tool listing includes per-tool usage guidance
     Given an empty project root tempdir
     When I run `fspec research` in that directory
     Then the command exits with code 0
-    And stdout contains "Usage: fspec research --tool=ast <args>"
+    And stdout contains "Usage: fspec research --tool=stakeholder <args>"
 
   Scenario: CLI fails with a not-found error for an unknown tool
     Given an empty project root tempdir

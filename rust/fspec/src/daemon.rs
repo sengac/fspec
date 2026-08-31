@@ -34,6 +34,10 @@ pub async fn run(workspace: Option<PathBuf>, bind: String, pidfile: Option<PathB
 
     common::validate_loopback_bind(&bind)?;
 
+    // CLI-015: this process hosts native agent sessions with the AstGrep rig
+    // tool, so core prompts render their harness (capture) variants.
+    std::env::set_var("FSPEC_CAPTURE_MODE", "1");
+
     let workspace = common::resolve_workspace(workspace)?;
     let service = common::build_service(&workspace)?;
     common::init_tracing_daemon(&service)?;

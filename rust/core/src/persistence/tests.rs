@@ -1753,7 +1753,18 @@ fn test_set_session_tokens() {
 
     // @step When I set the cumulative token usage to specific values
     // Pass cumulative values separately (here same as current for fresh session)
-    set_session_tokens(&mut session, 1000, 500, 100, 50, 1000, 500, 0).expect("set tokens");
+    set_session_tokens(
+        &mut session,
+        &TokenUsage {
+            current_context_tokens: 1000,
+            cumulative_billed_input: 1000,
+            cumulative_billed_output: 500,
+            cache_read_tokens: 100,
+            cache_creation_tokens: 50,
+            reasoning_tokens: 0,
+        },
+    )
+    .expect("set tokens");
 
     // @step Then the session should have exactly those token values (not added)
     // CTX-003: Now uses dual-metric fields
@@ -1854,7 +1865,18 @@ fn test_token_and_compaction_state_persist_together() {
     }
 
     // @step When I set both token usage and compaction state
-    set_session_tokens(&mut session, 2000, 1000, 200, 100, 2000, 1000, 0).expect("set tokens");
+    set_session_tokens(
+        &mut session,
+        &TokenUsage {
+            current_context_tokens: 2000,
+            cumulative_billed_input: 2000,
+            cumulative_billed_output: 1000,
+            cache_read_tokens: 200,
+            cache_creation_tokens: 100,
+            reasoning_tokens: 0,
+        },
+    )
+    .expect("set tokens");
     set_compaction_state(&mut session, "Compacted 15 turns".to_string(), 15)
         .expect("set compaction");
 

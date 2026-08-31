@@ -1,0 +1,167 @@
+{
+  "scenarios": [
+    {
+      "name": "unfilled agent slots are not rendered when fewer sessions are open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "92-131",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "186-215"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right at the right edge prompts to create a new agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "139-188",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "116-170"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right at the right edge prompts to create a new agent even when the rightmost pane is not an agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "197-245",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": "186-201"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right rotates the agent window forward when the window can advance",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "254-296",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "116-135"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left on the rightmost agent pane rotates the agent window backward",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "305-343",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "136-145"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on the rightmost files pane at the last window position prompts to create a new agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "352-421",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "116-170"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on the rightmost agent pane at the last window position prompts to create a new agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "430-487",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "116-170"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left at the first pane stops without wrapping",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "495-520",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "93-105"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left falls through to focus movement when the window cannot rotate backward",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "529-570",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "93-145"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "closing an agent session keeps the agent slots and re-clamps the window",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux002.rs",
+          "lines": "579-621",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": "44-61"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/mux002.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_mux.rs",
+      "rust/fspec-tui/src/views/multiplex/window.rs"
+    ],
+    "totalLinesCovered": 460
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "scenarios": [
+    {
+      "name": "History handed to the LLM is stripped of thinking when disabled",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/prov143_history_strip_test.rs",
+          "lines": "39-83",
+          "implMappings": [
+            {
+              "file": "rust/core/src/history_strip.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A reasoning-only assistant message is dropped from the outgoing history",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/prov143_history_strip_test.rs",
+          "lines": "85-116",
+          "implMappings": [
+            {
+              "file": "rust/core/src/history_strip.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve-thinking enabled returns the history unchanged",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/prov143_history_strip_test.rs",
+          "lines": "118-131",
+          "implMappings": [
+            {
+              "file": "rust/core/src/history_strip.rs",
+              "lines": [
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stripping keeps the message count and user messages intact",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/prov143_history_strip_test.rs",
+          "lines": "133-159",
+          "implMappings": [
+            {
+              "file": "rust/core/src/history_strip.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/prov143_history_strip_test.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/history_strip.rs"
+    ],
+    "totalLinesCovered": 176
+  }
+}

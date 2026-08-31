@@ -184,5 +184,7 @@ pub fn profile_def_from_wire(
         streaming: wire.streaming,
         // PROV-142: carry the per-profile auto-continue default through.
         auto_continue: wire.auto_continue,
+        // PROV-143: carry the per-profile preserve-thinking toggle through.
+        preserve_thinking: wire.preserve_thinking,
     }
 }

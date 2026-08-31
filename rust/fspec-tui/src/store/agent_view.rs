@@ -29,8 +29,9 @@ pub mod pause_state;
 pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
 pub mod role_state;
-pub mod session_context;
 pub mod sanitize;
+pub mod session_context;
+pub mod session_indexing;
 pub mod stderr;
 pub mod supervisor_state;
 pub mod token_state;
@@ -98,7 +99,6 @@ pub struct AgentViewStore {
     // RPC-061 supervisor state — accessors in `supervisor_state.rs`.
     pub(crate) supervisors_by_session: HashMap<SessionId, Vec<SessionId>>,
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
-
     // ── RPC-100 reduction pct + RPC-417 seq guard — chrome_state.rs ─────
     pub(crate) compaction_reduction_by_session: HashMap<SessionId, i32>,
     pub(crate) compaction_reduction_seq_by_session: HashMap<SessionId, u64>,

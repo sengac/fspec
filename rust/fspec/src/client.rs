@@ -23,6 +23,11 @@ pub async fn run(connect: Option<String>) -> Result<()> {
     common::install_panic_hook();
     common::init_tracing_client()?;
 
+    // CLI-015: this process runs native agent sessions with the AstGrep rig
+    // tool (over the WebSocket transport), so core prompts render their
+    // harness (capture) variants.
+    std::env::set_var("FSPEC_CAPTURE_MODE", "1");
+
     let shutdown: Pin<Box<dyn std::future::Future<Output = Result<ShutdownReason>> + Send>> =
         Box::pin(common::build_shutdown_future());
 

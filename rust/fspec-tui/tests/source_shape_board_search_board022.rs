@@ -138,7 +138,10 @@ fn board_header_chord_gains_the_search_segment() {
             .join("keybinding_shortcuts.rs"),
     );
     // @step Then the file contains the substring "/ Search"
-    assert!(body.contains("/ Search"), "'/ Search' chord segment missing");
+    assert!(
+        body.contains("/ Search"),
+        "'/ Search' chord segment missing"
+    );
 }
 
 /// Scenario: the board help content gains the '/' search row
@@ -171,7 +174,10 @@ fn board_store_gains_the_search_accessors() {
             .join("board.rs"),
     );
     // @step Then the file contains the substring "pub fn work_units"
-    assert!(board.contains("pub fn work_units"), "work_units accessor missing");
+    assert!(
+        board.contains("pub fn work_units"),
+        "work_units accessor missing"
+    );
     // @step And the file contains the substring "pub fn find"
     assert!(board.contains("pub fn find"), "find accessor missing");
 

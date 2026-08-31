@@ -145,11 +145,11 @@ command: "validate-foundation-schema"  # Validate against JSON schema
 
 **Use when:** Domain is unfamiliar, 13+ story points, multiple bounded contexts, unclear events.
 
-**Research first** using AST analysis:
+**Research first** using the AstGrep tool:
 ```
-command: "research", args: {"tool": "ast", "pattern": "function $NAME", "lang": "typescript", "path": "src/auth/"}
-command: "research", args: {"tool": "ast", "pattern": "class $NAME", "lang": "typescript", "path": "src/"}
-command: "research", args: {"tool": "ast", "pattern": "interface $NAME", "lang": "typescript", "path": "src/"}
+AstGrep(language="typescript", pattern="function $NAME($$$ARGS) { $$$BODY }", path="src/auth/")
+AstGrep(language="typescript", pattern="class $NAME { $$$FIELDS }", path="src/")
+AstGrep(language="typescript", pattern="interface $NAME { $$$FIELDS }", path="src/")
 ```
 
 **Event Storm commands:**
@@ -219,9 +219,6 @@ command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
 
 ```
 command: "research"  # List available research tools
-
-# AST code search
-command: "research", args: {"tool": "ast", "pattern": "async function $NAME", "lang": "typescript", "path": "src/"}
 
 # Stakeholder questions
 command: "research", args: {"tool": "stakeholder", "platform": "teams", "question": "Support OAuth?", "workUnit": "AUTH-001"}
@@ -1303,7 +1300,20 @@ mod tests {
         let guidance = get_fspec_workflow_guidance();
         assert!(guidance.contains("research"));
         assert!(guidance.contains("tool"));
-        assert!(guidance.contains("ast"));
+        assert!(guidance.contains("AstGrep"));
+    }
+
+    // Feature: spec/features/harness-workflow-guidance-references-astgrep-tool.feature
+    #[test]
+    fn test_harness_guidance_references_astgrep_not_research_ast() {
+        // @step Given the harness-only FSPEC workflow guidance constant
+        // @step When I inspect the guidance text
+        let guidance = get_fspec_workflow_guidance();
+        // @step Then it references `AstGrep` for code search during discovery
+        assert!(guidance.contains("**Research first** using the AstGrep tool:"));
+        // @step And it does not reference `research` with the `ast` tool
+        assert!(!guidance.contains("\"tool\": \"ast\""));
+        assert!(!guidance.contains("--tool=ast"));
     }
 
     #[test]

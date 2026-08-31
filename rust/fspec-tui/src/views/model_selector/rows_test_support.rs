@@ -55,7 +55,7 @@ pub(crate) fn render_to_grid(
     term.draw(|f| {
         let _ = render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, None);
     })
-        .expect("draw");
+    .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     let mut cells: Vec<(String, Color)> = Vec::new();

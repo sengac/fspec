@@ -109,6 +109,10 @@ impl App {
                     // first_open_session_id drop the dead session
                     // BEFORE the user can navigate again.
                     self.agent_view_store.remove_session_if_open(&session);
+                    // MUX-002: closing a session shrinks the open-session
+                    // list — re-clamp the mux agent window (agent slots
+                    // stay in the grid, no pane is removed from the layout).
+                    self.mux_sync_window();
 
                     // Step 4: current-work-unit pointer clear (TS
                     // parity step 3 — sessionService.ts:642). Mirrors

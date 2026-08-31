@@ -228,11 +228,13 @@ pub fn render_dialog_at(rect: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) 
     let query_h = if dialog.has_query_row() { 1 } else { 0 };
     // Spacious needs: title(1) + gap(1) + >=1 content + (gap(1)+footer if
     // any). Use it whenever it yields at least one visible content row.
-    let spacious_min = 3 + query_h + if raw_footer_h > 0 {
-        raw_footer_h + 1
-    } else {
-        0
-    };
+    let spacious_min = 3
+        + query_h
+        + if raw_footer_h > 0 {
+            raw_footer_h + 1
+        } else {
+            0
+        };
     let spacious = body.height >= spacious_min;
     // Compact drops the gaps; drop the footer too if it still won't fit.
     let footer_h = if raw_footer_h == 0 {

@@ -103,7 +103,8 @@ fn edit_form_prefills_connection_fields_from_stored_profile() {
         compaction_threshold_type: None,
         compaction_threshold_value: None,
         streaming: None,
-    auto_continue: None,
+        auto_continue: None,
+        preserve_thinking: None,
     };
     let form = ProfileForm::from_definition("fireworks", &def);
 

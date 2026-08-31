@@ -57,7 +57,8 @@ fn def(base_url: &str, api_key: &str) -> ProfileDefinition {
         compaction_threshold_type: None,
         compaction_threshold_value: None,
         streaming: None,
-    auto_continue: None,
+        auto_continue: None,
+        preserve_thinking: None,
     }
 }
 

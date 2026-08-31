@@ -27,6 +27,13 @@ where
     agent: Agent<M>,
     /// Maximum depth for multi-turn execution
     max_depth: usize,
+    /// PROV-143: whether captured thinking/reasoning blocks are preserved in
+    /// the chat history clone sent back to the LLM. Default `true` (today's
+    /// behavior — required for Anthropic/Gemini signed thinking blocks).
+    /// Profile (OpenAI local-server) sessions disable this when the profile's
+    /// `preserveThinking` is absent/false, so old thinking never confuses the
+    /// model; the persisted session history keeps the blocks regardless.
+    preserve_thinking: bool,
 }
 
 impl<M> RigAgent<M>
@@ -40,7 +47,11 @@ where
     /// and configuration. This ensures RigAgent stays decoupled from any
     /// specific provider implementation.
     pub fn new(agent: Agent<M>, max_depth: usize) -> Self {
-        Self { agent, max_depth }
+        Self {
+            agent,
+            max_depth,
+            preserve_thinking: true,
+        }
     }
 
     /// Create a new RigAgent with default max depth (10)
@@ -51,6 +62,29 @@ where
     /// Get the maximum depth setting
     pub fn max_depth(&self) -> usize {
         self.max_depth
+    }
+
+    /// PROV-143: whether thinking/reasoning blocks are preserved in the
+    /// outgoing chat history. Defaults to `true` (preserve — today's
+    /// behavior). Profile sessions set this from their profile's
+    /// `preserveThinking` value; when `false`, `AssistantContent::Reasoning`
+    /// blocks are stripped from the history clone before each LLM call.
+    pub fn with_preserve_thinking(mut self, preserve: bool) -> Self {
+        self.preserve_thinking = preserve;
+        self
+    }
+
+    /// Build the outgoing history clone: an unchanged copy when
+    /// [`preserve_thinking`](Self::preserve_thinking) is enabled, otherwise a
+    /// copy with every `AssistantContent::Reasoning` block removed (PROV-143).
+    ///
+    /// `pub(crate)` so unit tests can prove the flag wires through without a
+    /// live agent — this is the single outgoing-history choke point.
+    pub(crate) fn outgoing_history(
+        &self,
+        history: &[rig::message::Message],
+    ) -> Vec<rig::message::Message> {
+        super::history_strip::strip_reasoning_from_history(history, self.preserve_thinking)
     }
 
     /// Execute a prompt in non-streaming mode with automatic multi-turn tool execution
@@ -126,8 +160,10 @@ where
             "Starting streaming agent execution with history"
         );
 
-        // Clone history for rig (rig takes ownership and manages it internally)
-        let history_for_rig = history.to_vec();
+        // Clone history for rig (rig takes ownership and manages it internally).
+        // PROV-143: the clone is the single outgoing-history choke point —
+        // strip thinking blocks when the flag is disabled.
+        let history_for_rig = self.outgoing_history(history);
 
         self.agent
             .stream_prompt(prompt)
@@ -165,8 +201,10 @@ where
             "Starting streaming agent execution with history and hook"
         );
 
-        // Clone history for rig (rig takes ownership and manages it internally)
-        let history_for_rig = history.to_vec();
+        // Clone history for rig (rig takes ownership and manages it internally).
+        // PROV-143: the clone is the single outgoing-history choke point —
+        // strip thinking blocks when the flag is disabled.
+        let history_for_rig = self.outgoing_history(history);
 
         self.agent
             .stream_prompt(prompt)
@@ -185,12 +223,14 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RigAgent")
             .field("max_depth", &self.max_depth)
+            .field("preserve_thinking", &self.preserve_thinking)
             .field("tools", &9) // We have 9 tools including WebSearchTool (WEB-001)
             .finish()
     }
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -232,5 +272,128 @@ mod tests {
             production_source.contains("anyhow::Error::from"),
             "must use anyhow::Error::from to preserve typed error chain"
         );
+    }
+
+    // ── PROV-143: outgoing-history choke point ─────────────────────────
+
+    /// Minimal terminal completion payload (mirrors the providers'
+    /// `StubCompletion` shape) satisfying the `GetTokenUsage` bound.
+    #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+    struct MockCompletion {
+        stop_reason: String,
+    }
+
+    impl rig::completion::GetTokenUsage for MockCompletion {
+        fn token_usage(&self) -> Option<rig::completion::Usage> {
+            Some(rig::completion::Usage::new())
+        }
+
+        fn stop_reason(&self) -> Option<&str> {
+            Some(self.stop_reason.as_str())
+        }
+    }
+
+    /// Minimal no-op CompletionModel so a RigAgent can be constructed in a
+    /// unit test without any HTTP/provider machinery.
+    #[derive(Debug, Default, Clone)]
+    struct MockModel;
+
+    impl rig::completion::CompletionModel for MockModel {
+        type Response = MockCompletion;
+        type StreamingResponse = MockCompletion;
+        type Client = ();
+
+        fn make(_client: &Self::Client, _model: impl Into<String>) -> Self {
+            Self
+        }
+
+        async fn completion(
+            &self,
+            _request: rig::completion::CompletionRequest,
+        ) -> Result<
+            rig::completion::CompletionResponse<MockCompletion>,
+            rig::completion::CompletionError,
+        > {
+            unimplemented!("mock model: completion is never called in tests")
+        }
+
+        async fn stream(
+            &self,
+            _request: rig::completion::CompletionRequest,
+        ) -> Result<
+            rig::streaming::StreamingCompletionResponse<MockCompletion>,
+            rig::completion::CompletionError,
+        > {
+            unimplemented!("mock model: stream is never called in tests")
+        }
+    }
+
+    fn mock_agent() -> Agent<MockModel> {
+        rig::agent::AgentBuilder::new(MockModel).build()
+    }
+
+    #[tokio::test]
+    async fn prov143_rig_agent_default_preserves_reasoning_in_outgoing_history() {
+        use rig::completion::AssistantContent;
+        use rig::message::{Message, Reasoning, Text};
+        use rig::OneOrMany;
+
+        // @step Given a RigAgent built with with_default_depth (default flag)
+        let agent = RigAgent::with_default_depth(mock_agent());
+        let history = vec![Message::Assistant {
+            id: None,
+            content: OneOrMany::many(vec![
+                AssistantContent::Reasoning(Reasoning::new("old thinking")),
+                AssistantContent::Text(Text {
+                    text: "answer".into(),
+                }),
+            ])
+            .expect("two items"),
+        }];
+        // @step When the outgoing history is built
+        let outgoing = agent.outgoing_history(&history);
+        // @step Then the Reasoning block survives (default = today's behavior)
+        assert!(
+            matches!(&outgoing[0], Message::Assistant { content, .. } if content.iter().any(|c| matches!(c, AssistantContent::Reasoning(_)))),
+            "default preserve_thinking must keep Reasoning blocks"
+        );
+    }
+
+    #[tokio::test]
+    async fn prov143_rig_agent_flag_false_strips_reasoning_in_outgoing_history() {
+        use rig::completion::AssistantContent;
+        use rig::message::{Message, Reasoning, Text};
+        use rig::OneOrMany;
+
+        // @step Given a RigAgent with preserve_thinking disabled
+        let agent = RigAgent::with_default_depth(mock_agent()).with_preserve_thinking(false);
+        let history = vec![Message::Assistant {
+            id: None,
+            content: OneOrMany::many(vec![
+                AssistantContent::Reasoning(Reasoning::new("old thinking")),
+                AssistantContent::Text(Text {
+                    text: "answer".into(),
+                }),
+            ])
+            .expect("two items"),
+        }];
+        // @step When the outgoing history is built
+        let outgoing = agent.outgoing_history(&history);
+        // @step Then the clone keeps the Text but carries no Reasoning
+        let Message::Assistant { content, .. } = &outgoing[0] else {
+            panic!("assistant lost");
+        };
+        let items: Vec<_> = content.iter().collect();
+        assert_eq!(items.len(), 1, "only Text should survive");
+        assert!(
+            matches!(&items[0], AssistantContent::Text(t) if t.text == "answer"),
+            "the Text block must survive: {items:?}"
+        );
+        // @step And the source history is unmutated
+        let src: Vec<_> = match &history[0] {
+            Message::Assistant { content, .. } => content.iter().collect(),
+            _ => panic!(),
+        };
+        assert_eq!(src.len(), 2, "the live history must keep both blocks");
     }
 }

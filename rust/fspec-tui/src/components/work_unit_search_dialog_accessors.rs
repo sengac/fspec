@@ -15,8 +15,7 @@ use codelet_rpc_types::WorkUnitInfo;
 
 use super::scroll_viewport::WheelVelocity;
 use super::work_unit_search_dialog::{
-    filter_work_units, SearchMatch, SearchMode, WorkUnitSearchDialog,
-    WORK_UNIT_SEARCH_DIALOG_ID,
+    filter_work_units, SearchMatch, SearchMode, WorkUnitSearchDialog, WORK_UNIT_SEARCH_DIALOG_ID,
 };
 use crate::mouse::scrollbar_drag::ScrollbarDrag;
 

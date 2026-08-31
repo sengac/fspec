@@ -127,6 +127,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the scrollback for that session still contains the 'API Error: provider error: [claude] API error: Rig completion failed: HttpError: Invalid status code 429 Too Many Requests' line per RPC-078
 
   Scenario: End-to-end App.render paints ErrorDialog modal on top of AgentView when a provider Error chunk arrives
-    given an App with an active session s-1 routed to the AgentView and no error dialog currently on the compositor
-    when the App dispatches Action::ChunkReceived(s-1, StreamChunk::Error{error: "provider error: [claude] API error: Rig completion failed: HttpError: Invalid status code 429 Too Many Requests"}) and then App::render is called into an 80x24 TestBackend buffer
-    then the rendered buffer contains a centered rounded red border drawn ON TOP of the AgentView scrollback (i.e. the ErrorDialog modal is painted last and covers the centre of the 80x24 buffer), with the bold red 'Error' title text visible inside the border and the scrollback 'API Error:' text still present in the rows the modal does not cover
+    Given an App with an active session s-1 routed to the AgentView and no error dialog currently on the compositor
+    When the App dispatches Action::ChunkReceived(s-1, StreamChunk::Error{error: "provider error: [claude] API error: Rig completion failed: HttpError: Invalid status code 429 Too Many Requests"}) and then App::render is called into an 80x24 TestBackend buffer
+    Then the rendered buffer contains a centered rounded red border drawn ON TOP of the AgentView scrollback (i.e. the ErrorDialog modal is painted last and covers the centre of the 80x24 buffer), with the bold red 'Error' title text visible inside the border and the scrollback 'API Error:' text still present in the rows the modal does not cover

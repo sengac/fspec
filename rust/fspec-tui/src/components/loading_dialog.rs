@@ -80,7 +80,12 @@ impl LoadingDialog {
 /// rows: [spinner line, optional "(idx/total)"], footer: "",
 /// min_width: 40 }` and delegates the pixel paint to the single shared
 /// [`render_dialog`] implementation.
-pub fn render_loading_dialog(area: Rect, buf: &mut Buffer, dialog: &LoadingDialog, elapsed_ms: u64) {
+pub fn render_loading_dialog(
+    area: Rect,
+    buf: &mut Buffer,
+    dialog: &LoadingDialog,
+    elapsed_ms: u64,
+) {
     let mut rows = vec![DialogRow {
         spans: vec![Span::raw(dialog.spinner_line(elapsed_ms))],
         selectable: false,
@@ -106,7 +111,7 @@ pub fn render_loading_dialog(area: Rect, buf: &mut Buffer, dialog: &LoadingDialo
         rows,
         footer: "",
         min_width: 40,
-query_row: None,
+        query_row: None,
     };
     render_dialog(area, buf, &spec);
 }
@@ -115,8 +120,8 @@ query_row: None,
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-    use ratatui::style::Color;
     use super::*;
+    use ratatui::style::Color;
 
     fn paint(dialog: &LoadingDialog, elapsed: u64) -> (Buffer, Rect) {
         let area = Rect::new(0, 0, 60, 14);
@@ -142,8 +147,7 @@ mod tests {
 
     #[test]
     fn counter_row_appears_only_with_progress() {
-        let mut dialog =
-            LoadingDialog::new("Loading checkpoints", "Loading checkpoint list…");
+        let mut dialog = LoadingDialog::new("Loading checkpoints", "Loading checkpoint list…");
         let out = text(&paint(&dialog, 0).0);
         assert!(!out.contains("(/"), "no counter row without progress");
         dialog.set_progress(3, 10);
@@ -171,7 +175,10 @@ mod tests {
         let dialog = LoadingDialog::new("Loading checkpoints", "Loading checkpoint list…");
         let out0 = text(&paint(&dialog, 0).0);
         let out80 = text(&paint(&dialog, 80).0);
-        assert!(out0.contains("⠋") && !out0.contains("⠙"), "t=0 → first glyph only");
+        assert!(
+            out0.contains("⠋") && !out0.contains("⠙"),
+            "t=0 → first glyph only"
+        );
         assert!(out80.contains("⠙"), "t=80 → second glyph");
     }
 

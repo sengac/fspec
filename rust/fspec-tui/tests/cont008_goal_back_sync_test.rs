@@ -31,7 +31,6 @@ use codelet_cli::interactive::goal::{build_goal_blocked_message, raise_goal_esca
 use codelet_cli::interactive::output::{
     ContinueStateEvent, ContinueStateReason, StreamEvent, StreamOutput,
 };
-use codelet_tools::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
 use codelet_cli::session::system_reminders::count_system_reminders_by_type;
 use codelet_cli::session::{Session, SystemReminderType};
 use codelet_core::session_manager_handle::SessionManagerHandle;
@@ -40,6 +39,7 @@ use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{ContinueStateInfo, SessionId, StreamChunk};
 use codelet_sessions::background_session::BackgroundSession;
 use codelet_sessions::SessionManager;
+use codelet_tools::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -230,7 +230,9 @@ fn goal_satisfied_teardown_emits_the_dedicated_goal_cleared_snapshot() {
     let events = output.events();
     let status_pos = events
         .iter()
-        .position(|e| matches!(e, StreamEvent::Status(s) if s.starts_with("\u{1F3AF} goal satisfied:")))
+        .position(
+            |e| matches!(e, StreamEvent::Status(s) if s.starts_with("\u{1F3AF} goal satisfied:")),
+        )
         .expect("goal teardown must announce the satisfied goal");
     let state_pos = events
         .iter()

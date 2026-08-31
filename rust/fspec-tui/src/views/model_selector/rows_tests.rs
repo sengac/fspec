@@ -44,7 +44,7 @@ fn body_renders_capability_legend_on_bottom_row() {
     term.draw(|f| {
         let _ = render_body(f.area(), f.buffer_mut(), &rows, true, 1, 0, None);
     })
-        .expect("draw");
+    .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -77,7 +77,7 @@ fn empty_rows_render_placeholder() {
     term.draw(|f| {
         let _ = render_body(f.area(), f.buffer_mut(), &rows, false, 0, 0, None);
     })
-        .expect("draw");
+    .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -187,7 +187,7 @@ fn current_model_row_shows_green_current_marker() {
     term.draw(|f| {
         let _ = render_body(f.area(), f.buffer_mut(), &rows, true, 0, 0, Some("gpt-4o"));
     })
-        .expect("draw");
+    .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     let mut found_green_current = false;

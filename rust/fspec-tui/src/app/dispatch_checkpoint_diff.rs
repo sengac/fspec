@@ -12,8 +12,8 @@
 
 use tokio::task::JoinHandle;
 
-use crate::components::Action;
 use crate::components::load_state::LoadTracker;
+use crate::components::Action;
 
 use super::state::App;
 

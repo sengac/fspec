@@ -1,0 +1,67 @@
+{
+  "scenarios": [
+    {
+      "name": "The wire-to-disk bridge copies the preserveThinking value",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov143_preserve_thinking_persistence.rs",
+          "lines": "40-54",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/conversions.rs",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving writes and removes the preserveThinking key",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov143_preserve_thinking_persistence.rs",
+          "lines": "58-108",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_persistence.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov143_preserve_thinking_persistence.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/conversions.rs",
+      "rust/sessions/src/profile_persistence.rs"
+    ],
+    "totalLinesCovered": 84
+  }
+}

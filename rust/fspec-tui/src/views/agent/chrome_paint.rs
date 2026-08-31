@@ -33,6 +33,7 @@ pub fn paint_header_and_role(
     sid: Option<&codelet_rpc_types::SessionId>,
     is_loading: bool,
     is_select_mode: bool,
+    session_index: (usize, usize),
 ) {
     let model = sid.and_then(|s| store.model_info_for(s));
     let thinking = sid
@@ -54,7 +55,10 @@ pub fn paint_header_and_role(
     let subordinate_label =
         sid.and_then(|s| super::header_build::format_subordinate_label(store.supervisors_for(s)));
     SessionHeader {
-        session_index: store.session_index(),
+        // BUG-163: per-pane session slot ("#N") — the mux render layer
+        // passes `store.session_index_for(&pane_sid)` so each agent pane
+        // shows ITS session's index, not the focused session's.
+        session_index,
         model,
         thinking,
         tokens,

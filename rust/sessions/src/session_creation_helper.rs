@@ -168,6 +168,32 @@ pub async fn create_background_session_inner(
 
     let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
+    // PROV-143: seed the session's preserve-thinking flag from the profile's
+    // stored default. Profile (OpenAI local-server) sessions default to
+    // DISABLED — old thinking blocks are stripped from the outgoing chat
+    // history so the model is not confused by stale reasoning. Non-profile
+    // sessions keep the historical preserve behavior (required for
+    // Anthropic/Gemini signed thinking blocks).
+    if is_profile_model {
+        let (colon_idx, slash_idx) = match (model.find(':'), model.find('/')) {
+            (Some(colon), Some(slash)) if colon < slash => (colon, slash),
+            _ => (0, 0),
+        };
+        let profile_name = &model[colon_idx + 1..slash_idx];
+        let preserve = crate::profile_sections::load_local_server_profiles()
+            .into_iter()
+            .find(|p| p.name == profile_name)
+            .and_then(|p| p.preserve_thinking)
+            .unwrap_or(false);
+        inner.preserve_thinking_enabled = preserve;
+        tracing::info!(
+            session_id = %uuid,
+            profile = %profile_name,
+            preserve,
+            "PROV-143: seeded preserve-thinking flag from profile"
+        );
+    }
+
     // Inject context reminders (with isolation context for isolated sessions)
     if let Some(isolation_ctx) = &isolation {
         inner.inject_context_reminders_with_isolation(Some(isolation_ctx));

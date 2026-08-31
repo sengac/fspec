@@ -1,0 +1,5 @@
+---
+source: fspec-tui/tests/mux001.rs
+expression: "MuxError::SplitPercentOutOfRange(5).to_string()"
+---
+/mux: split percent must be 10..=90, got 5

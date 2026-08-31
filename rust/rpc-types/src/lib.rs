@@ -494,6 +494,14 @@ pub struct ProfileDefinition {
     /// flat `Option<u32>` so the `napi(object)` projection stays a plain
     /// struct, mirroring the `context_window` / `max_output_tokens` fields.
     pub auto_continue: Option<u32>,
+    /// PROV-143: per-profile preserve-thinking toggle. `None` (key absent on
+    /// disk) or `Some(false)` mean thinking blocks are STRIPPED from the chat
+    /// history sent back to the LLM (the default — new profiles are
+    /// seeded with the form's disabled value); `Some(true)` preserves the
+    /// `AssistantContent::Reasoning` blocks in the outgoing history. Carried
+    /// as a flat `Option<bool>` like `streaming` so the `napi(object)`
+    /// projection stays a plain struct.
+    pub preserve_thinking: Option<bool>,
 }
 
 impl ProfileDefinition {
@@ -511,6 +519,14 @@ impl ProfileDefinition {
     /// `n >= 1`; `None` and `Some(0)` both mean off.
     pub fn auto_continue_enabled(&self) -> bool {
         self.auto_continue.is_some_and(|n| n >= 1)
+    }
+
+    /// PROV-143: canonical "is preserve-thinking on?" predicate — the single
+    /// source of truth for the "absent ⇒ stripped" semantics. Returns `true`
+    /// only for an explicit `Some(true)`; `None` and `Some(false)` both mean
+    /// thinking blocks are stripped from the outgoing chat history.
+    pub fn preserve_thinking_enabled(&self) -> bool {
+        self.preserve_thinking.unwrap_or(false)
     }
 }
 

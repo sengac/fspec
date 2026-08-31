@@ -187,8 +187,7 @@ pub fn render_session_rows(
             width: content_width,
             height: 1,
         };
-        Paragraph::new(Line::from(Span::styled(name_line, style)))
-            .render(row_area1, buf);
+        Paragraph::new(Line::from(Span::styled(name_line, style))).render(row_area1, buf);
 
         // Line 2: Detail line with message count, provider, time ago
         let provider_str = info
@@ -230,8 +229,7 @@ pub fn render_session_rows(
             width: content_width,
             height: 1,
         };
-        Paragraph::new(Line::from(Span::styled(detail_line, style)))
-            .render(row_area2, buf);
+        Paragraph::new(Line::from(Span::styled(detail_line, style))).render(row_area2, buf);
     }
 
     // TUI-097: Render proportional scrollbar when overflow

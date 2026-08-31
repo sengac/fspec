@@ -24,9 +24,13 @@ pub struct ScrollbarGeometry {
 enum State {
     Idle,
     /// Left button pressed; geometry captured at press time.
-    Pressed { geom: ScrollbarGeometry },
+    Pressed {
+        geom: ScrollbarGeometry,
+    },
     /// Drag in progress; geometry still from press time.
-    Dragging { geom: ScrollbarGeometry },
+    Dragging {
+        geom: ScrollbarGeometry,
+    },
 }
 
 /// Scrollbar click-and-drag state machine.
@@ -62,9 +66,7 @@ impl ScrollbarDrag {
                     self.state = State::Dragging { geom: *stored };
                     Some(offset)
                 }
-                State::Dragging { geom: stored } => {
-                    Some(Self::compute_offset(ev.row, stored))
-                }
+                State::Dragging { geom: stored } => Some(Self::compute_offset(ev.row, stored)),
                 State::Idle => None,
             },
             MouseEventKind::Up(MouseButton::Left) => {

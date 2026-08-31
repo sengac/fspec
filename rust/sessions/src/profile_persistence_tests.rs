@@ -19,6 +19,7 @@ fn basic(base_url: &str, api_key: &str) -> ProfileDef {
         compaction_threshold: None,
         streaming: None,
         auto_continue: None,
+        preserve_thinking: None,
     }
 }
 
@@ -89,6 +90,7 @@ fn save_writes_compaction_threshold() {
         }),
         streaming: None,
         auto_continue: None,
+        preserve_thinking: None,
     };
     save_profile_at(&path, "openai", "work-vllm", &def).unwrap();
     let profile = read(&path)["providers"]["openai"]["profiles"]["work-vllm"].clone();

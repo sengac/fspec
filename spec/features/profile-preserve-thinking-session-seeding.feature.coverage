@@ -1,0 +1,101 @@
+{
+  "scenarios": [
+    {
+      "name": "A profile with preserveThinking = true seeds the session flag on",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov143_preserve_thinking_seed.rs",
+          "lines": "138-166",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile with preserveThinking = false seeds the session flag off",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov143_preserve_thinking_seed.rs",
+          "lines": "173-201",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile without the key seeds the session flag off",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov143_preserve_thinking_seed.rs",
+          "lines": "208-236",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov143_preserve_thinking_seed.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_creation_helper.rs"
+    ],
+    "totalLinesCovered": 124
+  }
+}

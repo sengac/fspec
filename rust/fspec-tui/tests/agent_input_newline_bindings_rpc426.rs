@@ -19,7 +19,11 @@ fn ctrl_j_inserts_a_newline_and_grows_the_input_area() {
     // @step Given the agent input contains "hello" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("hello");
-    assert_eq!(input.cursor(), (0, 5), "precondition: cursor at end of 'hello'");
+    assert_eq!(
+        input.cursor(),
+        (0, 5),
+        "precondition: cursor at end of 'hello'"
+    );
 
     // @step When I press Ctrl+J
     let outcome = input.handle_key(KeyCode::Char('j'), KeyModifiers::CONTROL);
@@ -123,17 +127,10 @@ fn plain_enter_submits_the_multi_line_buffer_and_resets_the_input() {
     );
 
     // @step And the input buffer is empty
-    assert!(
-        input.is_empty(),
-        "input buffer must be empty after submit"
-    );
+    assert!(input.is_empty(), "input buffer must be empty after submit");
 
     // @step And the input area reports 1 visible row
-    assert_eq!(
-        input.visible_rows(),
-        1,
-        "input must reset to 1 visible row"
-    );
+    assert_eq!(input.visible_rows(), 1, "input must reset to 1 visible row");
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -198,10 +195,7 @@ fn shift_enter_submits_on_non_enhanced_terminals() {
     );
 
     // @step And the input buffer is empty
-    assert!(
-        input.is_empty(),
-        "input buffer must be empty after submit"
-    );
+    assert!(input.is_empty(), "input buffer must be empty after submit");
 }
 
 // ─────────────────────────────────────────────────────────────────────────

@@ -83,6 +83,8 @@ pub struct App {
     /// On session creation the flag is propagated to the new session.
     pub(crate) pre_session_debug_enabled: bool,
     pub(crate) compaction_hide_handles: std::collections::HashMap<SessionId, JoinHandle<()>>, // RPC-417 auto-hide timers
+    /// MUX-001: mux config persistence state (shared fspec-config.json, tui.mux).
+    pub(crate) mux_state: crate::store::MuxState,
 }
 
 impl App {
@@ -130,6 +132,7 @@ impl App {
             reconnect_dismiss_handle: None,
             compaction_hide_handles: std::collections::HashMap::new(),
             pre_session_debug_enabled: false,
+            mux_state: crate::store::MuxState::new(),
         }
     }
 
@@ -258,7 +261,9 @@ impl App {
 
     /// TUI-109: a clone of the CheckpointsView's LoadingDialog (test
     /// seam for asserting the counter row the progress fold feeds).
-    pub fn navigator_checkpoints_loading_dialog(&self) -> crate::components::loading_dialog::LoadingDialog {
+    pub fn navigator_checkpoints_loading_dialog(
+        &self,
+    ) -> crate::components::loading_dialog::LoadingDialog {
         self.navigator.checkpoints.loading.clone()
     }
 
@@ -361,5 +366,37 @@ impl App {
     /// RPC-430: set the pre-session debug-capture toggle flag.
     pub fn set_pre_session_debug_enabled(&mut self, val: bool) {
         self.pre_session_debug_enabled = val;
+    }
+
+    // ── MUX-001: mux state ──────────────────────────────────────────────
+
+    /// Borrow the mux persistence state (shared fspec-config.json, tui.mux).
+    pub fn mux_state(&self) -> &crate::store::MuxState {
+        &self.mux_state
+    }
+
+    /// Set the shared-config scope dirs for mux persistence (data dir
+    /// + cwd; `fspec-config.json` lives in each).
+    pub fn set_mux_persist_dir(&mut self, data_dir: std::path::PathBuf, cwd: std::path::PathBuf) {
+        self.mux_state.set_persist_dir(data_dir, cwd);
+    }
+
+    /// Load the persisted mux config from the shared `fspec-config.json`
+    /// (`tui.mux`; R6: missing key → default preset). Called at
+    /// bootstrap; the loaded config is mirrored into the Navigator's
+    /// live mux layout.
+    pub fn load_mux_config(&mut self) {
+        self.mux_state.load();
+        self.navigator.mux.config = self.mux_state.config().clone();
+    }
+
+    /// Persist the live mux config under `tui.mux` in the shared
+    /// `fspec-config.json` (R6). Best-effort: failures surface as `Err`
+    /// for the caller to log.
+    pub fn save_mux_config(&mut self) -> Result<(), String> {
+        self.mux_state
+            .config_mut()
+            .clone_from(self.navigator.mux.config());
+        self.mux_state.save()
     }
 }

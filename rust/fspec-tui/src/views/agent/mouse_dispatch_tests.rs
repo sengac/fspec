@@ -59,7 +59,11 @@ fn click_on_scrollbar_track_above_thumb_jumps_to_that_position() {
     let up_result = drag.on_mouse(up_ev, geom);
 
     // Then: offset should be 25 (row 5 * 100 / 20 = 25)
-    assert_eq!(up_result, Some(25), "track click should jump to proportional offset");
+    assert_eq!(
+        up_result,
+        Some(25),
+        "track click should jump to proportional offset"
+    );
 
     // And: state should return to idle
     assert!(!drag.is_dragging());
@@ -99,7 +103,11 @@ fn click_on_scrollbar_track_below_thumb_jumps_down() {
     let up_result = drag.on_mouse(up_ev, geom);
 
     // Then: offset should be 75 (row 15 * 100 / 20 = 75)
-    assert_eq!(up_result, Some(75), "track click below thumb should jump down");
+    assert_eq!(
+        up_result,
+        Some(75),
+        "track click below thumb should jump down"
+    );
     assert!(!drag.is_dragging());
 }
 
@@ -137,7 +145,11 @@ fn drag_on_scrollbar_thumb_continuously_scrolls_content() {
     let drag_result = drag.on_mouse(drag_ev, geom);
 
     // Then: offset should be 50 during drag
-    assert_eq!(drag_result, Some(50), "drag should continuously update offset");
+    assert_eq!(
+        drag_result,
+        Some(50),
+        "drag should continuously update offset"
+    );
     assert!(drag.is_dragging(), "state should be dragging");
 
     // And: release returns to idle
@@ -181,7 +193,8 @@ fn quick_click_on_thumb_scrolls_one_viewport_height() {
 
     // Then: offset should advance by one viewport height (10)
     assert_eq!(
-        up_result, Some(10),
+        up_result,
+        Some(10),
         "quick click on thumb should scroll one viewport height"
     );
 }
@@ -221,7 +234,8 @@ fn no_scrollbar_interaction_when_content_fits_in_viewport() {
 
     // Then: offset should be 0 (no scroll)
     assert_eq!(
-        up_result, Some(0),
+        up_result,
+        Some(0),
         "when content fits, scrollbar should return offset 0"
     );
     assert!(!drag.is_dragging());

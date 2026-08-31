@@ -86,7 +86,8 @@ mod tests {
         let span_text = line.spans[0].content.as_ref();
         assert!(
             !span_text.contains('\x1b'),
-            "Diff line should not contain ANSI escape sequences, got {span_text:?}");
+            "Diff line should not contain ANSI escape sequences, got {span_text:?}"
+        );
     }
 
     /// @step And the terminal display is not corrupted by escape sequences
@@ -125,8 +126,12 @@ mod tests {
         let span_text = line.spans[0].content.as_ref();
         assert!(
             !span_text.contains('\t'),
-            "Diff line should not contain tab characters, got {span_text:?}");
-        assert!(span_text.contains("  "), "Tabs should be replaced with two spaces");
+            "Diff line should not contain tab characters, got {span_text:?}"
+        );
+        assert!(
+            span_text.contains("  "),
+            "Tabs should be replaced with two spaces"
+        );
     }
 
     /// @step And the terminal display maintains consistent visual width
@@ -165,7 +170,8 @@ mod tests {
         let span_text = line.spans[0].content.as_ref();
         assert!(
             !span_text.contains('\r'),
-            "Diff line should not contain carriage returns, got {span_text:?}");
+            "Diff line should not contain carriage returns, got {span_text:?}"
+        );
     }
 
     /// @step And each line appears on its own row in the terminal
@@ -207,7 +213,8 @@ mod tests {
             let code = c as u32;
             assert!(
                 !matches!(code, 0x00..=0x08 | 0x0B | 0x0C | 0x0E..=0x1F | 0x7F),
-                "Control character U+{code:02X} should be removed, found in {span_text:?}");
+                "Control character U+{code:02X} should be removed, found in {span_text:?}"
+            );
         }
     }
 

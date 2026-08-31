@@ -57,12 +57,8 @@ pub(super) fn render_threshold(kind: Option<&str>, value: Option<u32>) -> String
 pub(super) fn parse_auto_continue(raw: &str) -> Result<Option<u32>, String> {
     match raw.trim() {
         "" => Ok(None),
-        text => text
-            .parse::<u32>()
-            .map(Some)
-            .map_err(|_| {
-                "Auto-Continue must be 0 (off) or a positive integer budget (e.g. 300)"
-                    .to_string()
-            }),
+        text => text.parse::<u32>().map(Some).map_err(|_| {
+            "Auto-Continue must be 0 (off) or a positive integer budget (e.g. 300)".to_string()
+        }),
     }
 }

@@ -111,6 +111,11 @@ pub struct LocalServerProfile {
         deserialize_with = "de_opt_u32_lenient"
     )]
     pub auto_continue: Option<u32>,
+    /// PROV-143: per-profile preserve-thinking toggle. `None` (absent) or
+    /// `Some(false)` mean thinking blocks are STRIPPED from the chat history
+    /// sent back to the LLM (the default); `Some(true)` preserves them.
+    #[serde(rename = "preserveThinking", default)]
+    pub preserve_thinking: Option<bool>,
 }
 
 /// A custom model declared on a profile (`profile.customModels[]`).

@@ -70,12 +70,7 @@ impl ChangedFilesView {
                 // body while a cascade stage is in flight (same
                 // paint-over pattern as the Checkpoints view).
                 if show_dialog {
-                    render_loading_dialog(
-                        body,
-                        buf,
-                        &self.loading,
-                        self.loading_elapsed_ms(),
-                    );
+                    render_loading_dialog(body, buf, &self.loading, self.loading_elapsed_ms());
                     return;
                 }
                 if files.is_empty() {
@@ -91,23 +86,11 @@ impl ChangedFilesView {
                     ])
                     .split(body);
                 render_vertical_divider(panes[1], buf);
-                let (fr, fsb) = render_files_pane(
-                    panes[0],
-                    buf,
-                    &files,
-                    selected_index,
-                    file_scroll,
-                    focused,
-                );
+                let (fr, fsb) =
+                    render_files_pane(panes[0], buf, &files, selected_index, file_scroll, focused);
                 files_rect = Some(fr);
                 files_sb_rect = fsb;
-                let (dr, dsb) = render_diff_pane(
-                    panes[2],
-                    buf,
-                    &diff_lines,
-                    diff_scroll,
-                    focused,
-                );
+                let (dr, dsb) = render_diff_pane(panes[2], buf, &diff_lines, diff_scroll, focused);
                 diff_rect = Some(dr);
                 diff_sb_rect = dsb;
             },

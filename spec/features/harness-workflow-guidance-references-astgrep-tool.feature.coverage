@@ -1,0 +1,38 @@
+{
+  "scenarios": [
+    {
+      "name": "harness workflow guidance references the AstGrep tool, not research ast",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1308-1319",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/fspec_workflow_guidance.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/src/fspec_workflow_guidance.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/fspec_workflow_guidance.rs"
+    ],
+    "totalLinesCovered": 18
+  }
+}

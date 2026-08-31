@@ -57,6 +57,8 @@ thiserror.workspace = true
 # RPC-045: FspecCommandRequest runner serialises work-unit query results
 # back into the FspecResult.data String slot via serde_json::to_string.
 serde_json.workspace = true
+# MUX-001: mux config serde derives (MuxConfig / MuxPaneKind / MuxOrientation).
+serde.workspace = true
 
 # RPC-059: `/loop` parser uses regex for leading/trailing interval matching.
 regex.workspace = true

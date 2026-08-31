@@ -158,7 +158,8 @@
         "UX-001",
         "REV-004",
         "REV-005",
-        "FOUND-044"
+        "FOUND-044",
+        "CLI-015"
       ]
     },
     "interactive-cli": {
@@ -1361,6 +1362,32 @@
       "description": "Command and file access blocklist/allowlist filtering system — dangerous command blocking, sensitive path prompts, and default template provisioning",
       "workUnits": [
         "BLOCK-012"
+      ]
+    },
+    "mux": {
+      "id": "mux",
+      "title": "MUX",
+      "createdAt": "2026-08-25T11:52:47.840Z",
+      "description": "TUI multiplex mode — multiplexed top-level views with /mux configuration (MUX epic)",
+      "workUnits": [
+        "MUX-001",
+        "MUX-002",
+        "MUX-003",
+        "BUG-165",
+        "BUG-166",
+        "MUX-004",
+        "MUX-005",
+        "MUX-006",
+        "MUX-007"
+      ]
+    },
+    "provider-settings": {
+      "id": "provider-settings",
+      "title": "PROV",
+      "createdAt": "2026-08-28T11:01:07.957Z",
+      "description": "Provider settings and profile features",
+      "workUnits": [
+        "PROV-143"
       ]
     }
   }

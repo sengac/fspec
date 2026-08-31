@@ -2,7 +2,7 @@
 //! Scrollback / Footer / Input. RPC-026: resume/search views early-return.
 
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::layout::{Constraint, Rect};
 use std::time::Instant;
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -41,6 +41,7 @@ mod multiline_input_paste;
 mod multiline_input_render;
 mod multiline_input_select;
 pub mod multiline_wrap;
+pub mod pane_render;
 mod pause_keys;
 pub mod pause_prompt;
 pub mod popups;
@@ -242,83 +243,32 @@ impl AgentView {
         }
     }
 
+    /// RPC-013/RPC-019/RPC-029 — the AgentView vertical layout
+    /// contract: Header `Length(1)`, RoleBanner `Length(role_height)`,
+    /// Scrollback flex `Min(0)`, Footer `Length(1)`, Input
+    /// `Length(input_height)`. Pinned by
+    /// rpc013-source-shape.feature (`agent_view_splits_into_scrollback_input_and_footer_rows`);
+    /// BUG-163's pane render (`pane_render.rs`) consumes these exact
+    /// rows so the structural invariants live in one place.
+    pub fn pane_layout_constraints(role_height: u16, input_height: u16) -> [Constraint; 5] {
+        [
+            Constraint::Length(1),
+            Constraint::Length(role_height),
+            Constraint::Min(0),
+            Constraint::Length(1),
+            Constraint::Length(input_height),
+        ]
+    }
+
     /// RPC-029 layout. Mode views early-return; otherwise paints chrome + input + popups.
     pub fn render_with_store(&mut self, area: Rect, buf: &mut Buffer, store: &mut AgentViewStore) {
-        self.last_render_area = Some(area);
-        if let Some(v) = self.resume_view.as_mut() {
-            v.render(area, buf);
-            return;
-        }
-        if let Some(v) = self.search_view.as_mut() {
-            v.render(area, buf);
-            return;
-        }
-        // RPC-405: height from the SAME area width the renderer derives
-        // its body widths from. RPC-406: the pause prompt's wrapped
-        // height wins while paused.
-        let sid = store.current_session().cloned();
-        let input_height = self.input_area_height(store, sid.as_ref(), area.width);
-        let role_height: u16 = sid
-            .as_ref()
-            .and_then(|s| store.role_for(s))
-            .map(|_| 1)
-            .unwrap_or(0);
-        // RPC-029 layout: Header(1), RoleBanner(0|1), Scrollback flex Min(0), Footer Length(1), Input Length(input_height).
-        let split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(1),
-                Constraint::Length(role_height),
-                Constraint::Min(0),
-                Constraint::Length(1),
-                Constraint::Length(input_height),
-            ])
-            .split(area);
-        let areas = chrome_paint::ChromeAreas {
-            header: split[0],
-            role: split[1],
-            scrollback: split[2],
-            footer: split[3],
-            input: split[4],
-        };
-        self.last_input_area = Some(areas.input);
-
-        let (session_status, is_loading) = self.tick_animation(store, sid.as_ref());
-        self.last_is_compacting = matches!(session_status, Some(SessionStatus::Compacting));
-        chrome_paint::paint_header_and_role(
-            &areas,
+        // BUG-163: single-view mode paints the store's current session
+        // with the live composer (impl in `pane_render.rs`).
+        self.render_session_pane(
+            area,
             buf,
             store,
-            sid.as_ref(),
-            is_loading,
-            self.turn_select_mode,
+            pane_render::PaneSession::current_session(),
         );
-
-        self.last_scrollback_viewport = areas.scrollback.height;
-        self.last_scrollback_area = Some(areas.scrollback);
-        if let Some(ctx) = store.current_session_context_mut() {
-            ctx.scrollback.render_count_visited(areas.scrollback, buf);
-            // TUI-102: cache total visual rows + scroll offset for scrollbar geometry.
-            self.last_scrollback_total_rows = ctx.scrollback.total_visual_rows();
-            self.last_scrollback_scroll_offset = ctx.scrollback.scroll_state().offset;
-            // TUI-102: reset drag state when scrollbar disappears.
-            let total = self.last_scrollback_total_rows;
-            let viewport = self.last_scrollback_viewport as usize;
-            if !(total > viewport && areas.scrollback.width >= 4) {
-                self.scrollback_scrollbar_drag.reset();
-            }
-        }
-        chrome_paint::paint_footer(&areas, buf, store, sid.as_ref());
-
-        // RPC-406: inline pause prompt OR spinner/transition/input
-        // (impl in `input_area.rs` to keep this file under 300 LoC).
-        self.paint_input_area(areas.input, buf, store, sid.as_ref());
-        if let Some(p) = self.slash_popup.as_mut() {
-            p.render(area, buf);
-        } else if let Some(p) = self.file_popup.as_mut() {
-            p.render(area, buf);
-        }
-        // RPC-382/383 + COPY-008: turn content modal overlay + selection.
-        self.paint_turn_modal(area, buf, store);
     }
 }

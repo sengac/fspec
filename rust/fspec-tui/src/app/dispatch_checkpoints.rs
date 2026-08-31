@@ -14,8 +14,8 @@ use tokio::task::JoinHandle;
 
 use codelet_rpc_types::{ChangedFile, CheckpointInfo};
 
-use crate::components::Action;
 use crate::components::load_state::LoadTracker;
+use crate::components::Action;
 
 use super::state::App;
 
@@ -89,7 +89,8 @@ impl App {
         if view.load.is_loaded() {
             return;
         }
-        view.loading.set_progress(progress.loaded as usize, progress.total as usize);
+        view.loading
+            .set_progress(progress.loaded as usize, progress.total as usize);
     }
 
     pub(crate) fn handle_load_checkpoint_files(&mut self, work_unit_id: String, name: String) {
@@ -143,13 +144,12 @@ impl App {
         // in-flight stage, so a late result for a de-selected
         // checkpoint never clears a fresh stage. The view's own
         // set_files key-match mirrors this on the data side.
-        view.load.complete_stage(&LoadTracker::files_stage_key(work_unit_id, name));
+        view.load
+            .complete_stage(&LoadTracker::files_stage_key(work_unit_id, name));
         let next_stage = view
             .selected_checkpoint_info()
             .zip(view.first_file_path())
-            .filter(|(cp, _)| {
-                cp.work_unit_id == work_unit_id && cp.name == name
-            })
+            .filter(|(cp, _)| cp.work_unit_id == work_unit_id && cp.name == name)
             .map(|(cp, path)| (cp.work_unit_id.clone(), cp.name.clone(), path));
         view.sync_loading_label();
         if let Some((work_unit_id, name, path)) = next_stage {

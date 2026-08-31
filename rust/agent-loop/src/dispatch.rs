@@ -83,7 +83,11 @@ macro_rules! run_with_provider {
                     agent.tool_server_handle.clone(),
                 );
 
-                let agent = codelet_core::RigAgent::with_default_depth(agent);
+                // PROV-143: hand the session's preserve-thinking flag to the
+                // agent so the outgoing history clone strips thinking blocks
+                // when the profile disabled the toggle.
+                let agent = codelet_core::RigAgent::with_default_depth(agent)
+                    .with_preserve_thinking($inner.preserve_thinking_enabled);
                 // BRIDGE-007: Use run_agent_stream_with_images for multimodal support
                 codelet_cli::interactive::run_agent_stream_with_images(
                     agent,

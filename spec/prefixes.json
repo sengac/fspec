@@ -424,6 +424,11 @@
       "prefix": "UPD",
       "description": "Update epic - cross-platform release pipeline and in-place self-update",
       "createdAt": "2026-08-20T12:44:53.561Z"
+    },
+    "MUX": {
+      "prefix": "MUX",
+      "description": "TUI multiplex (mux) mode — multiplexed top-level views with /mux configuration",
+      "createdAt": "2026-08-25T11:52:20.782Z"
     }
   }
 }

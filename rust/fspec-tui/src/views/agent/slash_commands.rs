@@ -39,6 +39,9 @@ pub enum SlashCommandAction {
     Continue,
     Goal,
     Update,
+    /// MUX-004: `/mux` — open the MuxConfigDialog (bare /mux opens the
+    /// config dialog; the on/off toggle lives inside the dialog).
+    Mux,
 }
 
 impl SlashCommandAction {
@@ -67,6 +70,7 @@ impl SlashCommandAction {
             SlashCommandAction::Continue => "continue",
             SlashCommandAction::Goal => "goal",
             SlashCommandAction::Update => "update",
+            SlashCommandAction::Mux => "mux",
         }
     }
 }
@@ -168,6 +172,10 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     SlashCommand {
         action: SlashCommandAction::Update,
         description: "Update fspec in place (or /update check)",
+    },
+    SlashCommand {
+        action: SlashCommandAction::Mux,
+        description: "Configure the mux layout",
     },
 ];
 

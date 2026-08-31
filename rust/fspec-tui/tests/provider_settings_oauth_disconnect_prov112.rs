@@ -544,7 +544,10 @@ impl FspecBackend for DefaultsOnlyBackend {
     async fn list_work_units(&self) -> Result<Vec<codelet_rpc_types::WorkUnitInfo>> {
         Ok(Vec::new())
     }
-    async fn list_sessions(&self, _project_path: String) -> Result<Vec<codelet_rpc_types::SessionInfo>> {
+    async fn list_sessions(
+        &self,
+        _project_path: String,
+    ) -> Result<Vec<codelet_rpc_types::SessionInfo>> {
         Ok(Vec::new())
     }
     async fn create_session(&self, _role: Option<String>) -> Result<codelet_rpc_types::SessionId> {

@@ -81,5 +81,6 @@ pub fn basic_def(base_url: &str, api_key: &str) -> ProfileDefinition {
         compaction_threshold_value: None,
         streaming: None,
         auto_continue: None,
+        preserve_thinking: None,
     }
 }

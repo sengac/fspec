@@ -26,4 +26,4 @@ expression: rows
 - "                                                                                "
 - "                                                                                "
 - "                                                                                "
-- " > Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history, 'Shift+←/→' se "
+- " > Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' session "

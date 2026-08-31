@@ -33,10 +33,10 @@ use super::help_dialog_scroll::{
     content_rows, fill_rect, gutter_rect, max_offset, wheel_direction,
 };
 use super::list_scrollbar::render_list_scrollbar;
-use crate::mouse::rect_contains;
-use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 use super::scroll_viewport::WheelVelocity;
 use super::{Callback, Component, EventResult, Priority};
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 
 /// Critical-priority modal dialog listing view-specific keybindings.
 ///
@@ -191,13 +191,16 @@ impl Component for HelpDialog {
                                     visible_items: visible,
                                     current_offset: self.scroll_offset,
                                 };
-                                if let Some(offset) = self.scrollbar_drag.on_mouse(*mouse_event, geom) {
+                                if let Some(offset) =
+                                    self.scrollbar_drag.on_mouse(*mouse_event, geom)
+                                {
                                     self.scroll_offset = offset.min(max);
                                 }
                                 return EventResult::consumed();
                             } else {
                                 // Reset drag state when clicking outside scrollbar
-                                if matches!(mouse_event.kind, MouseEventKind::Up(MouseButton::Left)) {
+                                if matches!(mouse_event.kind, MouseEventKind::Up(MouseButton::Left))
+                                {
                                     self.scrollbar_drag.reset();
                                 }
                             }

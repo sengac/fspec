@@ -58,7 +58,10 @@ fn down_arrow_returns_continued_when_cursor_is_not_at_visual_bottom() {
 
     // @step And the cursor moves to a later visual row
     let (vrow, _) = input.cursor_visual(body_width);
-    assert!(vrow > 3, "cursor should move to a later visual row, got {vrow}");
+    assert!(
+        vrow > 3,
+        "cursor should move to a later visual row, got {vrow}"
+    );
 }
 
 /// Scenario: Up arrow returns Continued when cursor is not at visual top

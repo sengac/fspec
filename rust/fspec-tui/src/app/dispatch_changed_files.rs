@@ -15,8 +15,8 @@ use tokio::task::JoinHandle;
 
 use codelet_rpc_types::ChangedFile;
 
-use crate::components::Action;
 use crate::components::load_state::LoadTracker;
+use crate::components::Action;
 
 use super::state::App;
 
@@ -61,8 +61,10 @@ impl App {
         view.load.mark_list_flushed();
         let path = view.selected_path();
         if let Some(path) = &path {
-            view.load
-                .begin_stage(&LoadTracker::diff_stage_key_path(path), format!("Loading diff for {path}…"));
+            view.load.begin_stage(
+                &LoadTracker::diff_stage_key_path(path),
+                format!("Loading diff for {path}…"),
+            );
         }
         view.sync_loading_label();
         if let Some(path) = path {
@@ -75,8 +77,10 @@ impl App {
     pub(crate) fn handle_load_file_diff(&mut self, path: String) {
         // TUI-106: a selection change begins a new diff stage.
         let view = &mut self.navigator.changed_files;
-        view.load
-            .begin_stage(&LoadTracker::diff_stage_key_path(&path), format!("Loading diff for {path}…"));
+        view.load.begin_stage(
+            &LoadTracker::diff_stage_key_path(&path),
+            format!("Loading diff for {path}…"),
+        );
         view.sync_loading_label();
         self.spawn_file_diff(path);
     }
@@ -107,7 +111,8 @@ impl App {
         view.set_diff(path, diff);
         // TUI-106: matching-key stale-drop — a late diff for a
         // de-selected file must NOT clear the in-flight stage.
-        view.load.complete_stage(&LoadTracker::diff_stage_key_path(path));
+        view.load
+            .complete_stage(&LoadTracker::diff_stage_key_path(path));
         view.sync_loading_label();
     }
 

@@ -118,33 +118,9 @@ Feature: Gherkin Description Blank-Line Preservation in Formatter
       """
 
   Scenario: Step doc string with an internal blank line is not regressed
-    Given a feature file with a step doc string whose body contains a blank line:
-      """
-      Feature: Docstring intact
-
-        Scenario: A
-          Given step:
-            """
-            line one
-
-            line three
-            """
-          Then ok
-      """
+    Given a feature file with a step doc string whose body is "line one", a blank line, then "line three"
     When the formatter formats the feature file
-    Then the step doc string body is emitted unchanged with no spurious blanks added or removed:
-      """
-      Feature: Docstring intact
-
-        Scenario: A
-          Given step:
-            """
-            line one
-
-            line three
-            """
-          Then ok
-      """
+    Then the step doc string body is emitted unchanged with no spurious blanks added or removed
 
   Scenario: Formatting a multi-paragraph description is idempotent
     Given a feature file with a two-paragraph feature description that has already been formatted once

@@ -142,6 +142,16 @@ impl App {
         }
         self.agent_view_store
             .append_session(crate::store::SessionContext::new(session.clone()));
+        // MUX-002: re-sync the agent window to the grown session list;
+        // if a mux Shift+Right new-agent prompt just confirmed, advance
+        // the window so the new (last) session lands in the last agent
+        // slot and focus moves there.
+        self.mux_sync_window();
+        self.navigator.mux.note_session_created();
+        // BUG-163: a mux Shift+Right rotation moved focus to the new
+        // agent pane — follow it with the store's current session
+        // (RPC-024 draft round-trip). No-op outside mux mode.
+        self.sync_mux_focus_to_session();
         let _ = self.active_session_tx.send(Some(session.clone()));
         if let Some(id) = self
             .agent_view_store

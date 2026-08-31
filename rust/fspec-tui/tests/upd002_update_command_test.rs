@@ -38,7 +38,12 @@ fn tui_update_reports_up_to_date_when_already_on_the_latest_release() {
     assert_eq!(parsed, UpdateSubcommand::CheckAndUpdate);
 
     // @step Then the TUI shows a message that fspec is up to date
-    let msg = format_update_message(current, &UpdateOutcome::UpToDate { version: "0.10.0".into() });
+    let msg = format_update_message(
+        current,
+        &UpdateOutcome::UpToDate {
+            version: "0.10.0".into(),
+        },
+    );
     assert!(
         msg.contains("up to date"),
         "up-to-date message must say 'up to date', got: {msg}"
@@ -76,7 +81,10 @@ fn tui_update_installs_the_latest_release_in_place() {
     // @step And the TUI shows a success line naming the new version and instructing the user to restart fspec
     let msg = format_update_message(
         current,
-        &UpdateOutcome::Updated { version: "0.10.0".into(), restart_required: true },
+        &UpdateOutcome::Updated {
+            version: "0.10.0".into(),
+            restart_required: true,
+        },
     );
     assert!(
         msg.contains("0.10.0"),
@@ -107,7 +115,9 @@ fn tui_update_fails_safely_with_no_network() {
     // @step Then the TUI shows an error line describing the failure
     let msg = format_update_message(
         current,
-        &UpdateOutcome::Failed { message: "no network / GitHub API unreachable".into() },
+        &UpdateOutcome::Failed {
+            message: "no network / GitHub API unreachable".into(),
+        },
     );
     assert!(
         msg.to_lowercase().contains("error"),

@@ -1,0 +1,167 @@
+{
+  "scenarios": [
+    {
+      "name": "fspec astgrep runs an AST search and prints matches",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_astgrep.rs",
+          "lines": "33-65",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/astgrep.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fspec astgrep requires pattern and lang",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_astgrep.rs",
+          "lines": "67-98",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/astgrep.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fspec astgrep reports an invalid pattern to stderr and exits 1",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_astgrep.rs",
+          "lines": "100-129",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/astgrep.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/cli_astgrep.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/astgrep.rs"
+    ],
+    "totalLinesCovered": 198
+  }
+}

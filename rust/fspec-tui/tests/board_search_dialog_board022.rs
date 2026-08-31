@@ -179,16 +179,17 @@ fn selecting_a_match_focuses_its_card_on_the_board_and_closes_the_dialog() {
     // The dialog emits Action::SelectWorkUnit(id); App::dispatch applies it
     // to the BoardStore via set_focused_column + select_work_unit.
     let mut app = App::new(Arc::new(MockBackend::new()));
-    app.board_store_mut()
-        .replace_work_units(vec![
-            wu("AUTH-001", "backlog", "User login", None),
-            wu("RPC-100", "implementing", "Board grid", None),
-            wu("TUI-110", "done", "Key input", None),
-        ]);
+    app.board_store_mut().replace_work_units(vec![
+        wu("AUTH-001", "backlog", "User login", None),
+        wu("RPC-100", "implementing", "Board grid", None),
+        wu("TUI-110", "done", "Key input", None),
+    ]);
     app.dispatch(Action::SelectWorkUnit("AUTH-001".to_string()));
     assert_eq!(app.board_store().focused_column(), "backlog");
     assert_eq!(
-        app.board_store().selected_work_unit().map(|u| u.id.as_str()),
+        app.board_store()
+            .selected_work_unit()
+            .map(|u| u.id.as_str()),
         Some("AUTH-001")
     );
 
@@ -199,9 +200,12 @@ fn selecting_a_match_focuses_its_card_on_the_board_and_closes_the_dialog() {
         panic!("Enter must carry the remove callback");
     };
     let mut compositor = codelet_fspec_tui::Compositor::new();
-    compositor.push(Box::new(
-        WorkUnitSearchDialog::new(vec![wu("AUTH-001", "backlog", "User login", None)]),
-    ));
+    compositor.push(Box::new(WorkUnitSearchDialog::new(vec![wu(
+        "AUTH-001",
+        "backlog",
+        "User login",
+        None,
+    )])));
     assert!(compositor.contains(WORK_UNIT_SEARCH_DIALOG_ID));
     callback(&mut compositor);
     assert!(

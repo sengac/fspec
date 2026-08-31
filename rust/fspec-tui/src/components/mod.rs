@@ -28,9 +28,11 @@ pub mod help_content;
 pub mod help_dialog;
 pub mod help_dialog_scroll;
 pub mod list_scrollbar;
-pub mod loading_dialog;
 pub mod load_state;
+pub mod loading_dialog;
 pub mod model_selector_dialog_rows;
+pub mod mux_config_dialog;
+pub mod mux_config_dialog_rows;
 pub mod notification_dialog;
 pub mod role_dialog;
 pub mod scroll_viewport;
@@ -1216,6 +1218,22 @@ pub enum Action {
     /// carrying the prompt-free selected text. App::dispatch copies it
     /// via OSC 52 (`self.clipboard.copy(text)`), reusing the COPY-006 writer.
     CopyToClipboard(String),
+
+    // MUX-001: mux mode (multiplexed top-level views with /mux config).
+    /// Enter a work unit from the board pane while in mux mode — focus
+    /// the agent pane instead of flipping the whole view (R8). All
+    /// other mux transitions are /mux-driven (dispatch_mux.rs).
+    MuxEnterWorkUnit(String),
+    // MUX-004: mux configuration dialog (bare /mux opens it).
+    /// The MuxConfigDialog committed its draft (Enter) — apply the
+    /// draft layout to the live mux (orientation/panes/scale re-derived
+    /// for the new pane count) and flip the enabled state per the
+    /// draft (R7). Emitted by `MuxConfigDialog` on Enter.
+    MuxConfigApplied(crate::views::multiplex::MuxConfig),
+    /// The MuxConfigDialog committed its draft AND persisted it to the
+    /// shared `fspec-config.json` `tui.mux` key ('s' keybinding). Emitted
+    /// by `MuxConfigDialog` on 's'.
+    MuxConfigAppliedAndSaved(crate::views::multiplex::MuxConfig),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

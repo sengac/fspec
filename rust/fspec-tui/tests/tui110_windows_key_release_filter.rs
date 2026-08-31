@@ -60,8 +60,11 @@ fn board_app() -> (App, Arc<MockBackend>) {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.board_store_mut()
-        .replace_work_units(vec![make_unit("AUTH-001"), make_unit("AUTH-002"), make_unit("AUTH-003")]);
+    app.board_store_mut().replace_work_units(vec![
+        make_unit("AUTH-001"),
+        make_unit("AUTH-002"),
+        make_unit("AUTH-003"),
+    ]);
     app.board_store_mut().set_focused_column("backlog");
     app.board_store_mut().set_selected_index_for("backlog", 0);
     (app, mock)
@@ -73,10 +76,16 @@ fn single_down_arrow_press_moves_the_board_selection_exactly_one_row() {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Press arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Down, KeyEventKind::Press)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Down,
+        KeyEventKind::Press,
+    )));
     drain_actions(&mut app);
     // @step And a Down-arrow key event with kind Release arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Down, KeyEventKind::Release)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Down,
+        KeyEventKind::Release,
+    )));
     drain_actions(&mut app);
     // @step Then the board selection has moved down exactly one row
     assert_eq!(
@@ -92,7 +101,10 @@ fn a_key_release_event_is_dropped_by_the_central_app_event_loop() {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Release arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Down, KeyEventKind::Release)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Down,
+        KeyEventKind::Release,
+    )));
     drain_actions(&mut app);
     // @step Then the board selection has not moved
     assert_eq!(
@@ -108,7 +120,10 @@ fn a_key_repeat_event_is_dropped_by_the_central_app_event_loop() {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Repeat arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Down, KeyEventKind::Repeat)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Down,
+        KeyEventKind::Repeat,
+    )));
     drain_actions(&mut app);
     // @step Then the board selection has not moved
     assert_eq!(
@@ -125,10 +140,16 @@ fn a_single_question_press_opens_the_help_dialog_exactly_once() {
     let (mut app, _mock) = board_app();
     assert!(!app.compositor().contains("help-dialog"));
     // @step When a ? key event with kind Press arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('?'), KeyEventKind::Press)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('?'),
+        KeyEventKind::Press,
+    )));
     drain_actions(&mut app);
     // @step And a ? key event with kind Release arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('?'), KeyEventKind::Release)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('?'),
+        KeyEventKind::Release,
+    )));
     drain_actions(&mut app);
     // @step Then the Help dialog is open
     assert!(
@@ -149,7 +170,10 @@ fn a_question_release_event_does_not_open_the_help_dialog() {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a ? key event with kind Release arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('?'), KeyEventKind::Release)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('?'),
+        KeyEventKind::Release,
+    )));
     drain_actions(&mut app);
     // @step Then no dialog is open
     assert!(
@@ -164,7 +188,10 @@ fn a_question_repeat_event_does_not_open_the_help_dialog() {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a ? key event with kind Repeat arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('?'), KeyEventKind::Repeat)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('?'),
+        KeyEventKind::Repeat,
+    )));
     drain_actions(&mut app);
     // @step Then no dialog is open
     assert!(
@@ -179,7 +206,10 @@ fn press_key_events_still_flow_to_views_and_dialogs_unchanged() {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Press arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Down, KeyEventKind::Press)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Down,
+        KeyEventKind::Press,
+    )));
     drain_actions(&mut app);
     // @step Then the board selection has moved down exactly one row
     assert_eq!(
@@ -195,7 +225,10 @@ fn a_repeat_question_event_does_not_trigger_the_app_level_help_shortcut() {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a ? key event with kind Repeat arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('?'), KeyEventKind::Repeat)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('?'),
+        KeyEventKind::Repeat,
+    )));
     drain_actions(&mut app);
     // @step Then no dialog is open
     assert!(
@@ -209,18 +242,17 @@ fn a_repeat_question_event_does_not_trigger_the_app_level_help_shortcut() {
 fn a_repeat_q_event_does_not_quit_the_disconnect_dialog() {
     // @step Given the Disconnect dialog is open
     let (mut app, _mock) = board_app();
-    app.compositor_mut()
-        .push(Box::new(DisconnectDialog::new()));
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     assert!(app.compositor().contains("disconnect-dialog"));
     assert!(!app.should_quit());
     // @step When a q key event with kind Repeat arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('q'), KeyEventKind::Repeat)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('q'),
+        KeyEventKind::Repeat,
+    )));
     drain_actions(&mut app);
     // @step Then the app has not quit
-    assert!(
-        !app.should_quit(),
-        "a q Repeat must not quit the app"
-    );
+    assert!(!app.should_quit(), "a q Repeat must not quit the app");
     // @step And the Disconnect dialog is still open
     assert!(
         app.compositor().contains("disconnect-dialog"),
@@ -233,10 +265,12 @@ fn a_repeat_q_event_does_not_quit_the_disconnect_dialog() {
 fn a_press_q_event_still_quits_the_disconnect_dialog() {
     // @step Given the Disconnect dialog is open
     let (mut app, _mock) = board_app();
-    app.compositor_mut()
-        .push(Box::new(DisconnectDialog::new()));
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     // @step When a q key event with kind Press arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(KeyCode::Char('q'), KeyEventKind::Press)));
+    let _ = app.handle_event(&Event::Key(key_with_kind(
+        KeyCode::Char('q'),
+        KeyEventKind::Press,
+    )));
     drain_actions(&mut app);
     // @step Then the app has quit and the dialog is gone
     assert!(app.should_quit(), "a q Press must quit the app");

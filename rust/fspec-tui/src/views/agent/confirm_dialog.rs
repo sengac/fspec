@@ -210,7 +210,7 @@ impl ConfirmDialog {
             rows: vec![body_row, spacer, self.build_button_row()],
             footer: "",
             min_width: 40,
-query_row: None,
+            query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

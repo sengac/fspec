@@ -127,7 +127,7 @@ impl Component for DisconnectDialog {
             rows: self.body_rows(),
             footer: "",
             min_width: 50,
-query_row: None,
+            query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

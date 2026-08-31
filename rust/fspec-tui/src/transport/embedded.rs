@@ -73,7 +73,10 @@ impl FspecBackend for EmbeddedFspecBackend {
     }
 
     async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>> {
-        Ok(self.client.list_sessions(context::current(), project_path).await?)
+        Ok(self
+            .client
+            .list_sessions(context::current(), project_path)
+            .await?)
     }
 
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {
@@ -1031,8 +1034,9 @@ impl FspecBackend for EmbeddedFspecBackend {
     /// path forwards it with zero cost — `FspecServiceImpl::
     /// list_checkpoints` publishes a frame per collected item while the
     /// final Vec still returns through the tarpc RPC.
-    fn checkpoints_progress_rx(&self) -> broadcast::Receiver<codelet_rpc_types::CheckpointsProgress>
-    {
+    fn checkpoints_progress_rx(
+        &self,
+    ) -> broadcast::Receiver<codelet_rpc_types::CheckpointsProgress> {
         self.service.checkpoints_progress_rx()
     }
 }

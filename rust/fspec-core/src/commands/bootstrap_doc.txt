@@ -371,42 +371,14 @@ Once complete, move to Feature Event Storm (Step 4) when creating individual sto
 
 ### Research-First Workflow
 
-**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using AST analysis to understand the domain structure.
+__AST_RESEARCH_BLOCK__
 
-```bash
-# Step 1: Research relevant code using AST pattern matching
-# Find all functions in the domain area:
-fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/auth/
-
-# Find classes to understand domain entities:
-fspec research --tool=ast --pattern="class $NAME" --lang=typescript --path=src/auth/
-
-# Find interfaces to understand data structures:
-fspec research --tool=ast --pattern="interface $NAME" --lang=typescript --path=src/auth/
-
-# Find async functions (often indicate external integrations or events):
-fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/auth/
-
-# Step 2: Analyze findings to understand domain
-# - What domain events exist in the code?
-# - What commands trigger those events?
-# - What business rules/policies are present?
-
-# Step 3: If uncertain after research, ASK USER
-# Share your findings and let the user decide:
-# "I found 3 domain events: UserRegistered, LoginAttempted, SessionExpired.
-#  Should we do Feature Event Storm to map the full authentication flow?"
-
-# Step 4: Proceed with chosen approach
-# - Feature Event Storm (if complex/unfamiliar)
-# - Example Mapping (if simple/clear)
-```
-
-**AST Pattern Tips:**
+**AstGrep Pattern Tips:**
 - Use `$NAME` as a wildcard to match any identifier
 - Use `$$$ARGS` to match multiple arguments or body content
-- Adjust `--lang` for your codebase: typescript, tsx, javascript, rust, python, go, etc.
-- Adjust `--path` to focus on the relevant domain area
+- Patterns must match a COMPLETE AST node (e.g. `function $NAME()` without a body will not match — include `{ $$$BODY }`)
+- Set `language` for your codebase: typescript, tsx, javascript, rust, python, go, etc.
+- Set `path` to focus on the relevant domain area
 
 **Decision is SUBJECTIVE and COLLABORATIVE** - emphasize no guessing, always ask if unsure. Research builds familiarity before judgment.
 
@@ -2660,23 +2632,9 @@ RESEARCH TOOLS (Answering Questions During Discovery)
       --work-unit <id>                 Work unit context (forwarded to tool)
       [tool-specific args]             Additional args passed to tool
     Examples:
-      fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/
-      fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/
       fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001
 
   Available Research Tools:
-    ast          - AST code search and refactoring using ast-grep
-                         Supports 23 languages via native Rust implementation
-      --pattern <pattern>      AST pattern to match (e.g., "function $NAME")
-      --lang <language>        Programming language (typescript, rust, python, etc.)
-      --path <path>            File or directory to search
-      --refactor               Refactor mode: move matched code to new file
-      --source <path>          Source file for refactor
-      --target <path>          Target file for refactor
-      Examples:
-        fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/
-        fspec research --tool=ast --refactor --pattern="const MyComponent" --lang=tsx --source=src/big.tsx --target=src/MyComponent.tsx
-
     stakeholder - Send questions to stakeholders via chat platforms
       --platform <platform>    Platform: teams, slack, discord (comma-separated)
       --question <question>    Question to send
@@ -2690,8 +2648,9 @@ RESEARCH TOOLS (Answering Questions During Discovery)
 
   Notes:
     - Research tools auto-discovered from spec/research-scripts/
-    - Use --help on any tool: fspec research --tool=ast --help
+    - Use --help on any tool: fspec research --tool=<name> --help
     - Results can be attached to work units during Example Mapping
+    __AST_RESEARCH_NOTES_BLOCK__
 
 
 

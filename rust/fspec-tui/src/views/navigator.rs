@@ -19,6 +19,9 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::components::{Action, EventResult, Priority};
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
+use crate::views::multiplex::{
+    keys as mux_keys, mouse as mux_mouse, render as mux_render, MultiplexLayout,
+};
 use crate::views::{
     AgentView, BlocklistView, BoardView, ChangedFilesView, CheckpointsView, ModelSelectorView,
     ProviderSettingsView,
@@ -47,6 +50,9 @@ pub enum ViewMode {
     ChangedFiles,
     /// RPC-364: three-pane CheckpointsView entered via the board `C` key.
     Checkpoints,
+    /// MUX-001: multiplex grid of top-level views (Board | Agent |
+    /// ChangedFiles | Checkpoints) entered via `/mux` or the `m` key.
+    Mux,
 }
 
 /// Top-level navigator. Owns the BoardView + AgentView components; the
@@ -67,6 +73,9 @@ pub struct Navigator {
     pub changed_files: ChangedFilesView,
     /// RPC-364: three-pane CheckpointsView owned by the Navigator.
     pub checkpoints: CheckpointsView,
+    /// MUX-001: multiplex grid layout (config + cached pane rects +
+    /// focus + divider drag state).
+    pub mux: MultiplexLayout,
     pub active_view: ViewMode,
     pub action_tx: Option<UnboundedSender<Action>>,
 }
@@ -81,6 +90,7 @@ impl Navigator {
             model_selector: ModelSelectorView::new(),
             changed_files: ChangedFilesView::new(),
             checkpoints: CheckpointsView::new(),
+            mux: MultiplexLayout::new(),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),
         }
@@ -108,6 +118,16 @@ impl Navigator {
         }
     }
 
+    /// MUX-006: true iff the mux focus flash is in flight — the mux
+    /// view is active AND the layout has an armed flash inside its
+    /// 350ms window. The run loop feeds this into the 5th
+    /// `tick_should_draw` operand so the 16ms tick keeps redrawing the
+    /// flash even when the session is idle (R6). With mux off (any
+    /// single-view mode) this is always false (R7).
+    pub fn is_mux_flash_active(&self) -> bool {
+        self.active_view == ViewMode::Mux && self.mux.is_flash_active()
+    }
+
     /// Route a keyboard or mouse event to the active sub-view. RPC-023
     /// extended this from `Event::Key`-only forwarding so the BoardView
     /// mouse-handling slice sees `Event::Mouse(_)` for wheel scroll and
@@ -121,7 +141,178 @@ impl Navigator {
             ViewMode::ModelSelector => self.handle_model_selector_event(event),
             ViewMode::ChangedFiles => self.handle_changed_files_event(event),
             ViewMode::Checkpoints => self.handle_checkpoints_event(event),
+            ViewMode::Mux => self.handle_mux_event(event, board_store),
         }
+    }
+
+    /// MUX-001: route an event through the mux grid. Keyboard input
+    /// goes to the focused pane ONLY (the isolation "trap"); mouse
+    /// events hit-test the divider (drag) then the pane rects
+    /// (click-to-focus + forward).
+    fn handle_mux_event(&mut self, event: &Event, board_store: &BoardStore) -> EventResult {
+        let is_mouse = matches!(event, Event::Mouse(_));
+        if is_mouse {
+            let decision = mux_mouse::classify_mouse(&self.mux, event);
+            return match decision {
+                mux_mouse::MouseDecision::DividerDown { index } => {
+                    self.mux.begin_drag(index);
+                    EventResult::consumed()
+                }
+                mux_mouse::MouseDecision::DividerDrag { index } => {
+                    if self.mux.is_dragging {
+                        if let Some((col, row)) = mux_mouse::mouse_pos(event) {
+                            let (pos, total) = self.mux_drag_axis(col, row, index);
+                            let horizontal = self.mux.config().orientation
+                                == crate::views::multiplex::MuxOrientation::Horizontal;
+                            let cursor = if horizontal { col } else { row };
+                            // BUG-166: live width = cursor minus the
+                            // DRAGGED pane's origin (the drag tracks the
+                            // cursor); the stored percent is relative to
+                            // that pane's width over the available axis,
+                            // so release keeps the divider in place.
+                            let pane_start = self
+                                .mux
+                                .pane_rects()
+                                .get(index)
+                                .map(|r| if horizontal { r.x } else { r.y })
+                                .unwrap_or(0);
+                            let width = cursor.saturating_sub(pane_start);
+                            self.mux.update_drag(index, width, pos, total);
+                        }
+                    }
+                    EventResult::consumed()
+                }
+                mux_mouse::MouseDecision::DividerUp { .. } => {
+                    self.mux.finish_drag();
+                    EventResult::consumed()
+                }
+                mux_mouse::MouseDecision::Pane { index } => {
+                    self.mux.set_focus(index);
+                    let result = self.forward_mux_event_to_focused_pane(event, board_store);
+                    if result.is_consumed() {
+                        result
+                    } else {
+                        EventResult::consumed()
+                    }
+                }
+                mux_mouse::MouseDecision::Gap => EventResult::ignored(),
+            };
+        }
+        let Event::Key(key) = event else {
+            return EventResult::ignored();
+        };
+        let key = *key;
+        // R8: Enter on the focused BOARD pane in mux mode binds the
+        // selected work unit + focuses the agent pane WITHOUT flipping
+        // the whole view. Intercepted here (before the board handler
+        // would emit EnterWorkUnit).
+        if key.code == crossterm::event::KeyCode::Enter
+            && self.mux.focus() < self.mux.effective_panes().len()
+            && self.mux.effective_panes()[self.mux.focus()]
+                == crate::views::multiplex::MuxPaneKind::Board
+        {
+            if let Some(unit) = board_store.selected_work_unit() {
+                if let Some(tx) = &self.action_tx {
+                    let _ = tx.send(Action::MuxEnterWorkUnit(unit.id.clone()));
+                }
+                return EventResult::consumed();
+            }
+        }
+        let decision = mux_keys::classify_key(&self.mux, &key);
+        match decision {
+            mux_keys::KeyDecision::FocusPrev => {
+                // MUX-002: agent window backward-rotation OR focus
+                // movement (stops at the first pane — no wrap).
+                self.mux.shift_left();
+                EventResult::consumed()
+            }
+            mux_keys::KeyDecision::FocusNext => {
+                // MUX-002: agent window forward-rotation, focus
+                // movement, or a new-agent prompt at the right edge.
+                if self.mux.shift_right() {
+                    self.emit_mux_new_agent();
+                }
+                EventResult::consumed()
+            }
+            mux_keys::KeyDecision::Forward => {
+                // Forward to the focused pane; if the pane ignores the
+                // key, fall through to the App-level shortcuts (e.g.
+                // '?' help, 'm' mux toggle) — mirroring the
+                // single-view cascade.
+                self.forward_mux_event_to_focused_pane(&Event::Key(key), board_store)
+            }
+        }
+    }
+
+    /// MUX-002: open the CreateSessionDialog (no work-unit attachment)
+    /// for a Shift+Right new-agent prompt at the right mux edge.
+    fn emit_mux_new_agent(&self) {
+        if let Some(tx) = &self.action_tx {
+            let _ = tx.send(Action::OpenCreateSessionDialog { preselect: None });
+        }
+    }
+
+    /// The (dragged-pane width at the cursor, available axis span) for a
+    /// divider drag. BUG-166: the stored percent is the dragged pane's
+    /// width over the AVAILABLE axis (panes + dividers subtracted) —
+    /// the same basis the layout math uses — so release keeps the
+    /// divider within one cell of where the user left it.
+    fn mux_drag_axis(&self, col: u16, row: u16, index: usize) -> (u16, u16) {
+        use crate::views::multiplex::{MuxOrientation, DIVIDER_SIZE};
+        let horizontal = self.mux.config().orientation == MuxOrientation::Horizontal;
+        let pane_start = self
+            .mux
+            .pane_rects()
+            .get(index)
+            .map(|r| if horizontal { r.x } else { r.y })
+            .unwrap_or(0);
+        let first =
+            self.mux
+                .pane_rects()
+                .first()
+                .map_or(pane_start, |r| if horizontal { r.x } else { r.y });
+        let last_end = self.mux.pane_rects().last().map_or(pane_start + 1, |r| {
+            if horizontal {
+                r.x + r.width
+            } else {
+                r.y + r.height
+            }
+        });
+        let body = last_end.saturating_sub(first);
+        let n = self.mux.pane_rects().len();
+        let available = body
+            .saturating_sub((n.saturating_sub(1)) as u16 * DIVIDER_SIZE)
+            .max(1);
+        let cursor = if horizontal { col } else { row };
+        (cursor.saturating_sub(pane_start), available)
+    }
+
+    /// Forward an event to the mux's currently-focused pane (keyboard
+    /// isolation: unfocused panes receive NO events).
+    fn forward_mux_event_to_focused_pane(
+        &mut self,
+        event: &Event,
+        board_store: &BoardStore,
+    ) -> EventResult {
+        let focus = self.mux.focus();
+        let kind = self
+            .mux
+            .effective_panes()
+            .get(focus)
+            .copied()
+            .unwrap_or_default();
+        if focus >= self.mux.effective_panes().len() {
+            return EventResult::consumed();
+        }
+        mux_keys::forward_to_pane(
+            event,
+            board_store,
+            &self.board,
+            &mut self.agent,
+            &mut self.changed_files,
+            &mut self.checkpoints,
+            kind,
+        )
     }
 
     /// React to a dispatched action that the App has already applied to
@@ -135,7 +326,24 @@ impl Navigator {
                 self.active_view = ViewMode::Agent;
             }
             Action::OpenAgentView(None) => {}
-            Action::BackToBoard => self.active_view = ViewMode::Board,
+            Action::BackToBoard => {
+                // MUX-001: retain the mux grid when it is active —
+                // "back to board" focuses the board pane within the
+                // grid instead of flipping the whole view out of Mux.
+                // (The App dispatch arm applies the same rule first;
+                // this arm re-runs per action, so it needs the guard too.)
+                if self.mux.config().enabled {
+                    let board_idx = self
+                        .mux
+                        .effective_panes()
+                        .iter()
+                        .position(|k| *k == crate::views::multiplex::MuxPaneKind::Board)
+                        .unwrap_or(0);
+                    self.mux.set_focus(board_idx);
+                } else {
+                    self.active_view = ViewMode::Board;
+                }
+            }
             Action::OpenProviderSettingsView => {
                 self.active_view = ViewMode::ProviderSettings;
             }
@@ -167,6 +375,14 @@ impl Navigator {
             Action::OpenCheckpointsView => self.active_view = ViewMode::Checkpoints,
             Action::CloseCheckpointsView if self.active_view == ViewMode::Checkpoints => {
                 self.active_view = ViewMode::Board;
+            }
+            // MUX-001: R8 — Enter on a board work unit in mux mode
+            // focuses the agent pane WITHOUT flipping the whole view
+            // (the board stays visible in its pane). All other mux
+            // transitions are /mux-driven (dispatch_mux.rs).
+            Action::MuxEnterWorkUnit(_) if self.active_view == ViewMode::Mux => {
+                let agent_idx = self.mux.agent_pane_index(&self.mux.config().panes, 0);
+                self.mux.set_focus(agent_idx);
             }
             _ => {}
         }
@@ -210,6 +426,21 @@ impl Navigator {
             }
             ViewMode::Checkpoints => {
                 self.checkpoints.render(area, buf);
+            }
+            ViewMode::Mux => {
+                mux_render::render_with_stores(
+                    &mut self.mux,
+                    area,
+                    buf,
+                    board_store,
+                    agent_store,
+                    &mut mux_render::MuxRenderViews {
+                        board: &self.board,
+                        agent: &mut self.agent,
+                        changed_files: &mut self.changed_files,
+                        checkpoints: &mut self.checkpoints,
+                    },
+                );
             }
         }
     }
@@ -309,5 +540,47 @@ mod tests {
             codelet_rpc_types::SessionId::new("s-1"),
         )));
         assert_eq!(nav.active_view, ViewMode::Agent);
+    }
+
+    // ── BUG-164: BackToBoard must retain the active mux grid ──────────────
+
+    /// Feature: spec/features/rust-mux-mode.feature
+    /// Scenario: closing a session in mux mode retains the mux and focuses the board pane
+    #[test]
+    fn back_to_board_in_mux_retains_the_grid_and_focuses_the_board_pane() {
+        let (mut nav, _rx) = fresh();
+        nav.mux.enable_default();
+        nav.active_view = ViewMode::Mux;
+        nav.mux.set_focus(1); // agent pane
+                              // @step When BackToBoard lands while the mux grid is active
+        nav.apply_action(&Action::BackToBoard);
+        // @step Then the view stays in Mux (no single-view flip to Board)
+        assert_eq!(
+            nav.active_view,
+            ViewMode::Mux,
+            "BackToBoard must NOT flip the whole view out of the mux grid"
+        );
+        // @step And the Board pane is focused within the grid
+        let panes = nav.mux.effective_panes();
+        assert_eq!(
+            panes[nav.mux.focus()],
+            crate::views::multiplex::MuxPaneKind::Board,
+            "BackToBoard must focus the Board pane inside the grid"
+        );
+    }
+
+    /// Feature: spec/features/rust-mux-mode.feature
+    /// Scenario: existing single-view behavior is unchanged when mux is off
+    #[test]
+    fn back_to_board_outside_mux_still_flips_to_the_board_view() {
+        let (mut nav, _rx) = fresh();
+        nav.active_view = ViewMode::Agent;
+        assert!(!nav.mux.config().enabled);
+        nav.apply_action(&Action::BackToBoard);
+        assert_eq!(
+            nav.active_view,
+            ViewMode::Board,
+            "BackToBoard with mux inactive must flip to the single Board view"
+        );
     }
 }

@@ -211,7 +211,10 @@ fn a_long_title_is_truncated_with_a_trailing_ellipsis_and_the_frame_stays_fixed(
 #[test]
 fn the_selected_row_snippet_is_not_dimmed_but_unselected_rows_are() {
     // @step Given a board with two work units "AAA-001" and "AAA-002" in backlog both titled "Same title"
-    let units = vec![wu("AAA-001", "Same title", None), wu("AAA-002", "Same title", None)];
+    let units = vec![
+        wu("AAA-001", "Same title", None),
+        wu("AAA-002", "Same title", None),
+    ];
     let mut dialog = WorkUnitSearchDialog::new(units);
 
     // @step When I open the search dialog and type "aaa"
@@ -265,7 +268,11 @@ fn the_match_order_and_selection_math_are_unchanged_by_the_richer_matches() {
     // @step Then the dialog lists the matches in board order "AAA-001", "AAA-002", "AAA-003"
     assert_eq!(
         dialog.matches(),
-        vec!["AAA-001".to_string(), "AAA-002".to_string(), "AAA-003".to_string()]
+        vec![
+            "AAA-001".to_string(),
+            "AAA-002".to_string(),
+            "AAA-003".to_string()
+        ]
     );
 
     // @step And pressing Down wraps the selection within the match list
@@ -292,16 +299,10 @@ fn filter_work_units_returns_mode_aware_snippets_parallel_to_ids() {
     // Id mode: snippet is the title.
     let id_matches = filter_work_units(&units, Default::default(), "");
     assert_eq!(
-        id_matches
-            .iter()
-            .map(|m| m.id.as_str())
-            .collect::<Vec<_>>(),
+        id_matches.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(),
         vec!["AAA-001", "AAA-002"]
     );
-    let id_snippets: Vec<String> = id_matches
-        .iter()
-        .map(|m| m.snippet.clone())
-        .collect();
+    let id_snippets: Vec<String> = id_matches.iter().map(|m| m.snippet.clone()).collect();
     assert_eq!(
         id_snippets,
         vec!["First title".to_string(), "Second title".to_string()]

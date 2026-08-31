@@ -174,7 +174,12 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                     // the result is emitted after process exit). If the body
                     // is non-empty, the content is already there — skip to
                     // avoid duplication.
-                    let body = source.text.split('\n').skip(1).collect::<Vec<_>>().join("\n");
+                    let body = source
+                        .text
+                        .split('\n')
+                        .skip(1)
+                        .collect::<Vec<_>>()
+                        .join("\n");
                     if body.is_empty() {
                         let sanitized = sanitize_for_terminal(&info.content);
                         if !sanitized.trim().is_empty() {

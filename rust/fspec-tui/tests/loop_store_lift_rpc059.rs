@@ -51,10 +51,7 @@ fn read_all_rust_files(dir: &Path) -> Vec<(PathBuf, String)> {
 fn loops_module_lives_under_codelet_core() {
     // @step Given the directory rust/core/src/loops/ exists
     let dir = loops_core_dir();
-    assert!(
-        dir.is_dir(),
-        "rust/core/src/loops/ directory should exist"
-    );
+    assert!(dir.is_dir(), "rust/core/src/loops/ directory should exist");
 
     // @step Then it contains a file named "mod.rs"
     let mod_path = dir.join("mod.rs");

@@ -68,6 +68,10 @@ pub enum SlashCommandParse {
     /// (CheckAndUpdate / CheckOnly / Invalid) so the dispatcher can call
     /// the shared update engine without re-parsing.
     UpdateSubcommand(UpdateSubcommand),
+    /// `/mux …` — MUX-001. The raw line is re-parsed by the dedicated
+    /// `mux_parser` in the dispatcher (keeps this enum free of the
+    /// multiplex types).
+    MuxCommand(String),
     /// Anything else — forward to `backend.send_input` as before.
     NotASlashCommand,
 }
@@ -154,6 +158,12 @@ pub fn parse_slash_command(text: &str) -> SlashCommandParse {
     // parser. Bare `/update` resolves to `UpdateSubcommand::CheckAndUpdate`.
     if trimmed == "/update" || trimmed.starts_with("/update ") {
         return SlashCommandParse::UpdateSubcommand(parse_update_command(trimmed));
+    }
+    // MUX-001: route the entire `/mux …` family to the dedicated parser.
+    // The raw line is carried so the dispatcher re-parses it (the enum
+    // stays free of the multiplex types).
+    if trimmed == "/mux" || trimmed.starts_with("/mux ") {
+        return SlashCommandParse::MuxCommand(trimmed.to_string());
     }
     SlashCommandParse::NotASlashCommand
 }

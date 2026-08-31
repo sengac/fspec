@@ -159,6 +159,9 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
         .get("autoContinue")
         .and_then(Value::as_u64)
         .and_then(|n| u32::try_from(n).ok());
+    // PROV-143: read the optional preserve-thinking toggle; an absent key
+    // stays `None` (⇒ stripped, the default) so older profiles are unaffected.
+    let preserve_thinking = cfg.get("preserveThinking").and_then(Value::as_bool);
     ProfileDefinition {
         base_url,
         api_key,
@@ -168,6 +171,7 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
         compaction_threshold_value,
         streaming,
         auto_continue,
+        preserve_thinking,
     }
 }
 

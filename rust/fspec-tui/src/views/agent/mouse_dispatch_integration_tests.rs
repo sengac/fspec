@@ -56,10 +56,13 @@ fn agentview_emits_scrollback_jump_to_offset_on_scrollbar_click() {
     assert!(result.is_some(), "scrollbar release should be consumed");
 
     // Then: Action::ScrollbackJumpToOffset should be emitted
-    let action = rx.blocking_recv().expect("expected ScrollbackJumpToOffset action");
+    let action = rx
+        .blocking_recv()
+        .expect("expected ScrollbackJumpToOffset action");
     assert!(
         matches!(action, Action::ScrollbackJumpToOffset(25)),
-        "expected ScrollbackJumpToOffset(25), got {action:?}");
+        "expected ScrollbackJumpToOffset(25), got {action:?}"
+    );
 }
 
 /// Integration test: AgentView does NOT emit ScrollbackJumpToOffset when
@@ -93,7 +96,10 @@ fn agentview_no_scrollbar_interaction_when_content_fits() {
 
     // Then: click should still be consumed by text selection
     let result = view.handle_scrollback_mouse(down_ev);
-    assert!(result.is_some(), "click should still be consumed by text selection");
+    assert!(
+        result.is_some(),
+        "click should still be consumed by text selection"
+    );
 
     // Verify no ScrollbackJumpToOffset was emitted
     assert!(
@@ -141,8 +147,11 @@ fn agentview_scrollbar_click_exits_stick_mode() {
 
     // The emitted action should be ScrollbackJumpToOffset with the computed offset
     // (row 15 * 100 / 20 = 75)
-    let action = rx.blocking_recv().expect("expected ScrollbackJumpToOffset action");
+    let action = rx
+        .blocking_recv()
+        .expect("expected ScrollbackJumpToOffset action");
     assert!(
         matches!(action, Action::ScrollbackJumpToOffset(75)),
-        "expected ScrollbackJumpToOffset(75), got {action:?}");
+        "expected ScrollbackJumpToOffset(75), got {action:?}"
+    );
 }

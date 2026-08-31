@@ -123,6 +123,60 @@ impl MultiLineInput {
         super::scrollback_paint::paint_selection_highlight(area, buf, &spans, area.width);
     }
 
+    /// BUG-163 — ghost-draft variant of [`Self::render_with_prompt`]:
+    /// paints `draft` (the session's persisted input draft) instead of
+    /// the live buffer, WITHOUT touching viewport/scroll state. The mux
+    /// render layer uses this for UNfocused agent panes — they render a
+    /// read-only ghost of their own session's draft (or the dim
+    /// placeholder when the draft is empty).
+    pub fn render_ghost_draft(&self, area: Rect, buf: &mut Buffer, draft: &str, placeholder: &str) {
+        if area.width == 0 || area.height == 0 {
+            return;
+        }
+        let prompt_area = Rect {
+            x: area.x,
+            y: area.y,
+            width: PROMPT_WIDTH.min(area.width),
+            height: 1,
+        };
+        Paragraph::new(Line::from(Span::styled(
+            "> ",
+            Style::default().fg(Color::Green),
+        )))
+        .render(prompt_area, buf);
+
+        let body_x = area.x.saturating_add(PROMPT_WIDTH);
+        let body_width = area.width.saturating_sub(PROMPT_WIDTH);
+        if body_width == 0 {
+            return;
+        }
+        let body_area = Rect {
+            x: body_x,
+            y: area.y,
+            width: body_width,
+            height: area.height,
+        };
+        if draft.is_empty() {
+            let hint = Span::styled(placeholder, Style::default().fg(Color::DarkGray));
+            Paragraph::new(Line::from(hint)).render(body_area, buf);
+            return;
+        }
+        let lines: Vec<String> = draft.split('\n').map(String::from).collect();
+        for (i, row) in wrap_lines(&lines, body_width)
+            .into_iter()
+            .take(area.height as usize)
+            .enumerate()
+        {
+            let row_area = Rect {
+                x: body_x,
+                y: area.y.saturating_add(i as u16),
+                width: body_width,
+                height: 1,
+            };
+            Paragraph::new(Line::from(row.text)).render(row_area, buf);
+        }
+    }
+
     /// Paint the input box body: green "> " prompt prefix on the top
     /// row, then either the wrapped buffer content or a dim
     /// placeholder hint when the buffer is empty. Used by AgentView

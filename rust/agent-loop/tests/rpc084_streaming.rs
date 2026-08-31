@@ -320,7 +320,7 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
          run_agent_stream_with_images call in the OpenAI arm"
     );
 
-    // @step And the call is positioned between line 950 and line 1050
+    // @step And the call is positioned between line 950 and line 1080
     //
     // RPC-327 follow-up: the fspec_handler closure earlier in this file
     // grew by ~25 lines (it now also emits FspecCommandRequest /
@@ -335,14 +335,18 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
     // `session_id` arg into each call site added +1 line per call. The
     // invariant is unchanged: the call lives in a bounded vicinity of
     // the OpenAI inlined arm.
+    //
+    // PROV-143: the window was widened to 950..=1080 — the OpenAI arm
+    // now wraps the rig agent with `.with_preserve_thinking(...)` (+3
+    // lines), pushing the call to ~line 1053. The invariant is unchanged.
     let abs_offset = src
         .find("codelet_cli::interactive::run_agent_stream_with_images")
         .expect("agent_loop.rs must contain at least one run_agent_stream_with_images call");
     let line = line_number_of(&src, abs_offset);
     assert!(
-        (950..=1050).contains(&line),
+        (950..=1080).contains(&line),
         "first run_agent_stream_with_images call (OpenAI inlined arm) must \
-         live between lines 950 and 1050; got line {line}"
+         live between lines 950 and 1080; got line {line}"
     );
 }
 

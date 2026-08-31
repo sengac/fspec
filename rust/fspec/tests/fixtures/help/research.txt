@@ -3,36 +3,20 @@ RESEARCH
 Execute research tools to answer questions during Example Mapping
 
 WHEN TO USE
-  Use during specifying phase when you have questions that require external research (AST analysis, stakeholder input, API queries, etc.). Research tools help answer red card questions during Example Mapping.
+  Use during specifying phase when you have questions that require external research (stakeholder input, API queries, web answers, etc.). Research tools help answer red card questions during Example Mapping. For AST code search, use the `fspec astgrep` command instead.
 
 USAGE
   fspec research [--tool=<name>] [tool-specific-args...]
 
 OPTIONS
   undefined
-    Research tool to execute (ast, perplexity, confluence, jira, stakeholder). Omit to list available tools.
+    Research tool to execute (perplexity, jira, confluence, stakeholder). Omit to list available tools.
   undefined
     Work unit context (forwarded to tool). Enables attaching results as attachments.
   undefined
     Additional arguments passed directly to the research tool. See tool --help for details.
 
 COMMON PATTERNS
-  • undefined
-    Example: fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/
-    Search for function declarations using AST pattern matching
-
-  • undefined
-    Example: fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/
-    Search for async function declarations
-
-  • undefined
-    Example: fspec research --tool=ast --pattern="class $NAME" --lang=typescript --path=src/
-    Search for class or interface definitions
-
-  • undefined
-    Example: fspec research --tool=ast --refactor --pattern="const MyComponent" --lang=tsx --source=src/big.tsx --target=src/MyComponent.tsx
-    Extract a component or function to its own file
-
   • undefined
     Example: fspec research --tool=stakeholder --platform=teams,slack --question="Need OAuth?" --work-unit=AUTH-001
     Send questions to Teams/Slack and attach responses
@@ -46,25 +30,13 @@ EXAMPLES
   $ fspec research
   Available Research Tools:
 
-  ast
-    Usage: fspec research --tool=ast <args>
+  perplexity
+    Usage: fspec research --tool=perplexity <args>
 
   stakeholder
     Usage: fspec research --tool=stakeholder <args>
 
-  2. Search codebase for async functions using AST analysis
-  $ fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/
-  src/services/api.ts:15:1:async function fetchUser(id: string) {
-src/services/auth.ts:42:1:async function validateToken(token: string) {
-src/utils/cache.ts:8:1:async function getCacheValue(key: string) {
-
-  3. Find all functions in a specific file
-  $ fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/auth.ts
-  src/auth.ts:12:1:function login(username: string, password: string) {
-src/auth.ts:28:1:function logout() {
-src/auth.ts:45:1:function validateCredentials(user: User) {
-
-  4. Send question to stakeholders via Teams
+  2. Send question to stakeholders via Teams
   $ fspec research --tool=stakeholder --platform=teams --question="Should we support OAuth2?" --work-unit=AUTH-001
   # Stakeholder Question for AUTH-001
 
@@ -83,33 +55,8 @@ Message sent successfully.
 
 Attach research results to work unit? (y/n):
 
-  5. Move a component to its own file using AST refactoring
-  $ fspec research --tool=ast --refactor --pattern="const MyComponent" --lang=tsx --source=src/big-file.tsx --target=src/components/MyComponent.tsx
-  {
-  "success": true,
-  "movedCode": "const MyComponent = () => { ... }",
-  "sourceFile": "src/big-file.tsx",
-  "targetFile": "src/components/MyComponent.tsx"
-}
-
-  6. Find all TypeScript interfaces in a directory
-  $ fspec research --tool=ast --pattern="interface $NAME" --lang=typescript --path=src/types/
-  src/types/user.ts:5:1:interface User {
-src/types/user.ts:12:1:interface UserProfile {
-src/types/auth.ts:3:1:interface AuthToken {
-src/types/auth.ts:18:1:interface Session {
-
 COMMON ERRORS
   ✗ Error: Research tool not found: xyz
-    Fix: undefined
-
-  ✗ Error: --pattern is required
-    Fix: undefined
-
-  ✗ Error: --lang is required
-    Fix: undefined
-
-  ✗ Pattern matched N nodes. Refactor requires exactly 1 match.
     Fix: undefined
 
 RELATED COMMANDS
@@ -125,4 +72,5 @@ NOTES
   • Use <tool> --help to see tool-specific options
   • Results can be attached to work units during discovery
   • Attachments are saved to spec/attachments/<work-unit-id>/
+  • For AST code search and refactoring, use the `fspec astgrep` command
 

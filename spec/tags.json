@@ -658,6 +658,10 @@
           "description": "Multiple simultaneous connections"
         },
         {
+          "name": "@mux",
+          "description": "Mux mode — multiplexed top-level views with /mux configuration (MUX epic)"
+        },
+        {
           "name": "@navigation",
           "description": "Navigation and keyboard interaction features in the TUI"
         },
@@ -1216,6 +1220,18 @@
         {
           "name": "@bug-162",
           "description": "Bug fix work unit BUG-162 - board search dialog: list does not scroll with the mouse wheel"
+        },
+        {
+          "name": "@bug-164",
+          "description": "Bug fix work unit BUG-164 - closing a session in mux mode retains the grid (BackToBoard focuses the board pane within the active mux instead of flipping the whole view out of Mux)"
+        },
+        {
+          "name": "@bug-165",
+          "description": "Bug fix work unit BUG-165 - Esc on the board pane in mux mode with no open agents must show the exit confirmation dialog (previously a dead key)"
+        },
+        {
+          "name": "@bug-166",
+          "description": "Bug fix work unit BUG-166 - mux divider fixes: every inter-pane gap gets an independently draggable divider, release keeps the released position (no snap-back to equal split), and splits are a percentage scale that dynamically rescales when the pane count changes"
         },
         {
           "name": "@bug120",
@@ -2350,8 +2366,28 @@
           "description": "Work unit: Add ensureWorkUnitsFile to ALL 48+ commands"
         },
         {
+          "name": "@mux-002",
+          "description": "Work unit MUX-002 — multiple agent panes with grouped agent-view cycling (agent window over open sessions, right-edge prompt, no left-edge wrap)"
+        },
+        {
+          "name": "@mux-004",
+          "description": "Work unit MUX-004 — mux configuration dialog + /mux slash-popup entry (bare /mux opens the MuxConfigDialog; layout-only scope)"
+        },
+        {
+          "name": "@mux-006",
+          "description": "Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (full-height 2-column strip, right-to-left) over the focused pane, re-armed on every focus change, live-only (never persisted)"
+        },
+        {
+          "name": "@mux-007",
+          "description": "Work unit MUX-007 — mux focus flash settled final frame: after the 350ms right-to-left scan (MUX-006) elapses, the focused pane keeps the final frame painted (full-height 2-column dark-purple strip at the pane's left edge) until focus moves or mux is disabled; live-only, never persists the tick gate open"
+        },
+        {
           "name": "@partial",
           "description": "Partially implemented feature - work in progress"
+        },
+        {
+          "name": "@prov-143",
+          "description": "Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them)"
         },
         {
           "name": "@refactor",
@@ -2902,7 +2938,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-25T05:30:48.298Z",
+    "lastUpdated": "2026-08-31T00:33:52.704Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

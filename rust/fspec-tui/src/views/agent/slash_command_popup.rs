@@ -17,9 +17,7 @@ use ratatui::layout::Rect;
 
 use super::slash_command_popup_rows::build_rows as build_dialog_rows;
 use super::slash_commands::{filter_commands, SlashCommand, SlashCommandAction, SLASH_COMMANDS};
-use crate::components::dialog_theme::{
-    dialog_rect, render_dialog, Accent, DialogRow, FspecDialog,
-};
+use crate::components::dialog_theme::{dialog_rect, render_dialog, Accent, DialogRow, FspecDialog};
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
@@ -209,7 +207,9 @@ impl SlashCommandPopup {
                     if total > visible {
                         // TUI-103: convert absolute screen row to body-local row
                         #[allow(clippy::expect_used)]
-                        let body = self.last_body_origin.expect("body origin must be set when scrollbar rect is set");
+                        let body = self
+                            .last_body_origin
+                            .expect("body origin must be set when scrollbar rect is set");
                         let local_row = ev.row.saturating_sub(body.y);
                         let local_ev = MouseEvent {
                             row: local_row,
@@ -313,7 +313,7 @@ impl SlashCommandPopup {
             rows: self.build_rows(),
             footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
             min_width: 45,
-query_row: None,
+            query_row: None,
         };
 
         // TUI-103: compute the dialog rect so we can derive the body area

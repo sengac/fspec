@@ -26,7 +26,10 @@ fn markdown_table_column_width_accounts_for_wide_unicode_characters() {
 
     // @step And the cell padding must align correctly with other width-2 content like "OK"
     // Both "✅" and "OK" have display width 2, so column widths should match.
-    assert_eq!(emoji_width, ascii_width, "emoji and OK must have same display width");
+    assert_eq!(
+        emoji_width, ascii_width,
+        "emoji and OK must have same display width"
+    );
 }
 
 // Scenario: Dialog title centering accounts for wide Unicode characters
@@ -42,7 +45,10 @@ fn dialog_title_centering_accounts_for_wide_unicode_characters() {
     // @step Then the dialog must center correctly using display width 2 not char count 1
     assert_eq!(cjk_width, 2, "CJK character display width must be 2");
     assert_eq!(ascii_width, 2, "OK display width must be 2");
-    assert_eq!(cjk_width, ascii_width, "CJK and OK must have same display width for centering");
+    assert_eq!(
+        cjk_width, ascii_width,
+        "CJK and OK must have same display width for centering"
+    );
 }
 
 // Scenario: Text wrapping respects Unicode display width
@@ -61,7 +67,11 @@ fn text_wrapping_respects_unicode_display_width() {
     // @step And the first wrapped row must contain exactly 2 emoji characters
     let first_row = &rows[0];
     assert_eq!(first_row.width(), 4, "first row must have display width 4");
-    assert_eq!(first_row.chars().count(), 2, "first row must contain 2 emoji characters");
+    assert_eq!(
+        first_row.chars().count(),
+        2,
+        "first row must contain 2 emoji characters"
+    );
 }
 
 // Scenario: Dialog button row centering accounts for wide Unicode characters
@@ -98,12 +108,20 @@ fn text_truncation_respects_unicode_display_width() {
     // @step Then the truncated output must fit within display width 4
     // "中文" has display width 4, which fits.
     let truncated = "中文";
-    assert_eq!(truncated.width(), 4, "truncated text must have display width 4");
+    assert_eq!(
+        truncated.width(),
+        4,
+        "truncated text must have display width 4"
+    );
 
     // @step And the truncation must not split wide characters mid-way
     // Each CJK character is intact — no partial characters.
     for ch in truncated.chars() {
-        assert_eq!(ch.width(), Some(2), "each character must be a complete wide character");
+        assert_eq!(
+            ch.width(),
+            Some(2),
+            "each character must be a complete wide character"
+        );
     }
 }
 
@@ -122,7 +140,11 @@ fn text_selection_copy_preserves_character_count_not_display_width() {
     // @step And the character count boundary must be used (not display width)
     // Display width is 4 (2+1+1), but char count is 3.
     assert_eq!(text.width(), 4, "display width is 4");
-    assert_eq!(text.chars().count(), 3, "char count is 3 — clipboard uses char count");
+    assert_eq!(
+        text.chars().count(),
+        3,
+        "char count is 3 — clipboard uses char count"
+    );
 }
 
 // Scenario: Secret masking uses character count not display width
@@ -136,7 +158,11 @@ fn secret_masking_uses_character_count_not_display_width() {
     let masked: String = secret.chars().map(|_| '•').collect();
 
     // @step Then each character must be replaced by exactly one bullet point
-    assert_eq!(masked.chars().count(), secret.chars().count(), "each char → one bullet");
+    assert_eq!(
+        masked.chars().count(),
+        secret.chars().count(),
+        "each char → one bullet"
+    );
 
     // @step And the masked output must have the same character count as the input
     assert_eq!(masked.chars().count(), 3, "masked must have 3 characters");
@@ -157,7 +183,11 @@ fn animation_frame_counting_uses_character_count_not_display_width() {
 
     // @step And the frame count must equal the character count not display width
     assert_eq!(frame_count, 3, "frame count must be 3 (char count)");
-    assert_eq!(text.width(), 4, "display width is 4 — not used for animation");
+    assert_eq!(
+        text.width(),
+        4,
+        "display width is 4 — not used for animation"
+    );
     assert_ne!(frame_count, text.width(), "frame count ≠ display width");
 }
 

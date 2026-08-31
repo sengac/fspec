@@ -220,9 +220,7 @@ impl ResumeSessionView {
                     if self.double_click.record_click(candidate, now) {
                         // Double-click: resume session immediately
                         let info = &self.sessions[candidate];
-                        return ResumeSessionViewOutcome::Selected(SessionId::new(
-                            info.id.clone(),
-                        ));
+                        return ResumeSessionViewOutcome::Selected(SessionId::new(info.id.clone()));
                     }
                     // Single-click: move selection
                     self.selected_index = candidate;
@@ -357,13 +355,7 @@ impl ResumeSessionView {
             "available",
             "DblClick Resume | Enter Select | ↑↓ Navigate | D Delete | Esc Cancel",
             |body_area, buf| {
-                render_session_rows(
-                    body_area,
-                    buf,
-                    &sessions,
-                    selected_index,
-                    scroll_offset,
-                );
+                render_session_rows(body_area, buf, &sessions, selected_index, scroll_offset);
             },
             delete_confirm,
         );

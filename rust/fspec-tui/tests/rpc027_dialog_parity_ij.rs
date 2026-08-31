@@ -183,7 +183,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             "src/tui/components/ThinkingLevelDialog.tsx" => {
@@ -191,7 +194,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             "src/tui/components/AttachmentDialog.tsx" => {
@@ -199,7 +205,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             "src/tui/components/TurnContentModal.tsx" => {
@@ -207,7 +216,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             "src/tui/components/FileSearchPopup.tsx" => {
@@ -215,7 +227,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             "src/tui/components/SlashCommandPalette.tsx" => {
@@ -223,7 +238,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             "src/tui/components/ThreeButtonDialog.tsx" => {
@@ -231,7 +249,10 @@ fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
                 if path.exists() {
                     let content = fs::read_to_string(&path)
                         .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(!content.is_empty(), "BUG-153: {file_name} must have content");
+                    assert!(
+                        !content.is_empty(),
+                        "BUG-153: {file_name} must have content"
+                    );
                 }
             }
             _ => {

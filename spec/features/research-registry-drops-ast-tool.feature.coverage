@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "research listing no longer offers the ast tool",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/research.rs",
+          "lines": "64-97",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/research.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "research rejects the ast tool as unknown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/research.rs",
+          "lines": "200-226",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/research.rs",
+              "lines": [
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/research.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/research.rs"
+    ],
+    "totalLinesCovered": 120
+  }
+}

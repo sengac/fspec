@@ -246,9 +246,8 @@ pub struct MockBackend {
     /// TUI-109: push-driven checkpoint-enumeration progress broadcast
     /// Sender. Tests use `push_checkpoints_progress` to drive synthetic
     /// `CheckpointsProgress` frames without a real RPC server.
-    checkpoints_progress_tx: Mutex<
-        Option<broadcast::Sender<codelet_rpc_types::CheckpointsProgress>>,
-    >,
+    checkpoints_progress_tx:
+        Mutex<Option<broadcast::Sender<codelet_rpc_types::CheckpointsProgress>>>,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
@@ -1042,10 +1041,7 @@ impl MockBackend {
     /// TUI-109: push a checkpoint-enumeration progress frame so the
     /// checkpoints-progress subscriber test can drive synthetic frames
     /// without a real RPC server.
-    pub fn push_checkpoints_progress(
-        &self,
-        progress: codelet_rpc_types::CheckpointsProgress,
-    ) {
+    pub fn push_checkpoints_progress(&self, progress: codelet_rpc_types::CheckpointsProgress) {
         if let Some(tx) = self
             .checkpoints_progress_tx
             .lock()
@@ -2425,7 +2421,10 @@ impl FspecBackend for MockBackend {
     }
 
     async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>> {
-        *self.last_list_sessions_project.lock().expect("MockBackend mutex") = Some(project_path);
+        *self
+            .last_list_sessions_project
+            .lock()
+            .expect("MockBackend mutex") = Some(project_path);
         Ok(self.sessions.lock().expect("MockBackend mutex").clone())
     }
 
@@ -3451,7 +3450,10 @@ impl FspecBackend for MockBackend {
 
     async fn set_debug_enabled(&self, session_id: SessionId, enabled: bool) -> Result<()> {
         self.set_debug_enabled_calls.fetch_add(1, Ordering::SeqCst);
-        *self.last_set_debug_enabled.lock().expect("MockBackend mutex") = Some((session_id, enabled));
+        *self
+            .last_set_debug_enabled
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id, enabled));
         Ok(())
     }
 

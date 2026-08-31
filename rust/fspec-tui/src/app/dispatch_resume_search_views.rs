@@ -75,13 +75,9 @@ impl App {
         );
         if let Some(v) = self.navigator.agent.resume_view.as_mut() {
             v.set_sessions(sessions);
-            tracing::debug!(
-                "TUI: handle_session_list_loaded: folded into resume_view"
-            );
+            tracing::debug!("TUI: handle_session_list_loaded: folded into resume_view");
         } else {
-            tracing::debug!(
-                "TUI: handle_session_list_loaded: resume_view not open, discarding"
-            );
+            tracing::debug!("TUI: handle_session_list_loaded: resume_view not open, discarding");
         }
     }
 
@@ -289,6 +285,9 @@ impl App {
         // If the deleted session is currently open, remove it from
         // open_sessions and clamp the index.
         self.agent_view_store.remove_session_if_open(&id);
+        // MUX-002: closing a session shrinks the open-session list —
+        // re-clamp the mux agent window (agent slots stay in the grid).
+        self.mux_sync_window();
         let project_path = std::env::current_dir()
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_default();

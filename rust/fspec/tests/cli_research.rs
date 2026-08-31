@@ -60,14 +60,20 @@ fn cli_lists_available_research_tools_with_header() {
         "stdout={stdout}"
     );
 
-    // @step And stdout contains "ast"
-    assert!(stdout.contains("ast"), "stdout={stdout}");
+    // @step And stdout contains "jira"
+    assert!(stdout.contains("jira"), "stdout={stdout}");
 
     // @step And stdout contains "perplexity"
     assert!(stdout.contains("perplexity"), "stdout={stdout}");
 
     // @step And stdout contains "stakeholder"
     assert!(stdout.contains("stakeholder"), "stdout={stdout}");
+
+    // @step And stdout does not contain an "ast" tool entry (CLI-015)
+    assert!(
+        !stdout.contains("--tool=ast"),
+        "stdout must not advertise the ast tool: {stdout}"
+    );
 }
 
 #[test]
@@ -81,9 +87,9 @@ fn cli_tool_listing_includes_per_tool_usage_guidance() {
     // @step Then the command exits with code 0
     assert_eq!(code, 0, "expected exit 0; stdout={stdout} stderr={stderr}");
 
-    // @step And stdout contains "Usage: fspec research --tool=ast <args>"
+    // @step And stdout contains "Usage: fspec research --tool=stakeholder <args>"
     assert!(
-        stdout.contains("Usage: fspec research --tool=ast <args>"),
+        stdout.contains("Usage: fspec research --tool=stakeholder <args>"),
         "stdout={stdout}"
     );
 }

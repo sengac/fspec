@@ -1130,24 +1130,22 @@ pub fn update_session_tokens(
 }
 
 /// Set session token usage (REPLACES existing — restore scenario).
+///
+/// Takes the full [`TokenUsage`] so the /resume restore path can re-seed
+/// every field (including the session-cumulative reasoning value for the
+/// SessionHeader 🧠 counter) in one call.
 pub fn set_session_tokens(
     session: &mut SessionManifest,
-    input: u64,
-    _output: u64,
-    cache_read: u64,
-    cache_create: u64,
-    cumulative_input: u64,
-    cumulative_output: u64,
-    reasoning_tokens: u64,
+    usage: &TokenUsage,
 ) -> Result<(), String> {
-    session.token_usage.current_context_tokens = input;
-    session.token_usage.cumulative_billed_input = cumulative_input;
-    session.token_usage.cumulative_billed_output = cumulative_output;
-    session.token_usage.cache_read_tokens = cache_read;
-    session.token_usage.cache_creation_tokens = cache_create;
+    session.token_usage.current_context_tokens = usage.current_context_tokens;
+    session.token_usage.cumulative_billed_input = usage.cumulative_billed_input;
+    session.token_usage.cumulative_billed_output = usage.cumulative_billed_output;
+    session.token_usage.cache_read_tokens = usage.cache_read_tokens;
+    session.token_usage.cache_creation_tokens = usage.cache_creation_tokens;
     // TOKEN-003: restore the session-cumulative reasoning value so the
     // SessionHeader re-displays the 🧠 counter after /resume.
-    session.token_usage.reasoning_tokens = reasoning_tokens;
+    session.token_usage.reasoning_tokens = usage.reasoning_tokens;
 
     init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;

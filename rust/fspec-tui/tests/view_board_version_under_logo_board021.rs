@@ -21,7 +21,10 @@ use tokio::sync::mpsc::unbounded_channel;
 /// The compile-time version string the logo's 4th row must paint.
 const VERSION_LINE: &str = concat!("v", env!("CARGO_PKG_VERSION"));
 
-fn fresh() -> (BoardView, tokio::sync::mpsc::UnboundedReceiver<codelet_fspec_tui::Action>) {
+fn fresh() -> (
+    BoardView,
+    tokio::sync::mpsc::UnboundedReceiver<codelet_fspec_tui::Action>,
+) {
     let (tx, rx) = unbounded_channel();
     let view = BoardView::new(Arc::new(Theme::default()), tx);
     (view, rx)
@@ -114,7 +117,10 @@ fn logo_glyph_rows_are_unchanged_when_the_version_row_is_painted() {
     );
     // @step And the rendered buffer contains the substring "┣ ┗┓┃┃┣ ┃"
     let row2 = row_string(&buf, 2);
-    assert!(row2.contains("┣ ┗┓┃┃┣ ┃"), "missing logo glyph row 2:\n{row2}");
+    assert!(
+        row2.contains("┣ ┗┓┃┃┣ ┃"),
+        "missing logo glyph row 2:\n{row2}"
+    );
     // @step And the rendered buffer contains the substring "┻ ┗┛┣┛┗┛┗┛"
     let row3 = row_string(&buf, 3);
     assert!(
@@ -141,13 +147,17 @@ fn the_version_row_is_styled_with_the_themes_dim_color() {
     let store = BoardStore::default();
     // @step And the Theme is the default dark variant
     let theme = Theme::default();
-    assert_eq!(theme.dim, Color::DarkGray, "precondition: default theme dim color");
+    assert_eq!(
+        theme.dim,
+        Color::DarkGray,
+        "precondition: default theme dim color"
+    );
     // @step When the App renders BoardView against a 120x24 TestBackend
     let (buf, _logo_x) = render(120, 24, &store);
     // @step Then the buffer cells spelling the version string on the 4th logo row carry the theme's dim foreground color
     let row4 = row_string(&buf, 4);
-    let version_x = find_cell(&row4, VERSION_LINE)
-        .expect("version substring must be present (see scenario 1)");
+    let version_x =
+        find_cell(&row4, VERSION_LINE).expect("version substring must be present (see scenario 1)");
     for offset in 0..VERSION_LINE.len() {
         let cell = &buf[(version_x as u16 + offset as u16, 4)];
         assert_eq!(
@@ -186,8 +196,8 @@ fn the_version_text_never_overflows_the_12_cell_logo_block() {
     // @step Then the version string occupies at most 12 cells starting at the logo's left edge
     // (logo block: x=2..14, i.e. 12 cells after the left border + paddingX)
     let row4 = row_string(&buf, 4);
-    let version_x = find_cell(&row4, VERSION_LINE)
-        .expect("version substring must be present (see scenario 1)");
+    let version_x =
+        find_cell(&row4, VERSION_LINE).expect("version substring must be present (see scenario 1)");
     assert!(
         version_x + VERSION_LINE.len() <= 2 + 12,
         "version must fit inside the 12-cell logo block (x {version_x} + {} cells); right edge would be x={}",

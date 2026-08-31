@@ -188,7 +188,7 @@ impl Component for RoleDialog {
             rows: vec![body_row],
             footer: footer.as_str(),
             min_width: 60,
-query_row: None,
+            query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

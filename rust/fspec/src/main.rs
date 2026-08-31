@@ -22,6 +22,7 @@ mod add_dependencies;
 mod add_example;
 mod add_question;
 mod add_rule;
+mod astgrep;
 mod clear_dependencies;
 mod client;
 mod combined;
@@ -2320,6 +2321,16 @@ enum Mode {
         #[arg(long = "work-unit", value_name = "id")]
         work_unit: Option<String>,
     },
+    /// CLI-015: AST code search via the native AstGrep tool implementation.
+    #[command(name = "astgrep", about = "AST code search (pattern-based, language-aware)")]
+    AstGrep {
+        #[arg(long = "pattern", value_name = "pattern", required = true)]
+        pattern: Option<String>,
+        #[arg(long = "lang", value_name = "language", required = true)]
+        lang: Option<String>,
+        #[arg(long = "path", value_name = "path")]
+        path: Option<String>,
+    },
     /// RPC-200: print the fspec bootstrap workflow document.
     #[command(
         name = "bootstrap",
@@ -3816,6 +3827,18 @@ async fn main() -> std::process::ExitCode {
         Some(Mode::Research { tool, work_unit }) => {
             forward!(research::run, research::CliArgs { tool, work_unit })
         }
+        Some(Mode::AstGrep {
+            pattern,
+            lang,
+            path,
+        }) => forward!(
+            astgrep::run,
+            astgrep::CliArgs {
+                pattern,
+                lang,
+                path
+            }
+        ),
         Some(Mode::Bootstrap {}) => forward!(bootstrap::run, bootstrap::CliArgs {}),
         Some(Mode::ReportBugToGitHub {
             project_root,

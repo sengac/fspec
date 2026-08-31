@@ -148,6 +148,12 @@ impl App {
                     super::update_parser::UpdateSubcommand::CheckAndUpdate,
                 );
             }
+            SlashCommandAction::Mux => {
+                // MUX-004: /mux (palette pick or bare /mux submit) opens
+                // the MuxConfigDialog. Handler body lives in
+                // dispatch_mux_config.rs.
+                self.handle_open_mux_config_dialog();
+            }
             SlashCommandAction::Isolation => {
                 // RPC-060: routed via try_dispatch_create_session_dialog in app/dispatch.rs.
                 let _ = self.action_tx.send(Action::OpenCreateSessionDialog {
@@ -270,6 +276,12 @@ impl App {
                 // UPD-002: apply directly in this dispatch tick —
                 // handler body lives in dispatch_slash_update.rs.
                 self.handle_update_subcommand(sub);
+                return;
+            }
+            SlashCommandParse::MuxCommand(line) => {
+                // MUX-001: apply the /mux subcommand directly in this
+                // dispatch tick (handler body lives in dispatch_mux.rs).
+                self.handle_mux_subcommand(&line);
                 return;
             }
             SlashCommandParse::NotASlashCommand => {}

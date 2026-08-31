@@ -358,13 +358,14 @@ fn reasoning_tokens_persist_across_session_restore() {
     let mut manifest = load_session(session_id).expect("reload manifest for restore");
     set_session_tokens(
         &mut manifest,
-        100,   // input (current context)
-        50,    // output
-        0,     // cache_read
-        0,     // cache_create
-        100,   // cumulative_input
-        50,    // cumulative_output
-        1_000, // reasoning_tokens (session cumulative)
+        &codelet_core::persistence::TokenUsage {
+            current_context_tokens: 100,
+            cumulative_billed_input: 100,
+            cumulative_billed_output: 50,
+            cache_read_tokens: 0,
+            cache_creation_tokens: 0,
+            reasoning_tokens: 1_000, // reasoning_tokens (session cumulative)
+        },
     )
     .expect("set_session_tokens must succeed");
 

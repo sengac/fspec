@@ -149,7 +149,7 @@ impl Component for AttachmentPickerDialog {
             rows,
             footer: FOOTER,
             min_width: MIN_WIDTH,
-query_row: None,
+            query_row: None,
         };
         render_dialog(area, buf, &dialog);
     }

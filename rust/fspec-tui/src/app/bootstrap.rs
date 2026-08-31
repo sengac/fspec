@@ -53,6 +53,10 @@ impl App {
         self.spawn_subscriber_tasks();
         self.initialize_startup_model().await;
         self.initialize_default_thinking_level();
+        // MUX-001 R6: load the persisted mux config (shared
+        // fspec-config.json, tui.mux) so a restart restores the saved
+        // grid; missing key → default preset.
+        self.load_mux_config();
         self.start_viewer_server().await;
         Ok(())
     }

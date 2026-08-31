@@ -1371,6 +1371,7 @@ dependencies = [
  "proptest",
  "ratatui 0.29.0",
  "regex",
+ "serde",
  "serde_json",
  "serial_test",
  "similar",

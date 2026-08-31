@@ -76,7 +76,8 @@ fn multi_provider_view() -> ProviderSettingsView {
             compaction_threshold_type: None,
             compaction_threshold_value: None,
             streaming: None,
-        auto_continue: None,
+            auto_continue: None,
+            preserve_thinking: None,
         },
     );
     view.set_profile_configs(configs);

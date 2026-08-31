@@ -25,6 +25,7 @@ pub mod hitl_mapping;
 pub mod last_used_model_persistence;
 pub mod model_parsing;
 pub mod model_resolution;
+pub mod mux_config_persistence;
 pub mod navigation;
 pub mod profile_persistence;
 pub mod profile_sections;

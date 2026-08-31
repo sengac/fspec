@@ -95,7 +95,38 @@ impl App {
         // with its MultiLineInput). The AgentView's input field
         // receives `?`, `q`, etc. here so users can type them into
         // messages.
+        // MUX-002: keep the agent window in sync with the open-session
+        // list BEFORE routing (unfilled agent slots are dropped; the
+        // window re-clamps after a close) AND intercept Shift+Left/
+        // Right in mux mode: they drive the agent window (rotation /
+        // focus movement) and prompt for a new agent at the right
+        // edge. Intercepted here — not in the Navigator — so the
+        // CreateSessionDialog opens synchronously (the Navigator has
+        // no Compositor access).
+        if matches!(self.navigator.active_view, ViewMode::Mux)
+            && self.navigator.mux.config().enabled
+        {
+            self.mux_sync_window();
+            if let Event::Key(key) = event {
+                if key.modifiers.contains(KeyModifiers::SHIFT)
+                    && matches!(key.code, KeyCode::Left | KeyCode::Right)
+                {
+                    let result = self.handle_mux_shift_key(*key);
+                    self.should_render = true;
+                    return result;
+                }
+            }
+        }
         let nav_result = self.navigator.handle_event(event, &self.board_store);
+        // BUG-163: the mux's focused agent pane always hosts the store's
+        // current session — after ANY focus change (click-to-focus,
+        // Shift+Left/Right window rotation) the RPC-024 draft round-trip
+        // keeps the live composer on the focused pane's session.
+        if matches!(self.navigator.active_view, ViewMode::Mux)
+            && self.navigator.mux.config().enabled
+        {
+            self.sync_mux_focus_to_session();
+        }
         if nav_result.is_consumed() {
             self.should_render = true;
             return nav_result;
@@ -155,9 +186,17 @@ impl App {
         // overlay on the compositor (popups, modals already handle ESC
         // at Stage 2). The compositor.contains() guard prevents
         // double-push on rapid ESC presses.
+        // BUG-165: the same dialog must open when the BOARD PANE is the
+        // focused mux pane (R9: dialogs overlay the mux) — with no open
+        // agents the agent slots are dropped, the Board pane is the only
+        // (focused) pane, and pre-fix this guard was a dead key. Esc on
+        // a focused AGENT pane never reaches Stage 4 (the agent
+        // Esc-cascade consumes it), so this branch cannot steal the
+        // agent exit-confirmation dialog.
         if key.code == KeyCode::Esc
             && key.modifiers == KeyModifiers::NONE
-            && self.navigator.active_view == ViewMode::Board
+            && (self.navigator.active_view == ViewMode::Board
+                || (self.navigator.active_view == ViewMode::Mux && self.mux_board_pane_focused()))
         {
             if !self.compositor.contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID) {
                 let dialog =
@@ -265,11 +304,16 @@ impl App {
                     // loading dialog's 80ms-cadence braille spinner
                     // animates on an otherwise-idle board.
                     let is_view_loading = self.is_view_loading();
+                    // MUX-006: the mux focus flash keeps the 16ms tick
+                    // redrawing during its 350ms window even when the
+                    // session is idle.
+                    let is_mux_flash_active = self.navigator.is_mux_flash_active();
                     if super::tick_should_draw(
                         self.should_render,
                         is_busy,
                         is_animating,
                         is_view_loading,
+                        is_mux_flash_active,
                     ) {
                         let session_status = self.current_session_status();
                         guard.terminal().draw(|frame| {

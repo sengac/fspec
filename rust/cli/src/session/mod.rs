@@ -78,6 +78,15 @@ pub struct Session {
     /// CONT-003: done() rejections recorded for the current goal. Resets when
     /// the goal is set/replaced/cleared — NOT on nudges.
     pub done_rejections: u32,
+
+    /// PROV-143: whether captured thinking/reasoning blocks are PRESERVED in
+    /// the chat history sent back to the LLM. Defaults to `true` (today's
+    /// behavior — required for Anthropic/Gemini signed thinking blocks).
+    /// Profile sessions (OpenAI local-server profiles) seed this from the
+    /// profile's stored `preserveThinking` value, which defaults to `false`
+    /// (thinking stripped from the outgoing history clone; the persisted
+    /// session history always keeps it).
+    pub preserve_thinking_enabled: bool,
 }
 
 /// CONT-003: the user-set goal driving conditional done() acceptance.
@@ -119,6 +128,7 @@ impl Session {
             continue_nudges_used: 0,
             goal: None,
             done_rejections: 0,
+            preserve_thinking_enabled: true,
         })
     }
 
@@ -145,6 +155,7 @@ impl Session {
             continue_nudges_used: 0,
             goal: None,
             done_rejections: 0,
+            preserve_thinking_enabled: true,
         }
     }
 

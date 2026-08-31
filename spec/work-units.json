@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-25T06:24:49.741Z",
+    "lastUpdated": "2026-08-31T05:12:05.664Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,10 +26,10 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 162,
+    "BUG": 166,
     "CACHE": 1,
     "CLEAN": 7,
-    "CLI": 14,
+    "CLI": 15,
     "CMPCT": 42,
     "CODE": 9,
     "CODEX": 1,
@@ -67,7 +67,7 @@
     "PATCH": 2,
     "PAUSE": 1,
     "PERF": 2,
-    "PROV": 142,
+    "PROV": 143,
     "REFAC": 18,
     "REMIND": 17,
     "RES": 22,
@@ -92,7 +92,8 @@
     "VIZ": 4,
     "WATCH": 24,
     "UPD": 4,
-    "BOARD": 22
+    "BOARD": 22,
+    "MUX": 7
   },
   "states": {
     "backlog": [
@@ -1659,7 +1660,20 @@
       "BUG-159",
       "BUG-160",
       "BUG-161",
-      "BUG-162"
+      "BUG-162",
+      "MUX-001",
+      "MUX-003",
+      "MUX-002",
+      "BUG-163",
+      "BUG-164",
+      "BUG-165",
+      "BUG-166",
+      "PROV-143",
+      "MUX-004",
+      "MUX-005",
+      "MUX-006",
+      "MUX-007",
+      "CLI-015"
     ],
     "blocked": [
       "QUERY-001",
@@ -226383,6 +226397,1520 @@
       ],
       "nextExampleId": 2,
       "estimate": 3
+    },
+    "MUX-001": {
+      "id": "MUX-001",
+      "title": "Mux mode — multiplexed top-level views with /mux configuration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-25T11:53:04.654Z",
+      "updatedAt": "2026-08-26T13:15:14.541Z",
+      "description": "Add a multiplex (mux) mode to the fspec TUI that places multiple top-level views (Board, Agent, ChangedFiles, Checkpoints) in a configurable grid with /mux-driven configuration, mouse divider drag, and keyboard isolation. NOTE (MUX-003, 2026-08-26): the R5 minimum-clamp behavior (board 64-col / non-board 20-col / vertical 10-row floors) is SUPERSEDED — panes now divide the terminal equally by pane count and an explicit split percent is honored as-is; the mouse divider drag (10..=90 percent clamp) is the only non-equal split source. See spec/features/equal-division-pane-splits-no-minimums-with-live-resize.feature.",
+      "epic": "mux",
+      "children": [],
+      "userStory": {
+        "role": "developer supervising multiple agents",
+        "action": "see the board and an agent conversation side-by-side in a configurable grid",
+        "benefit": "monitor progress without switching views"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-25T11:53:50.719Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-25T12:19:31.061Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-26T03:22:38.266Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-26T03:55:57.710Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-26T05:25:58.289Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-26T05:26:08.557Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-26T05:40:01.613Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-26T08:07:32.719Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-26T08:51:10.174Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-26T10:22:29.755Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-26T10:22:47.616Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-26T10:23:05.909Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-26T10:42:50.442Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: /mux toggles mux on/off; /mux off returns to the pre-mux view",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:54:01.786Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: keyboard input goes only to the focused pane; clicking a pane focuses it and routes the click to that pane",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:54:13.789Z"
+        },
+        {
+          "id": 2,
+          "text": "R6: config persists across restarts when saved; missing file -> default preset (horizontal, Board|Agent, 50/50)",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:54:48.820Z"
+        },
+        {
+          "id": 3,
+          "text": "R7: parse errors in /mux leave the current config untouched and show a one-line error",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:54:55.907Z"
+        },
+        {
+          "id": 4,
+          "text": "R8: Enter on a board work unit in mux mode focuses the agent pane for that unit (does NOT flip the whole screen to Agent)",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:55:04.115Z"
+        },
+        {
+          "id": 5,
+          "text": "R9: mux mode coexists with the Compositor: dialogs (help, exit confirmation, create-session) still overlay the full screen and capture input above mux",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:55:12.049Z"
+        },
+        {
+          "id": 6,
+          "text": "R10: existing single-view behavior is byte-for-byte unchanged when mux is off (all existing tests stay green)",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:55:19.689Z"
+        },
+        {
+          "id": 7,
+          "text": "R6 (corrected): mux config persists in the shared CONFIG-008 fspec-config.json under tui.mux (user scope ~/.fspec/fspec-config.json, project-scope spec/fspec-config.json overrides via deep merge) — same pattern as tui.defaultThinkingLevel. Missing/malformed key -> default preset. Loaded at bootstrap; auto-saved on /mux save and on mux exit. NO dedicated spec/mux.json file.",
+          "deleted": false,
+          "createdAt": "2026-08-26T03:34:55.969Z"
+        },
+        {
+          "id": 8,
+          "text": "R3 (corrected): Shift+Left/Right cycle pane focus while mux is active (agent session cycling is deferred: crossterm cannot distinguish Ctrl+arrow from Shift+arrow)",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:53:41.751Z"
+        },
+        {
+          "id": 9,
+          "text": "R4 (corrected): the divider is drag-resizable (mouse) ONLY — no keyboard divider bindings (Tab pane/divider cycling and keyboard resize removed 2026-08-26; Tab is reserved for the agent view's turn-select mode, Esc is never a mux exit)",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:57:33.775Z"
+        },
+        {
+          "id": 10,
+          "text": "R5 (corrected): no board pane may be narrower than 64 columns (board minimum, per views/board/grid.rs); splits are clamped, never allowed to produce a sub-minimum pane",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:57:44.275Z"
+        },
+        {
+          "id": 11,
+          "text": "Default preset (corrected): horizontal orientation, Board | Agent, 50/50 split. Fresh entry focuses the Board pane (the view the user came from); the agent pane is the persisted home focus restored on reload.",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:57:54.383Z"
+        },
+        {
+          "id": 12,
+          "text": "Keybindings (corrected 2026-08-26): the ONLY mux keybindings are Shift+Left/Right (pane focus cycling). The 'm' toggle, Tab pane/divider cycling, and keyboard divider resize were all removed — everything else is /mux-driven. Mouse divider drag is retained.",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:58:07.753Z"
+        }
+      ],
+      "nextRuleId": 20,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With Board | Agent mux active and the Board pane focused, typing 'j' moves the board selection down; the agent scrollback and input are untouched. Clicking inside the agent pane moves focus there and the same click is delivered to the agent pane.",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:55:47.679Z"
+        },
+        {
+          "id": 1,
+          "text": "User types /mux 3 in the agent input; the screen becomes Board | Agent | ChangedFiles with the agent pane focused; typing 'hello' lands in the agent pane only. /mux 4 adds a fourth Checkpoints pane; /mux 2 collapses back to Board | Agent.",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:56:25.835Z"
+        },
+        {
+          "id": 2,
+          "text": "User types /mux board agent 40; the grid shows Board on the left at 40% and Agent on the right at 60%. /mux v flips the same panes into a top/bottom stack; /mux h flips back to side-by-side.",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:56:39.101Z"
+        },
+        {
+          "id": 3,
+          "text": "User types /mux in the agent input; the screen becomes a 2-pane horizontal grid Board | Agent with the Board pane focused on fresh entry. Typing /mux off returns to the single Agent view that was active before mux was entered.",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:56:18.185Z"
+        },
+        {
+          "id": 4,
+          "text": "With 3 panes Board | Agent | Files and focus on the Files pane, Shift+Left moves focus to the Agent pane; Shift+Left again to Board; Shift+Left again wraps to Files. Agent session cycling is deferred (crossterm cannot distinguish Ctrl+arrow from Shift+arrow).",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:56:29.641Z"
+        },
+        {
+          "id": 5,
+          "text": "Dragging the divider between Board and Agent with the mouse live-resizes the split; releasing at a position that would make the Board pane 40 cols clamps it to the 64-col board minimum. The divider is mouse-drag-resizable only — there are no keyboard divider bindings.",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:56:39.834Z"
+        },
+        {
+          "id": 6,
+          "text": "User types /mux save; the current grid config is written to the shared fspec-config.json under tui.mux. Restarting the TUI loads that key and /mux on restores the saved grid. With no saved tui.mux key present, /mux on applies the default preset (horizontal, Board | Agent, 50/50).",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:56:50.581Z"
+        },
+        {
+          "id": 7,
+          "text": "User types /mux board zzz; a one-line error '/mux: unknown pane kind: zzz' appears in the agent scrollback and the grid keeps its previous configuration unchanged.",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:57:02.706Z"
+        }
+      ],
+      "nextExampleId": 14,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: What should the default mux preset be?",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:57:29.643Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Default preset: horizontal orientation, Board | Agent, 50/50 split, agent pane focused."
+        },
+        {
+          "id": 1,
+          "text": "@human: Is 'm' acceptable as the mux toggle key (vs a different key)?",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:57:56.264Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, 'm' (no modifiers) toggles mux on/off. BoardView does not bind 'm' today, so there is no conflict."
+        },
+        {
+          "id": 2,
+          "text": "@human: Where should the mux config persist to?",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:58:16.775Z",
+          "selected": true,
+          "answered": true,
+          "answer": "spec/mux.json (project spec dir, next to the other spec state). Missing file -> default preset. Loaded at bootstrap; auto-saved on /mux save and on mux exit."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should the divider be focusable via Tab in MVP?",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:58:39.606Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes — Tab cycles through panes AND the divider; when the divider has focus, arrow keys resize the split (Left/Right for horizontal, Up/Down for vertical), Home/End jump to min/max, Esc unfocuses the divider."
+        }
+      ],
+      "nextQuestionId": 4,
+      "assumptions": [
+        "Mux MVP hosts at most ONE live agent pane (AgentView is a single instance); extra agent panes are out of scope. Pane kinds: board, agent, files (ChangedFiles), checkpoints."
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New views/multiplex/ module (mod/layout/render/keys/mouse/presets/tests) + store/mux_state.rs (MuxState + serde, spec/mux.json) + app/mux_parser.rs (/mux grammar) + app/dispatch_mux.rs. ViewMode::Mux in Navigator; MultiplexLayout owns MuxConfig + cached pane rects. App::dispatch is the single mutation surface; keyboard isolation = unfocused panes receive NO events.",
+          "deleted": false,
+          "createdAt": "2026-08-25T11:59:13.574Z"
+        },
+        {
+          "id": 1,
+          "text": "Deviations from design doc: (1) board pane minimum is 64 cols, not 52 — verified against views/board/grid.rs (7×8+6+2=64) and the render bail in views/board/render.rs; non-board panes floor at 20 cols (H) / 10 rows (V). (2) views/multiplex/tests.rs is NOT a separate module — unit tests live in #[cfg(test)] modules per sibling file (codebase convention). (3) /mux 50 50 (split percents for current pane count) subcommand is dropped from the grammar: ambiguous with pane-count and pane-list tokens; /mux <kind> <kind> <pct> covers the need. (4) Ctrl+Left/Right session cycling in the agent pane is deferred: crossterm cannot distinguish Ctrl+arrow from Shift+arrow (both map to KeyModifiers::CONTROL) — documented in help; Shift+Left/Right keep pane-focus meaning in mux mode.",
+          "deleted": false,
+          "createdAt": "2026-08-25T14:14:40.928Z"
+        },
+        {
+          "id": 2,
+          "text": "PERSISTENCE CORRECTION (user directive 2026-08-26): mux config lives in the shared CONFIG-008 fspec-config.json under tui.mux (user scope ~/.fspec/fspec-config.json; project spec/fspec-config.json overrides via deep merge) — mirrors tui.defaultThinkingLevel (rust/sessions/src/default_thinking_level_persistence.rs). NO dedicated spec/mux.json. Load: load_config_with_dirs -> tui.mux -> MuxConfig (missing/malformed -> default preset). Save: read-modify-write USER scope preserving sibling keys, via write_config_with_dirs. Persistence core lives in rust/sessions/src/mux_config_persistence.rs with path-injectable *_with_dirs cores (data_dir, cwd) + global convenience wrappers, matching the TUI-092 pattern. App::set_mux_persist_dir(data_dir, cwd) is the test seam.",
+          "deleted": false,
+          "createdAt": "2026-08-26T03:36:42.726Z"
+        },
+        {
+          "id": 3,
+          "text": "KEYBINDING REMOVAL (user directive 2026-08-26): the only mux keybindings are Shift+Left/Right (pane focus cycling). Removed: (1) 'm' toggle (app/events.rs stage-4 arm + Action::MuxToggle), (2) Tab pane/divider cycling (KeyDecision::TabNext, MultiplexLayout::tab_next), (3) keyboard divider resize (DividerKey, adjust_split/split_to_min/split_to_max, MuxFocus::Divider). MuxFocus is now a plain pane index; the divider is mouse-drag-resizable only. Mux exits are /mux off or /mux (toggle). Dead Action variants (MuxOn, MuxOff, MuxConfigApplied, MuxFocusPrev, MuxFocusNext, MuxSplitAdjust, MuxExit) and config_for_panes were deleted. Tab is reserved for the agent view's turn-select mode; Esc is never a mux exit.",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:58:37.875Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/MUX-001/ast-research-mux-mode.md",
+        "spec/attachments/MUX-001/review-findings.md"
+      ]
+    },
+    "MUX-002": {
+      "id": "MUX-002",
+      "title": "Multiple agent panes with grouped agent-view cycling",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-26T08:10:50.019Z",
+      "updatedAt": "2026-08-27T05:03:31.464Z",
+      "description": "In mux mode, each agent session gets its own agent view pane. All agent panes are grouped together in the agent-view section of the grid; non-agent panes (Board, Files, Checkpoints) stay pinned in place. Shift+Right/Left rotates which agent views are visible in the agent section (e.g. [BOARD][AGENT 1][AGENT 2] -> [BOARD][AGENT 2][AGENT 3]), cycling through all active agent sessions. Requires: per-pane session identity in MuxConfig, one AgentView (or per-pane session context) per agent pane, agent-group rotation in keys/layout, and new scenarios/tests. MUX-001's single-agent-pane assumption is superseded by this story.",
+      "epic": "mux",
+      "userStory": {
+        "role": "developer supervising multiple agents",
+        "action": "cycle agent panes in a fixed mux slot layout",
+        "benefit": "monitor all active agent sessions without reconfiguring the grid"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-26T08:11:42.924Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-26T22:42:29.978Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-26T22:55:34.337Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-26T23:00:34.020Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-27T00:39:48.407Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-27T05:02:59.004Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-27T05:03:31.464Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "All agent panes are grouped together in the agent-view section of the grid; non-agent panes (board, files, checkpoints) stay pinned in place when agent views rotate",
+          "deleted": false,
+          "createdAt": "2026-08-26T08:12:01.925Z"
+        },
+        {
+          "id": 1,
+          "text": "The /mux pane list defines fixed SLOTS. Non-agent slots (board, files, checkpoints) are pinned in place; agent slots form a window over the ordered list of open agent sessions.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:23:13.368Z"
+        },
+        {
+          "id": 2,
+          "text": "An agent slot renders the session at (window_start + slot_index) in the ordered open-session list; when fewer sessions are open than agent slots, only the filled slots render (no blank panes) and the remaining space goes to the other panes.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:26:42.757Z"
+        },
+        {
+          "id": 3,
+          "text": "Shift+Left/Shift+Right move pane focus one pane at a time; Shift+Left at the first (leftmost/topmost) pane STOPS (no wrap-around).",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:27:29.918Z"
+        },
+        {
+          "id": 4,
+          "text": "Shift+Right at the rightmost pane ALWAYS prompts to create a new agent (same CreateSessionDialog as non-mux mode), regardless of the rightmost pane's kind. The new session is created WITHOUT work-unit attachment; it fills the last agent slot via a forward window rotation and focus moves to the new agent pane.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:27:49.854Z"
+        },
+        {
+          "id": 5,
+          "text": "Closing an agent session shrinks the open-session list; the agent slots stay in the grid and the window re-clamps to the remaining sessions (no pane is removed from the layout).",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:32:37.061Z"
+        },
+        {
+          "id": 6,
+          "text": "Shift+Right on the rightmost AGENT pane rotates the agent window forward ONLY when the window can advance (window_start + agent_slots < session count); otherwise it prompts to create a new agent. Shift+Left on the rightmost agent pane rotates backward when window_start > 0; otherwise it falls through to normal focus movement (to the previous pane). Rotation keeps focus on the rightmost agent pane.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:57:04.350Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs /mux board agent agent with 1 open session. The grid shows [Board][Agent 1] (the second agent slot is not rendered). Pressing Shift+Right twice moves focus to the rightmost pane; pressing Shift+Right again opens the new-agent modal. Confirming creates session 2 and the grid becomes [Board][Agent 1][Agent 2] with focus on the Agent 2 pane.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:32:54.606Z"
+        },
+        {
+          "id": 1,
+          "text": "With /mux board agent agent and 3 open sessions, the grid shows [Board][Agent 1][Agent 2]. Focus on the Agent 2 pane, Shift+Right rotates the window forward: [Board][Agent 2][Agent 3]. Shift+Left on the rightmost pane rotates backward: [Board][Agent 1][Agent 2]. The Board pane never moves or changes.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:33:03.877Z"
+        },
+        {
+          "id": 2,
+          "text": "With /mux board agent and the Board pane focused, pressing Shift+Left does nothing (focus stays on Board — no wrap-around to the rightmost pane).",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:33:13.908Z"
+        },
+        {
+          "id": 3,
+          "text": "With /mux board agent agent, 2 open sessions, and focus on the rightmost agent pane (window already at the start [A1][A2]), pressing Shift+Left does NOT rotate — it moves focus left to the Agent 1 pane; pressing Shift+Left again moves focus to the Board pane.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:33:26.162Z"
+        },
+        {
+          "id": 4,
+          "text": "With /mux board agent agent files, 3 open sessions, and the agent window at [A2][A3], pressing Shift+Right on the rightmost agent pane does NOT rotate (the window is already at the end) — it opens the new-agent modal. Confirming creates session 4; the agent window becomes [A3][A4] and the A4 pane is focused. The Files pane stays pinned on the right.",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:57:18.959Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation shape: MultiplexLayout gains a `window_start: usize` (agent window offset, clamped to max(0, sessions - agent_slots) on each render/session change). Agent slot i renders the session at index window_start + i; unfilled agent slots are filtered out of the rect list and the remaining panes absorb the space. Shift+Right at the rightmost pane (any kind) opens the CreateSessionDialog via the existing App::handle_open_create_session_dialog path with NO work-unit attachment; on session creation the window advances so the new (last) session lands in the last agent slot and focus moves there. Shift+Right on the rightmost AGENT pane rotates the window forward only when window_start + agent_slots < sessions; otherwise it prompts. Shift+Left on the rightmost agent pane rotates backward when window_start > 0; otherwise it falls through to normal focus movement. Left-edge Shift+Left stops (no wrap).",
+          "deleted": false,
+          "createdAt": "2026-08-26T22:59:06.439Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/MUX-002/ast-research-mux002-agent-window.md"
+      ]
+    },
+    "MUX-003": {
+      "id": "MUX-003",
+      "title": "Equal-division pane splits (no minimums) with live resize",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-26T11:32:48.913Z",
+      "updatedAt": "2026-08-26T21:31:17.442Z",
+      "description": "Mux pane widths should be an EQUAL division of the terminal by the number of panes, not a fixed 50% cascade. /mux board agent agent (3 panes) must give each pane ~1/3 width; /mux 4 gives ~1/4 each. Remove the per-pane minimum-width clamps (board 64 / non-board 20 / vertical 10) from the default layout math — the only place a non-equal split is produced is the mouse divider drag. The layout must recompute live when the terminal resizes. Supersedes MUX-001's R5 minimum-clamp behavior.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-26T11:33:48.211Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-26T11:49:33.249Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-26T12:08:09.187Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-26T13:15:35.298Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-26T21:31:17.442Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising multiple agents",
+        "action": "see every mux pane at an equal share of the terminal width",
+        "benefit": "no pane collapses to a sliver when I list more than two panes"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: When no explicit split percent is given, panes divide the terminal area EQUALLY by pane count (n panes → each ~available/n), not a fixed 50% cascade where the last pane takes the remainder.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:34:15.815Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: The per-pane minimum-size clamps (board 64 cols, non-board 20 cols, vertical 10 rows) are removed from the default layout math. A non-equal split is produced ONLY by the mouse divider drag (which keeps its 10..=90 percent clamp).",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:34:31.872Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: The layout recomputes from the live terminal area on every render, so a terminal resize re-divides the panes equally (or re-applies the stored drag percent) without any stale cached rect.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:34:58.485Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: An explicit trailing split percent (/mux board agent 40) is still honored for the first split; when no percent is given the equal-division default applies. The percent is not clamped to any pane minimum.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:35:17.493Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /mux board agent agent on a 120-column terminal; the three panes each get ~1/3 of the width (40/39/39 with the 1-col dividers) instead of the third pane collapsing to 1 column.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:35:29.355Z"
+        },
+        {
+          "id": 1,
+          "text": "User resizes the terminal from 120 to 180 columns while a 3-pane mux is active; the next frame re-divides the three panes equally across the new width with no stale cached layout.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:39:01.077Z"
+        },
+        {
+          "id": 2,
+          "text": "User types /mux board agent 40 on a 120-column terminal; the Board pane is 40% (47 cols) and the Agent pane takes the remainder (71 cols) — the percent is honored even though the Board pane is now narrower than the old 64-col minimum; the board view degrades gracefully (blank pane) if it cannot fit its columns.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:39:16.520Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Equal-division default in layout.rs::split_sizes: when a pane has no split entry (unwrap_or(50) becomes available/n via an equal-division fallback) each pane gets available/n and the last pane absorbs the remainder. Remove the min_size clamps from the default path; the mouse divider drag (first_override) keeps its [1, available-(n-1)] clamp and the 10..=90 percent clamp in set_split_from_position. Render already recomputes from the live frame area every draw (render.rs:50-57), so resizes re-divide automatically; recompute_rects (rects.rs) is the event-time path.",
+          "deleted": false,
+          "createdAt": "2026-08-26T11:46:47.244Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/MUX-003/ast-research-equal-division.md"
+      ]
+    },
+    "BUG-163": {
+      "id": "BUG-163",
+      "title": "Mux mode: second agent pane duplicates the focused session instead of showing a different agent",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-27T05:40:51.374Z",
+      "updatedAt": "2026-08-27T08:57:21.883Z",
+      "description": "With `/mux board agent agent` and one open session, the second agent pane renders the SAME session as the first agent pane (identical header, scrollback, and input) instead of a separate agent. The agent window math in MultiplexLayout (window_start / window_session_ids / focused_session_id / sync_window) and the per-slot session selection are not applied at render time; AgentView::render_with_store always draws store.current_session(). The MUX-002 window tests only assert on window_session_ids() and never render a multi-agent grid, so the gap went unnoticed.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-27T05:40:56.103Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-27T08:57:00.148Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-27T08:57:04.370Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-27T08:57:07.111Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-27T08:57:21.883Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each rendered agent pane MUST paint the session at window_start + slot_index (the MUX-002 agent window) — header, scrollback and input alike. No two agent panes may render the same session, and no agent pane may render a session that is outside the agent window.",
+          "deleted": false,
+          "createdAt": "2026-08-27T05:46:22.459Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "userStory": {
+        "role": "a developer supervising multiple agents in mux mode",
+        "action": "have every agent pane render its own agent session from the agent window (unique scrollback + input per pane)",
+        "benefit": "I can see and type into each open agent session without panes duplicating the focused session"
+      },
+      "estimate": 5
+    },
+    "BUG-164": {
+      "id": "BUG-164",
+      "title": "closing a session in mux mode turns the mux off instead of retaining the grid",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-27T09:51:06.047Z",
+      "updatedAt": "2026-08-27T10:00:12.894Z",
+      "description": "With mux mode active (e.g. /mux board agent agent), answering the exit-confirmation dialog with Close Session (or Detach) flips the whole view to the single Board view — the mux grid disappears. Both choices route through Action::BackToBoard, which unconditionally set active_view = ViewMode::Board in both the App dispatch arm and Navigator::apply_action. The mux config stays enabled=true but the render path no longer draws the grid. Expected: BackToBoard is a 'focus the board pane' semantic — when the mux grid is active it must focus the Board pane WITHIN the grid (retaining the layout, pane list and window) instead of flipping the whole view out of Mux. Mirror of MUX-001 R8 (Enter on a board work unit focuses the agent pane without flipping the view).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-27T09:53:14.330Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-27T09:55:11.733Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-27T09:56:37.019Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-27T09:56:40.488Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-27T10:00:12.894Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user working in mux mode",
+        "action": "close or detach a session from the exit dialog",
+        "benefit": "the mux grid stays up with the board pane focused instead of being turned off"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "BackToBoard is a 'focus the board pane' semantic: when the mux grid is enabled it focuses the Board pane within the grid (layout, pane list and agent window retained) instead of flipping active_view out of Mux; when mux is inactive it flips to the single Board view exactly as before.",
+          "deleted": false,
+          "createdAt": "2026-08-27T09:54:20.310Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "/mux board agent agent with two sessions open; user focuses the agent pane, presses ESC, chooses Close Session → the grid stays up (ViewMode::Mux, panes [Board, Agent, Agent] reduced to the live window) with the Board pane focused; the destroyed session disappears from the window.",
+          "deleted": false,
+          "createdAt": "2026-08-27T09:54:25.095Z"
+        },
+        {
+          "id": 1,
+          "text": "With a three-pane grid (Board | Agent | Agent) and two sessions, the user focuses the first agent pane, presses ESC and picks Close Session — the grid stays on screen with the Board pane focused; the closed session is gone from the panes and the remaining session still shows in its pane. Picking Detach instead keeps the session open and likewise lands on the focused Board pane inside the same grid.",
+          "deleted": false,
+          "createdAt": "2026-08-27T09:54:28.891Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 3
+    },
+    "BUG-165": {
+      "id": "BUG-165",
+      "title": "Esc in mux mode with no open agent panes does not show the exit confirmation dialog",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-27T10:20:02.108Z",
+      "updatedAt": "2026-08-27T11:53:35.142Z",
+      "description": "In mux mode (e.g. /mux board agent) when no agent sessions are open, the agent pane is dropped from the effective panes (MUX-002 rule 3) and focus sits on the Board pane. Pressing Esc does nothing: Navigator::handle_mux_event forwards it to the Board pane, BoardView::handle_event returns Ignored, and the App-level fallback in handle_app_shortcut only opens the BoardExitConfirmationDialog when active_view == ViewMode::Board (not ViewMode::Mux). Expected: Esc while the Board pane is focused in mux mode opens the same 'Exit fspec?' confirmation dialog as the single Board view (R9 — dialogs overlay the mux).",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-27T10:20:06.316Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-27T10:24:34.303Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-27T11:51:47.141Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-27T11:51:49.857Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-27T11:53:35.142Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising agents in mux mode",
+        "action": "press Esc while the board pane is focused and no agents are open",
+        "benefit": "the 'Exit fspec?' confirmation dialog is shown instead of a dead key"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: In mux mode, Esc pressed while the Board pane is focused (regardless of whether agent panes are rendered) must push the BoardExitConfirmationDialog onto the compositor — identical to the single Board view (R9: dialogs overlay the mux).",
+          "deleted": false,
+          "createdAt": "2026-08-27T10:20:18.433Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With /mux board agent active and zero open sessions (the agent slot is dropped from the effective panes; only the Board pane remains, focused), pressing Esc pushes BoardExitConfirmationDialog onto the compositor. Enter on the pre-selected 'Exit' option quits (should_quit=true).",
+          "deleted": false,
+          "createdAt": "2026-08-27T10:20:20.858Z"
+        },
+        {
+          "id": 1,
+          "text": "Regression guard: with /mux board agent active and one open session, pressing Esc on the focused agent pane still opens the agent exit-confirmation dialog (Detach / Close Session / Cancel) — unchanged. The Board pane Esc behavior is only what changes.",
+          "deleted": false,
+          "createdAt": "2026-08-27T10:20:24.134Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 2
+    },
+    "BUG-166": {
+      "id": "BUG-166",
+      "title": "Mux divider: only one divider drawn and dragged release snaps back to equal split; all dividers should be independently draggable with a percentage-scale model",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-27T20:18:29.910Z",
+      "updatedAt": "2026-08-28T03:33:28.310Z",
+      "description": "Two defects reported after the recent MUX work (MUX-001/002/003, BUG-163/164/165):\n\n1. Divider reset: dragging the mux divider and releasing snaps the panes back to an equal-division split instead of keeping the released divider position. Root cause candidate: `set_split_from_position` early-returns when `config.splits` is empty (equal-division mode), so the stored percent never gets written during the drag; on release `finish_drag` recomputes from the (still empty) splits and the split returns to equal.\n\n2. Single divider: only the divider after the FIRST pane is painted/hit-tested (layout.rs `divider_rect_for`, types.rs `divider_rect: Option<Rect>`, render.rs `paint_divider`, mouse.rs hit-test, navigator.rs `mux_drag_axis`/drag width math all assume a single first-pane divider). Every gap between panes must have a draggable divider.\n\n3. Percentage-scale model: splits must be a percentage scale (one percent per inter-pane gap, i.e. n-1 entries) so that adding new panes (e.g. /mux board agent agent) dynamically scales the existing percentages to the new pane count rather than dropping them to equal division. Default is equal portions (e.g. 50/50 for 2 panes), but each divider is independently movable.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-27T20:36:24.930Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-27T22:43:04.795Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-28T02:57:50.694Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-28T02:58:00.011Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-28T03:33:28.310Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R17: Every inter-pane gap has its own 1-col/row divider, painted and independently mouse-draggable; the dragged divider is highlighted (cyan) while in flight",
+          "deleted": false,
+          "createdAt": "2026-08-27T22:41:01.292Z"
+        },
+        {
+          "id": 1,
+          "text": "R18: Releasing a divider stores the released percent in config.splits — the grid must NOT snap back to an equal split (root cause: set_split_from_position early-returned when splits was empty, i.e. the equal-division state)",
+          "deleted": false,
+          "createdAt": "2026-08-27T22:41:34.830Z"
+        },
+        {
+          "id": 2,
+          "text": "R19: splits is a percentage scale (n-1 entries; splits[i] = pane i's share of the available axis in percent; the last pane absorbs the integer remainder so the scale sums to 100). Changing the pane count RESCALES the existing scale proportionally (largest-remainder rounding) — adding a pane gives it an equal 100/n share and shrinks the others; removing one re-allocates its share to the survivors proportionally. Nothing resets to a bare equal split and no user position is thrown away.",
+          "deleted": false,
+          "createdAt": "2026-08-27T22:41:46.857Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "userStory": {
+        "role": "developer supervising multiple agents in mux mode",
+        "action": "drag any of the inter-pane dividers and change the pane count",
+        "benefit": "the grid keeps the shape I set — dividers stay where I release them, and adding/removing panes rescales my existing split scale instead of resetting it"
+      },
+      "examples": [
+        {
+          "id": 0,
+          "text": "User drags the Board|Agent divider right on a 120-col terminal and releases; Board stays at its released ~33% (40 cols) instead of snapping back to 59/60 equal",
+          "deleted": false,
+          "createdAt": "2026-08-27T22:42:09.111Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Layout math (views/multiplex/layout.rs + new splits.rs): new API scale_scales(old: &[u16], new_count: usize) -> Vec<u16> (largest-remainder proportional rescale, all entries >= 1 unless count==1) and calculate_pane_rects(area, orientation, panes, scale: &[u16]) where scale has n-1 entries (splits[i] = pane i percent of available axis; last pane = remainder). MultiplexLayout state: divider_rect: Option<Rect> -> divider_rects: Vec<Rect> (n-1 rects), drag_width: Option<u16> -> drag_index: Option<usize> + drag_width: Option<u16>; recompute_rects/render derive ALL divider rects from the pane rects; mouse.rs hit-tests every divider rect (first match wins); navigator.rs routes drag to the hit divider index (set_split_index_from_position(idx, pos, total)); set_pane_count/set_pane_list rescale the existing scale via scale_scales instead of resetting to Vec::new()/vec![p]; MuxConfig default preset = splits vec![50] for 2 panes; /mux <kinds> [pct] keeps pct as splits[0] and fills the rest with an equal split of the remainder (100-pct)/(n-1) so the scale always has n-1 entries; loaded persisted configs normalize: len < n-1 -> rescale (empty -> equal). The 10..=90 clamp on the stored drag percent stays (parser + drag alike) but is now per-split-index; the last pane's remainder is never a stored percent.",
+          "deleted": false,
+          "createdAt": "2026-08-27T22:42:48.140Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8
+    },
+    "MUX-004": {
+      "id": "MUX-004",
+      "title": "Mux configuration dialog + /mux slash-popup entry",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-28T09:03:26.695Z",
+      "updatedAt": "2026-08-30T03:01:12.303Z",
+      "description": "Bare /mux opens a MuxConfigDialog (base dialog architecture: Component @ Foreground + dialog_theme) that shows and edits the mux layout — enabled on/off, orientation, pane list (add/remove/cycle kinds) — applied live to the grid, with save-to-config and Esc-close. The /mux slash command gains a registry entry so the slash popup lists it with a description, and picking it opens the dialog. Layout-only scope: split percentages stay divider-drag-driven (user decision 2026-08-28).",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-28T09:08:53.539Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-29T12:15:52.517Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-29T23:54:35.492Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-30T02:22:36.069Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-30T03:01:12.303Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising multiple agents",
+        "action": "open a mux configuration dialog from the /mux command",
+        "benefit": "I can configure which views appear in the mux grid, and enable or disable the mode, visually"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: bare /mux (no args) OPENS the MuxConfigDialog instead of toggling (MUX-001 R1 superseded). /mux on and /mux off remain explicit slash commands that toggle without opening the dialog.",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:17:24.709Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: the MuxConfigDialog is a Priority::Foreground Component rendered via the base dialog architecture (components/dialog_theme::render_dialog + FspecDialog rows), the same pattern as ThinkingLevelDialog/RoleDialog. It seeds from the live mux config and is idempotent on reopen (one instance, addressed by a stable id).",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:17:36.559Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: the dialog body shows exactly these rows in order: (1) 'Enabled' with On/Off, (2) 'Orientation' with Horizontal/Vertical, (3) one row per configured pane in grid order showing the pane kind (Board/Agent/Files/Checkpoints).",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:25:36.074Z"
+        },
+        {
+          "id": 3,
+          "text": "R5: Dialog edits work on a DRAFT copy of the live MuxConfig. Enter applies the draft to the live layout (Action::MuxConfigApplied) and closes; S applies + persists to fspec-config.json tui.mux (Action::MuxConfigAppliedAndSaved) and closes; Esc closes without applying or saving. While the dialog is open, the live grid is untouched (cancel-safe). The applied draft always keeps 2..=4 panes and the scale is re-derived for the new pane count (BUG-166 percentage-scale semantics; split percents are NOT editable in the dialog — layout-only scope, user decision 2026-08-28).",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:41:06.854Z"
+        },
+        {
+          "id": 4,
+          "text": "R4: Dialog editing keys: Up/Down move the field cursor across the rows (Enabled, Orientation, then each pane row, wrapping); Left/Right cycle the highlighted row's value (Enabled: On<->Off, Orientation: Horizontal<->Vertical, pane row: cycles kind Board->Agent->Files->Checkpoints->Board); 'a' appends a new pane row (kind Board, max 4 panes); Backspace removes the highlighted pane row (min 2 panes); Enter commits + closes; 's' commits + persists to fspec-config.json tui.mux + closes; Esc closes without committing. Mouse wheel scrolls the cursor like Up/Down. No other keys are consumed.",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:50:14.563Z"
+        },
+        {
+          "id": 5,
+          "text": "R6: /mux is added to the SLASH_COMMANDS palette registry (SlashCommandAction::Mux with a description) so the slash popup lists and filters it like every other command; picking it (Enter) emits Action::SlashCommandSelected(Mux) which opens the MuxConfigDialog. The agent help dialog's slash-command list picks the row up automatically from the registry (no manual help edit). The /mux help notice documents that bare /mux opens the config dialog.",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:59:21.608Z"
+        },
+        {
+          "id": 6,
+          "text": "R7: Opening the dialog with mux OFF is allowed (it shows Enabled: Off + the last/saved layout). Committing with Enabled: On enters mux mode with the draft layout (pre-mux view = current active view); committing with Enabled: Off while mux is on exits mux mode back to the pre-mux view. Committing while the enabled state is unchanged only refreshes the layout.",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:59:41.731Z"
+        },
+        {
+          "id": 7,
+          "text": "Dialog replaces toggle (user decision 2026-08-28): bare /mux ALWAYS opens the MuxConfigDialog; the on/off toggle lives inside the dialog's Enabled row; /mux on and /mux off remain explicit commands. MUX-001 R1 + its tests get updated to match.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:03:30.981Z"
+        },
+        {
+          "id": 8,
+          "text": "Layout only (user decision 2026-08-28): the dialog manages panes/order/orientation/enabled; split percentages stay divider-drag-driven. Applying a layout change re-derives the scale for the new pane count (BUG-166 semantics), existing percents are not hand-edited in the dialog.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:03:50.596Z"
+        }
+      ],
+      "nextRuleId": 12,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /mux in the agent input while in the single Board view. The MuxConfigDialog opens (Foreground, overlaying the board) with rows 'Enabled: Off', 'Orientation: Horizontal', 'Pane 1: Board', 'Pane 2: Agent' and footer '↑↓ Field · ←→ Value · A Add · ⌫ Remove · S Save · Enter Apply · Esc Cancel'. The board view is still visible underneath; the mux is not yet active.",
+          "deleted": false,
+          "createdAt": "2026-08-28T09:59:55.463Z"
+        },
+        {
+          "id": 1,
+          "text": "With the dialog open on the default 2 panes, the user presses 'a' (a third pane row appears, kind Board), moves down to that row and presses Right until it reads Files, then presses Enter to apply. The screen becomes a 3-pane horizontal grid Board | Agent | Files, the dialog closes, and the Board pane is focused. Split percentages are unchanged by the dialog.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:00:45.096Z"
+        },
+        {
+          "id": 2,
+          "text": "Typing /mux on (explicit) still enters mux mode immediately without opening the dialog; typing /mux off exits back to the pre-mux view without the dialog. Only bare /mux opens the dialog. (Supersedes the MUX-001 'bare /mux toggles' example: the toggle moved into the dialog's Enabled row.)",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:01:03.942Z"
+        },
+        {
+          "id": 3,
+          "text": "With the dialog open: Up from the Enabled row wraps to the LAST pane row; Down from the last pane row wraps back to Enabled. On the Orientation row, Right toggles Horizontal<->Vertical. On the 'Pane 2: Agent' row, Right shows 'Pane 2: Files', then 'Pane 2: Checkpoints', then 'Pane 2: Board'.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:02:27.355Z"
+        },
+        {
+          "id": 4,
+          "text": "While the MuxConfigDialog is open, submitting /mux again (or picking it from the slash popup) is a no-op — exactly one dialog instance exists. After pressing Esc, submitting /mux again opens a fresh dialog seeded from the CURRENT (possibly committed) config.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:02:27.811Z"
+        },
+        {
+          "id": 5,
+          "text": "In the agent input the user types '/' and sees the slash popup. Typing 'mux' filters the list to a single row: '/mux  Configure the mux layout' (or similar). Pressing Enter on that row opens the MuxConfigDialog and clears the input — exactly like picking /model or /role opens their views. The agent help dialog (? ) now also lists '/mux' with the same description.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:02:41.695Z"
+        },
+        {
+          "id": 6,
+          "text": "With the dialog open on a 2-pane grid, pressing Backspace on the 'Pane 2: Agent' row does nothing (the minimum of 2 panes is enforced — no row is removed). With 4 panes configured, pressing 'a' does nothing (the maximum of 4 is enforced).",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:02:55.216Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should bare /mux open the config dialog (replacing the old toggle), or should a separate subcommand like /mux config open it while bare /mux keeps toggling?",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:03:07.431Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Dialog replaces toggle (user decision 2026-08-28): bare /mux ALWAYS opens the MuxConfigDialog; the on/off toggle lives inside the dialog's Enabled row; /mux on and /mux off remain explicit commands. MUX-001 R1 + its tests get updated to match."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should the dialog also edit the pane split percentages, or stay layout-only (panes, order, orientation, enabled) with splits kept to the mouse divider drag?",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:03:40.226Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Layout only (user decision 2026-08-28): the dialog manages panes/order/orientation/enabled; split percentages stay divider-drag-driven. Applying a layout change re-derives the scale for the new pane count (BUG-166 semantics), existing percents are not hand-edited in the dialog."
+        }
+      ],
+      "nextQuestionId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New MuxConfigDialog Component (Priority::Foreground, stable id 'mux-config-dialog', components/mux_config_dialog.rs <300 LoC + a rows sibling file) built on the base dialog architecture: dialog_theme::FspecDialog/render_dialog rows (Enabled, Orientation, one row per pane). State: draft MuxConfig + field cursor (usize over the 2 + n_panes rows). Emitted actions: Action::MuxConfigApplied(draft MuxConfig) on Enter, Action::MuxConfigAppliedAndSaved on 's' (App::dispatch persists via the existing save_mux_config path), Compositor-removal callback on every commit/close. App wiring: handle_open_mux_config_dialog() in a new app/dispatch_mux_config.rs (idempotent via compositor.contains, seeds from navigator.mux.config()). mux_parser: MuxSubcommand::Toggle renamed to Config (bare /mux). Slash registry: SlashCommandAction::Mux + SLASH_COMMANDS row 'mux' / 'Configure the mux layout'; handle_slash_command(Mux) opens the dialog. App::dispatch arms for the two new Actions live in dispatch_mux.rs. MUX-001 R1 scenarios/tests in rust-mux-mode.feature + tests/mux001.rs + tests/bug166_* get updated to the dialog behavior.",
+          "deleted": false,
+          "createdAt": "2026-08-28T10:04:46.238Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/MUX-004/ast-research-mux-config-dialog.md"
+      ]
+    },
+    "PROV-143": {
+      "id": "PROV-143",
+      "title": "Profile Preserve Thinking toggle",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-28T11:01:11.229Z",
+      "updatedAt": "2026-08-29T10:11:37.578Z",
+      "description": "Add a Preserve Thinking toggle to the OpenAI profile form (default disabled); when disabled, strip AssistantContent::Reasoning blocks from the history clone sent to the LLM while keeping them in persisted session history.",
+      "epic": "provider-settings",
+      "children": [],
+      "userStory": {
+        "role": "provider profile user",
+        "action": "configure the Preserve Thinking toggle on an OpenAI profile",
+        "benefit": "stop the agent from sending thinking/reasoning tokens back to the LLM in conversation history"
+      },
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-28T13:05:16.704Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-28T13:08:34.696Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-28T22:00:59.740Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-28T22:01:21.656Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-29T09:15:32.612Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-29T09:17:22.519Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-29T09:25:31.945Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-29T10:11:25.554Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The Preserve Thinking toggle is a boolean field rendered as Enabled/Disabled, placed as the 8th (last) form field after Auto-Continue",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:05:43.912Z"
+        },
+        {
+          "id": 1,
+          "text": "New profiles default Preserve Thinking to OFF; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone while persisted session history keeps them",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:05:47.587Z"
+        },
+        {
+          "id": 2,
+          "text": "The value persists on-disk as \"preserveThinking\": true|false and round-trips through ProfileDefinition.preserve_thinking; an absent key means stripped (off)",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:05:55.725Z"
+        },
+        {
+          "id": 3,
+          "text": "Sessions seeded from a profile carry the flag into the runtime session; RigAgent::with_preserve_thinking wires it so the outgoing-history clone strips thinking blocks when disabled",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:06:01.193Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User saves an OpenAI profile with Preserve Thinking enabled → fspec-config.json gains \"preserveThinking\": true and a session on that profile seeds preserve_thinking_enabled=true",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:06:06.376Z"
+        },
+        {
+          "id": 1,
+          "text": "User opens a brand-new OpenAI profile form → the Preserve Thinking row shows Disabled and pressing Space flips it to Enabled",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:06:17.713Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Toggle is a boolean form field (like Streaming) in rust/fspec-tui/src/views/provider_settings/profile_form*.rs; persisted via ProfileDef.preserve_thinking (rust/sessions/src/profile_persistence.rs) as on-disk key preserveThinking; carried on the wire as ProfileDefinition.preserve_thinking: Option<bool> (rust/rpc-types) with canonical predicate preserve_thinking_enabled() (absent ⇒ stripped)",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:06:34.290Z"
+        },
+        {
+          "id": 1,
+          "text": "Session seeding: create_background_session_inner (rust/sessions/src/session_creation_helper.rs) sets Session.preserve_thinking_enabled from the profile for profile models; RigAgent::with_preserve_thinking + outgoing_history() (rust/core/src/rig_agent.rs) is the single outgoing-history choke point; the pure strip function strip_reasoning_from_history (rust/core/src/history_strip.rs) never mutates the live session history",
+          "deleted": false,
+          "createdAt": "2026-08-28T13:06:41.968Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/PROV-143/ast-research-preserve-thinking-wiring.md"
+      ],
+      "iterations": 1
+    },
+    "MUX-005": {
+      "id": "MUX-005",
+      "title": "Mux footer bar styling: white foreground on dark purple background",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-30T07:35:04.385Z",
+      "updatedAt": "2026-08-30T08:00:34.442Z",
+      "description": "The mux mode footer bar (rust/fspec-tui/src/views/multiplex/render.rs paint_footer) renders with default terminal colors. Paint the footer row with white foreground on a dark purple background across the full row width.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-30T07:35:07.383Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-30T07:50:57.221Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-30T07:56:34.138Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-30T07:59:13.776Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-30T08:00:34.442Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using mux mode",
+        "action": "see the mux status bar clearly distinguished at the bottom of the screen",
+        "benefit": "the footer bar stands out visually with white text on a dark purple background"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The dark purple background fills the FULL footer row width (area.x .. area.x+area.width), not just the cells behind the footer label text",
+          "deleted": false,
+          "createdAt": "2026-08-30T07:44:56.045Z"
+        },
+        {
+          "id": 1,
+          "text": "The mux footer row is painted with white foreground text (Color::White) on a dark purple background (Color::Rgb(74, 44, 112))",
+          "deleted": false,
+          "createdAt": "2026-08-30T07:44:56.191Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With mux active and two panes, the bottom row shows 'MUX 2 panes [Board|Agent]  ●pane 0  /mux config · Shift+←/→ focus · drag divider' in white text on a dark purple bar; the cells past the label up to the terminal edge are still dark purple (the whole row is one solid bar).",
+          "deleted": false,
+          "createdAt": "2026-08-30T07:45:06.214Z"
+        },
+        {
+          "id": 1,
+          "text": "When the mux is off (mux off / single-view modes), no footer bar is painted — the existing 'no mux footer' behavior and its tests stay green (single-view output unchanged).",
+          "deleted": false,
+          "createdAt": "2026-08-30T07:45:06.352Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Change is confined to paint_footer in rust/fspec-tui/src/views/multiplex/render.rs: add a named MUX_FOOTER_BG constant (Color::Rgb(74, 44, 112)) and apply Style::default().fg(Color::White).bg(MUX_FOOTER_BG) to every cell of the footer row (full area width), matching the existing FOOTER_BG/HEADER_BG constant pattern in views/agent/footer.rs|header.rs. No layout or state changes.",
+          "deleted": false,
+          "createdAt": "2026-08-30T07:49:41.976Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/MUX-005/ast-research-mux-footer-styling.md"
+      ]
+    },
+    "MUX-006": {
+      "id": "MUX-006",
+      "title": "Mux focus flash — 350ms right-to-left scan strip on the selected pane",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-30T09:32:43.724Z",
+      "updatedAt": "2026-08-30T23:47:11.678Z",
+      "description": "When a mux pane becomes the selected (focused) pane, paint a brief 350ms background scan across the focused pane rect using the mux footer dark purple (RGB 74, 44, 112). Single animation: a full-height 2-column purple strip sweeping from the pane's RIGHT edge to the LEFT (right-to-left scanner); no burst ring, no rain, no 2-row band. Triggers on every focus change while mux is enabled (Shift+Left/Right, click-to-focus, Enter on board work unit, BackToBoard, new-agent focus, pane-count changes, fresh mux entry); re-arming restarts the 350ms window at the right edge. The run-loop draw gate (tick_should_draw) gains a 5th operand (is_mux_flash_active) so the 16ms tick keeps redrawing during the 350ms window even when idle. Clock is a render-driven animation clock (advance +16ms per render frame in render_with_stores), same pattern as AgentView::animation_clock_ms. Mux off / single-view rendering must remain byte-for-byte unchanged (no purple cells).",
+      "epic": "mux",
+      "children": [],
+      "attachments": [
+        "spec/attachments/MUX-006/ast-research-focus-flash-animation.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-30T09:36:04.431Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-30T21:51:11.691Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-30T21:53:05.987Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-30T21:53:15.920Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-30T22:07:03.444Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-30T23:11:05.278Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-30T23:11:35.950Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-30T23:36:44.061Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-30T23:36:55.457Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-30T23:37:13.066Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-30T23:47:11.678Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising multiple agents in mux mode",
+        "action": "see a brief 350ms purple scan strip sweep from the right to the left across the pane that just became selected",
+        "benefit": "I know instantly which pane now has keyboard focus without staring at the footer indicator"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: the flash uses the SAME dark purple as the mux footer bar (Color::Rgb(74, 44, 112) — MUX-005 MUX_FOOTER_BG) and is painted as cell BACKGROUNDS only — pane content symbols are never blanked or modified",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:47:47.072Z"
+        },
+        {
+          "id": 1,
+          "text": "R5: no purple cell is ever painted outside the focused pane's rect (dividers, other panes, the footer row, and the terminal area outside the body are untouched) and pane content remains readable under the flash",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:47:56.991Z"
+        },
+        {
+          "id": 2,
+          "text": "R7: when mux is off (single-view modes), no flash state is armed, no purple flash cells are painted, and the tick gate's mux operand is false — single-view behavior is byte-for-byte unchanged (rust-mux-mode.feature R10)",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:49:20.582Z"
+        },
+        {
+          "id": 3,
+          "text": "R8: flash state is live-only — it is NOT persisted with MuxConfig (tui.mux in fspec-config.json keeps its existing serde shape) and a restart never resumes a flash mid-flight",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:49:29.176Z"
+        },
+        {
+          "id": 4,
+          "text": "R6: the 16ms render tick keeps redrawing during the flash even when nothing else is animating (a 5th tick_should_draw operand); after the 350ms window elapses the flash stops and the tick gate returns to idle",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:12:05.593Z"
+        },
+        {
+          "id": 5,
+          "text": "R4: the flash is re-armed on EVERY focus change while mux is enabled (Shift+Left/Right focus movement, click-to-focus, Enter on a board work unit → agent pane, BackToBoard → board pane, new-agent focus, pane-count/pane-list changes, fresh mux entry); re-arming restarts the 350ms window at the start of the right-to-left scan",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:12:11.514Z"
+        },
+        {
+          "id": 6,
+          "text": "R2: the flash lasts 350ms from the focus change; during that window the scan strip is always present (right-edge start to left-edge end) and is clipped to the focused pane rect",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:15:54.281Z"
+        },
+        {
+          "id": 7,
+          "text": "R3: the flash is a single full-height vertical scan strip — 2 columns wide, all rows of the focused pane — sweeping from the RIGHT edge of the pane to the LEFT over the 350ms window (right-to-left); there are no other phases — no burst ring, no rain, no 2-row band",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:16:01.133Z"
+        }
+      ],
+      "nextRuleId": 15,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Clicking inside the Board pane while the Agent pane is focused re-arms the flash on the Board pane; the Agent pane's flash (if still in flight) is not re-armed",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:49:41.583Z"
+        },
+        {
+          "id": 1,
+          "text": "With the Board pane focused and work unit AUTH-001 selected, pressing Enter binds the unit and focuses the agent pane — the agent pane flashes; the board pane does not",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:49:48.079Z"
+        },
+        {
+          "id": 2,
+          "text": "During the flash, the pane's header, scrollback text, input placeholder, and footer text remain visible — the flash tints their backgrounds but never erases their glyphs",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:53:46.962Z"
+        },
+        {
+          "id": 3,
+          "text": "With mux disabled (single Board view), no purple (RGB 74,44,112) cell is ever painted anywhere on screen",
+          "deleted": false,
+          "createdAt": "2026-08-30T09:53:47.111Z"
+        },
+        {
+          "id": 4,
+          "text": "With Board | Agent active and focus on the Board pane, pressing Shift+Right moves focus to the Agent pane: a full-height 2-column purple strip appears at the Agent pane's RIGHT edge and sweeps left across the pane over 350ms, then the flash is gone while the Agent pane stays focused",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:16:16.246Z"
+        },
+        {
+          "id": 5,
+          "text": "With the session idle (no spinner, no input animation), a Shift+Left focus change still produces a full 350ms scan flash — the run loop keeps ticking for the flash alone",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:16:18.956Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Flash state (focused pane index + 350ms window + render-driven clock) lives on MultiplexLayout (views/multiplex, live-only, NOT persisted — MuxConfig serde shape unchanged per R8). A single private re-arm helper is called from every focus-mutating site (set_focus, focus_prev/focus_next, note_session_created, enable_default, enable_with_config, set_pane_count, set_pane_list); it re-arms only when the focus index actually changes. The pure frame-pattern function (clock_ms, pane rect) -> set of purple cells + the painter live in views/multiplex/flash.rs and render.rs; the render path paints the flash at the current clock and THEN advances it (paint-then-advance), so frame 1 shows the right edge (clock 0) and the last frame (clock LAST_PAINT_MS = 336) shows the left edge. The sweep travel is (w-2) columns mapped onto the 336ms last-paintable window, so the strip is exactly 2 columns wide, always inside the rect, and lands exactly on each edge.",
+          "deleted": false,
+          "createdAt": "2026-08-30T23:35:20.754Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 5
+    },
+    "MUX-007": {
+      "id": "MUX-007",
+      "title": "Mux focus flash — settled final frame persists on the active pane",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-31T00:28:11.141Z",
+      "updatedAt": "2026-08-31T00:58:02.003Z",
+      "description": "After the 350ms right-to-left scan (MUX-006) elapses, the focused mux pane keeps the scan's final frame painted for good: the full-height 2-column dark-purple strip (MUX_FOOTER_BG) parked at the pane's LEFT edge. The settled strip tracks the focused pane (focus move clears the old pane's strip and plays the new pane's scan), is background-only (glyphs stay readable, clipped to the pane rect), never keeps the tick gate open (no perpetual redraw), and is live-only (MuxConfig serde shape unchanged).",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-31T00:28:13.717Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-31T00:35:17.941Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-31T00:49:35.460Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-31T00:49:45.815Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-31T00:58:02.003Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising multiple agents in mux mode",
+        "action": "keep the focus-flash final frame (dark-purple left-edge strip) painted on the active pane after the 350ms scan ends",
+        "benefit": "the active pane stays visibly distinguished at a glance instead of losing its accent as soon as the animation finishes"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: after the 350ms scan window (MUX-006) elapses, the focused pane keeps the scan's FINAL frame painted on every subsequent mux frame — a full-height 2-column dark-purple strip (MUX_FOOTER_BG, RGB 74, 44, 112) parked at the pane's LEFT edge — until focus moves or mux is disabled (1-column panes settle to a 1-column strip)",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:31:01.975Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: the settled strip moves with focus — when focus changes, the previously focused pane loses its settled strip (no purple remains in that pane) and the newly focused pane plays a fresh 350ms scan that settles into its own left-edge strip (MUX-006 R4 re-arm behavior is preserved)",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:31:04.251Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: the settled strip is background-only — pane content symbols are never blanked or modified under it (same as MUX-006 R1) and every cell stays inside the focused pane rect (never touches dividers, other panes, or the footer row — MUX-006 R5)",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:31:06.174Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: the settled strip must NOT keep the run-loop draw gate open — after the 350ms window elapses, tick_should_draw's mux operand (is_mux_flash_active) returns to the idle result even though the strip is still painted on subsequent frames (the strip is repaint content, not an animation; no perpetual 16ms redraws)",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:31:10.027Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With Board | Agent active and focus on the Board pane: after the 350ms scan ends, the Board pane keeps a full-height 2-column dark-purple strip at its LEFT edge on every frame — the Board pane's left two columns are purple on row 0..bottom, nothing else in the body is purple",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:33:16.243Z"
+        },
+        {
+          "id": 1,
+          "text": "After the Agent pane's strip has settled, pressing Shift+Left moves focus to the Board pane: the Agent pane's purple strip vanishes immediately (the next frame shows zero purple in the Agent pane) and a fresh 350ms scan sweeps the Board pane right-to-left before its own left-edge strip settles",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:33:18.704Z"
+        },
+        {
+          "id": 2,
+          "text": "While the settled strip sits under the focused pane's header and input text, the glyphs remain exactly as before the scan (the strip tints backgrounds only, never erases content); with mux disabled (single Board view) no purple cell is ever painted",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:33:21.224Z"
+        },
+        {
+          "id": 3,
+          "text": "With the session idle and the scan finished, the mux pane shows the settled left-edge strip with no continuous redrawing — the run-loop draw gate reports idle (no animation in flight) yet the strip is still visible on the next user-triggered frame",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:33:23.617Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: the render path keeps calling flash_cells but clamps the clock to the settle boundary — after the 350ms window the strip stays parked at the left edge (the LAST_PAINT_MS frame) instead of vanishing. The paint pass must render for the focused pane whenever mux is enabled, not only while is_flash_active(); the tick-gate operand (is_mux_flash_active) keeps its 350ms semantics (animation only, no perpetual redraws). State stays live-only on MultiplexLayout (MuxConfig serde shape unchanged).",
+          "deleted": false,
+          "createdAt": "2026-08-31T00:33:28.174Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 3,
+      "attachments": [
+        "spec/attachments/MUX-007/ast-research-settled-final-frame.md"
+      ]
+    },
+    "CLI-015": {
+      "id": "CLI-015",
+      "title": "Replace research --tool=ast with AstGrep tool guidance and new fspec astgrep command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-31T02:53:52.786Z",
+      "updatedAt": "2026-08-31T05:12:05.664Z",
+      "description": "Remove the `ast` tool from the research command registry and update all AI-facing guidance to target the correct front door: (1) Harness/TUI mode (native agent host, FSPEC_CAPTURE_MODE=1) — prompts direct the AI to the native `AstGrep` tool; (2) CLI mode (one-shot `fspec` shell commands, FSPEC_CAPTURE_MODE unset) — prompts direct the user to a new `fspec astgrep` subcommand. Wire `fspec astgrep --pattern <pattern> --lang <language> [--path <path>]` into the fspec binary as a thin bridge that delegates to the existing AstGrepTool in codelet-tools (no search-logic duplication). Remove the `ast` entry from: research registry (list output + unknown-tool error), research help config + fixture, specifying-state reminders, event-storm discovery guidance, bootstrap doc, and the specifying→testing ast-research error message (which now splits by mode). Update the harness-only FSPEC_WORKFLOW_GUIDANCE (injected only into the native agent system prompt) to reference the AstGrep tool.",
+      "epic": "cli-ux-improvements",
+      "children": [],
+      "userStory": {
+        "role": "AI agent or shell user working with fspec",
+        "action": "get code-search guidance that names a tool that actually exists in my mode, and a working CLI command for AST search",
+        "benefit": "no dead-end references to a research ast tool that no longer exists, and CLI users can run ast-grep searches natively"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-31T02:54:11.627Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-31T04:18:26.284Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-31T04:27:08.711Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-31T04:27:18.995Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-31T05:12:05.664Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Harness/TUI mode (FSPEC_CAPTURE_MODE=1, the native agent host) prompts direct the AI to the native AstGrep tool — e.g. FSPEC_WORKFLOW_GUIDANCE, the specifying-state reminder, and the event-storm discovery guidance all reference `AstGrep(...)` tool calls, never `fspec research --tool=ast`.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:54:15.768Z"
+        },
+        {
+          "id": 1,
+          "text": "CLI mode (FSPEC_CAPTURE_MODE unset — one-shot `fspec` shell commands) prompts direct the user to a new `fspec astgrep` subcommand. The new subcommand accepts `--pattern <pattern>` (required), `--lang <language>` (required, matching AstGrep's `language` param), and `--path <path>` (optional, defaults to current dir), and delegates to the existing AstGrepTool in codelet-tools with a nil session id (no isolation context, paths pass through).",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:54:20.134Z"
+        },
+        {
+          "id": 2,
+          "text": "Mode detection uses the FSPEC_CAPTURE_MODE env var (value \"1\" = harness/native-agent mode; unset/other = CLI mode), mirroring the existing is_in_capture_mode() semantics. The TUI harness entry points (combined, daemon, client) set FSPEC_CAPTURE_MODE=1 at startup; one-shot CLI subcommands never set it.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:14.355Z"
+        },
+        {
+          "id": 3,
+          "text": "No search logic is duplicated: the `fspec astgrep` CLI bridge delegates to codelet_tools::AstGrepTool (constructed with Uuid::nil(), so no worktree-isolation validation) via its rig::tool::Tool::call entry point, so the CLI and the harness AstGrep tool share one implementation.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:22.926Z"
+        },
+        {
+          "id": 4,
+          "text": "The `fspec astgrep` CLI exits 0 with matches printed to stdout in `file:line:column:text` format; on tool error (missing pattern, unsupported language, invalid pattern, no matches context errors) it prints the error to stderr and exits 1. No matches prints 'No matches found' to stdout and exits 0 (matching the tool's success path).",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:27.047Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In a Rust project, `fspec astgrep --pattern 'fn $NAME($$$ARGS) { $$$BODY }' --lang rust --path src/` prints lines like `src/main.rs:10:1:fn main() { ... }` to stdout and exits 0.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:30.355Z"
+        },
+        {
+          "id": 1,
+          "text": "`fspec research` lists perplexity, jira, confluence, and stakeholder with their config status — the `ast` entry is absent from the list and from the 'Available bundled tools' line of the unknown-tool error.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:34.076Z"
+        },
+        {
+          "id": 2,
+          "text": "`fspec astgrep --pattern 'function $NAME($$$ARGS) { $$$BODY }' --lang typescript` with an invalid pattern prints 'Error: Invalid AST pattern' to stderr and exits 1.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:38.141Z"
+        },
+        {
+          "id": 3,
+          "text": "CLI-015 (no capture mode): `update-work-unit-status AUTH-001 testing` without an ast-research attachment fails with an error that says 'run: fspec astgrep --help (to learn HOW to use the astgrep tool)' and 'use: fspec astgrep --pattern <pattern> --lang <language> [--path <path>]'. Harness mode (FSPEC_CAPTURE_MODE=1): the same error says 'Use the AstGrep tool to analyze relevant code' and does not mention fspec astgrep.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:42.530Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Two front doors, one source of truth: the `fspec astgrep` clap subcommand (rust/fspec/src/astgrep.rs bridge) delegates to codelet_tools::AstGrepTool::call with Uuid::nil() session id. The bridge is thin — JSON marshalling + stdout/stderr rendering only — mirroring the research.rs bridge pattern. FSPEC_WORKFLOW_GUIDANCE (rust/tools/src/fspec_workflow_guidance.rs) is harness-only: it is injected only into the native agent system prompt (tools/src/facade/system_prompt.rs + providers/src/custom/system_prompt.rs), so its AstGrep tool references never reach CLI users.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:56:46.732Z"
+        },
+        {
+          "id": 1,
+          "text": "Shared dual-mode strings (EVENT_STORM_GUIDANCE in discover_event_storm.rs, bootstrap_doc.txt, SPEC_HEAD/SPEC_TAIL in reminders.rs) carry placeholders (e.g. __AST_RESEARCH_BLOCK__) that their run()/specifying_reminder() fills per-mode via is_in_capture_mode() (FSPEC_CAPTURE_MODE==\"1\" → harness variant naming the AstGrep tool; otherwise CLI variant naming `fspec astgrep`). The ast_research_error_message(capture: bool) in update_work_unit_status.rs already takes the mode flag — its CLI branch switches from `fspec research --tool=ast` to `fspec astgrep`.",
+          "deleted": false,
+          "createdAt": "2026-08-31T02:58:33.079Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/CLI-015/ast-research-astgrep-tool-bridge.md"
+      ],
+      "estimate": 8
     }
   }
 }

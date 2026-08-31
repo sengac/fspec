@@ -182,6 +182,7 @@ Tags that categorize features by functional area.
 | `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |
 | `@multi-session` | Multi-session AgentView features — open multiple sessions, attach, cycle |
 | `@multiple` | Multiple simultaneous connections |
+| `@mux` | Mux mode — multiplexed top-level views with /mux configuration (MUX epic) |
 | `@navigation` | Navigation and keyboard interaction features in the TUI |
 | `@operations` | General operations |
 | `@orchestration` | Command orchestration features that coordinate multiple operations |
@@ -329,6 +330,9 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-160` | Bug fix work unit BUG-160 - board search dialog: result rows show a dimmed title/description snippet |
 | `@bug-161` | Bug fix work unit BUG-161 - board search dialog: modal keyboard blocking (unhandled keys must not leak to the board) |
 | `@bug-162` | Bug fix work unit BUG-162 - board search dialog: list does not scroll with the mouse wheel |
+| `@bug-164` | Bug fix work unit BUG-164 - closing a session in mux mode retains the grid (BackToBoard focuses the board pane within the active mux instead of flipping the whole view out of Mux) |
+| `@bug-165` | Bug fix work unit BUG-165 - Esc on the board pane in mux mode with no open agents must show the exit confirmation dialog (previously a dead key) |
+| `@bug-166` | Bug fix work unit BUG-166 - mux divider fixes: every inter-pane gap gets an independently draggable divider, release keeps the released position (no snap-back to equal split), and splits are a percentage scale that dynamically rescales when the pane count changes |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -633,7 +637,12 @@ Tags tracking development status of features.
 | `@enhancement` | Feature enhancement or improvement |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |
+| `@mux-002` | Work unit MUX-002 — multiple agent panes with grouped agent-view cycling (agent window over open sessions, right-edge prompt, no left-edge wrap) |
+| `@mux-004` | Work unit MUX-004 — mux configuration dialog + /mux slash-popup entry (bare /mux opens the MuxConfigDialog; layout-only scope) |
+| `@mux-006` | Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (full-height 2-column strip, right-to-left) over the focused pane, re-armed on every focus change, live-only (never persisted) |
+| `@mux-007` | Work unit MUX-007 — mux focus flash settled final frame: after the 350ms right-to-left scan (MUX-006) elapses, the focused pane keeps the final frame painted (full-height 2-column dark-purple strip at the pane's left edge) until focus moves or mux is disabled; live-only, never persists the tick gate open |
 | `@partial` | Partially implemented feature - work in progress |
+| `@prov-143` | Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them) |
 | `@refactor` | Code refactoring and technical improvements |
 | `@refactoring` | Code that needs refactoring |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
@@ -745,4 +754,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-25T05:30:48.298Z_
+_Last updated: 2026-08-31T00:33:52.704Z_

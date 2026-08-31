@@ -227,11 +227,13 @@ pub fn body_content_rows(rect_height: u16, footer_h: u16, has_query_row: bool) -
     let raw_footer_h = footer_h;
     // BUG-159: the pinned query row consumes one content row.
     let query_h = if has_query_row { 1 } else { 0 };
-    let spacious_min = 3 + query_h + if raw_footer_h > 0 {
-        raw_footer_h + 1
-    } else {
-        0
-    };
+    let spacious_min = 3
+        + query_h
+        + if raw_footer_h > 0 {
+            raw_footer_h + 1
+        } else {
+            0
+        };
     let spacious = body_h >= spacious_min;
     let footer_h = if raw_footer_h == 0 {
         0

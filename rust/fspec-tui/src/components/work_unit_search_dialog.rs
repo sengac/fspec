@@ -107,12 +107,7 @@ impl WorkUnitSearchDialog {
     /// " - " separator, so a long snippet never widens the frame.
     fn snippet_budget(&self, rect: Rect) -> usize {
         let inner = rect.width.saturating_sub(4).max(1) as usize;
-        let id_w = self
-            .matches
-            .first()
-            .map(|m| m.id.len())
-            .unwrap_or(0)
-            .max(1);
+        let id_w = self.matches.first().map(|m| m.id.len()).unwrap_or(0).max(1);
         // marker(2) + id + " - "(3)
         inner.saturating_sub(2 + id_w + 3)
     }

@@ -1,0 +1,390 @@
+{
+  "scenarios": [
+    {
+      "name": "/mux board agent agent divides the width equally across three panes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "41-68",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/mux 4 divides the width equally across four panes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "76-96",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "two panes divide the width equally",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "104-119",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a board pane narrower than 64 columns is not clamped up",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "127-155",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dragging the divider produces a non-equal split",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "163-183",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a terminal resize re-divides the panes equally",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "191-238",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/mux board agent 40 honors the percent even below the old minimum",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux003.rs",
+          "lines": "247-266",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/mux003.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/multiplex/layout.rs",
+      "rust/fspec-tui/src/views/multiplex/mod.rs",
+      "rust/fspec-tui/src/views/multiplex/render.rs"
+    ],
+    "totalLinesCovered": 443
+  }
+}

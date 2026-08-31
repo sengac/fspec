@@ -162,11 +162,10 @@ fn git_streaming_variant_ticks_the_callback_per_checkpoint_ref() {
 
     // @step When the transport emits CheckpointsProgress events (1/…), (47/…), then (150/150) with done=true before the list result folds
     let mut seen: Vec<(String, String)> = Vec::new();
-    let out =
-        list_all_ghost_checkpoints_stream(repo, &mut |pair| {
-            seen.push(pair.clone());
-        })
-        .expect("streaming list");
+    let out = list_all_ghost_checkpoints_stream(repo, &mut |pair| {
+        seen.push(pair.clone());
+    })
+    .expect("streaming list");
 
     // @step Then the loading dialog counter row shows (1/…) while the total is still unknown
     // (the callback fires per item — 3 ticks for 3 refs)
@@ -176,7 +175,10 @@ fn git_streaming_variant_ticks_the_callback_per_checkpoint_ref() {
     seen_sorted.sort();
     let mut all_sorted: Vec<(String, String)> = out.to_vec();
     all_sorted.sort();
-    assert_eq!(seen_sorted, all_sorted, "ticks cover exactly the returned pairs");
+    assert_eq!(
+        seen_sorted, all_sorted,
+        "ticks cover exactly the returned pairs"
+    );
     // @step And the counter row shows the final (150/150) just before the list appears
     assert_eq!(out.len(), 3, "return value unchanged (backward-compatible)");
     // @step When the CheckpointsLoaded fold arrives with 150 checkpoints
@@ -217,7 +219,11 @@ fn rpc_collect_checkpoints_stream_ticks_per_item_with_pending_total_then_done() 
     assert!(frames[3].done, "final frame carries done=true");
     assert_eq!(frames[3].total, 3, "total = full enumeration count");
     assert_eq!(frames[3].loaded, 3);
-    assert_eq!(list.len(), 3, "return value unchanged (backward-compatible)");
+    assert_eq!(
+        list.len(),
+        3,
+        "return value unchanged (backward-compatible)"
+    );
 }
 
 /// wire half — `FspecServiceImpl::list_checkpoints` publishes a frame on
@@ -291,7 +297,10 @@ async fn tui_counter_advances_from_pending_total_to_final_before_list_folds() {
         total: 0,
         done: false,
     }));
-    assert!(app.is_view_loading(), "still loading after a pending-total frame");
+    assert!(
+        app.is_view_loading(),
+        "still loading after a pending-total frame"
+    );
     let dialog = app.navigator_checkpoints_loading_dialog();
     assert!(
         dialog.progress.is_some(),
@@ -419,7 +428,10 @@ async fn tui_bootstrap_spawns_checkpoints_progress_subscriber_forwarding_to_the_
     // @step Then the list renders and the loading dialog is dismissed
     // (the fold itself is covered by the first TUI scenario; here the
     // subscriber must keep forwarding every frame it receives)
-    assert!(app.active_view() == ViewMode::Board, "view untouched by the subscriber");
+    assert!(
+        app.active_view() == ViewMode::Board,
+        "view untouched by the subscriber"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -494,8 +506,7 @@ fn tui_late_done_event_after_checkpoints_loaded_is_stale_dropped() {
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::OpenCheckpointsView);
     app.dispatch(Action::CheckpointsLoaded(vec![checkpoint_info(
-        "AUTH-001",
-        "baseline",
+        "AUTH-001", "baseline",
     )]));
     // The list stage has flushed (the cascade may continue onto the
     // files stage — that is the list presentation state).
@@ -583,11 +594,10 @@ fn git_non_streaming_list_all_delegates_to_streaming_with_no_op_callback() {
 
     // @step Then the output is byte-identical to the pre-streaming behavior
     let mut ticks = 0usize;
-    let streamed =
-        list_all_ghost_checkpoints_stream(repo, &mut |_| {
-            ticks += 1;
-        })
-        .expect("streaming list");
+    let streamed = list_all_ghost_checkpoints_stream(repo, &mut |_| {
+        ticks += 1;
+    })
+    .expect("streaming list");
 
     // @step And the existing list_checkpoints tests pass unmodified
     assert_eq!(
@@ -621,7 +631,11 @@ fn rpc_non_streaming_collect_checkpoints_matches_streaming_return_value() {
             ("AUTH-001-auto-a", "2026-06-02T10:00:00.000Z"),
         ],
     );
-    write_index(repo, "AUTH-002", &[("pre-refactor", "2026-06-03T10:00:00.000Z")]);
+    write_index(
+        repo,
+        "AUTH-002",
+        &[("pre-refactor", "2026-06-03T10:00:00.000Z")],
+    );
 
     // @step When the CLI list-checkpoints command runs against a repository with checkpoints
     let baseline = collect_checkpoints(repo).expect("non-streaming collect");
@@ -636,5 +650,8 @@ fn rpc_non_streaming_collect_checkpoints_matches_streaming_return_value() {
         baseline, streamed,
         "non-streaming output must equal the streaming variant's return value"
     );
-    assert_eq!(ticks, 4, "callback ticks once per collected item + the done frame");
+    assert_eq!(
+        ticks, 4,
+        "callback ticks once per collected item + the done frame"
+    );
 }

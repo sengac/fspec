@@ -16,8 +16,8 @@ use codelet_fspec_core::update::{UpdateConfig, UpdateOutcome};
 
 use crate::components::Action;
 
-use super::update_parser::{format_update_message, UpdateSubcommand};
 use super::state::App;
+use super::update_parser::{format_update_message, UpdateSubcommand};
 
 impl App {
     /// Apply a `/update …` subcommand for the focused session.
@@ -70,11 +70,9 @@ impl App {
                 cfg.perform_update().await
             } else {
                 match cfg.check_latest().await {
-                    Ok(info) if !info.is_newer => {
-                        Ok(UpdateOutcome::UpToDate {
-                            version: info.version,
-                        })
-                    }
+                    Ok(info) if !info.is_newer => Ok(UpdateOutcome::UpToDate {
+                        version: info.version,
+                    }),
                     Ok(info) => Ok(UpdateOutcome::Failed {
                         message: format!(
                             "newer release v{} available — run /update to install",

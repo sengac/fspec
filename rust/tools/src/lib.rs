@@ -94,6 +94,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub use apply_patch::ApplyPatchTool;
+pub use astgrep::AstGrepArgs;
 pub use astgrep::AstGrepTool;
 pub use astgrep_refactor::AstGrepRefactorTool;
 pub use bash::BashTool;

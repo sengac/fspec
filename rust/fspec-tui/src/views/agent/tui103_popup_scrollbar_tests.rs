@@ -49,7 +49,11 @@ fn slash_command_popup_click_on_scrollbar_track_jumps_to_position() {
     let result = drag.on_mouse(up, geom);
 
     // Then: offset should be 37 (row 15 * 50 / 20 = 37)
-    assert_eq!(result, Some(37), "track click should jump to proportional offset");
+    assert_eq!(
+        result,
+        Some(37),
+        "track click should jump to proportional offset"
+    );
     assert!(!drag.is_dragging());
 }
 
@@ -88,7 +92,11 @@ fn file_search_popup_drag_scrollbar_thumb_continuously_scrolls() {
 
     // And: release returns to idle
     let up = mouse_event(MouseEventKind::Up(MouseButton::Left), 0, 10);
-    assert_eq!(drag.on_mouse(up, geom), None, "release after drag should return None");
+    assert_eq!(
+        drag.on_mouse(up, geom),
+        None,
+        "release after drag should return None"
+    );
     assert!(!drag.is_dragging());
 }
 
@@ -189,7 +197,11 @@ fn scrollbar_ignored_when_content_fits_in_viewport() {
     let result = drag.on_mouse(up, geom);
 
     // Then: offset should be 0 (no scroll)
-    assert_eq!(result, Some(0), "when content fits, scrollbar should return offset 0");
+    assert_eq!(
+        result,
+        Some(0),
+        "when content fits, scrollbar should return offset 0"
+    );
     assert!(!drag.is_dragging());
 }
 
@@ -212,8 +224,14 @@ fn scrollbar_drag_state_resets_when_content_changes() {
         current_offset: 0,
     };
 
-    drag.on_mouse(mouse_event(MouseEventKind::Down(MouseButton::Left), 0, 0), geom);
-    drag.on_mouse(mouse_event(MouseEventKind::Drag(MouseButton::Left), 0, 10), geom);
+    drag.on_mouse(
+        mouse_event(MouseEventKind::Down(MouseButton::Left), 0, 0),
+        geom,
+    );
+    drag.on_mouse(
+        mouse_event(MouseEventKind::Drag(MouseButton::Left), 0, 10),
+        geom,
+    );
     assert!(drag.is_dragging());
 
     // When: content changes → reset
@@ -223,7 +241,10 @@ fn scrollbar_drag_state_resets_when_content_changes() {
     assert!(!drag.is_dragging());
 
     // And: subsequent drag events are ignored
-    let result = drag.on_mouse(mouse_event(MouseEventKind::Drag(MouseButton::Left), 0, 5), geom);
+    let result = drag.on_mouse(
+        mouse_event(MouseEventKind::Drag(MouseButton::Left), 0, 5),
+        geom,
+    );
     assert_eq!(result, None, "drag after reset should return None");
 }
 
@@ -237,7 +258,7 @@ fn scrollbar_drag_state_resets_when_content_changes() {
 /// @step Then the popup updates its scroll_offset via ScrollbarDrag
 #[test]
 fn slash_command_popup_handle_mouse_routes_scrollbar_events() {
-    use crate::views::agent::slash_command_popup::{SlashCommandPopup, PopupOutcome};
+    use crate::views::agent::slash_command_popup::{PopupOutcome, SlashCommandPopup};
 
     let mut popup = SlashCommandPopup::new();
     popup.set_matches_for_test(50);
@@ -332,13 +353,20 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
     );
     let down_result = popup.handle_mouse(down_ev, popup_rect);
     assert!(
-        matches!(down_result, FilePopupOutcome::Continued | FilePopupOutcome::Ignored),
+        matches!(
+            down_result,
+            FilePopupOutcome::Continued | FilePopupOutcome::Ignored
+        ),
         "Down event should not produce a selection outcome"
     );
 
     // And: drag to the middle of the scrollbar rect
     let drag_row = sb_rect.y + sb_rect.height / 2;
-    let drag_ev = mouse_event(MouseEventKind::Drag(MouseButton::Left), scrollbar_col, drag_row);
+    let drag_ev = mouse_event(
+        MouseEventKind::Drag(MouseButton::Left),
+        scrollbar_col,
+        drag_row,
+    );
     let drag_result = popup.handle_mouse(drag_ev, popup_rect);
 
     // Then: scroll offset should have changed
@@ -363,8 +391,8 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
 /// @step Then the view updates its scroll_offset via ScrollbarDrag
 #[test]
 fn search_history_view_handle_mouse_routes_scrollbar_events() {
-    use crate::views::agent::search_history_view::SearchHistoryViewOutcome;
     use crate::views::agent::search_history_view::SearchHistoryView;
+    use crate::views::agent::search_history_view::SearchHistoryViewOutcome;
 
     let mut view = SearchHistoryView::new();
     // Set up matches for testing
@@ -405,7 +433,10 @@ fn search_history_view_handle_mouse_routes_scrollbar_events() {
     );
     let down_result = view.handle_mouse(down_ev, body_rect, visible_rows);
     assert!(
-        matches!(down_result, SearchHistoryViewOutcome::Continued | SearchHistoryViewOutcome::Ignored),
+        matches!(
+            down_result,
+            SearchHistoryViewOutcome::Continued | SearchHistoryViewOutcome::Ignored
+        ),
         "Down event should not produce a selection outcome"
     );
 

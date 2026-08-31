@@ -60,10 +60,12 @@ fn scrollbar_appears_when_session_count_exceeds_visible_rows() {
     // @step Then a proportional scrollbar is rendered on the rightmost column
     // The scrollbar occupies the last column (x = 79)
     let last_col = area.width - 1;
-    let has_scrollbar = (0..area.height).any(|y| {
-        has_glyph(&buf, last_col, y, "■") || has_glyph(&buf, last_col, y, "│")
-    });
-    assert!(has_scrollbar, "Scrollbar should be rendered when 30 sessions exceed visible area");
+    let has_scrollbar = (0..area.height)
+        .any(|y| has_glyph(&buf, last_col, y, "■") || has_glyph(&buf, last_col, y, "│"));
+    assert!(
+        has_scrollbar,
+        "Scrollbar should be rendered when 30 sessions exceed visible area"
+    );
     // @step And the content width is reduced by 1 column to accommodate the scrollbar
     // Content should not extend into the scrollbar column
     // The session names should be within the content area (width - 1)
@@ -89,10 +91,12 @@ fn no_scrollbar_when_session_count_fits_in_visible_area() {
     let rows = rows_of(&buf);
     // @step Then no scrollbar is rendered
     let last_col = area.width - 1;
-    let has_scrollbar = (0..area.height).any(|y| {
-        has_glyph(&buf, last_col, y, "■") || has_glyph(&buf, last_col, y, "│")
-    });
-    assert!(!has_scrollbar, "Scrollbar should NOT be rendered when 5 sessions fit in 20 rows");
+    let has_scrollbar = (0..area.height)
+        .any(|y| has_glyph(&buf, last_col, y, "■") || has_glyph(&buf, last_col, y, "│"));
+    assert!(
+        !has_scrollbar,
+        "Scrollbar should NOT be rendered when 5 sessions fit in 20 rows"
+    );
     // @step And the content uses the full body width
     let joined = rows.join("\n");
     assert!(joined.contains("Session 0"));
@@ -129,7 +133,8 @@ fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
     let actual_pos = thumb_start as usize;
     assert!(
         (actual_pos as i32 - expected_pos as i32).abs() <= 2,
-        "Thumb at row {actual_pos} should be near expected position {expected_pos}");
+        "Thumb at row {actual_pos} should be near expected position {expected_pos}"
+    );
 }
 
 // ============================================================================
@@ -149,13 +154,9 @@ fn scrollbar_uses_dim_styled_glyphs_for_thumb_and_track() {
     render_session_rows(area, &mut buf, &sessions, 0, 0);
     let last_col = area.width - 1;
     // @step Then the scrollbar thumb uses the ■ glyph with DIM modifier
-    let has_thumb = (0..area.height).any(|y| {
-        has_glyph(&buf, last_col, y, "■")
-    });
+    let has_thumb = (0..area.height).any(|y| has_glyph(&buf, last_col, y, "■"));
     assert!(has_thumb, "Scrollbar should contain ■ thumb glyph");
     // @step And the scrollbar track uses the │ glyph with DIM modifier
-    let has_track = (0..area.height).any(|y| {
-        has_glyph(&buf, last_col, y, "│")
-    });
+    let has_track = (0..area.height).any(|y| has_glyph(&buf, last_col, y, "│"));
     assert!(has_track, "Scrollbar should contain │ track glyph");
 }

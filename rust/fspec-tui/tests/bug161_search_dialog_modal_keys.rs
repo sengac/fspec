@@ -57,9 +57,7 @@ fn shift_key(code: KeyCode) -> Event {
 }
 
 /// A dialog wired to an action bus so tests can assert nothing was emitted.
-fn dialog_with_bus(
-    units: Vec<WorkUnitInfo>,
-) -> (WorkUnitSearchDialog, UnboundedReceiver<Action>) {
+fn dialog_with_bus(units: Vec<WorkUnitInfo>) -> (WorkUnitSearchDialog, UnboundedReceiver<Action>) {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
     (WorkUnitSearchDialog::new(units).with_action_tx(tx), rx)
 }
@@ -81,7 +79,11 @@ fn board_navigation_keys_are_consumed_while_the_dialog_is_open() {
     for c in "zzz".chars() {
         let _ = dialog.handle_event(&char_key(c));
     }
-    assert_eq!(dialog.matches(), Vec::<String>::new(), "query 'zzz' must yield zero matches");
+    assert_eq!(
+        dialog.matches(),
+        Vec::<String>::new(),
+        "query 'zzz' must yield zero matches"
+    );
     let store = board_with_selection();
 
     // @step When I press the "j" key
@@ -194,7 +196,11 @@ fn unmodified_arrow_keys_left_right_are_consumed_while_the_dialog_is_open() {
     }
 
     // @step And the board column focus is unchanged
-    assert_eq!(store.focused_column(), "backlog", "the board must stay frozen");
+    assert_eq!(
+        store.focused_column(),
+        "backlog",
+        "the board must stay frozen"
+    );
 }
 
 /// Scenario: Enter with zero matches is consumed and does not enter a work unit
@@ -230,10 +236,8 @@ fn enter_with_zero_matches_is_consumed_and_does_not_enter_a_work_unit() {
 #[test]
 fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() {
     // @step Given the work-unit search dialog is open in Id mode with a match list
-    let (mut dialog, mut rx) = dialog_with_bus(vec![
-        wu("AUTH-001", "Auth one"),
-        wu("AUTH-002", "Auth two"),
-    ]);
+    let (mut dialog, mut rx) =
+        dialog_with_bus(vec![wu("AUTH-001", "Auth one"), wu("AUTH-002", "Auth two")]);
     assert_eq!(dialog.mode_label(), "id");
     assert_eq!(dialog.matches().len(), 2);
 
@@ -260,7 +264,11 @@ fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() {
     // Backspace still edits the query: narrow to zero matches, then widen
     // back to two.
     let _ = dialog.handle_event(&char_key('x'));
-    assert_eq!(dialog.matches(), Vec::<String>::new(), "'authx' matches nothing");
+    assert_eq!(
+        dialog.matches(),
+        Vec::<String>::new(),
+        "'authx' matches nothing"
+    );
     let bs = dialog.handle_event(&key(KeyCode::Backspace));
     assert!(bs.is_consumed());
     assert_eq!(
