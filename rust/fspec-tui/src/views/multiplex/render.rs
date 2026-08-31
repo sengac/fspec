@@ -109,17 +109,19 @@ pub fn render_with_stores(
         }
     }
 
-    // MUX-006: tint the flash over the newly-focused pane's FULL rect —
-    // AFTER the pane content (the flash is a background-only overlay,
-    // R1/R5) and BEFORE the dividers/footer (it never touches divider
-    // columns or the footer row). The clock advances AFTER the paint so
-    // frame 1 renders the right edge (clock 0) and the final frame the
-    // left edge (clock 336). MUX-007: the paint gate is the SETTLED
-    // accent (focused pane owns the strip) — during the 350ms window
-    // the strip sweeps right-to-left, and once the window elapses the
-    // same pattern fn settles at the left edge and keeps painting there
-    // on every frame of the focused pane (repaint content, not an
-    // animation — the tick gate stays closed, R4).
+    // MUX-006/MUX-008: tint the flash over the newly-focused pane's
+    // FULL rect — AFTER the pane content (the flash is a
+    // background-only overlay, R1/R5) and BEFORE the dividers/footer
+    // (it never touches divider columns or the footer row). The clock
+    // advances AFTER the paint so frame 1 renders the bottom edge
+    // (clock 0) and the final frame the top edge (clock 336).
+    // MUX-007/MUX-008: the paint gate is the SETTLED accent (focused
+    // pane owns the row) — during the 350ms window the row sweeps
+    // bottom-to-top, and once the window elapses the same pattern fn
+    // settles at the top row (a 1-row bar across the full width) and
+    // keeps painting there on every frame of the focused pane
+    // (repaint content, not an animation — the tick gate stays
+    // closed, R4).
     paint_focus_flash(layout, &rects, buf);
     layout.advance_flash_clock();
 
@@ -127,13 +129,13 @@ pub fn render_with_stores(
     paint_footer(layout, area, buf);
 }
 
-/// MUX-006/MUX-007: paint the focus-flash cells (dark purple background
-/// only — `set_style` without `set_symbol`, so pane glyphs stay
-/// readable) over the armed pane's rect. The gate is the SETTLED accent
-/// (`has_settled_flash`): the strip paints during the 350ms scan and,
-/// once the window elapses, keeps painting the parked left-edge frame
-/// on every frame of the focused pane (R1). No-op with no accent armed
-/// (mux not entered / disabled — R7).
+/// MUX-006/MUX-007/MUX-008: paint the focus-flash cells (dark purple
+/// background only — `set_style` without `set_symbol`, so pane glyphs
+/// stay readable) over the armed pane's rect. The gate is the SETTLED
+/// accent (`has_settled_flash`): the row paints during the 350ms
+/// bottom-to-top scan and, once the window elapses, keeps painting the
+/// parked top-row bar on every frame of the focused pane (R1). No-op
+/// with no accent armed (mux not entered / disabled — R7).
 fn paint_focus_flash(layout: &MultiplexLayout, rects: &[Rect], buf: &mut Buffer) {
     if !layout.has_settled_flash() {
         return;

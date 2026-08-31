@@ -93,8 +93,8 @@ pub struct MultiplexLayout {
     /// on (`None` = no accent — mux not entered yet or disabled). The
     /// flash ANIMATION runs for the first 350ms after (re)arming; from
     /// then on the focused pane keeps the settled final frame (the
-    /// left-edge strip, MUX-007 R1) until focus moves or mux exits.
-    /// Live-only — never persisted (R8).
+    /// 1-row top bar, MUX-007 R1 as superseded by MUX-008) until focus
+    /// moves or mux exits. Live-only — never persisted (R8).
     pub(super) flash_pane: Option<MuxFocus>,
     /// MUX-006: render-driven flash clock in ms (0 at arm; ≥ 350 the
     /// scan window has elapsed — the accent then settles). Advanced
@@ -190,16 +190,16 @@ impl MultiplexLayout {
 
     /// MUX-007: true iff the focused pane owns the flash accent — the
     /// scan is in flight OR the window has elapsed and the accent has
-    /// settled (R1: the final left-edge frame stays painted on every
-    /// subsequent frame of the focused pane). Paint gate only; NOT fed
-    /// to the tick gate (the settled strip is repaint content, not an
-    /// animation — R4).
+    /// settled (R1: the final top-row frame stays painted on every
+    /// subsequent frame of the focused pane — MUX-008). Paint gate only;
+    /// NOT fed to the tick gate (the settled bar is repaint content, not
+    /// an animation — R4).
     pub fn has_settled_flash(&self) -> bool {
         self.config.enabled && self.flash_pane.is_some()
     }
 
     /// MUX-006: (re)arm the focus flash on `pane` — restarts the
-    /// 350ms window at the right edge of the scan. No-op when mux is
+    /// 350ms window at the bottom edge of the scan. No-op when mux is
     /// disabled or `pane` is not a rendered pane index (R4/R7).
     pub(super) fn rearm_flash(&mut self, pane: MuxFocus) {
         if !self.config.enabled || pane >= self.rendered_panes.len().max(1) {
@@ -230,9 +230,9 @@ impl MultiplexLayout {
     /// (called once per rendered mux frame — the run loop owns the
     /// clock, the view only reports state). The 350ms scan ANIMATION
     /// expires at [`super::flash::FLASH_MS`] (the tick gate closes,
-    /// R6); MUX-007: the accent itself is retained — the clock keeps
-    /// advancing (unbounded) and the pattern fn clamps at the settle
-    /// boundary, so the focused pane keeps the left-edge strip until
+    /// R6); MUX-007/MUX-008: the accent itself is retained — the clock
+    /// keeps advancing (unbounded) and the pattern fn clamps at the
+    /// settle boundary, so the focused pane keeps the top-row bar until
     /// focus moves or mux exits (R1/R2; `disarm_flash` on exit).
     pub fn advance_flash_clock(&mut self) {
         if self.flash_pane.is_none() {

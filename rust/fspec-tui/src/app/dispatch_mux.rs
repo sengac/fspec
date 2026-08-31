@@ -161,9 +161,7 @@ impl App {
             };
             // Enter mux mode (or layout-refresh while already in) with
             // the draft layout (R7).
-            self.navigator
-                .mux
-                .enable_with_config(config, pre_mux);
+            self.navigator.mux.enable_with_config(config, pre_mux);
             self.navigator.active_view = crate::views::ViewMode::Mux;
             self.mux_sync_window();
             self.navigator.mux.recompute_rects();

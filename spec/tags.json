@@ -2375,11 +2375,11 @@
         },
         {
           "name": "@mux-006",
-          "description": "Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (full-height 2-column strip, right-to-left) over the focused pane, re-armed on every focus change, live-only (never persisted)"
+          "description": "Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (1-row-high full-width strip, bottom-to-top — MUX-008) over the focused pane, re-armed on every focus change, live-only (never persisted)"
         },
         {
           "name": "@mux-007",
-          "description": "Work unit MUX-007 — mux focus flash settled final frame: after the 350ms right-to-left scan (MUX-006) elapses, the focused pane keeps the final frame painted (full-height 2-column dark-purple strip at the pane's left edge) until focus moves or mux is disabled; live-only, never persists the tick gate open"
+          "description": "Work unit MUX-007 — mux focus flash settled final frame: after the 350ms bottom-to-top scan (MUX-006) elapses, the focused pane keeps the final frame painted — a 1-row-high dark-purple bar across the pane's top row (MUX-008) — until focus moves or mux is disabled; live-only, never persists the tick gate open"
         },
         {
           "name": "@partial",

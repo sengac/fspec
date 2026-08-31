@@ -5,48 +5,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux006_focus_flash.rs",
-          "lines": "260-307",
+          "lines": "303-365",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/flash.rs",
               "lines": [
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
               ]
             }
           ]
@@ -58,51 +39,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux006_focus_flash.rs",
-          "lines": "316-368",
+          "lines": "374-473",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/types.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
                 204,
                 205,
                 206,
@@ -120,13 +61,7 @@
                 218,
                 219,
                 220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227
+                221
               ]
             }
           ]
@@ -138,20 +73,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux006_focus_flash.rs",
-          "lines": "377-412",
+          "lines": "482-531",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/mod.rs",
+              "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109
+                127,
+                128,
+                129
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/types.rs",
+              "lines": [
+                185,
+                186,
+                187,
+                188,
+                189
               ]
             }
           ]
@@ -163,22 +102,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux006_focus_flash.rs",
-          "lines": "421-444",
+          "lines": "540-569",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/render.rs",
               "lines": [
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
                 139,
                 140,
                 141,
@@ -188,7 +116,18 @@
                 145,
                 146,
                 147,
-                148
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
               ]
             }
           ]
@@ -200,22 +139,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux006_focus_flash.rs",
-          "lines": "453-499",
+          "lines": "578-626",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/flash.rs",
               "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -225,7 +153,15 @@
                 60,
                 61,
                 62,
-                63
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
               ]
             }
           ]
@@ -233,26 +169,15 @@
       ]
     },
     {
-      "name": "focusing a pane scans a purple strip from the right edge to the left",
+      "name": "focusing a pane scans a purple strip from the bottom edge to the top",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux006_focus_flash.rs",
-          "lines": "158-251",
+          "lines": "157-294",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/flash.rs",
               "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -262,7 +187,15 @@
                 60,
                 61,
                 62,
-                63
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
               ]
             }
           ]
@@ -278,11 +211,11 @@
       "rust/fspec-tui/tests/mux006_focus_flash.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/views/multiplex/render.rs",
+      "rust/fspec-tui/src/views/multiplex/flash.rs",
       "rust/fspec-tui/src/views/multiplex/types.rs",
-      "rust/fspec-tui/src/app/mod.rs",
-      "rust/fspec-tui/src/views/multiplex/flash.rs"
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/multiplex/render.rs"
     ],
-    "totalLinesCovered": 475
+    "totalLinesCovered": 531
   }
 }

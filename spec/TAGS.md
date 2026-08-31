@@ -639,8 +639,8 @@ Tags tracking development status of features.
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |
 | `@mux-002` | Work unit MUX-002 — multiple agent panes with grouped agent-view cycling (agent window over open sessions, right-edge prompt, no left-edge wrap) |
 | `@mux-004` | Work unit MUX-004 — mux configuration dialog + /mux slash-popup entry (bare /mux opens the MuxConfigDialog; layout-only scope) |
-| `@mux-006` | Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (full-height 2-column strip, right-to-left) over the focused pane, re-armed on every focus change, live-only (never persisted) |
-| `@mux-007` | Work unit MUX-007 — mux focus flash settled final frame: after the 350ms right-to-left scan (MUX-006) elapses, the focused pane keeps the final frame painted (full-height 2-column dark-purple strip at the pane's left edge) until focus moves or mux is disabled; live-only, never persists the tick gate open |
+| `@mux-006` | Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (1-row-high full-width strip, bottom-to-top — MUX-008) over the focused pane, re-armed on every focus change, live-only (never persisted) |
+| `@mux-007` | Work unit MUX-007 — mux focus flash settled final frame: after the 350ms bottom-to-top scan (MUX-006) elapses, the focused pane keeps the final frame painted — a 1-row-high dark-purple bar across the pane's top row (MUX-008) — until focus moves or mux is disabled; live-only, never persists the tick gate open |
 | `@partial` | Partially implemented feature - work in progress |
 | `@prov-143` | Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them) |
 | `@refactor` | Code refactoring and technical improvements |

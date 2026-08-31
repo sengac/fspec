@@ -1,9 +1,10 @@
 //! MUX-007 — mux focus flash settled final frame: after the 350ms
-//! right-to-left scan (MUX-006) elapses, the focused pane KEEPS the scan's
-//! final frame painted — a full-height 2-column dark-purple strip (MUX-005
-//! footer purple, RGB 74, 44, 112) parked at the pane's LEFT edge — until
-//! focus moves or mux is disabled. The settled strip is repaint content,
-//! not an animation: it never keeps the run-loop draw gate open.
+//! bottom-to-top scan (MUX-006, MUX-008) elapses, the focused pane KEEPS
+//! the scan's final frame painted — a 1-ROW-HIGH dark-purple bar
+//! (MUX-005 footer purple, RGB 74, 44, 112) across the pane's TOP row
+//! (full width) — until focus moves or mux is disabled. The settled bar
+//! is repaint content, not an animation: it never keeps the run-loop
+//! draw gate open.
 //!
 //! Feature: spec/features/mux-focus-flash-settled-final-frame-persists-on-the-active-pane.feature
 
@@ -45,9 +46,15 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
     }
 }
 
-fn fresh() -> (Navigator, tokio::sync::mpsc::UnboundedReceiver<codelet_fspec_tui::components::Action>) {
+fn fresh() -> (
+    Navigator,
+    tokio::sync::mpsc::UnboundedReceiver<codelet_fspec_tui::components::Action>,
+) {
     let (tx, rx) = unbounded_channel();
-    (Navigator::new(std::sync::Arc::new(Theme::default()), tx), rx)
+    (
+        Navigator::new(std::sync::Arc::new(Theme::default()), tx),
+        rx,
+    )
 }
 
 /// MUX-001: enable the default preset on the Navigator's mux layout.
@@ -97,50 +104,42 @@ fn purple_cells(buf: &ratatui::buffer::Buffer) -> Vec<(u16, u16)> {
 
 fn symbols_in(buf: &ratatui::buffer::Buffer, x0: u16, y0: u16, w: u16, h: u16) -> Vec<String> {
     (0..h)
-        .flat_map(|dy| {
-            (0..w).map(move |dx| buf[(x0 + dx, y0 + dy)].symbol().to_string())
-        })
+        .flat_map(|dy| (0..w).map(move |dx| buf[(x0 + dx, y0 + dy)].symbol().to_string()))
         .collect()
 }
 
-/// Assert the purple cells form a full-height strip exactly 2 columns wide
-/// (1 column for a 1-column pane) starting at `left_col`.
-fn assert_left_edge_strip(painted: &[(u16, u16)], pane_x: u16, pane_w: u16, pane_y: u16, pane_h: u16) {
-    let width = pane_w.min(2);
-    assert!(!painted.is_empty(), "the strip must paint cells");
+/// Assert the purple cells form a 1-row-high bar across the pane's top
+/// row (full pane width).
+fn assert_top_row_bar(painted: &[(u16, u16)], pane_x: u16, pane_w: u16, pane_y: u16) {
+    assert!(!painted.is_empty(), "the bar must paint cells");
     for (x, y) in painted {
-        assert!(
-            (pane_x..pane_x + width).contains(x),
-            "strip column {x} must sit at the pane's left edge ({pane_x}..{} )",
-            pane_x + width
+        assert_eq!(
+            *y, pane_y,
+            "bar cell ({x}, {y}) must sit on the pane's top row"
         );
         assert!(
-            (pane_y..pane_y + pane_h).contains(y),
-            "strip cell row {y} must lie inside the pane"
+            (pane_x..pane_x + pane_w).contains(x),
+            "bar cell ({x}, {y}) must lie inside the pane"
         );
     }
     let mut cols: Vec<u16> = painted.iter().map(|&(x, _)| x).collect();
     cols.sort();
     cols.dedup();
-    assert_eq!(cols, (pane_x..pane_x + width).collect::<Vec<_>>());
-    let mut rows: Vec<u16> = painted.iter().map(|&(_, y)| y).collect();
-    rows.sort();
-    rows.dedup();
     assert_eq!(
-        rows.len() as u16,
-        pane_h,
-        "strip must span the full pane height"
+        cols,
+        (pane_x..pane_x + pane_w).collect::<Vec<_>>(),
+        "the bar must span the full pane width"
     );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: the active pane keeps the settled left-edge strip after the
+// Scenario: the active pane keeps the settled 1-row top bar after the
 // scan ends
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: the active pane keeps the settled left-edge strip after the scan ends
+/// Scenario: the active pane keeps the settled 1-row top bar after the scan ends
 #[test]
-fn the_active_pane_keeps_the_settled_left_edge_strip_after_the_scan_ends() {
+fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -160,15 +159,9 @@ fn the_active_pane_keeps_the_settled_left_edge_strip_after_the_scan_ends() {
     );
     let board_rect = nav.mux.pane_rects()[0];
     let agent_rect = nav.mux.pane_rects()[1];
-    // @step Then the Board pane shows the dark purple background (RGB 74, 44, 112) as a full-height 2-column strip at the pane's left edge
+    // @step Then the Board pane shows the dark purple background (RGB 74, 44, 112) as a 1-row-high bar across the full pane width on the pane's top row
     let settled = purple_cells(&buf);
-    assert_left_edge_strip(
-        &settled,
-        board_rect.x,
-        board_rect.width,
-        board_rect.y,
-        board_rect.height,
-    );
+    assert_top_row_bar(&settled, board_rect.x, board_rect.width, board_rect.y);
     // @step And the Agent pane rect has no dark purple background
     for (x, y) in &settled {
         assert!(
@@ -176,7 +169,7 @@ fn the_active_pane_keeps_the_settled_left_edge_strip_after_the_scan_ends() {
             "settled strip leaked into the Agent pane at ({x}, {y})"
         );
     }
-    // @step And rendering more frames later the Board pane still shows the same left-edge strip
+    // @step And rendering more frames later the Board pane still shows the same 1-row top bar
     let later = render_frames(&mut nav, &board, &mut agent, 5);
     assert_eq!(
         purple_cells(&later),
@@ -207,7 +200,7 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
     board.replace_work_units(vec![wu("AUTH-001", "backlog")]);
     let mut agent = AgentViewStore::default();
     seed_agent_session(&mut agent);
-    // @step And the Agent pane is focused with a settled left-edge strip
+    // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
     let settled_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
     let agent_rect = nav.mux.pane_rects()[1];
@@ -221,9 +214,16 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
         "the agent pane must show the settled strip before the focus move"
     );
     // @step When I press Shift+Left
-    let result = nav.handle_event(&Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::SHIFT)), &board);
+    let result = nav.handle_event(
+        &Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::SHIFT)),
+        &board,
+    );
     assert!(result.is_consumed());
-    assert_eq!(nav.mux.focus(), 0, "Shift+Left must move focus to the Board pane");
+    assert_eq!(
+        nav.mux.focus(),
+        0,
+        "Shift+Left must move focus to the Board pane"
+    );
     assert_eq!(
         nav.mux.flash_clock_ms(),
         0,
@@ -238,19 +238,20 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
         );
     }
     // @step And the Board pane is focused and its scan is armed at the start of the 350ms window
-    assert_eq!(nav.mux.flash_pane(), Some(0), "scan must be armed on the Board pane");
+    assert_eq!(
+        nav.mux.flash_pane(),
+        Some(0),
+        "scan must be armed on the Board pane"
+    );
     // @step When 350ms of rendered frames have elapsed
     let done = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
-    assert!(!nav.mux.is_flash_active(), "the board scan must have settled");
-    // @step Then the Board pane shows the dark purple strip at its left edge
-    let new_settled = purple_cells(&done);
-    assert_left_edge_strip(
-        &new_settled,
-        board_rect.x,
-        board_rect.width,
-        board_rect.y,
-        board_rect.height,
+    assert!(
+        !nav.mux.is_flash_active(),
+        "the board scan must have settled"
     );
+    // @step Then the Board pane shows the dark purple 1-row top bar across its top row
+    let new_settled = purple_cells(&done);
+    assert_top_row_bar(&new_settled, board_rect.x, board_rect.width, board_rect.y);
     // @step And the Agent pane still has no dark purple background
     for (x, y) in &new_settled {
         assert!(
@@ -275,7 +276,7 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
     board.replace_work_units(vec![wu("AUTH-001", "backlog")]);
     let mut agent = AgentViewStore::default();
     seed_agent_session(&mut agent);
-    // @step And the Agent pane is focused with a settled left-edge strip
+    // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
     render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
     let agent_rect = nav.mux.pane_rects()[1];
@@ -290,7 +291,10 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
     let buf = render_frames(&mut nav, &board, &mut agent, 1);
     let painted = purple_cells(&buf);
     // @step Then every dark purple cell lies inside the Agent pane rect
-    assert!(!painted.is_empty(), "the settled strip must still be painted");
+    assert!(
+        !painted.is_empty(),
+        "the settled strip must still be painted"
+    );
     for (x, y) in &painted {
         assert!(
             agent_rect.contains(ratatui::layout::Position { x: *x, y: *y }),
@@ -298,7 +302,13 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
         );
     }
     // @step And the Agent pane glyphs are unchanged by the strip (background-only tint)
-    let glyphs_now = symbols_in(&buf, agent_rect.x, agent_rect.y, agent_rect.width, agent_rect.height);
+    let glyphs_now = symbols_in(
+        &buf,
+        agent_rect.x,
+        agent_rect.y,
+        agent_rect.width,
+        agent_rect.height,
+    );
     assert_eq!(
         glyphs_settled, glyphs_now,
         "the strip must tint BACKGROUNDS only — pane glyphs must survive"
@@ -337,7 +347,7 @@ fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing
     let board = BoardStore::default();
     let mut agent = AgentViewStore::default();
     seed_agent_session(&mut agent);
-    // @step And the Agent pane is focused with a settled left-edge strip
+    // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
     let _ = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
     let agent_rect = nav.mux.pane_rects()[1];
@@ -348,16 +358,10 @@ fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing
         !tick_should_draw(false, false, false, false, nav.is_mux_flash_active()),
         "the settled strip must NOT keep the draw gate open"
     );
-    // @step And the next user-triggered frame still paints the settled left-edge strip on the Agent pane
+    // @step And the next user-triggered frame still paints the settled 1-row top bar on the Agent pane
     let buf = render_frames(&mut nav, &board, &mut agent, 1);
     let mut painted = purple_cells(&buf);
-    assert_left_edge_strip(
-        &painted,
-        agent_rect.x,
-        agent_rect.width,
-        agent_rect.y,
-        agent_rect.height,
-    );
+    assert_top_row_bar(&painted, agent_rect.x, agent_rect.width, agent_rect.y);
     // Pure-math companion: the painted settled cells equal the pure
     // pattern at the settle boundary (the final scan frame's geometry).
     painted.sort();

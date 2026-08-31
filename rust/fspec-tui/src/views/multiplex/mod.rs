@@ -15,7 +15,7 @@
 //!   - `splits.rs` — pure percentage-scale math (equal scale, rescale)
 //!   - `window.rs` — MUX-002 agent window (rotation, clamping, new-agent)
 //!   - `rects.rs`  — live pane-rect recomputation
-//!   - `flash.rs`  — MUX-006 pure focus-flash pattern math (right-to-left scan)
+//!   - `flash.rs`  — MUX-006 pure focus-flash pattern math (bottom-to-top scan)
 //!   - `render.rs` — pane dispatch + dividers + mux footer paint
 //!   - `keys.rs`   — keyboard routing classification
 //!   - `mouse.rs`  — hit-test, click-to-focus, per-divider drag

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-31T05:12:05.664Z",
+    "lastUpdated": "2026-08-31T13:35:43.099Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -93,7 +93,7 @@
     "WATCH": 24,
     "UPD": 4,
     "BOARD": 22,
-    "MUX": 7
+    "MUX": 8
   },
   "states": {
     "backlog": [
@@ -1673,7 +1673,8 @@
       "MUX-005",
       "MUX-006",
       "MUX-007",
-      "CLI-015"
+      "CLI-015",
+      "MUX-008"
     ],
     "blocked": [
       "QUERY-001",
@@ -227527,11 +227528,11 @@
     },
     "MUX-006": {
       "id": "MUX-006",
-      "title": "Mux focus flash — 350ms right-to-left scan strip on the selected pane",
+      "title": "Mux focus flash — 350ms bottom-to-top scan strip on the selected pane",
       "type": "story",
       "status": "done",
       "createdAt": "2026-08-30T09:32:43.724Z",
-      "updatedAt": "2026-08-30T23:47:11.678Z",
+      "updatedAt": "2026-08-31T12:07:56.182Z",
       "description": "When a mux pane becomes the selected (focused) pane, paint a brief 350ms background scan across the focused pane rect using the mux footer dark purple (RGB 74, 44, 112). Single animation: a full-height 2-column purple strip sweeping from the pane's RIGHT edge to the LEFT (right-to-left scanner); no burst ring, no rain, no 2-row band. Triggers on every focus change while mux is enabled (Shift+Left/Right, click-to-focus, Enter on board work unit, BackToBoard, new-agent focus, pane-count changes, fresh mux entry); re-arming restarts the 350ms window at the right edge. The run-loop draw gate (tick_should_draw) gains a 5th operand (is_mux_flash_active) so the 16ms tick keeps redrawing during the 350ms window even when idle. Clock is a render-driven animation clock (advance +16ms per render frame in render_with_stores), same pattern as AgentView::animation_clock_ms. Mux off / single-view rendering must remain byte-for-byte unchanged (no purple cells).",
       "epic": "mux",
       "children": [],
@@ -227692,11 +227693,11 @@
     },
     "MUX-007": {
       "id": "MUX-007",
-      "title": "Mux focus flash — settled final frame persists on the active pane",
+      "title": "Mux focus flash — settled 1-row top bar persists on the active pane",
       "type": "story",
       "status": "done",
       "createdAt": "2026-08-31T00:28:11.141Z",
-      "updatedAt": "2026-08-31T00:58:02.003Z",
+      "updatedAt": "2026-08-31T12:08:00.798Z",
       "description": "After the 350ms right-to-left scan (MUX-006) elapses, the focused mux pane keeps the scan's final frame painted for good: the full-height 2-column dark-purple strip (MUX_FOOTER_BG) parked at the pane's LEFT edge. The settled strip tracks the focused pane (focus move clears the old pane's strip and plays the new pane's scan), is background-only (glyphs stay readable, clipped to the pane rect), never keeps the tick gate open (no perpetual redraw), and is live-only (MuxConfig serde shape unchanged).",
       "epic": "mux",
       "children": [],
@@ -227911,6 +227912,81 @@
         "spec/attachments/CLI-015/ast-research-astgrep-tool-bridge.md"
       ],
       "estimate": 8
+    },
+    "MUX-008": {
+      "id": "MUX-008",
+      "title": "Focus flash scans bottom-to-top and settles as a 1-row top bar",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-08-31T11:53:44.384Z",
+      "updatedAt": "2026-08-31T13:35:43.099Z",
+      "description": "User decision 2026-08-31: the MUX-006 focus-flash scan strip must sweep from the BOTTOM edge of the pane UP to the TOP (not right-to-left), and the MUX-007 settled final frame must be a 1-row-high bar across the pane's TOP row (not a full-height 2-column left-edge strip). Supersedes MUX-006 R3 and MUX-007 R1.",
+      "epic": "mux",
+      "children": [],
+      "userStory": {
+        "role": "developer supervising multiple agents in mux mode",
+        "action": "see the focus flash sweep from the bottom of the newly-selected pane up to its top and settle as a 1-row top bar",
+        "benefit": "the active pane stays distinguishable without a full-height accent eating the pane edge"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-31T11:54:04.196Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-08-31T12:11:22.937Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-08-31T12:23:35.447Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-08-31T13:15:39.763Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-08-31T13:35:43.099Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: the MUX-006 focus-flash scan strip is 1 ROW HIGH (a single full-width row of dark purple) and sweeps from the pane's BOTTOM edge UP to the TOP over the 350ms window (bottom-to-top). It spans the full width of the focused pane. The last painted frame sits exactly on the pane's TOP row, which is also the settled frame (R2). Supersedes MUX-006 R3 (full-height 2-column right-to-left strip).",
+          "deleted": false,
+          "createdAt": "2026-08-31T12:02:09.926Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: the MUX-007 settled final frame is a 1-ROW-HIGH bar across the pane's TOP row (the full width of the focused pane, dark purple MUX_FOOTER_BG background). It is exactly the last painted scan frame of R1, so clocks past the 350ms window settle to that same top-row bar instead of the strip vanishing. Supersedes MUX-007 R1 (full-height 2-column strip at the left edge).",
+          "deleted": false,
+          "createdAt": "2026-08-31T12:02:48.404Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With Board | Agent active and focus on the Board pane: frame 1 shows a single purple row across the full width at the pane's BOTTOM edge; 9 frames later that row has moved UP to a mid-scan position (still 1 row high, full width); after 350ms the pane shows exactly 1 purple row at its TOP row (full width) on every subsequent frame.",
+          "deleted": false,
+          "createdAt": "2026-08-31T12:03:26.956Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Changes live in the pure pattern fn flash_cells (rust/fspec-tui/src/views/multiplex/flash.rs): replace the horizontal X-axis strip math with a vertical 1-row band traveling from rect.y + height - 1 (bottom) up to rect.y (top); clocks >= LAST_PAINT_MS settle to the top-row bar (which equals the last scan frame). No new state: MultiplexLayout flash_pane/flash_clock_ms, render.rs paint pass and the is_mux_flash_active tick-gate chain stay as-is. MUX-006 R3 and MUX-007 R1 scenario text updated in their feature files; their inline tests in flash.rs and tests/mux006_focus_flash.rs / tests/mux007_settled_final_frame.rs are updated to the new geometry (1 row high, full width).",
+          "deleted": false,
+          "createdAt": "2026-08-31T12:09:19.725Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/MUX-008/ast-research-flash-geometry.md"
+      ]
     }
   }
 }

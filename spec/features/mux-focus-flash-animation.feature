@@ -5,13 +5,13 @@
 @ui-enhancement
 @keyboard-navigation
 @mouse-events
-Feature: Mux focus flash — 350ms right-to-left scan strip on the selected pane
+Feature: Mux focus flash — 350ms bottom-to-top scan strip on the selected pane
   """
   When a mux pane becomes the selected (focused) pane, paint a brief 350ms
   background scan across the focused pane rect using the mux footer dark
   purple (MUX_FOOTER_BG = Color::Rgb(74, 44, 112), MUX-005). The animation
-  is a single full-height 2-column scan strip that sweeps from the pane's
-  RIGHT edge to the LEFT over the 350ms window (a right-to-left scanner).
+  is a single full-width 1-row scan strip that sweeps from the pane's
+  BOTTOM edge to the TOP over the 350ms window (a bottom-to-top scanner).
   Only cell BACKGROUNDS are touched — pane content symbols are never
   blanked. The flash is re-armed on every focus change while mux is
   enabled (Shift+Left/Right focus movement, click-to-focus, Enter on a
@@ -39,16 +39,16 @@ Feature: Mux focus flash — 350ms right-to-left scan strip on the selected pane
   #
   # BUSINESS RULES:
   #   1. R1: the flash uses the SAME dark purple as the mux footer bar (Color::Rgb(74, 44, 112) — MUX-005 MUX_FOOTER_BG) and is painted as cell BACKGROUNDS only — pane content symbols are never blanked or modified
-  #   2. R2: the flash lasts 350ms from the focus change; during that window the scan strip is always present (right-edge start to left-edge end) and is clipped to the focused pane rect
-  #   3. R3: the flash is a single full-height vertical scan strip — 2 columns wide, all rows of the focused pane — sweeping from the RIGHT edge of the pane to the LEFT over the 350ms window (right-to-left); there are no other phases — no burst ring, no rain, no 2-row band
-  #   4. R4: the flash is re-armed on EVERY focus change while mux is enabled (Shift+Left/Right focus movement, click-to-focus, Enter on a board work unit → agent pane, BackToBoard → board pane, new-agent focus, pane-count/pane-list changes, fresh mux entry); re-arming restarts the 350ms window at the start of the right-to-left scan
+  #   2. R2: the flash lasts 350ms from the focus change; during that window the scan strip is always present (bottom-edge start to top-edge end) and is clipped to the focused pane rect
+  #   3. R3: the flash is a single full-width horizontal scan strip — 1 ROW high, all columns of the focused pane — sweeping from the BOTTOM edge of the pane to the TOP over the 350ms window (bottom-to-top); there are no other phases — no burst ring, no rain, no full-height band (SUPERSEDED 2026-08-31 by MUX-008: the strip was a full-height 2-column right-to-left band)
+  #   4. R4: the flash is re-armed on EVERY focus change while mux is enabled (Shift+Left/Right focus movement, click-to-focus, Enter on a board work unit → agent pane, BackToBoard → board pane, new-agent focus, pane-count/pane-list changes, fresh mux entry); re-arming restarts the 350ms window at the start of the bottom-to-top scan
   #   5. R5: no purple cell is ever painted OUTSIDE the focused pane's rect (dividers, other panes, the footer row, and the terminal area outside the body are untouched) and pane content remains readable under the flash
   #   6. R6: the 16ms render tick keeps redrawing during the flash even when nothing else is animating (a 5th tick_should_draw operand); after the 350ms window elapses the flash stops and the tick gate returns to idle
   #   7. R7: when mux is off (single-view modes), no flash state is armed, no purple flash cells are painted, and the tick gate's mux operand is false — single-view behavior is byte-for-byte unchanged (rust-mux-mode.feature R10)
   #   8. R8: flash state is live-only — it is NOT persisted with MuxConfig (tui.mux in fspec-config.json keeps its existing serde shape) and a restart never resumes a flash mid-flight
   #
   # EXAMPLES:
-  #   1. With Board | Agent active and focus on the Board pane, pressing Shift+Right moves focus to the Agent pane: a full-height 2-column purple strip appears at the Agent pane's RIGHT edge and sweeps left across the pane over 350ms, then the flash is gone while the Agent pane stays focused
+  #   1. With Board | Agent active and focus on the Board pane, pressing Shift+Right moves focus to the Agent pane: a single full-width purple row appears at the Agent pane's BOTTOM edge and sweeps up across the pane over 350ms, then the flash is gone while the Agent pane stays focused
   #   2. Clicking inside the Board pane while the Agent pane is focused re-arms the flash on the Board pane; the Agent pane's flash (if still in flight) is not re-armed
   #   3. With the Board pane focused and work unit AUTH-001 selected, pressing Enter binds the unit and focuses the agent pane — the agent pane flashes; the board pane does not
   #   4. With the session idle (no spinner, no input animation), a Shift+Left focus change still produces a full 350ms scan flash — the run loop keeps ticking for the flash alone
@@ -63,19 +63,19 @@ Feature: Mux focus flash — 350ms right-to-left scan strip on the selected pane
   # ========================================
   Background: User Story
     As a developer supervising multiple agents in mux mode
-    I want a brief 350ms purple scan strip to sweep from the right to the left across the pane that just became selected
+    I want a brief 350ms purple scan strip to sweep from the bottom to the top across the pane that just became selected
     So that I know instantly which pane has keyboard focus without staring at the footer indicator
 
-  # R1 + R3: the flash paints a full-height 2-column strip scanning right-to-left
-  Scenario: focusing a pane scans a purple strip from the right edge to the left
+  # R1 + R3: the flash paints a full-width 1-row strip scanning bottom-to-top
+  Scenario: focusing a pane scans a purple strip from the bottom edge to the top
     Given mux mode is active with the default two-pane grid (Board | Agent)
     And the Agent pane is focused
     When the mux frame is rendered to a terminal buffer
-    Then the Agent pane rect shows the dark purple background (RGB 74, 44, 112) as a full-height 2-column strip at the pane's right edge
+    Then the Agent pane rect shows the dark purple background (RGB 74, 44, 112) as a full-width 1-row strip at the pane's bottom edge
     And the Board pane rect has no dark purple flash background
-    And rendering a few frames later the strip has moved LEFT (a mid-scan position, still 2 columns wide)
-    And rendering to the end of the 350ms window shows the strip at the pane's left edge
-    And after 350ms of rendered frames the flash has ended and no flash purple cells remain in either pane
+    And rendering a few frames later the strip has moved UP (a mid-scan position, still 1 row high and full width)
+    And rendering to the end of the 350ms window shows the strip at the pane's top edge
+    And after 350ms of rendered frames the scan animation has ended (the focused pane keeps the settled 1-row top bar — MUX-007 R1, MUX-008 R2)
 
   # R2 + R5: the flash stays inside the focused pane rect and never erases content
   Scenario: the flash stays inside the focused pane and keeps pane content readable
@@ -95,7 +95,7 @@ Feature: Mux focus flash — 350ms right-to-left scan strip on the selected pane
     When I click inside the Board pane rect
     Then the Board pane is focused and its flash is armed
     When I press Enter on the selected work unit
-    Then the Agent pane is focused and its flash is re-armed (restarted at the right edge)
+    Then the Agent pane is focused and its flash is re-armed (restarted at the bottom edge)
     When BackToBoard lands
     Then the Board pane is focused within the grid and its flash is armed
 

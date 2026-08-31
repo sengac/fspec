@@ -94,7 +94,7 @@ pub use state::App;
 ///   produces no render ticks.
 /// - MUX-006: `is_mux_flash_active=true` keeps the 16ms tick redrawing
 ///   while the mux focus flash is inside its 350ms window — without
-///   this fifth flag the right-to-left scan strip freezes after the
+///   this fifth flag the bottom-to-top scan row freezes after the
 ///   focus-change event's own redraw because an idle session produces no
 ///   render ticks.
 #[must_use]

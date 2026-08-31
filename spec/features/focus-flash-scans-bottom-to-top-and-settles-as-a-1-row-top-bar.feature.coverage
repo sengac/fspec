@@ -1,0 +1,187 @@
+{
+  "scenarios": [
+    {
+      "name": "focusing a pane scans a purple strip from the bottom edge to the top",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux008_bottom_to_top_flash.rs",
+          "lines": "138-274",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/flash.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "the settled frame is a 1-row top bar that persists on the focused pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux008_bottom_to_top_flash.rs",
+          "lines": "283-356",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "focus change clears the old pane's bar and settles the new pane's top bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux008_bottom_to_top_flash.rs",
+          "lines": "365-448",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/types.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "the bottom-to-top flash and settled top bar are deterministic, background-only and off when mux is disabled",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux008_bottom_to_top_flash.rs",
+          "lines": "457-539",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/mux008_bottom_to_top_flash.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/multiplex/flash.rs",
+      "rust/fspec-tui/src/views/multiplex/render.rs",
+      "rust/fspec-tui/src/views/multiplex/types.rs"
+    ],
+    "totalLinesCovered": 483
+  }
+}
