@@ -276,6 +276,12 @@ AgentManager, SessionSearch, and DeepSearch enable parallel work across multiple
 
 ---
 
+## Multiplexing
+
+Watch the whole factory at once: mux mode splits the TUI screen into a grid of live views—Board, agent sessions, Changed Files, and Checkpoints—so you can supervise parallel production without switching views. Type `/mux` to configure the grid, `Shift+←/→` to move pane focus, and drag the dividers to resize. See [docs/MULTIPLEXING.md](docs/MULTIPLEXING.md) for the full configuration reference and how input routing works.
+
+---
+
 ## Using with external agents
 
 fspec works as tooling for Claude Code, Cursor, Codex, or any AI agent. See [docs/EXTERNAL.md](docs/EXTERNAL.md) for setup instructions.
