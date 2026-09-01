@@ -91,11 +91,11 @@
       ]
     },
     {
-      "name": "CLI --context with unknown name prints empty array",
+      "name": "CLI --context with unknown name errors and lists available contexts",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "503-526",
+          "lines": "533-556",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",

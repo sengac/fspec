@@ -263,11 +263,13 @@ fn rust_port_filtering_by_context_returns_bounded_context_plus_linked_items() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// rust-port.feature — Scenario 6: Filtering by unknown context returns empty
+// rust-port.feature — Scenario 6: Filtering by unknown context errors and
+// lists available contexts (DISC-003 rule 10 supersedes the old
+// "returns an empty array" behavior)
 // ═════════════════════════════════════════════════════════════════════════
 
 #[test]
-fn rust_port_filtering_by_unknown_context_returns_empty_array() {
+fn rust_port_filtering_by_unknown_context_errors_and_lists_available_contexts() {
     // @step Given spec/foundation.json contains a bounded_context with text='Work Management' and three items linked to it
     let ws = tempfile::tempdir().expect("tempdir");
     write_foundation(ws.path(), foundation_bc_with_linked_items());
@@ -275,14 +277,21 @@ fn rust_port_filtering_by_unknown_context_returns_empty_array() {
     // @step When I dispatch show-foundation-event-storm with context='Nonexistent'
     let result = dispatch(ws.path(), r#"{"context":"Nonexistent"}"#);
 
-    // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got {result:?}");
-    let parsed: serde_json::Value =
-        serde_json::from_str(&result.data).expect("dispatcher data is JSON");
-    let arr = parsed["data"].as_array().expect("data is array");
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected success=false; got {result:?}");
 
-    // @step And the data field is an empty JSON array
-    assert_eq!(arr.len(), 0, "expected empty array; got {arr:?}");
+    // @step And the error message contains "Unknown context 'Nonexistent'"
+    let error = result.error.clone().unwrap_or_default();
+    assert!(
+        error.contains("Unknown context 'Nonexistent'"),
+        "error must name the bad context: {error:?}"
+    );
+
+    // @step And the error message lists 'Work Management' as an available bounded context
+    assert!(
+        error.contains("Work Management"),
+        "error must list the available context: {error:?}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -515,11 +524,13 @@ fn cli_context_filter_returns_bc_plus_linked_items() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// cli-subcommand.feature — Scenario 7: CLI --context unknown prints empty
+// cli-subcommand.feature — Scenario 7: CLI --context unknown errors and
+// lists available contexts (DISC-003 rule 10 supersedes the old
+// "prints empty array" behavior)
 // ═════════════════════════════════════════════════════════════════════════
 
 #[test]
-fn cli_context_unknown_prints_empty_array() {
+fn cli_context_unknown_errors_and_lists_available_contexts() {
     // @step Given a temp workspace contains spec/foundation.json with a bounded_context text='Work Management' and items linked to it
     let ws = tempfile::tempdir().expect("tempdir");
     write_foundation(ws.path(), foundation_bc_with_linked_items());
@@ -527,13 +538,21 @@ fn cli_context_unknown_prints_empty_array() {
     // @step When I run `./rust/target/release/fspec show-foundation-event-storm --context Nonexistent` from that workspace
     let (code, stdout, stderr) = run_sfes(ws.path(), &["--context", "Nonexistent"]);
 
-    // @step Then the command exits 0
-    assert_eq!(code, 0, "must exit 0; stderr={stderr}");
+    // @step Then the command exits 1
+    assert_eq!(code, 1, "must exit 1; stderr={stderr}");
 
-    // @step And stdout parses as a JSON array with 0 elements
-    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
-    let arr = parsed.as_array().expect("stdout is JSON array");
-    assert_eq!(arr.len(), 0);
+    // @step And stderr contains "Unknown context 'Nonexistent'"
+    assert!(
+        stderr.contains("Unknown context 'Nonexistent'"),
+        "stderr must name the bad context: {stderr}"
+    );
+
+    // @step And stderr lists 'Work Management' as an available bounded context
+    assert!(
+        stderr.contains("Work Management"),
+        "stderr must list the available context: {stderr}"
+    );
+    let _ = stdout;
 }
 
 // ═════════════════════════════════════════════════════════════════════════

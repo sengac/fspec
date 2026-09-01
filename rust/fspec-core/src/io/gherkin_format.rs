@@ -220,7 +220,8 @@ fn format_feature_into(
     // Insert comments before tags (or before feature keyword if no tags).
     // Tags appear before the feature keyword line. Scan source to find them.
     if !feature.tags.is_empty() {
-        let first_tag_line = find_first_tag_line(source, 0, feature.position.line.saturating_sub(1));
+        let first_tag_line =
+            find_first_tag_line(source, 0, feature.position.line.saturating_sub(1));
         if let Some(tag_line) = first_tag_line {
             insert_comments_before(tag_line, comment_map, lines);
         } else {
@@ -464,7 +465,14 @@ fn format_rule(
         // Bound the prose-only Background description by the first sibling
         // scenario inside the Rule (BUG-157).
         let next_sibling = rule.scenarios.first().map(|s| s.position.line);
-        format_background(bg, source, lines, base_indent + 1, comment_map, next_sibling);
+        format_background(
+            bg,
+            source,
+            lines,
+            base_indent + 1,
+            comment_map,
+            next_sibling,
+        );
         idx += 1;
     }
 
@@ -487,7 +495,14 @@ fn format_rule(
         // Bound a step-less scenario's description by the next sibling
         // scenario inside the Rule (BUG-158).
         let next_sibling = rule_scenarios.get(sidx + 1).map(|s| s.position.line);
-        format_scenario(scenario, source, lines, base_indent + 1, comment_map, next_sibling);
+        format_scenario(
+            scenario,
+            source,
+            lines,
+            base_indent + 1,
+            comment_map,
+            next_sibling,
+        );
         idx += 1;
     }
 }
@@ -1086,7 +1101,10 @@ mod tests {
         let twice = format_feature(&parse(&once), &once);
 
         // @step Then the output of the second run is byte-identical to the output of the first run
-        assert_eq!(once, twice, "formatting must be idempotent, got:\n{once}\n---\n{twice}");
+        assert_eq!(
+            once, twice,
+            "formatting must be idempotent, got:\n{once}\n---\n{twice}"
+        );
     }
 
     /// Feature: spec/features/gherkin-background-formatting.feature
@@ -1178,7 +1196,10 @@ mod tests {
         let twice = format_feature(&parse(&once), &once);
 
         // @step Then the output of the second run is byte-identical to the output of the first run
-        assert_eq!(once, twice, "formatting must be idempotent, got:\n{once}\n---\n{twice}");
+        assert_eq!(
+            once, twice,
+            "formatting must be idempotent, got:\n{once}\n---\n{twice}"
+        );
     }
 
     /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature

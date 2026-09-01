@@ -634,6 +634,7 @@ Tags tracking development status of features.
 | `@cont-008` | Work unit identifier tag for CONT-008 — goal state back-sync to chrome: goal-satisfied write-back, resurrection guard, TUI goal cache clear and live /goal counters |
 | `@cont-009` | Work unit identifier tag for CONT-009 — NAPI agent_loop dispatch-site arming: shared BackgroundSession completion-contract sync helper called by both agent-loop twins |
 | `@deprecated` | Deprecated |
+| `@disc-003` | DISC-003: Refactor foundation discovery system for agent clarity — unified progress status, draft-aware show-foundation, universal next-step guidance |
 | `@done` | Complete |
 | `@enhancement` | Feature enhancement or improvement |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |
@@ -755,4 +756,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-31T23:30:01.215Z_
+_Last updated: 2026-09-01T14:11:12.455Z_

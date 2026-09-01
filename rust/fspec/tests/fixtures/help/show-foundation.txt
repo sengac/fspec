@@ -14,6 +14,10 @@ OPTIONS
     List section names only (without content)
   --line-numbers
     Show line numbers in output
+  --draft
+    Read from foundation.json.draft instead of foundation.json
+  --final
+    DISC-003: force the finalized foundation.json even when a draft exists
 
 EXAMPLES
   1. Show all foundation data

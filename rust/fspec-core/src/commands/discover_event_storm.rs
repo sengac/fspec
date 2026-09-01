@@ -125,12 +125,10 @@ fspec astgrep --pattern 'async function $NAME($$$ARGS) { $$$BODY }' --lang types
 /// Assembles the full event-storm guidance for the current mode
 /// ([`crate::utils::mode::in_capture_mode`]).
 fn event_storm_guidance() -> String {
-    EVENT_STORM_GUIDANCE_PREFIX
-        .replace(
-            "__AST_RESEARCH_BLOCK__",
-            &ast_research_block(crate::utils::mode::in_capture_mode()),
-        )
-        + EVENT_STORM_GUIDANCE_SUFFIX
+    EVENT_STORM_GUIDANCE_PREFIX.replace(
+        "__AST_RESEARCH_BLOCK__",
+        &ast_research_block(crate::utils::mode::in_capture_mode()),
+    ) + EVENT_STORM_GUIDANCE_SUFFIX
 }
 const EVENT_STORM_GUIDANCE_PREFIX: &str = r####"## Step 4: Feature Event Storm (BEFORE Example Mapping)
 

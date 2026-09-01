@@ -80,6 +80,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             println!("  Name: {name}");
             println!("  Description: {description}");
             println!("  Goals: {goals_joined}");
+            // DISC-003 rule 4/14: print the progress trailer.
+            crate::common::print_next_steps(&parsed);
             Ok(0)
         }
         Err(err) => {

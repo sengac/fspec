@@ -51,7 +51,10 @@ async fn fetch_expected_digest(
     let client = reqwest::Client::new();
     let resp = client
         .get(&url)
-        .header(reqwest::header::USER_AGENT, format!("fspec/{}", cfg.current_version))
+        .header(
+            reqwest::header::USER_AGENT,
+            format!("fspec/{}", cfg.current_version),
+        )
         .send()
         .await
         .map_err(|e| UpdateError::Network(e.to_string()))?;
@@ -78,10 +81,7 @@ async fn fetch_expected_digest(
         if name != asset_name {
             continue;
         }
-        let digest = asset
-            .get("digest")
-            .and_then(|d| d.as_str())
-            .unwrap_or("");
+        let digest = asset.get("digest").and_then(|d| d.as_str()).unwrap_or("");
         let hex = digest.strip_prefix("sha256:").unwrap_or(digest);
         if hex.len() == 64 {
             return Ok(hex.to_ascii_lowercase());

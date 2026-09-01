@@ -24,10 +24,12 @@ use anyhow::{Context, Result};
 use codelet_fspec_core::commands::validate_foundation_schema;
 use serde::Deserialize;
 
-/// `validate-foundation-schema` accepts no flags; the struct exists only to
-/// keep the `forward!` macro call shape consistent with the other bridges.
+/// `validate-foundation-schema` accepts a DISC-003 `--draft` flag to validate
+/// the draft file instead of the finalized foundation.
 #[derive(Debug, Default)]
-pub struct CliArgs;
+pub struct CliArgs {
+    pub draft: bool,
+}
 
 /// Structured `{success, output?, error?}` envelope returned by the core
 /// command.
@@ -43,10 +45,11 @@ struct Outcome {
 /// Entry point invoked from `main.rs` for the `validate-foundation-schema`
 /// clap subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
-pub async fn run(_args: CliArgs) -> Result<u8> {
+pub async fn run(args: CliArgs) -> Result<u8> {
     let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
-    let payload = validate_foundation_schema::run("{}", &project_root).await?;
+    let payload_args = serde_json::json!({ "draft": args.draft }).to_string();
+    let payload = validate_foundation_schema::run(&payload_args, &project_root).await?;
     let outcome: Outcome =
         serde_json::from_str(&payload).context("parse validate-foundation-schema JSON payload")?;
 

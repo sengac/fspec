@@ -76,11 +76,11 @@
       ]
     },
     {
-      "name": "Filtering by an unknown context name returns an empty array",
+      "name": "Filtering by an unknown context name errors and lists available contexts",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "260-281",
+          "lines": "272-295",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_foundation_event_storm.rs",

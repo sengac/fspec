@@ -42,7 +42,10 @@ pub async fn fetch_latest_release(cfg: &UpdateConfig) -> Result<Release, UpdateE
     let client = reqwest::Client::new();
     let resp = client
         .get(&url)
-        .header(reqwest::header::USER_AGENT, user_agent(&cfg.current_version))
+        .header(
+            reqwest::header::USER_AGENT,
+            user_agent(&cfg.current_version),
+        )
         .send()
         .await
         .map_err(|e| UpdateError::Network(e.to_string()))?;
@@ -90,10 +93,7 @@ pub async fn fetch_latest_release(cfg: &UpdateConfig) -> Result<Release, UpdateE
 /// Non-semver strings fall back to a string inequality (newer tag != current
 /// tag). This keeps the engine robust against pre-release suffixes.
 pub fn is_newer_version(candidate: &str, current: &str) -> bool {
-    match (
-        Version::parse(candidate),
-        Version::parse(current),
-    ) {
+    match (Version::parse(candidate), Version::parse(current)) {
         (Ok(c), Ok(cur)) => c > cur,
         _ => candidate != current,
     }
@@ -136,7 +136,10 @@ pub async fn download_asset_to_temp(
     let client = reqwest::Client::new();
     let resp = client
         .get(&url)
-        .header(reqwest::header::USER_AGENT, user_agent(&cfg.current_version))
+        .header(
+            reqwest::header::USER_AGENT,
+            user_agent(&cfg.current_version),
+        )
         .send()
         .await
         .map_err(|e| UpdateError::Network(e.to_string()))?;

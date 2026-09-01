@@ -85,56 +85,79 @@ command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "
 
 ```
 command: "discover-foundation"
-# Creates foundation.json.draft with [QUESTION:] and [DETECTED:] placeholders
+# Creates foundation.json.draft with [QUESTION:] and [DETECTED:] placeholders.
+# The result now includes ALL remaining fields with fix commands + examples.
 
-command: "update-foundation", args: {"key": "projectName", "value": "My Project"}
-command: "update-foundation", args: {"key": "projectVision", "value": "A tool that..."}
+# Update a single field (args use {section, content}):
+command: "update-foundation", args: {"section": "projectName", "content": "My Project"}
+command: "update-foundation", args: {"section": "projectVision", "content": "A tool that..."}
 
-command: "add-capability", args: {"capability": "User Authentication", "description": "Login and session management"}
-command: "remove-capability", args: {"capability": "[QUESTION: What can users DO?]"}
+# Capabilities (args use {name, description}):
+command: "add-capability", args: {"name": "User Authentication", "description": "Login and session management"}
+command: "remove-capability", args: {"name": "[QUESTION: What can users DO?]"}
 
-command: "add-persona", args: {"name": "Developer"}, "description": "Builds features", "goal": "Ship quality code faster"
+# Personas (args use {name, description, goals[]}):
+command: "add-persona", args: {"name": "Developer", "description": "Builds features", "goals": ["Ship quality code faster"]}
 command: "remove-persona", args: {"name": "[QUESTION: Who uses this?]"}
 
+# Check progress at any time (read-only, no writes):
+command: "foundation-status"
+command: "foundation-status", args: {"json": true}
+# Shows phase, an 8-field progress table, remaining fields with fix commands
+# and examples, and the finalize next-action.
+
+# Validate the draft incrementally (same schema as the final gate):
+command: "validate-foundation-schema", args: {"draft": true}
+
+# When all 8 fields are complete:
 command: "discover-foundation", args: {"finalize": true}
-# Validates and creates foundation.json + FOUNDATION.md
+# Lists EVERY remaining field with its fix command if any are unfilled.
 ```
 
-**Iteration supported** - update any field anytime. Draft persists until finalization succeeds.
+**Iteration supported** - update any field anytime. Draft persists until finalization succeeds. `show-foundation` now auto-shows the draft when one exists (use `--final` to force the finalized file).
 
 ### Foundation Event Storm
 
 **After foundation discovery completes:**
 
 ```
-command: "add-foundation-bounded-context", args: {"name": "Work Management"}
-command: "add-foundation-bounded-context", args: {"name": "Specification"}
+# Bounded contexts (args use {text}):
+command: "add-foundation-bounded-context", args: {"text": "Work Management"}
+command: "add-foundation-bounded-context", args: {"text": "Specification"}
 
-command: "add-aggregate-to-foundation", args: {"context": "Work Management", "aggregate": "WorkUnit"}
-command: "add-aggregate-to-foundation", args: {"context": "Work Management", "aggregate": "Epic"}
+# Aggregates (args use {contextName, aggregateName}):
+command: "add-aggregate-to-foundation", args: {"contextName": "Work Management", "aggregateName": "WorkUnit"}
+command: "add-aggregate-to-foundation", args: {"contextName": "Work Management", "aggregateName": "Epic"}
 
-command: "add-domain-event-to-foundation", args: {"context": "Work Management", "event": "WorkUnitCreated"}
-command: "add-domain-event-to-foundation", args: {"context": "Work Management", "event": "WorkUnitStatusChanged"}
+# Domain events (args use {contextName, eventName}):
+command: "add-domain-event-to-foundation", args: {"contextName": "Work Management", "eventName": "WorkUnitCreated"}
+command: "add-domain-event-to-foundation", args: {"contextName": "Work Management", "eventName": "WorkUnitStatusChanged"}
 
-command: "add-command-to-foundation", args: {"context": "Work Management", "command": "CreateWorkUnit"}
+# Commands (args use {contextName, commandName}):
+command: "add-command-to-foundation", args: {"contextName": "Work Management", "commandName": "CreateWorkUnit"}
 
+# Inspect (type filter uses the underscore 'bounded_context'):
 command: "show-foundation-event-storm"
-command: "show-foundation-event-storm", args: {"type": "bounded-context"}
+command: "show-foundation-event-storm", args: {"type": "bounded_context"}
+command: "show-foundation-event-storm", args: {"context": "Work Management"}
+# An unmatched context name now errors and lists the available contexts.
 
-command: "derive-tags-from-foundation"
-# Generates component/feature tags from bounded contexts
+# Generate component/feature tags from bounded contexts:
+command: "generate-tags-md"
 ```
 
 ### Foundation Maintenance
 
 ```
-command: "show-foundation"
-command: "show-foundation", args: {"section": "What We Are Building", "format": "json"}
-command: "show-foundation", args: {"listSections": true}
+command: "foundation-status"       # Read-only progress + next-step guidance
+command: "show-foundation"         # Auto-shows the draft when one exists
+command: "show-foundation", args: {"section": "projectName"}
+command: "show-foundation", args: {"final": true}   # Force the finalized file
 
 command: "generate-foundation-md"      # Regenerate FOUNDATION.md
 command: "generate-tags-md"            # Regenerate TAGS.md
-command: "validate-foundation-schema"  # Validate against JSON schema
+command: "validate-foundation-schema"  # Validate the final foundation.json
+command: "validate-foundation-schema", args: {"draft": true}  # Validate the draft
 ```
 
 ---

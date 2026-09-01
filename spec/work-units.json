@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-01T05:38:28.406Z",
+    "lastUpdated": "2026-09-01T15:25:52.388Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -39,7 +39,7 @@
     "COV": 55,
     "CTX": 9,
     "DEP": 3,
-    "DISC": 2,
+    "DISC": 3,
     "DOC": 18,
     "DOCS": 3,
     "DOMAIN": 5,
@@ -1675,7 +1675,8 @@
       "MUX-007",
       "CLI-015",
       "MUX-008",
-      "BUG-167"
+      "BUG-167",
+      "DISC-003"
     ],
     "blocked": [
       "QUERY-001",
@@ -228074,6 +228075,213 @@
       ],
       "nextExampleId": 3,
       "estimate": 3
+    },
+    "DISC-003": {
+      "id": "DISC-003",
+      "title": "Refactor foundation discovery system for agent clarity: unified progress status, draft-aware show-foundation, universal next-step guidance",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-01T07:42:56.789Z",
+      "updatedAt": "2026-09-01T15:25:52.388Z",
+      "description": "The foundation discovery tooling (discover-foundation, update-foundation, show-foundation, add/remove-capability, add/remove-persona, event-storm commands) is inefficient and confusing for agents: (1) after a tool call finishes it rarely tells the agent what remains or what to do next — only update-foundation chains a single-field reminder, and add-capability/add-persona/remove-* emit nothing; (2) drafts expose no list of remaining fields with examples of appropriate content; (3) show-foundation silently auto-creates the FINAL foundation.json and never shows the draft unless the undocumented draft:true arg is known, so agents working on a draft see template garbage; (4) the field-scan/reminder logic is duplicated verbatim across discover_foundation.rs and update_foundation.rs; (5) finalize failure reports only the FIRST remaining field; (6) the injected workflow guidance doc (fspec_workflow_guidance.rs) documents wrong arg names (key/value vs section/content, capability vs name, goal vs goals[]) and a phantom derive-tags-from-foundation command. Refactor per research doc (attached): new foundation-status command, shared foundation/guidance.rs module (single field table with examples, full-field scan, progress renderer), show-foundation draft auto-preference + --final, universal progress/next-step trailers on all foundation mutations, full remaining-fields report on finalize, unknown-context error in show-foundation-event-storm, validate-foundation-schema --draft, dedup of the duplicated scan/reminder code, corrected guidance doc. No functionality removed — all existing commands/flags retained.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/DISC-003/foundation-discovery-ux-research.md",
+        "spec/attachments/DISC-003/ast-research-foundation-duplication.md"
+      ],
+      "userStory": {
+        "role": "AI agent",
+        "action": "discover and fill the project foundation with clear per-step guidance and progress",
+        "benefit": "I always know what fields remain, what to do next, and what content is appropriate, without guessing or re-reading raw JSON"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-01T08:41:33.812Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-01T09:57:25.163Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-01T14:38:37.492Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-01T14:38:43.816Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-01T15:25:52.388Z",
+          "reason": "Foundation discovery agent-clarity refactor complete: shared guidance module, foundation-status command, draft-aware show-foundation, universal nextSteps trailers, full finalize report, event-storm unknown-context error, validate --draft, guidance doc fixes. 24 scenarios across 5 features 100% covered; clippy/fmt clean; CLI smoke-tested."
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "A new shared module fspec-core/src/foundation/guidance.rs is the single source of truth for the 8-field draft table (path, alias, kind, examples, guidance body), the full-field scan, the progress renderer, and the unified field reminder. agent_supports_meta_cognition + is_known_agent also move here.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:06:14.288Z"
+        },
+        {
+          "id": 1,
+          "text": "The shared module scan returns status for ALL 8 draft fields, not just the first: each field is 'complete', 'placeholder' (contains [QUESTION: or [DETECTED:), 'missing' (key absent), 'empty-array' (capabilities []), or 'placeholder-entries' (personas array non-empty and all entries placeholder). Progress = count of fields whose status is complete. Array fields complete iff non-empty AND no placeholder entries.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:16:51.094Z"
+        },
+        {
+          "id": 2,
+          "text": "Existing asserted output substrings must remain intact: the field reminder must keep 'Field N/8: <path>' header and the 'Run: fspec update-foundation <alias> ...' line, plus the ULTRATHINK/Think-a-lot branch for project.vision; new Examples: content is appended AFTER the existing text, never reworded. The discover-foundation draft-created banner, DRAFT_EXISTS_ERROR, and finalize 'Schema validation failed.'/'Cannot finalize:' prefixes are unchanged in kind.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:17:02.758Z"
+        },
+        {
+          "id": 3,
+          "text": "A new 'foundation-status' command is registered in fspec-core dispatch + PORTED_COMMANDS and exposed as a clap subcommand with a CLI bridge and help config. It reports phase (none|draft|final), an 8-row progress table with per-field preview, the remaining fields with fix commands and examples, and the finalize next-action. Args: {json?: bool} for machine output. It performs no writes.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:17:12.722Z"
+        },
+        {
+          "id": 4,
+          "text": "Every foundation-domain mutation command (update-foundation draft path, add/remove-capability, add/remove-persona, and the six event-storm add/remove commands) appends a compact status trailer to its success result, surfaced in a standard envelope field 'nextSteps' (two lines: a progress/summary line and a 'next:' action line). Draft-phase trailer = 'progress: N/8 fields complete | remaining: <aliases>' + 'next: <next field command>'. Event-storm-phase trailer = 'eventStorm: X contexts, Y aggregates, Z events, W commands' + 'next: <next item command>'. No trailer on hard-error paths.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:18:42.555Z"
+        },
+        {
+          "id": 5,
+          "text": "show-foundation auto-prefers the draft when spec/foundation.json.draft exists (draft-wins rule, same as the mutation commands): a one-line banner 'Showing DRAFT (foundation.json.draft)' is prepended and a progress line 'progress: N/8 fields complete' follows. A --final flag (dispatcher arg final: true) forces the finalized file; draft:true still forces the draft; with NO draft present the default path is byte-identical to today (including ensure_foundation_file auto-create) so existing parity tests stay green.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:18:54.640Z"
+        },
+        {
+          "id": 6,
+          "text": "Dedicated foundation-status command (per research doc Q1 recommendation: show-foundation has byte-exact TS-parity fixtures and one-command-one-purpose fits the FOUND-044 convention). The card description itself names 'new foundation-status command'.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:19:35.885Z"
+        },
+        {
+          "id": 7,
+          "text": "The duplicated field-scan/reminder code (~100 lines each in discover_foundation.rs and update_foundation.rs: scan/extract_detected_value/field_reminder_body/agent_supports_meta_cognition/is_known_agent/TOTAL_FIELDS) is deleted from both and replaced by calls into foundation/guidance.rs. Net deletion of the duplicated copies; behavior preserved (existing unit tests in both files must keep passing or be updated to call the shared module).",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:20:57.533Z"
+        },
+        {
+          "id": 8,
+          "text": "validate-foundation-schema gains a 'draft' arg ({draft: true}): it validates spec/foundation.json.draft against the same generic-foundation schema and reports schema errors in the same format as the final path (minItems humanised, '#/required' fallback). A missing draft yields the soft-error envelope (success=false) naming the draft file. The existing flag-less behavior (final file) is unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:23:08.990Z"
+        },
+        {
+          "id": 9,
+          "text": "show-foundation-event-storm with an unmatched 'context' filter errors instead of silently returning an empty array: the error lists the available bounded context names. The 'type' filter behavior is unchanged (unknown type still yields an empty array). A context that exists but has no matching items still returns the BC item (current match behavior preserved).",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:25:59.652Z"
+        },
+        {
+          "id": 10,
+          "text": "discover-foundation --finalize placeholder failure lists EVERY remaining field (not just the first): validationErrors keeps the 'Cannot finalize: draft still has unfilled placeholder fields' prefix, then one line per incomplete field showing its alias, status, and exact fix command, then the generic fix-commands block, ending 'Then re-run: fspec discover-foundation --finalize'. Schema-failure path (all placeholders filled but schema-invalid) already lists all errors and is unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:26:41.112Z"
+        },
+        {
+          "id": 11,
+          "text": "The injected workflow guidance doc (tools/src/fspec_workflow_guidance.rs, Phase 0 FOUNDATION section) is rewritten with correct arg shapes: update-foundation uses {section, content}; add-capability/remove-capability use {name, description?}; add-persona uses {name, description, goals[]}; remove-persona uses {name}; add-foundation-bounded-context uses {text}; show-foundation-event-storm type is 'bounded_context' (underscore); the phantom 'derive-tags-from-foundation' is replaced with 'generate-tags-md'; show-foundation examples use real section aliases. foundation-status and validate-foundation-schema --draft are added to the documented flow. Existing doc tests (no positional _ patterns, named keys) must keep passing.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:26:52.995Z"
+        },
+        {
+          "id": 12,
+          "text": "The DRAFT_EXISTS_ERROR 'Observe' option (option 2) is updated to name 'foundation-status' (or 'show-foundation' which now auto-shows the draft) instead of only the undocumented '--draft' flag, so the agent has a discoverable way to see progress.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:27:00.600Z"
+        },
+        {
+          "id": 13,
+          "text": "This card (Story A) delivers the trailer via the existing data envelope: each mutation command's result JSON gains a `nextSteps` field, and the CLI bridges print it (2 indented lines). This is mechanically safe and testable now. The cross-cutting NAPI/TS forwarding of a dedicated `nextSteps` (Story B / research doc R10) is explicitly EXCLUDED and tracked as a follow-up story — per research doc Q3 and the card's 'Story A' scope. Agent-facing agents already see the rich guidance via the systemReminder channel where it exists, and the CLI users get the trailer this way.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:29:54.265Z"
+        },
+        {
+          "id": 14,
+          "text": "Use the existing data-envelope channel: each mutation command's result JSON gains a `nextSteps` field and the CLI bridges print it (two indented lines). The cross-cutting NAPI/TS forwarding (Story B / R10) is explicitly a separate follow-up story per research doc Q3. This matches the card's Story A scope and the rule already added.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:30:16.453Z"
+        }
+      ],
+      "nextRuleId": 15,
+      "questions": [],
+      "nextQuestionId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "After discover-foundation creates the draft, the agent immediately sees ALL remaining fields: foundation-status shows 'Progress: 0/8 fields complete' with a ✓/✗/● row per field and a 'Remaining' list where each entry carries a fix command AND 1-2 concrete examples (e.g. problemDefinition → 'Developers manage Gherkin feature files by hand; specs drift out of sync with code').",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:19:46.278Z"
+        },
+        {
+          "id": 1,
+          "text": "After add-capability appends a capability to the draft, the agent now sees a trailer: 'progress: 4/8 fields complete | remaining: problemDefinition, solutionOverview, personas' then 'next: update-foundation problemDefinition \"<description>' — so it never has to guess whether it added enough or what is left.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:19:55.431Z"
+        },
+        {
+          "id": 2,
+          "text": "Mid-discovery (draft present), the agent runs show-foundation without flags and sees the DRAFT, not a freshly auto-created final file: 'Showing DRAFT (foundation.json.draft)' banner, the draft content, and 'progress: 3/8 fields complete; run foundation-status for details'.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:20:05.340Z"
+        },
+        {
+          "id": 3,
+          "text": "When finalize is run on a draft with 4 fields still unfilled, validationErrors lists EVERY remaining field with its status and exact fix command (not just the first one), so the agent fixes them all in one round: '5. problemDefinition (placeholder) → fspec update-foundation problemDefinition \"...\"' and so on, ending with 'Then re-run: fspec discover-foundation --finalize'.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:20:15.974Z"
+        },
+        {
+          "id": 4,
+          "text": "In the event-storm phase, after add-foundation-bounded-context \"Auth\", the agent sees: 'eventStorm: 1 contexts, 0 aggregates, 0 events, 0 commands' then 'next: add-aggregate-to-foundation \"Auth\" \"<Aggregate>\"' — closing the guidance gap that exists today where the add commands emit only a success message.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:21:04.607Z"
+        },
+        {
+          "id": 5,
+          "text": "The agent runs validate-foundation-schema --draft on a half-filled draft and gets the same schema errors it would get at finalize time, so it can catch problems incrementally instead of only learning about them at the final gate.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:21:10.865Z"
+        },
+        {
+          "id": 6,
+          "text": "The agent typos a context name in show-foundation-event-storm and instead of a silent empty array it gets an error: \"Unknown context 'Aut'. Available bounded contexts: Auth, Specification\" — so it can correct the name and retry.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:21:18.375Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "assumptions": [
+        "foundation-status is a Rust-only extension command (not in the 162-command canonical TS list and not in the TS command→RPC mapping attachment), so it needs NO commands/foundation_status.rs module, NO canonical entry, and NO work-unit mapping — only dispatch.rs routing + PORTED_COMMANDS entry + main.rs clap variant + CLI bridge + help config. The canonical 162-invariant tests iterate only CANONICAL_COMMANDS, so they are unaffected."
+      ],
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Shared guidance module: new fspec-core/src/foundation/{mod.rs,guidance.rs} holds (1) FOUNDATION_FIELDS table of the 8 draft fields (json path, update-foundation alias, kind scalar|capability-array|persona-array, 1-2 examples, reminder body text), (2) scan_fields() -> per-field status for ALL fields (complete/placeholder/missing/empty-array/placeholder-entries; arrays complete iff non-empty and zero placeholder entries; progress=count complete), (3) render_progress_block()/render_trailer(), (4) field_reminder() = existing body + appended Examples block, (5) agent_supports_meta_cognition/is_known_agent/extract_detected_value moved verbatim from update_foundation.rs. discover_foundation.rs + update_foundation.rs delete their ~100-line duplicated copies and call into the module; existing asserted substrings ('Field 2/8: project.vision', 'Run: fspec update-foundation projectVision', ULTRATHINK branch) must survive.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:53:50.157Z"
+        },
+        {
+          "id": 1,
+          "text": "foundation-status is a Rust-only extension command (NOT in the 162 canonical list, so no commands/ stub module, no canonical entry, no mapping attachment change). Wiring: (1) fspec-core/src/commands/foundation_status.rs NEW, (2) dispatch.rs run_ported arm, (3) canonical.rs PORTED_COMMANDS entry, (4) help/configs/foundation_status.rs + help_dispatch_table.rs entry, (5) fspec/src/foundation_status.rs CLI bridge + main.rs clap variant + intercept_ts_help arm. Read-only: reports phase none|draft|final, progress table, remaining fields with fix commands + examples, next-action. Args {json?: bool}.",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:54:04.272Z"
+        },
+        {
+          "id": 2,
+          "text": "Mutation trailers land in the envelope `nextSteps` field (2 lines: progress/eventStorm summary + 'next:' action) via guidance::render_trailer(project_root). 11 commands emit it: update-foundation (draft path, ALONGSIDE existing systemReminder), add-capability, remove-capability, add-persona, remove-persona, and the 6 event-storm add/remove commands (add/remove bounded-context/aggregate/domain-event/command). CLI bridges print nextSteps (2 indented lines). No trailer on hard-error paths. No NAPI/TS plumbing this card (Story B).",
+          "deleted": false,
+          "createdAt": "2026-09-01T09:54:16.827Z"
+        }
+      ],
+      "nextNoteId": 3
     }
   }
 }

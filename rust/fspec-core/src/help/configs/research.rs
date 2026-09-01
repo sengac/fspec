@@ -44,13 +44,11 @@ const OPTIONS: &[CommandOption] = &[
     },
 ];
 
-const COMMON_PATTERNS: &[CommonPatternEntry] = &[
-    CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: r#"fspec research --tool=stakeholder --platform=teams,slack --question="Need OAuth?" --work-unit=AUTH-001"#,
-        description: "Send questions to Teams/Slack and attach responses",
-    }),
-];
+const COMMON_PATTERNS: &[CommonPatternEntry] = &[CommonPatternEntry::Structured(CommonPattern {
+    pattern: "undefined",
+    example: r#"fspec research --tool=stakeholder --platform=teams,slack --question="Need OAuth?" --work-unit=AUTH-001"#,
+    description: "Send questions to Teams/Slack and attach responses",
+})];
 
 const TYPICAL_WORKFLOW: &str = r#"During Example Mapping, identify a question that needs research,Add question: fspec add-question AUTH-001 "@human: Support OAuth?",Research the question: fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001,When prompted, attach results to work unit (y),Review attached research in spec/attachments/AUTH-001/,Answer question based on research: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule,Generate scenarios: fspec generate-scenarios AUTH-001"#;
 
@@ -71,12 +69,10 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const COMMON_ERRORS: &[CommonError] = &[
-    CommonError {
-        error: "Error: Research tool not found: xyz",
-        fix: "undefined",
-    },
-];
+const COMMON_ERRORS: &[CommonError] = &[CommonError {
+    error: "Error: Research tool not found: xyz",
+    fix: "undefined",
+}];
 
 const RELATED: &[&str] = &[
     "add-question",

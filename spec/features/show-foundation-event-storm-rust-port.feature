@@ -49,11 +49,12 @@ Feature: Port show-foundation-event-storm command to Rust
     And one returned item has type='bounded_context' and text='Work Management'
     And every other returned item has boundedContextId=1
 
-  Scenario: Filtering by an unknown context name returns an empty array
+  Scenario: Filtering by an unknown context name errors and lists available contexts
     Given spec/foundation.json contains a bounded_context with text='Work Management' and three items linked to it
     When I dispatch show-foundation-event-storm with context='Nonexistent'
-    Then the dispatcher returns success=true
-    And the data field is an empty JSON array
+    Then the dispatcher returns success=false
+    And the error message contains "Unknown context 'Nonexistent'"
+    And the error message lists 'Work Management' as an available bounded context
 
   Scenario: Combined context and type filters compose
     Given spec/foundation.json contains a bounded_context id=1 'Work Management' with two aggregates and one event linked to it plus one aggregate linked to a different bounded context

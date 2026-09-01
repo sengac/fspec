@@ -33,16 +33,42 @@
 
 use std::path::Path;
 
+use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
 use crate::generators::foundation_schema::{validate_foundation, SchemaError};
 
+/// CLI arguments accepted by `validate-foundation-schema`. DISC-003 adds the
+/// optional `draft` flag: validate `spec/foundation.json.draft` instead of
+/// the finalized `spec/foundation.json` (same schema, same error format).
+#[derive(Debug, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+struct ValidateFoundationSchemaArgs {
+    draft: bool,
+}
+
 /// Dispatcher entry point. `project_root` is passed by both front doors so the
 /// same binary can serve multiple working directories without touching
 /// `std::env::current_dir()`.
-pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let foundation_path = project_root.join("spec").join("foundation.json");
+pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
+    let args: ValidateFoundationSchemaArgs =
+        serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
+            command: "validate-foundation-schema",
+            reason: format!("failed to parse args: {e}"),
+        })?;
+
+    let (foundation_path, file_name) = if args.draft {
+        (
+            project_root.join("spec").join("foundation.json.draft"),
+            "foundation.json.draft",
+        )
+    } else {
+        (
+            project_root.join("spec").join("foundation.json"),
+            "foundation.json",
+        )
+    };
 
     // Read the foundation document. ENOENT → friendly "not found" message
     // (parity with the TS `errorMessage.includes('ENOENT')` branch); any other
@@ -50,7 +76,9 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     let content = match std::fs::read_to_string(&foundation_path) {
         Ok(c) => c,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            return Ok(soft_error("foundation.json not found in spec/ directory"));
+            return Ok(soft_error(&format!(
+                "{file_name} not found in spec/ directory"
+            )));
         }
         Err(e) => {
             return Ok(soft_error(&format!(
@@ -74,7 +102,7 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     match validate_foundation(&foundation) {
         Ok(()) => Ok(serde_json::to_string(&json!({
             "success": true,
-            "output": "✓ foundation.json is valid according to the schema",
+            "output": format!("✓ {file_name} is valid according to the schema"),
         }))
         .unwrap_or_default()),
         Err(errors) => {

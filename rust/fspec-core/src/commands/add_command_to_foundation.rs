@@ -40,6 +40,7 @@ use serde::Deserialize;
 use serde_json::{json, Map, Value};
 
 use crate::error::FspecCoreError;
+use crate::foundation::guidance;
 use crate::io::locked_file::{read_or_init_json, write_json_atomic};
 use crate::io::time::iso8601_now;
 
@@ -156,11 +157,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         "Added command \"{}\" to \"{}\" bounded context",
         args.command_name, args.context_name
     );
-    serde_json::to_string(&json!({ "success": true, "message": message })).map_err(|e| {
-        FspecCoreError::InvalidArgs {
-            command: "add-command-to-foundation",
-            reason: format!("failed to serialize result: {e}"),
-        }
+    // DISC-003 rule 4: event-storm trailer on the success envelope.
+    let next_steps = guidance::event_storm_trailer(&data, args.context_name.as_str());
+    serde_json::to_string(&json!({
+        "success": true,
+        "message": message,
+        "nextSteps": next_steps,
+    }))
+    .map_err(|e| FspecCoreError::InvalidArgs {
+        command: "add-command-to-foundation",
+        reason: format!("failed to serialize result: {e}"),
     })
 }
 

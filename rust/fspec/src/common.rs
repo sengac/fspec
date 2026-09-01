@@ -517,6 +517,20 @@ pub fn render_core_error(err: &FspecCoreError) -> String {
     }
 }
 
+/// Print the DISC-003 `nextSteps` trailer (two lines) with two-space
+/// indentation, when the mutation success envelope carries it. Shared by the
+/// foundation-domain mutation bridges so the rendering lives in one place
+/// (work unit DISC-003, rule 4/14).
+pub fn print_next_steps(parsed: &serde_json::Value) {
+    if let Some(ns) = parsed.get("nextSteps").and_then(serde_json::Value::as_str) {
+        if !ns.is_empty() {
+            for line in ns.lines() {
+                println!("  {line}");
+            }
+        }
+    }
+}
+
 /// Strip the dispatcher's `"Invalid args for fspec command <name>: "`
 /// envelope so a CLI bridge that routes through `dispatch_command` can emit
 /// only the bare `<reason>` on stderr — exactly what the TS

@@ -31,6 +31,16 @@ const OPTIONS: &[CommandOption] = &[
         description: "Show line numbers in output",
         default_value: None,
     },
+    CommandOption {
+        flag: "--draft",
+        description: "Read from foundation.json.draft instead of foundation.json",
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--final",
+        description: "DISC-003: force the finalized foundation.json even when a draft exists",
+        default_value: None,
+    },
 ];
 
 const EXAMPLES: &[CommandExample] = &[

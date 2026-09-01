@@ -71,6 +71,7 @@ pub mod export_dependencies;
 pub mod export_example_map;
 pub mod export_work_units;
 pub mod format;
+pub mod foundation_status; // DISC-003 — Rust-only extension (not canonical)
 pub mod generate_coverage;
 pub mod generate_example_mapping_from_event_storm;
 pub mod generate_foundation_md;

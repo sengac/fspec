@@ -97,8 +97,8 @@ impl UpdateConfig {
     /// `FSPEC_UPDATE_BASE_URL` test override), the `sengac/fspec` repo, the
     /// running binary as the install target.
     pub fn for_production(current_version: impl Into<String>) -> Self {
-        let base_url =
-            std::env::var("FSPEC_UPDATE_BASE_URL").unwrap_or_else(|_| "https://api.github.com".into());
+        let base_url = std::env::var("FSPEC_UPDATE_BASE_URL")
+            .unwrap_or_else(|_| "https://api.github.com".into());
         let install_path = std::env::var("FSPEC_UPDATE_INSTALL_PATH")
             .ok()
             .map(PathBuf::from)

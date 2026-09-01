@@ -2354,6 +2354,10 @@
           "description": "Deprecated"
         },
         {
+          "name": "@disc-003",
+          "description": "DISC-003: Refactor foundation discovery system for agent clarity — unified progress status, draft-aware show-foundation, universal next-step guidance"
+        },
+        {
           "name": "@done",
           "description": "Complete"
         },
@@ -2942,7 +2946,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-31T23:30:01.215Z",
+    "lastUpdated": "2026-09-01T14:11:12.455Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

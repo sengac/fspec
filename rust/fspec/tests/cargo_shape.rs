@@ -489,6 +489,9 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_aggregate_from_foundation.rs",
         "add_command_to_foundation.rs",
         "remove_command_from_foundation.rs",
+        // DISC-003: foundation-status CLI bridge (Rust-only extension
+        // command; read-only progress report for foundation discovery).
+        "foundation_status.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -617,6 +620,9 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_aggregate_from_foundation.rs",
         "add_command_to_foundation.rs",
         "remove_command_from_foundation.rs",
+        // DISC-003: foundation-status CLI bridge (Rust-only extension
+        // command; read-only progress report for foundation discovery).
+        "foundation_status.rs",
         // RPC-233 (foundation markdown regeneration)
         "generate_foundation_md.rs",
         // Batch 14 (2026-06-13): schedules, foundation domain-events,

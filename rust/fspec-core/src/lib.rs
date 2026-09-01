@@ -25,6 +25,7 @@ pub mod canonical;
 pub mod commands;
 pub mod dispatch;
 pub mod error;
+pub mod foundation;
 pub mod generators;
 pub mod help;
 mod help_dispatch;

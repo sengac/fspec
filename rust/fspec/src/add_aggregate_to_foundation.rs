@@ -56,6 +56,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 .and_then(|m| m.as_str())
                 .unwrap_or("Aggregate added");
             println!("✓ {msg}");
+            // DISC-003 rule 4/14: print the event-storm trailer.
+            crate::common::print_next_steps(&parsed);
             Ok(0)
         }
         Err(err) => {

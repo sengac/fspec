@@ -56,11 +56,12 @@ Feature: show-foundation-event-storm CLI subcommand on the standalone fspec Rust
     Then the command exits 0
     And stdout parses as a JSON array with 4 elements
 
-  Scenario: CLI --context with unknown name prints empty array
+  Scenario: CLI --context with unknown name errors and lists available contexts
     Given a temp workspace contains spec/foundation.json with a bounded_context text='Work Management' and items linked to it
     When I run `./rust/target/release/fspec show-foundation-event-storm --context Nonexistent` from that workspace
-    Then the command exits 0
-    And stdout parses as a JSON array with 0 elements
+    Then the command exits 1
+    And stderr contains "Unknown context 'Nonexistent'"
+    And stderr lists 'Work Management' as an available bounded context
 
   Scenario: show-foundation-event-storm --help is byte-for-byte identical to the TS formatCommandHelp reference
     Given the fspec Rust binary at rust/target/release/fspec has been compiled

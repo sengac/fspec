@@ -17,7 +17,9 @@
 //! * `context` filter (by `text` of a `bounded_context` item):
 //!     - matched → keep the BC itself plus every item whose
 //!       `boundedContextId == bc.id`.
-//!     - unmatched → return empty array (TS behaviour).
+//!     - unmatched → `Err(InvalidArgs)` naming the available bounded
+//!       context names (DISC-003: a typo'd context must not silently
+//!       return an empty array).
 //! * `type` filter (post-context) → keep items whose `type` field equals.
 //!
 //! ## Envelope shape
@@ -126,8 +128,29 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                     }
                 });
             }
+            // DISC-003 rule 10: an unmatched context name is almost always a
+            // typo — error with the available bounded context names instead
+            // of silently returning an empty array.
             None => {
-                items.clear();
+                let available: Vec<String> = items
+                    .iter()
+                    .filter(|item| {
+                        item.get("type").and_then(|v| v.as_str()) == Some("bounded_context")
+                    })
+                    .filter_map(|item| item.get("text").and_then(|v| v.as_str()))
+                    .map(str::to_string)
+                    .collect();
+                return Err(FspecCoreError::InvalidArgs {
+                    command: "show-foundation-event-storm",
+                    reason: format!(
+                        "Unknown context '{ctx}'. Available bounded contexts: {}",
+                        if available.is_empty() {
+                            "(none)".to_string()
+                        } else {
+                            available.join(", ")
+                        }
+                    ),
+                });
             }
         }
     }
