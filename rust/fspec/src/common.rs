@@ -294,7 +294,13 @@ pub fn daemon_json_path() -> Result<PathBuf> {
     Ok(home_fspec_dir()?.join("daemon.json"))
 }
 
-fn home_fspec_dir() -> Result<PathBuf> {
+/// Resolve the per-user fspec state dir (`~/.fspec`).
+///
+/// BUG-167: also used by `client::run` to initialise the process-global
+/// data directory (the combined/daemon path does the same in
+/// `build_service`) so shared-config persistence resolves the same
+/// user-scope path in every mode.
+pub fn home_fspec_dir() -> Result<PathBuf> {
     let home = dirs::home_dir().ok_or_else(|| anyhow!("cannot resolve home directory"))?;
     Ok(home.join(".fspec"))
 }

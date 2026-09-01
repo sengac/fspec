@@ -343,7 +343,9 @@ impl App {
         // R6: auto-save on mux exit — persist the post-exit config
         // (enabled=false) so a restart comes back with mux off.
         if mux_enabled_before && !self.navigator.mux.config().enabled {
-            let _ = self.save_mux_config();
+            if let Err(err) = self.save_mux_config() {
+                tracing::warn!(error = %err, "mux-exit auto-save failed (non-fatal)");
+            }
         }
         self.should_render = true;
     }

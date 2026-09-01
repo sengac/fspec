@@ -23,6 +23,16 @@ pub async fn run(connect: Option<String>) -> Result<()> {
     common::install_panic_hook();
     common::init_tracing_client()?;
 
+    // BUG-167: initialise the process-global data directory BEFORE the App is
+    // constructed — the same single source of truth the combined/daemon
+    // entry point sets via build_service. Shared-config persistence
+    // (fspec-config.json: tui.mux, tui.lastUsedModel, …) resolves its
+    // user-scope path from this global; without it a client-mode
+    // `/mux save` / mux-exit auto-save silently no-ops.
+    let data_dir = common::home_fspec_dir()?;
+    codelet_common::set_data_directory(data_dir)
+        .map_err(|e| anyhow::anyhow!("codelet_common::set_data_directory: {e}"))?;
+
     // CLI-015: this process runs native agent sessions with the AstGrep rig
     // tool (over the WebSocket transport), so core prompts render their
     // harness (capture) variants.

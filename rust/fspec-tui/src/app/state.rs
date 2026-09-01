@@ -375,16 +375,16 @@ impl App {
         &self.mux_state
     }
 
-    /// Set the shared-config scope dirs for mux persistence (data dir
-    /// + cwd; `fspec-config.json` lives in each).
-    pub fn set_mux_persist_dir(&mut self, data_dir: std::path::PathBuf, cwd: std::path::PathBuf) {
-        self.mux_state.set_persist_dir(data_dir, cwd);
-    }
-
     /// Load the persisted mux config from the shared `fspec-config.json`
     /// (`tui.mux`; R6: missing key → default preset). Called at
     /// bootstrap; the loaded config is mirrored into the Navigator's
     /// live mux layout.
+    ///
+    /// BUG-167: the shared-config dirs resolve themselves (the
+    /// `codelet_sessions::mux_config_persistence` globals read the
+    /// process-global data directory + current dir — the same CONFIG-008
+    /// resolution every other shared-config persistence uses), so no
+    /// manual persist-dirs wiring is needed here or in `App::new`.
     pub fn load_mux_config(&mut self) {
         self.mux_state.load();
         self.navigator.mux.config = self.mux_state.config().clone();

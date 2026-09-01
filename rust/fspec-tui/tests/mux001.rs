@@ -6,6 +6,7 @@
 // file. Scenarios map directly to Gherkin scenarios.
 
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use codelet_rpc_types::WorkUnitInfo;
 use crossterm::event::{
@@ -13,6 +14,7 @@ use crossterm::event::{
 };
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
+use serial_test::serial;
 use tokio::sync::mpsc::unbounded_channel;
 
 use codelet_fspec_tui::components::Action;
@@ -92,6 +94,30 @@ fn seed_agent_session(agent: &mut AgentViewStore) {
     agent.append_session(codelet_fspec_tui::store::SessionContext::new(
         codelet_rpc_types::SessionId::new("s-1"),
     ));
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// BUG-167: shared-config persistence helpers (the manual persist-dirs
+// wiring was removed from App; these helpers root the process-global
+// data directory the way the production entry points do — combined/
+// daemon via build_service, client via client::run)
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Serialises tests that mutate the process-global data directory
+/// (within this test binary).
+static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+
+/// Root the process-global data directory at a fresh throwaway dir and
+/// keep it alive (the established tui093 pattern). Returns the guard
+/// (held for the test's duration) + the TempDir.
+fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
+    let guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let tmp = tempfile::tempdir().expect("tempdir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf())
+        .expect("set data dir");
+    (guard, tmp)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -963,7 +989,6 @@ use std::fs;
 
 use codelet_fspec_tui::{App, FspecBackend};
 use codelet_rpc_types::SessionId;
-use tempfile::TempDir;
 
 mod common;
 use common::MockBackend;
@@ -1278,23 +1303,26 @@ async fn slash_mux_invalid_pane_kind_leaves_config_unchanged_and_shows_an_error(
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: /mux save persists the config to the shared fspec-config.json
+// (BUG-167: no manual persist-dirs wiring — the process-global data dir
+// is the single source of truth, rooted here the way the production
+// entry points root it)
 // ─────────────────────────────────────────────────────────────────────────
 
 /// Scenario: /mux save persists the config to the shared fspec-config.json
 #[tokio::test]
+#[serial]
 async fn slash_mux_save_persists_the_config_to_the_shared_fspec_config_json() {
-    let data = TempDir::new().expect("data dir");
-    let cwd = TempDir::new().expect("cwd");
     // @step Given mux mode is active with panes Board and Agent at a 40/60 vertical split
+    let (_data_guard, _data) = root_data_dir();
     let (mut app, _mock) = fresh_app();
     app_with_mux(&mut app).await;
     submit(&mut app, "/mux v");
     submit(&mut app, "/mux board agent 40");
-    app.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     // @step When I submit the slash command "/mux save"
     submit(&mut app, "/mux save");
     // @step Then the shared fspec-config.json exists and its tui.mux key contains the saved orientation, splits and pane list
-    let path = data.path().join("fspec-config.json");
+    let data_dir = codelet_common::get_data_dir().expect("data dir");
+    let path = data_dir.join("fspec-config.json");
     assert!(
         path.exists(),
         "fspec-config.json must exist after /mux save"
@@ -1313,18 +1341,16 @@ async fn slash_mux_save_persists_the_config_to_the_shared_fspec_config_json() {
 
 /// Scenario: a fresh bootstrap restores the saved mux config
 #[tokio::test]
+#[serial]
 async fn a_fresh_bootstrap_restores_the_saved_mux_config() {
-    let data = TempDir::new().expect("data dir");
-    let cwd = TempDir::new().expect("cwd");
     // @step Given a fresh TUI bootstrap with a saved tui.mux config of 40/60 vertical Board and Agent
+    let (_data_guard, _data) = root_data_dir();
     let (mut app, _mock) = fresh_app();
     app_with_mux(&mut app).await;
     submit(&mut app, "/mux v");
     submit(&mut app, "/mux board agent 40");
-    app.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     submit(&mut app, "/mux save");
     let (mut app2, _mock2) = fresh_app();
-    app2.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     app2.load_mux_config();
     app2.dispatch(Action::SessionCreated(SessionId::new("s-2")));
     drain_pending(&mut app2).await;
@@ -1343,12 +1369,11 @@ async fn a_fresh_bootstrap_restores_the_saved_mux_config() {
 
 /// Scenario: a fresh bootstrap with no saved config applies the default preset
 #[tokio::test]
+#[serial]
 async fn a_fresh_bootstrap_with_no_saved_config_applies_the_default_preset() {
-    let data = TempDir::new().expect("data dir");
-    let cwd = TempDir::new().expect("cwd");
     // @step Given a fresh TUI bootstrap with no tui.mux config present
+    let (_data_guard, _data) = root_data_dir();
     let (mut app, _mock) = fresh_app();
-    app.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     app.load_mux_config();
     app.dispatch(Action::SessionCreated(SessionId::new("s-3")));
     drain_pending(&mut app).await;

@@ -333,6 +333,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-164` | Bug fix work unit BUG-164 - closing a session in mux mode retains the grid (BackToBoard focuses the board pane within the active mux instead of flipping the whole view out of Mux) |
 | `@bug-165` | Bug fix work unit BUG-165 - Esc on the board pane in mux mode with no open agents must show the exit confirmation dialog (previously a dead key) |
 | `@bug-166` | Bug fix work unit BUG-166 - mux divider fixes: every inter-pane gap gets an independently draggable divider, release keeps the released position (no snap-back to equal split), and splits are a percentage scale that dynamically rescales when the pane count changes |
+| `@bug-167` | Bug fix work unit BUG-167 - mux config save is a no-op in the real binary: persist dirs are never wired in production (App::new now resolves the CONFIG-008 shared-config dirs once, with a dirs::home_dir()/.fspec fallback when the global data directory is unset) |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -754,4 +755,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-31T00:33:52.704Z_
+_Last updated: 2026-08-31T23:30:01.215Z_

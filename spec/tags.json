@@ -1234,6 +1234,10 @@
           "description": "Bug fix work unit BUG-166 - mux divider fixes: every inter-pane gap gets an independently draggable divider, release keeps the released position (no snap-back to equal split), and splits are a percentage scale that dynamically rescales when the pane count changes"
         },
         {
+          "name": "@bug-167",
+          "description": "Bug fix work unit BUG-167 - mux config save is a no-op in the real binary: persist dirs are never wired in production (App::new now resolves the CONFIG-008 shared-config dirs once, with a dirs::home_dir()/.fspec fallback when the global data directory is unset)"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -2938,7 +2942,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-31T00:33:52.704Z",
+    "lastUpdated": "2026-08-31T23:30:01.215Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

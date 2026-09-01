@@ -1,29 +1,36 @@
-//! MUX-001 — mux config persistence state (shared `fspec-config.json`).
+//! MUX-001 / BUG-167 — mux config persistence state (shared
+//! `fspec-config.json`, `tui.mux`).
 //!
-//! Feature: spec/features/rust-mux-mode.feature
+//! Feature: spec/features/rust-mux-mode.feature +
+//! spec/features/mux-config-persistence-wiring.feature
 //!
 //! The mux grid config (orientation, splits, pane list, focused pane,
 //! enabled flag) is persisted in the shared CONFIG-008
 //! `fspec-config.json` under `tui.mux` — the same pattern as
-//! `tui.defaultThinkingLevel`. Missing / malformed key → default
-//! preset (R6). Loaded at bootstrap; saved on `/mux save` and on mux
-//! exit.
+//! `tui.defaultThinkingLevel`.
 //!
-//! The `serde_json::Value` ↔ `MuxConfig` round-trip happens here so the
-//! `codelet-sessions` core stays free of the TUI's typed config.
-
-use std::path::PathBuf;
+//! BUG-167: the dirs were once stored here (`set_persist_dir`) and had to be
+//! wired manually at every construction site — in production that wiring was
+//! never done, so every save returned `Err("mux: persist dirs not set")` and
+//! was silently swallowed. This state is now CONFIG-ONLY: it holds the live
+//! config and delegates load/save to the `codelet_sessions::
+//! mux_config_persistence` GLOBALS, which resolve the CONFIG-008 two-scope
+//! dirs themselves (process-global data dir + current dir — the same
+//! resolution every other `fspec-config.json` persistence uses). The
+//! serde round-trip lives here so `codelet-sessions` stays free of the TUI's
+//! typed config.
+//!
+//! Invariants:
+//!   * Missing / malformed key → the default preset (R6; load infallible).
+//!   * Persistence is best-effort: `save` surfaces an `Err` the caller logs
+//!     (non-fatal — `/mux save` pushes a one-line scrollback notice).
 
 use crate::views::multiplex::MuxConfig;
 
-/// The mux persistence state.
+/// The mux persistence state (config-only — no dirs).
 #[derive(Debug, Default)]
 pub struct MuxState {
     config: MuxConfig,
-    /// `(data_dir, cwd)` selecting the shared config scopes. `None`
-    /// until set (tests + bootstrap set it via
-    /// `App::set_mux_persist_dir`).
-    dirs: Option<(PathBuf, PathBuf)>,
 }
 
 impl MuxState {
@@ -39,20 +46,11 @@ impl MuxState {
         &mut self.config
     }
 
-    /// Set the shared-config scope dirs (data dir + cwd).
-    pub fn set_persist_dir(&mut self, data_dir: PathBuf, cwd: PathBuf) {
-        self.dirs = Some((data_dir, cwd));
-    }
-
-    /// Load the persisted config (R6: missing key → default preset).
-    /// Corrupt values also fall back to the default preset (traced).
+    /// Load the persisted config from the shared `fspec-config.json`
+    /// (`tui.mux`; R6: missing key → default preset). Reads the
+    /// deep-merged (project-over-user) view via the shared-config globals.
     pub fn load(&mut self) {
-        let Some((data_dir, cwd)) = self.dirs.as_ref() else {
-            return;
-        };
-        let Some(value) =
-            codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(data_dir, cwd)
-        else {
+        let Some(value) = codelet_sessions::mux_config_persistence::load_mux_config() else {
             return;
         };
         match serde_json::from_value::<MuxConfig>(value) {
@@ -64,14 +62,12 @@ impl MuxState {
     }
 
     /// Persist the current config under `tui.mux` (R6). Best-effort:
-    /// failures are traced and swallowed (non-fatal).
+    /// failures are surfaced as `Err` (the `/mux save` caller pushes a
+    /// one-line notice; the mux-exit auto-save logs and continues).
     pub fn save(&self) -> Result<(), String> {
-        let Some((data_dir, cwd)) = self.dirs.as_ref() else {
-            return Err("mux: persist dirs not set".to_string());
-        };
         let value = serde_json::to_value(&self.config)
             .map_err(|err| format!("mux: cannot serialize config: {err}"))?;
-        codelet_sessions::mux_config_persistence::save_mux_config_with_dirs(data_dir, cwd, &value)
+        codelet_sessions::mux_config_persistence::save_mux_config(&value)
     }
 }
 
@@ -83,17 +79,25 @@ mod tests {
     use crate::views::multiplex::{MuxOrientation, MuxPaneKind};
     use tempfile::TempDir;
 
+    /// BUG-167: the config-only state round-trips through the path-
+    /// injectable persistence core with explicit dirs (no global data dir
+    /// needed).
     #[test]
     fn round_trip_persists_config() {
         let data = TempDir::new().expect("data dir");
         let cwd = TempDir::new().expect("cwd");
         let mut state = MuxState::new();
-        state.set_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
         state.config_mut().orientation = MuxOrientation::Vertical;
         state.config_mut().splits = vec![40];
         state.config_mut().panes = vec![MuxPaneKind::Board, MuxPaneKind::Agent];
 
-        state.save().expect("save");
+        let value = serde_json::to_value(state.config()).expect("serialize");
+        codelet_sessions::mux_config_persistence::save_mux_config_with_dirs(
+            data.path(),
+            cwd.path(),
+            &value,
+        )
+        .expect("save");
         let raw = std::fs::read_to_string(data.path().join("fspec-config.json"))
             .expect("read fspec-config.json");
         assert!(
@@ -101,9 +105,14 @@ mod tests {
             "the tui.mux key must round-trip: {raw}"
         );
 
+        let reloaded_value =
+            codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
+                data.path(),
+                cwd.path(),
+            )
+            .expect("load");
         let mut reloaded = MuxState::new();
-        reloaded.set_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
-        reloaded.load();
+        reloaded.config = serde_json::from_value(reloaded_value).expect("round-trip");
         assert_eq!(reloaded.config().orientation, MuxOrientation::Vertical);
         assert_eq!(reloaded.config().splits, vec![40]);
         assert_eq!(
@@ -116,10 +125,12 @@ mod tests {
     fn missing_key_falls_back_to_default() {
         let data = TempDir::new().expect("data dir");
         let cwd = TempDir::new().expect("cwd");
-        let mut state = MuxState::new();
-        state.set_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
-        state.load();
-        assert_eq!(state.config().splits, vec![50]);
+        let value =
+            codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
+                data.path(),
+                cwd.path(),
+            );
+        assert!(value.is_none(), "missing tui.mux must load as None");
     }
 
     #[test]
@@ -134,9 +145,14 @@ mod tests {
         std::fs::write(data.path().join("fspec-config.json"), cfg.to_string())
             .expect("seed config");
 
-        let mut state = MuxState::new();
-        state.set_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
-        state.save().expect("save");
+        let state = MuxState::new();
+        let value = serde_json::to_value(state.config()).expect("serialize");
+        codelet_sessions::mux_config_persistence::save_mux_config_with_dirs(
+            data.path(),
+            cwd.path(),
+            &value,
+        )
+        .expect("save");
 
         let raw = std::fs::read_to_string(data.path().join("fspec-config.json"))
             .expect("read fspec-config.json");

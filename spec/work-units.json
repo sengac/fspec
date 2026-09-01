@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-08-31T13:35:43.099Z",
+    "lastUpdated": "2026-09-01T05:38:28.406Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 166,
+    "BUG": 167,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1674,7 +1674,8 @@
       "MUX-006",
       "MUX-007",
       "CLI-015",
-      "MUX-008"
+      "MUX-008",
+      "BUG-167"
     ],
     "blocked": [
       "QUERY-001",
@@ -227987,6 +227988,92 @@
       "attachments": [
         "spec/attachments/MUX-008/ast-research-flash-geometry.md"
       ]
+    },
+    "BUG-167": {
+      "id": "BUG-167",
+      "title": "Mux config save is a no-op in the real binary — persist dirs are never wired in production",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-08-31T23:15:48.220Z",
+      "updatedAt": "2026-09-01T05:38:28.406Z",
+      "description": "MuxState::save() is called by /mux save, the config dialog's 's', and the mux-exit auto-save, but App::set_mux_persist_dir is only ever called from tests. In production (combined/daemon and client modes) the dirs are never set, so every save returns Err('mux: persist dirs not set') which the callers swallow (let _ =). The shared fspec-config.json tui.mux key is never written and load always falls back to the default preset. Fix: resolve the CONFIG-008 shared-config dirs (get_data_dir + current_dir) once and wire them in all App construction sites — the same single source of truth the other fspec-config.json persistence uses — and remove the manual MuxState dirs plumbing (DRY).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-08-31T23:19:43.704Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-01T04:52:30.199Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-01T04:52:35.007Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-01T04:55:31.554Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-01T05:38:28.406Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising agents in the TUI",
+        "action": "save my mux grid config (dialog 's' key, /mux save, or mux exit)",
+        "benefit": "the grid persists in the shared fspec-config.json and is restored on the next TUI start"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Every App construction site (production and test) gets working mux persistence with zero manual wiring — App::new is the single wiring point, mirroring how the rest of the fspec-config.json persistence resolves its dirs from the process-global data directory",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:22:08.411Z"
+        },
+        {
+          "id": 1,
+          "text": "The shared-config dirs resolve to the SAME two-scope pair the CONFIG-008 fspec-config.json uses everywhere else: user scope = codelet_common::get_data_dir() (~/.fspec in the binary), project scope = std::env::current_dir() (spec/fspec-config.json overrides via deep merge)",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:22:13.977Z"
+        },
+        {
+          "id": 2,
+          "text": "A mux save (MuxConfigDialog 's' commit, /mux save, or the mux-exit auto-save) writes tui.mux into the USER-scope shared fspec-config.json preserving sibling keys, with no manual set-persist-dirs call — the manual MuxState dirs plumbing is removed",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:22:18.638Z"
+        },
+        {
+          "id": 3,
+          "text": "A missing or unresolvable data directory is non-fatal: load falls back to the default preset and save surfaces a logged error (the /mux save scrollback notice), never a panic",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:22:25.284Z"
+        },
+        {
+          "id": 4,
+          "text": "The persistence behavior stays byte-identical to the existing mux_config_persistence core (read-modify-write to USER scope; load reads the deep-merged view) — only the dirs wiring changes, not the on-disk layout",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:22:31.723Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In the real binary (combined/daemon mode, data dir initialized by build_service), opening the mux config dialog, setting Orientation to Vertical and pressing 's' writes ~/.fspec/fspec-config.json with a tui.mux key (orientation \"Vertical\"), preserving the sibling 'agent' and 'tools' keys",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:22:40.404Z"
+        },
+        {
+          "id": 1,
+          "text": "Exiting mux mode (dialog commit with Enabled: Off, or /mux off) auto-saves the post-exit config (enabled=false) to the same tui.mux key so a restart comes back with mux off",
+          "deleted": false,
+          "createdAt": "2026-08-31T23:23:10.958Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 3
     }
   }
 }

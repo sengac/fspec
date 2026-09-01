@@ -16,12 +16,14 @@
 // shared fspec-config.json.
 
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use crossterm::event::{Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use proptest::proptest;
 use ratatui::backend::TestBackend;
 use ratatui::style::Color;
 use ratatui::Terminal;
+use serial_test::serial;
 use tokio::sync::mpsc::unbounded_channel;
 
 use codelet_fspec_tui::components::Action;
@@ -33,6 +35,23 @@ use tempfile::TempDir;
 
 mod common;
 use common::MockBackend;
+
+/// Serialises tests that mutate the process-global data directory
+/// (within this test binary).
+static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+
+/// BUG-167: root the process-global data directory at a fresh throwaway
+/// dir (the established tui093 pattern). Returns the guard (held for the
+/// test's duration) + the TempDir.
+fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
+    let guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let tmp = TempDir::new().expect("tempdir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf())
+        .expect("set data dir");
+    (guard, tmp)
+}
 
 fn fresh() -> (Navigator, tokio::sync::mpsc::UnboundedReceiver<Action>) {
     let (tx, rx) = unbounded_channel();
@@ -566,9 +585,11 @@ async fn mux_4_on_an_equal_two_pane_split_divides_the_width_equally_across_four_
 
 /// Scenario: /mux save persists every split entry and a fresh bootstrap restores them
 #[tokio::test]
+#[serial]
 async fn mux_save_persists_every_split_entry_and_a_fresh_bootstrap_restores_them() {
-    let data = TempDir::new().expect("data dir");
-    let cwd = TempDir::new().expect("cwd");
+    // BUG-167: no manual persist-dirs wiring — root the process-global
+    // data directory the way the production entry points do.
+    let (_data_guard, _data) = root_data_dir();
     // @step Given mux mode is active with three panes whose dividers were dragged to a non-equal scale
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -579,18 +600,18 @@ async fn mux_save_persists_every_split_entry_and_a_fresh_bootstrap_restores_them
     }
     app.dispatch(Action::InputSubmitted("/mux board agent agent".to_string()));
     app.navigator_mut().mux.config_mut().splits = vec![20, 45];
-    app.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     // @step When I submit the slash command "/mux save"
     app.dispatch(Action::InputSubmitted("/mux save".to_string()));
     // @step Then the tui.mux key in fspec-config.json contains all n-1 split entries
-    let raw = std::fs::read_to_string(data.path().join("fspec-config.json")).expect("read config");
+    let data_dir = codelet_common::get_data_dir().expect("data dir");
+    let raw =
+        std::fs::read_to_string(data_dir.join("fspec-config.json")).expect("read config");
     assert!(raw.contains("20"), "splits[0]=20 must round-trip: {raw}");
     assert!(raw.contains("45"), "splits[1]=45 must round-trip: {raw}");
     // @step And a fresh bootstrap followed by /mux on restores the same non-equal scale
     let mock2 = Arc::new(MockBackend::new());
     let backend2: Arc<dyn FspecBackend> = mock2.clone();
     let mut app2 = App::new(backend2);
-    app2.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     app2.load_mux_config();
     app2.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     while let Some(handle) = app2.next_pending_task() {
