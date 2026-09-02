@@ -1423,6 +1423,20 @@ pub enum StreamChunk {
         #[serde(rename = "continueState")]
         continue_state: ContinueStateInfo,
     },
+    /// BUG-171: state-only push of a stored exec-stdin request — the
+    /// sessions layer emits it from `BackgroundSession::set_exec_stdin_request`
+    /// when a request is stored (detector fire) so the TUI surfaces the
+    /// composer overlay WITHOUT a status flip. The TUI folds it into the
+    /// exec-stdin slot; it is never rendered into the transcript.
+    ExecStdinRequest {
+        #[serde(rename = "execStdinRequest")]
+        request: ExecStdinRequest,
+    },
+    /// BUG-171: state-only push of an exec-stdin slot clear — emitted
+    /// when the stored request transitions to `None` (child exit
+    /// alive-check, successful `write_exec_stdin`, explicit clear) so
+    /// the TUI unmounts the overlay. Never rendered into the transcript.
+    ExecStdinRequestCleared,
 }
 
 impl StreamChunk {
@@ -1655,6 +1669,16 @@ impl StreamChunk {
     /// CONT-007: live continue/goal counter snapshot (state-only).
     pub fn continue_state_update(continue_state: ContinueStateInfo) -> Self {
         Self::ContinueStateUpdate { continue_state }
+    }
+
+    /// BUG-171: state-only exec-stdin request push (detector fire).
+    pub fn exec_stdin_request(request: ExecStdinRequest) -> Self {
+        Self::ExecStdinRequest { request }
+    }
+
+    /// BUG-171: state-only exec-stdin cleared push (slot → None).
+    pub fn exec_stdin_request_cleared() -> Self {
+        Self::ExecStdinRequestCleared
     }
 }
 

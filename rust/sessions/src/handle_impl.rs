@@ -1004,7 +1004,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     ) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
-            Ok(_session) => {
+            Ok(session) => {
                 let store = codelet_tools::unified_exec::global_store();
                 let exec_session_id_owned = exec_session_id.to_string();
                 let payload = {
@@ -1014,7 +1014,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     }
                     p
                 };
-                loop_block_on(async move {
+                let result = loop_block_on(async move {
                     let tx = store
                         .get_stdin_tx(&exec_session_id_owned)
                         .await
@@ -1027,7 +1027,16 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                         ));
                     }
                     Ok::<(), String>(())
-                })
+                });
+                // BUG-171: a successful submit answers the prompt — clear
+                // the stored request so the push contract emits
+                // ExecStdinRequestCleared and the TUI unmounts the
+                // overlay (set_exec_stdin_request is the sole emission
+                // point; Some→None → cleared chunk).
+                if result.is_ok() {
+                    session.set_exec_stdin_request(None);
+                }
+                result
             }
             Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
         }

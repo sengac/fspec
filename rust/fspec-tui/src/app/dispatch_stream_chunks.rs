@@ -196,6 +196,26 @@ impl App {
                         .set_goal_state(session_id.clone(), None);
                 }
             }
+            // BUG-171: exec-stdin push chunks — the sessions layer emits
+            // these from `set_exec_stdin_request` on slot transitions
+            // (no status flip, so the Paused-chunk probe never fires).
+            // Route them into the existing exec-stdin reducer: request →
+            // `ExecStdinPromptFetched` (reuses the HITL-guarded reducer +
+            // the HITL > exec-stdin > pause > composer precedence chain),
+            // cleared → `ExecStdinDismissed` (slot-only clear; nothing is
+            // sent, cancelled, or killed). Re-dispatch via action_tx so
+            // the reducers run through the normal dispatch path.
+            StreamChunk::ExecStdinRequest { request } => {
+                let _ = self.action_tx.send(Action::ExecStdinPromptFetched {
+                    agent_session: session_id.clone(),
+                    request: request.clone(),
+                });
+            }
+            StreamChunk::ExecStdinRequestCleared => {
+                let _ = self.action_tx.send(Action::ExecStdinDismissed {
+                    agent_session: session_id.clone(),
+                });
+            }
             // All other variants: nothing additional to record here.
             _ => {}
         }

@@ -224,5 +224,17 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
                 "doneRejections": continue_state.done_rejections,
             },
         }),
+        StreamChunk::ExecStdinRequest { request } => json!({
+            "type": "execStdinRequest",
+            "execStdinRequest": {
+                "execSessionId": request.exec_session_id,
+                "command": request.command,
+                "quietSeconds": request.quiet_seconds,
+                "tsMs": request.ts_ms,
+            },
+        }),
+        StreamChunk::ExecStdinRequestCleared => json!({
+            "type": "execStdinRequestCleared",
+        }),
     }
 }

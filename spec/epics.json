@@ -1321,7 +1321,8 @@
       "createdAt": "2026-07-17T00:54:28.757Z",
       "description": "Tool invocation and execution improvements",
       "workUnits": [
-        "TOOL-021"
+        "TOOL-021",
+        "BUG-171"
       ]
     },
     "tui-lazy-load": {

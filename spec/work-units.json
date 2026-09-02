@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-02T07:38:44.821Z",
+    "lastUpdated": "2026-09-02T08:28:30.279Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 170,
+    "BUG": 171,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -257,7 +257,8 @@
     ],
     "implementing": [
       "RPC-165",
-      "RPC-225"
+      "RPC-225",
+      "BUG-171"
     ],
     "validating": [
       "RPC-174",
@@ -228482,6 +228483,76 @@
       "attachments": [
         "spec/attachments/BUG-170/unrecoverable-api-error-tool-call-context-replay-research.md"
       ]
+    },
+    "BUG-171": {
+      "id": "BUG-171",
+      "title": "Exec-stdin TUI overlay never appears: pull probe has no push trigger while session stays Running",
+      "type": "bug",
+      "status": "implementing",
+      "createdAt": "2026-09-02T08:01:27.114Z",
+      "updatedAt": "2026-09-02T08:28:30.279Z",
+      "description": "TOOL-022 P2 built the exec-stdin composer overlay as a pure pull (probe get_exec_stdin_request). The detector correctly stores the ExecStdinRequest on the BackgroundSession, but the TUI only probes at two sites: (a) session focus switch and (b) a Paused state change. Exec-stdin deliberately performs NO status flip, so while a session stays Running the probe never fires and the overlay is dead-on-arrival. Fix by adding a push StreamChunk (exec-stdin request / cleared) emitted from BackgroundSession::set_exec_stdin_request, mirroring the HITL SessionStateChange flow, and handling it in handle_stream_chunk_state_updates.",
+      "epic": "tooling",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-171/BUG-171-exec-stdin-overlay-no-push-trigger.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-02T08:02:30.296Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-02T08:08:24.133Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-02T08:28:30.279Z"
+        }
+      ],
+      "userStory": {
+        "role": "user of the Rust TUI agent",
+        "action": "have the exec-stdin composer overlay appear automatically when a running command goes quiet waiting for input",
+        "benefit": "I can type into the running command's stdin without switching sessions or waiting for a status change"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A stored exec-stdin request must surface in the TUI composer slot via a push StreamChunk emitted from BackgroundSession::set_exec_stdin_request, without any agent session status flip (session stays Running)",
+          "deleted": false,
+          "createdAt": "2026-09-02T08:02:38.447Z"
+        },
+        {
+          "id": 1,
+          "text": "The cleared chunk must be emitted whenever the exec-stdin slot transitions from Some to None: exec session child exits (alive-check), write_exec_stdin succeeds, or the exec session is removed from the store",
+          "deleted": false,
+          "createdAt": "2026-09-02T08:02:42.184Z"
+        },
+        {
+          "id": 2,
+          "text": "The two existing pull probe sites (focus switch + Paused-state probe) are retained as belt-and-braces; the push chunk is the primary trigger",
+          "deleted": false,
+          "createdAt": "2026-09-02T08:02:45.488Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent runs `printf 'input: '; read -r x` via Bash; after ~5s quiet the detector fires and the TUI shows the ⌨ overlay in the composer within ~2s (next detector tick), with the session status pill still Running",
+          "deleted": false,
+          "createdAt": "2026-09-02T08:02:52.312Z"
+        },
+        {
+          "id": 1,
+          "text": "User types '42' and presses Enter on the ⌨ overlay; '42\\n' reaches the running command's stdin, the overlay clears immediately, and the command's output ('You entered: 42') appears in scrollback",
+          "deleted": false,
+          "createdAt": "2026-09-02T08:02:55.382Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 8
     }
   }
 }

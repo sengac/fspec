@@ -1212,6 +1212,19 @@ impl BackgroundSession {
     /// `handle_impl::write_exec_stdin`); it is a cheap
     /// `child.try_wait()` on the store entry and only runs on detector
     /// fires / clears, not on every TUI probe.
+    ///
+    /// BUG-171: the setter is the SOLE emission point for the
+    /// exec-stdin push chunks — storing a fresh request (detector fire)
+    /// pushes `StreamChunk::ExecStdinRequest`; any transition to None
+    /// (explicit clear, alive-check reject, post-write clear) pushes
+    /// `StreamChunk::ExecStdinRequestCleared`. Mirrors
+    /// `set_status` → `session_state_change`. Re-storing the SAME
+    /// request (same exec session + detector fire timestamp — the
+    /// detector only mints a fresh `ts_ms` on a real fire, and a
+    /// re-tick within the 30s cooldown is suppressed by the cooldown
+    /// map) is a dedupe no-op: it still updates the slot but emits no
+    /// fresh push chunk, so the TUI never re-populates a slot it just
+    /// submitted against.
     pub fn set_exec_stdin_request(
         &self,
         mut request: Option<codelet_tools::unified_exec::ExecStdinRequest>,
@@ -1226,7 +1239,31 @@ impl BackgroundSession {
             request = None;
         }
         if let Ok(mut guard) = self.exec_stdin_request.write() {
+            // BUG-171: transition-aware emission. Emit only on real
+            // slot transitions:
+            //   None → Some(fresh fire)  : ExecStdinRequest
+            //   Some → None              : ExecStdinRequestCleared
+            //   Some(same fire) → Some(same fire): no-op (detector re-tick)
+            //   None → None              : no-op (already clear)
+            let prev_same_fire = match (&*guard, &request) {
+                (Some(prev), Some(next)) => {
+                    prev.exec_session_id == next.exec_session_id && prev.ts_ms == next.ts_ms
+                }
+                (None, None) => true,
+                _ => false,
+            };
+            let chunk = match request.as_ref() {
+                Some(internal) => Some(StreamChunk::exec_stdin_request(
+                    crate::exec_stdin_mapping::internal_request_to_wire(internal.clone()),
+                )),
+                None => Some(StreamChunk::exec_stdin_request_cleared()),
+            };
             *guard = request;
+            if !prev_same_fire {
+                if let Some(chunk) = chunk {
+                    self.handle_output(chunk);
+                }
+            }
         }
     }
 
