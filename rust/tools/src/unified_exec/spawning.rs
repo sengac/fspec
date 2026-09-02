@@ -166,13 +166,17 @@ fn build_kill_handle(child: &Child) -> ChildHandle {
         ChildHandle {
             kill: Arc::new(move || {
                 use crate::bash_process::taskkill_args;
-                let status = std::process::Command::new("taskkill")
-                    .args(taskkill_args(pid, true))
-                    .stdout(Stdio::null())
-                    .stderr(Stdio::null())
-                    .status();
-                if let Err(e) = status {
-                    tracing::warn!("failed to run taskkill for pid {pid}: {e}");
+                // `child.id()` is `Option<u32>`; guard like the unix branch so we
+                // never build `taskkill` args from a missing pid.
+                if let Some(pid) = pid {
+                    let status = std::process::Command::new("taskkill")
+                        .args(taskkill_args(pid, true))
+                        .stdout(Stdio::null())
+                        .stderr(Stdio::null())
+                        .status();
+                    if let Err(e) = status {
+                        tracing::warn!("failed to run taskkill for pid {pid}: {e}");
+                    }
                 }
             }),
         }
