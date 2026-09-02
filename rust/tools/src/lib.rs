@@ -16,6 +16,7 @@ pub mod bash_output;
 pub mod bash_process;
 #[cfg(windows)]
 pub mod bash_process_windows;
+pub mod bash_session; // TOOL-022 P4: BashTool execution via unified exec sessions
 pub mod bash_streams;
 pub mod blocklist;
 pub mod bridge;

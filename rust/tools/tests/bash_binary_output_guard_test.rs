@@ -210,9 +210,11 @@ async fn gzip_bytes_on_stdout_trigger_generic_guard() {
 #[tokio::test]
 async fn raw_nul_bytes_on_stdout_trigger_generic_guard() {
     // @step Given a bash command prints "\x00\x01\x02\x03hello" to stdout (bytes with an embedded NUL)
+    // Octal escapes are POSIX printf (dash's builtin printf supports
+    // them; \xNN escapes do not).
     // @step And the command exits with status 0
     // @step When the Bash tool returns
-    let result = run_bash(r#"printf '\x00\x01\x02\x03hello'"#).await;
+    let result = run_bash(r#"printf '\000\001\002\003hello'"#).await;
 
     // @step Then the caller receives a ToolError::Execution
     let err = result.expect_err("binary output must produce an error");

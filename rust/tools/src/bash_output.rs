@@ -12,6 +12,94 @@ use tokio::sync::Mutex;
 /// Marker for stderr content to enable red styling in UI
 pub const STDERR_MARKER: &str = "⚠stderr⚠";
 
+/// TOOL-022 P4: split a merged exec-session output string back into
+/// (stdout, stderr) for the [`BashOutput`] formatter.
+///
+/// The unified exec store merges stdout and stderr into ONE buffer
+/// (interleaved, read-order). `poll` drains it as one lossy-UTF-8
+/// string; stderr lines are tagged with [`STDERR_MARKER`] at the
+/// Bash layer. This inverse is line-based:
+///
+/// - a line STARTING with `STDERR_MARKER` → its remainder (the
+///   original stderr line, verbatim) joins the stderr result;
+/// - any other line joins the stdout result;
+/// - relative ordering inside each stream is preserved (the merged
+///   buffer only interleaves BETWEEN streams, never reorders within
+///   one).
+///
+/// A command whose genuine stdout line literally begins with the
+/// marker text is misclassified as stderr — accepted: the marker is
+/// a non-ASCII sentinel (`⚠stderr⚠`) no shell command emits in
+/// practice.
+pub fn split_merged_output(merged: &str) -> (String, String) {
+    let mut stdout = String::new();
+    let mut stderr = String::new();
+    let mut first_out = true;
+    let mut first_err = true;
+    for line in merged.split('\n') {
+        match line.strip_prefix(STDERR_MARKER) {
+            Some(rest) => {
+                if !first_err {
+                    stderr.push('\n');
+                }
+                stderr.push_str(rest);
+                first_err = false;
+            }
+            None => {
+                if !first_out {
+                    stdout.push('\n');
+                }
+                stdout.push_str(line);
+                first_out = false;
+            }
+        }
+    }
+    (stdout, stderr)
+}
+
+/// TOOL-022 P4: split RAW merged exec-session output bytes back into
+/// (stdout_bytes, stderr_bytes) for the [`BashOutput`] formatter and
+/// the BUG-142 binary-output guard.
+///
+/// Byte-level (unlike [`split_merged_output`], which operates on a
+/// lossy-decoded String): a binary stdout payload must reach the guard
+/// UNTOUCHED — lossy UTF-8 decoding would turn magic bytes (PNG/JPEG/ELF)
+/// into U+FFFD and the guard could no longer recognize the format.
+///
+/// Same line-based marker contract:
+/// - a line STARTING with [`STDERR_MARKER`] (as bytes) → its remainder
+///   joins the stderr half;
+/// - any other line joins the stdout half;
+/// - lines are rejoined with the exact `b'\n'` separator, so the
+///   round-trip of the stdout half is byte-perfect (binary payloads
+///   containing newlines survive intact).
+pub fn split_merged_output_bytes(merged: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    let marker = STDERR_MARKER.as_bytes();
+    let mut stdout: Vec<u8> = Vec::new();
+    let mut stderr: Vec<u8> = Vec::new();
+    let mut first_out = true;
+    let mut first_err = true;
+    for line in merged.split(|&b| b == b'\n') {
+        match line.strip_prefix(marker) {
+            Some(rest) => {
+                if !first_err {
+                    stderr.push(b'\n');
+                }
+                stderr.extend_from_slice(rest);
+                first_err = false;
+            }
+            None => {
+                if !first_out {
+                    stdout.push(b'\n');
+                }
+                stdout.extend_from_slice(line);
+                first_out = false;
+            }
+        }
+    }
+    (stdout, stderr)
+}
+
 /// Holds the raw output from a bash command execution.
 ///
 /// Separates data capture from formatting (Single Responsibility Principle).
@@ -181,5 +269,99 @@ impl StreamBuffers {
         let stdout = self.stdout.lock().await.clone();
         let stderr = self.stderr.lock().await.clone();
         (stdout, stderr)
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_merged_output_splits_to_two_empty_strings() {
+        let (out, err) = split_merged_output("");
+        assert_eq!(out, "");
+        assert_eq!(err, "");
+    }
+
+    #[test]
+    fn stdout_only_lines_stay_in_stdout() {
+        // Trailing-newline semantics: the final empty segment after the
+        // last `\n` round-trips as a trailing newline (byte-perfect
+        // stdout half — matches the pre-P4 raw-bytes contract).
+        let (out, err) = split_merged_output("a\nb\n");
+        assert_eq!(out, "a\nb\n");
+        assert_eq!(err, "");
+    }
+
+    #[test]
+    fn stderr_lines_strip_marker_and_landing_in_stderr() {
+        let (out, err) = split_merged_output(&format!("{STDERR_MARKER}e1\n{STDERR_MARKER}e2\n"));
+        assert_eq!(out, "");
+        assert_eq!(err, "e1\ne2");
+    }
+
+    #[test]
+    fn interleaved_streams_split_by_marker_prefix() {
+        let (out, err) = split_merged_output(
+            &format!("s1\n{STDERR_MARKER}e1\ns2\n{STDERR_MARKER}e2\ns3"),
+        );
+        assert_eq!(out, "s1\ns2\ns3");
+        assert_eq!(err, "e1\ne2");
+    }
+
+    #[test]
+    fn stderr_line_with_empty_payload_is_preserved() {
+        // The marker line itself carries no payload; the trailing
+        // newline round-trips in the stdout half (see
+        // stdout_only_lines_stay_in_stdout).
+        let (out, err) = split_merged_output(&format!("s\n{STDERR_MARKER}\n"));
+        assert_eq!(out, "s\n");
+        assert_eq!(err, "");
+    }
+
+    #[test]
+    fn marker_only_line_with_trailing_content_kept_verbatim() {
+        let (out, err) = split_merged_output(&format!("{STDERR_MARKER}fatal: bad thing"));
+        assert_eq!(out, "");
+        assert_eq!(err, "fatal: bad thing");
+    }
+
+    // ==================================================================
+    // split_merged_output_bytes (TOOL-022 P4 — binary-safe split)
+    // ==================================================================
+
+    #[test]
+    fn bytes_split_empty_input() {
+        assert_eq!(split_merged_output_bytes(b""), (vec![], vec![]));
+    }
+
+    #[test]
+    fn bytes_split_binary_stdout_round_trips() {
+        // A PNG-ish payload: raw binary bytes incl. NUL must come back
+        // BYTE-IDENTICAL (the BUG-142 guard needs the magic bytes).
+        let png_magic = [0x89u8, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x01];
+        let merged: Vec<u8> = png_magic.to_vec();
+        let (out, err) = split_merged_output_bytes(&merged);
+        assert_eq!(out, png_magic.to_vec());
+        assert!(err.is_empty());
+    }
+
+    #[test]
+    fn bytes_split_stderr_lines_strip_marker() {
+        let merged = format!("out1\n{STDERR_MARKER}err1\nout2\n{STDERR_MARKER}err2");
+        let merged = merged.as_bytes();
+        let (out, err) = split_merged_output_bytes(merged);
+        assert_eq!(out, "out1\nout2".as_bytes());
+        assert_eq!(err, "err1\nerr2".as_bytes());
+    }
+
+    #[test]
+    fn bytes_split_stdout_newlines_are_preserved() {
+        // Newlines inside the stdout half must survive verbatim.
+        let stdout_bytes = b"a\nb\nc";
+        let (out, err) = split_merged_output_bytes(stdout_bytes);
+        assert_eq!(out, stdout_bytes);
+        assert!(err.is_empty());
     }
 }

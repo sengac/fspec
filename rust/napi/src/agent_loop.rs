@@ -707,6 +707,21 @@ pub(crate) async fn agent_loop(
             );
             codelet_tools::set_hitl_handler(session.id, Some(hitl_handler));
 
+            // TOOL-022 P2: Register the exec-stdin request callback so the
+            // deterministic quiet detector (tools crate, spawned with the
+            // reaper on `run`) can push an ExecStdinRequest onto this
+            // agent session's BackgroundSession. Pure overlay — NO
+            // status flip, NO response channel (unlike the HITL handler).
+            let session_for_exec_stdin = session.clone();
+            let exec_stdin_callback: codelet_tools::unified_exec::ExecStdinRequestCallback =
+                std::sync::Arc::new(move |request| {
+                    session_for_exec_stdin.set_exec_stdin_request(Some(request));
+                });
+            codelet_tools::unified_exec::set_exec_stdin_request_callback(
+                session.id,
+                Some(exec_stdin_callback),
+            );
+
             // AMGR-001: Register SessionSearch handler for this session
             // The handler accesses the persistence layer directly (MessageStore, SessionStore, BlobStore)
             let session_search_handler = crate::session_search_handler::create_handler(
@@ -1406,6 +1421,10 @@ Use SessionSearch to recover context.
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
+            codelet_tools::unified_exec::set_exec_stdin_request_callback(
+                session.id,
+                None,
+            ); // TOOL-022 P2: Cleanup exec-stdin callback
             codelet_tools::set_bridge_handler(session.id, None);
             codelet_tools::remove_bridge_session_context(session.id);
 

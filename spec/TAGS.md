@@ -670,6 +670,7 @@ Tags tracking development status of features.
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
+| `@tool-022` | Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt) |
 | `@wip` | Work In Progress |
 
 **Rule**: Update status tags as features progress through development lifecycle.
@@ -756,4 +757,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-01T14:11:12.455Z_
+_Last updated: 2026-09-02T01:02:41.714Z_

@@ -54,6 +54,11 @@ use common::MockBackend;
 /// data directory.
 static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
+/// Trimmed offline models.dev catalog (anthropic/openai/google), shared with
+/// the sessions-crate PROV-101 / cont009 tests. Seeding it into the temp data
+/// dir's cache keeps registry validation fully offline.
+const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
+
 /// Create a fresh BackgroundSession via the SessionManagerHandle bridge
 /// (Noop hooks — no agent loop spawned). Mirrors
 /// rust/sessions/tests/cont009_completion_contract_sync.rs.
@@ -63,7 +68,16 @@ async fn fresh_background_session() -> (
     Arc<BackgroundSession>,
 ) {
     let data_dir = tempfile::tempdir().expect("tempdir");
+    // Hermetic: seed the offline model cache + fake anthropic key so
+    // `create_session` works without ambient credentials or network.
+    let cache_dir = data_dir.path().join("cache");
+    std::fs::create_dir_all(&cache_dir).expect("create cache dir");
+    std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models.json");
+    // RPC-423 precedent (cont009): reset stores BEFORE setting data
+    // directory so init_session_store() points at the fresh temp dir.
+    codelet_core::persistence::reset_stores_for_tests();
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    std::env::set_var("ANTHROPIC_API_KEY", "cont008-fake-key");
     let manager = Arc::new(SessionManager::new());
     manager.set_default_model("anthropic/claude-opus-4-5");
     let handle: &dyn SessionManagerHandle = manager.as_ref();

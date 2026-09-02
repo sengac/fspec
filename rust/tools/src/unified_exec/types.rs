@@ -89,6 +89,15 @@ impl ExecCommand {
 // UnifiedExecResult
 // ============================================================================
 
+/// Fixed steering line appended to every still-running exec result.
+///
+/// TOOL-022 P1 (deterministic, vtcode-aligned): a pure next-step directive —
+/// NO output-content inspection. Mirrors vtcode's `next_wait_args` +
+/// `next_action_hint` (`attach_long_command_wait_steering`).
+pub const STILL_RUNNING_STEERING: &str = "Command still running. \
+If it needs input, send it via the write action. \
+Poll with a short yield_time_ms to check for new output.";
+
 /// Result type returned to the LLM.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnifiedExecResult {
@@ -110,12 +119,58 @@ pub struct UnifiedExecResult {
     /// Error message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
+    /// TOOL-022 P1: seconds since the last output, floored to a whole
+    /// number — a deterministic timing fact. Present (and the fixed
+    /// steering line attached to `output`) ONLY while the process is
+    /// still running; absent when it has exited. No output-content
+    /// inspection is involved (vtcode-aligned).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quiet_seconds: Option<u64>,
+    /// TOOL-022 P4: the RAW merged stdout+stderr bytes captured in this
+    /// result's window (stderr lines carry the `⚠stderr⚠` marker).
+    /// NEVER serialized for the LLM (`#[serde(skip)]`) — it exists so
+    /// the BashTool delegation can split the streams back out
+    /// (`bash_output::split_merged_output`) and run the BUG-142 binary
+    /// guard on the raw stdout bytes.
+    #[serde(skip)]
+    pub raw_output: Option<Vec<u8>>,
+}
+
+/// TOOL-022 P4: strip the `⚠stderr⚠` line markers from a merged
+/// stdout+stderr string for LLM/UI consumption. Line-based; a genuine
+/// stdout line that literally starts with the marker is accepted as
+/// stripped (the marker is a non-ASCII sentinel no shell command
+/// emits in practice — same convention as
+/// `bash_output::split_merged_output`).
+pub fn strip_stderr_markers(merged: &str) -> String {
+    let mut out = String::with_capacity(merged.len());
+    for (i, line) in merged.lines().enumerate() {
+        if i > 0 {
+            out.push('\n');
+        }
+        out.push_str(line.strip_prefix(crate::bash_output::STDERR_MARKER).unwrap_or(line));
+    }
+    if merged.ends_with('\n') {
+        out.push('\n');
+    }
+    out
 }
 
 impl std::fmt::Display for UnifiedExecResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", serde_json::to_string(self).unwrap_or_default())
     }
+}
+
+/// TOOL-022 P1: seconds since the last output, floored to a whole number.
+///
+/// `last_output_micros` and `now_micros` are tokio monotonic clock
+/// microseconds. This is a pure, deterministic computation — no output
+/// content is inspected. The result is used as `UnifiedExecResult.quiet_seconds`
+/// and, for the P2 detector, as the quiet-time measurement.
+pub fn quiet_secs_since(last_output_micros: u64, now_micros: u64) -> u64 {
+    let elapsed = now_micros.saturating_sub(last_output_micros);
+    elapsed / 1_000_000
 }
 
 // ============================================================================

@@ -1753,6 +1753,44 @@ pub fn session_send_hitl_response(
     Ok(())
 }
 
+// === TOOL-022 P2: exec-stdin prompt NAPI functions ===
+
+/// Get exec-stdin request state for a session (TOOL-022 P2)
+///
+/// Returns the pending exec-stdin prompt if a live exec session has
+/// been quiet >= 3s while its child is alive. Pure overlay — NO
+/// status flip, NO response channel. TypeScript polls this to render
+/// the inline prompt in the composer slot (like pause state).
+#[napi]
+pub fn session_get_exec_stdin_request(session_id: String) -> Result<Option<crate::types::ExecStdinRequest>> {
+    use codelet_core::SessionManagerHandle;
+    let manager = SessionManager::instance();
+    // The NAPI `session_id` is the session key verbatim (matches the
+    // `session_get_hitl_request` / `session_get_pause_state` pattern).
+    let sid = codelet_rpc_types::SessionId::new(session_id);
+    Ok(manager.get_exec_stdin_request(&sid))
+}
+
+/// Write typed text to a live exec session's stdin (TOOL-022 P2)
+///
+/// Called by the TUI when the user presses Enter on the exec-stdin
+/// prompt. A trailing newline is appended when absent (matching the
+/// unified_exec `write` action semantics). Unknown agent session or
+/// unknown/exited exec session returns a clean error naming the id.
+#[napi]
+pub fn session_write_exec_stdin(
+    session_id: String,
+    exec_session_id: String,
+    text: String,
+) -> Result<()> {
+    use codelet_core::SessionManagerHandle;
+    let manager = SessionManager::instance();
+    let sid = codelet_rpc_types::SessionId::new(session_id);
+    manager
+        .write_exec_stdin(&sid, &exec_session_id, &text)
+        .map_err(napi::Error::from_reason)
+}
+
 // === TUI-054: Base thinking level NAPI functions ===
 
 /// Get the base thinking level for a session (TUI-054)

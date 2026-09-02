@@ -23,6 +23,8 @@ pub mod dispatch;
 pub mod dispatch_mode_views;
 mod dispatch_popups;
 pub mod dispatch_select;
+mod exec_stdin_keys;
+pub mod exec_stdin_prompt;
 pub mod file_search_popup;
 pub mod file_search_popup_rows;
 pub mod footer;
@@ -128,6 +130,11 @@ pub struct AgentView {
     pub(crate) last_pause: Option<(codelet_rpc_types::SessionId, codelet_rpc_types::PauseKind)>,
     /// RPC-411: `(session, mode)` of the HITL prompt painted last frame.
     pub(crate) last_hitl: Option<(codelet_rpc_types::SessionId, hitl_keys::HitlKeyMode)>,
+    /// TOOL-022 P2: `(agent_session, exec_session_id)` of the exec-stdin
+    /// prompt painted last frame (cached for key routing — mirrors
+    /// `last_hitl` / `last_pause`). `None` when no exec-stdin overlay is
+    /// showing for the focused session.
+    pub(crate) last_exec_stdin: Option<(codelet_rpc_types::SessionId, String)>,
     /// RPC-412: freeform HITL header offset (rows to the "> " input line).
     pub(crate) last_hitl_input_offset: Option<u16>,
     pub(crate) recognizer: crate::mouse::gesture::SelectionRecognizer, // COPY-006

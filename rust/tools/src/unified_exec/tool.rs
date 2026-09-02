@@ -3,17 +3,22 @@
 //! Dispatches to run/write/poll/list/close actions based on the `action` parameter.
 //! Types live in `types.rs`; spawning, output, and reaper in their own modules.
 
-use super::output::{collect_output_until_deadline, truncate_output_str};
+use super::exec_stdin::spawn_exec_stdin_detector;
+use super::output::{collect_output_until_deadline_interruptible, truncate_output_str};
 use super::process_store::{global_store, ProcessEntry};
 use super::reaper::{generate_session_id, spawn_reaper};
 use super::spawning::{spawn_pipe_process, spawn_pty_process};
-use super::types::{ExecCommand, SessionListEntry, UnifiedExecArgs, UnifiedExecResult};
+use super::types::{
+    strip_stderr_markers, ExecCommand, SessionListEntry, STILL_RUNNING_STEERING,
+    UnifiedExecArgs, UnifiedExecResult,
+};
 use super::{clamp_poll_yield_time, clamp_yield_time, DEFAULT_YIELD_TIME_MS};
 use crate::blocklist::check_bash_command;
 use crate::error::ToolError;
 use crate::facade::get_effective_cwd;
 use rig::tool::Tool;
 use serde_json::{json, Value};
+use std::sync::Arc;
 use std::time::Instant;
 use uuid::Uuid;
 
@@ -24,11 +29,36 @@ use uuid::Uuid;
 /// The unified exec tool.
 pub struct UnifiedExecTool {
     session_id: Uuid,
+    /// TOOL-022 P4: optional abort check (the BashTool delegation passes
+    /// its per-session abort flag). When set, the `run` output window
+    /// observes it every ~50ms and exits early.
+    abort_check: Option<Arc<dyn Fn() -> bool + Send + Sync>>,
 }
 
 impl UnifiedExecTool {
     pub fn new(session_id: Uuid) -> Self {
-        Self { session_id }
+        Self {
+            session_id,
+            abort_check: None,
+        }
+    }
+
+    /// TOOL-022 P4: attach the abort check the `run` output window
+    /// consults every ~50ms (the BashTool delegation's per-session
+    /// abort flag).
+    pub fn with_abort_check(mut self, f: impl Fn() -> bool + Send + Sync + 'static) -> Self {
+        self.abort_check = Some(Arc::new(f));
+        self
+    }
+
+    /// The interrupt closure for the output drain (no-op when no abort
+    /// check is attached). Returns a shared Arc (owned by the drain's
+    /// lifetime) so the `Send` future bound is satisfied.
+    fn interrupt(&self) -> Arc<dyn Fn() -> bool + Send + Sync> {
+        match &self.abort_check {
+            Some(check) => Arc::clone(check),
+            None => Arc::new(|| false),
+        }
     }
 
     /// Determine the effective working directory.
@@ -140,14 +170,6 @@ impl UnifiedExecTool {
         })?;
         let command = ExecCommand::from_value(command_val)?;
 
-        // Check blocklist
-        let check_str = command.blocklist_check_string();
-        if let Err(blocked) = check_bash_command(&check_str, self.session_id) {
-            return Err(ToolError::Blocked {
-                tool: "unified_exec",
-                message: blocked.to_string(),
-            });
-        }
 
         let tty = params
             .get("tty")
@@ -164,16 +186,35 @@ impl UnifiedExecTool {
         let store = global_store();
         store.evict_lru_if_full().await;
 
+        // TOOL-022 P4: `skip_blocklist` — the BashTool delegation path has
+        // already run the Bash-layer blocklist/pause check; skip the
+        // unified_exec internal check to avoid double-prompting.
+        let skip_blocklist = params
+            .get("skip_blocklist")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+        if !skip_blocklist {
+            let check_str = command.blocklist_check_string();
+            if let Err(blocked) = check_bash_command(&check_str, self.session_id) {
+                return Err(ToolError::Blocked {
+                    tool: "unified_exec",
+                    message: blocked.to_string(),
+                });
+            }
+        }
+
         // Spawn the process
-        let (mut child, stdin_tx, output_buffer, output_notify) = if tty {
-            spawn_pty_process(&command, workdir.as_deref())?
-        } else {
-            spawn_pipe_process(&command, workdir.as_deref())?
-        };
+        let (mut child, stdin_tx, output_buffer, output_notify, last_output_micros, kill_handle) =
+            if tty {
+                spawn_pty_process(&command, workdir.as_deref())?
+            } else {
+                spawn_pipe_process(&command, workdir.as_deref())?
+            };
 
         let start = Instant::now();
         let output =
-            collect_output_until_deadline(&output_buffer, &output_notify, yield_time_ms).await;
+            collect_output_until_deadline_interruptible(&output_buffer, &output_notify, yield_time_ms, &self.interrupt())
+                .await;
 
         // Check if process exited
         let exit_status = child.try_wait().map_err(|e| ToolError::Execution {
@@ -183,16 +224,21 @@ impl UnifiedExecTool {
 
         let wall_time = start.elapsed().as_secs_f64();
 
+        let raw = output.clone();
+        let output = String::from_utf8_lossy(&raw).into_owned();
+        let clean = strip_stderr_markers(&output);
         match exit_status {
             Some(status) => {
                 // Process exited — return exit_code (backward-compatible one-shot)
                 Ok(UnifiedExecResult {
                     exit_code: Some(status.code().unwrap_or(-1)),
                     session_id: None,
-                    output: Some(truncate_output_str(&output)),
+                    output: Some(truncate_output_str(&clean)),
                     wall_time_seconds: Some(wall_time),
                     sessions: None,
                     error: None,
+                    quiet_seconds: None,
+                    raw_output: Some(raw),
                 })
             }
             _ => {
@@ -206,17 +252,27 @@ impl UnifiedExecTool {
                     last_used: Instant::now(),
                     tty,
                     command_display: command.display(),
+                    last_output_micros,
+                    kill_handle,
                 };
                 store.insert(session_id.clone(), entry).await;
                 spawn_reaper(session_id.clone());
+                // TOOL-022 P2: deterministic quiet detector — pushes an
+                // ExecStdinRequest to the owning agent session's callback
+                // once the child is alive and quiet >= 3s (no status flip).
+                spawn_exec_stdin_detector(self.session_id, session_id.clone(), command.display());
 
+                let quiet_secs = store.quiet_secs(&session_id).await.unwrap_or(0);
+                let output_str = truncate_output_str(&clean);
                 Ok(UnifiedExecResult {
                     exit_code: None,
                     session_id: Some(session_id),
-                    output: Some(truncate_output_str(&output)),
+                    output: Some(still_running_output(&output_str)),
                     wall_time_seconds: Some(wall_time),
                     sessions: None,
                     error: None,
+                    quiet_seconds: Some(quiet_secs),
+                    raw_output: Some(raw),
                 })
             }
         }
@@ -297,6 +353,8 @@ impl UnifiedExecTool {
             wall_time_seconds: None,
             sessions: Some(sessions),
             error: None,
+            quiet_seconds: None,
+            raw_output: None,
         })
     }
 
@@ -312,15 +370,19 @@ impl UnifiedExecTool {
                 })?;
 
         let store = global_store();
-        let mut entry = store
-            .remove(session_id)
+        let killed = store
+            .close_session(session_id)
             .await
-            .ok_or(ToolError::Validation {
+            .map_err(|message| ToolError::Validation {
+                tool: "unified_exec",
+                message,
+            })?;
+        if !killed {
+            return Err(ToolError::Validation {
                 tool: "unified_exec",
                 message: format!("Unknown session: {session_id}"),
-            })?;
-
-        let _ = entry.child.kill().await;
+            });
+        }
 
         Ok(UnifiedExecResult {
             exit_code: None,
@@ -329,6 +391,8 @@ impl UnifiedExecTool {
             wall_time_seconds: None,
             sessions: None,
             error: None,
+            quiet_seconds: None,
+            raw_output: None,
         })
     }
 }
@@ -343,9 +407,27 @@ impl UnifiedExecTool {
 /// Implements the yield-and-resume pattern: collect output for `yield_time_ms`,
 /// then check if the process exited. If exited, remove from store and return
 /// `exit_code`. If still running, return `session_id`.
-async fn poll_session(
+///
+/// TOOL-022 P4: `pub` so the BashTool delegation loop
+/// (`crate::bash_session`) can poll with its own (abort-cadence) yield
+/// window without going through the LLM-facing action clamps.
+pub async fn poll_session(
     session_id: &str,
     yield_time_ms: u64,
+) -> Result<UnifiedExecResult, ToolError> {
+    let no_interrupt: Arc<dyn Fn() -> bool + Send + Sync> = Arc::new(|| false);
+    poll_session_interruptible(session_id, yield_time_ms, &no_interrupt).await
+}
+
+/// TOOL-022 P4: like [`poll_session`], but the output drain consults
+/// `interrupt` every ~50ms and stops early when it returns `true`
+/// (the BashTool delegation loop's abort flag). Early-stopped polls
+/// return the partial output captured so far + the (still) running
+/// session id — the caller continues polling.
+pub async fn poll_session_interruptible(
+    session_id: &str,
+    yield_time_ms: u64,
+    interrupt: &Arc<dyn Fn() -> bool + Send + Sync>,
 ) -> Result<UnifiedExecResult, ToolError> {
     let store = global_store();
 
@@ -359,7 +441,12 @@ async fn poll_session(
             })?;
 
     let start = Instant::now();
-    let output = collect_output_until_deadline(&output_buffer, &output_notify, yield_time_ms).await;
+    let output_bytes =
+        collect_output_until_deadline_interruptible(&output_buffer, &output_notify, yield_time_ms, interrupt)
+            .await;
+    let output = String::from_utf8_lossy(&output_bytes).into_owned();
+    let clean = strip_stderr_markers(&output);
+    let raw = output_bytes.clone();
     let wall_time = start.elapsed().as_secs_f64();
 
     match store.try_wait(session_id).await {
@@ -369,37 +456,61 @@ async fn poll_session(
             Ok(UnifiedExecResult {
                 exit_code: status.code().or(Some(-1)),
                 session_id: None,
-                output: Some(truncate_output_str(&output)),
+                output: Some(truncate_output_str(&clean)),
                 wall_time_seconds: Some(wall_time),
                 sessions: None,
                 error: None,
+                quiet_seconds: None,
+                raw_output: Some(raw),
             })
         }
         Some(None) => {
             // Process still running
+            let quiet_secs = store.quiet_secs(session_id).await.unwrap_or(0);
+            let output_str = truncate_output_str(&clean);
             Ok(UnifiedExecResult {
                 exit_code: None,
                 session_id: Some(session_id.to_string()),
-                output: Some(truncate_output_str(&output)),
+                output: Some(still_running_output(&output_str)),
                 wall_time_seconds: Some(wall_time),
                 sessions: None,
                 error: None,
+                quiet_seconds: Some(quiet_secs),
+                raw_output: Some(raw),
             })
         }
         None => {
-            // Session no longer in store — removed by the background reaper
-            // after detecting process exit during the yield wait. The process
-            // already exited; we just didn't observe it via try_wait because
-            // the reaper got there first. Return exit_code -1 (unknown) since
-            // we don't have the actual status.
+            // Session no longer in store — the reaper removed it after
+            // the process exited. `recover_exit` retrieves the real
+            // status the reaper stashed (or -1 when unavailable), so a
+            // successful command does NOT degrade to the reaper-race
+            // -1 code (research §9.6).
+            let exit_code = store
+                .recover_exit(session_id)
+                .await
+                .map(|status| status.code().unwrap_or(-1))
+                .unwrap_or(-1);
             Ok(UnifiedExecResult {
-                exit_code: Some(-1),
+                exit_code: Some(exit_code),
                 session_id: None,
-                output: Some(truncate_output_str(&output)),
+                output: Some(truncate_output_str(&clean)),
                 wall_time_seconds: Some(wall_time),
                 sessions: None,
                 error: None,
+                quiet_seconds: None,
+                raw_output: Some(raw),
             })
         }
+    }
+}
+
+/// TOOL-022 P1: append the fixed steering line to a still-running result's
+/// output. Deterministic — no output-content inspection (vtcode's
+/// `next_action_hint` analogue).
+fn still_running_output(output: &str) -> String {
+    if output.is_empty() {
+        format!("{STILL_RUNNING_STEERING}\n")
+    } else {
+        format!("{output}\n\n{STILL_RUNNING_STEERING}")
     }
 }

@@ -697,6 +697,41 @@ pub enum Action {
     },
 
     // ========================================================================
+    // TOOL-022 P2: exec-stdin inline prompt actions. The prompt is a
+    // non-blocking overlay in the SAME composer slot as HITL (precedence
+    // HITL > exec-stdin > pause > composer); it has NO response channel
+    // and does NOT flip the session status.
+    // ========================================================================
+    /// TOOL-022 P2: emitted when a probe of the focused agent session's
+    /// `get_exec_stdin_request` returns `Some`. App::dispatch stores the
+    /// request in the AgentViewStore exec-stdin slot — the AgentView
+    /// paints the inline prompt from that slot when the session is
+    /// focused.
+    ExecStdinPromptFetched {
+        agent_session: codelet_rpc_types::SessionId,
+        request: codelet_rpc_types::ExecStdinRequest,
+    },
+    /// TOOL-022 P2: Enter on the exec-stdin prompt. The key handler
+    /// already read + cleared the SHARED composer input; this carries
+    /// the captured text. App::dispatch routes through
+    /// `handle_exec_stdin_submit`, which fires
+    /// `backend.write_exec_stdin(agent_session, exec_session, text)`
+    /// fire-and-forget (slot cleared on success; kept + logged on
+    /// failure — NEVER a scrollback notice).
+    ExecStdinSubmit {
+        agent_session: codelet_rpc_types::SessionId,
+        exec_session: String,
+        text: String,
+    },
+    /// TOOL-022 P2: Esc on the exec-stdin prompt — dismiss the
+    /// overlay only. The session keeps running; NOTHING is sent,
+    /// cancelled, or killed. App::dispatch routes through
+    /// `handle_exec_stdin_dismissed` which clears the slot.
+    ExecStdinDismissed {
+        agent_session: codelet_rpc_types::SessionId,
+    },
+
+    // ========================================================================
     // RPC-054: Provider settings view actions. The `/provider` slash
     // command dispatches `OpenProviderSettingsView`; the view itself
     // emits `SaveProviderCredentials` / `TestProviderConnection` /

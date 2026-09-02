@@ -80,6 +80,12 @@ impl AgentView {
             if let Some(result) = self.handle_hitl_prompt_paste(text) {
                 return result;
             }
+            // TOOL-022 P2: paste routing while the exec-stdin prompt is
+            // live — inserts into the shared input (HITL above still
+            // wins on tie).
+            if let Some(result) = self.handle_exec_stdin_prompt_paste(text) {
+                return result;
+            }
         }
         if let Event::Key(key) = event {
             // RPC-402 rule [3]: only KeyEventKind::Press key events are
@@ -97,6 +103,15 @@ impl AgentView {
             // mode consumes every key; freeform/Other mode intercepts
             // Enter/Esc and lets the rest reach the shared input.
             if let Some(result) = self.handle_hitl_prompt_key(key) {
+                return result;
+            }
+            // TOOL-022 P2: the inline exec-stdin prompt (focused
+            // session has an active exec-stdin slot, cached at render
+            // time) is consulted AFTER the HITL keys (HITL still wins)
+            // and BEFORE the pause prompt. Esc dismisses the overlay
+            // only; Enter submits to the exec session's stdin; typing
+            // / paste reach the shared input.
+            if let Some(result) = self.handle_exec_stdin_prompt_key(key) {
                 return result;
             }
             // RPC-406: the inline pause prompt (focused session has an

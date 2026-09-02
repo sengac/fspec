@@ -30,7 +30,9 @@
 //! - `spawning.rs` — pipe/PTY process creation with I/O wiring
 //! - `output.rs` — output collection and truncation
 //! - `reaper.rs` — background cleanup and session ID generation
+//! - `exec_stdin.rs` — TOOL-022 P2 deterministic quiet detector + per-agent-session callback
 
+mod exec_stdin;
 mod output;
 mod process_store;
 mod reaper;
@@ -38,10 +40,17 @@ mod spawning;
 mod tool;
 mod types;
 
-pub use process_store::session_id_to_evict;
-pub use process_store::ProcessStore;
-pub use tool::UnifiedExecTool;
-pub use types::{ExecCommand, UnifiedExecArgs, UnifiedExecResult};
+pub use exec_stdin::{
+    emit_exec_stdin_request, set_exec_stdin_request_callback, spawn_exec_stdin_detector,
+    ExecStdinRequest, ExecStdinRequestCallback, EXEC_STDIN_COOLDOWN_SECS,
+    EXEC_STDIN_QUIET_THRESHOLD_SECS,
+};
+pub use process_store::{global_store, session_id_to_evict, ChildHandle, ProcessStore};
+pub use reaper::{generate_session_id, spawn_reaper};
+pub use tool::{poll_session, poll_session_interruptible, UnifiedExecTool};
+pub use types::{
+    quiet_secs_since, ExecCommand, STILL_RUNNING_STEERING, UnifiedExecArgs, UnifiedExecResult,
+};
 
 // ============================================================================
 // Constants (from Codex reference)
@@ -52,6 +61,13 @@ pub const MIN_YIELD_TIME_MS: u64 = 250;
 
 /// Minimum yield time for poll/empty-write (higher to avoid excessive polling)
 pub const MIN_EMPTY_YIELD_TIME_MS: u64 = 5_000;
+
+/// TOOL-022 P4: minimum yield for the BashTool delegation poll loop —
+/// the cadence of the abort-flag check. Lower than the LLM-facing
+/// poll minimum (delegation aborts are USER-driven, not LLM-driven;
+/// the pre-P4 Bash abort contract terminates within ~200ms of the
+/// ESC).
+pub const MIN_BASH_DELEGATION_YIELD_TIME_MS: u64 = 100;
 
 /// Maximum yield time in milliseconds
 pub const MAX_YIELD_TIME_MS: u64 = 30_000;
@@ -76,4 +92,10 @@ pub fn clamp_yield_time(requested: u64) -> u64 {
 /// Clamp yield time for poll actions (higher minimum)
 pub fn clamp_poll_yield_time(requested: u64) -> u64 {
     requested.clamp(MIN_EMPTY_YIELD_TIME_MS, MAX_YIELD_TIME_MS)
+}
+
+/// TOOL-022 P4: clamp yield time for the BashTool delegation poll loop
+/// (the abort-flag-check cadence — lower minimum than the LLM poll).
+pub fn clamp_bash_delegation_yield_time(requested: u64) -> u64 {
+    requested.clamp(MIN_BASH_DELEGATION_YIELD_TIME_MS, MAX_YIELD_TIME_MS)
 }

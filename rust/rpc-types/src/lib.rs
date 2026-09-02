@@ -1257,6 +1257,28 @@ pub struct HitlResponse {
     pub answers: Vec<HitlAnswer>,
 }
 
+/// TOOL-022 P2: deterministic exec-stdin prompt request — surfaced in
+/// the TUI composer slot when a live unified_exec session has been
+/// quiet for >= 3s while its child is alive. Wire-facing mirror of
+/// the tools-internal `codelet_tools::unified_exec::ExecStdinRequest`
+/// (NO hint/content field — nothing derived from output content
+/// crosses the wire). `quiet_seconds` / `ts_ms` are `i64` (not `u64`)
+/// because the `napi(object)` derive in this workspace only supports
+/// i32/i64/f32/f64 numerics — matching the `LogRecord.timestamp_ms`
+/// convention; the values are always non-negative in practice.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ExecStdinRequest {
+    /// The unified_exec session id (NOT the agent session id).
+    pub exec_session_id: String,
+    /// Command display string.
+    pub command: String,
+    /// Seconds since last output when the detector fired (floored).
+    pub quiet_seconds: i64,
+    /// Detector fire time, Unix epoch milliseconds.
+    pub ts_ms: i64,
+}
+
 // ---------------------------------------------------------------------------
 // Phase 2.4 — Supporting types
 // ---------------------------------------------------------------------------

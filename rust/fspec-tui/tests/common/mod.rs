@@ -187,11 +187,11 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_fspec_tui::FspecBackend;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionResult, FspecResult,
-    HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, ModelEntry,
-    ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
-    SessionId, SessionInfo, SessionStatus, StreamChunk, TestConnectionResult, ThinkingLevel,
-    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionResult, ExecStdinRequest,
+    FspecResult, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
+    ModelEntry, ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput,
+    ProviderInfo, SessionId, SessionInfo, SessionStatus, StreamChunk, TestConnectionResult,
+    ThinkingLevel, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tokio::sync::broadcast;
 
@@ -449,6 +449,24 @@ pub struct MockBackend {
     pause_confirm_error: Mutex<Option<String>>,
     pause_triple_error: Mutex<Option<String>>,
     send_hitl_response_error: Mutex<Option<String>>,
+    // ── TOOL-022 P2 exec-stdin overlay surface ────────────────────────
+    /// Per-session scripted exec-stdin request return from
+    /// `get_exec_stdin_request`. `None` when no request is pending.
+    exec_stdin_store: Mutex<HashMap<SessionId, Option<ExecStdinRequest>>>,
+    /// Per-call counter for `get_exec_stdin_request`.
+    get_exec_stdin_request_calls: AtomicUsize,
+    /// Per-call counter for `write_exec_stdin`.
+    write_exec_stdin_calls: AtomicUsize,
+    /// Capture of every `(SessionId, exec_session_id, text)` passed to
+    /// `write_exec_stdin` in call order.
+    write_exec_stdin_calls_log: Mutex<Vec<(SessionId, String, String)>>,
+    /// Scripted error for `get_exec_stdin_request` — when `Some`, the
+    /// method returns `Err(anyhow!(message))`.
+    get_exec_stdin_request_error: Mutex<Option<String>>,
+    /// Scripted error for `write_exec_stdin` — when `Some`, the method
+    /// returns `Err(message)` (a String, matching the trait's
+    /// `Result<(), String>`).
+    write_exec_stdin_error: Mutex<Option<String>>,
     // ── RPC-054 provider-credentials surface ─────────────────────────
     /// RPC-054: ordered list of provider credential infos returned by
     /// `list_provider_credentials`. Tests use `seed_provider_credentials`
@@ -809,6 +827,12 @@ impl Default for MockBackend {
             pause_confirm_error: Mutex::new(None),
             pause_triple_error: Mutex::new(None),
             send_hitl_response_error: Mutex::new(None),
+            exec_stdin_store: Mutex::new(HashMap::new()),
+            get_exec_stdin_request_calls: AtomicUsize::new(0),
+            write_exec_stdin_calls: AtomicUsize::new(0),
+            write_exec_stdin_calls_log: Mutex::new(Vec::new()),
+            get_exec_stdin_request_error: Mutex::new(None),
+            write_exec_stdin_error: Mutex::new(None),
             // ── RPC-054 ──────────────────────────────────────────────
             provider_credentials: Mutex::new(Vec::new()),
             provider_credentials_after_save: Mutex::new(None),
@@ -1675,6 +1699,55 @@ impl MockBackend {
             .lock()
             .expect("MockBackend mutex")
             .clone()
+    }
+
+    // ── TOOL-022 P2 helpers ────────────────────────────────────────────────
+
+    /// Seed the value `get_exec_stdin_request(session)` returns.
+    /// Pass `Some(request)` to simulate a pending exec-stdin prompt;
+    /// pass `None` to simulate "no request" (the default for
+    /// un-scripted sessions is also `None`).
+    pub fn script_exec_stdin_request(&self, session: SessionId, value: Option<ExecStdinRequest>) {
+        self.exec_stdin_store
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session, value);
+    }
+
+    /// Per-call counter for `get_exec_stdin_request`.
+    pub fn get_exec_stdin_request_calls(&self) -> usize {
+        self.get_exec_stdin_request_calls.load(Ordering::SeqCst)
+    }
+
+    /// Per-call counter for `write_exec_stdin`.
+    pub fn write_exec_stdin_calls(&self) -> usize {
+        self.write_exec_stdin_calls.load(Ordering::SeqCst)
+    }
+
+    /// Full call log for `write_exec_stdin` (every
+    /// (session, exec_session_id, text)).
+    pub fn write_exec_stdin_log(&self) -> Vec<(SessionId, String, String)> {
+        self.write_exec_stdin_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// Force the next `get_exec_stdin_request` call to fail.
+    pub fn set_get_exec_stdin_request_error(&self, message: String) {
+        *self
+            .get_exec_stdin_request_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// Force the next `write_exec_stdin` call to fail (String error,
+    /// matching the trait's `Result<(), String>`).
+    pub fn set_write_exec_stdin_error(&self, message: String) {
+        *self
+            .write_exec_stdin_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
     }
 
     /// RPC-053: force the next `get_pause_state` call to fail.
@@ -2944,6 +3017,45 @@ impl FspecBackend for MockBackend {
         }
         let store = self.hitl_request_store.lock().expect("MockBackend mutex");
         Ok(store.get(&session_id).cloned().unwrap_or(None))
+    }
+
+    async fn get_exec_stdin_request(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<ExecStdinRequest>> {
+        self.get_exec_stdin_request_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .get_exec_stdin_request_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let store = self.exec_stdin_store.lock().expect("MockBackend mutex");
+        Ok(store.get(&session_id).cloned().unwrap_or(None))
+    }
+
+    async fn write_exec_stdin(
+        &self,
+        session_id: SessionId,
+        exec_session_id: String,
+        text: String,
+    ) -> Result<(), String> {
+        self.write_exec_stdin_calls.fetch_add(1, Ordering::SeqCst);
+        self.write_exec_stdin_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push((session_id, exec_session_id, text));
+        if let Some(msg) = self
+            .write_exec_stdin_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(msg);
+        }
+        Ok(())
     }
 
     async fn pause_resume(&self, session_id: SessionId) -> Result<()> {

@@ -976,6 +976,63 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         Some(crate::hitl_mapping::internal_request_to_wire(internal))
     }
 
+    /// TOOL-022 P2: snapshot of the active exec-stdin request, if any.
+    /// Pure pass-through mapping (tools-internal → wire; identical
+    /// fields, see `exec_stdin_mapping`).
+    fn get_exec_stdin_request(&self, session_id: &SessionId) -> Option<codelet_rpc_types::ExecStdinRequest> {
+        let uuid = uuid_from(session_id);
+        let internal = self
+            .get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_exec_stdin_request())?;
+        Some(crate::exec_stdin_mapping::internal_request_to_wire(internal))
+    }
+
+    /// TOOL-022 P2: write typed text to a live exec session's stdin.
+    ///
+    /// Bridges sync→async via `block_in_place` + `Handle::current().block_on`
+    /// (the `loop_block_on` pattern) because `get_stdin_tx` / `send` are
+    /// async store ops. MUST be invoked from a multi-thread tokio runtime.
+    /// Unknown agent session → "Session not found"; unknown/exited exec
+    /// session → a clean error naming the exec session id (no -1
+    /// reaper-race noise).
+    fn write_exec_stdin(
+        &self,
+        session_id: &SessionId,
+        exec_session_id: &str,
+        text: &str,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(_session) => {
+                let store = codelet_tools::unified_exec::global_store();
+                let exec_session_id_owned = exec_session_id.to_string();
+                let payload = {
+                    let mut p = text.to_string();
+                    if !p.ends_with('\n') {
+                        p.push('\n');
+                    }
+                    p
+                };
+                loop_block_on(async move {
+                    let tx = store
+                        .get_stdin_tx(&exec_session_id_owned)
+                        .await
+                        .ok_or_else(|| {
+                            format!("Unknown or exited exec session: {exec_session_id_owned}")
+                        })?;
+                    if let Err(e) = tx.send(payload.into_bytes()).await {
+                        return Err(format!(
+                            "Failed to write to exec session {exec_session_id_owned}: {e}"
+                        ));
+                    }
+                    Ok::<(), String>(())
+                })
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
     fn send_fspec_result(&self, session_id: &SessionId, result: FspecResult) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {

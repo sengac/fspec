@@ -146,7 +146,13 @@ impl App {
             .current_session_context()
             .map(|c| c.id.clone())
         {
-            self.spawn_load_supervisors(incoming_session);
+            self.spawn_load_supervisors(incoming_session.clone());
+            // TOOL-022 P2: re-probe the exec-stdin overlay for the
+            // incoming session on focus switch. The probe clears the
+            // slot when the backend returns None (the exec session no
+            // longer exists / is no longer quiet) and populates it
+            // when a request is pending.
+            self.probe_exec_stdin_for(incoming_session);
         }
     }
 }

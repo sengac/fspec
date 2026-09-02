@@ -59,7 +59,7 @@ pub use codelet_rpc_types::WorkUnitInfo;
 /// (newtype around String) and `LogRecord` (structured tracing event) are
 /// re-exported here so rust/napi has the full RPC-007 contract surface
 /// available without depending on rpc-types directly.
-pub use codelet_rpc_types::{LogRecord, SessionId};
+pub use codelet_rpc_types::{ExecStdinRequest, LogRecord, SessionId};
 
 /// NAPI-010: Session state for internal state machine tracking
 /// NOT for conversation display - use SessionStateChange chunk variant

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-01T15:25:52.388Z",
+    "lastUpdated": "2026-09-02T07:38:44.821Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 167,
+    "BUG": 170,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -81,7 +81,7 @@
     "TECH": 3,
     "TEST": 40,
     "TOKEN": 3,
-    "TOOL": 21,
+    "TOOL": 22,
     "TOOLS": 4,
     "TUI": 110,
     "UX": 2,
@@ -231,7 +231,10 @@
       "RPC-384",
       "PROV-126",
       "BUG-152",
-      "RPC-428"
+      "RPC-428",
+      "BUG-168",
+      "BUG-169",
+      "BUG-170"
     ],
     "specifying": [
       "BROWSE-001",
@@ -1676,7 +1679,8 @@
       "CLI-015",
       "MUX-008",
       "BUG-167",
-      "DISC-003"
+      "DISC-003",
+      "TOOL-022"
     ],
     "blocked": [
       "QUERY-001",
@@ -228282,6 +228286,202 @@
         }
       ],
       "nextNoteId": 3
+    },
+    "TOOL-022": {
+      "id": "TOOL-022",
+      "title": "Surface exec-session stdin prompts in the TUI composer slot (HITL integration)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-02T00:39:47.397Z",
+      "updatedAt": "2026-09-02T07:38:44.821Z",
+      "description": "Surface exec-session stdin prompts in the TUI composer slot (HITL integration).\n\nG11 from the vtcode-vs-fspec research (session 2bc9d511): when a unified_exec session waits for interactive stdin, the TUI shows nothing and the user cannot type into it.\n\nP1 (done): LLM-side deterministic signal in UnifiedExecResult (quiet_seconds + fixed steering line).\nP2 (done): TUI exec-stdin overlay in the composer slot (wire ExecStdinRequest, BackgroundSession slot, handle methods, time-based detector, TUI render/keys/lifecycle).\nP3 (done): real PTY via portable-pty in spawn_pty_process (G8/FIX-1) + PTY denial list (G12) + PAGER/GIT_PAGER/NO_COLOR env (G2).\nP4 (this iteration, done): main-provider exposure (G4) — BashTool delegates command execution to UnifiedExecTool so ALL providers (Claude, OpenAI, Copilot, custom/internal) get session-based exec + the TUI exec-stdin overlay. BashTool's one-shot contract (wait for exit, return output, ESC abort via SIGKILL) is preserved; the LLM additionally sees session_id + a steering footer in long-running results and can send stdin via a new exec session action. The TUI probe (get_exec_stdin_request, focus-switch + periodic tick) surfaces the ⌨ overlay for any provider's session.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TOOL-022/stdin-prompt-hitl-integration-research.md",
+        "spec/attachments/TOOL-022/ast-research-exec-stdin-signal.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-02T00:48:18.829Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-02T01:24:23.288Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-02T01:35:50.564Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-02T01:38:49.359Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-02T04:15:53.513Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-02T07:38:44.821Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user or LLM agent",
+        "action": "see and answer an interactive stdin prompt from a running unified_exec session",
+        "benefit": "answer waiting commands (passwords, y/n, REPLs) without killing the session or blind-polling"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "P2 overlay semantics (research §7.1/§7.6): the exec-stdin prompt is a non-blocking overlay — it does NOT change SessionStatus (stays Running), does NOT block any tool or the agent loop, and has NO response channel (no blocking wait, unlike HITL). Esc dismisses the prompt only (session keeps running, no cancel semantics). The user's typed text is written to the exec session's stdin exactly as if the LLM had called the write action (appends newline when the text doesn't end with one).",
+          "deleted": false,
+          "createdAt": "2026-09-02T00:51:49.411Z"
+        },
+        {
+          "id": 1,
+          "text": "P2 session state + handle methods: BackgroundSession gains exec_stdin_request: RwLock<Option<ExecStdinRequest>> (mirror of hitl_request at background_session.rs ~388; NO status flip, NO response channel). SessionManagerHandle gains get_exec_stdin_request(session_id) -> Option<ExecStdinRequest> (mirror of get_hitl_request at handle_impl.rs:968) and write_exec_stdin(session_id, exec_session_id, text) -> Result<(), String> which clones the exec session's stdin sender from the unified_exec global ProcessStore (codelet-tools is already a dependency of codelet-sessions) and sends text + newline (appended when absent, matching write-action semantics). Errors: unknown agent session -> 'Session not found'; unknown/executed exec session -> clean error naming the exec session id (NOT the -1 reaper-race noise, research §9.6). Exposed through codelet-rpc (embedded + websocket) and codelet-napi session_bindings.",
+          "deleted": false,
+          "createdAt": "2026-09-02T00:52:45.620Z"
+        },
+        {
+          "id": 2,
+          "text": "P2 TUI keys: a new exec_stdin_keys module (mirroring hitl_keys.rs) is consulted AFTER the HITL keys (HITL still wins) and BEFORE the pause keys. Enter captures the shared input text, clears it, and submits (fire-and-forget write_exec_stdin; slot cleared on success; on error the slot is kept and the error is logged via tracing — never a scrollback notice); Esc dismisses the prompt (ExecStdinDismissed, session keeps running); typing/paste routes into the shared input. Only the focused agent pane renders/handles the prompt; ghost panes show nothing (mux mode, research §9.4).",
+          "deleted": false,
+          "createdAt": "2026-09-02T00:52:52.014Z"
+        },
+        {
+          "id": 3,
+          "text": "P1 LLM-side signal (deterministic, vtcode-aligned — NO content heuristics): UnifiedExecResult gains `quiet_seconds: Option<u64>` — a pure timing fact. None when the process has exited; Some(seconds since last output, floored) when still running. There is NO waiting_for_input boolean and NO output-content inspection (vtcode's exec core never inspects what a command printed: it attaches deterministic next_wait_args steering to any still-running command, exec_support.rs:244).",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:30:37.711Z"
+        },
+        {
+          "id": 4,
+          "text": "P1 steering hint (vtcode attach_long_command_wait_steering analogue): when the process is still running, the exec result output gains a fixed steering line: 'Command still running. If it needs input, send it via the write action. Poll with a short yield_time_ms to check for new output.' This is attached UNCONDITIONALLY to every still-running result — no content inspection, no conditional branch on output. It mirrors vtcode's next_wait_args + next_action_hint (exec_support.rs:244-258) which is attached to every still-running command regardless of what it printed.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:00.303Z"
+        },
+        {
+          "id": 5,
+          "text": "P2 wire type (deterministic): rpc-types gains ExecStdinRequest { exec_session_id: String (the unified_exec session id, NOT the agent session id), command: String (command display, already stored per ProcessEntry), quiet_seconds: u64 (seconds since last output when the detector fired — a deterministic timing fact, cooldown keying + display), ts_ms: u64 (detector fire time) }. NO hint/content field — nothing derived from output content crosses the wire. NAPI + serde object mirroring HitlRequest (rpc-types/src/lib.rs ~1202-1258).",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:20.577Z"
+        },
+        {
+          "id": 6,
+          "text": "P2 detection trigger (deterministic, time-based — NO output-content inspection): a per-exec-session background task (spawned with the reaper at run) fires when the child is ALIVE AND the session has been quiet for >= QUIET_THRESHOLD_SECS (3s, measured from the entry's last-output timestamp — a fact stamped by the reader task, deterministic). It pushes an ExecStdinRequest to the owning agent session via a per-session callback (registry analogous to set_tool_progress_callback in tools/src/tool_progress.rs). Cooldown: re-fire at most every 30s per exec session, and never while a request is already stored for that agent session. Known consequence (accepted): the overlay also appears for legitimately quiet non-interactive commands (sleep, builds) — see decision rule 'DECISION (research §9.1)'. The LLM path and the user path both write the same stdin_tx; mpsc serialization makes concurrent writes safe.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:25.199Z"
+        },
+        {
+          "id": 7,
+          "text": "P2 TUI render contract: the exec-stdin prompt renders in the SAME composer input area as HITL (input_area.rs::paint_input_area) with precedence HITL > exec-stdin > pause > composer. Visual: magenta '⌨' glyph + bold command display + dim 'has been quiet for Ns — waiting for input?' on the prompt line (N from quiet_seconds; NO output content shown), then the SHARED composer MultiLineInput (placeholder 'Type to send to the command…'), then dim footer '(Enter Send | Esc Dismiss)'. Reuses the shared MultiLineInput exactly as HITL freeform does: composer draft + cursor survive the round-trip (paint over, never mutate, except the deliberate submit capture).",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:29.459Z"
+        },
+        {
+          "id": 8,
+          "text": "P2 TUI store + lifecycle: AgentViewStore gains exec_stdin_by_session: HashMap<SessionId, ExecStdinRequest> (mirrors hitl_prompt_by_session in store/agent_view/hitl_state.rs). FspecBackend gains get_exec_stdin_request + write_exec_stdin (embedded + websocket + MockBackend). The slot is ephemeral: cleared when the exec session no longer exists (TUI re-probes get_exec_stdin_request on focus switch and clears on None), cleared on session exit/focus-loss, and never re-shown while a HITL prompt occupies the slot for that agent session. Per-agent-session isolation (multiple sessions can show exec prompts independently).",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:34.225Z"
+        },
+        {
+          "id": 9,
+          "text": "DECISION (research §9.1 re-resolved under determinism): the P2 trigger is TIME-BASED ONLY (quiet >= 3s + child alive + stdin piped). No prompt-shape/content detection — a content heuristic was rejected as non-deterministic. Consequence accepted: the overlay WILL also appear for quiet non-interactive commands (sleep, tail -f, long builds). Mitigations (all deterministic, all in scope): (a) the overlay is dismissible (Esc, no side effects), (b) 30s per-exec-session cooldown limits re-firing, (c) never shown while a HITL prompt occupies the slot, (d) quiet_seconds display tells the user how long the command has been silent so a false positive is recognizable. A smarter deterministic refinement (e.g. PTY-based read-wait signals, or an LLM-declared 'this session expects input' flag surfaced via a tool parameter) is explicitly P3+ scope, not this card.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:48.796Z"
+        },
+        {
+          "id": 10,
+          "text": "DECISION (research §9.3 'mask secrets' — resolved by elimination): because no output content is ever surfaced (P1 exposes only the deterministic quiet_seconds + a fixed steering string; P2's ExecStdinRequest carries no hint/content field, and the TUI prompt line shows only the command display + quiet_seconds), there is NO secret-masking code to write and no content echo risk. Typed answers never appear in scrollback, the TUI store, or the exec-stdin wire type — they go straight to the session stdin_tx. The only channel that could echo typed text is the LLM's own tool output (the process echoing the answer in its next poll), which is pre-existing behavior of the exec tool, unchanged by this card. If a future card ever surfaces the prompt line itself (P3+), masking must be re-decided for that content.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:31:54.084Z"
+        }
+      ],
+      "nextRuleId": 20,
+      "examples": [
+        {
+          "id": 0,
+          "text": "P1 — LLM sees the timing fact + steering: agent runs `printf 'y/n: '; sleep 30` via the exec tool. After ~4s it polls the session; the result carries session_id (no exit_code), the command's printed output, quiet_seconds >= 3, and the fixed steering line telling it to send input via the write action if needed. No claim about what the command is waiting for — the LLM knows what it launched.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:32:04.222Z"
+        },
+        {
+          "id": 1,
+          "text": "P2 — TUI user answers inline: agent runs a command that goes quiet for 3s while still running. The composer input area shows a magenta ⌨ prompt '<command> has been quiet for 5s — waiting for input?' with the shared text input. The user types 'y' and presses Enter; the text plus newline flows into the running command's stdin and the prompt slot clears. The agent kept streaming the whole time — no pause, no status change.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:32:07.335Z"
+        },
+        {
+          "id": 2,
+          "text": "P2 — Esc dismisses without side effects: the exec-stdin prompt is showing; user presses Esc. The prompt disappears, the command keeps running, nothing is cancelled or killed, and the composer draft the user had before the prompt appeared is still there.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:32:10.709Z"
+        },
+        {
+          "id": 3,
+          "text": "P2 (integration) — backend round-trip: the agent session's stored exec-stdin request is None while no live exec session is quiet; once a live session goes quiet >= 3s while its child is alive, the detector stores a request (with that session's command display + quiet_seconds) and the TUI's probe returns it; the TUI's write path sends the typed text to that exec session's stdin and the backend reports success. Mirrors the HITL get_hitl_request / send_hitl_response round-trip.",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:32:14.520Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "P1 implementation (deterministic, no heuristics): types.rs UnifiedExecResult + facade/wrapper.rs ExecOperationResult gain quiet_seconds: Option<u64> (skip_serializing_if Option::is_none); all existing construction sites get quiet_seconds: None except the still-running branches. process_store.rs: ProcessEntry gains last_output_micros: AtomicU64 (tokio::time::Instant::now() monotonic micros, set at entry creation in handle_run) plus a quiet_secs() helper returning (now_micros - last_output_micros)/1e6 floored. spawning.rs spawn_reader_task takes a shared Arc<AtomicU64> stamp and updates it before notify_waiters. tool.rs: handle_run still-running branch + poll_session Some(None) branch compute quiet_secs, set quiet_seconds: Some(secs), and append the fixed steering line (const STILL_RUNNING_STEERING: 'Command still running. If it needs input, send it via the write action. Poll with a short yield_time_ms to check for new output.') to the output string. Facade: ExecToolFacadeWrapper::call copies quiet_seconds into ExecOperationResult; no facade/codex.rs schema change (Codex consumes wrapper output verbatim). No content inspection anywhere. Tests: rust/tools/tests/exec_stdin_prompt_p1.rs — @step-mapped tests against the 5 P1 scenarios (real `printf 'y/n: '; sleep 30` process via UnifiedExecTool run+poll asserting quiet_seconds grows / steering present; echo asserting exited-result has neither).",
+          "deleted": false,
+          "createdAt": "2026-09-02T01:33:58.593Z"
+        },
+        {
+          "id": 1,
+          "text": "P4 implementation (G4, all providers): bash.rs::run_session() delegates to codelet_tools::unified_exec::UnifiedExecTool — `run` with yield_time_ms=1000 (bounded), then loop of `poll` (5s) until exit while honoring the per-session abort flag (request_bash_abort/is_bash_abort_requested — ESC kills via the same abort path; the exec session's child dies because the session is closed on abort). BashTool.call and call_with_streaming both route through run_session (single source of truth); the streaming callback (call_with_streaming) is fed each poll's drained output. UnifiedExecResult Display already renders exit_code/output/quiet_seconds — long-running results append session_id + a steering footer ('Still running — session {id}. If it needs input, send it via the exec session action. Poll again to check for new output.') to the returned String so the LLM on ANY provider can drive the session. pre_tool_hook_check + check_bash_command keep running at the BashTool boundary (the tool name stays 'Bash'; UnifiedExecTool's internal blocklist check is skipped for delegated commands via the blocklist bypass param). unified_exec tool.rs: run gains optional `skip_blocklist: bool` (default false) so BashTool delegation does not double-run pause/blocklist prompts. No schema change needed for the LLM tool call shape (BashArgs unchanged: command + cwd).",
+          "deleted": false,
+          "createdAt": "2026-09-02T05:42:30.347Z"
+        }
+      ],
+      "nextNoteId": 4
+    },
+    "BUG-168": {
+      "id": "BUG-168",
+      "title": "Read tool: PDF visual mode ignores offset/limit and returns unbounded page images",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-09-02T00:49:57.765Z",
+      "updatedAt": "2026-09-02T00:50:03.533Z",
+      "description": "Read({file_path: some-67-page.pdf, limit: 4, offset: 1}) returned 8+ [Image] parts (the whole document) instead of 4 pages. Root cause: rust/tools/src/read.rs passes neither args.offset nor args.limit into read_pdf_from_bytes / render_pdf_pages / extract_pdf_images (rust/tools/src/pdf.rs), so all three PDF modes always process the entire document; the rig-core patch parse_tool_result_content (rust/patches/rig-core/src/agent/prompt_request/streaming.rs) then converts every page into a ToolResultContent::Image part with no count cap. No configurable page/image limit exists (CODELET_MAX_FILE_TOKENS applies to text only; PDFs are ExemptFileType::Pdf). Additionally, provider model vision capability (ModelDef.supports_vision / ModelInfo.supports_vision) is tracked for TUI badges only — the Read tool defaults to visual mode even when the active model cannot see images. Fix: honor offset/limit in all PDF modes, add a configurable default page cap (env var, e.g. CODELET_MAX_PDF_PAGES, mirroring CODELET_MAX_FILE_TOKENS), emit a truncation notice with total_pages so the LLM can paginate, consult session model vision capability to default non-vision models to text mode, and add a defense-in-depth image count cap in parse_tool_result_content. Research attached: spec/research/BUG-168-pdf-image-limit-research.md",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-168/BUG-168-pdf-image-limit-research.md"
+      ]
+    },
+    "BUG-169": {
+      "id": "BUG-169",
+      "title": "Slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM)",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-09-02T01:08:45.870Z",
+      "updatedAt": "2026-09-02T01:10:20.395Z",
+      "description": "Typing /provide + Tab + Enter sends the literal text '/provider' to the LLM instead of opening the ProviderSettingsView. Root cause: parse_slash_command (the submit-time interceptor in handle_input_submitted, rust/fspec-tui/src/app/slash_parser.rs) only recognizes 11 of the 21 registered slash commands (model, thinking, role, schedule, loop, continue, goal, update, mux families). Every other command is wired only through the popup path (Action::SlashCommandSelected -> handle_slash_command). The popup is closed by Tab (PopupOutcome::Filled -> slash_popup = None in views/agent/dispatch_popups.rs) and by Esc, so a subsequent Enter is handled by MultiLineInput (plain Enter always submits), emits Action::InputSubmitted, and parse_slash_command returns NotASlashCommand -> backend.send_input. Affected commands: /help, /clear, /quit, /provider, /resume, /search, /debug, /compact, /isolation, /blocklist, /detach, /merge-worktree. Fix: registry-driven interception in parse_slash_command (lookup first token in SLASH_COMMANDS, exact bare-name match) returning a BareCommand(SlashCommandAction) variant, routed in handle_input_submitted to the existing handle_slash_command handler (no send_input, no history append). Research doc: docs/research/BUG-169-slash-submit-interception-research.md",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-169/BUG-169-slash-submit-interception-research.md"
+      ]
+    },
+    "BUG-170": {
+      "id": "BUG-170",
+      "title": "Unrecoverable API error leaves failed tool call in context — replays same error on next message and skips cache-token invalidation",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-09-02T01:38:10.247Z",
+      "updatedAt": "2026-09-02T01:38:21.794Z",
+      "description": "When an unrecoverable (terminal) API error occurs — most commonly a failing/oversized tool call whose tool result or arguments push the next request past the model's context window — the last message is NOT removed from the context window stack. The failed tool-call pair (Assistant ToolCall + User ToolResult) remains in session.messages and in the persisted session manifest, so the next user message replays the same failed tool call and the same error recurs every turn. Additionally, tracked cache-token state (TokenState / TokenTracker cache_read_input_tokens + cache_creation_input_tokens) is stale after a failed request and is never invalidated or recomputed; provider prompt caches are content-addressed server-side, so 'invalidation' means zeroing the tracked fields and recomputing input tokens from the trimmed history. The existing compaction cascade (Paths B/C/D via begin_compaction_recovery) would handle this correctly IF reached, but Path B's has_compactable_turns gate (convert_messages_to_turns only counts User/Assistant adjacent pairs) fails exactly when the tail is a failed tool pair, falling through to the terminal arm which removes nothing. Fix: (1) new surgical tail-stripping primitive in rust/cli/src/interactive/ that pops the failed tool-call pair (or trailing user prompt) off session.messages while preserving system reminders and satisfying validate_no_orphan_tool_calls; (2) cache-token invalidation on the stripped path (zero cache fields like reset_after_compaction, recompute input_tokens like recalculate_token_tracker); (3) relax the has_compactable_turns gate so a trailing tool result counts as compactable; (4) persistence primitive to drop the tail MessageRefs from the session manifest (or restore-time skip marker) so /resume does not replay the stripped pair; (5) invoke from the terminal error arm in stream_loop.rs and the agent-loop Err handler (agent_loop.rs ~1483). Research doc attached: spec/attachments/BUG-170/unrecoverable-api-error-tool-call-context-replay-research.md (also at docs/research/unrecoverable-api-error-tool-call-context-replay-research.md).",
+      "epic": "provider-resilience",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-170/unrecoverable-api-error-tool-call-context-replay-research.md"
+      ]
     }
   }
 }

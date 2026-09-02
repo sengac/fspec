@@ -318,6 +318,7 @@ impl App {
                 let _ = self.try_dispatch_model_selector(&action)
                     || self.try_dispatch_model_thinking_dialogs(&action)
                     || self.try_dispatch_pause_hitl(&action)
+                    || self.try_dispatch_exec_stdin(&action)
                     || self.try_dispatch_provider_settings(&action)
                     || self.try_dispatch_blocklist(&action)
                     || self.try_dispatch_changed_files(&action)

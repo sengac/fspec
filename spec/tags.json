@@ -2498,6 +2498,10 @@
           "description": "To Do"
         },
         {
+          "name": "@tool-022",
+          "description": "Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt)"
+        },
+        {
           "name": "@wip",
           "description": "Work In Progress"
         }
@@ -2946,7 +2950,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-01T14:11:12.455Z",
+    "lastUpdated": "2026-09-02T01:02:41.714Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -30,6 +30,7 @@ pub mod dispatch_compaction_hide;
 pub mod dispatch_create_session_dialog;
 pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
+pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
 pub mod dispatch_fspec_runner;
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;

@@ -387,6 +387,12 @@ pub struct BackgroundSession {
     /// TypeScript polls this via session_get_hitl_request NAPI getter (like pause_state)
     hitl_request: RwLock<Option<codelet_tools::request_user_input::HitlRequest>>,
 
+    /// TOOL-022 P2: exec-stdin prompt request (deterministic quiet
+    /// detector, tools crate). Pure overlay — NO status flip, NO
+    /// response channel. TypeScript polls via session_get_exec_stdin_request.
+    exec_stdin_request:
+        RwLock<Option<codelet_tools::unified_exec::ExecStdinRequest>>,
+
     /// TUI-054: Base thinking level for session (0=Off, 1=Low, 2=Medium, 3=High)
     /// This is the level set via /thinking command, persists for the session.
     /// Effective level = max(base_thinking_level, detected_level_from_text)
@@ -548,6 +554,7 @@ impl BackgroundSession {
             hitl_response_tx,
             hitl_response_rx: std::sync::Mutex::new(hitl_response_rx),
             hitl_request: RwLock::new(None),
+            exec_stdin_request: RwLock::new(None), // TOOL-022 P2
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
             continue_enabled: AtomicBool::new(false), // CONT-002: auto-continue off by default
             continue_budget: AtomicU32::new(10),   // CONT-002: DEFAULT_CONTINUE_BUDGET
@@ -1188,6 +1195,93 @@ impl BackgroundSession {
             .read()
             .ok()
             .and_then(|guard| guard.clone())
+    }
+
+    /// Set exec-stdin request state (TOOL-022 P2)
+    ///
+    /// Called by the per-agent-session detector callback to store the
+    /// request for TypeScript to poll. Pure overlay: NO status flip,
+    /// NO response channel. Pass None to clear.
+    ///
+    /// TOOL-022 P2 (scenario "Backend round-trip"): a request for an
+    /// exec session that no longer has a live child (exited / evicted /
+    /// `close`d — the reaper removes the entry from the global
+    /// ProcessStore within ~2s of exit) is NOT stored — the probe
+    /// returns None once the exec session is gone. The check is a
+    /// `block_in_place` bridge (same convention as
+    /// `handle_impl::write_exec_stdin`); it is a cheap
+    /// `child.try_wait()` on the store entry and only runs on detector
+    /// fires / clears, not on every TUI probe.
+    pub fn set_exec_stdin_request(
+        &self,
+        mut request: Option<codelet_tools::unified_exec::ExecStdinRequest>,
+    ) {
+        let alive = match &request {
+            Some(request) => self.exec_session_alive(&request.exec_session_id),
+            None => true,
+        };
+        if !alive {
+            // Exec session gone — store the clear, never the stale
+            // request.
+            request = None;
+        }
+        if let Ok(mut guard) = self.exec_stdin_request.write() {
+            *guard = request;
+        }
+    }
+
+    /// TOOL-022 P2: true while `exec_session_id` still has a live child
+    /// in the tools `global_store` (alive AND still in the store).
+    ///
+    /// The check is a `block_in_place` bridge (same convention as
+    /// `handle_impl::write_exec_stdin`) and is only attempted on a
+    /// multi-thread runtime; on any other context it degrades to
+    /// `true` (assume alive — preserves the pre-check behavior rather
+    /// than panicking inside `block_in_place`).
+    fn exec_session_alive(&self, exec_session_id: &str) -> bool {
+        use codelet_tools::unified_exec::global_store;
+        let handle = match tokio::runtime::Handle::try_current() {
+            Ok(h) => h,
+            Err(_) => return true, // no runtime: skip the bridge
+        };
+        if !matches!(
+            handle.runtime_flavor(),
+            tokio::runtime::RuntimeFlavor::MultiThread
+        ) {
+            return true; // block_in_place panics on current-thread
+        }
+        let store = global_store();
+        tokio::task::block_in_place(|| {
+            handle.block_on(async move {
+                if !store.contains(exec_session_id).await {
+                    return false;
+                }
+                // `Some(None)` = child still running; `Some(Some(_))` =
+                // exited (the reaper removes the entry on its next
+                // tick); `None` = entry already removed.
+                matches!(store.try_wait(exec_session_id).await, Some(None))
+            })
+        })
+    }
+
+    /// Get exec-stdin request state (TOOL-022 P2)
+    ///
+    /// Called by the NAPI getter (session_get_exec_stdin_request) for
+    /// TypeScript to poll.
+    ///
+    /// TOOL-022 P2 (scenario "Backend round-trip"): a stored request
+    /// whose exec session no longer has a live child is NOT returned —
+    /// the slot is cleared and `None` surfaces (the TUI probe then
+    /// clears its ephemeral slot). `exec_session_alive` degrades to
+    /// `true` outside a multi-thread runtime, so this never panics on
+    /// the NAPI thread.
+    pub fn get_exec_stdin_request(&self) -> Option<codelet_tools::unified_exec::ExecStdinRequest> {
+        let request = self.exec_stdin_request.read().ok()?.clone()?;
+        if !self.exec_session_alive(&request.exec_session_id) {
+            self.set_exec_stdin_request(None);
+            return None;
+        }
+        Some(request)
     }
 
     // =========================================================================
