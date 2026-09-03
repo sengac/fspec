@@ -34,8 +34,10 @@ async fn scenario_bash_delegation_surfaces_exec_stdin_prompt() {
     let captured_clone = captured.clone();
     set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: ExecStdinRequest| {
-            captured_clone.lock().unwrap().push(request);
+        Some(Arc::new(move |request: Option<ExecStdinRequest>| {
+            if let Some(request) = request {
+                captured_clone.lock().unwrap().push(request);
+            }
         })),
     );
 

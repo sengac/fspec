@@ -1238,6 +1238,10 @@
           "description": "Bug fix work unit BUG-167 - mux config save is a no-op in the real binary: persist dirs are never wired in production (App::new now resolves the CONFIG-008 shared-config dirs once, with a dirs::home_dir()/.fspec fallback when the global data directory is unset)"
         },
         {
+          "name": "@bug-171",
+          "description": "Bug fix work unit BUG-171 — exec-stdin TUI overlay never appeared: pull probe had no push trigger while the session stayed Running. Fix: detector observes the end of the prompt condition and pushes clear StreamChunks; set_exec_stdin_request is the sole emission point for ExecStdinRequest / ExecStdinRequestCleared push chunks; non-exit clear resets the per-exec-session cooldown"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -2950,7 +2954,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-02T01:02:41.714Z",
+    "lastUpdated": "2026-09-03T03:49:39.046Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -126,8 +126,8 @@ async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_qu
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(std::sync::Arc::new(move |request: InternalExecStdinRequest| {
-            session_for_cb.set_exec_stdin_request(Some(request));
+        Some(std::sync::Arc::new(move |request: Option<InternalExecStdinRequest>| {
+            session_for_cb.set_exec_stdin_request(request);
         })),
     );
 
@@ -271,8 +271,8 @@ async fn scenario_exec_stdin_overlay_does_not_flip_agent_session_status() {
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(std::sync::Arc::new(move |request: InternalExecStdinRequest| {
-            session_for_cb.set_exec_stdin_request(Some(request));
+        Some(std::sync::Arc::new(move |request: Option<InternalExecStdinRequest>| {
+            session_for_cb.set_exec_stdin_request(request);
         })),
     );
 

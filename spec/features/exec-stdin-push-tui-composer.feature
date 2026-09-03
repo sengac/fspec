@@ -1,7 +1,7 @@
+@done
 @BUG-171
 @tui
 @tool-execution
-@wip
 Feature: Exec-stdin push chunks drive the TUI composer overlay
 
   """

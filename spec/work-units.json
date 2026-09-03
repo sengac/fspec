@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-03T02:01:29.874Z",
+    "lastUpdated": "2026-09-03T03:51:12.006Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -250,8 +250,7 @@
       "LANG-001",
       "PROV-009",
       "TUI-085",
-      "RIG-013",
-      "BUG-171"
+      "RIG-013"
     ],
     "testing": [
       "EXT-001"
@@ -1682,7 +1681,8 @@
       "BUG-167",
       "DISC-003",
       "TOOL-022",
-      "BUG-172"
+      "BUG-172",
+      "BUG-171"
     ],
     "blocked": [
       "QUERY-001",
@@ -228489,9 +228489,9 @@
       "id": "BUG-171",
       "title": "Exec-stdin TUI overlay never appears: pull probe has no push trigger while session stays Running",
       "type": "bug",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-09-02T08:01:27.114Z",
-      "updatedAt": "2026-09-03T00:11:33.469Z",
+      "updatedAt": "2026-09-03T03:51:27.771Z",
       "description": "TOOL-022 P2 built the exec-stdin composer overlay as a pure pull (probe get_exec_stdin_request). The detector correctly stores the ExecStdinRequest on the BackgroundSession, but the TUI only probes at two sites: (a) session focus switch and (b) a Paused state change. Exec-stdin deliberately performs NO status flip, so while a session stays Running the probe never fires and the overlay is dead-on-arrival. Fix by adding a push StreamChunk (exec-stdin request / cleared) emitted from BackgroundSession::set_exec_stdin_request, mirroring the HITL SessionStateChange flow, and handling it in handle_stream_chunk_state_updates.",
       "epic": "tooling",
       "children": [],
@@ -228514,6 +228514,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-09-02T21:25:24.884Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-03T02:56:21.435Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-03T03:37:48.355Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-03T03:37:53.122Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-03T03:51:12.006Z"
         }
       ],
       "userStory": {
@@ -228542,19 +228558,12 @@
         },
         {
           "id": 3,
-          "text": "The detector must emit a clear signal (Option::None) to the agent-session callback when the condition for showing the prompt is no longer met: the exec session is no longer quiet (quiet < threshold), the child has exited, or the session has been removed from the store. The clear must be pushed as a StreamChunk::ExecStdinRequestCleared via the existing set_exec_stdin_request(None) path — no new chunk variant needed.",
-          "deleted": true,
-          "createdAt": "2026-09-02T22:28:35.517Z",
-          "deletedAt": "2026-09-02T23:49:39.768Z"
-        },
-        {
-          "id": 4,
           "text": "The exec-stdin detector must observe the end of the prompt condition and push a clear: once it has fired for an exec session, it must emit a clear to the agent-session callback within one detector tick (~2s) when (a) the child exits, (b) the session is removed from the store, or (c) the command produces output again (quiet < threshold). The clear flows through the existing set_exec_stdin_request(None) path and surfaces as an ExecStdinRequestCleared chunk. If the detector had not fired yet, no clear is emitted (nothing to clear); after a non-exit clear the detector keeps watching and may re-fire after the cooldown.",
           "deleted": false,
           "createdAt": "2026-09-02T23:53:16.763Z"
         },
         {
-          "id": 5,
+          "id": 4,
           "text": "A non-exit detector clear (command produced output again) resets the per-exec-session re-fire cooldown, so a fresh quiet period after the command resumed can fire again without waiting out the previous fire's 30s window. The P2 30s cooldown still applies within one continuous quiet period (e.g. right after a user submit that leaves the command silent).",
           "deleted": false,
           "createdAt": "2026-09-03T00:11:19.448Z"
@@ -228588,7 +228597,8 @@
         }
       ],
       "nextExampleId": 4,
-      "estimate": 8
+      "estimate": 8,
+      "iterations": 1
     },
     "BUG-172": {
       "id": "BUG-172",

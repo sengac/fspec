@@ -712,10 +712,15 @@ pub(crate) async fn agent_loop(
             // reaper on `run`) can push an ExecStdinRequest onto this
             // agent session's BackgroundSession. Pure overlay — NO
             // status flip, NO response channel (unlike the HITL handler).
+            // BUG-171: the payload is Option — the detector also pushes
+            // clears (child exit / store removal / output resumption);
+            // the setter is the sole emission point for the push
+            // StreamChunks, so passing the Option through routes both
+            // transitions into the chunk stream.
             let session_for_exec_stdin = session.clone();
             let exec_stdin_callback: codelet_tools::unified_exec::ExecStdinRequestCallback =
-                std::sync::Arc::new(move |request| {
-                    session_for_exec_stdin.set_exec_stdin_request(Some(request));
+                std::sync::Arc::new(move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
+                    session_for_exec_stdin.set_exec_stdin_request(request);
                 });
             codelet_tools::unified_exec::set_exec_stdin_request_callback(
                 session.id,
