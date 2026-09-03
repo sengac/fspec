@@ -120,6 +120,55 @@ pub fn build_unix_shell_invocation(command: &str) -> (String, Vec<String>) {
     )
 }
 
+/// Build the platform shell invocation for a shell-string command
+/// (BUG-172).
+///
+/// `target_os` is the value of `std::env::consts::OS` on the target host
+/// (explicit so the platform selection is unit-testable on any host — the
+/// same pattern as the BUG-156 builders). "windows" → the BUG-156
+/// PowerShell wrap; every other platform → the historical Unix `sh -c`
+/// invocation (byte-for-byte unchanged, R2).
+pub fn platform_shell_invocation(command: &str, target_os: &str) -> (String, Vec<String>) {
+    match target_os {
+        "windows" => build_windows_shell_invocation(command),
+        _ => build_unix_shell_invocation(command),
+    }
+}
+
+/// Build the Windows shell-fallback invocation for a shell-string command
+/// (BUG-172).
+///
+/// Used by the unified exec spawn path when the PowerShell spawn fails
+/// because PowerShell cannot be located — the same `cmd /C <cmd>`
+/// fallback the BUG-156 spawn path used (R1).
+pub fn windows_shell_fallback_invocation(command: &str) -> (String, Vec<String>) {
+    build_cmd_fallback_invocation(command)
+}
+
+/// Build the PTY liveness-anchor invocation for a target platform
+/// (BUG-172).
+///
+/// Unix: `sleep 2147483647` — blocks until killed (the pre-BUG-172
+/// anchor, unchanged). Windows: a PowerShell blocking sleep — there is
+/// no `sleep.exe` on Windows, so a bare `sleep` anchor fails with
+/// "program not found". `Start-Sleep -Seconds` blocks until the process
+/// is killed — the same block-until-killed contract as the Unix anchor
+/// (R3).
+pub fn pty_liveness_anchor_invocation(target_os: &str) -> (String, Vec<String>) {
+    match target_os {
+        "windows" => (
+            "powershell".to_string(),
+            vec![
+                "-NoProfile".to_string(),
+                "-NonInteractive".to_string(),
+                "-Command".to_string(),
+                "Start-Sleep -Seconds 2147483647".to_string(),
+            ],
+        ),
+        _ => ("sleep".to_string(), vec!["2147483647".to_string()]),
+    }
+}
+
 /// Build the `taskkill` argument vector for terminating a Windows process tree.
 ///
 /// `forceful == false` → `["/PID", "<pid>", "/T"]` (graceful).

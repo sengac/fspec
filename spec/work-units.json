@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-02T08:28:30.279Z",
+    "lastUpdated": "2026-09-03T02:01:29.874Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 171,
+    "BUG": 172,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1681,7 +1681,8 @@
       "MUX-008",
       "BUG-167",
       "DISC-003",
-      "TOOL-022"
+      "TOOL-022",
+      "BUG-172"
     ],
     "blocked": [
       "QUERY-001",
@@ -228553,6 +228554,99 @@
       ],
       "nextExampleId": 2,
       "estimate": 8
+    },
+    "BUG-172": {
+      "id": "BUG-172",
+      "title": "Windows builds: every Bash command fails 'program not found' after TOOL-022 P4 rewired BashTool onto unified_exec",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-03T01:13:36.176Z",
+      "updatedAt": "2026-09-03T02:01:29.874Z",
+      "description": "BUG-156 (1668516d, 2026-08-19) made bash_process::spawn_command wrap Windows commands in powershell -NoProfile -NonInteractive -Command <cmd> (cmd /C fallback). TOOL-022 P4 (7d41941b, 2026-09-02) rewired BashTool::call/call_with_streaming onto the unified exec session machinery (bash_session::run_bash_session -> UnifiedExecTool::run -> unified_exec/spawning.rs), whose spawn_pipe_process and spawn_pty_process hardcode Command::new(\"sh\") / CommandBuilder::new(\"sh\") for every platform, and whose PTY liveness anchor spawns a bare `sleep` (no sleep.exe on Windows). The BUG-156 wrap is now dead code on the live path (spawn_command has zero callers). Net effect: on Windows builds every Bash command fails at CreateProcess with 'program not found' (user screenshot: Bash(git ...) and Bash(dir) both fail). Fix: route ExecCommand::Shell through the BUG-156 platform invocation builders in spawn_pipe_process + spawn_pty_process (+ Windows-safe PTY anchor), keeping Argv and the Unix sh -c path byte-for-byte unchanged.",
+      "epic": "tooling",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-03T01:26:58.111Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-03T01:47:08.259Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-03T01:53:19.948Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-03T01:59:28.725Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-03T02:01:29.874Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent using a Windows build",
+        "action": "execute commands via the Bash tool (unified exec pipe and PTY paths)",
+        "benefit": "commands actually run instead of failing 'program not found' at spawn"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: The Unix spawn path MUST remain sh -c <command> with process_group(0) in pipe mode — byte-for-byte unchanged, no Unix regression.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:29.337Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: On Windows, every ExecCommand::Shell (pipe AND PTY spawn paths) MUST be wrapped in a real Windows shell — powershell -NoProfile -NonInteractive -Command <cmd> preferred, cmd /C <cmd> as the fallback when PowerShell cannot be located — using the existing BUG-156 invocation builders; the raw command string must NEVER be the CreateProcess program.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:29.527Z"
+        },
+        {
+          "id": 2,
+          "text": "R4: ExecCommand::Argv MUST remain a direct bare-program spawn (no shell wrapping) on all platforms — CreateProcess resolves PATHEXT for bare names on Windows.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:45.366Z"
+        },
+        {
+          "id": 3,
+          "text": "R3: The PTY liveness anchor MUST be spawnable on every platform (no bare `sleep` on Windows — a platform-appropriate blocking sleep substitute).",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:45.566Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "On Windows, the agent runs `whoami` via the Bash tool (pipe mode): the process is spawned as powershell -NoProfile -NonInteractive -Command whoami and exits 0 with the user identity — not 'Failed to spawn: program not found'.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:01.427Z"
+        },
+        {
+          "id": 1,
+          "text": "On Windows with PowerShell unavailable, `cmd /c dir` spawns as cmd /C <cmd /c dir> and returns a directory listing (cmd fallback).",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:01.612Z"
+        },
+        {
+          "id": 2,
+          "text": "On Linux, the agent runs `echo hello` via the Bash tool exactly as before: it is spawned via sh -c in a new process group and prints hello — the Unix behavior is unchanged by this fix.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:17.172Z"
+        },
+        {
+          "id": 3,
+          "text": "On Windows, a tty=true run of `cat` opens a PTY session: the PTY child is the Windows shell (cmd /C cat) and the liveness anchor is a Windows-spawnable blocking sleep — no 'program not found' for sh or sleep at spawn time.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:17.366Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5
     }
   }
 }
