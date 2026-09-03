@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-02T08:28:30.279Z",
+    "lastUpdated": "2026-09-03T02:01:29.874Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 171,
+    "BUG": 172,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -250,15 +250,15 @@
       "LANG-001",
       "PROV-009",
       "TUI-085",
-      "RIG-013"
+      "RIG-013",
+      "BUG-171"
     ],
     "testing": [
       "EXT-001"
     ],
     "implementing": [
       "RPC-165",
-      "RPC-225",
-      "BUG-171"
+      "RPC-225"
     ],
     "validating": [
       "RPC-174",
@@ -1681,7 +1681,8 @@
       "MUX-008",
       "BUG-167",
       "DISC-003",
-      "TOOL-022"
+      "TOOL-022",
+      "BUG-172"
     ],
     "blocked": [
       "QUERY-001",
@@ -228488,9 +228489,9 @@
       "id": "BUG-171",
       "title": "Exec-stdin TUI overlay never appears: pull probe has no push trigger while session stays Running",
       "type": "bug",
-      "status": "implementing",
+      "status": "specifying",
       "createdAt": "2026-09-02T08:01:27.114Z",
-      "updatedAt": "2026-09-02T08:28:30.279Z",
+      "updatedAt": "2026-09-03T00:11:33.469Z",
       "description": "TOOL-022 P2 built the exec-stdin composer overlay as a pure pull (probe get_exec_stdin_request). The detector correctly stores the ExecStdinRequest on the BackgroundSession, but the TUI only probes at two sites: (a) session focus switch and (b) a Paused state change. Exec-stdin deliberately performs NO status flip, so while a session stays Running the probe never fires and the overlay is dead-on-arrival. Fix by adding a push StreamChunk (exec-stdin request / cleared) emitted from BackgroundSession::set_exec_stdin_request, mirroring the HITL SessionStateChange flow, and handling it in handle_stream_chunk_state_updates.",
       "epic": "tooling",
       "children": [],
@@ -228509,12 +228510,16 @@
         {
           "state": "implementing",
           "timestamp": "2026-09-02T08:28:30.279Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-02T21:25:24.884Z"
         }
       ],
       "userStory": {
         "role": "user of the Rust TUI agent",
-        "action": "have the exec-stdin composer overlay appear automatically when a running command goes quiet waiting for input",
-        "benefit": "I can type into the running command's stdin without switching sessions or waiting for a status change"
+        "action": "have the exec-stdin composer overlay appear automatically when a running command goes quiet waiting for input, and clear automatically when it stops being quiet, exits, or is answered",
+        "benefit": "type into the running command's stdin without switching sessions, waiting for a status change, or dismissing a stale prompt by hand"
       },
       "rules": [
         {
@@ -228534,9 +228539,28 @@
           "text": "The two existing pull probe sites (focus switch + Paused-state probe) are retained as belt-and-braces; the push chunk is the primary trigger",
           "deleted": false,
           "createdAt": "2026-09-02T08:02:45.488Z"
+        },
+        {
+          "id": 3,
+          "text": "The detector must emit a clear signal (Option::None) to the agent-session callback when the condition for showing the prompt is no longer met: the exec session is no longer quiet (quiet < threshold), the child has exited, or the session has been removed from the store. The clear must be pushed as a StreamChunk::ExecStdinRequestCleared via the existing set_exec_stdin_request(None) path — no new chunk variant needed.",
+          "deleted": true,
+          "createdAt": "2026-09-02T22:28:35.517Z",
+          "deletedAt": "2026-09-02T23:49:39.768Z"
+        },
+        {
+          "id": 4,
+          "text": "The exec-stdin detector must observe the end of the prompt condition and push a clear: once it has fired for an exec session, it must emit a clear to the agent-session callback within one detector tick (~2s) when (a) the child exits, (b) the session is removed from the store, or (c) the command produces output again (quiet < threshold). The clear flows through the existing set_exec_stdin_request(None) path and surfaces as an ExecStdinRequestCleared chunk. If the detector had not fired yet, no clear is emitted (nothing to clear); after a non-exit clear the detector keeps watching and may re-fire after the cooldown.",
+          "deleted": false,
+          "createdAt": "2026-09-02T23:53:16.763Z"
+        },
+        {
+          "id": 5,
+          "text": "A non-exit detector clear (command produced output again) resets the per-exec-session re-fire cooldown, so a fresh quiet period after the command resumed can fire again without waiting out the previous fire's 30s window. The P2 30s cooldown still applies within one continuous quiet period (e.g. right after a user submit that leaves the command silent).",
+          "deleted": false,
+          "createdAt": "2026-09-03T00:11:19.448Z"
         }
       ],
-      "nextRuleId": 3,
+      "nextRuleId": 6,
       "examples": [
         {
           "id": 0,
@@ -228549,10 +228573,115 @@
           "text": "User types '42' and presses Enter on the ⌨ overlay; '42\\n' reaches the running command's stdin, the overlay clears immediately, and the command's output ('You entered: 42') appears in scrollback",
           "deleted": false,
           "createdAt": "2026-09-02T08:02:55.382Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent runs `sh -c 'printf out\\n; sleep 10'` via Bash. After ~4s the detector fires (push request chunk, overlay shows). At t=10 the child exits; on the next detector tick (~2s) the detector emits the clear to the agent-session callback, the stored request is cleared, an exec-stdin cleared chunk is pushed, and the TUI overlay unmounts — while the agent session status remains Running throughout.",
+          "deleted": false,
+          "createdAt": "2026-09-02T23:00:39.487Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent runs a long build that prints nothing for 5s (overlay appears), then prints progress output again at t=6s. Within one detector tick (~2s) of the output resuming, the ⌨ overlay disappears from the composer even though the command keeps running and the session stays focused — no key press, focus switch, or status change needed.",
+          "deleted": false,
+          "createdAt": "2026-09-02T23:00:49.586Z"
         }
       ],
-      "nextExampleId": 2,
+      "nextExampleId": 4,
       "estimate": 8
+    },
+    "BUG-172": {
+      "id": "BUG-172",
+      "title": "Windows builds: every Bash command fails 'program not found' after TOOL-022 P4 rewired BashTool onto unified_exec",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-03T01:13:36.176Z",
+      "updatedAt": "2026-09-03T02:01:29.874Z",
+      "description": "BUG-156 (1668516d, 2026-08-19) made bash_process::spawn_command wrap Windows commands in powershell -NoProfile -NonInteractive -Command <cmd> (cmd /C fallback). TOOL-022 P4 (7d41941b, 2026-09-02) rewired BashTool::call/call_with_streaming onto the unified exec session machinery (bash_session::run_bash_session -> UnifiedExecTool::run -> unified_exec/spawning.rs), whose spawn_pipe_process and spawn_pty_process hardcode Command::new(\"sh\") / CommandBuilder::new(\"sh\") for every platform, and whose PTY liveness anchor spawns a bare `sleep` (no sleep.exe on Windows). The BUG-156 wrap is now dead code on the live path (spawn_command has zero callers). Net effect: on Windows builds every Bash command fails at CreateProcess with 'program not found' (user screenshot: Bash(git ...) and Bash(dir) both fail). Fix: route ExecCommand::Shell through the BUG-156 platform invocation builders in spawn_pipe_process + spawn_pty_process (+ Windows-safe PTY anchor), keeping Argv and the Unix sh -c path byte-for-byte unchanged.",
+      "epic": "tooling",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-03T01:26:58.111Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-03T01:47:08.259Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-03T01:53:19.948Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-03T01:59:28.725Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-03T02:01:29.874Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent using a Windows build",
+        "action": "execute commands via the Bash tool (unified exec pipe and PTY paths)",
+        "benefit": "commands actually run instead of failing 'program not found' at spawn"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: The Unix spawn path MUST remain sh -c <command> with process_group(0) in pipe mode — byte-for-byte unchanged, no Unix regression.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:29.337Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: On Windows, every ExecCommand::Shell (pipe AND PTY spawn paths) MUST be wrapped in a real Windows shell — powershell -NoProfile -NonInteractive -Command <cmd> preferred, cmd /C <cmd> as the fallback when PowerShell cannot be located — using the existing BUG-156 invocation builders; the raw command string must NEVER be the CreateProcess program.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:29.527Z"
+        },
+        {
+          "id": 2,
+          "text": "R4: ExecCommand::Argv MUST remain a direct bare-program spawn (no shell wrapping) on all platforms — CreateProcess resolves PATHEXT for bare names on Windows.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:45.366Z"
+        },
+        {
+          "id": 3,
+          "text": "R3: The PTY liveness anchor MUST be spawnable on every platform (no bare `sleep` on Windows — a platform-appropriate blocking sleep substitute).",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:27:45.566Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "On Windows, the agent runs `whoami` via the Bash tool (pipe mode): the process is spawned as powershell -NoProfile -NonInteractive -Command whoami and exits 0 with the user identity — not 'Failed to spawn: program not found'.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:01.427Z"
+        },
+        {
+          "id": 1,
+          "text": "On Windows with PowerShell unavailable, `cmd /c dir` spawns as cmd /C <cmd /c dir> and returns a directory listing (cmd fallback).",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:01.612Z"
+        },
+        {
+          "id": 2,
+          "text": "On Linux, the agent runs `echo hello` via the Bash tool exactly as before: it is spawned via sh -c in a new process group and prints hello — the Unix behavior is unchanged by this fix.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:17.172Z"
+        },
+        {
+          "id": 3,
+          "text": "On Windows, a tty=true run of `cat` opens a PTY session: the PTY child is the Windows shell (cmd /C cat) and the liveness anchor is a Windows-spawnable blocking sleep — no 'program not found' for sh or sleep at spawn time.",
+          "deleted": false,
+          "createdAt": "2026-09-03T01:28:17.366Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5
     }
   }
 }
