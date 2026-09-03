@@ -56,6 +56,8 @@ pub struct PdfContent {
     pub total_pages: usize,
     /// Text content from each page (0-indexed)
     pub pages: Vec<PageContent>,
+    /// Truncation notice naming the next offset to continue reading (BUG-168)
+    pub notice: Option<String>,
 }
 
 /// Content from a single PDF page
@@ -85,12 +87,24 @@ impl PdfContent {
             output.push('\n');
         }
 
+        if let Some(notice) = &self.notice {
+            output.push('\n');
+            output.push_str(notice);
+        }
+
         output
     }
 }
 
-/// Read and extract text from a PDF file
-pub fn read_pdf_from_bytes(bytes: &[u8], path: &str) -> Result<PdfContent, PdfError> {
+/// Read and extract text from a PDF file, honoring `offset` (1-based) and
+/// `limit` (max pages). When the range covers fewer pages than the document
+/// has, a truncation notice naming the next offset is attached (BUG-168).
+pub fn read_pdf_from_bytes(
+    bytes: &[u8],
+    path: &str,
+    offset: usize,
+    limit: usize,
+) -> Result<PdfContent, PdfError> {
     if has_encryption_markers(bytes) {
         return Err(PdfError::Encrypted(path.to_string()));
     }
@@ -108,15 +122,20 @@ pub fn read_pdf_from_bytes(bytes: &[u8], path: &str) -> Result<PdfContent, PdfEr
     }
 
     let page_count = doc.get_pages().len();
-    let mut pages = Vec::with_capacity(page_count);
+    let start = offset.max(1);
+    let end = start
+        .saturating_add(limit.saturating_sub(1))
+        .min(page_count);
+    let mut pages = Vec::new();
 
-    for page_num in 1..=page_count as u32 {
+    for page_num in start..=end {
+        let page_num_u32 = page_num as u32;
         let text = doc
-            .extract_text(&[page_num])
+            .extract_text(&[page_num_u32])
             .unwrap_or_else(|e| format!("[Error extracting text: {e}]"));
 
         pages.push(PageContent {
-            page_number: page_num,
+            page_number: page_num_u32,
             text,
         });
     }
@@ -125,13 +144,14 @@ pub fn read_pdf_from_bytes(bytes: &[u8], path: &str) -> Result<PdfContent, PdfEr
         path: path.to_string(),
         total_pages: page_count,
         pages,
+        notice: pdf_pagination_notice(start, end, page_count, "pages"),
     })
 }
 
 /// Read PDF from file path
 pub fn read_pdf_from_path(path: &Path) -> Result<PdfContent, PdfError> {
     let bytes = std::fs::read(path).map_err(|e| PdfError::LoadError(e.to_string()))?;
-    read_pdf_from_bytes(&bytes, &path.to_string_lossy())
+    read_pdf_from_bytes(&bytes, &path.to_string_lossy(), 1, usize::MAX)
 }
 
 fn is_encryption_error(error: &LopdfError) -> bool {
@@ -170,13 +190,47 @@ pub struct RenderedPdfPages {
     pub total_pages: usize,
     /// Rendered page images
     pub pages: Vec<RenderedPage>,
+    /// Truncation notice naming the next offset to continue rendering (BUG-168)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notice: Option<String>,
+}
+
+/// Build a truncation notice for a bounded PDF read (BUG-168).
+///
+/// `start`/`end` are the 1-based inclusive range that was returned;
+/// `total` is the full document size in `unit`s (pages or images). Returns
+/// `None` when the whole document was returned, otherwise a notice that names
+/// the total and — when more `unit`s remain — the exact offset to call Read
+/// again with.
+pub fn pdf_pagination_notice(start: usize, end: usize, total: usize, unit: &str) -> Option<String> {
+    if start > total {
+        return Some(format!(
+            "Offset {start} is past the end of the document ({total} {unit}); no content returned."
+        ));
+    }
+    if end >= total {
+        return None;
+    }
+    let next = end + 1;
+    Some(format!(
+        "Returned {} of {total} {unit} (from offset {start}). Continue with offset={next}.",
+        end - start + 1
+    ))
 }
 
 /// Scale factor for 150 DPI rendering (150 / 72 standard PDF points per inch)
 const RENDER_SCALE: f32 = 150.0 / 72.0;
 
-/// Render PDF pages as PNG images at 150 DPI using hayro (pure Rust)
-pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, PdfError> {
+/// Render PDF pages as PNG images at 150 DPI using hayro (pure Rust),
+/// honoring `offset` (1-based) and `limit` (max pages). When the range covers
+/// fewer pages than the document has, a truncation notice naming the next
+/// offset is attached (BUG-168).
+pub fn render_pdf_pages(
+    bytes: &[u8],
+    path: &str,
+    offset: usize,
+    limit: usize,
+) -> Result<RenderedPdfPages, PdfError> {
     if has_encryption_markers(bytes) {
         return Err(PdfError::Encrypted(path.to_string()));
     }
@@ -188,7 +242,11 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
 
     let pdf_pages = pdf.pages();
     let page_count = pdf_pages.len();
-    let mut pages = Vec::with_capacity(page_count);
+    let start = offset.max(1);
+    let end = start
+        .saturating_add(limit.saturating_sub(1))
+        .min(page_count);
+    let mut pages = Vec::new();
 
     let interpreter_settings = InterpreterSettings::default();
     let render_settings = RenderSettings {
@@ -200,17 +258,21 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
     };
 
     for (index, page) in pdf_pages.iter().enumerate() {
-        let page_num = (index + 1) as u32;
+        let page_num = index + 1;
+        if page_num < start || page_num > end {
+            continue;
+        }
 
+        let page_number = page_num as u32;
         let pixmap = hayro::render(page, &interpreter_settings, &render_settings);
 
         let png_bytes = pixmap.into_png().map_err(|e| PdfError::RenderError {
-            page: page_num,
+            page: page_number,
             message: format!("Failed to encode PNG: {e:?}"),
         })?;
 
         pages.push(RenderedPage {
-            page_number: page_num,
+            page_number,
             data: BASE64.encode(&png_bytes),
             media_type: "image/png".to_string(),
         });
@@ -219,6 +281,7 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
     Ok(RenderedPdfPages {
         path: path.to_string(),
         total_pages: page_count,
+        notice: pdf_pagination_notice(start, end, page_count, "pages"),
         pages,
     })
 }
@@ -245,14 +308,25 @@ pub struct ExtractedPdfImages {
     pub path: String,
     /// Total number of pages
     pub total_pages: usize,
-    /// Number of images found
+    /// Number of images found (across the whole document)
     pub image_count: usize,
     /// Extracted images
     pub images: Vec<ExtractedImage>,
+    /// Truncation notice naming the next image offset to continue with (BUG-168)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notice: Option<String>,
 }
 
-/// Extract embedded images from a PDF
-pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages, PdfError> {
+/// Extract embedded images from a PDF, honoring `offset` (1-based image
+/// index) and `limit` (max images). `image_count` always reports the total
+/// images in the document; when the range covers fewer, a truncation notice
+/// naming the next offset is attached (BUG-168).
+pub fn extract_pdf_images(
+    bytes: &[u8],
+    path: &str,
+    offset: usize,
+    limit: usize,
+) -> Result<ExtractedPdfImages, PdfError> {
     if has_encryption_markers(bytes) {
         return Err(PdfError::Encrypted(path.to_string()));
     }
@@ -270,8 +344,11 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
     }
 
     let page_count = doc.get_pages().len();
+    let start = offset.max(1);
+    let end = start.saturating_add(limit.saturating_sub(1));
     let mut images = Vec::new();
     let mut image_index = 0u32;
+    let mut total_images = 0usize;
 
     for (_object_id, object) in doc.objects.iter() {
         if let Ok(stream) = object.as_stream() {
@@ -289,6 +366,11 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
             }
 
             image_index += 1;
+            total_images += 1;
+            let index = image_index;
+            if index < start as u32 || index > end as u32 {
+                continue;
+            }
 
             let width = dict
                 .get(b"Width")
@@ -317,7 +399,7 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
             let content = stream.content.clone();
 
             images.push(ExtractedImage {
-                index: image_index,
+                index,
                 data: BASE64.encode(&content),
                 media_type: media_type.to_string(),
                 width,
@@ -329,7 +411,8 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
     Ok(ExtractedPdfImages {
         path: path.to_string(),
         total_pages: page_count,
-        image_count: images.len(),
+        image_count: total_images,
+        notice: pdf_pagination_notice(start, end, total_images, "images"),
         images,
     })
 }
@@ -350,6 +433,7 @@ mod tests {
         let content = PdfContent {
             path: "test.pdf".to_string(),
             total_pages: 2,
+            notice: None,
             pages: vec![
                 PageContent {
                     page_number: 1,

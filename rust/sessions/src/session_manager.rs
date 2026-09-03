@@ -378,19 +378,16 @@ impl SessionManager {
         );
 
         // RPC-427: Filter persisted sessions by project path instead of loading all.
-        let persisted: Vec<SessionInfo> =
-            match codelet_core::persistence::list_sessions_for_project(
-                std::path::Path::new(project_path),
-            ) {
+        let persisted: Vec<SessionInfo> = match codelet_core::persistence::list_sessions_for_project(
+            std::path::Path::new(project_path),
+        ) {
             Ok(manifests) => {
                 tracing::info!(
                     persisted_on_disk = manifests.len(),
                     "list_sessions: loaded persisted session manifests from disk"
                 );
-                let in_memory_ids: std::collections::HashSet<String> = in_memory
-                    .iter()
-                    .map(|s| s.id.clone())
-                    .collect();
+                let in_memory_ids: std::collections::HashSet<String> =
+                    in_memory.iter().map(|s| s.id.clone()).collect();
                 let result: Vec<SessionInfo> = manifests
                     .into_iter()
                     .filter(|m| !in_memory_ids.contains(&m.id.to_string()))
@@ -403,7 +400,13 @@ impl SessionManager {
                         provider_id: if m.provider.is_empty() {
                             None
                         } else {
-                            Some(m.provider.split('/').next().unwrap_or(&m.provider).to_string())
+                            Some(
+                                m.provider
+                                    .split('/')
+                                    .next()
+                                    .unwrap_or(&m.provider)
+                                    .to_string(),
+                            )
                         },
                         model_id: if m.provider.is_empty() {
                             None
@@ -437,15 +440,11 @@ impl SessionManager {
         // TUI-099: Sort by updated_at_ms descending (most recent first),
         // with session ID as alphabetical tiebreaker. Sessions without
         // a timestamp (None) appear at the end.
-        all.sort_by(|a, b| {
-            match (a.updated_at_ms, b.updated_at_ms) {
-                (Some(ts_a), Some(ts_b)) => {
-                    ts_b.cmp(&ts_a).then_with(|| a.id.cmp(&b.id))
-                }
-                (Some(_), None) => std::cmp::Ordering::Less,
-                (None, Some(_)) => std::cmp::Ordering::Greater,
-                (None, None) => a.id.cmp(&b.id),
-            }
+        all.sort_by(|a, b| match (a.updated_at_ms, b.updated_at_ms) {
+            (Some(ts_a), Some(ts_b)) => ts_b.cmp(&ts_a).then_with(|| a.id.cmp(&b.id)),
+            (Some(_), None) => std::cmp::Ordering::Less,
+            (None, Some(_)) => std::cmp::Ordering::Greater,
+            (None, None) => a.id.cmp(&b.id),
         });
 
         tracing::debug!(
@@ -1029,6 +1028,13 @@ impl SessionManager {
         let initial_context_window = provider_manager.context_window() as u32;
         let initial_max_output_tokens = provider_manager.max_output_tokens() as u32;
 
+        // BUG-168: store the resolved vision capability in the tool-layer
+        // registry so the Read tool can default non-vision sessions to text mode.
+        codelet_tools::model_capabilities::set_session_model_vision(
+            uuid,
+            crate::model_resolution::resolve_model_vision(&provider_manager),
+        );
+
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
         let isolation = codelet_cli::session::context_gathering::IsolationContext {
@@ -1261,6 +1267,7 @@ impl SessionManager {
             unregister_pre_tool_hook(uuid);
             codelet_tools::unregister_bash_abort_flag(uuid);
             codelet_tools::unregister_footer_cwd(uuid);
+            codelet_tools::model_capabilities::clear_session_model_vision(uuid);
             codelet_tools::broadcast_metadata_update();
 
             // PARITY FIX: Do NOT delete the session manifest from disk.

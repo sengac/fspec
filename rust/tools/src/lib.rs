@@ -46,6 +46,7 @@ pub mod image_dimensions;
 pub mod limits;
 pub mod ls;
 pub mod mcp;
+pub mod model_capabilities; // BUG-168: session-scoped model capability registry
 pub mod page_fetcher;
 pub mod pdf;
 pub mod pre_tool_hook;

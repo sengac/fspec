@@ -1375,7 +1375,13 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
         .map_err(napi::Error::from_reason)?;
 
     // KGRAPH-002: Close graph database when no sessions remain to avoid Lance corruption
-    let session_count = sm.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).len();
+    let session_count = sm
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
+        .len();
     if session_count == 0 {
         crate::graph::close_graph_db();
     }
@@ -1762,7 +1768,9 @@ pub fn session_send_hitl_response(
 /// status flip, NO response channel. TypeScript polls this to render
 /// the inline prompt in the composer slot (like pause state).
 #[napi]
-pub fn session_get_exec_stdin_request(session_id: String) -> Result<Option<crate::types::ExecStdinRequest>> {
+pub fn session_get_exec_stdin_request(
+    session_id: String,
+) -> Result<Option<crate::types::ExecStdinRequest>> {
     use codelet_core::SessionManagerHandle;
     let manager = SessionManager::instance();
     // The NAPI `session_id` is the session key verbatim (matches the
@@ -2045,6 +2053,15 @@ pub async fn session_set_model(
             session.set_model_limits(context_window, max_output, compaction_thresh);
             tracing::debug!("session_set_model: model set successfully (context_window={}, max_output={}, compaction_threshold={})", context_window, max_output, compaction_thresh);
 
+            // BUG-168: update the tool-layer capability registry on model switch
+            // so the Read tool's PDF default mode follows the new model.
+            let registry_uuid = Uuid::parse_str(&session_id)
+                .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
+            codelet_tools::model_capabilities::set_session_model_vision(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_model_vision(inner.provider_manager()),
+            );
+
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
             let session_uuid = Uuid::parse_str(&session_id)
                 .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
@@ -2216,6 +2233,15 @@ pub async fn session_set_model_profile(
                 profile_compaction_thresh,
             );
             tracing::debug!("session_set_model_profile: model set successfully (context_window={}, max_output={}, compaction_threshold={})", resolved_context_window, resolved_max_output, profile_compaction_thresh);
+
+            // BUG-168: update the tool-layer capability registry on model switch
+            // so the Read tool's PDF default mode follows the new model.
+            let registry_uuid = Uuid::parse_str(&session_id)
+                .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
+            codelet_tools::model_capabilities::set_session_model_vision(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_model_vision(inner.provider_manager()),
+            );
 
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
             let session_uuid = Uuid::parse_str(&session_id)

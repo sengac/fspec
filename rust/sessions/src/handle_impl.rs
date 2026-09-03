@@ -185,11 +185,9 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 "resume_session: session not in memory, creating from existing manifest"
             );
             tokio::task::block_in_place(|| {
-                tokio::runtime::Handle::current()
-                    .block_on(async {
-                        SessionManager::create_session_from_manifest(self, &manifest, &model)
-                            .await
-                    })
+                tokio::runtime::Handle::current().block_on(async {
+                    SessionManager::create_session_from_manifest(self, &manifest, &model).await
+                })
             })?;
             tracing::info!(
                 session_id = %uuid,
@@ -979,13 +977,18 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     /// TOOL-022 P2: snapshot of the active exec-stdin request, if any.
     /// Pure pass-through mapping (tools-internal → wire; identical
     /// fields, see `exec_stdin_mapping`).
-    fn get_exec_stdin_request(&self, session_id: &SessionId) -> Option<codelet_rpc_types::ExecStdinRequest> {
+    fn get_exec_stdin_request(
+        &self,
+        session_id: &SessionId,
+    ) -> Option<codelet_rpc_types::ExecStdinRequest> {
         let uuid = uuid_from(session_id);
         let internal = self
             .get_session(&uuid.to_string())
             .ok()
             .and_then(|s| s.get_exec_stdin_request())?;
-        Some(crate::exec_stdin_mapping::internal_request_to_wire(internal))
+        Some(crate::exec_stdin_mapping::internal_request_to_wire(
+            internal,
+        ))
     }
 
     /// TOOL-022 P2: write typed text to a live exec session's stdin.
@@ -1362,7 +1365,16 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 .inner
                 .try_lock()
                 .map_err(|_| "Session is busy; cannot switch model right now".to_string())?;
-            crate::model_resolution::apply_model_selection(inner.provider_manager_mut(), &model)?
+            let pm = inner.provider_manager_mut();
+            let resolved = crate::model_resolution::apply_model_selection(pm, &model)?;
+            // BUG-168: update the tool-layer capability registry on every
+            // mid-session model switch so the Read tool's PDF default mode
+            // follows the new model.
+            codelet_tools::model_capabilities::set_session_model_vision(
+                uuid,
+                crate::model_resolution::resolve_model_vision(pm),
+            );
+            resolved
         };
 
         let compaction_threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
@@ -1944,8 +1956,15 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     fn prune_orphaned_worktrees(&self) -> Result<Vec<String>, String> {
         let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         // The active-session set is sourced from the live SessionManager.
-        let active: std::collections::HashSet<String> =
-            self.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).into_iter().map(|s| s.id).collect();
+        let active: std::collections::HashSet<String> = self
+            .list_sessions(
+                &std::env::current_dir()
+                    .map(|p| p.to_string_lossy().to_string())
+                    .unwrap_or_default(),
+            )
+            .into_iter()
+            .map(|s| s.id)
+            .collect();
         codelet_git::prune_orphaned(&repo_path, &active)
             .map(|r| r.pruned)
             .map_err(|e| format!("{e}"))

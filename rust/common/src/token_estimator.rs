@@ -17,6 +17,11 @@ use tiktoken_rs::CoreBPE;
 /// Default maximum tokens for file reads (configurable via CODELET_MAX_FILE_TOKENS env var)
 pub const DEFAULT_MAX_FILE_TOKENS: usize = 25_000;
 
+/// Default maximum PDF pages returned by a single Read call (configurable via
+/// CODELET_MAX_PDF_PAGES env var). BUG-168: bounds visual/text PDF reads when
+/// no explicit limit is given, so one Read stays under ~1 MB of context.
+pub const DEFAULT_MAX_PDF_PAGES: usize = 20;
+
 /// Global TokenEstimator instance using lazy initialization.
 /// Uses cl100k_base encoding which is compatible with GPT-4 and Claude models.
 static ESTIMATOR: Lazy<TokenEstimator> = Lazy::new(|| {
@@ -92,6 +97,17 @@ pub fn max_file_tokens() -> usize {
         .unwrap_or(DEFAULT_MAX_FILE_TOKENS)
 }
 
+/// Get the maximum PDF page cap from environment or default.
+///
+/// Reads CODELET_MAX_PDF_PAGES environment variable, defaults to 20.
+pub fn max_pdf_pages() -> usize {
+    std::env::var("CODELET_MAX_PDF_PAGES")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .filter(|v| *v > 0)
+        .unwrap_or(DEFAULT_MAX_PDF_PAGES)
+}
+
 /// Check if content exceeds the token limit.
 ///
 /// Returns `Some((estimated_tokens, limit))` if the limit is exceeded,
@@ -135,6 +151,60 @@ mod tests {
         let code = "fn main() { println!(\"Hello\"); }";
         let tokens = count_tokens(code);
         assert!(tokens > 0, "Code should have tokens");
+    }
+
+    /// BUG-168: CODELET_MAX_PDF_PAGES default is 20.
+    #[test]
+    #[serial]
+    fn test_max_pdf_pages_default() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_PDF_PAGES").ok();
+        // Clear env var to test default
+        std::env::remove_var("CODELET_MAX_PDF_PAGES");
+        let result = max_pdf_pages();
+        // Restore original value
+        if let Some(val) = original {
+            std::env::set_var("CODELET_MAX_PDF_PAGES", val);
+        }
+        assert_eq!(result, DEFAULT_MAX_PDF_PAGES);
+    }
+
+    /// BUG-168: CODELET_MAX_PDF_PAGES can be overridden by the environment.
+    #[test]
+    #[serial]
+    fn test_max_pdf_pages_custom() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_PDF_PAGES").ok();
+        // Set custom value
+        std::env::set_var("CODELET_MAX_PDF_PAGES", "5");
+        let result = max_pdf_pages();
+        // Restore original value
+        if let Some(val) = original {
+            std::env::set_var("CODELET_MAX_PDF_PAGES", val);
+        } else {
+            std::env::remove_var("CODELET_MAX_PDF_PAGES");
+        }
+        assert_eq!(result, 5);
+    }
+
+    /// BUG-168: invalid CODELET_MAX_PDF_PAGES values fall back to the default.
+    #[test]
+    #[serial]
+    fn test_max_pdf_pages_invalid_falls_back_to_default() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_PDF_PAGES").ok();
+        std::env::set_var("CODELET_MAX_PDF_PAGES", "not-a-number");
+        let result = max_pdf_pages();
+        std::env::set_var("CODELET_MAX_PDF_PAGES", "0");
+        let zero = max_pdf_pages();
+        // Restore original value
+        if let Some(val) = original {
+            std::env::set_var("CODELET_MAX_PDF_PAGES", val);
+        } else {
+            std::env::remove_var("CODELET_MAX_PDF_PAGES");
+        }
+        assert_eq!(result, DEFAULT_MAX_PDF_PAGES);
+        assert_eq!(zero, DEFAULT_MAX_PDF_PAGES);
     }
 
     // NOTE: These tests manipulate environment variables and must run serially.

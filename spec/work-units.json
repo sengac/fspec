@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-03T03:51:12.006Z",
+    "lastUpdated": "2026-09-03T06:50:04.680Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -232,7 +232,6 @@
       "PROV-126",
       "BUG-152",
       "RPC-428",
-      "BUG-168",
       "BUG-169",
       "BUG-170"
     ],
@@ -1682,7 +1681,8 @@
       "DISC-003",
       "TOOL-022",
       "BUG-172",
-      "BUG-171"
+      "BUG-171",
+      "BUG-168"
     ],
     "blocked": [
       "QUERY-001",
@@ -228449,14 +228449,107 @@
       "id": "BUG-168",
       "title": "Read tool: PDF visual mode ignores offset/limit and returns unbounded page images",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-09-02T00:49:57.765Z",
-      "updatedAt": "2026-09-02T00:50:03.533Z",
+      "updatedAt": "2026-09-03T06:50:07.837Z",
       "description": "Read({file_path: some-67-page.pdf, limit: 4, offset: 1}) returned 8+ [Image] parts (the whole document) instead of 4 pages. Root cause: rust/tools/src/read.rs passes neither args.offset nor args.limit into read_pdf_from_bytes / render_pdf_pages / extract_pdf_images (rust/tools/src/pdf.rs), so all three PDF modes always process the entire document; the rig-core patch parse_tool_result_content (rust/patches/rig-core/src/agent/prompt_request/streaming.rs) then converts every page into a ToolResultContent::Image part with no count cap. No configurable page/image limit exists (CODELET_MAX_FILE_TOKENS applies to text only; PDFs are ExemptFileType::Pdf). Additionally, provider model vision capability (ModelDef.supports_vision / ModelInfo.supports_vision) is tracked for TUI badges only — the Read tool defaults to visual mode even when the active model cannot see images. Fix: honor offset/limit in all PDF modes, add a configurable default page cap (env var, e.g. CODELET_MAX_PDF_PAGES, mirroring CODELET_MAX_FILE_TOKENS), emit a truncation notice with total_pages so the LLM can paginate, consult session model vision capability to default non-vision models to text mode, and add a defense-in-depth image count cap in parse_tool_result_content. Research attached: spec/research/BUG-168-pdf-image-limit-research.md",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-168/BUG-168-pdf-image-limit-research.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-03T04:42:21.088Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-03T05:50:22.758Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-03T06:46:07.713Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-03T06:47:38.753Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-03T06:50:04.680Z"
+        }
+      ],
+      "userStory": {
+        "role": "agent or user session reading a PDF",
+        "action": "page through PDFs and receive only the pages I asked for",
+        "benefit": "my context window is not flooded by a wall of images from a 67-page document"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The Read tool MUST honor offset and limit for PDF files in ALL three modes (visual, text, images): 1-based page offset, limit = max pages (visual/text) or max embedded images (images)",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:10.659Z"
+        },
+        {
+          "id": 1,
+          "text": "A configurable default page cap MUST exist (env var CODELET_MAX_PDF_PAGES, default 20, mirroring the CODELET_MAX_FILE_TOKENS pattern) applied when no explicit limit is given",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:13.801Z"
+        },
+        {
+          "id": 2,
+          "text": "When the returned page/image count is smaller than the document total, the output MUST carry a truncation notice that includes total_pages and the exact offset to call Read again with so the LLM can paginate",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:16.227Z"
+        },
+        {
+          "id": 3,
+          "text": "When the active session model lacks vision capability and pdf_mode is NOT explicitly set, the Read tool MUST default to text mode with a one-line notice in the output (silent fallback, matching the leniency of invalid-mode falls back to visual). An explicit pdf_mode always wins.",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:19.338Z"
+        },
+        {
+          "id": 4,
+          "text": "Session model capabilities (at least supports_vision) MUST be resolvable in-process from the sessions layer: resolved at session creation and on every set_model, stored in a codelet-tools session-scoped registry that tools consult",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:22.386Z"
+        },
+        {
+          "id": 5,
+          "text": "Defense-in-depth: the rig-core patch parse_tool_result_content MUST cap the number of ToolResultContent::Image parts it produces from a pages array (mirroring EXT-016 layering), so ANY tool emitting PDF-shape JSON (MCP etc.) cannot flood the context with unbounded images",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:26.189Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Read(report.pdf, offset=1, limit=4) on a 67-page PDF in visual mode returns exactly 4 rendered pages (1-4) plus a notice 'Rendered 4 of 67 pages. Continue with offset=5.' — not 8+ images",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:28.685Z"
+        },
+        {
+          "id": 1,
+          "text": "Read(67-page.pdf) with NO offset/limit in visual mode stops at the default 20 pages and tells the reader there are 47 more, so one Read stays under ~1 MB of context",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:31.466Z"
+        },
+        {
+          "id": 2,
+          "text": "Read(catalog.pdf, pdf_mode='images', offset=2, limit=3) returns only embedded images 2-4 and says the document has 15 images in total",
+          "deleted": false,
+          "createdAt": "2026-09-03T04:54:39.172Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "assumptions": [
+        "Default page cap is 20 pages, overridable via env var CODELET_MAX_PDF_PAGES (mirrors CODELET_MAX_FILE_TOKENS); applied only when no explicit limit is given",
+        "Unknown session (no capability entry registered) is treated as vision-capable by the Read tool, preserving today's visual default for any session whose capability was never plumbed; resolution on the session side is conservative (false when unresolvable)"
+      ],
+      "estimate": 8,
+      "iterations": 1
     },
     "BUG-169": {
       "id": "BUG-169",

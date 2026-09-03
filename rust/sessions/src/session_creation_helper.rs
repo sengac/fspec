@@ -73,9 +73,13 @@ pub struct SessionCreationParams<'a> {
     /// Isolation context (for isolated sessions)
     pub isolation: Option<codelet_cli::session::context_gathering::IsolationContext>,
     /// Chunks broadcast sender
-    pub chunks_tx: broadcast::Sender<(codelet_rpc_types::SessionId, codelet_rpc_types::StreamChunk)>,
+    pub chunks_tx:
+        broadcast::Sender<(codelet_rpc_types::SessionId, codelet_rpc_types::StreamChunk)>,
     /// Status changes broadcast sender
-    pub status_changes_tx: broadcast::Sender<(codelet_rpc_types::SessionId, codelet_rpc_types::SessionStatus)>,
+    pub status_changes_tx: broadcast::Sender<(
+        codelet_rpc_types::SessionId,
+        codelet_rpc_types::SessionStatus,
+    )>,
 }
 
 /// Create a BackgroundSession with all shared initialization logic.
@@ -160,8 +164,14 @@ pub async fn create_background_session_inner(
     // RPC-343: apply the selection via the shared resolver so creation and
     // the mid-session set_model path can never drift.
     let mut provider_manager = provider_manager;
-    let resolved =
-        crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;
+    let resolved = crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;
+
+    // BUG-168: store the resolved vision capability in the tool-layer registry
+    // so the Read tool can default non-vision sessions to text mode.
+    codelet_tools::model_capabilities::set_session_model_vision(
+        uuid,
+        crate::model_resolution::resolve_model_vision(&provider_manager),
+    );
 
     let initial_context_window = resolved.context_window;
     let initial_max_output_tokens = resolved.max_output_tokens;
@@ -291,8 +301,8 @@ pub async fn create_background_session_inner(
         if !hooks.pre_tool_use.is_empty() {
             let hooks_for_pre = hooks.clone();
             let session_for_pre = session.clone();
-            let pre_handler: PreToolHookHandler = std::sync::Arc::new(
-                move |_sid, tool_name, tool_input| {
+            let pre_handler: PreToolHookHandler =
+                std::sync::Arc::new(move |_sid, tool_name, tool_input| {
                     let ctx = session_for_pre.hook_context();
                     let hooks = hooks_for_pre.clone();
                     let name = tool_name.to_string();
@@ -319,8 +329,7 @@ pub async fn create_background_session_inner(
                             PreToolHookDecision::Continue
                         }
                     }
-                },
-            );
+                });
             register_pre_tool_hook(uuid, pre_handler);
         }
     }
