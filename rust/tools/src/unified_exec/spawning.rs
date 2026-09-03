@@ -30,6 +30,10 @@ pub type SpawnResult = (
 /// TOOL-022 P4: platform-appropriate `TERM` for spawned processes.
 const SPAWN_TERM: &str = "xterm-256color";
 
+/// BUG-172: target OS name for platform shell selection
+/// (`std::env::consts::OS` — "unix" on Linux/macOS, "windows" on Windows).
+const OS: &str = std::env::consts::OS;
+
 /// TOOL-022 P4 (G2): pager suppression env applied to every spawned
 /// child so `git`/`man`/`less` never block on a pager.
 fn apply_non_pager_env(cmd: &mut Command) {
@@ -190,8 +194,11 @@ pub fn spawn_pipe_process(
 ) -> Result<SpawnResult, ToolError> {
     let mut cmd = match command {
         ExecCommand::Shell(s) => {
-            let mut c = Command::new("sh");
-            c.arg("-c").arg(s);
+            // BUG-172: platform shell wrap — `sh -c` on Unix (unchanged),
+            // the BUG-156 PowerShell wrap on Windows (never spawn `sh`).
+            let (program, args) = crate::bash_process::platform_shell_invocation(s, OS);
+            let mut c = Command::new(&program);
+            c.args(&args);
             c
         }
         ExecCommand::Argv(args) => {
@@ -225,10 +232,49 @@ pub fn spawn_pipe_process(
         cmd.current_dir(dir);
     }
 
-    let mut child = cmd.spawn().map_err(|e| ToolError::Execution {
-        tool: "unified_exec",
-        message: format!("Failed to spawn: {e}"),
-    })?;
+    let mut child = match cmd.spawn() {
+        Ok(child) => child,
+        Err(e) => {
+            // BUG-172 (R1): on Windows the PowerShell spawn fails when
+            // PowerShell cannot be located — fall back to `cmd /C <cmd>`
+            // (the same fallback the BUG-156 spawn path used before
+            // TOOL-022 P4 moved this path). Unix and Argv spawns fail
+            // as before (no fallback).
+            let (fallback_program, fallback_args) = match (command, OS) {
+                (ExecCommand::Shell(s), "windows") => {
+                    crate::bash_process::windows_shell_fallback_invocation(s)
+                }
+                _ => {
+                    return Err(ToolError::Execution {
+                        tool: "unified_exec",
+                        message: format!("Failed to spawn: {e}"),
+                    })
+                }
+            };
+            let mut fallback = Command::new(&fallback_program);
+            fallback
+                .args(&fallback_args)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .kill_on_drop(true)
+                .env("TERM", SPAWN_TERM);
+            apply_non_pager_env(&mut fallback);
+            #[cfg(unix)]
+            {
+                fallback.process_group(0);
+            }
+            if let Some(dir) = cwd {
+                fallback.current_dir(dir);
+            }
+            fallback.spawn().map_err(|fb_err| ToolError::Execution {
+                tool: "unified_exec",
+                message: format!(
+                    "Failed to spawn via powershell ({e}) or {fallback_program} ({fb_err})"
+                ),
+            })?
+        }
+    };
 
     let output_buffer = Arc::new(Mutex::new(Vec::new()));
     let output_notify = Arc::new(Notify::new());
@@ -305,22 +351,19 @@ pub fn spawn_pty_process(
         pixel_width: 0,
         pixel_height: 0,
     };
-    let pair = pty_system
-        .openpty(size)
-        .map_err(|e| ToolError::Execution {
-            tool: "unified_exec",
-            message: format!("Failed to open PTY: {e}"),
-        })?;
+    let pair = pty_system.openpty(size).map_err(|e| ToolError::Execution {
+        tool: "unified_exec",
+        message: format!("Failed to open PTY: {e}"),
+    })?;
 
-    let mut builder = CommandBuilder::new("sh");
-    match command {
-        ExecCommand::Shell(s) => {
-            builder.arg("-c");
-            builder.arg(s);
-        }
+    // BUG-172: the PTY child IS the platform terminal shell (a PTY needs a
+    // real shell as its controlling child — `sh` on Unix, the BUG-156
+    // PowerShell wrap on Windows). The command string (Shell as-is, Argv
+    // space-joined) is passed via the platform shell invocation (R1).
+    let command_string = match command {
+        ExecCommand::Shell(s) => s.clone(),
         ExecCommand::Argv(args) => {
             // Re-exec through the requested argv inside the PTY.
-            builder.arg("-c");
             let mut joined = String::new();
             for a in &args[0..1] {
                 joined.push_str(a);
@@ -329,8 +372,14 @@ pub fn spawn_pty_process(
                 joined.push(' ');
                 joined.push_str(a);
             }
-            builder.arg(&joined);
+            joined
         }
+    };
+    let (pty_program, pty_args) =
+        crate::bash_process::platform_shell_invocation(&command_string, OS);
+    let mut builder = CommandBuilder::new(pty_program);
+    for a in &pty_args {
+        builder.arg(a);
     }
     if let Some(dir) = cwd {
         if !std::path::Path::new(dir).is_dir() {
@@ -360,22 +409,23 @@ pub fn spawn_pty_process(
     // — `true` exits instantly, which would make `try_wait` report EXITED
     // for every PTY session right after spawn (TOOL-022 P4 regression
     // surface: the reaper then removes the session and the `run` action
-    // returns a one-shot result instead of a session_id). `sleep` with the
-    // max representable seconds blocks for effectively forever; the
-    // background task kills it when the PTY child exits or the session
-    // ends (kill_on_drop also covers process exit).
-    let mut anchor_cmd = tokio::process::Command::new("sleep");
+    // returns a one-shot result instead of a session_id). The platform
+    // blocking-sleep invocation (BUG-172 R3: `sleep` on Unix, PowerShell
+    // `Start-Sleep` on Windows — there is no `sleep.exe`) blocks for
+    // effectively the full i32 range; the background task kills it when
+    // the PTY child exits or the session ends (kill_on_drop also covers
+    // process exit).
+    let (anchor_program, anchor_args) = crate::bash_process::pty_liveness_anchor_invocation(OS);
+    let mut anchor_cmd = tokio::process::Command::new(&anchor_program);
     anchor_cmd
-        .arg("2147483647")
+        .args(&anchor_args)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .kill_on_drop(true);
-    let anchor = anchor_cmd.spawn().map_err(|e| {
-        ToolError::Execution {
-            tool: "unified_exec",
-            message: format!("Failed to spawn liveness anchor: {e}"),
-        }
+    let anchor = anchor_cmd.spawn().map_err(|e| ToolError::Execution {
+        tool: "unified_exec",
+        message: format!("Failed to spawn liveness anchor: {e}"),
     })?;
 
     let anchor_pid = anchor.id();
@@ -384,8 +434,7 @@ pub fn spawn_pty_process(
         // Block until the PTY child exits (blocking wait on a blocking
         // thread), then kill the anchor so the store's `try_wait`
         // reports the exit.
-        let _ = tokio::task::spawn_blocking(move || pty_child.wait())
-        .await;
+        let _ = tokio::task::spawn_blocking(move || pty_child.wait()).await;
         kill_anchor_pid(anchor_pid);
     });
 
@@ -396,12 +445,12 @@ pub fn spawn_pty_process(
     // PTY output: OS-thread reader over the master (the portable-pty
     // master is blocking-only) -> bounded channel -> the shared buffer,
     // the same shape the pipe readers use.
-    let master_read = master.try_clone_reader().map_err(|e| {
-        ToolError::Execution {
+    let master_read = master
+        .try_clone_reader()
+        .map_err(|e| ToolError::Execution {
             tool: "unified_exec",
             message: format!("Failed to clone PTY reader: {e}"),
-        }
-    })?;
+        })?;
     let (pty_tx, pty_rx) = std::sync::mpsc::channel::<Vec<u8>>();
     std::thread::Builder::new()
         .name("unified-exec-pty-read".into())
@@ -466,14 +515,11 @@ pub fn spawn_pty_process(
 
     // PTY stdin: same mpsc shape as pipe mode.
     let (stdin_tx, mut stdin_rx) = mpsc::channel::<Vec<u8>>(64);
-    let pty_writer = std::sync::Mutex::new(
-        master
-            .take_writer()
-            .map_err(|e| ToolError::Execution {
-                tool: "unified_exec",
-                message: format!("Failed to take PTY writer: {e}"),
-            })?,
-    );
+    let pty_writer =
+        std::sync::Mutex::new(master.take_writer().map_err(|e| ToolError::Execution {
+            tool: "unified_exec",
+            message: format!("Failed to take PTY writer: {e}"),
+        })?);
     let pty_writer = Arc::new(pty_writer);
     tokio::spawn(async move {
         while let Some(data) = stdin_rx.recv().await {

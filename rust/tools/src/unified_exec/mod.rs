@@ -40,6 +40,9 @@ mod spawning;
 mod tool;
 mod types;
 
+pub use crate::bash_process::{
+    platform_shell_invocation, pty_liveness_anchor_invocation, windows_shell_fallback_invocation,
+};
 pub use exec_stdin::{
     emit_exec_stdin_request, set_exec_stdin_request_callback, spawn_exec_stdin_detector,
     ExecStdinRequest, ExecStdinRequestCallback, EXEC_STDIN_COOLDOWN_SECS,
@@ -49,7 +52,7 @@ pub use process_store::{global_store, session_id_to_evict, ChildHandle, ProcessS
 pub use reaper::{generate_session_id, spawn_reaper};
 pub use tool::{poll_session, poll_session_interruptible, UnifiedExecTool};
 pub use types::{
-    quiet_secs_since, ExecCommand, STILL_RUNNING_STEERING, UnifiedExecArgs, UnifiedExecResult,
+    quiet_secs_since, ExecCommand, UnifiedExecArgs, UnifiedExecResult, STILL_RUNNING_STEERING,
 };
 
 // ============================================================================

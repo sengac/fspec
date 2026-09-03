@@ -1322,7 +1322,8 @@
       "description": "Tool invocation and execution improvements",
       "workUnits": [
         "TOOL-021",
-        "BUG-171"
+        "BUG-171",
+        "BUG-172"
       ]
     },
     "tui-lazy-load": {
