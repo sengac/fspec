@@ -1,5 +1,17 @@
 # fspec Native Installer (Windows PowerShell)
-# Downloads and installs the latest fspec SEA binary from GitHub Releases
+# Downloads and installs the latest fspec binary from GitHub Releases.
+#
+# Usage:
+#   powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+#   powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
+#   .\install.ps1 -InstallDir "C:\Program Files\fspec"
+#
+# NOTE: This file is intentionally pure ASCII. Windows PowerShell 5.1
+# (powershell.exe) decodes BOM-less .ps1 files using the system ANSI code
+# page (CP1252 on en-US systems); UTF-8 non-ASCII bytes in string literals
+# (e.g. a checkmark U+2713 contains byte 0x93, a CP1252 double-quote)
+# corrupt the parse. Keep any future edits ASCII-only for that reason.
+# (Same constraint as build.ps1 and build-install.ps1.)
 
 param(
   [string]$InstallDir = "$env:USERPROFILE\.local\bin",
@@ -16,9 +28,9 @@ $GitHubReleases = "https://github.com/$Repo/releases/download"
 
 # Logging functions
 function Write-Info { Write-Host "INFO: $args" -ForegroundColor Cyan }
-function Write-Success { Write-Host "✓ $args" -ForegroundColor Green }
-function Write-InstallError { Write-Host "✗ $args" -ForegroundColor Red }
-function Write-InstallWarning { Write-Host "⚠ $args" -ForegroundColor Yellow }
+function Write-Success { Write-Host "[OK] $args" -ForegroundColor Green }
+function Write-InstallError { Write-Host "[FAIL] $args" -ForegroundColor Red }
+function Write-InstallWarning { Write-Host "[WARN] $args" -ForegroundColor Yellow }
 
 # Show help
 function Show-Help {
@@ -61,7 +73,6 @@ function Get-LatestRelease {
   catch {
     Write-InstallError "Failed to fetch release info from GitHub API"
     Write-InstallError "Error: $_"
-    Write-Info "You can install via npm instead: npm install -g @sengac/fspec"
     exit 1
   }
 }
@@ -82,8 +93,10 @@ function Get-DownloadUrl {
   }
 
   $Platform = "${Arch}-pc-windows-msvc"
-  $VersionTag = $ReleaseTag -replace '^v', ''
-  $Filename = "fspec-${VersionTag}-${Platform}.zip"
+  # Asset name is a contract with the UPD-002 self-updater:
+  # fspec-<target-triple>.zip, no version segment (the release pipeline
+  # names assets this way; install.sh resolves the same name on unix).
+  $Filename = "fspec-${Platform}.zip"
   $DownloadUrl = "$GitHubReleases/$ReleaseTag/$Filename"
 
   return @{
@@ -120,18 +133,22 @@ function Download-Binary {
 function Verify-Checksum {
   param(
     [string]$BinaryPath,
-    [string]$ReleaseTag
+    [string]$ReleaseTag,
+    [string]$ReleaseFilename
   )
 
   Write-Info "Verifying binary integrity..."
 
-  $Filename = (Get-Item $BinaryPath).Name
+  # The checksums.txt asset lists the RELEASE asset names
+  # (fspec-<target-triple>.zip), not the local temp filename.
+  $Filename = $ReleaseFilename
   $TempChecksumFile = Join-Path $env:TEMP "fspec-checksums.txt"
   $ExpectedChecksum = ""
 
   # Try to download checksums.txt first
   $ChecksumsUrl = "$GitHubReleases/$ReleaseTag/checksums.txt"
   try {
+    if (Test-Path $TempChecksumFile) { Remove-Item $TempChecksumFile -Force }
     Invoke-WebRequest -Uri $ChecksumsUrl -OutFile $TempChecksumFile -ErrorAction SilentlyContinue
     if (Test-Path $TempChecksumFile) {
       $ExpectedChecksum = (Get-Content $TempChecksumFile | Select-String $Filename | ForEach-Object { $_ -split '\s+' } | Select-Object -First 1).Trim()
@@ -145,6 +162,7 @@ function Verify-Checksum {
   if ([string]::IsNullOrEmpty($ExpectedChecksum)) {
     $ShaUrl = "$GitHubReleases/$ReleaseTag/$Filename.sha256"
     try {
+      if (Test-Path $TempChecksumFile) { Remove-Item $TempChecksumFile -Force }
       Invoke-WebRequest -Uri $ShaUrl -OutFile $TempChecksumFile -ErrorAction SilentlyContinue
       if (Test-Path $TempChecksumFile) {
         $ExpectedChecksum = (Get-Content $TempChecksumFile | Select-Object -First 1).Trim()
@@ -280,7 +298,7 @@ function Main {
     Download-Binary -Url $DownloadInfo.Url -OutputPath $ArchivePath
 
     # Verify checksum
-    Verify-Checksum -BinaryPath $ArchivePath -ReleaseTag $DownloadInfo.Tag
+    Verify-Checksum -BinaryPath $ArchivePath -ReleaseTag $DownloadInfo.Tag -ReleaseFilename $DownloadInfo.Filename
 
     # Extract binary
     $ExtractDir = Join-Path $TempDir "extract"

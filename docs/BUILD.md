@@ -7,14 +7,20 @@ fspec is a pure-Rust binary. This document covers building from source and cross
 ## Quick Start
 
 ```bash
-# Build for current platform:
+# macOS / Linux — build for current platform:
 ./scripts/build.sh
 
-# Build and package for distribution:
+# macOS / Linux — build and package for distribution:
 ./scripts/build.sh --package
 
-# Cross-compile Windows binary from macOS/Linux:
+# macOS / Linux — cross-compile a Windows binary:
 ./scripts/build-cross.sh
+
+# Windows — build natively (PowerShell):
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+
+# Windows — build and package for distribution:
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -Package
 ```
 
 ---
@@ -40,6 +46,10 @@ fspec is a pure-Rust binary. This document covers building from source and cross
 
    # Ubuntu/Debian
    sudo apt install -y protobuf-compiler
+
+   # Windows: download protoc-<version>-win64.zip from
+   # https://github.com/protocolbuffers/protobuf/releases,
+   # extract it, and add its bin\ directory to your PATH
 
    # Verify
    protoc --version  # libprotoc 3.x or higher
@@ -80,6 +90,66 @@ Builds `fspec` for the current platform (macOS or Linux).
 **Output:**
 - Binary: `rust/target/release-slim/fspec` (~150 MB)
 - Archive: `dist/fspec-<arch>-<platform>.tar.gz` (~50 MB)
+
+### `scripts/build.ps1` — Native Build (Windows)
+
+Builds `fspec` natively on Windows (MSVC toolchain via rustup). PowerShell mirror of `build.sh`.
+
+```powershell
+# Build only:
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+
+# Build and package as zip in dist/ (fspec-<target-triple>.zip):
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -Package
+
+# Use release profile (with debug info for profiling):
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -Profile release
+```
+
+**Prerequisites:**
+- Rust via rustup (cargo on PATH)
+- MSVC build tools (`link.exe`) — Visual Studio 2022 or Build Tools ("Desktop development with C++")
+- `protoc` on PATH (build-time only — see Prerequisites above)
+
+**Output:**
+- Binary: `rust\target\release-slim\fspec.exe` (~275 MB)
+- Archive: `dist\fspec-x86_64-pc-windows-msvc.zip` (~79 MB)
+
+The script checks its prerequisites up front (cargo, protoc, MSVC `link.exe` under
+the default Visual Studio install paths), reports the detected platform and build
+profile, times the build, and verifies the result by running `fspec.exe --version`.
+
+### `scripts/build-install.ps1` — Source Build + Install (Windows)
+
+PowerShell mirror of `build-install.sh`: builds from source and installs
+`fspec.exe` to `%USERPROFILE%\.local\bin` by default (override with
+`-InstallDir` or `INSTALL_DIR`).
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-install.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build-install.ps1 -InstallDir C:\bin
+```
+
+### `scripts/install.ps1` — Binary Installer (Windows)
+
+PowerShell mirror of `install.sh`: downloads the latest prebuilt `fspec.exe`
+from GitHub Releases — **no Rust toolchain required** — and installs it to
+`%USERPROFILE%\.local\bin` by default (override with `-InstallDir`).
+
+```powershell
+# One-line install (the README command):
+powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
+
+# From a checkout:
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -InstallDir C:\bin
+```
+
+It resolves the latest release via the GitHub API, downloads the platform's
+asset (`fspec-<target-triple>.zip`, versionless — the UPD-002 self-updater
+contract), verifies its SHA-256 against the release's `checksums.txt` asset
+(warns and continues if absent), extracts, installs, and verifies with
+`fspec.exe --version`.
 
 ### `scripts/build-cross.sh` — Cross-Compile Windows & Linux
 
@@ -169,6 +239,17 @@ cargo build --profile release-slim -p codelet-fspec
 # Profiling build (keeps DWARF for pprof):
 cargo build --release -p codelet-fspec
 ```
+
+On Windows the same commands work natively (MSVC toolchain via rustup); the
+artifact is `target\release-slim\fspec.exe`:
+
+```powershell
+cd rust
+cargo build --profile release-slim -p codelet-fspec
+```
+
+Or use the script: `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`
+(see Build Scripts above).
 
 ### Verifying Builds
 
