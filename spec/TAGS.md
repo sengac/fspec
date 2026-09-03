@@ -625,6 +625,7 @@ Tags tracking development status of features.
 | `@auth-999` | Non-existent work unit for testing error handling |
 | `@blocked` | Blocked |
 | `@bug` | Bug fix work units |
+| `@bug-169` | Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
@@ -759,4 +760,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-03T05:14:16.525Z_
+_Last updated: 2026-09-03T07:58:17.216Z_

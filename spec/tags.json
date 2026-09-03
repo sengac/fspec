@@ -2318,6 +2318,10 @@
           "description": "Bug fix work units"
         },
         {
+          "name": "@bug-169",
+          "description": "Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2958,7 +2962,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-03T05:14:16.525Z",
+    "lastUpdated": "2026-09-03T07:58:17.216Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

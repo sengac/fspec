@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-03T06:50:04.680Z",
+    "lastUpdated": "2026-09-03T09:17:06.478Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -232,7 +232,6 @@
       "PROV-126",
       "BUG-152",
       "RPC-428",
-      "BUG-169",
       "BUG-170"
     ],
     "specifying": [
@@ -1682,7 +1681,8 @@
       "TOOL-022",
       "BUG-172",
       "BUG-171",
-      "BUG-168"
+      "BUG-168",
+      "BUG-169"
     ],
     "blocked": [
       "QUERY-001",
@@ -228555,14 +228555,96 @@
       "id": "BUG-169",
       "title": "Slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM)",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-09-02T01:08:45.870Z",
-      "updatedAt": "2026-09-02T01:10:20.395Z",
+      "updatedAt": "2026-09-03T09:17:06.478Z",
       "description": "Typing /provide + Tab + Enter sends the literal text '/provider' to the LLM instead of opening the ProviderSettingsView. Root cause: parse_slash_command (the submit-time interceptor in handle_input_submitted, rust/fspec-tui/src/app/slash_parser.rs) only recognizes 11 of the 21 registered slash commands (model, thinking, role, schedule, loop, continue, goal, update, mux families). Every other command is wired only through the popup path (Action::SlashCommandSelected -> handle_slash_command). The popup is closed by Tab (PopupOutcome::Filled -> slash_popup = None in views/agent/dispatch_popups.rs) and by Esc, so a subsequent Enter is handled by MultiLineInput (plain Enter always submits), emits Action::InputSubmitted, and parse_slash_command returns NotASlashCommand -> backend.send_input. Affected commands: /help, /clear, /quit, /provider, /resume, /search, /debug, /compact, /isolation, /blocklist, /detach, /merge-worktree. Fix: registry-driven interception in parse_slash_command (lookup first token in SLASH_COMMANDS, exact bare-name match) returning a BareCommand(SlashCommandAction) variant, routed in handle_input_submitted to the existing handle_slash_command handler (no send_input, no history append). Research doc: docs/research/BUG-169-slash-submit-interception-research.md",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-169/BUG-169-slash-submit-interception-research.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-03T07:53:09.605Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-03T08:13:00.218Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-03T08:43:08.492Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-03T08:43:59.549Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-03T09:17:06.478Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "type a full slash command name (e.g. /provider) and press Enter after Tab-fill or Esc-dismiss",
+        "benefit": "the command is intercepted by its handler instead of being sent to the LLM as plain text"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: parse_slash_command performs a registry-driven catch BEFORE the NotASlashCommand fallback: the first whitespace-delimited token of the trimmed text must start with '/' and its name (token minus '/'), case-insensitive, must match a SlashCommandAction.name() in the SLASH_COMMANDS registry. Match requires the trimmed text to be EXACTLY that token (no arguments).",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:54:36.298Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: The registry catch returns a new variant SlashCommandParse::BareCommand(SlashCommandAction) carrying the matched action. Existing family branches (/model, /thinking …, /role …, /schedule, /loop, /continue, /goal, /update, /mux) are evaluated first and take precedence; the registry catch only runs for text no existing branch recognized.",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:54:39.051Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: handle_input_submitted routes SlashCommandParse::BareCommand(action) by calling the existing handle_slash_command(action) (the same handler the popup path uses — single source of truth) and RETURNS immediately: no backend.send_input, no persistence_add_history (RPC-022 rule), no pending-input draft clear.",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:54:49.693Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: Exact-match-only semantics. A registered name with trailing arguments (e.g. '/provider openai'), an unknown name ('/unknown'), a bare '/' with empty name, or non-slash prose all still parse to NotASlashCommand and fall through to backend.send_input — the legacy behaviour pinned by slash_command_wiring_rpc022.rs and provider_settings_dispatch_rpc054.rs ('/providers' is NOT a command) is unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:54:52.234Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Tab-fill then Enter: type '/provide' (popup open, provider highlighted), press Tab → buffer becomes '/provider' and popup closes; press Enter → ProviderSettingsView opens; backend.send_input is never called",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:54:54.458Z"
+        },
+        {
+          "id": 1,
+          "text": "Esc-dismiss then Enter: type '/provider' (popup open), press Esc → popup closes with buffer unchanged; press Enter → ProviderSettingsView opens; backend.send_input is never called",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:54:57.777Z"
+        },
+        {
+          "id": 2,
+          "text": "Every bare-only registered command intercepted on typed submit: submitting /help, /clear, /quit, /resume, /search, /debug, /compact, /isolation, /blocklist, /detach, /merge-worktree (popup closed at submit) routes to the same handler as a popup pick — no command is sent to the LLM",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:55:01.225Z"
+        },
+        {
+          "id": 3,
+          "text": "No regression — arguments flow to the LLM: submitting '/provider openai' (registered name plus a trailing argument) is NOT a bare command and is sent to the LLM via backend.send_input, exactly like before the fix",
+          "deleted": false,
+          "createdAt": "2026-09-03T07:55:48.396Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 3
     },
     "BUG-170": {
       "id": "BUG-170",
