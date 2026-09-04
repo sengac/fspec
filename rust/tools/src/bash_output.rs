@@ -303,9 +303,8 @@ mod tests {
 
     #[test]
     fn interleaved_streams_split_by_marker_prefix() {
-        let (out, err) = split_merged_output(
-            &format!("s1\n{STDERR_MARKER}e1\ns2\n{STDERR_MARKER}e2\ns3"),
-        );
+        let (out, err) =
+            split_merged_output(&format!("s1\n{STDERR_MARKER}e1\ns2\n{STDERR_MARKER}e2\ns3"));
         assert_eq!(out, "s1\ns2\ns3");
         assert_eq!(err, "e1\ne2");
     }

@@ -1,0 +1,176 @@
+{
+  "scenarios": [
+    {
+      "name": "A profile model resolves its stored maxImages value",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
+          "lines": "30-49",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile model with maxImages 0 resolves the no-vision sentinel",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
+          "lines": "54-73",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile model without a maxImages key resolves absent",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
+          "lines": "78-96",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A non-profile model resolves absent",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
+          "lines": "101-117",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mid-session switch re-resolves to the new profile's value",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
+          "lines": "122-148",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1374,
+                1375,
+                1376,
+                1377,
+                1378,
+                1379,
+                1380,
+                1381,
+                1382,
+                1383,
+                1384
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov144_max_images_resolution.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/model_resolution.rs",
+      "rust/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 182
+  }
+}

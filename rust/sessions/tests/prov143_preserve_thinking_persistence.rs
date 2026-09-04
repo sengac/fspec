@@ -32,6 +32,7 @@ fn def_preserve(base_url: &str, api_key: &str, preserve_thinking: Option<bool>) 
         streaming: None,
         auto_continue: None,
         preserve_thinking,
+        max_images: None,
     }
 }
 

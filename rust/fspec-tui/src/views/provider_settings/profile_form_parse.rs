@@ -62,3 +62,17 @@ pub(super) fn parse_auto_continue(raw: &str) -> Result<Option<u32>, String> {
         }),
     }
 }
+
+/// PROV-144: parse the Max Images form field's raw string into the wire value.
+/// Empty ⇒ `None` (absent on disk ⇒ the tool-layer default of 4); `"0"` ⇒
+/// `Some(0)` (the no-vision sentinel — the Read tool fails image reads);
+/// `"n"` (n >= 1) ⇒ `Some(n)` (a single Read result returns at most n images).
+/// Non-numeric input is an `Err` with a user-facing hint.
+pub(super) fn parse_max_images(raw: &str) -> Result<Option<u32>, String> {
+    match raw.trim() {
+        "" => Ok(None),
+        text => text.parse::<u32>().map(Some).map_err(|_| {
+            "Max Images must be a whole number (0 = no vision, 4 = default)".to_string()
+        }),
+    }
+}

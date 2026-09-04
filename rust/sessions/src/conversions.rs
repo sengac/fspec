@@ -186,5 +186,7 @@ pub fn profile_def_from_wire(
         auto_continue: wire.auto_continue,
         // PROV-143: carry the per-profile preserve-thinking toggle through.
         preserve_thinking: wire.preserve_thinking,
+        // PROV-144: carry the per-profile Max Images limit through.
+        max_images: wire.max_images,
     }
 }

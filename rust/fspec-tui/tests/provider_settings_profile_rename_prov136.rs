@@ -61,6 +61,7 @@ fn stored_def() -> ProfileDefinition {
         streaming: None,
         auto_continue: None,
         preserve_thinking: None,
+        max_images: None,
     }
 }
 

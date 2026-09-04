@@ -3023,7 +3023,8 @@ impl FspecBackend for MockBackend {
         &self,
         session_id: SessionId,
     ) -> Result<Option<ExecStdinRequest>> {
-        self.get_exec_stdin_request_calls.fetch_add(1, Ordering::SeqCst);
+        self.get_exec_stdin_request_calls
+            .fetch_add(1, Ordering::SeqCst);
         if let Some(msg) = self
             .get_exec_stdin_request_error
             .lock()

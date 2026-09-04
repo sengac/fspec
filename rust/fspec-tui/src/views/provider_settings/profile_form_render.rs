@@ -59,6 +59,8 @@ fn placeholder_for(idx: usize) -> &'static str {
         4 => "80% or 200000",
         // PROV-142: the Auto-Continue field (idx 6) — 0 = off, n = budget.
         6 => "0 (off) or n (budget)",
+        // PROV-144: the Max Images field (idx 8) — 0 = no vision, 4 = default.
+        8 => "4 (default), 0 = no vision",
         _ => "(empty)",
     }
 }

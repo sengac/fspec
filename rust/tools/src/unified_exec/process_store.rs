@@ -43,7 +43,9 @@ static OUTPUT_CLOCK_EPOCH: once_cell::sync::Lazy<TokioInstant> =
 /// Saturates at `u64::MAX` microseconds (≈584,942 millennia) — no panic
 /// path, per workspace lint policy.
 pub fn now_micros() -> u64 {
-    let micros = TokioInstant::now().duration_since(*OUTPUT_CLOCK_EPOCH).as_micros();
+    let micros = TokioInstant::now()
+        .duration_since(*OUTPUT_CLOCK_EPOCH)
+        .as_micros();
     micros.min(u64::MAX as u128) as u64
 }
 

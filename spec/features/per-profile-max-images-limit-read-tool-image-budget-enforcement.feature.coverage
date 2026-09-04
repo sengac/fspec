@@ -1,0 +1,344 @@
+{
+  "scenarios": [
+    {
+      "name": "A no-vision profile fails image-file reads with a clear message",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "36-94",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read.rs",
+              "lines": [
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A no-vision profile forces PDF reads to text mode",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "99-131",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A PDF read exceeding the image budget fails with the limit message",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "136-186",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read_image_budget.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A PDF read within the image budget succeeds",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "191-242",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read_image_budget.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A PDF images-mode read exceeding the budget fails",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "247-281",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read_image_budget.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mid-session model switch updates the image budget",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "286-325",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/model_capabilities.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "383-405",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1377,
+                1378,
+                1379,
+                1380,
+                1381,
+                1382,
+                1383,
+                1384
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A non-profile session resolves the default budget of 4",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/prov144_read_image_budget.rs",
+          "lines": "330-378",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read_image_budget.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/prov144_read_image_budget.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/read.rs",
+      "rust/tools/src/read_image_budget.rs",
+      "rust/tools/src/model_capabilities.rs",
+      "rust/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 544
+  }
+}

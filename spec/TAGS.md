@@ -648,6 +648,7 @@ Tags tracking development status of features.
 | `@mux-007` | Work unit MUX-007 — mux focus flash settled final frame: after the 350ms bottom-to-top scan (MUX-006) elapses, the focused pane keeps the final frame painted — a 1-row-high dark-purple bar across the pane's top row (MUX-008) — until focus moves or mux is disabled; live-only, never persists the tick gate open |
 | `@partial` | Partially implemented feature - work in progress |
 | `@prov-143` | Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them) |
+| `@prov-144` | Work unit PROV-144 — per-profile Max Images limit: numeric field on the OpenAI profile form (absent => default 4, 0 = no vision), persisted as maxImages, resolved into the tool-layer session budget registry, and enforced in the Read tool image/PDF paths |
 | `@refactor` | Code refactoring and technical improvements |
 | `@refactoring` | Code that needs refactoring |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
@@ -760,4 +761,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-03T07:58:17.216Z_
+_Last updated: 2026-09-04T07:28:01.328Z_

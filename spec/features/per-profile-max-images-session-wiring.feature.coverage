@@ -1,0 +1,134 @@
+{
+  "scenarios": [
+    {
+      "name": "Session creation and model-switch set-sites register the max-images budget",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "110-130",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "133-152",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1041,
+                1042,
+                1043,
+                1044
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "155-174",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1377,
+                1378,
+                1379,
+                1380,
+                1381,
+                1382,
+                1383,
+                1384
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "177-200",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/session_bindings.rs",
+              "lines": [
+                2067,
+                2068,
+                2069,
+                2070
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "203-223",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The max-images resolver is defined once and not bridged into env vars",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "231-268",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov144_max_images_wiring_shape.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_creation_helper.rs",
+      "rust/sessions/src/session_manager.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/napi/src/session_bindings.rs",
+      "rust/sessions/src/model_resolution.rs"
+    ],
+    "totalLinesCovered": 182
+  }
+}

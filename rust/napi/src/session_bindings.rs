@@ -2061,6 +2061,15 @@ pub async fn session_set_model(
                 registry_uuid,
                 codelet_sessions::model_resolution::resolve_model_vision(inner.provider_manager()),
             );
+            // PROV-144: update the per-profile image budget alongside the
+            // vision entry (absent => None => default 4), sourced from the
+            // shared resolver so the NAPI model-switch cannot drift.
+            codelet_tools::model_capabilities::set_session_model_max_images(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_profile_max_images(
+                    inner.provider_manager(),
+                ),
+            );
 
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
             let session_uuid = Uuid::parse_str(&session_id)
@@ -2241,6 +2250,15 @@ pub async fn session_set_model_profile(
             codelet_tools::model_capabilities::set_session_model_vision(
                 registry_uuid,
                 codelet_sessions::model_resolution::resolve_model_vision(inner.provider_manager()),
+            );
+            // PROV-144: update the per-profile image budget alongside the
+            // vision entry (absent => None => default 4), sourced from the
+            // shared resolver so the NAPI profile-switch cannot drift.
+            codelet_tools::model_capabilities::set_session_model_max_images(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_profile_max_images(
+                    inner.provider_manager(),
+                ),
             );
 
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model

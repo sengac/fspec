@@ -6,7 +6,8 @@ Feature: Profile preserve-thinking form (PROV-143)
   """
   architecture:
   - The toggle is a boolean field (like Streaming) rendered as Enabled/Disabled,
-  the 8th (last) form field after Auto-Continue.
+  the 8th form field after Auto-Continue. (PROV-144 later appends the numeric
+  "Max Images" field as the 9th/last entry after it.)
   - New profiles default to preserve-thinking OFF.
   - The value persists on-disk as "preserveThinking": true|false and
   round-trips through ProfileDefinition.preserve_thinking.
@@ -20,7 +21,7 @@ Feature: Profile preserve-thinking form (PROV-143)
   Scenario: The Preserve Thinking toggle appears after Auto-Continue
     Given the profile form field list is rendered
     When the form is inspected
-    Then "Preserve Thinking" is the 8th (last) field
+    Then "Preserve Thinking" is the 8th field, directly after Auto-Continue
     And the focused-field routing treats it as a boolean toggle like Streaming
 
   Scenario: A new profile defaults Preserve Thinking to disabled

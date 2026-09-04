@@ -48,6 +48,7 @@ fn profile_def(base_url: &str) -> ProfileDefinition {
         streaming: None,
         auto_continue: None,
         preserve_thinking: None,
+        max_images: None,
     }
 }
 

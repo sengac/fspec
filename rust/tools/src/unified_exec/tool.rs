@@ -9,8 +9,8 @@ use super::process_store::{global_store, ProcessEntry};
 use super::reaper::{generate_session_id, spawn_reaper};
 use super::spawning::{spawn_pipe_process, spawn_pty_process};
 use super::types::{
-    strip_stderr_markers, ExecCommand, SessionListEntry, STILL_RUNNING_STEERING,
-    UnifiedExecArgs, UnifiedExecResult,
+    strip_stderr_markers, ExecCommand, SessionListEntry, UnifiedExecArgs, UnifiedExecResult,
+    STILL_RUNNING_STEERING,
 };
 use super::{clamp_poll_yield_time, clamp_yield_time, DEFAULT_YIELD_TIME_MS};
 use crate::blocklist::check_bash_command;
@@ -170,7 +170,6 @@ impl UnifiedExecTool {
         })?;
         let command = ExecCommand::from_value(command_val)?;
 
-
         let tty = params
             .get("tty")
             .and_then(crate::facade::param_extract::value_as_bool_lenient)
@@ -212,9 +211,13 @@ impl UnifiedExecTool {
             };
 
         let start = Instant::now();
-        let output =
-            collect_output_until_deadline_interruptible(&output_buffer, &output_notify, yield_time_ms, &self.interrupt())
-                .await;
+        let output = collect_output_until_deadline_interruptible(
+            &output_buffer,
+            &output_notify,
+            yield_time_ms,
+            &self.interrupt(),
+        )
+        .await;
 
         // Check if process exited
         let exit_status = child.try_wait().map_err(|e| ToolError::Execution {
@@ -370,13 +373,14 @@ impl UnifiedExecTool {
                 })?;
 
         let store = global_store();
-        let killed = store
-            .close_session(session_id)
-            .await
-            .map_err(|message| ToolError::Validation {
-                tool: "unified_exec",
-                message,
-            })?;
+        let killed =
+            store
+                .close_session(session_id)
+                .await
+                .map_err(|message| ToolError::Validation {
+                    tool: "unified_exec",
+                    message,
+                })?;
         if !killed {
             return Err(ToolError::Validation {
                 tool: "unified_exec",
@@ -441,9 +445,13 @@ pub async fn poll_session_interruptible(
             })?;
 
     let start = Instant::now();
-    let output_bytes =
-        collect_output_until_deadline_interruptible(&output_buffer, &output_notify, yield_time_ms, interrupt)
-            .await;
+    let output_bytes = collect_output_until_deadline_interruptible(
+        &output_buffer,
+        &output_notify,
+        yield_time_ms,
+        interrupt,
+    )
+    .await;
     let output = String::from_utf8_lossy(&output_bytes).into_owned();
     let clean = strip_stderr_markers(&output);
     let raw = output_bytes.clone();

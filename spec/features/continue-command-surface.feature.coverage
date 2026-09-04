@@ -2203,10 +2203,6 @@
       ]
     },
     {
-      "name": "The CLI repl handles /continue before the provider-switch catch-all",
-      "testMappings": []
-    },
-    {
       "name": "The status bar shows an auto-continue indicator while armed",
       "testMappings": [
         {
@@ -2257,9 +2253,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
+    "totalScenarios": 7,
     "coveredScenarios": 7,
-    "coveragePercent": 88,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/cont002_continue_command_test.rs"
     ],

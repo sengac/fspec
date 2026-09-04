@@ -2884,23 +2884,6 @@
       ]
     },
     {
-      "name": "Existing TS AgentView chrome files are untouched",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
-          "lines": "265-277",
-          "implMappings": [
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                1
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
       "testMappings": [
         {
@@ -3199,8 +3182,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 12,
-    "coveredScenarios": 12,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/source_shape_rpc018.rs"

@@ -52,6 +52,7 @@ pub mod pdf;
 pub mod pre_tool_hook;
 pub mod profile;
 pub mod read;
+pub mod read_image_budget; // PROV-144: per-session Read-tool image-budget enforcement
 pub mod request_user_input;
 pub mod schedule;
 pub mod search_engine;

@@ -1374,6 +1374,13 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 uuid,
                 crate::model_resolution::resolve_model_vision(pm),
             );
+            // PROV-144: update the per-profile image budget alongside the
+            // vision entry (absent => None => default 4), sourced from the
+            // shared resolver so a mid-session switch cannot drift.
+            codelet_tools::model_capabilities::set_session_model_max_images(
+                uuid,
+                crate::model_resolution::resolve_profile_max_images(pm),
+            );
             resolved
         };
 

@@ -502,6 +502,14 @@ pub struct ProfileDefinition {
     /// as a flat `Option<bool>` like `streaming` so the `napi(object)`
     /// projection stays a plain struct.
     pub preserve_thinking: Option<bool>,
+    /// PROV-144: per-profile Max Images limit for the Read tool's image
+    /// budget. `None` (key absent on disk) resolves to the default of 4
+    /// images per tool result; `Some(0)` means the profile's model has no
+    /// vision (the Read tool fails image reads); `Some(n)` with `n >= 1`
+    /// caps the images a single Read tool result may return at `n`.
+    /// Carried as a flat `Option<u32>` like `auto_continue` so the
+    /// `napi(object)` projection stays a plain struct.
+    pub max_images: Option<u32>,
 }
 
 impl ProfileDefinition {
@@ -527,6 +535,16 @@ impl ProfileDefinition {
     /// thinking blocks are stripped from the outgoing chat history.
     pub fn preserve_thinking_enabled(&self) -> bool {
         self.preserve_thinking.unwrap_or(false)
+    }
+
+    /// PROV-144: canonical "effective Max Images limit" predicate — the
+    /// single source of truth for the "absent ⇒ default 4" semantics.
+    /// Returns the default of 4 when [`max_images`](Self::max_images) is
+    /// `None` (key absent on disk, including pre-existing profiles), and the
+    /// stored value `n` for `Some(n)` — including the explicit `Some(0)`
+    /// no-vision sentinel (the Read tool fails image reads at 0).
+    pub fn max_images_limit(&self) -> u32 {
+        self.max_images.unwrap_or(4)
     }
 }
 

@@ -78,6 +78,7 @@ fn multi_provider_view() -> ProviderSettingsView {
             streaming: None,
             auto_continue: None,
             preserve_thinking: None,
+            max_images: None,
         },
     );
     view.set_profile_configs(configs);

@@ -1034,6 +1034,14 @@ impl SessionManager {
             uuid,
             crate::model_resolution::resolve_model_vision(&provider_manager),
         );
+        // PROV-144: store the resolved per-profile image budget alongside the
+        // vision entry (absent => None => the Read tool applies its default
+        // of 4), sourced from the shared resolver so this create path cannot
+        // drift.
+        codelet_tools::model_capabilities::set_session_model_max_images(
+            uuid,
+            crate::model_resolution::resolve_profile_max_images(&provider_manager),
+        );
 
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
@@ -1268,6 +1276,8 @@ impl SessionManager {
             codelet_tools::unregister_bash_abort_flag(uuid);
             codelet_tools::unregister_footer_cwd(uuid);
             codelet_tools::model_capabilities::clear_session_model_vision(uuid);
+            // PROV-144: clear the image-budget entry alongside the vision entry.
+            codelet_tools::model_capabilities::clear_session_model_max_images(uuid);
             codelet_tools::broadcast_metadata_update();
 
             // PARITY FIX: Do NOT delete the session manifest from disk.

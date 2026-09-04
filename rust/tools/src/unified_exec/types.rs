@@ -148,7 +148,10 @@ pub fn strip_stderr_markers(merged: &str) -> String {
         if i > 0 {
             out.push('\n');
         }
-        out.push_str(line.strip_prefix(crate::bash_output::STDERR_MARKER).unwrap_or(line));
+        out.push_str(
+            line.strip_prefix(crate::bash_output::STDERR_MARKER)
+                .unwrap_or(line),
+        );
     }
     if merged.ends_with('\n') {
         out.push('\n');

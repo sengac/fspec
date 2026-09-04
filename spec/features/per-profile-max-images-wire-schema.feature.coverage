@@ -1,0 +1,88 @@
+{
+  "scenarios": [
+    {
+      "name": "The maxImages value round-trips through wire and disk",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/prov144_max_images_wire.rs",
+          "lines": "34-69",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/lib.rs",
+              "lines": [
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing maxImages key resolves to the default 4",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/prov144_max_images_wire.rs",
+          "lines": "84-104",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/lib.rs",
+              "lines": [
+                546,
+                547,
+                548
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-types/tests/prov144_max_images_wire.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/lib.rs"
+    ],
+    "totalLinesCovered": 97
+  }
+}

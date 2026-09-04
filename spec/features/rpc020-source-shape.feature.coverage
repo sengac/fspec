@@ -2931,23 +2931,6 @@
       ]
     },
     {
-      "name": "Existing TS slash + file search components are untouched",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
-          "lines": "227-240",
-          "implMappings": [
-            {
-              "file": "src/tui/components/SlashCommandPalette.tsx",
-              "lines": [
-                1
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "SlashCommandAction enum contains no Providers variant",
       "testMappings": [
         {
@@ -3037,8 +3020,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 15,
-    "coveredScenarios": 15,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/source_shape_rpc020.rs"

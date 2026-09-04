@@ -2410,6 +2410,10 @@
           "description": "Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them)"
         },
         {
+          "name": "@prov-144",
+          "description": "Work unit PROV-144 — per-profile Max Images limit: numeric field on the OpenAI profile form (absent => default 4, 0 = no vision), persisted as maxImages, resolved into the tool-layer session budget registry, and enforced in the Read tool image/PDF paths"
+        },
+        {
           "name": "@refactor",
           "description": "Code refactoring and technical improvements"
         },
@@ -2962,7 +2966,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-03T07:58:17.216Z",
+    "lastUpdated": "2026-09-04T07:28:01.328Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

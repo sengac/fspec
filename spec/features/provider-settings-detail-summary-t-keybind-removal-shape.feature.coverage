@@ -283,82 +283,11 @@
           ]
         }
       ]
-    },
-    {
-      "name": "TS reference confirms no `t` keybind exists for TestProviderConnection",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs",
-          "lines": "302-345",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
-            }
-          ]
-        }
-      ]
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/rpc154_summary_t_keybind_removal_shape.rs"

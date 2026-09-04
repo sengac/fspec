@@ -31,6 +31,7 @@ fn def_auto_continue(base_url: &str, api_key: &str, auto_continue: Option<u32>) 
         streaming: None,
         auto_continue,
         preserve_thinking: None,
+        max_images: None,
     }
 }
 

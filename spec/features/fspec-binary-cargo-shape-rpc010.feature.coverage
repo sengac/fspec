@@ -922,63 +922,6 @@
       ]
     },
     {
-      "name": "package.json declares the build:rust:fspec script",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "764-792",
-          "implMappings": [
-            {
-              "file": "package.json",
-              "lines": [
-                15,
-                16,
-                17
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "npm run build:rust:fspec produces dist/fspec for parity with the TS layout",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "794-824",
-          "implMappings": [
-            {
-              "file": "package.json",
-              "lines": [
-                15,
-                16,
-                17
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "npm bin entry remains on the TS shim (no npm install path swap in this card)",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "826-857",
-          "implMappings": [
-            {
-              "file": "package.json",
-              "lines": [
-                9,
-                10,
-                11
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "--workspace defaults to CWD when omitted",
       "testMappings": [
         {
@@ -1300,63 +1243,6 @@
       ]
     },
     {
-      "name": "Existing Vitest smoke at napi-workunitinfo-shape.test.ts remains green",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "859-884",
-          "implMappings": [
-            {
-              "file": "rust/fspec/Cargo.toml",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Existing cargo test suites for RPC-005..009 remain green",
       "testMappings": [
         {
@@ -1415,8 +1301,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 22,
-    "coveredScenarios": 22,
+    "totalScenarios": 18,
+    "coveredScenarios": 18,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec/tests/cargo_shape.rs"

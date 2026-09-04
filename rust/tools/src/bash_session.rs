@@ -225,7 +225,6 @@ pub(crate) async fn abort_bash_session(exec_session: &str) {
     abort_exec_session(exec_session).await;
 }
 
-
 /// UI stream destination for a delegated Bash command (mirrors the
 /// pre-P4 `StdoutStreamMode` split): the `Tool` impl streams stdout
 /// AND stderr (red) via tool progress; the streaming callback path
@@ -296,12 +295,10 @@ pub(crate) async fn run_bash_session(
         stream_chunk(&ui, session_id, &first.merged_so_far);
         return Ok(first.result);
     }
-    let exec_session = first
-        .exec_session
-        .ok_or_else(|| ToolError::Execution {
-            tool: "bash",
-            message: "delegated exec session lost".to_string(),
-        })?;
+    let exec_session = first.exec_session.ok_or_else(|| ToolError::Execution {
+        tool: "bash",
+        message: "delegated exec session lost".to_string(),
+    })?;
     let mut merged = first.merged_so_far;
     stream_chunk(&ui, session_id, &merged);
 
@@ -313,7 +310,8 @@ pub(crate) async fn run_bash_session(
                 message: ABORT_MESSAGE.to_string(),
             });
         }
-        let (chunk, code) = drain_bash_output(session_id, &exec_session, BASH_POLL_YIELD_MS).await?;
+        let (chunk, code) =
+            drain_bash_output(session_id, &exec_session, BASH_POLL_YIELD_MS).await?;
         if !chunk.is_empty() {
             stream_chunk(&ui, session_id, &chunk);
             merged.extend_from_slice(&chunk);

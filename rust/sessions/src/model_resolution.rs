@@ -64,6 +64,41 @@ pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
         .unwrap_or(false)
 }
 
+/// PROV-144: resolve the active profile's stored `maxImages` (image budget
+/// for the Read tool), for the tool-layer session capability registry.
+///
+/// Resolution: for a profile model selection (composite
+/// `openai:<profile>/<model>`), read the profile's `maxImages` from
+/// `fspec-config.json` via [`crate::profile_sections::load_local_server_profiles`]:
+///
+/// * explicit `maxImages: n` (including the `Some(0)` no-vision sentinel)
+///   -> `Some(n)`
+/// * key absent (including pre-existing profiles) -> `None`
+///   (the tool layer applies the effective default of 4)
+///
+/// Non-profile selections (cloud / custom / codex) have no profile behind
+/// them and resolve to `None` — the tool layer then applies the uniform
+/// default of 4. The resolution follows the model on every re-resolution
+/// (mid-session switches), mirroring [`resolve_model_vision`]'s contract.
+pub fn resolve_profile_max_images(pm: &ProviderManager) -> Option<u32> {
+    let composite = pm.selected_model_string()?;
+
+    // Profile selection: "provider:profile/model" (colon before the slash).
+    let (colon, slash) = (composite.find(':'), composite.find('/'));
+    let (Some(colon), Some(slash)) = (colon, slash) else {
+        return None; // not a profile selection — no budget to resolve
+    };
+    if colon >= slash {
+        return None;
+    }
+    let profile_name = &composite[colon + 1..slash];
+
+    crate::profile_sections::load_local_server_profiles()
+        .into_iter()
+        .find(|p| p.name == profile_name)
+        .and_then(|p| p.max_images)
+}
+
 /// Limits resolved for a selected model, read back from the provider manager
 /// after the selection is applied. Values are already clamped by the provider's
 /// `ModelLimitsResolver`.

@@ -8,11 +8,22 @@
 //! and use only the existing `ReadArgs`/`ReadTool` API, so they compile
 //! against pre-fix code and fail at runtime (red phase).
 
+use codelet_tools::model_capabilities::clear_all_model_capabilities;
 use codelet_tools::read::{ReadArgs, ReadTool};
 use lopdf::{dictionary, Document, Object, Stream};
 use rig::tool::Tool;
 use serial_test::serial;
 use uuid::Uuid;
+
+/// PROV-144: these scenarios exercise the BUG-168 page-cap mechanic on the
+/// default `Uuid::nil()` session. Register a non-binding image budget so the
+/// page cap — not the per-profile image budget (default 4 for unregistered
+/// sessions) — stays the binding constraint. Clears the registry first so no
+/// stale entry from another test in this process leaks in.
+fn nil_session_non_binding_image_budget() {
+    clear_all_model_capabilities();
+    codelet_tools::model_capabilities::set_session_model_max_images(Uuid::nil(), Some(u32::MAX));
+}
 
 /// Feature: spec/features/add-pdf-reading-support-to-read-tool.feature
 #[tokio::test]
@@ -248,6 +259,10 @@ async fn scenario_default_page_cap_bounds_an_unbounded_pdf_read() {
     // @step And CODELET_MAX_PDF_PAGES is at its default value
     std::env::remove_var("CODELET_MAX_PDF_PAGES");
 
+    // PROV-144: this scenario isolates the BUG-168 page-cap mechanic, so the
+    // session must not be bounded by the default 4-image budget.
+    nil_session_non_binding_image_budget();
+
     // @step When the read tool is called with pdf_mode="visual" and no offset or limit
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
@@ -302,6 +317,10 @@ async fn scenario_configurable_page_cap_via_environment_variable() {
 
     // @step And CODELET_MAX_PDF_PAGES is set to 5
     std::env::set_var("CODELET_MAX_PDF_PAGES", "5");
+
+    // PROV-144: this scenario isolates the BUG-168 page-cap mechanic, so the
+    // session must not be bounded by the default 4-image budget.
+    nil_session_non_binding_image_budget();
 
     // @step When the read tool is called with pdf_mode="visual" and no offset or limit
     let read_tool = ReadTool::new(Uuid::nil());

@@ -116,6 +116,14 @@ pub struct LocalServerProfile {
     /// sent back to the LLM (the default); `Some(true)` preserves them.
     #[serde(rename = "preserveThinking", default)]
     pub preserve_thinking: Option<bool>,
+    /// PROV-144: per-profile Max Images limit for the Read tool's image
+    /// budget. `None` (absent, including pre-existing profiles) resolves to
+    /// the tool-layer default of 4; `Some(0)` is the explicit no-vision
+    /// sentinel; `Some(n)` with `n >= 1` caps a single Read result at `n`
+    /// images. Lenient u32 deserialization so a TS-written float (e.g. `2.0`)
+    /// saturates rather than dropping the whole profile.
+    #[serde(rename = "maxImages", default, deserialize_with = "de_opt_u32_lenient")]
+    pub max_images: Option<u32>,
 }
 
 /// A custom model declared on a profile (`profile.customModels[]`).

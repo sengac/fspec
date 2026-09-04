@@ -172,6 +172,14 @@ pub async fn create_background_session_inner(
         uuid,
         crate::model_resolution::resolve_model_vision(&provider_manager),
     );
+    // PROV-144: store the resolved per-profile image budget (absent => None so
+    // the Read tool applies its default of 4) in the tool-layer registry
+    // alongside the vision entry, sourced from the shared resolver so the
+    // create path cannot drift.
+    codelet_tools::model_capabilities::set_session_model_max_images(
+        uuid,
+        crate::model_resolution::resolve_profile_max_images(&provider_manager),
+    );
 
     let initial_context_window = resolved.context_window;
     let initial_max_output_tokens = resolved.max_output_tokens;

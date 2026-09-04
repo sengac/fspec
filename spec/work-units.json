@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-03T09:17:06.478Z",
+    "lastUpdated": "2026-09-04T08:45:21.532Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -67,7 +67,7 @@
     "PATCH": 2,
     "PAUSE": 1,
     "PERF": 2,
-    "PROV": 143,
+    "PROV": 144,
     "REFAC": 18,
     "REMIND": 17,
     "RES": 22,
@@ -1682,7 +1682,8 @@
       "BUG-172",
       "BUG-171",
       "BUG-168",
-      "BUG-169"
+      "BUG-169",
+      "PROV-144"
     ],
     "blocked": [
       "QUERY-001",
@@ -228867,6 +228868,151 @@
       ],
       "nextExampleId": 4,
       "estimate": 5
+    },
+    "PROV-144": {
+      "id": "PROV-144",
+      "title": "Per-profile Max Images limit + Read tool image budget enforcement",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-04T03:06:34.104Z",
+      "updatedAt": "2026-09-04T08:45:21.532Z",
+      "description": "Add a new 'Max Images' field (default 4, 0 = no vision) to the /provider OpenAI profile form, persist it per profile in fspec-config.json, resolve it into the tool-layer capability registry at session creation/model switch, and enforce it in the Read tool: reads that would return more images than the limit fail with a tool error message naming the limit, and a 0-image profile hard-fails image reads as a no-vision model.",
+      "epic": "provider-resilience",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-144/PROV-144-research.md",
+        "spec/attachments/PROV-144/ast-research-PROV-144.md"
+      ],
+      "userStory": {
+        "role": "user configuring an OpenAI API profile",
+        "action": "set a Max Images limit in the /provider profile form",
+        "benefit": "the Read tool enforces how many images a tool call may return, and profiles for no-vision models (0) make image reads fail with a clear message"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-04T03:07:45.618Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-04T04:12:24.156Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-04T06:00:00.160Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-04T08:21:45.656Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-04T08:45:21.532Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /provider OpenAI profile create/edit form gains a new 'Max Images' numeric field appended after Preserve Thinking (9th field). Empty means 'use default 4', '0' means no vision, any positive integer n is a cap of n images per Read tool result. Non-numeric input rejects the save with a hint.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:07:49.292Z"
+        },
+        {
+          "id": 1,
+          "text": "The field persists as a single flat Option<u32> 'maxImages' on the wire ProfileDefinition and on-disk profile (fspec-config.json providers.openai.profiles.<name>), written by the existing read-modify-write save/rename path and removed when the form field is empty (absent key => default 4). A canonical predicate resolves the effective limit: absent => 4, Some(0) => 0, Some(n) => n.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:07:53.224Z"
+        },
+        {
+          "id": 2,
+          "text": "The effective image budget for a session is resolved from the profile's maxImages when the session's model is a profile model (openai:<profile>/<model>), and stored in a tool-layer session capability registry at session creation and on every mid-session model switch (all four set-sites: shared create helper, isolated-session create, handle set_model, NAPI session_set_model/session_set_model_profile). Non-profile sessions and absent registry entries resolve to the default of 4.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:07:59.965Z"
+        },
+        {
+          "id": 3,
+          "text": "The Read tool enforces the budget at call time in ReadTool::call (the single source of truth consulted by both the rig-native tool and the FileToolFacadeWrapper facade path). When the session budget is 0, any read that would return an image (image file, or PDF visual/images mode) fails the tool call with a message stating that image reading is disabled for this session because the profile is configured with maxImages=0 (no vision), and pointing at text alternatives. When the budget is >= 1, a single image file read always passes; a PDF read that would return more pages/embedded images than the budget fails the tool call with a message naming the limit, the number requested, and how to read fewer (offset/limit) or raise the profile's Max Images setting.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:06.691Z"
+        },
+        {
+          "id": 4,
+          "text": "FAIL the tool call with the limit message — the user's request explicitly asks for 'a failed tool call with the message if it does more than that'. Clamping is not acceptable.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:42.227Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens the /provider view, enters the OpenAI profile edit form, and sees a new 'Max Images' field after Preserve Thinking. An existing profile with no maxImages key shows 4 (the default). The user types 2 and saves; fspec-config.json now stores \"maxImages\": 2 for that profile and re-opening the form shows 2.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:14.187Z"
+        },
+        {
+          "id": 1,
+          "text": "User configures a profile for a text-only local model (e.g. Qwen without vision) and sets Max Images to 0. In a session against that profile, when the agent asks the Read tool to view a screenshot PNG, the tool call fails with a message like 'Image reading is disabled: this profile has Max Images = 0 (no vision model). Use text-based tools instead.' The agent can still read text files normally.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:17.483Z"
+        },
+        {
+          "id": 2,
+          "text": "A session against a profile with Max Images = 2. The agent reads a 10-page PDF in visual mode without specifying a limit; the read would return up to the default 20 pages, which exceeds the budget of 2, so the tool call fails with a message naming the limit (2), the requested page count, and telling the agent to use offset/limit to read at most 2 pages at a time or raise the profile's Max Images setting. A retry with limit=2 succeeds and returns exactly 2 page images.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:20.898Z"
+        },
+        {
+          "id": 3,
+          "text": "A session against a profile with Max Images = 4 (explicit). The agent reads a single small PNG screenshot: the read returns exactly 1 image, which is within the budget of 4, so the call succeeds with the base64 image content. A read of a 3-page PDF in visual mode also succeeds (3 <= 4).",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:24.770Z"
+        },
+        {
+          "id": 4,
+          "text": "A session starts against profile 'vision' (Max Images = 8) and later the user switches the model mid-session to profile 'no-vision' (Max Images = 0). From that switch onward, the same Read tool that previously returned page images now fails image reads with the no-vision message, without recreating the session.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:27.851Z"
+        },
+        {
+          "id": 5,
+          "text": "A session created with a cloud model (e.g. anthropic/claude) has no profile behind it; the image budget resolves to the default of 4. Reading a 5-page PDF in visual mode fails with the over-budget message; reading a single JPEG succeeds. The default-4 behavior applies whether or not the model is vision-capable (vision=false still degrades PDFs to text via the existing BUG-168 fallback, but the count budget is independent of that).",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:31.744Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: When a PDF read would return more pages/embedded images than the budget, should the tool call FAIL with the limit message (your literal ask), or CLAMP to the budget pages and append a 'continue with offset=N' truncation notice (the existing BUG-168 precedent for PDF pages)? I'm currently spec'ing it as FAIL.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:34.701Z",
+          "selected": true,
+          "answered": true,
+          "answer": "FAIL the tool call with the limit message — the user's request explicitly asks for 'a failed tool call with the message if it does more than that'. Clamping is not acceptable."
+        }
+      ],
+      "nextQuestionId": 1,
+      "assumptions": [
+        "An absent maxImages key on disk (including on pre-existing profiles) resolves to the default 4 everywhere — form prefill, persistence round-trip, and the Read tool budget — so disk and form always agree. Only an explicit 0 means no vision."
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New field flows through the established PROV-139/142/143 path: wire ProfileDefinition (rust/rpc-types/src/lib.rs) -> profile_def_from_wire (rust/sessions/src/conversions.rs) -> ProfileDef + merge_profile 'maxImages' key (rust/sessions/src/profile_persistence.rs) -> LocalServerProfile deserialization with de_opt_u32_lenient (rust/sessions/src/profile_sections.rs). TUI: 9th PROFILE_FORM_FIELDS entry 'Max Images' (profile_form.rs), parse_max_images in profile_form_parse.rs (empty => None => default 4; non-numeric => Err hint; '0' => Some(0)), placeholder '4 (default), 0 = no vision' at index 8 (profile_form_render.rs), prefill read in profiles_config.rs profile_definition_from_value. Full map in the attached research doc.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:46.505Z"
+        },
+        {
+          "id": 1,
+          "text": "Tool-layer: a sibling session registry (model_capabilities.rs) stores the resolved per-session image budget, populated at all 4 set-sites that call set_session_model_vision (session_creation_helper.rs, session_manager.rs isolated-create, handle_impl.rs set_model, napi/session_bindings.rs x2) and cleared on session destroy alongside the vision entry. Enforcement lives in ReadTool::call (rust/tools/src/read.rs) at the FileType::Image branch and the PDF visual/images branches, consulted by BOTH front doors because FileToolFacadeWrapper delegates to ReadTool::call. maxImages is a tool-layer concern only — it is NOT bridged into OPENAI_* env vars by apply_profile_env_vars. Read.rs is already 456 lines; extract the budget check into a small helper module to stay under the 300-line ceiling.",
+          "deleted": false,
+          "createdAt": "2026-09-04T03:08:52.127Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 8
     }
   }
 }

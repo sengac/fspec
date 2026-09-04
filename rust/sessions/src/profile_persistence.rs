@@ -53,6 +53,13 @@ pub struct ProfileDef {
     /// `Some(_)` is written to disk (as `"preserveThinking": true|false`);
     /// `None` removes the key.
     pub preserve_thinking: Option<bool>,
+    /// PROV-144: per-profile Max Images limit for the Read tool's image
+    /// budget. `None` (key absent) resolves to the tool-layer default of 4;
+    /// `Some(0)` marks a no-vision profile (the Read tool fails image reads);
+    /// `Some(n)` with `n >= 1` caps a single Read result at `n` images. Only
+    /// `Some(_)` is written to disk (as `"maxImages": <n>`, including the
+    /// explicit `0` no-vision sentinel); `None` removes the key.
+    pub max_images: Option<u32>,
 }
 
 /// Canonical openai-only guard predicate — the single source of truth for
@@ -201,6 +208,10 @@ fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
         "preserveThinking",
         def.preserve_thinking.map(Value::from),
     );
+    // PROV-144: write the per-profile Max Images limit when set (including the
+    // explicit `0` no-vision sentinel); `None` removes the key so an absent
+    // `maxImages` continues to resolve to the tool-layer default of 4.
+    set_or_remove(profile, "maxImages", def.max_images.map(Value::from));
 }
 
 /// Path-injectable core of [`save_profile`]. Whole-file read-modify-write that

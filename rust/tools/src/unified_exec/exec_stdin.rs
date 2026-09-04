@@ -79,7 +79,10 @@ static EXEC_STDIN_REQUEST_CALLBACKS: Lazy<SessionRegistry<ExecStdinRequestCallba
 ///
 /// Call with `Some(callback)` before agent execution starts; call with
 /// `None` on cleanup (mirrors `set_tool_progress_callback`).
-pub fn set_exec_stdin_request_callback(session_id: Uuid, callback: Option<ExecStdinRequestCallback>) {
+pub fn set_exec_stdin_request_callback(
+    session_id: Uuid,
+    callback: Option<ExecStdinRequestCallback>,
+) {
     EXEC_STDIN_REQUEST_CALLBACKS.set(session_id, callback);
 }
 
@@ -99,9 +102,8 @@ pub fn emit_exec_stdin_request(agent_session_id: Uuid, request: Option<ExecStdin
 /// Cooldown tracker — per-exec-session last-fire timestamps. The
 /// detector task is the sole writer; the read is a cheap `saturating_sub`.
 type CooldownMap = Lazy<std::sync::RwLock<std::collections::HashMap<String, u64>>>;
-static LAST_FIRE_MS: CooldownMap = Lazy::new(|| {
-    std::sync::RwLock::new(std::collections::HashMap::new())
-});
+static LAST_FIRE_MS: CooldownMap =
+    Lazy::new(|| std::sync::RwLock::new(std::collections::HashMap::new()));
 
 /// Current Unix epoch milliseconds (saturates on clock anomalies — no
 /// panic path, per workspace lint policy).
@@ -117,14 +119,10 @@ fn now_ms() -> u64 {
 /// `SessionRegistry` convention of graceful degradation on poisoning.
 fn cooldown_elapsed(exec_id: &str) -> bool {
     let now = now_ms();
-    LAST_FIRE_MS
-        .read()
-        .ok()
-        .is_none_or(|last| {
-            last.get(exec_id).is_none_or(|&fired| {
-                now.saturating_sub(fired) >= EXEC_STDIN_COOLDOWN_SECS * 1_000
-            })
-        })
+    LAST_FIRE_MS.read().ok().is_none_or(|last| {
+        last.get(exec_id)
+            .is_none_or(|&fired| now.saturating_sub(fired) >= EXEC_STDIN_COOLDOWN_SECS * 1_000)
+    })
 }
 
 /// Record a fire for `exec_id` (no-op when the lock is poisoned).
@@ -167,7 +165,11 @@ fn reset_cooldown(exec_id: &str) {
 /// through `set_exec_stdin_request(None)` → `ExecStdinRequestCleared`.
 /// Before the first fire nothing is ever cleared (nothing to clear),
 /// so the never-fired path stays silent.
-pub fn spawn_exec_stdin_detector(agent_session_id: Uuid, exec_session_id: String, command_display: String) {
+pub fn spawn_exec_stdin_detector(
+    agent_session_id: Uuid,
+    exec_session_id: String,
+    command_display: String,
+) {
     tokio::spawn(async move {
         // True after this exec session has fired at least once — the
         // gate for the clear (BUG-171 rule [4]: "If the detector had
@@ -360,7 +362,10 @@ mod tests {
             let mut last = LAST_FIRE_MS.write().unwrap();
             last.insert("exec-reset".to_string(), now.saturating_sub(10 * 1000));
         }
-        assert!(!cooldown_elapsed("exec-reset"), "cooldown must still apply after a recent fire");
+        assert!(
+            !cooldown_elapsed("exec-reset"),
+            "cooldown must still apply after a recent fire"
+        );
         // …but a non-exit clear (output resumption) resets it, so a
         // fresh quiet period can fire immediately (BUG-171 rule [5]).
         reset_cooldown("exec-reset");

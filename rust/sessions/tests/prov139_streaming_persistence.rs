@@ -31,6 +31,7 @@ fn def_streaming(base_url: &str, api_key: &str, streaming: Option<bool>) -> Prof
         streaming,
         auto_continue: None,
         preserve_thinking: None,
+        max_images: None,
     }
 }
 

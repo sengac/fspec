@@ -59,6 +59,7 @@ fn def(base_url: &str, api_key: &str) -> ProfileDefinition {
         streaming: None,
         auto_continue: None,
         preserve_thinking: None,
+        max_images: None,
     }
 }
 
