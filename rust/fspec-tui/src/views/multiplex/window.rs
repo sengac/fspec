@@ -72,7 +72,10 @@ impl MultiplexLayout {
 
     /// The pane list actually rendered: agent slots beyond the open-session
     /// count are dropped (no blank panes); the remaining panes absorb the
-    /// space.
+    /// space. BUG-174: the list is floored at one pane — an empty
+    /// derivation (all-agent layout, zero sessions) renders a single
+    /// full-width TRANSIENT Board pane instead (see
+    /// `recompute_effective_panes`).
     pub fn effective_panes(&self) -> &[MuxPaneKind] {
         &self.rendered_panes
     }
@@ -230,6 +233,18 @@ impl MultiplexLayout {
             })
             .copied()
             .collect();
+        // BUG-174: floor the rendered list at one pane. When the
+        // derivation is EMPTY (an all-agent layout with zero open
+        // sessions), render a single full-width TRANSIENT Board pane
+        // instead: the grid never collapses to "footer only" and every
+        // key path stays alive (Esc → BUG-165 exit dialog, Shift+Right
+        // → new-agent prompt, Enter → session from the board). The
+        // floor is LIVE-ONLY — `config.panes` is untouched, so the
+        // saved all-agent layout restores verbatim once a session
+        // fills an agent slot.
+        if self.rendered_panes.is_empty() {
+            self.rendered_panes = vec![MuxPaneKind::Board];
+        }
         let n = self.rendered_panes.len().max(1);
         // MUX-006: a window clamp that moves the focus re-arms the flash.
         self.bump_focus(self.focus.min(n - 1));

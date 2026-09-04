@@ -91,6 +91,7 @@ Tags that categorize features by functional area.
 | `@board-visualization` | Kanban board visualization and layout features |
 | `@bootstrap` | Bootstrap documentation and initialization workflows |
 | `@bridge` | Bridge tool features for external platform integration |
+| `@bug-174` | Bug fix work unit BUG-174 — closing the last agent in an all-agent mux layout leaves a blank 0-pane screen (footer only, keys dead). Fix: a transient full-width Board pane stands in for an empty rendered pane list so the grid never collapses to nothing and Esc/Shift+Right stay alive |
 | `@bug-reporting` | Bug reporting and issue submission features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
@@ -761,4 +762,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-04T07:28:01.328Z_
+_Last updated: 2026-09-04T10:31:52.594Z_

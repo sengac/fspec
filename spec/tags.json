@@ -294,6 +294,10 @@
           "description": "Bridge tool features for external platform integration"
         },
         {
+          "name": "@bug-174",
+          "description": "Bug fix work unit BUG-174 — closing the last agent in an all-agent mux layout leaves a blank 0-pane screen (footer only, keys dead). Fix: a transient full-width Board pane stands in for an empty rendered pane list so the grid never collapses to nothing and Esc/Shift+Right stay alive"
+        },
+        {
           "name": "@bug-reporting",
           "description": "Bug reporting and issue submission features"
         },
@@ -2966,7 +2970,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-04T07:28:01.328Z",
+    "lastUpdated": "2026-09-04T10:31:52.594Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
