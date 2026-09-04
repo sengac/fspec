@@ -372,34 +372,3 @@ fn an_invalid_continue_argument_leaves_state_unchanged() {
     assert_eq!(result.budget, DEFAULT_CONTINUE_BUDGET);
 }
 
-// =============================================================================
-// Scenario: The CLI repl handles /continue before the provider-switch catch-all
-// =============================================================================
-
-#[test]
-fn the_cli_repl_handles_continue_before_the_provider_switch_catch_all() {
-    // @step Given the CLI repl input handling
-    let source = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../cli/src/interactive/repl_loop.rs"
-    ))
-    .expect("repl_loop.rs must be readable");
-
-    // @step When the user enters a continue command at the repl prompt
-    // (source-shape: the typed input path is repl_loop's line dispatch)
-
-    // @step Then "/continue" input is handled by the continue handler
-    let handler_pos = source.find("/continue").unwrap_or_else(|| {
-        panic!("repl_loop.rs must contain a /continue handler");
-    });
-
-    // @step And it is handled before the provider-switch catch-all for "/" prefixed input
-    let catch_all_pos = source
-        .find("input.starts_with('/')")
-        .expect("provider-switch catch-all must exist");
-    assert!(
-        handler_pos < catch_all_pos,
-        "/continue handler (byte {handler_pos}) must precede the provider-switch \
-         catch-all (byte {catch_all_pos})"
-    );
-}

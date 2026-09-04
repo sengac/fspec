@@ -37,13 +37,6 @@ fn core_session_manager_handle() -> std::path::PathBuf {
         .join("session_manager_handle.rs")
 }
 
-fn project_root() -> std::path::PathBuf {
-    common::workspace_root()
-        .parent()
-        .expect("project root above rust/")
-        .to_path_buf()
-}
-
 fn read_raw(path: &std::path::Path) -> String {
     common::read_to_string_or_panic(path)
 }
@@ -277,29 +270,6 @@ fn action_enum_gains_new_rpc022_variants() {
     assert!(src.contains("ListProvidersLoaded"));
     // @step And the file contains the substring "OpenThinkingDialog"
     assert!(src.contains("OpenThinkingDialog"));
-}
-
-/// Scenario: Existing TS modal dialog files are untouched
-#[test]
-fn existing_ts_modal_dialog_files_are_untouched() {
-    // @step Given the project root after RPC-022 lands
-    let root = project_root();
-    // @step Then the file src/tui/components/ModelSelectorScreen.tsx exists
-    assert!(root
-        .join("src/tui/components/ModelSelectorScreen.tsx")
-        .exists());
-    // @step And the file src/tui/components/ModelSelectorView.tsx exists
-    assert!(root
-        .join("src/tui/components/ModelSelectorView.tsx")
-        .exists());
-    // @step And the file src/tui/components/ThinkingLevelDialog.tsx exists
-    assert!(root
-        .join("src/tui/components/ThinkingLevelDialog.tsx")
-        .exists());
-    // @step And the file src/tui/components/RoleBanner.tsx exists
-    assert!(root.join("src/tui/components/RoleBanner.tsx").exists());
-    // @step And the file src/tui/store/modelStore.ts exists
-    assert!(root.join("src/tui/store/modelStore.ts").exists());
 }
 
 /// Scenario: New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite

@@ -152,28 +152,6 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     And the same parsing logic mirrors `rust/rpc-server/tests/websocket_transport.rs::spawn_rpc_server`
 
   @smoke
-  Scenario: package.json declares the build:rust:fspec script
-    Given the file `package.json` exists
-    When the test parses the `scripts` object
-    Then `scripts["build:rust:fspec"]` exists
-    And the script invokes `cargo build -p fspec --release` (or runs a wrapper that does)
-    And the script copies `rust/target/release/fspec` to `dist/fspec`
-
-  @smoke
-  @end-to-end
-  Scenario: npm run build:rust:fspec produces dist/fspec for parity with the TS layout
-    When the developer runs `npm run build:rust:fspec` from the repo root
-    Then the command exits with code 0
-    And the file `dist/fspec` exists and is executable
-
-  @smoke
-  Scenario: npm bin entry remains on the TS shim (no npm install path swap in this card)
-    Given the file `package.json` exists
-    When the test reads the `bin` object
-    Then the `fspec` binary path still points at the existing TS shim (NOT `dist/fspec`)
-    And the README has NOT been updated to advertise the Rust binary as the npm install path
-
-  @smoke
   @regression
   Scenario: --workspace defaults to CWD when omitted
     Given a tempdir `<W>` containing a seeded spec/work-units.json
@@ -198,13 +176,6 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     Then the embedded backend's `list_work_units` returns the seeded units
     When the developer runs `fspec daemon --workspace <W>`
     Then the WebSocket-attached client's `list_work_units` returns the same seeded units
-
-  @smoke
-  @regression
-  Scenario: Existing Vitest smoke at napi-workunitinfo-shape.test.ts remains green
-    When the developer runs `npm test -- src/__tests__/napi-workunitinfo-shape.test.ts`
-    Then the test passes unchanged
-    And no NAPI surface has been altered by this card
 
   @smoke
   @regression

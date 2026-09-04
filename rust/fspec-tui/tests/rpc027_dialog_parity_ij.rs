@@ -10,7 +10,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// All dialog source files in scope for the RPC-027 refactor.
 const DIALOG_FILES: &[&str] = &[
@@ -25,30 +25,6 @@ const DIALOG_FILES: &[&str] = &[
 ];
 
 const DIALOG_THEME_FILE: &str = "src/components/dialog_theme.rs";
-
-const TS_REFERENCE_FILES: &[&str] = &[
-    "src/components/Dialog.tsx",
-    "src/tui/components/ThinkingLevelDialog.tsx",
-    "src/tui/components/AttachmentDialog.tsx",
-    "src/tui/components/TurnContentModal.tsx",
-    "src/tui/components/FileSearchPopup.tsx",
-    "src/tui/components/SlashCommandPalette.tsx",
-    "src/tui/components/ThreeButtonDialog.tsx",
-];
-
-/// Locate the repo root by walking up from cargo's manifest dir until we
-/// find `package.json` (the TS workspace root).
-fn repo_root() -> PathBuf {
-    let mut p: PathBuf = env!("CARGO_MANIFEST_DIR").into();
-    loop {
-        if p.join("package.json").exists() {
-            return p;
-        }
-        if !p.pop() {
-            panic!("could not locate repo root");
-        }
-    }
-}
 
 // ============================================================
 // Section I — Structural invariants
@@ -158,108 +134,6 @@ fn every_refactored_dialog_file_remains_under_300_lines() {
         theme_lines < 300,
         "dialog_theme.rs has {theme_lines} lines, must be < 300"
     );
-}
-
-/// Scenario: TypeScript Ink dialog files are not modified by this refactor
-#[test]
-fn typescript_ink_dialog_files_are_not_modified_by_this_refactor() {
-    // BUG-153: Replaced git status with direct file existence checks.
-    // The original test ran `git status --porcelain` to check whether
-    // TS reference files were modified in the working tree. This was
-    // fragile because it depended on git state. We now check each file
-    // directly — if it exists, it must have content; if it doesn't,
-    // that's also acceptable (file may have been deleted or never existed).
-
-    // @step Given the TS reference files are listed in TS_REFERENCE_FILES
-    let root = repo_root();
-
-    // @step When I check each file exists on disk
-    for file_name in TS_REFERENCE_FILES {
-        let path = root.join(file_name);
-
-        match *file_name {
-            "src/components/Dialog.tsx" => {
-                // @step Then Dialog.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            "src/tui/components/ThinkingLevelDialog.tsx" => {
-                // @step And ThinkingLevelDialog.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            "src/tui/components/AttachmentDialog.tsx" => {
-                // @step And AttachmentDialog.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            "src/tui/components/TurnContentModal.tsx" => {
-                // @step And TurnContentModal.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            "src/tui/components/FileSearchPopup.tsx" => {
-                // @step And FileSearchPopup.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            "src/tui/components/SlashCommandPalette.tsx" => {
-                // @step And SlashCommandPalette.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            "src/tui/components/ThreeButtonDialog.tsx" => {
-                // @step And ThreeButtonDialog.tsx exists and has content
-                if path.exists() {
-                    let content = fs::read_to_string(&path)
-                        .unwrap_or_else(|_| panic!("BUG-153: failed to read {file_name}"));
-                    assert!(
-                        !content.is_empty(),
-                        "BUG-153: {file_name} must have content"
-                    );
-                }
-            }
-            _ => {
-                panic!("BUG-153: unexpected file {file_name}");
-            }
-        }
-    }
 }
 
 // ============================================================

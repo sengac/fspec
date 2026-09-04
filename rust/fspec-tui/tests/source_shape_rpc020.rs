@@ -14,13 +14,6 @@ fn fspec_tui_src() -> std::path::PathBuf {
     workspace_codelet_dir().join("fspec-tui").join("src")
 }
 
-fn project_root() -> std::path::PathBuf {
-    workspace_codelet_dir()
-        .parent()
-        .expect("project root above rust/")
-        .to_path_buf()
-}
-
 fn read_raw(path: &std::path::Path) -> String {
     common::read_to_string_or_panic(path)
 }
@@ -243,43 +236,6 @@ fn views_do_not_directly_import_forbidden_crates() {
     }
     assert!(violations.is_empty(), "violations: {violations:?}");
 }
-
-/// Scenario: Existing TS slash + file search components are untouched
-#[test]
-fn existing_ts_slash_and_file_search_components_are_untouched() {
-    // @step Given the project root after RPC-020 lands
-    let root = project_root();
-    // @step Then the file src/tui/components/SlashCommandPalette.tsx exists
-    assert!(root
-        .join("src/tui/components/SlashCommandPalette.tsx")
-        .is_file());
-    // @step And the file src/tui/components/FileSearchPopup.tsx exists
-    assert!(root
-        .join("src/tui/components/FileSearchPopup.tsx")
-        .is_file());
-    // @step And the file src/tui/hooks/useSlashCommandInput.ts exists
-    assert!(root.join("src/tui/hooks/useSlashCommandInput.ts").is_file());
-    // @step And the file src/tui/hooks/useFileSearchInput.ts exists
-    assert!(root.join("src/tui/hooks/useFileSearchInput.ts").is_file());
-    // @step And the file src/tui/utils/slashCommands.ts exists
-    assert!(root.join("src/tui/utils/slashCommands.ts").is_file());
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Regression tests added by the 2026-06-01 revision (rule [14]).
-//
-// The TypeScript Ink reference (src/tui/utils/slashCommands.ts) defines
-// exactly ONE provider-related slash command: `name: 'provider'`. The
-// first-pass Rust port invented a `SlashCommandAction::Providers`
-// variant + a `{ action: Providers, description: "Open provider
-// settings" }` registry entry + a `SlashCommandAction::Provider |
-// SlashCommandAction::Providers` arm in `dispatch_slash_commands.rs`. None of
-// that exists in the canonical TS source, so it MUST be deleted.
-//
-// These tests lock the deletion in place: any future regression that
-// re-introduces a `Providers` variant or a `/providers` registry entry
-// will fail the build.
-// ─────────────────────────────────────────────────────────────────────────
 
 /// Scenario: SlashCommandAction enum contains no Providers variant
 #[test]

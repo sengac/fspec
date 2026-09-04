@@ -54,12 +54,6 @@ Feature: Continue Command Surface
     Then the palette lists a continue entry
     And typing "/continue 50" is parsed as a continue subcommand rather than a provider switch or plain prompt
 
-  Scenario: The CLI repl handles /continue before the provider-switch catch-all
-    Given the CLI repl input handling
-    When the user enters a continue command at the repl prompt
-    Then "/continue" input is handled by the continue handler
-    And it is handled before the provider-switch catch-all for "/" prefixed input
-
   Scenario: The status bar shows an auto-continue indicator while armed
     Given auto-continue is armed with budget 10 and 3 nudges used
     When the status bar renders

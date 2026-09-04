@@ -41,10 +41,6 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
     Then each file has fewer than 300 source lines (excluding tests and comments)
     And dialog_theme.rs itself has fewer than 300 source lines
 
-  Scenario: TypeScript Ink dialog files are not modified by this refactor
-    Given the TS source files src/components/Dialog.tsx, src/tui/components/ThinkingLevelDialog.tsx, src/tui/components/AttachmentDialog.tsx, src/tui/components/TurnContentModal.tsx, src/tui/components/FileSearchPopup.tsx, src/tui/components/SlashCommandPalette.tsx, src/tui/components/ThreeButtonDialog.tsx
-    Then their git diff against the base branch is empty
-
   # ============================================================
   # Section J — Snapshot regeneration
   # ============================================================

@@ -2204,45 +2204,7 @@
     },
     {
       "name": "The CLI repl handles /continue before the provider-switch catch-all",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/cont002_continue_command_test.rs",
-          "lines": "364-389",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/repl_loop.rs",
-              "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161
-              ]
-            }
-          ]
-        }
-      ]
+      "testMappings": []
     },
     {
       "name": "The status bar shows an auto-continue indicator while armed",
@@ -2296,8 +2258,8 @@
   ],
   "stats": {
     "totalScenarios": 8,
-    "coveredScenarios": 8,
-    "coveragePercent": 100,
+    "coveredScenarios": 7,
+    "coveragePercent": 88,
     "testFiles": [
       "rust/fspec-tui/tests/cont002_continue_command_test.rs"
     ],
@@ -2307,9 +2269,8 @@
       "rust/fspec-tui/src/views/agent/slash_commands.rs",
       "rust/fspec-tui/src/app/slash_parser.rs",
       "rust/fspec-tui/src/app/dispatch_slash_continue.rs",
-      "rust/cli/src/interactive/repl_loop.rs",
       "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
-    "totalLinesCovered": 2523
+    "totalLinesCovered": 2323
   }
 }

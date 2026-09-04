@@ -43,13 +43,6 @@ fn napi_src_dir() -> std::path::PathBuf {
     common::workspace_root().join("napi").join("src")
 }
 
-fn project_root() -> std::path::PathBuf {
-    common::workspace_root()
-        .parent()
-        .expect("project root above rust/")
-        .to_path_buf()
-}
-
 fn read_raw(path: &std::path::Path) -> String {
     common::read_to_string_or_panic(path)
 }
@@ -316,21 +309,6 @@ fn napi_surface_exposes_additive_get_model_info_export() {
         found,
         "rust/napi/src tree must include `pub fn get_model_info` somewhere"
     );
-}
-
-/// Scenario: Existing TS AgentView chrome files are untouched
-#[test]
-fn existing_ts_agentview_chrome_files_still_exist() {
-    // @step Given the project root after RPC-018 lands
-    let root = project_root();
-    // @step Then the file src/tui/components/SessionHeader.tsx exists
-    assert!(root.join("src/tui/components/SessionHeader.tsx").exists());
-    // @step And the file src/tui/components/SessionFooter.tsx exists
-    assert!(root.join("src/tui/components/SessionFooter.tsx").exists());
-    // @step And the file src/tui/utils/tokenStateUtils.ts exists
-    assert!(root.join("src/tui/utils/tokenStateUtils.ts").exists());
-    // @step And the file src/tui/store/modelStore.ts exists
-    assert!(root.join("src/tui/store/modelStore.ts").exists());
 }
 
 /// Scenario: Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite

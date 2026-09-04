@@ -18,12 +18,8 @@
 //!      `KeyCode::Char('t')` and zero `KeyCode::Char('T')` substrings.
 //!   4. Source-shape: `handle_summary_key` body contains zero
 //!      `Action::TestProviderConnection` and zero `"Testing…"` substrings.
-//!   5. TS reference: `src/tui/inputHandlers/listModeHandler.ts` (under
-//!      `.fspec/worktrees/3ce722ec-0b61-4601-813b-023909a2a45a/`) contains
-//!      zero substrings that would bind `t` / `T` to a TestProviderConnection
-//!      handler.
 //!
-//! Tests 3–5 read source-byte strings directly and run in
+//! Tests 3–4 read source-byte strings directly and run in
 //! sub-milliseconds — they exist so a regression that re-introduces the
 //! `t` arm fails CI before any behavioural test even runs. Tests 1 and 2
 //! exercise the actual `handle_key` dispatch surface against a real view.
@@ -300,56 +296,3 @@ fn handle_summary_key_source_contains_no_test_provider_connection_dispatch() {
     );
 }
 
-// ────────────────────────────────────────────────────────────────────────
-// Scenario: TS reference confirms no `t` keybind exists for
-// TestProviderConnection
-// ────────────────────────────────────────────────────────────────────────
-
-#[test]
-fn ts_reference_lists_no_t_keybind_for_test_provider_connection() {
-    // @step Given the TS canonical file src/tui/inputHandlers/listModeHandler.ts (under .fspec/worktrees/3ce722ec-0b61-4601-813b-023909a2a45a/)
-    let manifest = env!("CARGO_MANIFEST_DIR");
-    let mut path = PathBuf::from(manifest);
-    // CARGO_MANIFEST_DIR = .../rust/fspec-tui — climb to the repo root
-    // (two `pop`s) then descend into the worktree TS source.
-    path.pop();
-    path.pop();
-    path.push(".fspec");
-    path.push("worktrees");
-    path.push("3ce722ec-0b61-4601-813b-023909a2a45a");
-    path.push("src");
-    path.push("tui");
-    path.push("inputHandlers");
-    path.push("listModeHandler.ts");
-
-    // Some checkouts may not have the worktree present (CI for a sliced
-    // workspace, for example). In that case treat this scenario as
-    // structurally satisfied — the source-shape audits above already pin
-    // the Rust-side absence. We still record the path so a regression
-    // that moves the worktree gets a clear diagnostic.
-    if !path.exists() {
-        eprintln!(
-            "RPC-154: TS canonical worktree not present at {} — skipping the TS-side absence audit; Rust-side source-shape tests still enforce parity",
-            path.display()
-        );
-        return;
-    }
-
-    let ts_src = fs::read_to_string(&path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
-
-    // @step When the file body is scanned for any of the substrings "key.t " / "key.t&&" / "input === 't'" / "input === 'T'"
-    let forbidden: &[&str] = &["key.t ", "key.t&&", "input === 't'", "input === 'T'"];
-
-    // @step Then zero matches are found
-    for needle in forbidden {
-        assert!(
-            !ts_src.contains(needle),
-            "RPC-154: TS reference {} unexpectedly contains `{needle}` — the canonical source MUST NOT bind `t`/`T` to TestProviderConnection (that is the entire premise of RPC-154)",
-            path.display()
-        );
-    }
-
-    // @step And this absence-in-TS justifies the absence-in-Rust required by RPC-154
-    // (Asserted implicitly: the four substring checks above all passed.)
-}

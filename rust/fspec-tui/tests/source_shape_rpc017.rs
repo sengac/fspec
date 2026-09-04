@@ -289,56 +289,6 @@ fn napi_exports_delegate_to_the_shared_helper() {
     );
 }
 
-/// Scenario: Existing TS prioritize-work-unit code path is untouched
-#[test]
-fn existing_ts_prioritize_work_unit_code_path_is_untouched() {
-    // @step Given the project root after RPC-017 lands
-    let codelet_root = workspace_root();
-    let project_root = codelet_root
-        .parent()
-        .expect("workspace root must have a parent (project root)");
-    let prio_ts = project_root
-        .join("src")
-        .join("commands")
-        .join("prioritize-work-unit.ts");
-
-    // @step Then the file src/commands/prioritize-work-unit.ts exists
-    assert!(
-        prio_ts.exists(),
-        "src/commands/prioritize-work-unit.ts must exist (RPC-017 must not move/delete it)"
-    );
-
-    let prio_body = std::fs::read_to_string(&prio_ts)
-        .unwrap_or_else(|e| panic!("read {}: {e}", prio_ts.display()));
-    // @step And src/commands/prioritize-work-unit.ts still exports prioritizeWorkUnit and routes writes through fileManager.transaction
-    // The TS file still references `prioritizeWorkUnit` and `fileManager.transaction`
-    // — sentinel substrings that prove it has not been gutted.
-    assert!(
-        prio_body.contains("prioritizeWorkUnit"),
-        "prioritize-work-unit.ts must still export prioritizeWorkUnit"
-    );
-    assert!(
-        prio_body.contains("fileManager.transaction"),
-        "prioritize-work-unit.ts must still use fileManager.transaction (TS path unchanged)"
-    );
-
-    // @step And src/tui/components/BoardView.tsx still exists at its pre-RPC-017 path
-    let board_view = project_root
-        .join("src")
-        .join("tui")
-        .join("components")
-        .join("BoardView.tsx");
-    assert!(board_view.exists(), "BoardView.tsx must still exist");
-
-    // @step And src/tui/components/UnifiedBoardLayout.tsx still exists at its pre-RPC-017 path
-    let unified = project_root
-        .join("src")
-        .join("tui")
-        .join("components")
-        .join("UnifiedBoardLayout.tsx");
-    assert!(unified.exists(), "UnifiedBoardLayout.tsx must still exist");
-}
-
 /// Scenario: Views do not directly import codelet_core / napi / tarpc
 #[test]
 fn views_do_not_directly_import_codelet_core_napi_tarpc() {

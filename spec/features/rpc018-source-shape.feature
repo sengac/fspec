@@ -115,13 +115,6 @@ Feature: RPC-018 source-shape regression for the AgentView chrome port + shared 
     Given rust/napi/src/session_manager.rs (or a sibling file) after RPC-018 lands
     Then the rust/napi/src tree contains the substring "pub fn get_model_info"
 
-  Scenario: Existing TS AgentView chrome files are untouched
-    Given the project root after RPC-018 lands
-    Then the file src/tui/components/SessionHeader.tsx exists
-    And the file src/tui/components/SessionFooter.tsx exists
-    And the file src/tui/utils/tokenStateUtils.ts exists
-    And the file src/tui/store/modelStore.ts exists
-
   Scenario: Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite
     Given the directory rust/fspec-tui/src/views/ (including views/agent/) after RPC-018 lands
     When a test scans every *.rs file

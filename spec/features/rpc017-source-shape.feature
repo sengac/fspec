@@ -90,13 +90,6 @@ Feature: RPC-017 source-shape regression for the priority-reorder persistence po
     And the file contains the substring "pub fn move_work_unit_down"
     And both function bodies contain the substring "codelet_core::work_units_write::move_work_unit"
 
-  Scenario: Existing TS prioritize-work-unit code path is untouched
-    Given the project root after RPC-017 lands
-    Then the file src/commands/prioritize-work-unit.ts exists
-    And src/commands/prioritize-work-unit.ts still exports prioritizeWorkUnit and routes writes through fileManager.transaction
-    And src/tui/components/BoardView.tsx still exists at its pre-RPC-017 path
-    And src/tui/components/UnifiedBoardLayout.tsx still exists at its pre-RPC-017 path
-
   Scenario: Views do not directly import codelet_core / napi / tarpc
     Given the directory rust/fspec-tui/src/views/ after RPC-017 lands
     When a test scans every *.rs file

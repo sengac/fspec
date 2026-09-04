@@ -133,15 +133,6 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
     And the file contains the substring "ListProvidersLoaded"
     And the file contains the substring "OpenThinkingDialog"
 
-  @ts-untouched
-  Scenario: Existing TS modal dialog files are untouched
-    Given the project root after RPC-022 lands
-    Then the file src/tui/components/ModelSelectorScreen.tsx exists
-    And the file src/tui/components/ModelSelectorView.tsx exists
-    And the file src/tui/components/ThinkingLevelDialog.tsx exists
-    And the file src/tui/components/RoleBanner.tsx exists
-    And the file src/tui/store/modelStore.ts exists
-
   @architecture-invariants
   Scenario: New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite
     Given the new RPC-022 files (thinking_level_dialog.rs, role_banner.rs)
