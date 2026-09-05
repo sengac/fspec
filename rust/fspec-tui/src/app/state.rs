@@ -385,8 +385,19 @@ impl App {
     /// process-global data directory + current dir — the same CONFIG-008
     /// resolution every other shared-config persistence uses), so no
     /// manual persist-dirs wiring is needed here or in `App::new`.
+    ///
+    /// BUG-175: the persisted `enabled` flag is a SAVED LAYOUT
+    /// PREFERENCE, not a runtime mode. A restart always lands on the
+    /// single Board view, so the flag is force-disabled on BOTH the
+    /// persistence mirror and the live layout — a persisted
+    /// `enabled=true` (written while the user was in the grid) must not
+    /// leak into view routing outside the grid (BackToBoard /
+    /// EnterWorkUnit gate on `active_view == ViewMode::Mux`, and the
+    /// R6 auto-save reads the mirror). `/mux on` re-enables the grid
+    /// with the saved layout.
     pub fn load_mux_config(&mut self) {
         self.mux_state.load();
+        self.mux_state.config_mut().enabled = false;
         self.navigator.mux.config = self.mux_state.config().clone();
     }
 
