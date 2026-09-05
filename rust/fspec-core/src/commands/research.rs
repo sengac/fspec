@@ -392,7 +392,10 @@ mod tests {
         let tools = tools_of(&out);
         let mut names: Vec<&str> = tools.iter().filter_map(|t| t["name"].as_str()).collect();
         names.sort_unstable();
-        assert_eq!(names, vec!["confluence", "jira", "perplexity", "stakeholder"]);
+        assert_eq!(
+            names,
+            vec!["confluence", "jira", "perplexity", "stakeholder"]
+        );
     }
 
     #[test]

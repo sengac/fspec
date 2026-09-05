@@ -278,55 +278,38 @@
       ]
     },
     {
-      "name": "Without Codex credentials the standalone OpenAI API section is preserved",
+      "name": "Without Codex credentials the standalone OpenAI API section is suppressed",
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
-          "lines": "276-317",
+          "lines": "286-325",
           "implMappings": [
             {
-              "file": "rust/sessions/src/cloud_models.rs",
+              "file": "rust/sessions/src/handle_impl.rs",
               "lines": [
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234
+                1244,
+                1245,
+                1246,
+                1247,
+                1248,
+                1249,
+                1250,
+                1251,
+                1252,
+                1253,
+                1254,
+                1255,
+                1256,
+                1257,
+                1258,
+                1259,
+                1260,
+                1261,
+                1262,
+                1263,
+                1264,
+                1265,
+                1266
               ]
             }
           ]
@@ -346,6 +329,6 @@
       "rust/sessions/src/handle_impl.rs",
       "rust/sessions/src/codex_allowlist.rs"
     ],
-    "totalLinesCovered": 439
+    "totalLinesCovered": 420
   }
 }

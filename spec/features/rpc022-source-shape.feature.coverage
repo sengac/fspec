@@ -757,23 +757,6 @@
       ]
     },
     {
-      "name": "Existing TS modal dialog files are untouched",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
-          "lines": "271-288",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [
-                1
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
       "testMappings": [
         {
@@ -792,8 +775,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/source_shape_rpc022.rs"

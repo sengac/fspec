@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "Max Images field prefills to the default 4 when absent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov144_max_images_form.rs",
+          "lines": "82-133",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "lines": [
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty Max Images field saves as absent and resolves to the default",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov144_max_images_form.rs",
+          "lines": "137-170",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-numeric Max Images input rejects the save",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov144_max_images_form.rs",
+          "lines": "174-215",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/prov144_max_images_form.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs"
+    ],
+    "totalLinesCovered": 149
+  }
+}

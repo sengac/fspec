@@ -52,6 +52,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             let name = parsed.get("name").and_then(|v| v.as_str()).unwrap_or("");
 
             println!("✓ Removed persona \"{name}\" from {file_name}");
+            // DISC-003 rule 4/14: print the progress trailer.
+            crate::common::print_next_steps(&parsed);
             Ok(0)
         }
         Err(err) => {

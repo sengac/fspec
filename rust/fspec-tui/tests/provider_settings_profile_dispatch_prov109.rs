@@ -48,6 +48,11 @@ fn profile_def(base_url: &str) -> ProfileDefinition {
         streaming: None,
         auto_continue: None,
         preserve_thinking: None,
+        max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     }
 }
 

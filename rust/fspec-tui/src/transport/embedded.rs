@@ -19,7 +19,8 @@ use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
-    CompactionProgress, CompactionResult, CustomModelDefinition, FspecResult, HealthInfo,
+    CompactionProgress, CompactionResult, CustomModelDefinition, ExecStdinRequest, FspecResult,
+    HealthInfo,
     HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
     MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart,
     PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop,
@@ -727,6 +728,29 @@ impl FspecBackend for EmbeddedFspecBackend {
             .client
             .get_hitl_request(context::current(), session_id)
             .await?)
+    }
+
+    async fn get_exec_stdin_request(&self, session_id: SessionId) -> Result<Option<ExecStdinRequest>> {
+        Ok(self
+            .client
+            .get_exec_stdin_request(context::current(), session_id)
+            .await?)
+    }
+
+    async fn write_exec_stdin(
+        &self,
+        session_id: SessionId,
+        exec_session_id: String,
+        text: String,
+    ) -> Result<(), String> {
+        // The tarpc `FspecService::write_exec_stdin` returns
+        // `Result<(), String>` verbatim — the error already names the
+        // offending exec session id (no reaper-race noise). A transport
+        // failure is surfaced as its Display string.
+        self.client
+            .write_exec_stdin(context::current(), session_id, exec_session_id, text)
+            .await
+            .map_err(|e| e.to_string())?
     }
 
     async fn send_fspec_result(&self, session_id: SessionId, result: FspecResult) -> Result<()> {

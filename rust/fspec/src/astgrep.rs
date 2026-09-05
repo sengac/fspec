@@ -46,8 +46,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `astgrep` clap subcommand.
 /// Returns the process exit code so `main` can propagate it verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let _project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let _project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Nil session id ⇒ no isolation context registered ⇒ paths pass through.
     let tool = AstGrepTool::new(Uuid::nil());
@@ -64,9 +63,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         value_map.insert("path".to_string(), json!(path));
     }
 
-    let out = tool
-        .execute(serde_json::Value::Object(value_map))
-        .await;
+    let out = tool.execute(serde_json::Value::Object(value_map)).await;
 
     match out {
         Ok(content) if !content.is_error => {

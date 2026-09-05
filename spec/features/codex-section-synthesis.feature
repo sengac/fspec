@@ -20,13 +20,13 @@ Feature: Synthesize Codex (ChatGPT) section by re-parenting + allowlist-filterin
   #   2. The re-parented OpenAI model list is filtered to the Codex allowlist (only visibility='list' slugs, matched exactly or by a date-suffixed variant) and sorted by allowlist priority
   #   3. When the Codex (ChatGPT) section is synthesized, the standalone OpenAI API section is not rendered (models moved, not duplicated)
   #   4. Codex synthesis reuses the PROV-128 unified credential predicate (provider_has_credentials("codex")) so Codex OAuth alone yields a NON-empty selectable model list
-  #   5. When no Codex credentials are present, no re-parenting occurs and the standalone OpenAI API section behaves exactly as before (API-key gated)
+  #   5. When no Codex credentials are present, no re-parenting occurs. PROV-146: the standalone OpenAI API section is NEVER populated from the cloud catalog regardless of OPENAI_API_KEY — it is suppressed entirely (the openai provider is for local OpenAI-protocol servers only)
   #
   # EXAMPLES:
   #   1. Codex OAuth file present and no OPENAI_API_KEY: the Codex (ChatGPT) section lists the allowlisted OpenAI models and the OpenAI API section is absent (fixes #6)
   #   2. A models.dev OpenAI model that is not in the allowlist (e.g. gpt-5-mini) is excluded from Codex (ChatGPT); an allowlisted one (e.g. gpt-5.4) is kept
   #   3. Two allowlisted models present: they appear in Codex (ChatGPT) ordered by allowlist priority (gpt-5.4 priority 0 before gpt-5.2-codex priority 3)
-  #   4. No Codex creds, only OPENAI_API_KEY: the OpenAI API section is shown with its catalog and no Codex (ChatGPT) section is synthesized
+  #   4. No Codex creds, only OPENAI_API_KEY: the standalone OpenAI API section is NOT shown (PROV-146 reversal — the openai cloud section is never populated from the catalog; the openai provider is for local OpenAI-protocol servers only) and no Codex (ChatGPT) section is synthesized
   #   5. A hidden allowlist entry (visibility='hide', e.g. gpt-5.1-codex) does not match, so that model is excluded from Codex (ChatGPT) even though its slug is in the allowlist
   #
   # ========================================
@@ -62,10 +62,10 @@ Feature: Synthesize Codex (ChatGPT) section by re-parenting + allowlist-filterin
     When I open the model selector
     Then the "Codex (ChatGPT)" section does not list "gpt-5.1-codex"
 
-  Scenario: Without Codex credentials the standalone OpenAI API section is preserved
+  Scenario: Without Codex credentials the standalone OpenAI API section is suppressed
     Given I have no Codex credentials
     And only an OPENAI_API_KEY is set in the environment
     And the models.dev catalog offers OpenAI models
     When I open the model selector
-    Then a standalone "OpenAI API" section is shown with its models
+    Then no standalone "OpenAI API" cloud section is shown
     And no "Codex (ChatGPT)" section is synthesized

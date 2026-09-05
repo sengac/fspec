@@ -16,6 +16,7 @@ use crate::help::CommandHelpConfig;
 /// Resolve a kebab-case command name to its help configuration, if one exists.
 pub(crate) fn config_for(name: &str) -> Option<&'static CommandHelpConfig> {
     match name {
+        "foundation-status" => Some(&crate::help::configs::foundation_status::CONFIG),
         "add-aggregate" => Some(&crate::help::configs::add_aggregate::CONFIG),
         "add-aggregate-to-foundation" => {
             Some(&crate::help::configs::add_aggregate_to_foundation::CONFIG)

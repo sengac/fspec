@@ -93,6 +93,15 @@ fn seed_empty_homes() -> (tempfile::TempDir, tempfile::TempDir) {
     (codex, fspec)
 }
 
+/// Point `FSPEC_USER_DIR` at an empty temp dir so no local-server openai
+/// profile from a real user config can leak into `list_providers()` output
+/// (isolates the profile-section bucket from the cloud assertions).
+fn seed_empty_user_dir() -> tempfile::TempDir {
+    let dir = tempfile::tempdir().expect("create empty FSPEC_USER_DIR");
+    std::env::set_var("FSPEC_USER_DIR", dir.path());
+    dir
+}
+
 /// Collect the model ids of the section with the given key, if present.
 fn section_model_ids(
     providers: &[codelet_rpc_types::ProviderInfo],
@@ -271,16 +280,19 @@ async fn codex_section_excludes_hidden_allowlist_entry() {
 
 // =============================================================================
 // Scenario: Without Codex credentials the standalone OpenAI API section is
-// preserved
+// suppressed (PROV-146)
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
-async fn without_codex_credentials_openai_section_is_preserved() {
+async fn without_codex_credentials_openai_section_is_suppressed() {
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
 
     // @step Given I have no Codex credentials
     let (_codex_empty, _fspec_empty) = seed_empty_homes();
+    // Isolate the profile config so the test cannot observe a real user's
+    // local-server profiles (leaked openai:sglang / openai:runpod.io rows).
+    let _user_dir_empty = seed_empty_user_dir();
 
     // @step And only an OPENAI_API_KEY is set in the environment
     clear_api_keys();
@@ -294,16 +306,14 @@ async fn without_codex_credentials_openai_section_is_preserved() {
     // @step When I open the model selector
     let providers = handle.list_providers();
 
-    // @step Then a standalone "OpenAI API" section is shown with its models
-    let openai_models = section_model_ids(&providers, "openai").unwrap_or_else(|| {
-        panic!(
-            "PROV-129: with only OPENAI_API_KEY the standalone 'openai' section must be present; got keys: {:?}",
-            providers.iter().map(|p| p.key.as_str()).collect::<Vec<_>>()
-        )
-    });
+    // @step Then no standalone "OpenAI API" cloud section is shown
+    // (PROV-146: the openai cloud section is never populated from the
+    // models.dev catalog — it is dropped by the PROV-127 filter; the openai
+    // provider is for local OpenAI-protocol servers only)
     assert!(
-        !openai_models.is_empty(),
-        "PROV-129: the standalone 'openai' section must carry its catalog when API-key gated; got {openai_models:?}",
+        !providers.iter().any(|p| p.key == "openai" && p.profile_name.is_none()),
+        "PROV-146: the standalone 'openai' cloud section must not appear with only OPENAI_API_KEY; got keys: {:?}",
+        providers.iter().map(|p| p.key.as_str()).collect::<Vec<_>>()
     );
 
     // @step And no "Codex (ChatGPT)" section is synthesized
@@ -314,4 +324,5 @@ async fn without_codex_credentials_openai_section_is_preserved() {
 
     // Cleanup: drop the api key so a later test in this binary starts clean.
     std::env::remove_var("OPENAI_API_KEY");
+    std::env::remove_var("FSPEC_USER_DIR");
 }

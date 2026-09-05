@@ -1,0 +1,161 @@
+{
+  "scenarios": [
+    {
+      "name": "Windows shell command falls back to cmd when PowerShell is unavailable",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/windows_unified_exec_platform_shell_test.rs",
+          "lines": "49-67",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/spawning.rs",
+              "lines": [
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Windows shell command spawns via PowerShell in pipe mode",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/windows_unified_exec_platform_shell_test.rs",
+          "lines": "27-45",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/spawning.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PTY liveness anchor is spawnable on every platform",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/windows_unified_exec_platform_shell_test.rs",
+          "lines": "71-99",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unix pipe spawn path is unchanged (no regression)",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/windows_unified_exec_platform_shell_test.rs",
+          "lines": "99-124",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/windows_unified_exec_platform_shell_test.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/unified_exec/spawning.rs",
+      "rust/tools/src/bash_process.rs"
+    ],
+    "totalLinesCovered": 173
+  }
+}

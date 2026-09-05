@@ -1375,7 +1375,13 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
         .map_err(napi::Error::from_reason)?;
 
     // KGRAPH-002: Close graph database when no sessions remain to avoid Lance corruption
-    let session_count = sm.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).len();
+    let session_count = sm
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
+        .len();
     if session_count == 0 {
         crate::graph::close_graph_db();
     }
@@ -1753,6 +1759,46 @@ pub fn session_send_hitl_response(
     Ok(())
 }
 
+// === TOOL-022 P2: exec-stdin prompt NAPI functions ===
+
+/// Get exec-stdin request state for a session (TOOL-022 P2)
+///
+/// Returns the pending exec-stdin prompt if a live exec session has
+/// been quiet >= 3s while its child is alive. Pure overlay — NO
+/// status flip, NO response channel. TypeScript polls this to render
+/// the inline prompt in the composer slot (like pause state).
+#[napi]
+pub fn session_get_exec_stdin_request(
+    session_id: String,
+) -> Result<Option<crate::types::ExecStdinRequest>> {
+    use codelet_core::SessionManagerHandle;
+    let manager = SessionManager::instance();
+    // The NAPI `session_id` is the session key verbatim (matches the
+    // `session_get_hitl_request` / `session_get_pause_state` pattern).
+    let sid = codelet_rpc_types::SessionId::new(session_id);
+    Ok(manager.get_exec_stdin_request(&sid))
+}
+
+/// Write typed text to a live exec session's stdin (TOOL-022 P2)
+///
+/// Called by the TUI when the user presses Enter on the exec-stdin
+/// prompt. A trailing newline is appended when absent (matching the
+/// unified_exec `write` action semantics). Unknown agent session or
+/// unknown/exited exec session returns a clean error naming the id.
+#[napi]
+pub fn session_write_exec_stdin(
+    session_id: String,
+    exec_session_id: String,
+    text: String,
+) -> Result<()> {
+    use codelet_core::SessionManagerHandle;
+    let manager = SessionManager::instance();
+    let sid = codelet_rpc_types::SessionId::new(session_id);
+    manager
+        .write_exec_stdin(&sid, &exec_session_id, &text)
+        .map_err(napi::Error::from_reason)
+}
+
 // === TUI-054: Base thinking level NAPI functions ===
 
 /// Get the base thinking level for a session (TUI-054)
@@ -2007,6 +2053,24 @@ pub async fn session_set_model(
             session.set_model_limits(context_window, max_output, compaction_thresh);
             tracing::debug!("session_set_model: model set successfully (context_window={}, max_output={}, compaction_threshold={})", context_window, max_output, compaction_thresh);
 
+            // BUG-168: update the tool-layer capability registry on model switch
+            // so the Read tool's PDF default mode follows the new model.
+            let registry_uuid = Uuid::parse_str(&session_id)
+                .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
+            codelet_tools::model_capabilities::set_session_model_vision(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_model_vision(inner.provider_manager()),
+            );
+            // PROV-144: update the per-profile image budget alongside the
+            // vision entry (absent => None => default 4), sourced from the
+            // shared resolver so the NAPI model-switch cannot drift.
+            codelet_tools::model_capabilities::set_session_model_max_images(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_profile_max_images(
+                    inner.provider_manager(),
+                ),
+            );
+
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
             let session_uuid = Uuid::parse_str(&session_id)
                 .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
@@ -2178,6 +2242,24 @@ pub async fn session_set_model_profile(
                 profile_compaction_thresh,
             );
             tracing::debug!("session_set_model_profile: model set successfully (context_window={}, max_output={}, compaction_threshold={})", resolved_context_window, resolved_max_output, profile_compaction_thresh);
+
+            // BUG-168: update the tool-layer capability registry on model switch
+            // so the Read tool's PDF default mode follows the new model.
+            let registry_uuid = Uuid::parse_str(&session_id)
+                .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
+            codelet_tools::model_capabilities::set_session_model_vision(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_model_vision(inner.provider_manager()),
+            );
+            // PROV-144: update the per-profile image budget alongside the
+            // vision entry (absent => None => default 4), sourced from the
+            // shared resolver so the NAPI profile-switch cannot drift.
+            codelet_tools::model_capabilities::set_session_model_max_images(
+                registry_uuid,
+                codelet_sessions::model_resolution::resolve_profile_max_images(
+                    inner.provider_manager(),
+                ),
+            );
 
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
             let session_uuid = Uuid::parse_str(&session_id)

@@ -87,8 +87,9 @@ pub async fn agent_loop(
 
     // RIG-014: Loop-abort auto-continue retry counter (prevents infinite
     // cycling if the model keeps degenerating into loops on retry).
+    // PROV-145: the cap is resolved per turn from the session's profile
+    // (absent ⇒ the RIG-014 default of 10), no longer a hard-coded const.
     let mut loop_abort_retry_count: usize = 0;
-    const RIG014_MAX_LOOP_ABORT_RETRIES: usize = 10;
 
     // HOOK-013: Fire session_start hooks
     if let Some(ref hooks) = session.lifecycle_hooks {
@@ -516,10 +517,29 @@ pub async fn agent_loop(
             // BackgroundSession so both agent-loop twins share one copy.
             session.sync_completion_contract_for_user_turn(&mut inner_session);
 
-            // REFAC-007: Create output handler with provider for message persistence
+            // REFAC-007: Create output handler with provider for message persistence.
+            // PROV-145: resolve the per-turn loop-detection wiring from the
+            // session's current profile selection (mid-session model switches
+            // re-resolve on the next turn; non-profile sessions keep the
+            // RIG-014 defaults via `LoopDetectionWiring::default()`).
             let session_for_output = session.clone();
-            let output =
-                BackgroundOutput::with_provider(session_for_output, current_provider.clone());
+            let loop_wiring = {
+                let resolved =
+                    codelet_sessions::model_resolution::resolve_profile_loop_detection(
+                        inner_session.provider_manager(),
+                    );
+                crate::background_output::LoopDetectionWiring {
+                    enabled: resolved.enabled.unwrap_or(true),
+                    window: resolved.window.unwrap_or(160),
+                    max_repeats: resolved.max_repeats.unwrap_or(10),
+                    max_retries: resolved.max_retries.unwrap_or(10),
+                }
+            };
+            let output = BackgroundOutput::with_provider(
+                session_for_output,
+                current_provider.clone(),
+                Some(loop_wiring),
+            );
 
             // RIG-014: Reset the per-turn loop detectors (defensive — the
             // BackgroundOutput is fresh per turn, but this keeps the
@@ -676,6 +696,26 @@ pub async fn agent_loop(
                 },
             );
             codelet_tools::set_hitl_handler(session.id, Some(hitl_handler));
+
+            // TOOL-022 P2: Register the exec-stdin request callback so the
+            // deterministic quiet detector (tools crate, spawned with the
+            // reaper on `run`) can push an ExecStdinRequest onto this
+            // agent session's BackgroundSession. Pure overlay — NO
+            // status flip, NO response channel (unlike the HITL handler).
+            // BUG-171: the payload is Option — the detector also pushes
+            // clears (child exit / store removal / output resumption);
+            // the setter is the sole emission point for the push
+            // StreamChunks, so passing the Option through routes both
+            // transitions into the chunk stream.
+            let session_for_exec_stdin = session.clone();
+            let exec_stdin_callback: codelet_tools::unified_exec::ExecStdinRequestCallback =
+                std::sync::Arc::new(move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
+                    session_for_exec_stdin.set_exec_stdin_request(request);
+                });
+            codelet_tools::unified_exec::set_exec_stdin_request_callback(
+                session.id,
+                Some(exec_stdin_callback),
+            );
 
             // AMGR-001: Register SessionSearch handler for this session
             // The handler accesses the persistence layer directly (MessageStore, SessionStore, BlobStore)
@@ -1469,6 +1509,10 @@ Use SessionSearch to recover context.
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
+            codelet_tools::unified_exec::set_exec_stdin_request_callback(
+                session.id,
+                None,
+            ); // TOOL-022 P2: Cleanup exec-stdin callback
             codelet_tools::set_bridge_handler(session.id, None);
             codelet_tools::remove_bridge_session_context(session.id);
 
@@ -1505,17 +1549,20 @@ Use SessionSearch to recover context.
             // corrective note (staged on the session) gets injected into
             // the next turn's context and the model gets a fresh chance
             // to complete the task. Reuses the same retry-input mechanism
-            // as the compaction watchdog (CMPCT-020). Bounded by
-            // RIG014_MAX_LOOP_ABORT_RETRIES so a model that keeps
-            // degenerating into loops doesn't cycle forever.
+            // as the compaction watchdog (CMPCT-020).
+            // PROV-145: bounded by the per-turn profile-resolved retry cap
+            // (`loop_wiring.max_retries`; absent ⇒ the RIG-014 default of 10)
+            // so a model that keeps degenerating into loops doesn't cycle
+            // forever.
             if session.has_pending_loop_abort_note() {
-                if loop_abort_retry_count < RIG014_MAX_LOOP_ABORT_RETRIES {
+                let loop_abort_retry_cap = output.loop_wiring().max_retries as usize;
+                if loop_abort_retry_count < loop_abort_retry_cap {
                     loop_abort_retry_count += 1;
                     tracing::info!(
                         "[RIG-014] Loop abort auto-continue: injecting synthetic Continue input (session={}, retry {}/{})",
                         session.id,
                         loop_abort_retry_count,
-                        RIG014_MAX_LOOP_ABORT_RETRIES
+                        loop_abort_retry_cap
                     );
                     compaction_retry_input = Some("Continue".to_string());
                 } else {

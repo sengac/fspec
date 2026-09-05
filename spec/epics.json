@@ -647,7 +647,10 @@
         "BUG-137",
         "BUG-144",
         "PROV-141",
-        "PROV-142"
+        "PROV-142",
+        "BUG-170",
+        "PROV-144",
+        "PROV-145"
       ]
     },
     "local-change-protocols": {
@@ -1001,7 +1004,8 @@
         "BUG-159",
         "BUG-160",
         "BUG-161",
-        "BUG-162"
+        "BUG-162",
+        "BUG-174"
       ]
     },
     "rust-cli-port": {
@@ -1320,7 +1324,9 @@
       "createdAt": "2026-07-17T00:54:28.757Z",
       "description": "Tool invocation and execution improvements",
       "workUnits": [
-        "TOOL-021"
+        "TOOL-021",
+        "BUG-171",
+        "BUG-172"
       ]
     },
     "tui-lazy-load": {
@@ -1379,7 +1385,8 @@
         "MUX-005",
         "MUX-006",
         "MUX-007",
-        "MUX-008"
+        "MUX-008",
+        "BUG-175"
       ]
     },
     "provider-settings": {
@@ -1388,7 +1395,8 @@
       "createdAt": "2026-08-28T11:01:07.957Z",
       "description": "Provider settings and profile features",
       "workUnits": [
-        "PROV-143"
+        "PROV-143",
+        "PROV-146"
       ]
     }
   }

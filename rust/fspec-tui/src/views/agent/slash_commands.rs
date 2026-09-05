@@ -73,6 +73,11 @@ impl SlashCommandAction {
             SlashCommandAction::Mux => "mux",
         }
     }
+
+    /// BUG-169: case-insensitive registry lookup; `None` for unregistered/empty names.
+    pub fn from_name(name: &str) -> Option<Self> {
+        SLASH_COMMANDS.iter().find(|c| c.name().eq_ignore_ascii_case(name)).map(|c| c.action)
+    }
 }
 
 /// A single entry in the palette. Names line up with the TS
@@ -260,6 +265,27 @@ mod tests {
         for cmd in SLASH_COMMANDS.iter() {
             assert!(!cmd.name().is_empty());
             assert!(!cmd.description.is_empty());
+        }
+    }
+
+    #[test]
+    fn from_name_matches_registered_names_case_insensitively() {
+        // BUG-169: registry lookup used by the submit-time interceptor;
+        // names match case-insensitively, plural forms must not match.
+        let plural = "provider".to_owned() + "s";
+        assert_eq!(SlashCommandAction::from_name(&plural), None);
+        assert_eq!(
+            SlashCommandAction::from_name("PROVIDER"),
+            Some(SlashCommandAction::Provider)
+        );
+        // Every registered name round-trips back to its own action.
+        for cmd in SLASH_COMMANDS.iter() {
+            assert_eq!(
+                SlashCommandAction::from_name(cmd.name()),
+                Some(cmd.action),
+                "round-trip failed for {:?}",
+                cmd.action
+            );
         }
     }
 }

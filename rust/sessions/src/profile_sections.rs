@@ -116,6 +116,49 @@ pub struct LocalServerProfile {
     /// sent back to the LLM (the default); `Some(true)` preserves them.
     #[serde(rename = "preserveThinking", default)]
     pub preserve_thinking: Option<bool>,
+    /// PROV-144: per-profile Max Images limit for the Read tool's image
+    /// budget. `None` (absent, including pre-existing profiles) resolves to
+    /// the tool-layer default of 4; `Some(0)` is the explicit no-vision
+    /// sentinel; `Some(n)` with `n >= 1` caps a single Read result at `n`
+    /// images. Lenient u32 deserialization so a TS-written float (e.g. `2.0`)
+    /// saturates rather than dropping the whole profile.
+    #[serde(rename = "maxImages", default, deserialize_with = "de_opt_u32_lenient")]
+    pub max_images: Option<u32>,
+    /// PROV-145: per-profile loop-detection toggle. `None` (absent, including
+    /// pre-existing profiles) keeps the RIG-014 detector enabled (today's
+    /// always-on behavior); `Some(false)` disables it for the profile's
+    /// sessions.
+    #[serde(rename = "loopDetectionEnabled", default)]
+    pub loop_detection_enabled: Option<bool>,
+    /// PROV-145: per-profile loop-detector sliding window in words. `None`
+    /// (absent) resolves to the RIG-014 default of 160. Lenient u32
+    /// deserialization so a TS-written float (e.g. `320.0`) saturates rather
+    /// than dropping the whole profile.
+    #[serde(
+        rename = "loopDetectionWindow",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
+    pub loop_detection_window: Option<u32>,
+    /// PROV-145: per-profile tail n-gram repeat threshold. `None` (absent)
+    /// resolves to the RIG-014 default of 10. Lenient u32 deserialization
+    /// (float-tolerant), like [`maxImages`](Self::max_images).
+    #[serde(
+        rename = "loopDetectionMaxRepeats",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
+    pub loop_detection_max_repeats: Option<u32>,
+    /// PROV-145: per-profile max auto-continue retries after a loop abort.
+    /// `None` (absent) resolves to the RIG-014 default of 10; `Some(0)` is
+    /// the explicit never-retry sentinel. Lenient u32 deserialization, like
+    /// [`maxImages`](Self::max_images).
+    #[serde(
+        rename = "loopDetectionMaxRetries",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
+    pub loop_detection_max_retries: Option<u32>,
 }
 
 /// A custom model declared on a profile (`profile.customModels[]`).

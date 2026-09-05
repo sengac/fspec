@@ -58,11 +58,12 @@ impl App {
         let action_tx = self.action_tx.clone();
         let id = session_id;
         let handle = tokio::spawn(async move {
-            // Issue both reads in parallel so the dispatcher sees the
+            // Issue the reads in parallel so the dispatcher sees the
             // first Some result without paying serial latency.
-            let (pause_res, hitl_res) = tokio::join!(
+            let (pause_res, hitl_res, exec_res) = tokio::join!(
                 backend.get_pause_state(id.clone()),
                 backend.get_hitl_request(id.clone()),
+                backend.get_exec_stdin_request(id.clone()),
             );
             let pause = match pause_res {
                 Ok(p) => p,
@@ -100,11 +101,39 @@ impl App {
             if let Some(state) = pause {
                 // RPC-406: store slot instead of a modal push.
                 let _ = action_tx.send(Action::PauseStateFetched {
-                    session_id: id,
+                    session_id: id.clone(),
                     state,
                 });
             }
-            // Both None → silent no-op (stale Paused chunk).
+            // TOOL-022 P2: lowest-precedence overlay. Only surface the
+            // exec-stdin request when neither HITL nor a pause occupies
+            // the slot (the precedence chain is HITL > exec-stdin >
+            // pause > composer). When the backend returns None the
+            // probe clears the slot (exec session gone / no longer
+            // quiet). The error is a transport failure — silently
+            // dropped (logged), the overlay just doesn't appear this
+            // tick.
+            match exec_res {
+                Ok(Some(request)) => {
+                    let _ = action_tx.send(Action::ExecStdinPromptFetched {
+                        agent_session: id,
+                        request,
+                    });
+                }
+                Ok(None) => {
+                    let _ = action_tx.send(Action::ExecStdinDismissed {
+                        agent_session: id,
+                    });
+                }
+                Err(err) => {
+                    tracing::debug!(
+                        target: "tool022",
+                        session = &id.value,
+                        error = %err,
+                        "get_exec_stdin_request failed (silently dropped)",
+                    );
+                }
+            }
         });
         self.pending_tasks.push(handle);
     }

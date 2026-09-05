@@ -51,6 +51,10 @@ struct ShowFoundationArgs {
     /// `spec/foundation.json`.
     #[serde(default)]
     draft: bool,
+    /// DISC-003: force the finalized `spec/foundation.json` even when a
+    /// draft exists (defeats the draft auto-preference).
+    #[serde(default, rename = "final")]
+    r#final: bool,
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -66,9 +70,24 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let format = args.format.as_deref().unwrap_or("text");
 
+    let draft_path = project_root.join("spec").join("foundation.json.draft");
+    let draft_exists = draft_path.exists();
+
+    // DISC-003 rule 6: draft auto-preference. When a draft exists the draft
+    // WINS unless `final: true` forces the finalized file. `draft: true`
+    // still forces the draft. With NO draft present the default path is
+    // byte-identical to the legacy behaviour (incl. ensure_foundation_file
+    // auto-create) so existing parity tests stay green.
+    let use_draft = if args.r#final {
+        false
+    } else if args.draft {
+        true
+    } else {
+        draft_exists
+    };
+
     // Load source — either draft or final foundation.
-    let foundation = if args.draft {
-        let draft_path = project_root.join("spec").join("foundation.json.draft");
+    let (foundation, draft_banner) = if use_draft {
         if !draft_path.exists() {
             return Err(FspecCoreError::InvalidArgs {
                 command: "show-foundation",
@@ -79,12 +98,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             command: "show-foundation",
             source,
         })?;
-        serde_json::from_str::<Value>(&raw).map_err(|e| FspecCoreError::ParseJson {
+        let parsed: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "foundation.json.draft".to_string(),
             reason: crate::io::json_error::parse_json_reason(&raw, &e),
-        })?
+        })?;
+        let complete = crate::foundation::guidance::progress(
+            &crate::foundation::guidance::scan_fields(&parsed),
+        );
+        let banner = format!(
+            "Showing DRAFT (foundation.json.draft)\n\
+             progress: {complete}/{} fields complete; run fspec foundation-status for details",
+            crate::foundation::guidance::TOTAL_FIELDS
+        );
+        (parsed, Some(banner))
     } else {
-        ensure_foundation_file(project_root)?
+        (ensure_foundation_file(project_root)?, None)
     };
 
     // Resolve section (if supplied) via FIELD_MAP → dotted path walk.
@@ -142,6 +170,15 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             command: "show-foundation",
             source,
         })?;
+    }
+
+    // DISC-003 rule 6: the DRAFT banner is a stdout-only concern — it is
+    // prepended for the full-foundation text view (no section, no output
+    // file) so file writes and JSON payloads stay clean.
+    if let Some(banner) = draft_banner {
+        if args.section.is_none() && args.output.is_none() && format != "json" {
+            return Ok(format!("{banner}\n\n{rendered}"));
+        }
     }
 
     Ok(rendered)

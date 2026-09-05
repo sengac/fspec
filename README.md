@@ -33,6 +33,8 @@ powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sen
 
 See [BUILD.md](docs/BUILD.md) for complete build instructions, cross-compilation, and the `release-slim` profile rationale.
 
+**Windows** — known platform gotchas (SSH/git `Permission denied (publickey)`, PowerShell script encoding, etc.) and verified fixes: [docs/WINDOWS.md](docs/WINDOWS.md).
+
 ---
 
 ## Update

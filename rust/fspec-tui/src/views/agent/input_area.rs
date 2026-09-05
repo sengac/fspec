@@ -26,6 +26,7 @@ use codelet_rpc_types::SessionId;
 
 use crate::store::AgentViewStore;
 
+use super::exec_stdin_prompt;
 use super::hitl_prompt;
 use super::input_transition::paint_input_or_spinner;
 use super::pause_prompt;
@@ -52,10 +53,18 @@ impl AgentView {
         sid: Option<&SessionId>,
         area_width: u16,
     ) -> u16 {
-        // RPC-411: the HITL slot wins over the pause slot (TS
-        // InputTransition.tsx:385-388 priority).
+        // RPC-411: the HITL slot wins over the exec-stdin slot, which
+        // wins over the pause slot (TOOL-022 P2: HITL > exec-stdin >
+        // pause > composer).
         if let Some(state) = sid.and_then(|s| store.hitl_prompt_for(s)) {
             return hitl_prompt::prompt_height(state, pause_body_width(area_width), &self.input);
+        }
+        if let Some(request) = sid.and_then(|s| store.exec_stdin_for(s)) {
+            return exec_stdin_prompt::prompt_height(
+                request,
+                pause_body_width(area_width),
+                &self.input,
+            );
         }
         if let Some(state) = sid.and_then(|s| store.pause_state_for(s)) {
             return pause_prompt::prompt_height(state, pause_body_width(area_width));
@@ -116,6 +125,33 @@ impl AgentView {
             return;
         }
         self.last_hitl = None;
+        // TOOL-022 P2: the focused session's exec-stdin slot wins over
+        // the pause slot and the composer (precedence: HITL >
+        // exec-stdin > pause > composer). Pure overlay — the session
+        // status is NOT flipped, so the agent keeps streaming while the
+        // prompt is showing.
+        if let Some((session, request)) =
+            sid.and_then(|s| store.exec_stdin_for(s).map(|r| (s, r)))
+        {
+            // The shared input paints below the header — keep its
+            // viewport in sync (same geometry as the HITL freeform
+            // branch above).
+            let input_body_width = multiline_input_render::input_body_width(input_area.width);
+            self.input
+                .sync_viewport(input_body_width, input_area.height);
+            self.last_exec_stdin = Some((
+                session.clone(),
+                request.exec_session_id.clone(),
+            ));
+            // Anchor the hardware cursor on the input row (row 1, below
+            // the 1-row header) the way the HITL freeform branch does
+            // via its header offset.
+            exec_stdin_prompt::render_exec_stdin_prompt(padded, buf, request, &self.input);
+            self.last_hitl_input_offset = Some(1);
+            self.last_pause = None;
+            return;
+        }
+        self.last_exec_stdin = None;
         // RPC-406: the focused session's pause slot wins over the
         // MultiLineInput AND the spinner (TS early-return order).
         if let Some((session, state)) = sid.and_then(|s| store.pause_state_for(s).map(|p| (s, p))) {
@@ -163,8 +199,10 @@ impl AgentView {
         self.input
             .render_ghost_draft(padded, buf, &draft, INPUT_PLACEHOLDER_HINT);
         // BUG-163: no pause/HITL prompt is painted in a ghost pane — the
-        // focused pane's `paint_input_area` owns those caches.
+        // focused pane's `paint_input_area` owns those caches. TOOL-022 P2:
+        // the exec-stdin overlay is likewise focused-pane-only.
         self.last_pause = None;
         self.last_hitl = None;
+        self.last_exec_stdin = None;
     }
 }

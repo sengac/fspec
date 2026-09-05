@@ -9,6 +9,7 @@
 
 use std::fs;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::agent::slash_commands::{filter_commands, SlashCommandAction};
@@ -20,6 +21,7 @@ use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, Mouse
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::Terminal;
+use serial_test::serial;
 use tempfile::TempDir;
 
 mod common;
@@ -31,6 +33,23 @@ const MUX_CONFIG_DIALOG_ID: &str = "mux-config-dialog";
 // ─────────────────────────────────────────────────────────────────────────
 // Shared helpers
 // ─────────────────────────────────────────────────────────────────────────
+
+/// Serialises tests that mutate the process-global data directory
+/// (within this test binary).
+static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+
+/// Root the process-global data directory at a fresh throwaway dir and
+/// keep it alive (the established tui093 pattern). Returns the guard
+/// (held for the test's duration) + the TempDir.
+fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
+    let guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let tmp = TempDir::new().expect("tempdir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf())
+        .expect("set data dir");
+    (guard, tmp)
+}
 
 fn fresh_app() -> (App, Arc<MockBackend>) {
     let mock = Arc::new(MockBackend::new());
@@ -195,6 +214,11 @@ async fn mux_on_enters_mux_mode_without_opening_the_dialog() {
 #[tokio::test]
 async fn mux_off_exits_mux_mode_without_opening_the_dialog() {
     // @step Given mux mode is active with the default two panes and the pre-mux view is the Board view
+    // BUG-167: /mux off triggers the mux-exit auto-save (a real write to the
+    // shared fspec-config.json). Root this test's own data dir (holding the
+    // guard) so the auto-save is isolated and it cannot race a concurrent
+    // dir-rooted persistence test within this process.
+    let (_data_guard, _data) = root_data_dir();
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     submit(&mut app, "/mux on");
@@ -495,13 +519,12 @@ async fn pane_count_stays_within_the_2_to_4_bounds() {
 
 /// Scenario: Enter applies the draft layout and closes the dialog
 #[tokio::test]
+#[serial]
 async fn enter_applies_the_draft_layout_and_closes_the_dialog() {
-    let data = TempDir::new().expect("data dir");
-    let cwd = TempDir::new().expect("cwd");
     // @step Given the MuxConfigDialog is open with the default two panes while mux is off
+    let (_data_guard, data) = root_data_dir();
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
-    app.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     open_mux_config_dialog(&mut app).await;
     assert_dialog_open(&app);
     // @step When I cycle the second Pane row's kind to Checkpoints
@@ -541,13 +564,12 @@ async fn enter_applies_the_draft_layout_and_closes_the_dialog() {
 
 /// Scenario: S applies the draft and persists it to the shared config
 #[tokio::test]
+#[serial]
 async fn s_applies_the_draft_and_persists_it_to_the_shared_config() {
-    let data = TempDir::new().expect("data dir");
-    let cwd = TempDir::new().expect("cwd");
     // @step Given the MuxConfigDialog is open with the default two panes while mux is off
+    let (_data_guard, data) = root_data_dir();
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
-    app.set_mux_persist_dir(data.path().to_path_buf(), cwd.path().to_path_buf());
     open_mux_config_dialog(&mut app).await;
     // @step When I set the Orientation row to Vertical
     // Cursor starts at 0 (Enabled); one Down moves to Orientation (index 1)

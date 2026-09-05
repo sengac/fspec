@@ -55,6 +55,14 @@ impl AgentView {
         &self,
         session_status: Option<codelet_rpc_types::SessionStatus>,
     ) -> bool {
+        // TOOL-022 P2: the exec-stdin overlay is live — the shared
+        // input is the target, so the cursor shows there even though
+        // the session status stays Running (exec-stdin performs NO
+        // status flip, which would otherwise gate the cursor off via
+        // `is_cursor_visible_for`).
+        if self.last_exec_stdin.is_some() {
+            return true;
+        }
         if let Some((_, mode)) = &self.last_hitl {
             if matches!(mode, HitlKeyMode::Options) {
                 return false;

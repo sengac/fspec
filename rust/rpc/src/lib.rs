@@ -35,7 +35,7 @@ use codelet_rpc_types::{
     ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
     SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
     StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
-    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    ExecStdinRequest, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use std::path::PathBuf;
 use std::sync::{
@@ -498,6 +498,19 @@ pub trait FspecService {
 
     /// RPC-037: snapshot of the active HITL request, if any.
     async fn get_hitl_request(session_id: SessionId) -> Option<HitlRequest>;
+
+    /// TOOL-022 P2: snapshot of the active exec-stdin request, if any.
+    /// Pure overlay — NO status flip, NO response channel.
+    async fn get_exec_stdin_request(session_id: SessionId) -> Option<ExecStdinRequest>;
+
+    /// TOOL-022 P2: write typed text to a live exec session's stdin
+    /// (a trailing newline is appended when absent, matching the
+    /// unified_exec `write` action semantics).
+    async fn write_exec_stdin(
+        session_id: SessionId,
+        exec_session_id: String,
+        text: String,
+    ) -> Result<(), String>;
 
     /// RPC-037: round-trip an FspecCommandRequest reply.
     async fn send_fspec_result(session_id: SessionId, result: FspecResult) -> Result<(), String>;
@@ -1899,6 +1912,30 @@ impl FspecService for FspecServiceImpl {
         match self.inner.session_manager() {
             Some(handle) => handle.get_hitl_request(&session_id),
             None => None,
+        }
+    }
+
+    async fn get_exec_stdin_request(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+    ) -> Option<ExecStdinRequest> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.get_exec_stdin_request(&session_id),
+            None => None,
+        }
+    }
+
+    async fn write_exec_stdin(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        exec_session_id: String,
+        text: String,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.write_exec_stdin(&session_id, &exec_session_id, &text),
+            None => Err("write_exec_stdin requires a SessionManagerHandle".to_string()),
         }
     }
 

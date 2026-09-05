@@ -1,0 +1,236 @@
+{
+  "scenarios": [
+    {
+      "name": "closing the last agent in an all-agent layout shows a full-width board pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
+          "lines": "145-214",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "the transient board pane does not mutate the stored mux config",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
+          "lines": "215-249",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pressing Esc on the transient board pane shows the exit dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
+          "lines": "250-295",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                245,
+                246,
+                247
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on the transient board pane opens the new-agent dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
+          "lines": "296-324",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "creating a session restores the configured agent panes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
+          "lines": "327-360",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "the default board agent layout with zero sessions renders one board pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
+          "lines": "365-404",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/multiplex/window.rs"
+    ],
+    "totalLinesCovered": 378
+  }
+}

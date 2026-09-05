@@ -294,7 +294,13 @@ pub fn daemon_json_path() -> Result<PathBuf> {
     Ok(home_fspec_dir()?.join("daemon.json"))
 }
 
-fn home_fspec_dir() -> Result<PathBuf> {
+/// Resolve the per-user fspec state dir (`~/.fspec`).
+///
+/// BUG-167: also used by `client::run` to initialise the process-global
+/// data directory (the combined/daemon path does the same in
+/// `build_service`) so shared-config persistence resolves the same
+/// user-scope path in every mode.
+pub fn home_fspec_dir() -> Result<PathBuf> {
     let home = dirs::home_dir().ok_or_else(|| anyhow!("cannot resolve home directory"))?;
     Ok(home.join(".fspec"))
 }
@@ -508,6 +514,20 @@ pub fn render_core_error(err: &FspecCoreError) -> String {
     match err {
         FspecCoreError::InvalidArgs { reason, .. } => reason.clone(),
         _ => err.to_string(),
+    }
+}
+
+/// Print the DISC-003 `nextSteps` trailer (two lines) with two-space
+/// indentation, when the mutation success envelope carries it. Shared by the
+/// foundation-domain mutation bridges so the rendering lives in one place
+/// (work unit DISC-003, rule 4/14).
+pub fn print_next_steps(parsed: &serde_json::Value) {
+    if let Some(ns) = parsed.get("nextSteps").and_then(serde_json::Value::as_str) {
+        if !ns.is_empty() {
+            for line in ns.lines() {
+                println!("  {line}");
+            }
+        }
     }
 }
 

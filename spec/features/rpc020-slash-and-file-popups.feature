@@ -43,7 +43,7 @@ Feature: Slash command palette + @file search popup in AgentView
   #   8. User types 'hello @rea' → file search popup opens at the '@' anchor, shows 'README.md' (and others) sorted by mtime; arrow keys move selection; Enter on 'README.md' replaces '@rea' with '@README.md ' so the input reads 'hello @README.md ' with cursor at the end.
   #   9. User types '@' then types a space → file search popup auto-dismisses (the space ends the file-reference token) and the input is unchanged ('@ ').
   #   10. FspecBackend::search_files("README", 10) against a workspace where the project root is the rust/ fixture returns at most 10 paths and includes 'README.md' as the first entry; identical lists are returned from both EmbeddedFspecBackend and WebSocketFspecBackend wrapping the same SharedFspecService.
-  #   11. User types '/' on an empty AgentView input, presses Down, then Tab → input fills with '/clear' (no execute), popup closes; user can edit further or press Enter to send '/clear' as ordinary text.
+  #   11. User types '/' on an empty AgentView input, presses Down, then Tab → input fills with '/clear' (no execute), popup closes; user can edit further or press Enter — as of BUG-169 a full registered command name typed/submitted (Tab-fill, Esc-dismiss, or hand-typed) is intercepted by its handler at submit time, so Enter on '/clear' now runs /clear instead of sending it to the LLM (spec/features/slash-submit-intercept-registry.feature).
   #   12. AgentView scrollback has 5 chunks of conversation; user types '/clear' then Enter from palette → scrollback is empty afterward and the input box is reset to empty.
   #
   # QUESTIONS (ANSWERED):

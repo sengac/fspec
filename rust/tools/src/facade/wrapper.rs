@@ -1761,6 +1761,10 @@ pub struct ExecOperationResult {
     pub wall_time_seconds: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
+    /// TOOL-022 P1: deterministic quiet-time fact + steering (threaded from
+    /// UnifiedExecResult; Some only while the process is still running).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quiet_seconds: Option<u64>,
 }
 
 impl std::fmt::Display for ExecOperationResult {
@@ -1924,6 +1928,7 @@ impl Tool for ExecToolFacadeWrapper {
                 output: result.output,
                 wall_time_seconds: result.wall_time_seconds,
                 error: result.error,
+                quiet_seconds: result.quiet_seconds,
             }),
             Err(ToolError::Blocked { message, .. }) => {
                 // Emit notification to TUI for blocked commands
@@ -1935,6 +1940,7 @@ impl Tool for ExecToolFacadeWrapper {
                     output: None,
                     wall_time_seconds: None,
                     error: Some(message),
+                    quiet_seconds: None,
                 })
             }
             Err(e) => Ok(ExecOperationResult {
@@ -1944,6 +1950,7 @@ impl Tool for ExecToolFacadeWrapper {
                 output: None,
                 wall_time_seconds: None,
                 error: Some(e.to_string()),
+                quiet_seconds: None,
             }),
         }
     }

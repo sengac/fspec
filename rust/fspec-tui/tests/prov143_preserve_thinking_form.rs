@@ -42,7 +42,8 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
     view
 }
 
-/// The Preserve Thinking field's index into [`PROFILE_FORM_FIELDS`] (the 8th, last).
+/// The Preserve Thinking field's index into [`PROFILE_FORM_FIELDS`] (the 8th;
+/// PROV-144 appends "Max Images" as the 9th/last entry after it).
 fn preserve_thinking_field_index() -> usize {
     PROFILE_FORM_FIELDS
         .iter()
@@ -72,16 +73,18 @@ fn preserve_thinking_toggle_appears_after_auto_continue() {
         .expect("PROFILE_FORM_FIELDS must contain an \"Auto-Continue\" entry");
     let pt_idx = preserve_thinking_field_index();
 
-    // @step Then "Preserve Thinking" is the 8th (last) field
+    // @step Then "Preserve Thinking" is the 8th field, directly after Auto-Continue
+    // (PROV-144 appends the numeric "Max Images" field as the 9th/last entry
+    // after Preserve Thinking, so Preserve Thinking is no longer the last field
+    // — its position remains 8th, immediately after Auto-Continue.)
     assert_eq!(
         pt_idx,
         auto_idx + 1,
         "Preserve Thinking must be appended directly after Auto-Continue"
     );
     assert_eq!(
-        pt_idx,
-        PROFILE_FORM_FIELDS.len() - 1,
-        "Preserve Thinking must be the last form field"
+        pt_idx, 7,
+        "Preserve Thinking must be the 8th (index 7) form field"
     );
 
     // @step And the focused-field routing treats it as a boolean toggle like Streaming
@@ -126,7 +129,10 @@ fn toggling_preserve_thinking_flips_the_boolean() {
     view.handle_key(key(KeyCode::Char(' ')));
 
     // @step Then the value becomes true and renders "Enabled"
-    assert!(form_of(&view).preserve_thinking, "Space must enable the toggle");
+    assert!(
+        form_of(&view).preserve_thinking,
+        "Space must enable the toggle"
+    );
     assert_eq!(
         form_of(&view).field_value(preserve_thinking_field_index()),
         "Enabled",
@@ -137,7 +143,10 @@ fn toggling_preserve_thinking_flips_the_boolean() {
     view.handle_key(key(KeyCode::Char(' ')));
 
     // @step Then the value becomes false and renders "Disabled"
-    assert!(!form_of(&view).preserve_thinking, "Space must flip the toggle back");
+    assert!(
+        !form_of(&view).preserve_thinking,
+        "Space must flip the toggle back"
+    );
     assert_eq!(
         form_of(&view).field_value(preserve_thinking_field_index()),
         "Disabled",
@@ -168,11 +177,11 @@ fn editing_a_profile_prefills_the_stored_value() {
     let form = ProfileForm::from_definition("local", &def);
 
     // @step Then preserve_thinking is true and renders "Enabled"
-    assert!(form.preserve_thinking, "stored true must prefill the toggle");
-    assert_eq!(
-        form.field_value(preserve_thinking_field_index()),
-        "Enabled",
+    assert!(
+        form.preserve_thinking,
+        "stored true must prefill the toggle"
     );
+    assert_eq!(form.field_value(preserve_thinking_field_index()), "Enabled",);
 
     // @step And a stored profile with the key absent seeds preserve_thinking false
     let def_absent = ProfileDefinition {
@@ -228,14 +237,12 @@ fn config_loader_round_trips_the_preserve_thinking_flag() {
     let path = dir.path().join("fspec-config.json");
     std::fs::write(
         &path,
-        serde_json::to_string_pretty(
-            &serde_json::json!({
-                "providers": { "openai": { "profiles": {
-                    "on":  { "baseUrl": "http://on",  "apiKey": "k", "preserveThinking": true },
-                    "off": { "baseUrl": "http://off", "apiKey": "k" }
-                } } }
-            }),
-        )
+        serde_json::to_string_pretty(&serde_json::json!({
+            "providers": { "openai": { "profiles": {
+                "on":  { "baseUrl": "http://on",  "apiKey": "k", "preserveThinking": true },
+                "off": { "baseUrl": "http://off", "apiKey": "k" }
+            } } }
+        }))
         .expect("json"),
     )
     .expect("write");

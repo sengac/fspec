@@ -137,44 +137,69 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "188-221",
+          "lines": "212-265",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
               "lines": [
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
                 233,
                 234,
                 235,
                 236,
                 237,
                 238,
-                239
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
               ]
             }
           ]
@@ -300,19 +325,598 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Visual mode honors offset and limit for PDF pages",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "17-75",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/pdf.rs",
+              "lines": [
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Visual mode honors an offset that starts mid-document",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "73-116",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/pdf.rs",
+              "lines": [
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text mode honors offset and limit for PDF pages",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "114-163",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/pdf.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Images mode honors offset and limit for embedded images",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "161-209",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/pdf.rs",
+              "lines": [
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default page cap bounds an unbounded PDF read",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "207-256",
+          "implMappings": [
+            {
+              "file": "rust/common/src/token_estimator.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Configurable page cap via environment variable",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "254-295",
+          "implMappings": [
+            {
+              "file": "rust/common/src/token_estimator.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit limit wins over the default page cap",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "293-334",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read.rs",
+              "lines": [
+                350,
+                351,
+                352,
+                353,
+                354
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A PDF that fits entirely is returned without a truncation notice",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "332-371",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/pdf.rs",
+              "lines": [
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An offset beyond the document still reports the total",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_pagination_test.rs",
+          "lines": "369-411",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/pdf.rs",
+              "lines": [
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-vision session model defaults PDF reads to text mode",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_vision_fallback_test.rs",
+          "lines": "21-76",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/model_capabilities.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit pdf_mode wins even when the session model lacks vision",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_vision_fallback_test.rs",
+          "lines": "78-119",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read.rs",
+              "lines": [
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unregistered session keeps the historical visual default",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/pdf_vision_fallback_test.rs",
+          "lines": "121-160",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/read.rs",
+              "lines": [
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 20,
+    "coveredScenarios": 20,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/tests/pdf_read_test.rs"
+      "rust/tools/tests/pdf_read_test.rs",
+      "rust/tools/tests/pdf_pagination_test.rs",
+      "rust/tools/tests/pdf_vision_fallback_test.rs"
     ],
     "implFiles": [
       "rust/tools/src/read.rs",
-      "rust/tools/src/pdf.rs"
+      "rust/tools/src/pdf.rs",
+      "rust/common/src/token_estimator.rs",
+      "rust/tools/src/model_capabilities.rs"
     ],
-    "totalLinesCovered": 452
+    "totalLinesCovered": 1437
   }
 }

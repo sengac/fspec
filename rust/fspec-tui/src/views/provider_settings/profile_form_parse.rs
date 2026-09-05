@@ -62,3 +62,63 @@ pub(super) fn parse_auto_continue(raw: &str) -> Result<Option<u32>, String> {
         }),
     }
 }
+
+/// PROV-144: parse the Max Images form field's raw string into the wire value.
+/// Empty ⇒ `None` (absent on disk ⇒ the tool-layer default of 4); `"0"` ⇒
+/// `Some(0)` (the no-vision sentinel — the Read tool fails image reads);
+/// `"n"` (n >= 1) ⇒ `Some(n)` (a single Read result returns at most n images).
+/// Non-numeric input is an `Err` with a user-facing hint.
+pub(super) fn parse_max_images(raw: &str) -> Result<Option<u32>, String> {
+    match raw.trim() {
+        "" => Ok(None),
+        text => text.parse::<u32>().map(Some).map_err(|_| {
+            "Max Images must be a whole number (0 = no vision, 4 = default)".to_string()
+        }),
+    }
+}
+
+/// PROV-145: parse the Loop Window form field's raw string into the wire
+/// value. Empty ⇒ `None` (absent on disk ⇒ the RIG-014 default window of 160
+/// words); `"n"` ⇒ `Some(n)`. Non-numeric input (including floats like
+/// `"1.5"`) is an `Err` with a user-facing hint.
+pub(super) fn parse_loop_detection_window(raw: &str) -> Result<Option<u32>, String> {
+    match raw.trim() {
+        "" => Ok(None),
+        text => text
+            .parse::<u32>()
+            .map(Some)
+            .map_err(|_| "Loop Window must be a whole number of words (160 = default)".to_string()),
+    }
+}
+
+/// PROV-145: parse the Loop Repeat form field's raw string into the wire
+/// value. Empty ⇒ `None` (absent on disk ⇒ the RIG-014 default threshold of
+/// 10); `"n"` ⇒ `Some(n)`. Non-numeric input is an `Err` with a user-facing
+/// hint.
+pub(super) fn parse_loop_detection_max_repeats(raw: &str) -> Result<Option<u32>, String> {
+    match raw.trim() {
+        "" => Ok(None),
+        text => text
+            .parse::<u32>()
+            .map(Some)
+            .map_err(|_| {
+                "Loop Repeat must be a whole number (10 = default)".to_string()
+            }),
+    }
+}
+
+/// PROV-145: parse the Loop Retries form field's raw string into the wire
+/// value. Empty ⇒ `None` (absent on disk ⇒ the RIG-014 default cap of 10);
+/// `"0"` ⇒ `Some(0)` (the never-auto-retry sentinel); `"n"` ⇒ `Some(n)`.
+/// Non-numeric input is an `Err` with a user-facing hint.
+pub(super) fn parse_loop_detection_max_retries(raw: &str) -> Result<Option<u32>, String> {
+    match raw.trim() {
+        "" => Ok(None),
+        text => text
+            .parse::<u32>()
+            .map(Some)
+            .map_err(|_| {
+                "Loop Retries must be a whole number (0 = never retry, 10 = default)".to_string()
+            }),
+    }
+}

@@ -294,6 +294,10 @@
           "description": "Bridge tool features for external platform integration"
         },
         {
+          "name": "@bug-174",
+          "description": "Bug fix work unit BUG-174 — closing the last agent in an all-agent mux layout leaves a blank 0-pane screen (footer only, keys dead). Fix: a transient full-width Board pane stands in for an empty rendered pane list so the grid never collapses to nothing and Esc/Shift+Right stay alive"
+        },
+        {
           "name": "@bug-reporting",
           "description": "Bug reporting and issue submission features"
         },
@@ -1232,6 +1236,22 @@
         {
           "name": "@bug-166",
           "description": "Bug fix work unit BUG-166 - mux divider fixes: every inter-pane gap gets an independently draggable divider, release keeps the released position (no snap-back to equal split), and splits are a percentage scale that dynamically rescales when the pane count changes"
+        },
+        {
+          "name": "@bug-167",
+          "description": "Bug fix work unit BUG-167 - mux config save is a no-op in the real binary: persist dirs are never wired in production (App::new now resolves the CONFIG-008 shared-config dirs once, with a dirs::home_dir()/.fspec fallback when the global data directory is unset)"
+        },
+        {
+          "name": "@bug-168",
+          "description": "Work unit BUG-168 - Read tool PDF visual mode ignores offset/limit and returns unbounded page images; adds pagination, configurable page cap, truncation notice, vision-capability-aware default mode, and rig-patch image count defense"
+        },
+        {
+          "name": "@bug-171",
+          "description": "Bug fix work unit BUG-171 — exec-stdin TUI overlay never appeared: pull probe had no push trigger while the session stayed Running. Fix: detector observes the end of the prompt condition and pushes clear StreamChunks; set_exec_stdin_request is the sole emission point for ExecStdinRequest / ExecStdinRequestCleared push chunks; non-exit clear resets the per-exec-session cooldown"
+        },
+        {
+          "name": "@bug-175",
+          "description": "Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag."
         },
         {
           "name": "@bug120",
@@ -2306,6 +2326,10 @@
           "description": "Bug fix work units"
         },
         {
+          "name": "@bug-169",
+          "description": "Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2350,6 +2374,10 @@
           "description": "Deprecated"
         },
         {
+          "name": "@disc-003",
+          "description": "DISC-003: Refactor foundation discovery system for agent clarity — unified progress status, draft-aware show-foundation, universal next-step guidance"
+        },
+        {
           "name": "@done",
           "description": "Complete"
         },
@@ -2388,6 +2416,14 @@
         {
           "name": "@prov-143",
           "description": "Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them)"
+        },
+        {
+          "name": "@prov-144",
+          "description": "Work unit PROV-144 — per-profile Max Images limit: numeric field on the OpenAI profile form (absent => default 4, 0 = no vision), persisted as maxImages, resolved into the tool-layer session budget registry, and enforced in the Read tool image/PDF paths"
+        },
+        {
+          "name": "@prov-146",
+          "description": "Work unit PROV-146 — OpenAI cloud catalog excluded from the OpenAI API provider section: the standalone 'openai' cloud section is never populated from the models.dev catalog in list_providers (the openai provider is for local OpenAI-protocol servers only); cloud OpenAI models surface exclusively under Codex (ChatGPT)."
         },
         {
           "name": "@refactor",
@@ -2488,6 +2524,10 @@
         {
           "name": "@todo",
           "description": "To Do"
+        },
+        {
+          "name": "@tool-022",
+          "description": "Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt)"
         },
         {
           "name": "@wip",
@@ -2938,7 +2978,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-08-31T00:33:52.704Z",
+    "lastUpdated": "2026-09-05T11:49:09.281Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

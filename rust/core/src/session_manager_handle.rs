@@ -645,6 +645,31 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         None
     }
 
+    /// TOOL-022 P2: snapshot of the active exec-stdin request, if any.
+    /// Pure overlay — NO status flip, NO response channel.
+    fn get_exec_stdin_request(
+        &self,
+        session_id: &SessionId,
+    ) -> Option<codelet_rpc_types::ExecStdinRequest> {
+        let _ = session_id;
+        None
+    }
+
+    /// TOOL-022 P2: write typed text to a live exec session's stdin
+    /// (a trailing newline is appended when absent, matching the
+    /// unified_exec `write` action semantics). Unknown agent session
+    /// or unknown/exited exec session returns a clean error naming
+    /// the offending id.
+    fn write_exec_stdin(
+        &self,
+        session_id: &SessionId,
+        exec_session_id: &str,
+        text: &str,
+    ) -> Result<(), String> {
+        let _ = (session_id, exec_session_id, text);
+        Ok(())
+    }
+
     /// RPC-037: round-trip an `FspecCommandRequest` reply.
     fn send_fspec_result(&self, session_id: &SessionId, result: FspecResult) -> Result<(), String> {
         let _ = (session_id, result);

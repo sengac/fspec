@@ -17,7 +17,8 @@ use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
-    CompactionProgress, CompactionResult, CustomModelDefinition, FspecResult, HealthInfo,
+    CompactionProgress, CompactionResult, CustomModelDefinition, ExecStdinRequest, FspecResult,
+    HealthInfo,
     HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
     MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState, ProviderCredentialInfo,
     ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
@@ -1101,6 +1102,39 @@ impl FspecBackend for WebSocketFspecBackend {
             .client()
             .get_hitl_request(context::current(), session_id)
             .await?)
+    }
+
+    async fn get_exec_stdin_request(&self, session_id: SessionId) -> Result<Option<ExecStdinRequest>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_exec_stdin_request(context::current(), session_id)
+            .await?)
+    }
+
+    async fn write_exec_stdin(
+        &self,
+        session_id: SessionId,
+        exec_session_id: String,
+        text: String,
+    ) -> Result<(), String> {
+        let guard = self.client.read().await;
+        // The method's error type is `String` (the backend surfaces its
+        // business error verbatim), so the `Disconnected` sentinel maps
+        // to its Display string rather than propagating the typed error.
+        let client = guard
+            .as_ref()
+            .ok_or_else(|| BackendError::Disconnected.to_string())?;
+        // The tarpc service method returns `Result<(), String>` wrapped
+        // in the transport's own `Result<_, tarpc::Error>` — surface the
+        // transport error as its Display string, then unwrap the
+        // business result (which already names the exec session id).
+        client
+            .client()
+            .write_exec_stdin(context::current(), session_id, exec_session_id, text)
+            .await
+            .map_err(|e| e.to_string())?
     }
 
     async fn send_fspec_result(&self, session_id: SessionId, result: FspecResult) -> Result<()> {

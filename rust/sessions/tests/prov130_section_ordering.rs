@@ -205,30 +205,30 @@ async fn no_profiles_default_comes_from_first_cloud_section() {
     let providers = handle.list_providers();
 
     // @step Then only credentialed cloud sections appear in canonical order
+    // (PROV-146: the standalone 'openai' cloud section is excluded from
+    // catalog population, so anthropic is the only populated cloud section)
     assert!(
         providers.iter().all(|p| p.profile_name.is_none()),
         "PROV-130: no profile/custom sections should appear; keys: {:?}",
         providers.iter().map(|p| p.key.as_str()).collect::<Vec<_>>(),
     );
     let cloud_keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
-    let openai_pos = cloud_keys
-        .iter()
-        .position(|k| *k == "openai")
-        .expect("openai cloud section present");
-    let anthropic_pos = cloud_keys
-        .iter()
-        .position(|k| *k == "anthropic")
-        .expect("anthropic cloud section present");
     assert!(
-        openai_pos < anthropic_pos,
-        "PROV-130: canonical cloud order places openai before anthropic; keys: {cloud_keys:?}",
+        cloud_keys.contains(&"anthropic"),
+        "anthropic cloud section must be present; keys: {cloud_keys:?}",
+    );
+    assert!(
+        !cloud_keys.contains(&"openai"),
+        "PROV-146: the standalone 'openai' cloud section must not appear; keys: {cloud_keys:?}",
     );
 
     // @step And the auto-selected default model resolves to the first populated cloud section's first model
+    // (anthropic, since PROV-146 removed the openai cloud section)
     let resolved = resolve_startup_model(&providers, None).expect("a default model must resolve");
     assert_eq!(
-        resolved.model_string, "openai/o3",
-        "PROV-130: with no profiles the default is the first cloud section's first model",
+        resolved.model_string, "anthropic/claude-opus-4-5",
+        "PROV-130: with no profiles the default is the first populated cloud section's first model; got {}",
+        resolved.model_string,
     );
 
     clear_api_keys();

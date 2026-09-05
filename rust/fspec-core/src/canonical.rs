@@ -1022,6 +1022,8 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "bootstrap",                                 // RPC-200
     "report-bug-to-github",                      // RPC-285
     "review",                                    // RPC-295
+    // DISC-003 — Rust-only extension commands (not in the 162 canonical list)
+    "foundation-status", // DISC-003 (extension)
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

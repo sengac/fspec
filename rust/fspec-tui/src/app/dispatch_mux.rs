@@ -111,7 +111,17 @@ impl App {
                 }
             },
             MuxSubcommand::Default => {
-                let config = MuxConfig::default();
+                // BUG-175: enter the grid in lockstep with the live
+                // view — the default preset (orientation/splits/panes/
+                // home focus) with the enabled flag ON. Entering
+                // ViewMode::Mux with the flag still off would leave
+                // every flag-gated path (Shift+Left/Right intercept,
+                // key classification, the R6 auto-save) mis-firing
+                // inside the grid.
+                let config = crate::views::multiplex::MuxConfig {
+                    enabled: true,
+                    ..MuxConfig::default()
+                };
                 self.navigator
                     .mux
                     .enable_with_config(config, self.navigator.active_view);

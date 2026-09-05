@@ -52,8 +52,10 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     // config replacements (both use `replace`, so order does not matter).
     let in_capture = crate::utils::mode::in_capture_mode();
     content = content.replace("__AST_RESEARCH_BLOCK__", ast_research_block(in_capture));
-    content = content
-        .replace("__AST_RESEARCH_NOTES_BLOCK__", ast_research_notes(in_capture));
+    content = content.replace(
+        "__AST_RESEARCH_NOTES_BLOCK__",
+        ast_research_notes(in_capture),
+    );
 
     // 1. Apply config string-replacements (parity with bootstrap.ts:154-176).
     content = apply_config_replacements(project_root, content);

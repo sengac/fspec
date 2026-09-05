@@ -30,6 +30,7 @@ pub mod dispatch_compaction_hide;
 pub mod dispatch_create_session_dialog;
 pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
+pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
 pub mod dispatch_fspec_runner;
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
@@ -53,6 +54,7 @@ pub mod dispatch_session_cycle;
 pub mod dispatch_slash_clear;
 pub mod dispatch_slash_commands;
 pub mod dispatch_slash_continue; // CONT-002: /continue apply + backend round-trip
+pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-submit path
 pub mod dispatch_slash_debug;
 pub mod dispatch_slash_goal; // CONT-003: /goal apply + backend round-trip
 pub mod dispatch_slash_loop;

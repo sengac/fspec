@@ -62,11 +62,15 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     });
 
     if result.success {
-        let message = serde_json::from_str::<Value>(&result.data)
-            .ok()
-            .and_then(|v| v.get("message").and_then(Value::as_str).map(str::to_string))
+        let envelope = serde_json::from_str::<Value>(&result.data).unwrap_or(Value::Null);
+        let message = envelope
+            .get("message")
+            .and_then(Value::as_str)
+            .map(str::to_string)
             .unwrap_or_default();
         println!("✓ {message}");
+        // DISC-003 rule 4/14: print the event-storm trailer.
+        crate::common::print_next_steps(&envelope);
         Ok(0)
     } else {
         let raw = result.error.unwrap_or_default();

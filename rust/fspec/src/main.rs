@@ -54,6 +54,8 @@ mod list_epics;
 mod list_feature_tags;
 mod list_features;
 mod list_foundation_sections;
+// DISC-003 — Rust-only extension command
+mod foundation_status;
 mod list_hooks;
 mod list_prefixes;
 mod list_scenario_tags;
@@ -570,6 +572,10 @@ enum Mode {
         /// Read from `foundation.json.draft` instead of `foundation.json`.
         #[arg(long)]
         draft: bool,
+        /// DISC-003: force the finalized `foundation.json` even when a draft
+        /// exists (defeats the draft auto-preference).
+        #[arg(long)]
+        r#final: bool,
         /// Accepted for TS parity; lists all valid sections.
         #[arg(long = "list-sections")]
         list_sections: bool,
@@ -1924,7 +1930,12 @@ enum Mode {
         name = "validate-foundation-schema",
         about = "Validate foundation.json against its JSON schema using Ajv"
     )]
-    ValidateFoundationSchema {},
+    ValidateFoundationSchema {
+        /// DISC-003: validate `spec/foundation.json.draft` instead of the
+        /// finalized `spec/foundation.json`.
+        #[arg(long)]
+        draft: bool,
+    },
     /// RPC-320: validate Gherkin syntax in feature files.
     #[command(
         name = "validate",
@@ -2294,6 +2305,15 @@ enum Mode {
         #[arg(long = "force", action = clap::ArgAction::SetTrue)]
         force: bool,
     },
+    /// DISC-003: read-only progress report for foundation discovery.
+    #[command(
+        name = "foundation-status",
+        about = "Show foundation phase, 8-field progress, and remaining fields with fix commands"
+    )]
+    FoundationStatus {
+        #[arg(long)]
+        json: bool,
+    },
     /// RPC-234: generate a context-only Gherkin scaffold from an Example Map.
     #[command(
         name = "generate-scenarios",
@@ -2322,7 +2342,10 @@ enum Mode {
         work_unit: Option<String>,
     },
     /// CLI-015: AST code search via the native AstGrep tool implementation.
-    #[command(name = "astgrep", about = "AST code search (pattern-based, language-aware)")]
+    #[command(
+        name = "astgrep",
+        about = "AST code search (pattern-based, language-aware)"
+    )]
     AstGrep {
         #[arg(long = "pattern", value_name = "pattern", required = true)]
         pattern: Option<String>,
@@ -2578,6 +2601,7 @@ async fn main() -> std::process::ExitCode {
             format,
             output,
             draft,
+            r#final: final_flag,
             list_sections,
             line_numbers,
         }) => forward!(
@@ -2587,6 +2611,7 @@ async fn main() -> std::process::ExitCode {
                 format,
                 output,
                 draft,
+                r#final: final_flag,
                 list_sections,
                 line_numbers,
             }
@@ -3575,9 +3600,9 @@ async fn main() -> std::process::ExitCode {
             forward!(validate_work_units::run, validate_work_units::CliArgs {})
         }
         Some(Mode::ValidateHooks {}) => forward!(validate_hooks::run, validate_hooks::CliArgs {}),
-        Some(Mode::ValidateFoundationSchema {}) => forward!(
+        Some(Mode::ValidateFoundationSchema { draft }) => forward!(
             validate_foundation_schema::run,
-            validate_foundation_schema::CliArgs
+            validate_foundation_schema::CliArgs { draft }
         ),
         Some(Mode::Validate { file, verbose }) => {
             forward!(validate::run, validate::CliArgs { file, verbose })
@@ -3809,6 +3834,9 @@ async fn main() -> std::process::ExitCode {
                 force,
             }
         ),
+        Some(Mode::FoundationStatus { json }) => {
+            forward!(foundation_status::run, foundation_status::CliArgs { json })
+        }
         Some(Mode::GenerateScenarios {
             work_unit_id,
             feature,
@@ -4228,6 +4256,7 @@ fn intercept_ts_help() -> Option<u8> {
         }
         "show-event-storm" => format_command_help(&configs::show_event_storm::CONFIG),
         "show-foundation" => format_command_help(&configs::show_foundation::CONFIG),
+        "foundation-status" => format_command_help(&configs::foundation_status::CONFIG),
         "show-foundation-event-storm" => {
             format_command_help(&configs::show_foundation_event_storm::CONFIG)
         }

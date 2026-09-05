@@ -24,7 +24,13 @@ pub async fn extract_binary(
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::path::PathBuf::from("."));
-    let extracted = install_dir.join(format!(".fspec-update-{}.bin", install_path.file_name().and_then(|n| n.to_str()).unwrap_or("fspec")));
+    let extracted = install_dir.join(format!(
+        ".fspec-update-{}.bin",
+        install_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("fspec")
+    ));
 
     let is_zip = archive.extension().and_then(|e| e.to_str()) == Some("zip");
     if is_zip {
@@ -80,9 +86,11 @@ fn extract_targz(archive: &Path, out: &Path) -> Result<(), UpdateError> {
         .entries()
         .map_err(|e| UpdateError::ReplaceFailed(format!("tar entries: {e}")))?
     {
-        let mut entry =
-            entry.map_err(|e| UpdateError::ReplaceFailed(format!("tar entry: {e}")))?;
-        let name = entry.path().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
+        let mut entry = entry.map_err(|e| UpdateError::ReplaceFailed(format!("tar entry: {e}")))?;
+        let name = entry
+            .path()
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_default();
         let file_name = Path::new(&name)
             .file_name()
             .and_then(|n| n.to_str())
@@ -104,8 +112,8 @@ fn extract_targz(archive: &Path, out: &Path) -> Result<(), UpdateError> {
 fn extract_zip(archive: &Path, out: &Path) -> Result<(), UpdateError> {
     let file = std::fs::File::open(archive)
         .map_err(|e| UpdateError::ReplaceFailed(format!("open archive: {e}")))?;
-    let mut zip =
-        zip::ZipArchive::new(file).map_err(|e| UpdateError::ReplaceFailed(format!("zip open: {e}")))?;
+    let mut zip = zip::ZipArchive::new(file)
+        .map_err(|e| UpdateError::ReplaceFailed(format!("zip open: {e}")))?;
     for i in 0..zip.len() {
         let mut entry = zip
             .by_index(i)

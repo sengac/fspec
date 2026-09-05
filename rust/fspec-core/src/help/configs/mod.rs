@@ -17,6 +17,8 @@ pub mod list_schedules;
 pub mod list_tags;
 pub mod list_virtual_hooks;
 pub mod list_work_units;
+// DISC-003 — Rust-only extension commands
+pub mod foundation_status;
 pub mod query_bottlenecks;
 pub mod query_dependency_stats;
 pub mod query_estimate_accuracy;

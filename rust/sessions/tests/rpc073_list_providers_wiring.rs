@@ -44,16 +44,24 @@ static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
 /// Returns the `TempDir` guard — the caller must keep it alive for the whole
 /// test body so `build_cloud_registry` can read the seeded cache. Mirrors the
 /// e2e fixture seeding in `e2e/prov-126-cloud-sections.test.ts`.
-fn seed_populated_cloud_env() -> tempfile::TempDir {
+///
+/// PROV-146: also isolates `FSPEC_USER_DIR` to an empty temp dir so the
+/// caller's real local-server openai profiles (`build_local_profile_sections`
+/// reads `~/.fspec/fspec-config.json`) cannot leak into the assertion that
+/// every returned section carries >= 1 model (unreachable profile sections
+/// legitimately carry zero models).
+fn seed_populated_cloud_env() -> (tempfile::TempDir, tempfile::TempDir) {
     std::env::set_var("OPENAI_API_KEY", "sk-openai-test-dummy");
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy");
     std::env::set_var("GEMINI_API_KEY", "AIza-test-dummy");
+    let user_dir = tempfile::tempdir().expect("create empty FSPEC_USER_DIR");
+    std::env::set_var("FSPEC_USER_DIR", user_dir.path());
     let data_dir = tempfile::tempdir().expect("create temp data dir");
     let cache_dir = data_dir.path().join("cache");
     fs::create_dir_all(&cache_dir).expect("create cache dir");
     fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models cache");
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
-    data_dir
+    (data_dir, user_dir)
 }
 
 /// Workspace root (one level above `rust/sessions/`).
@@ -169,7 +177,7 @@ async fn list_providers_returns_all_six_built_in_providers() {
     // when they expose >=1 model (credentialed + present in the models.dev
     // cache). We seed openai/anthropic/gemini so they populate; zai/codex/
     // github-copilot are left uncredentialed/absent so they are dropped.
-    let _data_dir = seed_populated_cloud_env();
+    let (_data_dir, _user_dir) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
 
@@ -193,16 +201,25 @@ async fn list_providers_returns_all_six_built_in_providers() {
         );
     }
 
-    // @step Then the entries include the credentialed built-in provider keys 'openai' and 'anthropic'
+    // @step Then the entries include the credentialed built-in provider keys 'anthropic' and 'gemini'
+    //
+    // PROV-146: the standalone 'openai' cloud section is excluded from
+    // cloud-catalog population (the openai provider is for local
+    // OpenAI-protocol servers only — cloud OpenAI models live under Codex),
+    // so it must NOT appear here even though OPENAI_API_KEY is seeded.
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
-    for builtin in ["openai", "anthropic"] {
+    for builtin in ["anthropic", "gemini"] {
         assert!(
             keys.contains(&builtin),
             "PROV-127: credentialed built-in '{builtin}' missing from list_providers result; got keys: {keys:?}",
         );
     }
+    assert!(
+        !keys.contains(&"openai"),
+        "PROV-146: the standalone 'openai' cloud section must not be listed; got keys: {keys:?}",
+    );
 
-    // @step Then zero-model built-in cloud providers such as 'codex' and 'zai' are dropped from the result
+    // @step Then zero-model built-in cloud providers such as 'codex', 'zai' and 'openai' are dropped from the result
     //
     // codex is genuinely absent from models.dev (KNOWN_ABSENT_FROM_MODELS_DEV)
     // and zai has no seeded credentials/catalog entry — both resolve to zero
@@ -226,7 +243,7 @@ async fn list_providers_entries_have_populated_fields() {
         .unwrap_or_else(std::sync::PoisonError::into_inner);
 
     // @step Given list_providers has been called with seeded credentials and returned a non-empty Vec
-    let _data_dir = seed_populated_cloud_env();
+    let (_data_dir, _user_dir) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
     let providers = handle.list_providers();
@@ -271,38 +288,40 @@ async fn list_providers_maps_provider_info_fields_correctly() {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
 
-    // @step Given a seeded models.dev cache and credentials populate the built-in 'openai' provider with a reasoning-capable model whose supports_thinking=true
+    // @step Given a seeded models.dev cache and credentials populate the built-in 'anthropic' provider with a reasoning-capable model whose supports_thinking=true
     //
-    // The seeded catalog gives openai the `o3` model (reasoning=true,
-    // tool_call=true, context=200000). The models.dev `reasoning` flag maps to
-    // `supports_thinking` on the source struct and to `supports_reasoning` on
-    // the wire `ModelEntry`; the `usize` limit maps to `u32` (saturating).
-    let _data_dir = seed_populated_cloud_env();
+    // PROV-146: this test now uses 'anthropic' instead of 'openai'. The
+    // seeded catalog gives anthropic the `claude-opus-4-5` model
+    // (reasoning=true, tool_call=true, context=200000). The models.dev
+    // `reasoning` flag maps to `supports_thinking` on the source struct and
+    // to `supports_reasoning` on the wire `ModelEntry`; the `usize` limit
+    // maps to `u32` (saturating).
+    let (_data_dir, _user_dir) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
 
     // @step When the trait override list_providers maps the value into a codelet_rpc_types::ProviderInfo
     let providers = handle.list_providers();
-    let openai = providers
+    let anthropic = providers
         .iter()
-        .find(|p| p.key == "openai")
-        .expect("openai entry must exist");
+        .find(|p| p.key == "anthropic")
+        .expect("anthropic entry must exist");
 
-    // @step Then the resulting codelet_rpc_types::ProviderInfo has key='openai', a non-empty display, and a child ModelEntry with supports_reasoning=true and is_custom=false
-    assert_eq!(openai.key, "openai");
+    // @step Then the resulting codelet_rpc_types::ProviderInfo has key='anthropic', a non-empty display, and a child ModelEntry with supports_reasoning=true and is_custom=false
+    assert_eq!(anthropic.key, "anthropic");
     assert!(
-        !openai.display_name.is_empty(),
+        !anthropic.display_name.is_empty(),
         "display_name falls back to the provider name and must be non-empty",
     );
     assert!(
-        !openai.models.is_empty(),
-        "PROV-127: the populated 'openai' section must carry its seeded models",
+        !anthropic.models.is_empty(),
+        "PROV-127: the populated 'anthropic' section must carry its seeded models",
     );
-    let reasoning_model = openai
+    let reasoning_model = anthropic
         .models
         .iter()
         .find(|m| m.supports_reasoning)
-        .expect("seeded 'o3' model has reasoning=true → supports_reasoning=true");
+        .expect("seeded 'claude-opus-4-5' model has reasoning=true → supports_reasoning=true");
     assert!(
         !reasoning_model.is_custom,
         "built-in cloud models carry is_custom=false",
@@ -310,10 +329,11 @@ async fn list_providers_maps_provider_info_fields_correctly() {
 
     // @step Then context_window and max_output_tokens are converted from usize to u32 with saturating cast
     //
-    // The seeded `o3` limit.context is 200000, well within u32 range: the
-    // wire `ModelEntry.context_window` is u32 by definition and must carry the
-    // saturating-cast value (u32::MAX had the source usize exceeded u32::MAX).
-    for m in &openai.models {
+    // The seeded `claude-opus-4-5` limit.context is 200000, well within u32
+    // range: the wire `ModelEntry.context_window` is u32 by definition and
+    // must carry the saturating-cast value (u32::MAX had the source usize
+    // exceeded u32::MAX).
+    for m in &anthropic.models {
         let _cw: u32 = m.context_window;
         let _sr: bool = m.supports_reasoning;
         let _vis: bool = m.supports_vision;

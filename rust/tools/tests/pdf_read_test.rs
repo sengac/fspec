@@ -210,17 +210,17 @@ async fn test_reject_password_protected_pdf_with_clear_error() {
 #[tokio::test]
 #[serial]
 async fn test_visual_mode_includes_page_count() {
-    // @step Given a PDF file "report.pdf" with 25 pages of content
+    // @step Given a PDF file "report.pdf" with 3 pages of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("report.pdf");
-    let pages: Vec<String> = (1..=25)
+    let pages: Vec<String> = (1..=3)
         .map(|i| format!("Report page {i} content"))
         .collect();
     let page_refs: Vec<&str> = pages.iter().map(std::string::String::as_str).collect();
     let pdf_bytes = create_test_pdf_with_pages(&page_refs);
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
-    // @step When the read tool is called with pdf_mode="visual"
+    // @step When the read tool is called with pdf_mode="visual" and no offset or limit
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
@@ -231,7 +231,7 @@ async fn test_visual_mode_includes_page_count() {
         })
         .await;
 
-    // @step Then the response should include the total page count (25)
+    // @step Then the response should include the total page count (3)
     let output = result.expect("Visual mode should succeed");
 
     let read_output: serde_json::Value =
@@ -246,16 +246,23 @@ async fn test_visual_mode_includes_page_count() {
     let total_pages = parsed
         .get("total_pages")
         .and_then(serde_json::Value::as_u64);
-    assert_eq!(total_pages, Some(25), "Should have 25 total pages");
+    assert_eq!(total_pages, Some(3), "Should have 3 total pages");
 
-    // @step And all 25 pages should be rendered as base64-encoded PNG images
+    // @step And all 3 pages should be rendered as base64-encoded PNG images
     if let Some(pages) = parsed.get("pages").and_then(|p| p.as_array()) {
-        assert_eq!(pages.len(), 25, "Should have 25 rendered pages");
+        assert_eq!(pages.len(), 3, "Should have 3 rendered pages");
         for page in pages {
             let media_type = page.get("media_type").and_then(|m| m.as_str());
             assert_eq!(media_type, Some("image/png"), "Each page should be PNG");
         }
     }
+
+    // @step And no truncation notice should be present because the whole document fit
+    let notice = parsed.get("notice").and_then(|n| n.as_str());
+    assert!(
+        notice.is_none_or(str::is_empty),
+        "no truncation notice when the document fits entirely, got: {notice:?}"
+    );
 }
 
 /// Scenario: Text mode handles scanned PDFs gracefully

@@ -1,0 +1,66 @@
+{
+  "scenarios": [
+    {
+      "name": "The maxImages value round-trips through wire and disk",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_persistence.rs",
+          "lines": "47-73",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_persistence.rs",
+              "lines": [
+                213,
+                214
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/prov144_max_images_persistence.rs",
+          "lines": "126-141",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/conversions.rs",
+              "lines": [
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing maxImages key resolves to the default 4",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov144_max_images_persistence.rs",
+          "lines": "77-118",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov144_max_images_persistence.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/profile_persistence.rs",
+      "rust/sessions/src/conversions.rs",
+      "rust/sessions/src/profile_sections.rs"
+    ],
+    "totalLinesCovered": 90
+  }
+}

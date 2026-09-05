@@ -246,21 +246,6 @@ fn earlier_rpc_005_010_test_suites_still_pass() {
         );
     }
 
-    // @step And the existing Vitest smoke `src/__tests__/napi-workunitinfo-shape.test.ts` still passes
-    let project_root = workspace_root()
-        .parent()
-        .expect("project root above rust/")
-        .to_path_buf();
-    let napi_smoke = project_root
-        .join("src")
-        .join("__tests__")
-        .join("napi-workunitinfo-shape.test.ts");
-    assert!(
-        napi_smoke.is_file(),
-        "Vitest NAPI smoke must still exist at {}",
-        napi_smoke.display()
-    );
-
     // @step And no test was disabled, skipped, or marked #[ignore] to make RPC-011 green
     // Source-shape sweep: read every tests/*.rs we just asserted, verify
     // no NEW #[ignore] attributes appear inside scenario-named tests.

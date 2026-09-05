@@ -54,6 +54,9 @@ async fn fresh_session() -> (tempfile::TempDir, Arc<SessionManager>, Arc<Backgro
     // creates a fresh SessionStore pointing to the new temp dir.
     reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data dir");
+    // Hermetic: seed a fake key so anthropic credential validation passes
+    // regardless of the developer's shell (no ambient ANTHROPIC_API_KEY).
+    std::env::set_var("ANTHROPIC_API_KEY", "cont009-fake-key");
     let manager = Arc::new(SessionManager::new());
     manager.set_default_model("anthropic/claude-opus-4-5");
     let handle: &dyn SessionManagerHandle = manager.as_ref();

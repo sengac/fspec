@@ -586,9 +586,14 @@ fn scenario_impl_block_exists_with_every_override() {
     let block_on_count = after_impl
         .matches("tokio::runtime::Handle::current().block_on(")
         .count();
+    // The upper bound tracks the current bridge inventory: 5 per-method
+    // bridges in handle_impl.rs (resume_session, compact_session,
+    // restore_session_messages, create_isolated_session,
+    // test_provider_connection) plus the shared sync→async bridge helper,
+    // plus the profile_sections.rs `/v1/models` probe bridge = 7.
     assert!(
-        (1..=6).contains(&block_on_count),
-        "expected 1..=6 `tokio::runtime::Handle::current().block_on(` occurrences inside the SessionManagerHandle impl, found {block_on_count}",
+        (1..=7).contains(&block_on_count),
+        "expected 1..=7 `tokio::runtime::Handle::current().block_on(` occurrences inside the SessionManagerHandle impl, found {block_on_count}",
     );
 }
 

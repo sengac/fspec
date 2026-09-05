@@ -135,10 +135,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Atomic write with trailing newline (TS appends `'\n'`).
     write_json_atomic_trailing_newline(&target_path, &foundation)?;
 
+    // DISC-003 rule 4: universal progress trailer on the success envelope.
+    let next_steps = crate::foundation::guidance::draft_trailer(&foundation);
+
     let result = json!({
         "success": true,
         "fileName": file_name,
         "name": args.name,
+        "nextSteps": next_steps,
     });
     serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {
         command: "remove-persona",

@@ -16,6 +16,7 @@ pub mod bash_output;
 pub mod bash_process;
 #[cfg(windows)]
 pub mod bash_process_windows;
+pub mod bash_session; // TOOL-022 P4: BashTool execution via unified exec sessions
 pub mod bash_streams;
 pub mod blocklist;
 pub mod bridge;
@@ -45,11 +46,13 @@ pub mod image_dimensions;
 pub mod limits;
 pub mod ls;
 pub mod mcp;
+pub mod model_capabilities; // BUG-168: session-scoped model capability registry
 pub mod page_fetcher;
 pub mod pdf;
 pub mod pre_tool_hook;
 pub mod profile;
 pub mod read;
+pub mod read_image_budget; // PROV-144: per-session Read-tool image-budget enforcement
 pub mod request_user_input;
 pub mod schedule;
 pub mod search_engine;

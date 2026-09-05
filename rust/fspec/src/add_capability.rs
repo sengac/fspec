@@ -67,6 +67,12 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             println!("✓ Added capability to {file_name}");
             println!("  Name: {name}");
             println!("  Description: {description}");
+            // DISC-003 rule 4/14: print the progress trailer (2 indented lines).
+            if let Some(ns) = parsed.get("nextSteps").and_then(Value::as_str) {
+                for line in ns.lines() {
+                    println!("  {line}");
+                }
+            }
             Ok(0)
         }
         Err(err) => {

@@ -1,0 +1,328 @@
+{
+  "scenarios": [
+    {
+      "name": "/mux save persists to the shared fspec-config.json with no manual persist-dirs wiring",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
+          "lines": "111-137",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/state.rs",
+              "lines": [
+                396,
+                397,
+                398,
+                399,
+                400,
+                401
+              ]
+            },
+            {
+              "file": "rust/fspec/src/client.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "committing the mux config dialog with 's' persists tui.mux to the shared config",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
+          "lines": "147-185",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            },
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "exiting mux mode auto-saves the post-exit config to tui.mux",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
+          "lines": "194-217",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a project-scope tui.mux overrides the user-scope value on load",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
+          "lines": "225-256",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "an unresolvable data directory never panics load or save",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
+          "lines": "264-300",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/mux_config_persistence.rs",
+      "rust/fspec-tui/src/store/mux_state.rs",
+      "rust/fspec-tui/src/app/state.rs",
+      "rust/fspec/src/client.rs",
+      "rust/fspec-tui/src/components/mux_config_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_mux.rs",
+      "rust/fspec-tui/src/app/dispatch.rs"
+    ],
+    "totalLinesCovered": 360
+  }
+}

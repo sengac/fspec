@@ -21,19 +21,10 @@
 
 use super::blocklist::check_bash_command;
 use super::error::ToolError;
-use crate::bash_binary_guard::{detect_bash_binary_output, format_binary_guard_message};
-use crate::bash_output::{BashOutput, StreamBuffers};
-use crate::bash_process::{spawn_command, take_stdio_handles};
-use crate::bash_streams::{spawn_readers, wait_for_tasks_with_abort, StdoutStreamMode};
 use rig::tool::Tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-
-#[cfg(unix)]
-use crate::bash_process::ProcessGroupKiller;
-#[cfg(windows)]
-use crate::bash_process::WindowsProcessTreeKiller;
 
 // Re-export public items so external users can still use `bash::*`
 pub use crate::bash_abort::{
@@ -142,62 +133,20 @@ impl BashTool {
         // TUI-091: Also update footer CWD registry for dynamic display
         let cwd = self.resolve_and_track_cwd(args.cwd);
 
-        // Spawn process
-        let mut child = spawn_command(&args.command, cwd.as_deref())?;
-
-        // Create process group killer guard (Unix) / process tree killer (Windows)
-        #[cfg(unix)]
-        let pg_killer = ProcessGroupKiller::new(&child);
-        #[cfg(windows)]
-        let tree_killer = WindowsProcessTreeKiller::new(&child);
-
-        // Take stdio handles
-        let (stdout, stderr) = take_stdio_handles(&mut child)?;
-
-        // Set up buffers
-        let buffers = StreamBuffers::new();
+        // TOOL-022 P4: delegate to the unified exec session machinery —
+        // live session (stdin piped, pager env, abort-flag aware) with
+        // the TOOL-022 P2 quiet detector armed for the TUI overlay.
+        // stdout lines stream to the callback; stderr stays in the
+        // final result (pre-P4 streaming contract).
         clear_bash_abort(self.session_id);
-
-        // Spawn reader tasks with streaming callback
-        let (stdout_task, stderr_task) = spawn_readers(
-            stdout,
-            stderr,
-            &buffers,
-            StdoutStreamMode::Callback(callback),
-            false, // Don't stream stderr to the provided callback
+        let result = crate::bash_session::run_bash_session(
             self.session_id,
-        );
-
-        // Wait for completion with abort checking
-        #[cfg(unix)]
-        wait_for_tasks_with_abort(stdout_task, stderr_task, &pg_killer, self.session_id).await?;
-        #[cfg(windows)]
-        wait_for_tasks_with_abort(stdout_task, stderr_task, &tree_killer, self.session_id).await?;
-        #[cfg(not(any(unix, windows)))]
-        wait_for_tasks_with_abort(stdout_task, stderr_task, self.session_id).await?;
-
-        // Wait for process exit
-        let status = child.wait().await.map_err(|e| ToolError::Execution {
-            tool: "bash",
-            message: e.to_string(),
-        })?;
-
-        // Build and format output
-        let (stdout_bytes, stderr_content) = buffers.extract().await;
-
-        // BUG-142: binary-output guard. If the command emitted binary bytes
-        // (e.g. `cat /tmp/icon.png`), suppress the payload and return a
-        // structured error instructing the agent to use the Read tool
-        // instead. Runs regardless of exit status.
-        if let Some(kind) = detect_bash_binary_output(&stdout_bytes) {
-            return Err(ToolError::Execution {
-                tool: "bash",
-                message: format_binary_guard_message(kind),
-            });
-        }
-
-        let stdout_content = String::from_utf8_lossy(&stdout_bytes).into_owned();
-        BashOutput::from_execution(stdout_content, stderr_content, status).into_result()
+            &args.command,
+            cwd.as_deref(),
+            crate::bash_session::BashUiStream::Callback(callback),
+        )
+        .await?;
+        crate::bash_session::finalize_bash_result(result)
     }
 }
 
@@ -250,58 +199,19 @@ impl rig::tool::Tool for BashTool {
         // TUI-091: Also update footer CWD registry for dynamic display
         let cwd = self.resolve_and_track_cwd(args.cwd);
 
-        // Spawn process
-        let mut child = spawn_command(&args.command, cwd.as_deref())?;
-
-        // Create process group killer guard (Unix) / process tree killer (Windows)
-        #[cfg(unix)]
-        let pg_killer = ProcessGroupKiller::new(&child);
-        #[cfg(windows)]
-        let tree_killer = WindowsProcessTreeKiller::new(&child);
-
-        // Take stdio handles
-        let (stdout, stderr) = take_stdio_handles(&mut child)?;
-
-        // Set up buffers
-        let buffers = StreamBuffers::new();
+        // TOOL-022 P4: delegate to the unified exec session machinery —
+        // live session (stdin piped, pager env, abort-flag aware) with
+        // the TOOL-022 P2 quiet detector armed for the TUI overlay.
+        // stdout AND stderr stream to the UI via tool progress (red
+        // styling for stderr — pre-P4 contract preserved).
         clear_bash_abort(self.session_id);
-
-        // Spawn reader tasks with per-session progress callback (BUG-126)
-        let (stdout_task, stderr_task) = spawn_readers(
-            stdout,
-            stderr,
-            &buffers,
-            StdoutStreamMode::ToolProgress,
-            true, // Stream stderr to UI with is_stderr=true for red styling
+        let result = crate::bash_session::run_bash_session(
             self.session_id,
-        );
-
-        // Wait for completion with abort checking
-        #[cfg(unix)]
-        wait_for_tasks_with_abort(stdout_task, stderr_task, &pg_killer, self.session_id).await?;
-        #[cfg(windows)]
-        wait_for_tasks_with_abort(stdout_task, stderr_task, &tree_killer, self.session_id).await?;
-        #[cfg(not(any(unix, windows)))]
-        wait_for_tasks_with_abort(stdout_task, stderr_task, self.session_id).await?;
-
-        // Wait for process exit
-        let status = child.wait().await.map_err(|e| ToolError::Execution {
-            tool: "bash",
-            message: e.to_string(),
-        })?;
-
-        // Build and format output
-        let (stdout_bytes, stderr_content) = buffers.extract().await;
-
-        // BUG-142: binary-output guard — see BashTool::call_with_streaming for rationale.
-        if let Some(kind) = detect_bash_binary_output(&stdout_bytes) {
-            return Err(ToolError::Execution {
-                tool: "bash",
-                message: format_binary_guard_message(kind),
-            });
-        }
-
-        let stdout_content = String::from_utf8_lossy(&stdout_bytes).into_owned();
-        BashOutput::from_execution(stdout_content, stderr_content, status).into_result()
+            &args.command,
+            cwd.as_deref(),
+            crate::bash_session::BashUiStream::ToolProgress,
+        )
+        .await?;
+        crate::bash_session::finalize_bash_result(result)
     }
 }

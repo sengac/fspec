@@ -116,14 +116,6 @@ Feature: RPC-020 source-shape regression for the slash + file search popup port
     Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
     And no file constructs `tokio::runtime::Builder` or `Runtime::new()`
 
-  Scenario: Existing TS slash + file search components are untouched
-    Given the project root after RPC-020 lands
-    Then the file src/tui/components/SlashCommandPalette.tsx exists
-    And the file src/tui/components/FileSearchPopup.tsx exists
-    And the file src/tui/hooks/useSlashCommandInput.ts exists
-    And the file src/tui/hooks/useFileSearchInput.ts exists
-    And the file src/tui/utils/slashCommands.ts exists
-
   @no-alias
   @ts-parity
   Scenario: SlashCommandAction enum contains no Providers variant

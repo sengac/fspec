@@ -16,13 +16,19 @@ use super::profile_form::ProfileForm;
 pub(super) const STREAMING_FIELD_INDEX: usize = 5;
 
 /// PROV-143: index of the Preserve Thinking field in `PROFILE_FORM_FIELDS`
-/// (the 8th, last entry).
+/// (the 8th entry).
 pub(super) const PRESERVE_THINKING_FIELD_INDEX: usize = 7;
 
-/// True when `field_index` targets a boolean toggle field (Streaming or
-/// PROV-143's Preserve Thinking).
+/// PROV-145: index of the Loop Detection field in `PROFILE_FORM_FIELDS`
+/// (the 10th entry, first of the four appended loop-detection fields).
+pub(super) const LOOP_DETECTION_FIELD_INDEX: usize = 9;
+
+/// True when `field_index` targets a boolean toggle field (Streaming,
+/// PROV-143's Preserve Thinking, or PROV-145's Loop Detection).
 pub(super) fn is_streaming_field(field_index: usize) -> bool {
-    field_index == STREAMING_FIELD_INDEX || field_index == PRESERVE_THINKING_FIELD_INDEX
+    field_index == STREAMING_FIELD_INDEX
+        || field_index == PRESERVE_THINKING_FIELD_INDEX
+        || field_index == LOOP_DETECTION_FIELD_INDEX
 }
 
 /// Display string for the Streaming toggle (rendered by `profile_form_render`).
@@ -58,6 +64,8 @@ fn toggle_on_key(form: &mut ProfileForm, code: KeyCode) {
         match form.field_index {
             STREAMING_FIELD_INDEX => form.streaming = !form.streaming,
             PRESERVE_THINKING_FIELD_INDEX => form.preserve_thinking = !form.preserve_thinking,
+            // PROV-145: the Loop Detection toggle flips on the same keys.
+            LOOP_DETECTION_FIELD_INDEX => form.loop_detection = !form.loop_detection,
             _ => {}
         }
     }

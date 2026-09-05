@@ -91,6 +91,7 @@ Tags that categorize features by functional area.
 | `@board-visualization` | Kanban board visualization and layout features |
 | `@bootstrap` | Bootstrap documentation and initialization workflows |
 | `@bridge` | Bridge tool features for external platform integration |
+| `@bug-174` | Bug fix work unit BUG-174 — closing the last agent in an all-agent mux layout leaves a blank 0-pane screen (footer only, keys dead). Fix: a transient full-width Board pane stands in for an empty rendered pane list so the grid never collapses to nothing and Esc/Shift+Right stay alive |
 | `@bug-reporting` | Bug reporting and issue submission features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
@@ -333,6 +334,10 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-164` | Bug fix work unit BUG-164 - closing a session in mux mode retains the grid (BackToBoard focuses the board pane within the active mux instead of flipping the whole view out of Mux) |
 | `@bug-165` | Bug fix work unit BUG-165 - Esc on the board pane in mux mode with no open agents must show the exit confirmation dialog (previously a dead key) |
 | `@bug-166` | Bug fix work unit BUG-166 - mux divider fixes: every inter-pane gap gets an independently draggable divider, release keeps the released position (no snap-back to equal split), and splits are a percentage scale that dynamically rescales when the pane count changes |
+| `@bug-167` | Bug fix work unit BUG-167 - mux config save is a no-op in the real binary: persist dirs are never wired in production (App::new now resolves the CONFIG-008 shared-config dirs once, with a dirs::home_dir()/.fspec fallback when the global data directory is unset) |
+| `@bug-168` | Work unit BUG-168 - Read tool PDF visual mode ignores offset/limit and returns unbounded page images; adds pagination, configurable page cap, truncation notice, vision-capability-aware default mode, and rig-patch image count defense |
+| `@bug-171` | Bug fix work unit BUG-171 — exec-stdin TUI overlay never appeared: pull probe had no push trigger while the session stayed Running. Fix: detector observes the end of the prompt condition and pushes clear StreamChunks; set_exec_stdin_request is the sole emission point for ExecStdinRequest / ExecStdinRequestCleared push chunks; non-exit clear resets the per-exec-session cooldown |
+| `@bug-175` | Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag. |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -622,6 +627,7 @@ Tags tracking development status of features.
 | `@auth-999` | Non-existent work unit for testing error handling |
 | `@blocked` | Blocked |
 | `@bug` | Bug fix work units |
+| `@bug-169` | Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
@@ -633,6 +639,7 @@ Tags tracking development status of features.
 | `@cont-008` | Work unit identifier tag for CONT-008 — goal state back-sync to chrome: goal-satisfied write-back, resurrection guard, TUI goal cache clear and live /goal counters |
 | `@cont-009` | Work unit identifier tag for CONT-009 — NAPI agent_loop dispatch-site arming: shared BackgroundSession completion-contract sync helper called by both agent-loop twins |
 | `@deprecated` | Deprecated |
+| `@disc-003` | DISC-003: Refactor foundation discovery system for agent clarity — unified progress status, draft-aware show-foundation, universal next-step guidance |
 | `@done` | Complete |
 | `@enhancement` | Feature enhancement or improvement |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |
@@ -643,6 +650,8 @@ Tags tracking development status of features.
 | `@mux-007` | Work unit MUX-007 — mux focus flash settled final frame: after the 350ms bottom-to-top scan (MUX-006) elapses, the focused pane keeps the final frame painted — a 1-row-high dark-purple bar across the pane's top row (MUX-008) — until focus moves or mux is disabled; live-only, never persists the tick gate open |
 | `@partial` | Partially implemented feature - work in progress |
 | `@prov-143` | Work unit PROV-143 — Profile Preserve Thinking toggle: per-profile preserveThinking boolean on the OpenAI profile form; when disabled, AssistantContent::Reasoning blocks are stripped from the outgoing LLM history clone (persistence keeps them) |
+| `@prov-144` | Work unit PROV-144 — per-profile Max Images limit: numeric field on the OpenAI profile form (absent => default 4, 0 = no vision), persisted as maxImages, resolved into the tool-layer session budget registry, and enforced in the Read tool image/PDF paths |
+| `@prov-146` | Work unit PROV-146 — OpenAI cloud catalog excluded from the OpenAI API provider section: the standalone 'openai' cloud section is never populated from the models.dev catalog in list_providers (the openai provider is for local OpenAI-protocol servers only); cloud OpenAI models surface exclusively under Codex (ChatGPT). |
 | `@refactor` | Code refactoring and technical improvements |
 | `@refactoring` | Code that needs refactoring |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
@@ -668,6 +677,7 @@ Tags tracking development status of features.
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
+| `@tool-022` | Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt) |
 | `@wip` | Work In Progress |
 
 **Rule**: Update status tags as features progress through development lifecycle.
@@ -754,4 +764,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-08-31T00:33:52.704Z_
+_Last updated: 2026-09-05T11:49:09.281Z_

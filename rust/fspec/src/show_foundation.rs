@@ -28,6 +28,8 @@ pub struct CliArgs {
     pub format: Option<String>,
     pub output: Option<String>,
     pub draft: bool,
+    /// DISC-003: force the finalized file when a draft exists.
+    pub r#final: bool,
     /// Accepted for parity but ignored at the bridge layer.
     #[allow(dead_code)]
     pub list_sections: bool,
@@ -52,6 +54,9 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     }
     if args.draft {
         obj.insert("draft".into(), json!(true));
+    }
+    if args.r#final {
+        obj.insert("final".into(), json!(true));
     }
     let args_json = serde_json::Value::Object(obj).to_string();
 

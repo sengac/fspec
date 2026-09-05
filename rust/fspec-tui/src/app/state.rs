@@ -375,18 +375,29 @@ impl App {
         &self.mux_state
     }
 
-    /// Set the shared-config scope dirs for mux persistence (data dir
-    /// + cwd; `fspec-config.json` lives in each).
-    pub fn set_mux_persist_dir(&mut self, data_dir: std::path::PathBuf, cwd: std::path::PathBuf) {
-        self.mux_state.set_persist_dir(data_dir, cwd);
-    }
-
     /// Load the persisted mux config from the shared `fspec-config.json`
     /// (`tui.mux`; R6: missing key → default preset). Called at
     /// bootstrap; the loaded config is mirrored into the Navigator's
     /// live mux layout.
+    ///
+    /// BUG-167: the shared-config dirs resolve themselves (the
+    /// `codelet_sessions::mux_config_persistence` globals read the
+    /// process-global data directory + current dir — the same CONFIG-008
+    /// resolution every other shared-config persistence uses), so no
+    /// manual persist-dirs wiring is needed here or in `App::new`.
+    ///
+    /// BUG-175: the persisted `enabled` flag is a SAVED LAYOUT
+    /// PREFERENCE, not a runtime mode. A restart always lands on the
+    /// single Board view, so the flag is force-disabled on BOTH the
+    /// persistence mirror and the live layout — a persisted
+    /// `enabled=true` (written while the user was in the grid) must not
+    /// leak into view routing outside the grid (BackToBoard /
+    /// EnterWorkUnit gate on `active_view == ViewMode::Mux`, and the
+    /// R6 auto-save reads the mirror). `/mux on` re-enables the grid
+    /// with the saved layout.
     pub fn load_mux_config(&mut self) {
         self.mux_state.load();
+        self.mux_state.config_mut().enabled = false;
         self.navigator.mux.config = self.mux_state.config().clone();
     }
 

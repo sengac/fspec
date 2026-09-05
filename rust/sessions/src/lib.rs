@@ -20,6 +20,7 @@ pub mod conversions;
 pub mod credentials;
 pub mod default_model_persistence;
 pub mod default_thinking_level_persistence;
+pub mod exec_stdin_mapping;
 pub mod handle_impl;
 pub mod hitl_mapping;
 pub mod last_used_model_persistence;

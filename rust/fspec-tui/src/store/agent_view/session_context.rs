@@ -153,7 +153,9 @@ impl SessionContext {
             | StreamChunk::CompactionComplete { .. }
             | StreamChunk::TokenUpdate { .. }
             | StreamChunk::ContinueStateUpdate { .. }
-            | StreamChunk::ContextFillUpdate { .. } => {}
+            | StreamChunk::ContextFillUpdate { .. }
+            | StreamChunk::ExecStdinRequest { .. }
+            | StreamChunk::ExecStdinRequestCleared => {}
         }
     }
 

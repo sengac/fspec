@@ -67,9 +67,3 @@ Feature: Provider settings api-key edit: empty-Enter cancels silently (no valida
     When the byte range delimited by "fn handle_summary_key(" through the next top-level "fn " is extracted
     Then the substring "Action::TestProviderConnection" occurs zero times in that range
     And the substring "Testing…" (the legacy status text the `t` arm wrote) occurs zero times in that range
-
-  Scenario: TS reference confirms no `t` keybind exists for TestProviderConnection
-    Given the TS canonical file src/tui/inputHandlers/listModeHandler.ts (under .fspec/worktrees/3ce722ec-0b61-4601-813b-023909a2a45a/)
-    When the file body is scanned for any of the substrings "key.t " / "key.t&&" / "input === 't'" / "input === 'T'"
-    Then zero matches are found
-    And this absence-in-TS justifies the absence-in-Rust required by RPC-154

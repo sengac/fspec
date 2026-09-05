@@ -2,9 +2,9 @@
 //!
 //! Feature: spec/features/rpc054-provider-settings-view.feature
 //!
-//! Full-screen mode-view that ports the TS `ProviderSettingsScreen` UX onto
-//! the Rust ratatui frontend. Mirrors the canonical RPC-026 `ResumeSessionView`
-//! pattern. Destructive `d` opens a `ConfirmDialog`; PROV-100 wires profiles.
+//! Full-screen mode-view that ports the TS `ProviderSettingsScreen` UX onto the
+//! Rust ratatui frontend (canonical RPC-026 `ResumeSessionView` pattern). The
+//! destructive `d` opens a `ConfirmDialog`; PROV-100 wires profiles.
 
 use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo};
 use crossterm::event::{KeyEvent, KeyModifiers};
@@ -39,6 +39,7 @@ mod profile_form_parse;
 mod profile_form_paste;
 mod profile_form_render;
 mod profile_form_streaming;
+mod profile_form_submit;
 pub mod profiles_config;
 pub mod projection;
 pub mod row_render;
@@ -60,8 +61,8 @@ pub enum ProviderSettingsEvent {
     Ignored,
     Emit(Action),
     Close,
-    /// RPC-160: list-mode Tab keybind — the Navigator translates it to the
-    /// model-settings view transition. Pure UI navigation, no Action payload.
+    /// RPC-160: list-mode Tab keybind — Navigator translates it to the
+    /// model-settings transition (pure UI navigation, no Action payload).
     SwitchToModels,
 }
 
@@ -79,28 +80,22 @@ pub struct ProviderSettingsView {
     pub status: String,
     /// RPC-158: inline test-result decoration (see `test_result.rs`).
     pub test_result: Option<ProviderTestResult>,
-    /// PROV-111: full per-profile ProfileConfig keyed by profile name; the
-    /// EditProfile form prefills from this (see `profile_config_for`).
+    /// PROV-111: per-profile ProfileConfig keyed by name; the EditProfile form prefills from this.
     pub profile_configs: HashMap<String, ProfileDefinition>,
-    /// PROV-111: a pending per-profile delete-confirm target; when set the
-    /// `delete_confirm` Primary arm emits `ConfirmDeleteProfile`.
+    /// PROV-111: pending delete-confirm target; when set the Primary arm emits `ConfirmDeleteProfile`.
     pub(crate) pending_profile_delete: Option<(String, String)>,
-    /// PROV-112: when set, the next `ProviderCredentialsLoaded` reload moves
-    /// the cursor back onto this provider's row (TS `navigateToProviderRef`).
-    /// Set by the OAuth disconnect dispatch so the Logout row vanishing
-    /// doesn't strand the cursor.
+    /// PROV-112: cursor restore target for the next `ProviderCredentialsLoaded`
+    /// reload (TS `navigateToProviderRef`); set by the OAuth disconnect
+    /// dispatch so the vanishing Logout row doesn't strand the cursor.
     pub(crate) pending_navigate_provider: Option<String>,
     /// PROV-113: whether the browser OAuth login rows are available (the
-    /// providers-layer local HTTP server only runs on the embedded transport).
-    /// Wired from `backend.supports_browser_oauth()`; gates the Browser login
-    /// rows out of the nav tree when `false` (headless/device rows remain).
+    /// local HTTP server only runs on the embedded transport); gates the
+    /// Browser rows out of the nav tree when `false`.
     pub(crate) browser_login_enabled: bool,
     /// PROV-113: monotonically-increasing generation that invalidates an
-    /// in-flight login. Esc during a waiting/entry mode bumps this; a
-    /// success/error result whose generation no longer matches is dropped.
+    /// in-flight login (bumped on Esc-cancel; mismatched results dropped).
     pub(crate) oauth_generation: u64,
-    /// PROV-113: the last login (provider, method) so the OAuthError screen
-    /// can retry it on Enter.
+    /// PROV-113: last login (provider, method) so the OAuthError screen retries it.
     pub(crate) oauth_last_provider: Option<String>,
     pub(crate) oauth_last_method: Option<OAuthMethod>,
     visible_rows: usize,
@@ -157,16 +152,15 @@ impl ProviderSettingsView {
         self.status = status.into();
     }
 
-    /// PROV-113: enable/disable the browser OAuth login rows (wired from
-    /// `backend.supports_browser_oauth()`). Rebuilds the nav tree so the
-    /// browser rows appear/disappear immediately.
+    /// PROV-113: enable/disable the browser OAuth login rows; rebuilds the
+    /// nav tree so the browser rows appear/disappear immediately.
     pub fn set_browser_login_enabled(&mut self, enabled: bool) {
         self.browser_login_enabled = enabled;
         self.rebuild_nav_items();
     }
 
-    /// PROV-113: current login generation (bumped on Esc-cancel). A
-    /// success/error result whose generation differs is dropped as stale.
+    /// PROV-113: current login generation (bumped on Esc-cancel); results with
+    /// a mismatched generation are dropped as stale.
     pub fn oauth_generation(&self) -> u64 {
         self.oauth_generation
     }
@@ -274,8 +268,7 @@ impl ProviderSettingsView {
     }
 
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        // RPC-337 / RPC-350 R1: title-closure full-screen scaffold — two-span
-        // title (bold-yellow name + dim-gray count), shared blue title untouched.
+        // RPC-337 / RPC-350 R1: title-closure full-screen scaffold (two-span title, shared blue title).
         let title = "Provider Settings";
         let count = self.nav_items.len();
         let footer = self.footer_hint();
@@ -297,8 +290,7 @@ impl ProviderSettingsView {
     }
 
     pub fn visible_rows_for(area: Rect) -> usize {
-        area.height
-            .saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
+        area.height.saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
     }
 }
 

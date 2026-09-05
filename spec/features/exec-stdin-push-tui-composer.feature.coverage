@@ -1,0 +1,161 @@
+{
+  "scenarios": [
+    {
+      "name": "Exec-stdin request chunk populates the composer overlay while the session stays Running",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_push_chunk_bug171.rs",
+          "lines": "114-160",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The cleared chunk clears the TUI slot without sending anything",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_push_chunk_bug171.rs",
+          "lines": "168-204",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                214,
+                215,
+                216,
+                217,
+                218
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "State-only chunks never land in the transcript scrollback",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_push_chunk_bug171.rs",
+          "lines": "212-228",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing pull probe sites still surface and clear the overlay",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_push_chunk_bug171.rs",
+          "lines": "237-281",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End-to-end — interactive command surfaces the overlay without a focus switch or status flip",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_push_chunk_bug171.rs",
+          "lines": "292-341",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/exec_stdin_push_chunk_bug171.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/store/agent_view/session_context.rs",
+      "rust/fspec-tui/src/app/dispatch_exec_stdin.rs"
+    ],
+    "totalLinesCovered": 259
+  }
+}

@@ -14,11 +14,12 @@ use super::error::ToolError;
 use super::facade::validate_and_resolve_path;
 use super::file_type::{detect_file_type, ExemptFileType, FileType};
 use super::limits::OutputLimits;
+use super::model_capabilities;
 use super::pdf::{read_pdf_from_bytes, PdfError};
 use super::truncation::{format_truncation_warning, truncate_line_default};
 use super::validation::{require_absolute_path, require_file_exists};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use codelet_common::token_estimator::check_token_limit;
+use codelet_common::token_estimator::{check_token_limit, max_pdf_pages};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -260,6 +261,7 @@ impl rig::tool::Tool for ReadTool {
                   * 'visual' (default): Renders each page as a PNG image for full visual understanding of diagrams, charts, and layouts\n\
                   * 'text': Extracts text content page by page with page numbers (use for searchable text from text-heavy documents)\n\
                   * 'images': Extracts all embedded images from the PDF (use for catalogs, presentations with photos)\n\
+                  - Image reads are limited per session (default 4 images per tool result; the active profile's Max Images setting overrides it, and 0 means no vision). A read that would return more images than the limit FAILS the call with the limit and how to adjust it (offset/limit, or raise the profile's Max Images); with a 0 budget, image reads fail — use text-based alternatives instead.\n\\
                 - Use visual mode for PDFs with diagrams, flowcharts, or complex layouts\n\
                 - PDFs and Jupyter notebooks (.ipynb) are exempt from the token limit\n\
                 - If the user provides a path to a screenshot or image, use this tool to view the file at that path.".to_string(),
@@ -321,6 +323,15 @@ impl rig::tool::Tool for ReadTool {
                 Self::process_as_text(binary_content, &file_path_str, args.offset, args.limit)?
             }
             FileType::Image(media_type) => {
+                // PROV-144: enforce the per-session image budget BEFORE the
+                // size/dimension gate. A single image file read returns
+                // exactly 1 image: budget 0 (no-vision profile) fails the
+                // call with the no-vision message; any budget >= 1 passes.
+                crate::read_image_budget::check_image_count(
+                    crate::read_image_budget::effective_budget(self.session_id),
+                    1,
+                    "images",
+                )?;
                 // EXT-014/EXT-016: Validate size + dimensions, then encode
                 validate_and_encode_image(&binary_content, media_type, &file_path_str, "read")?
             }
@@ -329,8 +340,49 @@ impl rig::tool::Tool for ReadTool {
                 // They are processed differently (as structured documents)
                 match exempt_type {
                     ExemptFileType::Pdf => {
-                        // Support three PDF reading modes
-                        let mode = args.pdf_mode.as_deref().unwrap_or("visual");
+                        // BUG-168: when the caller did not pick a mode explicitly,
+                        // a session whose registered model lacks vision defaults
+                        // to text mode (silent fallback with a one-line notice);
+                        // everything else keeps the historical visual default.
+                        // An explicit pdf_mode always wins.
+                        let vision_fallback = args.pdf_mode.is_none()
+                            && model_capabilities::session_has_capabilities(self.session_id)
+                            && !model_capabilities::session_supports_vision(self.session_id);
+                        // PROV-144: a budget-0 (no-vision) profile's DEFAULT-mode
+                        // PDF read forces text mode — the explicit 0 overrides the
+                        // vision registry (an explicit visual/images mode still
+                        // fails below with the no-vision message).
+                        let image_budget =
+                            crate::read_image_budget::effective_budget(self.session_id);
+                        let no_vision_default = image_budget == 0 && args.pdf_mode.is_none();
+                        let mode =
+                            if args.pdf_mode.is_none() && (vision_fallback || no_vision_default) {
+                                "text"
+                            } else {
+                                args.pdf_mode.as_deref().unwrap_or("visual")
+                            };
+
+                        // BUG-168: honor offset/limit for PDF pages (or embedded
+                        // images in images mode); the default page cap bounds
+                        // unbounded reads when no explicit limit is given.
+                        let pdf_offset = args.offset.unwrap_or(1);
+                        let pdf_limit = args.limit.unwrap_or_else(max_pdf_pages);
+
+                        // PROV-144: enforce the per-session image budget on the
+                        // image-returning PDF modes (one image per rendered page
+                        // / embedded image). Text mode is never gated; an
+                        // explicit visual/images request on a budget-0 session
+                        // fails with the no-vision message; over-budget reads
+                        // fail naming the limit, the requested count, and how to
+                        // read fewer. Both front doors see this gate because it
+                        // lives in `ReadTool::call` (the facade delegates here).
+                        crate::read_image_budget::gate_pdf_image_mode(
+                            image_budget,
+                            &binary_content,
+                            pdf_offset,
+                            pdf_limit,
+                            mode,
+                        )?;
 
                         // Map errors for all modes
                         let map_pdf_error = |e: PdfError| match e {
@@ -357,18 +409,39 @@ impl rig::tool::Tool for ReadTool {
                         match mode {
                             "text" => {
                                 // TEXT MODE: Extract text page by page
-                                let pdf_content =
-                                    read_pdf_from_bytes(&binary_content, &file_path_str)
-                                        .map_err(map_pdf_error)?;
+                                let pdf_content = read_pdf_from_bytes(
+                                    &binary_content,
+                                    &file_path_str,
+                                    pdf_offset,
+                                    pdf_limit,
+                                )
+                                .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
-                                    content: pdf_content.format_display(),
+                                    // PROV-144: the no-vision-forced text mode
+                                    // (budget 0, no explicit pdf_mode) returns
+                                    // plain text content — the vision-unavailable
+                                    // notice belongs to the BUG-168
+                                    // vision-registry fallback only.
+                                    content: if vision_fallback {
+                                        let mut content = pdf_content.format_display();
+                                        content.push_str(
+                                            "\nNote: visual mode unavailable — the session model does not support vision, so text mode was used.\n",
+                                        );
+                                        content
+                                    } else {
+                                        pdf_content.format_display()
+                                    },
                                 }
                             }
                             "images" => {
                                 // IMAGES MODE: Extract embedded images
-                                let images =
-                                    super::pdf::extract_pdf_images(&binary_content, &file_path_str)
-                                        .map_err(map_pdf_error)?;
+                                let images = super::pdf::extract_pdf_images(
+                                    &binary_content,
+                                    &file_path_str,
+                                    pdf_offset,
+                                    pdf_limit,
+                                )
+                                .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: serde_json::to_string_pretty(&images)
                                         .unwrap_or_else(|_| "[]".to_string()),
@@ -376,9 +449,13 @@ impl rig::tool::Tool for ReadTool {
                             }
                             _ => {
                                 // VISUAL MODE (default): Render pages as images
-                                let pages =
-                                    super::pdf::render_pdf_pages(&binary_content, &file_path_str)
-                                        .map_err(map_pdf_error)?;
+                                let pages = super::pdf::render_pdf_pages(
+                                    &binary_content,
+                                    &file_path_str,
+                                    pdf_offset,
+                                    pdf_limit,
+                                )
+                                .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: serde_json::to_string_pretty(&pages)
                                         .unwrap_or_else(|_| "[]".to_string()),

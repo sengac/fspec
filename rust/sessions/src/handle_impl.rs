@@ -185,11 +185,9 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 "resume_session: session not in memory, creating from existing manifest"
             );
             tokio::task::block_in_place(|| {
-                tokio::runtime::Handle::current()
-                    .block_on(async {
-                        SessionManager::create_session_from_manifest(self, &manifest, &model)
-                            .await
-                    })
+                tokio::runtime::Handle::current().block_on(async {
+                    SessionManager::create_session_from_manifest(self, &manifest, &model).await
+                })
             })?;
             tracing::info!(
                 session_id = %uuid,
@@ -976,6 +974,77 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         Some(crate::hitl_mapping::internal_request_to_wire(internal))
     }
 
+    /// TOOL-022 P2: snapshot of the active exec-stdin request, if any.
+    /// Pure pass-through mapping (tools-internal → wire; identical
+    /// fields, see `exec_stdin_mapping`).
+    fn get_exec_stdin_request(
+        &self,
+        session_id: &SessionId,
+    ) -> Option<codelet_rpc_types::ExecStdinRequest> {
+        let uuid = uuid_from(session_id);
+        let internal = self
+            .get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_exec_stdin_request())?;
+        Some(crate::exec_stdin_mapping::internal_request_to_wire(
+            internal,
+        ))
+    }
+
+    /// TOOL-022 P2: write typed text to a live exec session's stdin.
+    ///
+    /// Bridges sync→async via `block_in_place` + `Handle::current().block_on`
+    /// (the `loop_block_on` pattern) because `get_stdin_tx` / `send` are
+    /// async store ops. MUST be invoked from a multi-thread tokio runtime.
+    /// Unknown agent session → "Session not found"; unknown/exited exec
+    /// session → a clean error naming the exec session id (no -1
+    /// reaper-race noise).
+    fn write_exec_stdin(
+        &self,
+        session_id: &SessionId,
+        exec_session_id: &str,
+        text: &str,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                let store = codelet_tools::unified_exec::global_store();
+                let exec_session_id_owned = exec_session_id.to_string();
+                let payload = {
+                    let mut p = text.to_string();
+                    if !p.ends_with('\n') {
+                        p.push('\n');
+                    }
+                    p
+                };
+                let result = loop_block_on(async move {
+                    let tx = store
+                        .get_stdin_tx(&exec_session_id_owned)
+                        .await
+                        .ok_or_else(|| {
+                            format!("Unknown or exited exec session: {exec_session_id_owned}")
+                        })?;
+                    if let Err(e) = tx.send(payload.into_bytes()).await {
+                        return Err(format!(
+                            "Failed to write to exec session {exec_session_id_owned}: {e}"
+                        ));
+                    }
+                    Ok::<(), String>(())
+                });
+                // BUG-171: a successful submit answers the prompt — clear
+                // the stored request so the push contract emits
+                // ExecStdinRequestCleared and the TUI unmounts the
+                // overlay (set_exec_stdin_request is the sole emission
+                // point; Some→None → cleared chunk).
+                if result.is_ok() {
+                    session.set_exec_stdin_request(None);
+                }
+                result
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
     fn send_fspec_result(&self, session_id: &SessionId, result: FspecResult) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
@@ -1172,7 +1241,21 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     // RPC-073: built-in (non-custom) providers carry no
                     // declared models — fill them from the models.dev
                     // registry, gated on configured credentials.
-                    if !is_custom && models.is_empty() {
+                    //
+                    // PROV-146: the `openai` provider is EXCLUDED from cloud
+                    // catalog population. It is exclusively for local
+                    // OpenAI-protocol-compatible servers (vLLM, Ollama,
+                    // sglang, RunPod, Fireworks) configured via profiles.
+                    // Cloud OpenAI models (GPT-5.x, o3, GPT-4o) belong
+                    // exclusively under the `Codex (ChatGPT)` provider —
+                    // sourced by `synthesize_codex_section` via
+                    // `codex_reparented_models`, which calls
+                    // `cloud_model_entries` directly (independent of this
+                    // loop). Without this exclusion, a profile's apiKey
+                    // bridged into `OPENAI_API_KEY` (PROV-121) makes
+                    // `provider_has_credentials("openai")` true and the
+                    // full cloud catalog leaks into the OpenAI API section.
+                    if !is_custom && models.is_empty() && p.name != "openai" {
                         if let Some(registry) = cloud_registry.as_ref() {
                             let has_creds = crate::cloud_models::provider_has_credentials(&p.name);
                             models = crate::cloud_models::cloud_model_entries(
@@ -1296,7 +1379,23 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 .inner
                 .try_lock()
                 .map_err(|_| "Session is busy; cannot switch model right now".to_string())?;
-            crate::model_resolution::apply_model_selection(inner.provider_manager_mut(), &model)?
+            let pm = inner.provider_manager_mut();
+            let resolved = crate::model_resolution::apply_model_selection(pm, &model)?;
+            // BUG-168: update the tool-layer capability registry on every
+            // mid-session model switch so the Read tool's PDF default mode
+            // follows the new model.
+            codelet_tools::model_capabilities::set_session_model_vision(
+                uuid,
+                crate::model_resolution::resolve_model_vision(pm),
+            );
+            // PROV-144: update the per-profile image budget alongside the
+            // vision entry (absent => None => default 4), sourced from the
+            // shared resolver so a mid-session switch cannot drift.
+            codelet_tools::model_capabilities::set_session_model_max_images(
+                uuid,
+                crate::model_resolution::resolve_profile_max_images(pm),
+            );
+            resolved
         };
 
         let compaction_threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
@@ -1878,8 +1977,15 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     fn prune_orphaned_worktrees(&self) -> Result<Vec<String>, String> {
         let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         // The active-session set is sourced from the live SessionManager.
-        let active: std::collections::HashSet<String> =
-            self.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).into_iter().map(|s| s.id).collect();
+        let active: std::collections::HashSet<String> = self
+            .list_sessions(
+                &std::env::current_dir()
+                    .map(|p| p.to_string_lossy().to_string())
+                    .unwrap_or_default(),
+            )
+            .into_iter()
+            .map(|s| s.id)
+            .collect();
         codelet_git::prune_orphaned(&repo_path, &active)
             .map(|r| r.pruned)
             .map_err(|e| format!("{e}"))

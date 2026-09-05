@@ -14,23 +14,27 @@
 //! CRUD and preserved by the backend read-modify-write.
 
 use codelet_rpc_types::ProfileDefinition;
-use crossterm::event::{KeyCode, KeyEvent};
-
-use crate::components::Action;
 
 use super::profile_form_parse::{
-    opt_num, parse_auto_continue, profile_compaction_trigger, render_threshold,
+    opt_num, parse_auto_continue, parse_loop_detection_max_repeats, parse_loop_detection_max_retries,
+    parse_loop_detection_window, parse_max_images, profile_compaction_trigger, render_threshold,
 };
-use super::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 
 /// Default base URL for a brand-new profile (TS `DEFAULT_PROFILE_BASE_URL`).
 pub const DEFAULT_PROFILE_BASE_URL: &str = "http://localhost:8888";
 
+/// Key routing + submit for the open form (TS `handleProfileFormMode`),
+/// extracted into the sibling `profile_form_submit` module to keep this file
+/// under the 300-LoC ceiling. Re-exported so the view's `handle_key` keeps its
+/// `profile_form::handle_form_key` call-site.
+pub(super) use super::profile_form_submit::{handle_form_key, restore_mode};
+
 /// The connection field labels in display order (TS `PROFILE_FORM_FIELDS`).
 /// PROV-139 appends the boolean "Streaming" toggle as the 6th entry; PROV-142
 /// appends the numeric "Auto-Continue" text field as the 7th; PROV-143
-/// appends the boolean "Preserve Thinking" toggle as the 8th, last entry.
-pub const PROFILE_FORM_FIELDS: [&str; 8] = [
+/// appends the boolean "Preserve Thinking" toggle as the 8th; PROV-144
+/// appends the numeric "Max Images" text field as the 9th, last entry.
+pub const PROFILE_FORM_FIELDS: [&str; 13] = [
     "Base URL",
     "API Key",
     "Context Window",
@@ -39,6 +43,13 @@ pub const PROFILE_FORM_FIELDS: [&str; 8] = [
     "Streaming",
     "Auto-Continue",
     "Preserve Thinking",
+    "Max Images",
+    // PROV-145: the four loop-detection fields (10th-13th), appended after
+    // Max Images.
+    "Loop Detection",
+    "Loop Window",
+    "Loop Repeat",
+    "Loop Retries",
 ];
 
 /// In-progress profile form values. Number / threshold fields keep their raw
@@ -60,6 +71,27 @@ pub struct ProfileForm {
     /// thinking blocks are STRIPPED from the chat history sent back to the LLM;
     /// `true` ⇒ preserved. Not a text field (Space/Left/Right flip it).
     pub preserve_thinking: bool,
+    /// PROV-144: the Max Images numeric text field (raw typed string, parsed
+    /// on build). Empty or absent ⇒ the tool-layer default of 4; `"0"` ⇒
+    /// no-vision profile (the Read tool fails image reads); `"n"` (n >= 1) ⇒
+    /// a single Read result may return at most `n` images.
+    pub max_images: String,
+    /// PROV-145: the Loop Detection boolean toggle (true ⇒ the RIG-014
+    /// streaming loop detector is enabled; default ON, today's always-on
+    /// behavior). Not a text field (Space/Left/Right flip it).
+    pub loop_detection: bool,
+    /// PROV-145: the Loop Window numeric text field (detector sliding window
+    /// in words; raw typed string, parsed on build). Empty ⇒ absent ⇒ the
+    /// RIG-014 default of 160.
+    pub loop_window: String,
+    /// PROV-145: the Loop Repeat numeric text field (tail n-gram repeat
+    /// threshold; raw typed string, parsed on build). Empty ⇒ absent ⇒ the
+    /// RIG-014 default of 10.
+    pub loop_repeat: String,
+    /// PROV-145: the Loop Retries numeric text field (max auto-continue
+    /// retries after a loop abort; raw typed string, parsed on build).
+    /// Empty ⇒ absent ⇒ the RIG-014 default of 10; `"0"` ⇒ never retry.
+    pub loop_retries: String,
     /// Focused field index into [`PROFILE_FORM_FIELDS`].
     pub field_index: usize,
     /// True while the cursor is in the name field (editable in both create and
@@ -88,6 +120,18 @@ impl ProfileForm {
             // PROV-143: default to DISABLED — thinking blocks are stripped
             // from the outgoing chat history unless the user opts in.
             preserve_thinking: false,
+            // PROV-144: empty ⇒ absent on save ⇒ the tool-layer default of 4
+            // applies. (The edit form prefills the effective value via
+            // `from_definition`; see that path.)
+            max_images: String::new(),
+            // PROV-145: the Loop Detection toggle defaults to ENABLED —
+            // absent on save ⇒ the RIG-014 detector stays on (today's
+            // always-on behavior). The numeric loop-detection fields start
+            // empty ⇒ absent on save ⇒ the RIG-014 defaults apply.
+            loop_detection: true,
+            loop_window: String::new(),
+            loop_repeat: String::new(),
+            loop_retries: String::new(),
         }
     }
 
@@ -113,6 +157,19 @@ impl ProfileForm {
             auto_continue: opt_num(def.auto_continue),
             // PROV-143: prefill the stored toggle; an absent key ⇒ disabled.
             preserve_thinking: def.preserve_thinking_enabled(),
+            // PROV-144: prefill the EFFECTIVE limit — the stored value, or the
+            // default 4 when the key is absent (assumption: disk and form
+            // always agree). An explicit 0 prefills "0" (no vision).
+            max_images: def.max_images_limit().to_string(),
+            // PROV-145: prefill the loop-detection toggle — the stored value,
+            // or enabled when the key is absent (today's always-on behavior).
+            loop_detection: def.loop_detection_enabled(),
+            // PROV-145: prefill the EFFECTIVE numeric values — the stored
+            // value, or the RIG-014 defaults (160 / 10 / 10) when the keys
+            // are absent.
+            loop_window: def.loop_detection_window().to_string(),
+            loop_repeat: def.loop_detection_max_repeats().to_string(),
+            loop_retries: def.loop_detection_max_retries().to_string(),
         }
     }
 
@@ -125,12 +182,24 @@ impl ProfileForm {
             1 => &mut self.api_key,
             2 => &mut self.context_window,
             3 => &mut self.max_output_tokens,
+            4 => &mut self.compaction_threshold,
             6 => &mut self.auto_continue,
+            // PROV-144: the Max Images field (index 8, the last text field
+            // before the loop-detection fields).
+            8 => &mut self.max_images,
+            // PROV-145: the numeric loop-detection fields (indices 10-12;
+            // index 9 is the Loop Detection boolean toggle).
+            10 => &mut self.loop_window,
+            11 => &mut self.loop_repeat,
+            12 => &mut self.loop_retries,
+            // 5 (Streaming), 7 (Preserve Thinking) and 9 (Loop Detection)
+            // are boolean toggles — the routing guard intercepts them before
+            // this is reached.
             _ => &mut self.compaction_threshold,
         }
     }
 
-    fn move_down(&mut self) {
+    pub(super) fn move_down(&mut self) {
         if self.is_editing_name {
             self.is_editing_name = false;
             self.field_index = 0;
@@ -139,7 +208,7 @@ impl ProfileForm {
         }
     }
 
-    fn move_up(&mut self) {
+    pub(super) fn move_up(&mut self) {
         if self.is_editing_name {
             // Already at the top — Up is a no-op while editing the name.
         } else if self.field_index > 0 {
@@ -177,7 +246,8 @@ impl ProfileForm {
 
     /// Display value for a field index (PROV-139: Streaming renders its label;
     /// PROV-142: Auto-Continue renders its raw text; PROV-143: Preserve
-    /// Thinking renders its Enabled/Disabled label).
+    /// Thinking renders its Enabled/Disabled label; PROV-144: Max Images
+    /// renders its raw text).
     pub fn field_value(&self, idx: usize) -> &str {
         match idx {
             0 => &self.base_url,
@@ -187,6 +257,16 @@ impl ProfileForm {
             4 => &self.compaction_threshold,
             6 => &self.auto_continue,
             7 => super::profile_form_streaming::streaming_label(self.preserve_thinking),
+            // PROV-145: the Loop Detection toggle (idx 9) renders its
+            // Enabled/Disabled label, like the other boolean toggles.
+            9 => super::profile_form_streaming::streaming_label(self.loop_detection),
+            // PROV-144: the Max Images field (index 8) renders its raw text.
+            8 => &self.max_images,
+            // PROV-145: the numeric loop-detection fields render their raw
+            // text.
+            10 => &self.loop_window,
+            11 => &self.loop_repeat,
+            12 => &self.loop_retries,
             _ => super::profile_form_streaming::streaming_label(self.streaming),
         }
     }
@@ -195,9 +275,10 @@ impl ProfileForm {
     ///
     /// Returns `Err(hint)` when the save must be REJECTED with a visible hint:
     /// PROV-142 — a non-numeric Auto-Continue value (mirroring `/continue`'s
-    /// invalid-argument rejection). Returns `Ok(None)` when base URL, API key,
-    /// or the trimmed name is empty (TS `handleSave` guard — the form stays
-    /// open silently). Returns `Ok(Some(def))` on success.
+    /// invalid-argument rejection); PROV-144 — a non-numeric Max Images value.
+    /// Returns `Ok(None)` when base URL, API key, or the trimmed name is empty
+    /// (TS `handleSave` guard — the form stays open silently). Returns
+    /// `Ok(Some(def))` on success.
     pub fn build_definition(&self) -> Result<Option<ProfileDefinition>, String> {
         if self.base_url.is_empty() || self.api_key.is_empty() || self.name.trim().is_empty() {
             return Ok(None);
@@ -206,6 +287,16 @@ impl ProfileForm {
         // behavior); "0" ⇒ Some(0) (explicit-off sentinel); "n" (n >= 1) ⇒
         // Some(n) (on with budget n); non-numeric ⇒ reject with a hint.
         let auto_continue = parse_auto_continue(&self.auto_continue)?;
+        // PROV-144: parse the Max Images field. Empty ⇒ None (absent ⇒ default
+        // 4); "0" ⇒ Some(0) (no-vision sentinel); "n" (n >= 1) ⇒ Some(n)
+        // (cap of n images per Read result); non-numeric ⇒ reject with a hint.
+        let max_images = parse_max_images(&self.max_images)?;
+        // PROV-145: parse the loop-detection numeric fields. Empty ⇒ None
+        // (absent ⇒ the RIG-014 defaults 160 / 10 / 10); "n" ⇒ Some(n);
+        // non-numeric ⇒ reject with a hint naming the field.
+        let loop_detection_window = parse_loop_detection_window(&self.loop_window)?;
+        let loop_detection_max_repeats = parse_loop_detection_max_repeats(&self.loop_repeat)?;
+        let loop_detection_max_retries = parse_loop_detection_max_retries(&self.loop_retries)?;
         let (compaction_threshold_type, compaction_threshold_value) =
             profile_compaction_trigger(&self.compaction_threshold);
         Ok(Some(ProfileDefinition {
@@ -220,95 +311,28 @@ impl ProfileForm {
             // PROV-143: always carry the explicit toggle so the on-disk
             // profile reflects the form (true ⇒ preserved, false ⇒ stripped).
             preserve_thinking: Some(self.preserve_thinking),
+            // PROV-144: carry the parsed Max Images limit (empty ⇒ None so the
+            // persistence read-modify-write REMOVES the key ⇒ default 4).
+            max_images,
+            // PROV-145: always carry the explicit loop-detection toggle so
+            // the on-disk profile reflects the form (true ⇒ detector on,
+            // false ⇒ detector off).
+            loop_detection_enabled: Some(self.loop_detection),
+            // PROV-145: carry the parsed loop-detection numeric fields
+            // (empty ⇒ None so the persistence read-modify-write REMOVES the
+            // keys ⇒ the RIG-014 defaults apply).
+            loop_detection_window,
+            loop_detection_max_repeats,
+            loop_detection_max_retries,
         }))
     }
 }
 
-/// Outcome of routing one key through the open form.
-enum FormKey {
+/// Outcome of routing one key through the open form. Owned here (form
+/// internals drive it); consumed by the sibling `profile_form_submit` module,
+/// which handles the submit / cancel / restore side effects.
+pub(super) enum ProfileFormKey {
     Editing,
     Cancel,
     Submit,
-}
-
-/// Apply one key to the form (TS `handleProfileFormMode`).
-fn route_key(form: &mut ProfileForm, key: KeyEvent) -> FormKey {
-    match key.code {
-        KeyCode::Esc => return FormKey::Cancel,
-        KeyCode::Enter => return FormKey::Submit,
-        // TUI-084: Tab is intentionally ignored in profile form mode.
-        KeyCode::Tab => {}
-        KeyCode::Down => form.move_down(),
-        KeyCode::Up => form.move_up(),
-        // PROV-139: remaining editing keys route through the sibling module.
-        code => super::profile_form_streaming::route_edit_key(form, code),
-    }
-    FormKey::Editing
-}
-
-/// Route a key event through an open create/edit form mode. On a valid Enter
-/// it emits [`Action::SaveProfile`] and resets to List; Esc cancels to List;
-/// every other key keeps the form open with its edits persisted.
-pub(super) fn handle_form_key(
-    view: &mut ProviderSettingsView,
-    key: KeyEvent,
-    provider_id: String,
-    mut form: ProfileForm,
-    profile_name: Option<String>,
-) -> ProviderSettingsEvent {
-    match route_key(&mut form, key) {
-        FormKey::Cancel => {
-            view.mode = ProviderSettingsMode::List;
-            ProviderSettingsEvent::Consumed
-        }
-        FormKey::Submit => match form.build_definition() {
-            Ok(Some(definition)) => {
-                // PROV-136: the EMITTED name is the (possibly edited) form name;
-                // `old_profile_name` carries the ORIGINAL edit-mode name so the
-                // dispatch layer can detect + apply a rename. In create mode
-                // `profile_name` is None → `old_profile_name` is None.
-                let new_name = form.name.trim().to_string();
-                view.mode = ProviderSettingsMode::List;
-                ProviderSettingsEvent::Emit(Action::SaveProfile {
-                    provider_id,
-                    profile_name: new_name,
-                    old_profile_name: profile_name,
-                    definition,
-                })
-            }
-            Ok(None) => {
-                restore_mode(view, provider_id, form, profile_name);
-                ProviderSettingsEvent::Consumed
-            }
-            // PROV-142: a non-numeric Auto-Continue value rejects the save —
-            // surface the hint in the view status and keep the form open so
-            // the user can fix the value (nothing is persisted).
-            Err(hint) => {
-                view.set_status(hint);
-                restore_mode(view, provider_id, form, profile_name);
-                ProviderSettingsEvent::Consumed
-            }
-        },
-        FormKey::Editing => {
-            restore_mode(view, provider_id, form, profile_name);
-            ProviderSettingsEvent::Consumed
-        }
-    }
-}
-
-/// Persist the (possibly mutated) form back into the view's mode.
-pub(super) fn restore_mode(
-    view: &mut ProviderSettingsView,
-    provider_id: String,
-    form: ProfileForm,
-    profile_name: Option<String>,
-) {
-    view.mode = match profile_name {
-        Some(profile_name) => ProviderSettingsMode::EditProfile {
-            provider_id,
-            profile_name,
-            form,
-        },
-        None => ProviderSettingsMode::CreateProfile { provider_id, form },
-    };
 }

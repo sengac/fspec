@@ -47,8 +47,8 @@ Feature: RPC-073 List Providers Wiring
     Given a SessionManager is constructed with a seeded models.dev cache and credentials for openai, anthropic and gemini
     When the test calls handle.list_providers()
     Then every returned cloud ProviderInfo entry has at least one model
-    Then the entries include the credentialed built-in provider keys 'openai' and 'anthropic'
-    Then zero-model built-in cloud providers such as 'codex' and 'zai' are dropped from the result
+    Then the entries include the credentialed built-in provider keys 'anthropic' and 'gemini'
+    Then zero-model built-in cloud providers such as 'codex', 'zai' and 'openai' are dropped from the result
 
   Scenario: list_providers entries have populated key and display_name fields and a non-empty models Vec
     Given list_providers has been called with seeded credentials and returned a non-empty Vec
@@ -58,9 +58,9 @@ Feature: RPC-073 List Providers Wiring
     Then the entry has a 'models' field of type Vec containing at least one model
 
   Scenario: list_providers maps codelet_providers::custom::ProviderInfo into codelet_rpc_types::ProviderInfo with the correct field mapping
-    Given a seeded models.dev cache and credentials populate the built-in 'openai' provider with a reasoning-capable model whose supports_thinking=true
+    Given a seeded models.dev cache and credentials populate the built-in 'anthropic' provider with a reasoning-capable model whose supports_thinking=true
     When the trait override list_providers maps the value into a codelet_rpc_types::ProviderInfo
-    Then the resulting codelet_rpc_types::ProviderInfo has key='openai', a non-empty display, and a child ModelEntry with supports_reasoning=true and is_custom=false
+    Then the resulting codelet_rpc_types::ProviderInfo has key='anthropic', a non-empty display, and a child ModelEntry with supports_reasoning=true and is_custom=false
     Then context_window and max_output_tokens are converted from usize to u32 with saturating cast
 
   Scenario: list_providers degrades gracefully to Vec::new() and logs via tracing::error when list_providers_info returns Err

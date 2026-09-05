@@ -13,6 +13,8 @@
 
 use codelet_rpc_types::ThinkingLevel;
 
+use crate::views::agent::slash_commands::SlashCommandAction;
+
 use super::continue_parser::{parse_continue_command, ContinueSubcommand};
 use super::goal_parser::{parse_goal_command, GoalSubcommand};
 use super::loop_parser::{parse_loop_command, LoopSubcommand};
@@ -72,6 +74,15 @@ pub enum SlashCommandParse {
     /// `mux_parser` in the dispatcher (keeps this enum free of the
     /// multiplex types).
     MuxCommand(String),
+    /// BUG-169: an EXACT bare registered command name that no dedicated
+    /// family branch above recognized (e.g. `/provider`, `/help`,
+    /// `/compact`). Carries the matching registry
+    /// [`SlashCommandAction`] so the dispatcher routes it through the
+    /// same `handle_slash_command` handler the popup pick uses. The
+    /// trimmed text must be exactly the matched token — a registered
+    /// name WITH arguments (e.g. `/provider openai`) intentionally falls
+    /// through to `NotASlashCommand`.
+    BareCommand(SlashCommandAction),
     /// Anything else — forward to `backend.send_input` as before.
     NotASlashCommand,
 }
@@ -90,6 +101,10 @@ pub enum SlashCommandParse {
 ///   - "/role clear" (any case after trimming) → `ClearRole`
 ///   - "/role <text>" → `SetRole(text.trim())`
 ///   - "/role " (trailing space, empty arg) → `OpenRoleDialog`
+///   - "/<exact bare registered name>" (case-insensitive, no arguments)
+///     → `BareCommand(action)` — BUG-169 registry-driven catch, so a
+///     Tab-filled or Esc-dismissed `/provider`, `/help`, `/compact`, …
+///     routes to its handler instead of leaking to `send_input`
 ///   - everything else → `NotASlashCommand`
 pub fn parse_slash_command(text: &str) -> SlashCommandParse {
     let trimmed = text.trim();
@@ -164,6 +179,25 @@ pub fn parse_slash_command(text: &str) -> SlashCommandParse {
     // stays free of the multiplex types).
     if trimmed == "/mux" || trimmed.starts_with("/mux ") {
         return SlashCommandParse::MuxCommand(trimmed.to_string());
+    }
+    // BUG-169: registry-driven bare-command catch. If the trimmed text
+    // contains NO internal whitespace (i.e. it is exactly one `/name`
+    // token) and its name is registered in SLASH_COMMANDS
+    // (case-insensitive via from_name), route it to its
+    // SlashCommandAction instead of letting it leak to send_input. This
+    // is what makes Tab-fill (popup Filled) and Esc-dismiss (popup
+    // Dismiss) submits of the 10 bare-only commands reach their handlers.
+    //
+    // Exact-match-only: a name WITH a trailing argument (e.g.
+    // "/provider openai") contains whitespace → NOT a bare command →
+    // NotASlashCommand (R4). A bare "/" (empty name) matches no registry
+    // entry → NotASlashCommand (R1).
+    if !trimmed.contains(char::is_whitespace) {
+        if let Some(name) = trimmed.strip_prefix('/') {
+            if let Some(action) = SlashCommandAction::from_name(name) {
+                return SlashCommandParse::BareCommand(action);
+            }
+        }
     }
     SlashCommandParse::NotASlashCommand
 }

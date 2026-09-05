@@ -38,6 +38,11 @@ fn setup_temp_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
     let temp = tempfile::tempdir().expect("tempdir");
     codelet_common::set_data_directory(temp.path().to_path_buf()).expect("set_data_directory");
     codelet_core::persistence::reset_stores_for_tests();
+    // Hermetic: seed fake provider keys so `create_session` (which uses
+    // the `openai:spark/qwen3.6` default model) works without relying on
+    // ambient ANTHROPIC_API_KEY / OPENAI_API_KEY in the developer's shell.
+    std::env::set_var("ANTHROPIC_API_KEY", "resume-bug-fake-ant-key");
+    std::env::set_var("OPENAI_API_KEY", "resume-bug-fake-openai-key");
     (guard, temp)
 }
 

@@ -118,6 +118,28 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
     let canonical = match lookup(&req.command) {
         Some(c) => c,
         None => {
+            // DISC-003: Rust-only extension commands are not in the 162
+            // canonical list; route them here before surfacing UnknownCommand.
+            if req.command == "foundation-status" {
+                let result =
+                    match run_ported("foundation-status", &req.args_json, &req.project_root) {
+                        Some(r) => r,
+                        None => {
+                            return DispatchResult::from_error(FspecCoreError::UnknownCommand {
+                                command: req.command.clone(),
+                            });
+                        }
+                    };
+                return match result {
+                    Ok(data) => DispatchResult {
+                        success: true,
+                        data,
+                        error: None,
+                        system_reminder: None,
+                    },
+                    Err(err) => DispatchResult::from_error(err),
+                };
+            }
             return DispatchResult::from_error(FspecCoreError::UnknownCommand {
                 command: req.command.clone(),
             });
@@ -563,6 +585,8 @@ fn run_ported(
             }
             // RPC-295 — review
             "review" => commands::review::run(args_json, project_root).await,
+            // DISC-003 — foundation-status (Rust-only extension)
+            "foundation-status" => commands::foundation_status::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }

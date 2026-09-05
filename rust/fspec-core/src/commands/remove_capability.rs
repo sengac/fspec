@@ -172,9 +172,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     write_json_atomic_trailing_newline(&target_path, &data)?;
 
+    // DISC-003 rule 4: universal progress trailer on the success envelope.
+    let next_steps = crate::foundation::guidance::draft_trailer(&data);
+
     serde_json::to_string(&json!({
         "success": true,
         "fileName": file_name,
+        "nextSteps": next_steps,
     }))
     .map_err(|e| FspecCoreError::InvalidArgs {
         command: COMMAND,

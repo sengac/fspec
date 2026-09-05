@@ -162,6 +162,32 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
     // PROV-143: read the optional preserve-thinking toggle; an absent key
     // stays `None` (⇒ stripped, the default) so older profiles are unaffected.
     let preserve_thinking = cfg.get("preserveThinking").and_then(Value::as_bool);
+    // PROV-144: read the optional Max Images limit; an absent key stays `None`
+    // (⇒ tool-layer default 4) so older profiles are unaffected. Mirrors the
+    // autoContinue `as_u64 → u32` read pattern above.
+    let max_images = cfg
+        .get("maxImages")
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok());
+    // PROV-145: read the optional loop-detection toggle; an absent key stays
+    // `None` (⇒ enabled, today's always-on behavior) so older profiles are
+    // unaffected.
+    let loop_detection_enabled = cfg.get("loopDetectionEnabled").and_then(Value::as_bool);
+    // PROV-145: read the optional loop-detection numerics; absent keys stay
+    // `None` (⇒ the RIG-014 defaults 160 / 10 / 10) so older profiles are
+    // unaffected. Mirrors the autoContinue `as_u64 → u32` read pattern.
+    let loop_detection_window = cfg
+        .get("loopDetectionWindow")
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok());
+    let loop_detection_max_repeats = cfg
+        .get("loopDetectionMaxRepeats")
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok());
+    let loop_detection_max_retries = cfg
+        .get("loopDetectionMaxRetries")
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok());
     ProfileDefinition {
         base_url,
         api_key,
@@ -172,6 +198,11 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
         streaming,
         auto_continue,
         preserve_thinking,
+        max_images,
+        loop_detection_enabled,
+        loop_detection_window,
+        loop_detection_max_repeats,
+        loop_detection_max_retries,
     }
 }
 

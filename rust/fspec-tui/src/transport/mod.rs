@@ -692,6 +692,28 @@ pub trait FspecBackend: Send + Sync {
         Ok(None)
     }
 
+    /// TOOL-022 P2: snapshot of the active exec-stdin request, if any.
+    /// Pure overlay — NO status flip, NO response channel.
+    async fn get_exec_stdin_request(
+        &self,
+        _session_id: SessionId,
+    ) -> Result<Option<codelet_rpc_types::ExecStdinRequest>> {
+        Ok(None)
+    }
+
+    /// TOOL-022 P2: write typed text to a live exec session's stdin
+    /// (a trailing newline is appended when absent). The backend's
+    /// error string is surfaced verbatim (it names the exec session id
+    /// for unknown/exited sessions).
+    async fn write_exec_stdin(
+        &self,
+        _session_id: SessionId,
+        _exec_session_id: String,
+        _text: String,
+    ) -> Result<(), String> {
+        Ok(())
+    }
+
     /// RPC-037: round-trip an FspecCommandRequest reply.
     async fn send_fspec_result(&self, _session_id: SessionId, _result: FspecResult) -> Result<()> {
         Ok(())

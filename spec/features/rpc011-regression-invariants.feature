@@ -43,5 +43,4 @@ Feature: RPC-011 regression invariants (prior RPC-005..010 signatures and archit
     Given the full Cargo workspace at the end of RPC-011 implementation
     When running cargo test -p codelet-rpc -p codelet-rpc-server -p codelet-rpc-embedded -p codelet-fspec-tui -p codelet-fspec --release
     Then all prior tests pass
-    And the existing Vitest smoke `src/__tests__/napi-workunitinfo-shape.test.ts` still passes
     And no test was disabled, skipped, or marked #[ignore] to make RPC-011 green

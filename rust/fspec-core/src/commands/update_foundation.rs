@@ -183,7 +183,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // can print it after the "Updated:" line (matches
     // `updateFoundationCommand`, src/commands/update-foundation.ts:296-314).
     let system_reminder = if is_draft {
-        scan_draft_for_next_field_reminder(&foundation, project_root)
+        crate::foundation::guidance::next_field_reminder(&foundation, project_root)
     } else {
         None
     };
@@ -191,6 +191,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut result = json!({ "success": true, "message": message });
     if let Some(reminder) = system_reminder {
         result["systemReminder"] = Value::String(reminder);
+    }
+    // DISC-003 rule 4: universal progress trailer on the draft path (the
+    // final foundation is complete by definition, so no trailer there).
+    if is_draft {
+        result["nextSteps"] =
+            Value::String(crate::foundation::guidance::draft_trailer(&foundation));
     }
 
     serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {
@@ -330,261 +336,11 @@ fn validate_problem_impact(content: &str) -> Option<String> {
     None
 }
 
-/// Resolve the active agent's `supportsMetaCognition` capability, mirroring
-/// `getAgentConfig` (`src/utils/agentRuntimeConfig.ts:20-60`):
-///   1. `FSPEC_AGENT` env var
-///   2. `spec/fspec-config.json` `agent` field
-///   3. safe default (`supportsMetaCognition = false`)
-///
-/// Only `claude` and `antigravity` enable meta-cognition in the agent registry
-/// (`src/utils/agentRegistry.ts`).
-fn agent_supports_meta_cognition(project_root: &Path) -> bool {
-    fn id_supports(id: &str) -> bool {
-        matches!(id, "claude" | "antigravity")
-    }
-
-    if let Ok(env_agent) = std::env::var("FSPEC_AGENT") {
-        if !env_agent.is_empty() && is_known_agent(&env_agent) {
-            return id_supports(&env_agent);
-        }
-    }
-
-    let config_path = project_root.join("spec").join("fspec-config.json");
-    if let Ok(raw) = std::fs::read_to_string(&config_path) {
-        if let Ok(cfg) = serde_json::from_str::<Value>(&raw) {
-            if let Some(agent_id) = cfg.get("agent").and_then(Value::as_str) {
-                if is_known_agent(agent_id) {
-                    return id_supports(agent_id);
-                }
-            }
-        }
-    }
-
-    false
-}
-
-/// Known agent ids from `src/utils/agentRegistry.ts`. An id not in this set is
-/// treated as unrecognised (`getAgentById` returns undefined), so the resolver
-/// falls through to the next priority — matching the TS behaviour.
-fn is_known_agent(id: &str) -> bool {
-    matches!(
-        id,
-        "claude"
-            | "cursor"
-            | "cline"
-            | "aider"
-            | "windsurf"
-            | "copilot"
-            | "gemini"
-            | "qwen"
-            | "kilocode"
-            | "roo"
-            | "codebuddy"
-            | "amazonq"
-            | "auggie"
-            | "opencode"
-            | "codex"
-            | "factory"
-            | "crush"
-            | "codex-cli"
-            | "antigravity"
-    )
-}
-
-/// Scan the draft for the next field still holding a `[QUESTION:` / `[DETECTED:`
-/// placeholder and, when found, build the field-specific `<system-reminder>`.
-/// Verbatim port of `scanDraftForNextField` + `generateFieldReminder`
-/// (`src/commands/discover-foundation.ts:37-177`).
-///
-/// Returns `None` when all fields are complete (TS returns an empty
-/// systemReminder which the CLI skips).
-fn scan_draft_for_next_field_reminder(draft: &Value, project_root: &Path) -> Option<String> {
-    // Ordered field list (1-indexed positions, 8 total) — must match the TS
-    // `fields` array exactly.
-    let fields: [(&str, Option<&Value>); 8] = [
-        ("project.name", draft.pointer("/project/name")),
-        ("project.vision", draft.pointer("/project/vision")),
-        ("project.projectType", draft.pointer("/project/projectType")),
-        (
-            "problemSpace.primaryProblem.title",
-            draft.pointer("/problemSpace/primaryProblem/title"),
-        ),
-        (
-            "problemSpace.primaryProblem.description",
-            draft.pointer("/problemSpace/primaryProblem/description"),
-        ),
-        (
-            "solutionSpace.overview",
-            draft.pointer("/solutionSpace/overview"),
-        ),
-        (
-            "solutionSpace.capabilities",
-            draft.pointer("/solutionSpace/capabilities"),
-        ),
-        ("personas", draft.pointer("/personas")),
-    ];
-
-    let total_fields = fields.len();
-    let mut next_field: Option<(&str, usize)> = None;
-
-    for (i, (path, value)) in fields.iter().enumerate() {
-        // TS: `if (field.value === undefined) continue;` — a missing key is
-        // skipped, NOT treated as a placeholder.
-        let value = match value {
-            Some(v) => *v,
-            None => continue,
-        };
-
-        // TS: `typeof field.value === 'string' ? field.value : JSON.stringify(field.value)`
-        let value_str = match value {
-            Value::String(s) => s.clone(),
-            other => other.to_string(),
-        };
-
-        let has_placeholder = value_str.contains("[QUESTION:") || value_str.contains("[DETECTED:");
-
-        if has_placeholder && next_field.is_none() {
-            next_field = Some((path, i + 1));
-        }
-    }
-
-    let (field_path, field_num) = next_field?;
-
-    // Extract a [DETECTED: ...] value for the projectType reminder.
-    let detected_value = if field_path == "project.projectType" {
-        draft
-            .pointer("/project/projectType")
-            .and_then(Value::as_str)
-            .and_then(extract_detected_value)
-    } else {
-        None
-    };
-
-    let supports_meta = agent_supports_meta_cognition(project_root);
-    let body = field_reminder_body(
-        field_path,
-        field_num,
-        total_fields,
-        supports_meta,
-        detected_value.as_deref(),
-    );
-    Some(format!("<system-reminder>\n{body}\n</system-reminder>"))
-}
-
-/// Extract the inner value of a `[DETECTED: <value>]` marker, trimmed.
-/// Mirrors the TS regex `/\[DETECTED:\s*([^\]]+)\]/`.
-fn extract_detected_value(s: &str) -> Option<String> {
-    let start = s.find("[DETECTED:")?;
-    let after = &s[start + "[DETECTED:".len()..];
-    let end = after.find(']')?;
-    Some(after[..end].trim().to_string())
-}
-
-/// Build the field-specific reminder body (without the `<system-reminder>`
-/// wrapper). Verbatim port of `generateFieldReminder`
-/// (`src/commands/discover-foundation.ts:98-176`).
-fn field_reminder_body(
-    field_path: &str,
-    field_num: usize,
-    total_fields: usize,
-    supports_meta: bool,
-    detected_value: Option<&str>,
-) -> String {
-    match field_path {
-        "project.name" => format!(
-            "Field {field_num}/{total_fields}: project.name\n\
-\n\
-Analyze project configuration to determine project name. Confirm with human.\n\
-\n\
-Run: fspec update-foundation projectName \"<name>\""
-        ),
-        "project.vision" => {
-            let think = if supports_meta {
-                "ULTRATHINK: Read ALL code, understand the system deeply."
-            } else {
-                "Think a lot about the entire codebase."
-            };
-            format!(
-                "Field {field_num}/{total_fields}: project.vision (elevator pitch)\n\
-\n\
-{think} What is the core PURPOSE?\n\
-Focus on WHY this exists, not HOW it works.\n\
-\n\
-Ask human to confirm vision.\n\
-\n\
-Run: fspec update-foundation projectVision \"your vision\""
-            )
-        }
-        "project.projectType" => {
-            let detected_prefix = match detected_value {
-                Some(v) => format!("[DETECTED: {v}] "),
-                None => String::new(),
-            };
-            format!(
-                "Field {field_num}/{total_fields}: project.projectType\n\
-\n\
-{detected_prefix}Analyze codebase to determine project type. Verify with human.\n\
-\n\
-Examples (non-exhaustive, any short descriptor is valid): cli-tool, web-app, library, sdk, mobile-app, desktop-app, service, api, saas-platform, browser-extension, other\n\
-\n\
-Run: fspec update-foundation projectType \"<type>\""
-            )
-        }
-        "problemSpace.primaryProblem.title" => format!(
-            "Field {field_num}/{total_fields}: problemSpace.primaryProblem.title\n\
-\n\
-CRITICAL: Think from USER perspective. WHO uses this (persona)?\n\
-WHAT problem do THEY face? WHY do they need this solution?\n\
-\n\
-Analyze codebase to understand user pain, ask human. Requires title, description, impact.\n\
-\n\
-Run: fspec update-foundation problemTitle \"Problem Title\""
-        ),
-        "problemSpace.primaryProblem.description" => format!(
-            "Field {field_num}/{total_fields}: problemSpace.primaryProblem.description\n\
-\n\
-USER perspective: Describe the problem users face in detail.\n\
-\n\
-Run: fspec update-foundation problemDefinition \"Problem description\""
-        ),
-        "solutionSpace.overview" => format!(
-            "Field {field_num}/{total_fields}: solutionSpace.overview\n\
-\n\
-High-level solution approach. Focus on WHAT not HOW.\n\
-\n\
-Run: fspec update-foundation solutionOverview \"Solution overview\""
-        ),
-        "solutionSpace.capabilities" => format!(
-            "Field {field_num}/{total_fields}: solutionSpace.capabilities\n\
-\n\
-List 3-7 high-level abilities users have. Focus on WHAT not HOW.\n\
-\n\
-Example: \"Spec Validation\" (WHAT), NOT \"Uses Cucumber parser\" (HOW)\n\
-\n\
-Analyze user-facing functionality to identify capabilities.\n\
-\n\
-Run: fspec add-capability \"Capability Name\" \"Capability Description\"\n\
-Run again for each capability (3-7 recommended)"
-        ),
-        "personas" => format!(
-            "Field {field_num}/{total_fields}: personas\n\
-\n\
-Identify ALL user types from interactions.\n\
-CLI tools: who runs commands? Web apps: who uses UI + who calls API?\n\
-\n\
-Analyze ALL user-facing code. Ask human about goals and pain points.\n\
-\n\
-Run: fspec add-persona \"Persona Name\" \"Persona Description\" --goal \"Primary goal\"\n\
-Run again for each persona (repeat --goal for multiple goals)"
-        ),
-        other => format!("Field {field_num}/{total_fields}: {other}"),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
     use super::*;
+    use crate::foundation::guidance;
 
     #[test]
     fn args_parse_minimal() {
@@ -646,7 +402,7 @@ mod tests {
             "solutionSpace": { "overview": "o", "capabilities": ["c"] },
             "personas": [ { "name": "p", "description": "d", "goals": ["g"] } ]
         });
-        let r = scan_draft_for_next_field_reminder(&draft, Path::new("/nonexistent")).unwrap();
+        let r = guidance::next_field_reminder(&draft, Path::new("/nonexistent")).unwrap();
         assert!(r.starts_with("<system-reminder>\n"));
         assert!(r.ends_with("\n</system-reminder>"));
         assert!(r.contains("Field 2/8: project.vision (elevator pitch)"));
@@ -663,7 +419,7 @@ mod tests {
             "solutionSpace": { "overview": "o", "capabilities": ["c"] },
             "personas": [ { "name": "p", "description": "d", "goals": ["g"] } ]
         });
-        assert!(scan_draft_for_next_field_reminder(&draft, Path::new("/nonexistent")).is_none());
+        assert!(guidance::next_field_reminder(&draft, Path::new("/nonexistent")).is_none());
     }
 
     #[test]
@@ -674,7 +430,7 @@ mod tests {
             "solutionSpace": { "overview": "o", "capabilities": ["c"] },
             "personas": [ { "name": "p", "description": "d", "goals": ["g"] } ]
         });
-        let r = scan_draft_for_next_field_reminder(&draft, Path::new("/nonexistent")).unwrap();
+        let r = guidance::next_field_reminder(&draft, Path::new("/nonexistent")).unwrap();
         assert!(r.contains("Field 3/8: project.projectType"));
         assert!(r.contains("[DETECTED: web-app] Analyze codebase"));
     }
@@ -688,28 +444,28 @@ mod tests {
             "solutionSpace": { "overview": "o", "capabilities": ["c"] },
             "personas": [ { "name": "p", "description": "d", "goals": ["g"] } ]
         });
-        let r = scan_draft_for_next_field_reminder(&draft, Path::new("/nonexistent")).unwrap();
+        let r = guidance::next_field_reminder(&draft, Path::new("/nonexistent")).unwrap();
         assert!(r.contains("Field 2/8: project.vision"));
     }
 
     #[test]
-    fn extract_detected_value_works() {
+    fn detected_value_extraction_works() {
         assert_eq!(
-            extract_detected_value("[DETECTED: web-app]").as_deref(),
+            guidance::extract_detected_value("[DETECTED: web-app]").as_deref(),
             Some("web-app")
         );
         assert_eq!(
-            extract_detected_value("[DETECTED:  cli-tool ]").as_deref(),
+            guidance::extract_detected_value("[DETECTED:  cli-tool ]").as_deref(),
             Some("cli-tool")
         );
-        assert_eq!(extract_detected_value("no marker"), None);
+        assert_eq!(guidance::extract_detected_value("no marker"), None);
     }
 
     #[test]
     fn unknown_agent_id_falls_through_to_default() {
         // is_known_agent rejects unknowns so resolver returns false.
-        assert!(!is_known_agent("bogus"));
-        assert!(is_known_agent("claude"));
-        assert!(is_known_agent("antigravity"));
+        assert!(!guidance::is_known_agent("bogus"));
+        assert!(guidance::is_known_agent("claude"));
+        assert!(guidance::is_known_agent("antigravity"));
     }
 }

@@ -3,8 +3,8 @@
 //! state introduced by RPC-018 and the multi-session container
 //! introduced by RPC-024. End-of-list navigation (RPC-096) lives in
 //! the `navigation` sibling module. Feature files:
-//! rpc012-board-agent-navigation, rpc018-agent-chrome,
-//! rpc018-app-bootstrap, rpc024-multi-session-store, rpc025-source-shape.
+//! rpc012-board-agent-navigation, rpc018-agent-chrome, rpc018-app-bootstrap,
+//! rpc024-multi-session-store, rpc025-source-shape.
 use codelet_rpc_types::{
     CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel, WorkUnitContext,
     WorkspaceInfo,
@@ -19,6 +19,7 @@ pub mod diff_codec;
 pub mod diff_context;
 pub mod diff_decode;
 pub mod diff_format;
+pub mod exec_stdin_state; // TOOL-022 P2
 pub mod history_state;
 pub mod hitl_state; // RPC-411
 pub mod isolation_state;
@@ -109,6 +110,8 @@ pub struct AgentViewStore {
     // RPC-406 pause + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
     pub(crate) pause_state_by_session: HashMap<SessionId, codelet_rpc_types::PauseState>,
     pub(crate) hitl_prompt_by_session: hitl_state::HitlPromptBySession,
+    // TOOL-022 P2: exec-stdin overlay slot — exec_stdin_state.rs
+    pub(crate) exec_stdin_by_session: exec_stdin_state::ExecStdinBySession,
     pub(crate) triple_pause_selection_by_session: HashMap<SessionId, usize>,
 }
 
@@ -280,17 +283,14 @@ impl AgentViewStore {
             .or_default()
     }
 
-    /// Borrow the cached history snapshot for `session`, if loaded.
     pub fn cached_history_snapshot(&self, session: &SessionId) -> Option<&Vec<String>> {
         self.cached_history_snapshot.get(session)
     }
 
-    /// Replace the cached history snapshot for `session`.
     pub fn set_history_snapshot(&mut self, session: SessionId, snapshot: Vec<String>) {
         self.cached_history_snapshot.insert(session, snapshot);
     }
 
-    /// Reset the per-session HistoryNavState and clear the cached snapshot.
     pub fn reset_history_state(&mut self, session: &SessionId) {
         self.history_state_by_session
             .insert(session.clone(), HistoryNavState::default());

@@ -14,13 +14,6 @@ fn fspec_tui_src() -> std::path::PathBuf {
     workspace_codelet_dir().join("fspec-tui").join("src")
 }
 
-fn project_root() -> std::path::PathBuf {
-    workspace_codelet_dir()
-        .parent()
-        .expect("project root above rust/")
-        .to_path_buf()
-}
-
 fn read_raw(path: &std::path::Path) -> String {
     common::read_to_string_or_panic(path)
 }
@@ -193,17 +186,3 @@ fn views_do_not_directly_import_forbidden_crates() {
     assert!(violations.is_empty(), "violations: {violations:?}");
 }
 
-/// Scenario: Existing TS AgentView input + scrollback files are untouched
-#[test]
-fn existing_ts_agent_view_input_and_scrollback_files_are_untouched() {
-    // @step Given the project root after RPC-019 lands
-    let root = project_root();
-    // @step Then the file src/tui/components/MultiLineInput.tsx exists
-    assert!(root.join("src/tui/components/MultiLineInput.tsx").is_file());
-    // @step And the file src/tui/components/VirtualList.tsx exists
-    assert!(root.join("src/tui/components/VirtualList.tsx").is_file());
-    // @step And the file src/tui/components/ConversationInputArea.tsx exists
-    assert!(root
-        .join("src/tui/components/ConversationInputArea.tsx")
-        .is_file());
-}

@@ -13,10 +13,6 @@
 // compression_ratio 0.0, turns 0. The CompactionComplete chunk (CMPCT-038
 // apply-site emission) is the single source of truth for the numbers.
 //
-// The plain-CLI REPL (rust/cli/src/interactive/repl_loop.rs) is the third
-// instance — validated here via a source-shape assertion (NAPI-010 precedent)
-// because the REPL loop reads stdin interactively.
-//
 // This is the only test crate that sees codelet-cli, codelet-sessions and
 // codelet-napi at once — same rationale as cmpct038/cmpct039.
 //
@@ -173,37 +169,3 @@ async fn test_napi_session_compact_returns_acknowledgement_shape() {
     );
 }
 
-// ========================================
-// Scenario: Plain-CLI REPL /compact prints no fabricated numbers
-// ========================================
-//
-// Source-shape assertion (NAPI-010 precedent): the REPL loop reads stdin
-// interactively, so its success print is pinned at the source level.
-
-#[test]
-fn test_repl_loop_compact_prints_no_fabricated_numbers() {
-    // @step Given the plain-CLI REPL /compact success handler source
-    let path = concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../cli/src/interactive/repl_loop.rs"
-    );
-    let source = std::fs::read_to_string(path).expect("repl_loop.rs must be readable");
-
-    // @step When the /compact success print statements are inspected
-    // (string scan over the file — the /compact arm is the only user of
-    // these markers)
-
-    // @step Then the source no longer prints the fabricated context-compacted percentage line
-    assert!(
-        !source.contains("[Context compacted:"),
-        "repl_loop.rs must no longer print the fabricated \
-         `[Context compacted: X→Y tokens, Z% compression]` line (RPC-421)"
-    );
-
-    // @step And the source prints a compaction-started message referencing the in-view DAG flow
-    assert!(
-        source.contains("[Compaction started") && source.contains("SessionSearch"),
-        "repl_loop.rs must print a compaction-started message referencing \
-         the in-view DAG flow (agent builds the summary via SessionSearch)"
-    );
-}

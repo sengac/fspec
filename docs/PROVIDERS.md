@@ -15,7 +15,7 @@ from the TUI.
 | Provider | Environment Variable | Auth Type |
 |----------|---------------------|-----------|
 | Anthropic | `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` | API Key / OAuth |
-| OpenAI | `OPENAI_API_KEY` | API Key |
+| OpenAI | `OPENAI_BASE_URL` + `OPENAI_API_KEY` (bridged from the selected profile) | API Key (local servers, via profiles) |
 | Google Gemini | `GOOGLE_GENERATIVE_AI_API_KEY` | API Key |
 | Z.AI | `ZAI_API_KEY` or `ZAI_PLAN_API_KEY` | API Key |
 | Codex | OAuth (`~/.codex/auth.json`) | OAuth |
@@ -33,7 +33,213 @@ from the TUI.
 | Azure OpenAI | `AZURE_OPENAI_API_KEY` | API Key |
 
 **OpenAI-compatible APIs** — Ollama, vLLM, LM Studio, and any server implementing
-the OpenAI API format work via the OpenAI provider.
+the OpenAI API format work via the OpenAI provider. The `OpenAI` provider is for
+**local OpenAI-protocol-compatible servers only** (vLLM, Ollama, sglang, RunPod,
+Fireworks) — cloud OpenAI models (GPT-5.x, o3, GPT-4o) are NOT listed under the
+`OpenAI API` section; they belong exclusively under the `Codex (ChatGPT)` provider.
+You configure local servers through **OpenAI profiles** (see
+[OpenAI API Profile Screen](#openai-api-profile-screen) below).
+
+---
+
+## The `/provider` View
+
+Type `/provider` to open the **Provider Settings** screen
+(`rust/fspec-tui/src/views/provider_settings/`). It shows every built-in provider
+as a flat, expandable tree:
+
+```
+▼ Anthropic (12 models)
+      ✓ sk-ant-••••••••mnop [env]
+      Logout from OAuth [Anthropic]
+      🔑 Sign in with browser
+      🔑 Sign in with code
+▶ OpenAI (2 profiles)
+      📁 sglang → http://localhost:18003
+      📁 runpod → https://runpod.io
+      + Create new profile
+▼ Codex (ChatGPT) (6 models)
+      ✓ OAuth [ChatGPT]
+      Logout from OAuth [Codex (ChatGPT)]
+      🔑 Sign in with browser
+      🔑 Sign in with device code
+...
+```
+
+- Provider header rows (white, `▶`/`▼` glyph) show the credential state
+  (`✓ {masked key} [source]` in green when configured, `(not configured)` in gray
+  otherwise). The `OpenAI` header appends a dim `(N profile(s))` badge when it
+  has stored profiles.
+- Child rows appear only when the provider is expanded, in a fixed order:
+  1. **OAuth status** row — `Logout from OAuth [Provider]` (only when logged in)
+  2. **OAuth login** rows (magenta 🔑) — the available login methods
+  3. **API key** row (yellow 🔑) — every provider *except* `openai`
+  4. **Profile** rows (cyan 📁) — `openai` only: one per stored profile,
+     labeled `name → baseUrl`
+  5. **Add Profile** pseudo-row (green `+`, labeled "Create new profile") —
+     `openai` only, always present
+
+The `OpenAI` provider has **no API-key row**: because it is for local servers only,
+its credentials are set per profile (in the profile form) instead.
+
+### Keybindings
+
+| Key | Effect |
+|-----|--------|
+| `↑` / `↓` | Navigate the flat tree (clamped, no wrap) |
+| `PgUp` / `PgDn` | Page up / down by one viewport |
+| `Home` / `End` | Jump to top / bottom |
+| `Enter` | Contextual: expand/collapse a provider · open the API-key editor · open the profile **Edit** form · open the **Create Profile** form · start an OAuth login · open the OAuth logout (disconnect) confirm |
+| `→` / `←` | Expand / collapse the focused provider header |
+| `d` | Delete: provider/API-key rows → "Delete credentials?" confirm (only when configured) · profile rows → "Delete profile?" confirm (removes just that profile) · logout rows → OAuth disconnect confirm |
+| `/` | Enter filter mode (case-insensitive substring match on provider name or id; a provider and its children are shown or hidden together). `Esc` clears the filter; `Enter` exits filter mode |
+| `Tab` | Switch to the Model Selector (`/model`) |
+| `Esc` | Close the screen (first clears an active filter) |
+| `Ctrl+C` | In a text-entry mode (API-key editor, profile form field), copy the focused field's value to the clipboard — API-key fields are copied **masked** (`••••`), other fields copy plaintext |
+
+Footer hints at the bottom of the screen always show the keybindings available
+for the focused row.
+
+### OAuth Providers
+
+OAuth-capable providers are `anthropic`, `codex` and `github-copilot`:
+
+| Provider | Login methods |
+|----------|---------------|
+| Anthropic | Browser · headless code entry (authorize URL + code) |
+| Codex (ChatGPT) | Browser · device code (shows a user code + verification URL) |
+| GitHub Copilot | Device code only, preceded by a deployment-type prompt (GitHub.com vs. GitHub Enterprise + host entry) |
+
+Browser login rows only appear on transports that can run the local OAuth HTTP
+server. On failure the error screen offers `Enter` to retry the last method or
+`Esc` to go back; `Esc` cancels an in-flight login (late results are discarded).
+
+### API Key Editor
+
+`Enter` on an API-key row opens an inline editor: type the key (printable ASCII
+only; `Ctrl+V` paste is supported and newlines/control characters are dropped),
+`Enter` saves it to `~/.fspec/credentials/credentials.json`, `Esc` cancels.
+The key renders masked (one bullet per character) while you type. Pressing
+`Enter` on an empty key silently cancels.
+
+---
+
+## OpenAI API Profile Screen
+
+Each **profile** points fspec at one local OpenAI-protocol-compatible server.
+Open the screen from the `OpenAI` provider in `/provider`:
+
+- `+ Create new profile` → opens the **create** form (name field focused, base
+  URL pre-filled with `http://localhost:8888`)
+- A `📁 name → baseUrl` row → opens the **edit** form, prefilled with the stored
+  values (the name is editable here — `↑` from the first field returns to it, so
+  a profile can be renamed; the original name is used as the delete key)
+
+### Profile Form Fields
+
+| # | Field | Type | Empty ⇒ | Saved as (`fspec-config.json`) | Effect at runtime |
+|---|-------|------|---------|-------------------------------|-------------------|
+| — | **Name** | text | required | map key under `providers.openai.profiles.<name>` | Identifies the profile; shown as `openai: <name>` in the Model Selector |
+| 1 | **Base URL** | text | required | `baseUrl` | Bridged to `OPENAI_BASE_URL` when the profile is selected |
+| 2 | **API Key** | text (masked) | required | `apiKey` | Bridged to `OPENAI_API_KEY` (only when non-empty). Also used for the `/v1/models` reachability probe |
+| 3 | **Context Window** | number | registry value / 128 000 fallback | `contextWindow` | Bridged to `OPENAI_CONTEXT_WINDOW`; fallback context window for models discovered via the probe |
+| 4 | **Max Output Tokens** | number | registry / provider default | `maxOutputTokens` | Per-profile cap override; deliberately NOT bridged to an env var |
+| 5 | **Compaction Threshold** | `80%` or `200000` | provider default | `compactionThreshold: { type, value }` | When context compaction triggers for this profile's sessions |
+| 6 | **Streaming** | toggle (default **Enabled**) | enabled | `streaming` | `OPENAI_STREAMING=true/false` is exported when the profile is selected; absent ⇒ streaming stays on |
+| 7 | **Auto-Continue** | number (default: off) | off | `autoContinue` | Sessions started on this profile continue as if `/continue n` had been run; `0` = explicitly off |
+| 8 | **Preserve Thinking** | toggle (default **Disabled**) | disabled | `preserveThinking` | `false` (default): reasoning blocks are **stripped** from the chat history sent back to the LLM; `true`: preserved |
+| 9 | **Max Images** | number (default 4) | 4 | `maxImages` | Image budget for the Read tool: `0` = no-vision profile (Read fails image reads), `n ≥ 1` = at most `n` images per Read result |
+| 10 | **Loop Detection** | toggle (default **Enabled**) | enabled | `loopDetectionEnabled` | On/off for the streaming loop detector (RIG-014) in this profile's sessions |
+| 11 | **Loop Window** | number (default 160) | 160 | `loopDetectionWindow` | Detector sliding window size, in words |
+| 12 | **Loop Repeat** | number (default 10) | 10 | `loopDetectionMaxRepeats` | Tail n-gram repeat threshold before a loop is declared |
+| 13 | **Loop Retries** | number (default 10) | 10 | `loopDetectionMaxRetries` | Max auto-continue retries after a loop abort; `0` = never retry |
+
+**Form navigation:** `↑`/`↓` move between fields (the name field sits above the
+first field and is reached with `↑` from Base URL), printable characters edit
+the focused field, and `Space`/`←`/`→` flip the boolean toggles (Streaming,
+Preserve Thinking, Loop Detection) — typing while a toggle is focused is
+swallowed. `Ctrl+V` pastes into the focused text field (newlines/control
+characters dropped). `Enter` saves, `Esc` cancels, `Tab` is ignored.
+
+**Validation on save:**
+
+- Base URL, API key, or the trimmed name empty → the save is rejected
+  **silently** and the form stays open.
+- A non-numeric value in any numeric field (Auto-Continue, Max Images, Loop
+  Window/Repeat/Retries) → the save is rejected with a hint shown in the status
+  line, e.g. `Auto-Continue must be 0 (off) or a positive integer budget (e.g. 300)`,
+  and the form stays open with your edits intact. Nothing is persisted.
+- Compaction Threshold out of range (percentage `1..=100`, tokens `≥ 1000`) →
+  the value is omitted from the saved profile rather than rejected.
+
+### Profile Storage
+
+Profiles are persisted to `~/.fspec/fspec-config.json` (or the `FSPEC_USER_DIR`
+override), deep-merged with the project-level `<cwd>/spec/fspec-config.json`
+(**project overrides user** by profile name):
+
+```json
+{
+  "providers": {
+    "openai": {
+      "profiles": {
+        "sglang": {
+          "baseUrl": "http://localhost:18003",
+          "apiKey": "test",
+          "contextWindow": 262144,
+          "maxOutputTokens": 32768,
+          "compactionThreshold": { "type": "percentage", "value": 80 },
+          "streaming": true,
+          "autoContinue": 300,
+          "preserveThinking": false,
+          "maxImages": 4,
+          "loopDetectionEnabled": true,
+          "loopDetectionWindow": 160,
+          "loopDetectionMaxRepeats": 10,
+          "loopDetectionMaxRetries": 10
+        }
+      }
+    }
+  }
+}
+```
+
+Saving is a **read-modify-write** that touches only the target profile:
+
+- The profile's `customModels` array (owned by the Model Selector CRUD, see
+  below) and every unrelated key (sibling profiles, top-level config) are
+  preserved verbatim.
+- Absent optional fields are **removed** from the profile object, so the
+  defaults documented in the table above apply on reload.
+- Saving a changed name renames the profile (the original entry is replaced).
+
+**Custom models** (`customModels`) are NOT a field of this form — they are
+managed via the Model Selector (`/model`) on an `openai: <profile>` section and
+are preserved by every profile save/delete. Each entry is
+`{ id, displayName?, facade?, contextWindow?, maxOutputTokens?, compactionThreshold?, reasoning?, hasVision? }`.
+
+### How a Profile Behaves at Runtime
+
+- **Listing** — when fspec assembles the provider list (`list_providers`), each
+  profile's `baseUrl` is probed via `GET /v1/models` (using the profile's
+  `apiKey`). Discovered model ids are merged with the profile's `customModels`
+  (custom entries override discovered ones with the same id). The section is
+  rendered as `openai: <name>`; it is marked *unreachable* only when the probe
+  fails **and** the profile has no custom models — a profile with custom models
+  is never flagged unreachable, and unlike cloud sections, an unreachable
+  profile section is never dropped from the list.
+- **Credential bridging** — when a profile's model is selected, the profile's
+  stored credentials are bridged into the process environment before dispatch
+  (`apply_profile_env_vars`):
+  - `OPENAI_BASE_URL` ← `baseUrl`
+  - `OPENAI_API_KEY` ← `apiKey` (only when present and non-empty)
+  - `OPENAI_CONTEXT_WINDOW` ← `contextWindow` (only when set)
+  - `OPENAI_STREAMING` ← `"true"`/`"false"` when `streaming` is set; **removed**
+    when absent (so a profile without the flag never forces streaming off)
+  - `maxOutputTokens` is deliberately **not** bridged to an env var
+- **Session defaults** — `autoContinue`, `preserveThinking`, `maxImages` and the
+  four loop-detection values seed the agent-loop / tool-layer settings for
+  sessions created on this profile.
 
 ---
 
@@ -41,32 +247,10 @@ the OpenAI API format work via the OpenAI provider.
 
 ### Via the TUI (`/provider`)
 
-Type `/provider` in the input bar to open the **Provider Settings** screen. This is
-the primary way to configure providers — you can set API keys, test connections,
-and manage OAuth logins without touching environment variables.
-
-**List mode (default):**
-- `↑` / `↓` — Navigate providers
-- `Enter` — Open detail for the selected provider
-- `d` — Delete credentials (with confirmation dialog)
-- `/` — Enter filter mode to search providers
-- `Esc` — Close the screen (or clear filter first)
-- `Tab` — Switch to the Model Selector
-
-**Detail mode (after pressing Enter on a provider):**
-- `Enter` — Open API key editor (for API-key providers) or OAuth login flow (for OAuth providers)
-- `r` — Refresh the provider's model cache
-- `Esc` — Return to list mode
-
-**API key editor:**
-- Type your API key
-- `Enter` — Save credentials
-- `Esc` — Cancel
-
-**OAuth providers** (Codex, GitHub Copilot, Claude):
-- Select the provider in list mode, press `Enter`
-- Choose login method (browser, device code, or headless)
-- Follow the OAuth flow prompts
+The **Provider Settings** screen (see [The `/provider` View](#the-/provider-view)
+and [OpenAI API Profile Screen](#openai-api-profile-screen) above) is the primary
+way to configure providers — you can set API keys, manage OAuth logins, and
+configure local-server profiles without touching environment variables.
 
 ### Via Environment Variables
 

@@ -75,6 +75,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                         println!("{reminder}");
                     }
                 }
+                // DISC-003 rule 4/14: print the progress trailer (draft path).
+                crate::common::print_next_steps(&parsed);
             } else {
                 println!("  Updated: spec/foundation.json");
                 println!("  Regenerated: spec/FOUNDATION.md");
