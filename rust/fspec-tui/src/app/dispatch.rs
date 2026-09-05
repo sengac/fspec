@@ -88,7 +88,12 @@ impl App {
                 // MUX-001 R8: in mux mode, Enter on a board work unit
                 // binds the unit + focuses the agent pane WITHOUT
                 // flipping the whole view.
-                if self.navigator.mux.config().enabled {
+                // BUG-175: gate on the LIVE view, not the persisted
+                // `mux.config().enabled` flag — with the flag leaked
+                // across a restart (saved while in the grid) the mux
+                // path would have swallowed the flip and stranded the
+                // user on the Board with a bound-but-unopened unit.
+                if self.navigator.active_view == ViewMode::Mux {
                     let _ = self.action_tx.send(Action::MuxEnterWorkUnit(id.clone()));
                 } else {
                     self.navigator.active_view = ViewMode::Agent;
@@ -124,7 +129,12 @@ impl App {
                 // means focus the board pane WITHIN the grid — never
                 // flip the whole view out of Mux (session close /
                 // detach must retain the mux layout).
-                if self.navigator.mux.config().enabled {
+                // BUG-175: gate on the LIVE view, not the persisted
+                // `mux.config().enabled` flag — the flag survives a
+                // restart (it is a saved layout preference) and used to
+                // take this branch while the grid was NOT entered,
+                // leaving the view stranded on a session-less Agent.
+                if self.navigator.active_view == ViewMode::Mux {
                     let board_idx = self
                         .navigator
                         .mux

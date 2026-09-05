@@ -337,6 +337,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-167` | Bug fix work unit BUG-167 - mux config save is a no-op in the real binary: persist dirs are never wired in production (App::new now resolves the CONFIG-008 shared-config dirs once, with a dirs::home_dir()/.fspec fallback when the global data directory is unset) |
 | `@bug-168` | Work unit BUG-168 - Read tool PDF visual mode ignores offset/limit and returns unbounded page images; adds pagination, configurable page cap, truncation notice, vision-capability-aware default mode, and rig-patch image count defense |
 | `@bug-171` | Bug fix work unit BUG-171 — exec-stdin TUI overlay never appeared: pull probe had no push trigger while the session stayed Running. Fix: detector observes the end of the prompt condition and pushes clear StreamChunks; set_exec_stdin_request is the sole emission point for ExecStdinRequest / ExecStdinRequestCleared push chunks; non-exit clear resets the per-exec-session cooldown |
+| `@bug-175` | Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag. |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -762,4 +763,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-04T10:31:52.594Z_
+_Last updated: 2026-09-05T02:05:46.969Z_

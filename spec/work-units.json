@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-04T11:07:18.573Z",
+    "lastUpdated": "2026-09-05T05:52:01.929Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 174,
+    "BUG": 175,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1682,7 +1682,8 @@
       "BUG-171",
       "BUG-172",
       "PROV-144",
-      "BUG-174"
+      "BUG-174",
+      "BUG-175"
     ],
     "blocked": [
       "QUERY-001",
@@ -229078,6 +229079,75 @@
       ],
       "nextRuleId": 4,
       "estimate": 2
+    },
+    "BUG-175": {
+      "id": "BUG-175",
+      "title": "Mux enabled=true in persisted config leaks into non-mux view routing — closing a session strands the user on a stale full-screen AgentView",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-05T00:43:35.684Z",
+      "updatedAt": "2026-09-05T05:52:01.929Z",
+      "description": "When tui.mux.enabled=true persists in fspec-config.json (saved while the user was in mux mode) and the TUI restarts, bootstrap loads it into MultiplexLayout.config.enabled WITHOUT entering ViewMode::Mux. The BackToBoard arm (App::dispatch + Navigator::apply_action) then gates on config.enabled instead of the live ViewMode::Mux, so it focuses the mux 'board pane' instead of flipping active_view to Board. Close-session (ExitChoice::CloseSession) dispatches BackToBoard as its final step, so the view stays on Agent with zero open sessions — a blank AgentView where Esc does nothing (cascade: current_session() == None → BackToBoard, which is now a no-op) and the exit dialog never appears. Reproduced 2026-09-04 ~21:45 AEST in /Users/rquast/uq/Bpd-7.7.5 (session 90be2150): model select → close session → blank Agent screen, Esc dead.",
+      "epic": "mux",
+      "children": [],
+      "userStory": {
+        "role": "TUI user who saved a mux grid",
+        "action": "close an agent session from single-view mode after a restart",
+        "benefit": "land on the board instead of a blank, unresponsive Agent view"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-05T00:53:31.964Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-05T03:24:34.178Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-05T05:28:55.801Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-05T05:29:13.761Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-05T05:52:01.929Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Bootstrap MUST NOT leave the mux layout in an enabled state without entering ViewMode::Mux — loading a persisted tui.mux config with enabled=true must force enabled=false until the user explicitly re-enters mux mode",
+          "deleted": false,
+          "createdAt": "2026-09-05T00:53:44.177Z"
+        },
+        {
+          "id": 1,
+          "text": "Any view-routing decision that reads the mux enabled flag MUST base it on the live view state (ViewMode::Mux) rather than the persisted config flag, so the persisted enabled=true cannot leak routing behavior into non-mux single views",
+          "deleted": false,
+          "createdAt": "2026-09-05T00:53:57.464Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Restart TUI with tui.mux.enabled=true persisted; user is on the single Board view; Esc on an Agent session with nothing open → BackToBoard MUST flip to the single Board view even though the persisted mux flag says enabled",
+          "deleted": false,
+          "createdAt": "2026-09-05T00:58:01.723Z"
+        },
+        {
+          "id": 1,
+          "text": "A persisted tui.mux block of enabled=true plus a saved Board|Agent 50/50 layout: on a fresh start the TUI boots on the single Board view with the mux layout DISABLED, and running /mux on re-enables the same saved 50/50 grid (the enabled flag is a saved layout preference, not a runtime mode)",
+          "deleted": false,
+          "createdAt": "2026-09-05T01:49:12.250Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 3
     }
   }
 }

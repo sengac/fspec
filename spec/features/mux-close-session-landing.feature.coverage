@@ -1,0 +1,179 @@
+{
+  "scenarios": [
+    {
+      "name": "bootstrap force-disables a persisted mux grid and keeps the saved layout for /mux on",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
+          "lines": "100-177",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/state.rs",
+              "lines": [
+                398,
+                399,
+                400,
+                401,
+                402
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "back-to-board lands on the single Board view when the persisted mux flag is on but the grid is not active",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
+          "lines": "179-235",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a board work unit enters the single Agent view when the persisted mux flag is on but the grid is not active",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
+          "lines": "237-296",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/mux default enters the grid with the enabled flag in lockstep with the live view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
+          "lines": "298-318",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/state.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/app/dispatch_mux.rs"
+    ],
+    "totalLinesCovered": 307
+  }
+}

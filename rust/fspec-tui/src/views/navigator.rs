@@ -330,9 +330,15 @@ impl Navigator {
                 // MUX-001: retain the mux grid when it is active —
                 // "back to board" focuses the board pane within the
                 // grid instead of flipping the whole view out of Mux.
-                // (The App dispatch arm applies the same rule first;
-                // this arm re-runs per action, so it needs the guard too.)
-                if self.mux.config().enabled {
+                // BUG-175: gate on the LIVE view, not the persisted
+                // `mux.config().enabled` flag (the App dispatch arm
+                // applies the same rule first; this arm re-runs per
+                // action, so it needs the identical guard). The flag
+                // is a saved layout preference that survives restarts;
+                // acting on it while the grid is not entered used to
+                // strand BackToBoard as a no-op (session close from
+                // single-view mode landed on a blank Agent).
+                if self.active_view == ViewMode::Mux {
                     let board_idx = self
                         .mux
                         .effective_panes()
