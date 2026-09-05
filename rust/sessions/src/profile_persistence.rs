@@ -60,6 +60,28 @@ pub struct ProfileDef {
     /// `Some(_)` is written to disk (as `"maxImages": <n>`, including the
     /// explicit `0` no-vision sentinel); `None` removes the key.
     pub max_images: Option<u32>,
+    /// PROV-145: per-profile loop-detection toggle. `None` (key absent) keeps
+    /// the RIG-014 detector enabled (today's always-on behavior);
+    /// `Some(false)` disables it; `Some(true)` is the explicit on. Only
+    /// `Some(_)` is written to disk (as `"loopDetectionEnabled": true|false`);
+    /// `None` removes the key.
+    pub loop_detection_enabled: Option<bool>,
+    /// PROV-145: per-profile loop-detector sliding window in words. `None`
+    /// (key absent) resolves to the RIG-014 default of 160. Only `Some(_)` is
+    /// written to disk (as `"loopDetectionWindow": <n>`); `None` removes the
+    /// key.
+    pub loop_detection_window: Option<u32>,
+    /// PROV-145: per-profile tail n-gram repeat threshold. `None` (key
+    /// absent) resolves to the RIG-014 default of 10. Only `Some(_)` is
+    /// written to disk (as `"loopDetectionMaxRepeats": <n>`); `None` removes
+    /// the key.
+    pub loop_detection_max_repeats: Option<u32>,
+    /// PROV-145: per-profile max auto-continue retries after a loop abort.
+    /// `None` (key absent) resolves to the RIG-014 default of 10; `Some(0)`
+    /// is the explicit never-retry sentinel. Only `Some(_)` is written to
+    /// disk (as `"loopDetectionMaxRetries": <n>`, including the explicit `0`
+    /// sentinel); `None` removes the key.
+    pub loop_detection_max_retries: Option<u32>,
 }
 
 /// Canonical openai-only guard predicate — the single source of truth for
@@ -212,6 +234,40 @@ fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
     // explicit `0` no-vision sentinel); `None` removes the key so an absent
     // `maxImages` continues to resolve to the tool-layer default of 4.
     set_or_remove(profile, "maxImages", def.max_images.map(Value::from));
+    // PROV-145: write the loop-detection toggle when set (including the
+    // explicit `false`); `None` removes the key so an absent
+    // `loopDetectionEnabled` continues to mean enabled (today's always-on
+    // behavior).
+    set_or_remove(
+        profile,
+        "loopDetectionEnabled",
+        def.loop_detection_enabled.map(Value::from),
+    );
+    // PROV-145: write the loop-detector window when set; `None` removes the
+    // key so an absent `loopDetectionWindow` continues to resolve to the
+    // RIG-014 default of 160.
+    set_or_remove(
+        profile,
+        "loopDetectionWindow",
+        def.loop_detection_window.map(Value::from),
+    );
+    // PROV-145: write the tail n-gram repeat threshold when set; `None`
+    // removes the key so an absent `loopDetectionMaxRepeats` continues to
+    // resolve to the RIG-014 default of 10.
+    set_or_remove(
+        profile,
+        "loopDetectionMaxRepeats",
+        def.loop_detection_max_repeats.map(Value::from),
+    );
+    // PROV-145: write the loop-abort retry cap when set (including the
+    // explicit `0` never-retry sentinel); `None` removes the key so an
+    // absent `loopDetectionMaxRetries` continues to resolve to the RIG-014
+    // default of 10.
+    set_or_remove(
+        profile,
+        "loopDetectionMaxRetries",
+        def.loop_detection_max_retries.map(Value::from),
+    );
 }
 
 /// Path-injectable core of [`save_profile`]. Whole-file read-modify-write that

@@ -129,6 +129,7 @@ impl Default for LoopDetectorConfig {
 /// signal fires the detector **latches** — further `feed` calls keep
 /// returning the latched signal until [`reset`](Self::reset) is called
 /// (once per turn).
+#[derive(Debug, Clone)]
 pub struct StreamLoopDetector {
     cfg: LoopDetectorConfig,
     words: VecDeque<String>,

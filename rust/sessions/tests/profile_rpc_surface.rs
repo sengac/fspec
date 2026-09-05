@@ -137,6 +137,10 @@ fn scenario_save_writes_optional_fields() {
         auto_continue: None,
         preserve_thinking: None,
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     };
     let result = handle.save_profile("openai", "work-vllm", &def);
 

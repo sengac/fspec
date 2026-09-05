@@ -22,6 +22,10 @@ fn basic(base_url: &str, api_key: &str) -> ProfileDef {
         preserve_thinking: None,
         // PROV-144: absent maxImages ⇒ tool-layer default of 4.
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     }
 }
 
@@ -94,6 +98,10 @@ fn save_writes_compaction_threshold() {
         auto_continue: None,
         preserve_thinking: None,
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     };
     save_profile_at(&path, "openai", "work-vllm", &def).unwrap();
     let profile = read(&path)["providers"]["openai"]["profiles"]["work-vllm"].clone();

@@ -510,6 +510,24 @@ pub struct ProfileDefinition {
     /// Carried as a flat `Option<u32>` like `auto_continue` so the
     /// `napi(object)` projection stays a plain struct.
     pub max_images: Option<u32>,
+    /// PROV-145: per-profile loop-detection toggle. `None` (key absent on
+    /// disk) means the RIG-014 streaming loop detector stays ENABLED
+    /// (today's always-on behavior); `Some(false)` disables it for the
+    /// profile's sessions; `Some(true)` is the explicit on. Carried as a
+    /// flat `Option<bool>` like `streaming` so the `napi(object)`
+    /// projection stays a plain struct.
+    pub loop_detection_enabled: Option<bool>,
+    /// PROV-145: per-profile loop-detector sliding window in words. `None`
+    /// (absent) resolves to the RIG-014 default of 160.
+    pub loop_detection_window: Option<u32>,
+    /// PROV-145: per-profile tail n-gram repeat threshold. `None` (absent)
+    /// resolves to the RIG-014 default of 10.
+    pub loop_detection_max_repeats: Option<u32>,
+    /// PROV-145: per-profile max auto-continue retries after a loop abort
+    /// before the agent loop gives up and waits for real user input.
+    /// `None` (absent) resolves to the RIG-014 default of 10; `Some(0)` is
+    /// the explicit never-retry sentinel.
+    pub loop_detection_max_retries: Option<u32>,
 }
 
 impl ProfileDefinition {
@@ -545,6 +563,36 @@ impl ProfileDefinition {
     /// no-vision sentinel (the Read tool fails image reads at 0).
     pub fn max_images_limit(&self) -> u32 {
         self.max_images.unwrap_or(4)
+    }
+
+    /// PROV-145: canonical "is loop detection on?" predicate — the single
+    /// source of truth for the "absent ⇒ enabled" semantics. Returns
+    /// `true` when [`loop_detection_enabled`](Self::loop_detection_enabled)
+    /// is `None` or `Some(true)` (today's always-on behavior), `false` only
+    /// for an explicit `Some(false)`.
+    pub fn loop_detection_enabled(&self) -> bool {
+        self.loop_detection_enabled.unwrap_or(true)
+    }
+
+    /// PROV-145: canonical "effective loop-detector window" predicate — the
+    /// stored value, or the RIG-014 default of 160 words when the key is
+    /// absent (including pre-existing profiles).
+    pub fn loop_detection_window(&self) -> u32 {
+        self.loop_detection_window.unwrap_or(160)
+    }
+
+    /// PROV-145: canonical "effective tail n-gram repeat threshold"
+    /// predicate — the stored value, or the RIG-014 default of 10 when the
+    /// key is absent.
+    pub fn loop_detection_max_repeats(&self) -> u32 {
+        self.loop_detection_max_repeats.unwrap_or(10)
+    }
+
+    /// PROV-145: canonical "effective loop-abort retry cap" predicate — the
+    /// stored value, or the RIG-014 default of 10 when the key is absent.
+    /// An explicit `Some(0)` stays 0 (never auto-retry).
+    pub fn loop_detection_max_retries(&self) -> u32 {
+        self.loop_detection_max_retries.unwrap_or(10)
     }
 }
 

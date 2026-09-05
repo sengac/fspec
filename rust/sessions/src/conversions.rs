@@ -188,5 +188,13 @@ pub fn profile_def_from_wire(
         preserve_thinking: wire.preserve_thinking,
         // PROV-144: carry the per-profile Max Images limit through.
         max_images: wire.max_images,
+        // PROV-145: carry the per-profile loop-detection toggle through.
+        loop_detection_enabled: wire.loop_detection_enabled,
+        // PROV-145: carry the per-profile loop-detector window through.
+        loop_detection_window: wire.loop_detection_window,
+        // PROV-145: carry the per-profile tail n-gram repeat threshold through.
+        loop_detection_max_repeats: wire.loop_detection_max_repeats,
+        // PROV-145: carry the per-profile loop-abort retry cap through.
+        loop_detection_max_retries: wire.loop_detection_max_retries,
     }
 }

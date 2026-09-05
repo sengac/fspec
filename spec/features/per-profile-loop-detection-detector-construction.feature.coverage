@@ -1,0 +1,200 @@
+{
+  "scenarios": [
+    {
+      "name": "A stored loopDetectionEnabled false disables the detector for the session's turns",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov145_profile_config_applied.rs",
+          "lines": "140-172",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A wiring built from absent values keeps the detector enabled",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov145_profile_config_applied.rs",
+          "lines": "174-196",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stored window and repeat threshold loosen the detector",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov145_profile_config_applied.rs",
+          "lines": "198-235",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stored lower repeat threshold aborts earlier",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov145_profile_config_applied.rs",
+          "lines": "237-293",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The per-turn retry cap resolves from the stored loopDetectionMaxRetries",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov145_profile_config_applied.rs",
+          "lines": "299-320",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent loop reads the per-turn retry cap from the profile resolution",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov145_profile_config_applied.rs",
+          "lines": "322-354",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/prov145_profile_config_applied.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/background_output.rs"
+    ],
+    "totalLinesCovered": 293
+  }
+}

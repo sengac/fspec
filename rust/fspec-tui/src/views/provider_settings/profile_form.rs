@@ -16,7 +16,8 @@
 use codelet_rpc_types::ProfileDefinition;
 
 use super::profile_form_parse::{
-    opt_num, parse_auto_continue, parse_max_images, profile_compaction_trigger, render_threshold,
+    opt_num, parse_auto_continue, parse_loop_detection_max_repeats, parse_loop_detection_max_retries,
+    parse_loop_detection_window, parse_max_images, profile_compaction_trigger, render_threshold,
 };
 
 /// Default base URL for a brand-new profile (TS `DEFAULT_PROFILE_BASE_URL`).
@@ -33,7 +34,7 @@ pub(super) use super::profile_form_submit::{handle_form_key, restore_mode};
 /// appends the numeric "Auto-Continue" text field as the 7th; PROV-143
 /// appends the boolean "Preserve Thinking" toggle as the 8th; PROV-144
 /// appends the numeric "Max Images" text field as the 9th, last entry.
-pub const PROFILE_FORM_FIELDS: [&str; 9] = [
+pub const PROFILE_FORM_FIELDS: [&str; 13] = [
     "Base URL",
     "API Key",
     "Context Window",
@@ -43,6 +44,12 @@ pub const PROFILE_FORM_FIELDS: [&str; 9] = [
     "Auto-Continue",
     "Preserve Thinking",
     "Max Images",
+    // PROV-145: the four loop-detection fields (10th-13th), appended after
+    // Max Images.
+    "Loop Detection",
+    "Loop Window",
+    "Loop Repeat",
+    "Loop Retries",
 ];
 
 /// In-progress profile form values. Number / threshold fields keep their raw
@@ -69,6 +76,22 @@ pub struct ProfileForm {
     /// no-vision profile (the Read tool fails image reads); `"n"` (n >= 1) ⇒
     /// a single Read result may return at most `n` images.
     pub max_images: String,
+    /// PROV-145: the Loop Detection boolean toggle (true ⇒ the RIG-014
+    /// streaming loop detector is enabled; default ON, today's always-on
+    /// behavior). Not a text field (Space/Left/Right flip it).
+    pub loop_detection: bool,
+    /// PROV-145: the Loop Window numeric text field (detector sliding window
+    /// in words; raw typed string, parsed on build). Empty ⇒ absent ⇒ the
+    /// RIG-014 default of 160.
+    pub loop_window: String,
+    /// PROV-145: the Loop Repeat numeric text field (tail n-gram repeat
+    /// threshold; raw typed string, parsed on build). Empty ⇒ absent ⇒ the
+    /// RIG-014 default of 10.
+    pub loop_repeat: String,
+    /// PROV-145: the Loop Retries numeric text field (max auto-continue
+    /// retries after a loop abort; raw typed string, parsed on build).
+    /// Empty ⇒ absent ⇒ the RIG-014 default of 10; `"0"` ⇒ never retry.
+    pub loop_retries: String,
     /// Focused field index into [`PROFILE_FORM_FIELDS`].
     pub field_index: usize,
     /// True while the cursor is in the name field (editable in both create and
@@ -101,6 +124,14 @@ impl ProfileForm {
             // applies. (The edit form prefills the effective value via
             // `from_definition`; see that path.)
             max_images: String::new(),
+            // PROV-145: the Loop Detection toggle defaults to ENABLED —
+            // absent on save ⇒ the RIG-014 detector stays on (today's
+            // always-on behavior). The numeric loop-detection fields start
+            // empty ⇒ absent on save ⇒ the RIG-014 defaults apply.
+            loop_detection: true,
+            loop_window: String::new(),
+            loop_repeat: String::new(),
+            loop_retries: String::new(),
         }
     }
 
@@ -130,6 +161,15 @@ impl ProfileForm {
             // default 4 when the key is absent (assumption: disk and form
             // always agree). An explicit 0 prefills "0" (no vision).
             max_images: def.max_images_limit().to_string(),
+            // PROV-145: prefill the loop-detection toggle — the stored value,
+            // or enabled when the key is absent (today's always-on behavior).
+            loop_detection: def.loop_detection_enabled(),
+            // PROV-145: prefill the EFFECTIVE numeric values — the stored
+            // value, or the RIG-014 defaults (160 / 10 / 10) when the keys
+            // are absent.
+            loop_window: def.loop_detection_window().to_string(),
+            loop_repeat: def.loop_detection_max_repeats().to_string(),
+            loop_retries: def.loop_detection_max_retries().to_string(),
         }
     }
 
@@ -144,10 +184,17 @@ impl ProfileForm {
             3 => &mut self.max_output_tokens,
             4 => &mut self.compaction_threshold,
             6 => &mut self.auto_continue,
-            // PROV-144: the Max Images field (index 8, the last text field).
+            // PROV-144: the Max Images field (index 8, the last text field
+            // before the loop-detection fields).
             8 => &mut self.max_images,
-            // 5 (Streaming) and 7 (Preserve Thinking) are boolean toggles —
-            // the routing guard intercepts them before this is reached.
+            // PROV-145: the numeric loop-detection fields (indices 10-12;
+            // index 9 is the Loop Detection boolean toggle).
+            10 => &mut self.loop_window,
+            11 => &mut self.loop_repeat,
+            12 => &mut self.loop_retries,
+            // 5 (Streaming), 7 (Preserve Thinking) and 9 (Loop Detection)
+            // are boolean toggles — the routing guard intercepts them before
+            // this is reached.
             _ => &mut self.compaction_threshold,
         }
     }
@@ -210,8 +257,16 @@ impl ProfileForm {
             4 => &self.compaction_threshold,
             6 => &self.auto_continue,
             7 => super::profile_form_streaming::streaming_label(self.preserve_thinking),
+            // PROV-145: the Loop Detection toggle (idx 9) renders its
+            // Enabled/Disabled label, like the other boolean toggles.
+            9 => super::profile_form_streaming::streaming_label(self.loop_detection),
             // PROV-144: the Max Images field (index 8) renders its raw text.
             8 => &self.max_images,
+            // PROV-145: the numeric loop-detection fields render their raw
+            // text.
+            10 => &self.loop_window,
+            11 => &self.loop_repeat,
+            12 => &self.loop_retries,
             _ => super::profile_form_streaming::streaming_label(self.streaming),
         }
     }
@@ -236,6 +291,12 @@ impl ProfileForm {
         // 4); "0" ⇒ Some(0) (no-vision sentinel); "n" (n >= 1) ⇒ Some(n)
         // (cap of n images per Read result); non-numeric ⇒ reject with a hint.
         let max_images = parse_max_images(&self.max_images)?;
+        // PROV-145: parse the loop-detection numeric fields. Empty ⇒ None
+        // (absent ⇒ the RIG-014 defaults 160 / 10 / 10); "n" ⇒ Some(n);
+        // non-numeric ⇒ reject with a hint naming the field.
+        let loop_detection_window = parse_loop_detection_window(&self.loop_window)?;
+        let loop_detection_max_repeats = parse_loop_detection_max_repeats(&self.loop_repeat)?;
+        let loop_detection_max_retries = parse_loop_detection_max_retries(&self.loop_retries)?;
         let (compaction_threshold_type, compaction_threshold_value) =
             profile_compaction_trigger(&self.compaction_threshold);
         Ok(Some(ProfileDefinition {
@@ -253,6 +314,16 @@ impl ProfileForm {
             // PROV-144: carry the parsed Max Images limit (empty ⇒ None so the
             // persistence read-modify-write REMOVES the key ⇒ default 4).
             max_images,
+            // PROV-145: always carry the explicit loop-detection toggle so
+            // the on-disk profile reflects the form (true ⇒ detector on,
+            // false ⇒ detector off).
+            loop_detection_enabled: Some(self.loop_detection),
+            // PROV-145: carry the parsed loop-detection numeric fields
+            // (empty ⇒ None so the persistence read-modify-write REMOVES the
+            // keys ⇒ the RIG-014 defaults apply).
+            loop_detection_window,
+            loop_detection_max_repeats,
+            loop_detection_max_retries,
         }))
     }
 }

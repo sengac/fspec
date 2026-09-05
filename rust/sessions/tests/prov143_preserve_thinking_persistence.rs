@@ -33,6 +33,10 @@ fn def_preserve(base_url: &str, api_key: &str, preserve_thinking: Option<bool>) 
         auto_continue: None,
         preserve_thinking,
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     }
 }
 

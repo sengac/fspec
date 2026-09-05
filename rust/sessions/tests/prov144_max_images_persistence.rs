@@ -39,6 +39,10 @@ fn def_max_images(base_url: &str, api_key: &str, max_images: Option<u32>) -> Pro
         auto_continue: None,
         preserve_thinking: None,
         max_images,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     }
 }
 
@@ -66,6 +70,10 @@ fn the_max_images_value_round_trips_through_wire_and_disk() {
         base_url: "http://new".to_string(),
         api_key: "new".to_string(),
         max_images: Some(7),
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
         ..ProfileDefinition::default()
     };
     let on_disk = profile_def_from_wire(&wire);
@@ -111,6 +119,10 @@ fn a_missing_max_images_key_resolves_to_the_default_4() {
         base_url: "http://new".to_string(),
         api_key: "new".to_string(),
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
         ..ProfileDefinition::default()
     };
     let on_disk = profile_def_from_wire(&wire);
@@ -130,6 +142,10 @@ fn wire_to_disk_bridge_copies_the_max_images_value() {
         base_url: "http://h".to_string(),
         api_key: "k".to_string(),
         max_images: Some(7),
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
         ..ProfileDefinition::default()
     };
 

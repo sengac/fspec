@@ -106,6 +106,10 @@ fn edit_form_prefills_connection_fields_from_stored_profile() {
         auto_continue: None,
         preserve_thinking: None,
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
     };
     let form = ProfileForm::from_definition("fireworks", &def);
 

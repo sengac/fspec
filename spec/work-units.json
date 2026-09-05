@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-04T11:07:18.573Z",
+    "lastUpdated": "2026-09-05T06:27:13.656Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -67,7 +67,7 @@
     "PATCH": 2,
     "PAUSE": 1,
     "PERF": 2,
-    "PROV": 144,
+    "PROV": 145,
     "REFAC": 18,
     "REMIND": 17,
     "RES": 22,
@@ -1682,7 +1682,8 @@
       "BUG-171",
       "BUG-172",
       "PROV-144",
-      "BUG-174"
+      "BUG-174",
+      "PROV-145"
     ],
     "blocked": [
       "QUERY-001",
@@ -229078,6 +229079,125 @@
       ],
       "nextRuleId": 4,
       "estimate": 2
+    },
+    "PROV-145": {
+      "id": "PROV-145",
+      "title": "Per-profile Loop Detection configuration on the /provider OpenAI profile form",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-04T12:08:59.555Z",
+      "updatedAt": "2026-09-05T06:27:43.710Z",
+      "description": "Add new fields to the /provider OpenAI profile create/edit form so the RIG-014 streaming LLM loop detector (commit e66f2cb1) can be tuned per profile. Core fields (Option A): a 'Loop Detection' enabled/disabled toggle (absent = enabled, preserving today's always-on behavior), 'Loop Window' (detector sliding window in words, default 160), 'Loop Repeat' (tail n-gram repeat threshold, default 10), and 'Loop Retries' (max auto-continue retries after a loop abort before giving up, default 10, resets per user turn). Values persist as flat camelCase keys (loopDetectionEnabled/loopDetectionWindow/loopDetectionMaxRepeats/loopDetectionMaxRetries) under providers.openai.profiles.<name> in fspec-config.json, None removes the key (absent = defaults), flow through wire ProfileDefinition -> profile_def_from_wire -> ProfileDef/merge_profile -> LocalServerProfile, and are resolved per turn when BackgroundOutput is constructed so mid-session model switches pick up the new profile's settings. Advanced thresholds (ngram_sizes, min_unique_ratio, diversity_min_window, min_long_match, min_words_before_check, period_len, period_min_matches, cooldown) are a follow-up card. Research + full integration-point map: attached PROV-145-research.md.",
+      "epic": "provider-resilience",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-145/PROV-145-research.md",
+        "spec/attachments/PROV-145/ast-research-prov145-integration-points.md"
+      ],
+      "userStory": {
+        "role": "user configuring an OpenAI API profile",
+        "action": "tune the RIG-014 streaming loop detector (on/off, window, repeat threshold, retry cap) in the /provider profile form",
+        "benefit": "the detector's sensitivity and auto-retry budget follow the active profile, resolved per turn so mid-session model switches take effect"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-04T12:09:53.412Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-04T14:23:27.999Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-05T04:20:56.039Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-05T04:29:06.478Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-05T06:27:13.656Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /provider OpenAI profile create/edit form gains 4 new entries appended after Max Images (10th-13th): 'Loop Detection' (boolean toggle, Space/Left/Right flip), 'Loop Window' (numeric, words), 'Loop Repeat' (numeric), 'Loop Retries' (numeric). Non-numeric input in any numeric field rejects the save with a hint and keeps the form open (mirrors PROV-142/144).",
+          "deleted": false,
+          "createdAt": "2026-09-04T12:10:02.102Z"
+        },
+        {
+          "id": 1,
+          "text": "The 4 values persist as flat camelCase keys (loopDetectionEnabled / loopDetectionWindow / loopDetectionMaxRepeats / loopDetectionMaxRetries) under providers.openai.profiles.<name> in fspec-config.json via the existing read-modify-write save/rename path. Saving an empty numeric field (or toggling the enable field) REMOVES that key (None), so absent keys mean 'use the RIG-014 default' — no migration needed for pre-existing profiles. The enabled toggle is absent=>ON to preserve today's always-on behavior.",
+          "deleted": false,
+          "createdAt": "2026-09-04T12:10:13.498Z"
+        },
+        {
+          "id": 2,
+          "text": "The values flow through the established PROV-139/142/143/144 path: wire ProfileDefinition (rust/rpc-types, flat Option<bool>/Option<u32> so the napi(object) projection stays a plain struct) -> profile_def_from_wire -> ProfileDef + merge_profile -> LocalServerProfile serde read (de_opt_u32_lenient) -> TUI prefill read in profiles_config.rs profile_definition_from_value. Canonical predicates resolve the effective values: enabled => loopDetectionEnabled.unwrap_or(true), window => stored value or 160, max_repeats => stored value or 10, max_retries => stored value or 10.",
+          "deleted": false,
+          "createdAt": "2026-09-04T12:10:29.669Z"
+        },
+        {
+          "id": 3,
+          "text": "Runtime: the per-turn loop-detector construction in BackgroundOutput (rust/agent-loop/src/background_output.rs with_provider) must use the profile's resolved values — detector ON/OFF flag, LoopDetectorConfig window + max_repeats (other thresholds keep POC-validated defaults), and the abort-retry cap replaces the const RIG014_MAX_LOOP_ABORT_RETRIES (10) read from the session instead. The profile is resolved from the session's provider/model at turn start so mid-session model switches take effect on the next turn. Non-profile sessions resolve to all defaults (today's behavior). The retry counter keeps its per-user-turn reset.",
+          "deleted": false,
+          "createdAt": "2026-09-04T12:10:45.022Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Profile 'spark' stores loopDetectionEnabled=false; the /provider form's Loop Detection toggle prefills Disabled; a session against openai:spark/m1 streams without any loop-detector aborts",
+          "deleted": false,
+          "createdAt": "2026-09-04T13:36:05.581Z"
+        },
+        {
+          "id": 1,
+          "text": "The form's Loop Detection toggle prefills Enabled for a profile with no loopDetectionEnabled key (absent = ON preserves today's always-on behavior); typing 320 into Loop Window and saving stores loopDetectionWindow 320, and re-opening the form shows 320",
+          "deleted": false,
+          "createdAt": "2026-09-04T13:36:35.216Z"
+        },
+        {
+          "id": 2,
+          "text": "Typing 'abc' into Loop Window and pressing save rejects the save with a hint naming the field; the form stays open showing 'abc' and nothing is written to fspec-config.json",
+          "deleted": false,
+          "createdAt": "2026-09-04T13:38:16.188Z"
+        },
+        {
+          "id": 3,
+          "text": "A profile stores loopDetectionMaxRetries 2; a session against it where the model loops is auto-continued after each loop abort at most twice, after which the loop gives up and waits for real user input instead of a third synthetic retry",
+          "deleted": false,
+          "createdAt": "2026-09-04T13:47:18.063Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Crate direction: codelet-sessions must NOT return LoopDetectorConfig (lives in codelet-agent-loop, which already depends on codelet-sessions — cycle). resolve_profile_loop_detection in model_resolution.rs returns flat values (Option<bool>, Option<u32>x3); codelet-agent-loop assembles LoopDetectorConfig at with_provider (research §5.2 option 1).",
+          "deleted": false,
+          "createdAt": "2026-09-04T14:01:22.634Z"
+        },
+        {
+          "id": 1,
+          "text": "BackgroundOutput::with_provider signature change: add a loop_config param (e.g. Option<LoopDetectionWiring> holding enabled flag + LoopDetectorConfig + cooldown). Call sites: agent-loop/src/agent_loop.rs:522 (production), fspec-tui/tests/cont008_goal_back_sync_test.rs (3 sites), napi/src/agent_loop.rs:613 (NAPI twin, no detectors today — keep it working; see out-of-scope decision).",
+          "deleted": false,
+          "createdAt": "2026-09-04T14:01:36.182Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI twin (rust/napi/src/agent_loop.rs) has its own BackgroundOutput WITHOUT loop detectors (confirmed: struct at ~line 1466 has no RIG-014 fields) — unaffected by the with_provider signature change and out of scope (research §6 Q3: documented drift, follow-up card). Also out of scope: warn-visibility status chunks, advanced thresholds (Option B), index.d.ts regeneration (validate manually in VALIDATING).",
+          "deleted": false,
+          "createdAt": "2026-09-04T14:02:05.714Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "estimate": 8,
+      "iterations": 1
     }
   }
 }

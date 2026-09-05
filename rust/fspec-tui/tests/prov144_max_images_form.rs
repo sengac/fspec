@@ -83,6 +83,10 @@ fn max_images_field_prefills_to_the_default_4_when_absent() {
         base_url: "http://localhost:8888".to_string(),
         api_key: "sk-stored".to_string(),
         max_images: None,
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
         ..ProfileDefinition::default()
     };
 
@@ -138,6 +142,10 @@ fn empty_max_images_field_saves_as_absent_and_resolves_to_the_default() {
         base_url: "http://h".to_string(),
         api_key: "sk".to_string(),
         max_images: Some(2),
+        loop_detection_enabled: None,
+        loop_detection_window: None,
+        loop_detection_max_repeats: None,
+        loop_detection_max_retries: None,
         ..ProfileDefinition::default()
     };
 

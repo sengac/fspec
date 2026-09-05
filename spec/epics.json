@@ -649,7 +649,8 @@
         "PROV-141",
         "PROV-142",
         "BUG-170",
-        "PROV-144"
+        "PROV-144",
+        "PROV-145"
       ]
     },
     "local-change-protocols": {

@@ -99,6 +99,67 @@ pub fn resolve_profile_max_images(pm: &ProviderManager) -> Option<u32> {
         .and_then(|p| p.max_images)
 }
 
+/// PROV-145: the per-profile loop-detection values, resolved flat.
+///
+/// `codelet-sessions` cannot return the `LoopDetectorConfig` that lives in
+/// `codelet-agent-loop` (crate cycle: agent-loop already depends on
+/// sessions), so this returns the flat stored values — `Option<bool>` for
+/// the enabled toggle, `Option<u32>` for the numeric fields. The caller
+/// (the agent-loop layer) assembles the detector config and applies the
+/// canonical defaults (enabled, 160, 10, 10) for absent values.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct ProfileLoopDetection {
+    /// Stored `loopDetectionEnabled`; `None` ⇒ enabled (RIG-014 default).
+    pub enabled: Option<bool>,
+    /// Stored `loopDetectionWindow` (words); `None` ⇒ 160.
+    pub window: Option<u32>,
+    /// Stored `loopDetectionMaxRepeats`; `None` ⇒ 10.
+    pub max_repeats: Option<u32>,
+    /// Stored `loopDetectionMaxRetries`; `None` ⇒ 10.
+    pub max_retries: Option<u32>,
+}
+
+/// PROV-145: resolve the active profile's stored loop-detection values for
+/// the per-turn detector construction in the agent loop.
+///
+/// Resolution: for a profile model selection (composite
+/// `openai:<profile>/<model>`), read the four `loopDetection*` keys from
+/// `fspec-config.json` via
+/// [`crate::profile_sections::load_local_server_profiles`]. Every absent key
+/// yields `None` (the agent-loop layer applies the effective defaults:
+/// enabled, 160, 10, 10 — today's behavior). Non-profile selections (cloud
+/// / custom / codex) have no profile behind them and resolve to all `None`.
+/// The resolution follows the model on every call (mid-session switches),
+/// mirroring [`resolve_profile_max_images`]'s contract.
+pub fn resolve_profile_loop_detection(pm: &ProviderManager) -> ProfileLoopDetection {
+    let Some(composite) = pm.selected_model_string() else {
+        return ProfileLoopDetection::default();
+    };
+
+    // Profile selection: "provider:profile/model" (colon before the slash).
+    let (colon, slash) = (composite.find(':'), composite.find('/'));
+    let (Some(colon), Some(slash)) = (colon, slash) else {
+        return ProfileLoopDetection::default();
+    };
+    if colon >= slash {
+        return ProfileLoopDetection::default();
+    }
+    let profile_name = &composite[colon + 1..slash];
+
+    let Some(profile) = crate::profile_sections::load_local_server_profiles()
+        .into_iter()
+        .find(|p| p.name == profile_name)
+    else {
+        return ProfileLoopDetection::default();
+    };
+    ProfileLoopDetection {
+        enabled: profile.loop_detection_enabled,
+        window: profile.loop_detection_window,
+        max_repeats: profile.loop_detection_max_repeats,
+        max_retries: profile.loop_detection_max_retries,
+    }
+}
+
 /// Limits resolved for a selected model, read back from the provider manager
 /// after the selection is applied. Values are already clamped by the provider's
 /// `ModelLimitsResolver`.

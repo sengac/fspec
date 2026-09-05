@@ -303,7 +303,7 @@ async fn goal_satisfied_snapshot_writes_the_chrome_goal_state_back() {
         session.sync_completion_contract_for_user_turn(&mut inner);
         assert!(inner.goal.is_some(), "precondition: inner goal synced");
     }
-    let output = BackgroundOutput::with_provider(session.clone(), "test".to_string());
+    let output = BackgroundOutput::with_provider(session.clone(), "test".to_string(), None);
     let mut rx = session.subscribe_to_stream();
 
     // @step When the background output maps a goal-satisfied counter snapshot
@@ -367,7 +367,7 @@ async fn a_goal_replaced_mid_turn_survives_the_goal_satisfied_write_back() {
     session.set_goal_state(Some(("goal B".to_string(), Some("true".to_string()))));
 
     // @step When the background output maps a goal-satisfied counter snapshot
-    let output = BackgroundOutput::with_provider(session.clone(), "test".to_string());
+    let output = BackgroundOutput::with_provider(session.clone(), "test".to_string(), None);
     output.emit(StreamEvent::ContinueState(snapshot(
         ContinueStateReason::GoalSatisfied,
         false,
@@ -406,7 +406,7 @@ async fn a_satisfied_goal_is_not_resurrected_on_the_next_dispatched_user_message
     }
 
     // @step And the engine accepted done() for the goal and the background output performed the write-back
-    let output = BackgroundOutput::with_provider(session.clone(), "test".to_string());
+    let output = BackgroundOutput::with_provider(session.clone(), "test".to_string(), None);
     {
         let mut inner = session.inner.lock().await;
         // The REAL teardown against the REAL twin: apply_finish_with_summary

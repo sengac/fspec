@@ -61,6 +61,10 @@ fn placeholder_for(idx: usize) -> &'static str {
         6 => "0 (off) or n (budget)",
         // PROV-144: the Max Images field (idx 8) — 0 = no vision, 4 = default.
         8 => "4 (default), 0 = no vision",
+        // PROV-145: the numeric loop-detection fields (idx 10-12).
+        10 => "160 (default)",
+        11 => "10 (default)",
+        12 => "10 (default), 0 = never retry",
         _ => "(empty)",
     }
 }

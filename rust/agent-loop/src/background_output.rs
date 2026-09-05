@@ -32,13 +32,54 @@ use crate::persist::{
     persist_assistant_message_internal, persist_token_state, persist_tool_result_internal,
 };
 use crate::stream_loop_detector::{
-    build_loop_abort_marker_note, build_loop_abort_recovery_message, LoopEscalationOutcome,
-    LoopEscalationPolicy, StreamLoopDetector,
+    build_loop_abort_marker_note, build_loop_abort_recovery_message, LoopDetectorConfig,
+    LoopEscalationOutcome, LoopEscalationPolicy, StreamLoopDetector,
 };
 
 /// RIG-014: Default cooldown between loop-detector triggers before the
 /// escalation policy aborts the in-flight stream.
 pub const RIG014_LOOP_ABORT_COOLDOWN_SECS: u64 = 30;
+
+/// PROV-145: Per-turn loop-detection wiring — the profile-resolved values the
+/// agent loop passes into [`BackgroundOutput::with_provider`]. [`Default`]
+/// (absent values) keeps today's behavior: detector ON with the POC-validated
+/// RIG-014 defaults (window 160, repeat threshold 10, retry cap 10).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LoopDetectionWiring {
+    /// Detector enabled flag (absent ⇒ true, today's always-on behavior).
+    pub enabled: bool,
+    /// Sliding window in words (absent ⇒ 160).
+    pub window: u32,
+    /// Tail n-gram repeat threshold (absent ⇒ 10).
+    pub max_repeats: u32,
+    /// Max auto-continue retries after a loop abort before giving up
+    /// (absent ⇒ 10; `0` = never auto-retry).
+    pub max_retries: u32,
+}
+
+impl Default for LoopDetectionWiring {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            window: 160,
+            max_repeats: 10,
+            max_retries: 10,
+        }
+    }
+}
+
+impl LoopDetectionWiring {
+    /// The POC-validated RIG-014 threshold defaults with the profile's
+    /// window + repeat threshold substituted in (all other thresholds keep
+    /// their POC-validated values — advanced tuning is a follow-up card).
+    pub fn detector_config(&self) -> LoopDetectorConfig {
+        LoopDetectorConfig {
+            window: self.window as usize,
+            max_repeats: self.max_repeats as usize,
+            ..LoopDetectorConfig::default()
+        }
+    }
+}
 
 /// Output handler for background sessions that implements StreamOutput.
 ///
@@ -72,23 +113,42 @@ pub struct BackgroundOutput {
     /// RIG-014: True once a loop abort has fired this turn (prevents
     /// re-feeding deltas into the detectors after the stream is cancelled).
     loop_abort_fired: std::sync::Mutex<bool>,
+    /// PROV-145: Per-turn loop-detection wiring (profile-resolved detector
+    /// thresholds + the retry cap the agent loop reads after an abort).
+    loop_wiring: LoopDetectionWiring,
 }
 
 impl BackgroundOutput {
-    pub fn with_provider(session: Arc<BackgroundSession>, provider: String) -> Self {
+    pub fn with_provider(
+        session: Arc<BackgroundSession>,
+        provider: String,
+        loop_wiring: Option<LoopDetectionWiring>,
+    ) -> Self {
+        // PROV-145: absent wiring keeps today's behavior — detector ON with
+        // the POC-validated RIG-014 defaults.
+        let loop_wiring = loop_wiring.unwrap_or_default();
+        let detector = StreamLoopDetector::with_config(loop_wiring.detector_config());
         Self {
             session,
             assistant_content: std::sync::Mutex::new(Vec::new()),
             provider,
             last_tool_call: std::sync::Mutex::new(None),
-            thinking_loop_detector: std::sync::Mutex::new(StreamLoopDetector::new()),
-            text_loop_detector: std::sync::Mutex::new(StreamLoopDetector::new()),
+            thinking_loop_detector: std::sync::Mutex::new(detector.clone()),
+            text_loop_detector: std::sync::Mutex::new(detector),
             loop_escalation_policy: std::sync::Mutex::new(LoopEscalationPolicy::new(
                 std::time::Duration::from_secs(RIG014_LOOP_ABORT_COOLDOWN_SECS),
             )),
             loop_last_trigger_at: std::sync::Mutex::new(None),
             loop_abort_fired: std::sync::Mutex::new(false),
+            loop_wiring,
         }
+    }
+
+    /// PROV-145: The per-turn loop-detection wiring this output was built
+    /// with (the agent loop reads `max_retries` as the loop-abort auto-continue
+    /// retry cap after an abort).
+    pub fn loop_wiring(&self) -> &LoopDetectionWiring {
+        &self.loop_wiring
     }
 
     /// RIG-014: Reset the per-turn loop detectors. Called at the start of
@@ -112,6 +172,12 @@ impl BackgroundOutput {
     /// escalation policy escalated to abort (caller should trigger the
     /// session interrupt).
     fn feed_loop_detectors(&self, channel: &str, delta: &str) -> bool {
+        // PROV-145: a profile that stores loopDetectionEnabled false disables
+        // the detector path entirely — deltas are accumulated verbatim and no
+        // abort note is ever staged.
+        if !self.loop_wiring.enabled {
+            return false;
+        }
         // Skip feeding after an abort has already fired this turn — the
         // stream is being cancelled and further deltas are noise.
         if let Ok(fired) = self.loop_abort_fired.lock() {
