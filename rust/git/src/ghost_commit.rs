@@ -581,7 +581,16 @@ pub fn restore_ghost_commit(
             if full_path.exists() {
                 fs::remove_file(&full_path)?;
             }
-            std::os::unix::fs::symlink(&target, &full_path)?;
+            #[cfg(unix)]
+            {
+                std::os::unix::fs::symlink(&target, &full_path)?;
+            }
+            #[cfg(windows)]
+            // Windows: materialize as a plain file holding the target path
+            // (no native symlink support in the release profile).
+            {
+                fs::write(&full_path, &target)?;
+            }
         }
         restored_files.push(path);
     }
@@ -663,7 +672,15 @@ pub fn restore_ghost_commit_file(
                     fs::remove_file(&full_path)?;
                 }
                 let target = String::from_utf8_lossy(&content).to_string();
-                std::os::unix::fs::symlink(&target, &full_path)?;
+                #[cfg(unix)]
+                {
+                    std::os::unix::fs::symlink(&target, &full_path)?;
+                }
+                #[cfg(windows)]
+                // Windows: materialize as a plain file holding the target path.
+                {
+                    fs::write(&full_path, &target)?;
+                }
             }
         }
         None => {
