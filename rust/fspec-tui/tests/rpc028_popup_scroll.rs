@@ -489,13 +489,18 @@ fn rpc028_resume_home_jumps_to_first_session_and_scrolls_to_top() {
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(20));
     let visible_rows = 8;
-    // Advance to selected=15 (scroll_offset will follow).
+    // Advance to selected=15 (scroll_offset will follow). The absolute
+    // offset (12) is TUI-096's 2-visual-rows-per-session artifact — the
+    // rule pinned by RPC-028 rule [4] is "Home → offset 0".
     for _ in 0..15 {
         v.handle_key(KeyCode::Down, KeyModifiers::NONE, visible_rows);
     }
-    // @step And the selected_index is 15 with scroll_offset 8
+    // @step And the selected_index is 15 with scroll_offset 12
+    // TUI-096: each session occupies 2 visual rows, so 8 rows show 4
+    // sessions → ensure_visible: 15 - 4 + 1 = 12 (pre-TUI-096 this was
+    // 8, the 1-row-per-session value; the pinned rule is "Home → 0").
     assert_eq!(v.selected_index(), 15);
-    assert_eq!(v.scroll_offset(), 8);
+    assert_eq!(v.scroll_offset(), 12);
     // @step When the user presses Home
     let outcome = v.handle_key(KeyCode::Home, KeyModifiers::NONE, visible_rows);
     match outcome {
@@ -516,13 +521,15 @@ fn rpc028_resume_left_click_on_row_selects_that_row() {
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(20));
     let visible_rows = 8;
-    // Drive selected_index to 12 to force scroll_offset to 5.
+    // TUI-096: each session occupies 2 visual rows, so 8 rows show 4
+    // sessions. Drive selected_index to 12 to force scroll_offset to 9
+    // (ensure_visible: 12 - 4 + 1).
     for _ in 0..12 {
         v.handle_key(KeyCode::Down, KeyModifiers::NONE, visible_rows);
     }
-    // @step And the scroll_offset is 5 so rows 5..12 are visible
+    // @step And the scroll_offset is 9 so sessions 9..12 are visible
     assert_eq!(v.selected_index(), 12);
-    assert_eq!(v.scroll_offset(), 5);
+    assert_eq!(v.scroll_offset(), 9);
     // body rect inside the mode-view layout: title=1, separator=1, body=vr, footer=1.
     let body_rect = Rect {
         x: 0,
@@ -531,6 +538,8 @@ fn rpc028_resume_left_click_on_row_selects_that_row() {
         height: visible_rows as u16,
     };
     // @step When the user left-clicks on the second visible row
+    // (visual row 1 = session offset+1; the TUI-098-pinned
+    // offset+row mapping keeps the selected row contiguous)
     let outcome = v.handle_mouse(
         MouseEvent {
             kind: MouseEventKind::Down(MouseButton::Left),
@@ -545,8 +554,8 @@ fn rpc028_resume_left_click_on_row_selects_that_row() {
         ResumeSessionViewOutcome::Continued => {}
         other => panic!("expected Continued, got {other:?}"),
     }
-    // @step Then the selected_index becomes 6
-    assert_eq!(v.selected_index(), 6);
+    // @step Then the selected_index becomes 10
+    assert_eq!(v.selected_index(), 10);
     // @step And the row is highlighted with the inverse style
     assert!(v.selected().is_some());
 }

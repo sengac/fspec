@@ -640,6 +640,9 @@ pub struct MockBackend {
     discard_session_worktree_error: Mutex<Option<String>>,
     /// RPC-057: per-call counter for `prune_orphaned_worktrees`.
     prune_orphaned_worktrees_calls: AtomicUsize,
+    /// RPC-057: when `Some`, `prune_orphaned_worktrees` returns
+    /// `Err(anyhow!(message))`.
+    prune_orphaned_worktrees_error: Mutex<Option<String>>,
     /// RPC-057: seeded pruned session ids list.
     pruned_sessions: Mutex<Vec<String>>,
     /// RPC-057: per-call counter for `list_session_worktrees`.
@@ -650,6 +653,12 @@ pub struct MockBackend {
     inspect_session_changes_calls: AtomicUsize,
     /// RPC-057: seeded `SessionChangesSummary`.
     session_changes_summary: Mutex<codelet_rpc_types::SessionChangesSummary>,
+    // ── WT-009 detach_session_worktree surface ───────────────────────
+    /// WT-009: per-call counter for `detach_session_worktree`.
+    detach_session_worktree_calls: AtomicUsize,
+    /// WT-009: when `Some`, `detach_session_worktree` returns
+    /// `Err(anyhow!(message))`.
+    detach_session_worktree_error: Mutex<Option<String>>,
     // ── RPC-058 /schedule surface ────────────────────────────────────
     /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
     /// `schedule_add`. Defaults to `Ok(ScheduledJob::default())`.
@@ -920,21 +929,26 @@ impl Default for MockBackend {
                 status: codelet_rpc_types::MergeStatus::NoChanges,
                 conflicts: Vec::new(),
                 merge_commit: None,
+                worktree_path: None,
             }),
             merge_session_worktree_calls: AtomicUsize::new(0),
             merge_session_worktree_error: Mutex::new(None),
             discard_session_worktree_calls: AtomicUsize::new(0),
             discard_session_worktree_error: Mutex::new(None),
             prune_orphaned_worktrees_calls: AtomicUsize::new(0),
+            prune_orphaned_worktrees_error: Mutex::new(None),
             pruned_sessions: Mutex::new(Vec::new()),
             list_session_worktrees_calls: AtomicUsize::new(0),
             session_worktrees: Mutex::new(Vec::new()),
+            detach_session_worktree_calls: AtomicUsize::new(0),
+            detach_session_worktree_error: Mutex::new(None),
             inspect_session_changes_calls: AtomicUsize::new(0),
             session_changes_summary: Mutex::new(codelet_rpc_types::SessionChangesSummary {
                 files_changed: 0,
                 insertions: 0,
                 deletions: 0,
                 commits: Vec::new(),
+                files_ignored: 0,
             }),
             schedule_add_result: Mutex::new(Ok(codelet_rpc_types::ScheduledJob::default())),
             schedule_list_result: Mutex::new(Ok(Vec::new())),
@@ -2257,6 +2271,15 @@ impl MockBackend {
         *self.pruned_sessions.lock().expect("MockBackend mutex") = ids;
     }
 
+    /// WT-005: force the next `prune_orphaned_worktrees` call to fail.
+    #[allow(dead_code)]
+    pub fn set_prune_orphaned_worktrees_error(&self, message: String) {
+        *self
+            .prune_orphaned_worktrees_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
     /// RPC-057: per-call counter for `prune_orphaned_worktrees`.
     #[allow(dead_code)]
     pub fn prune_orphaned_worktrees_calls(&self) -> usize {
@@ -2288,6 +2311,25 @@ impl MockBackend {
     #[allow(dead_code)]
     pub fn inspect_session_changes_calls(&self) -> usize {
         self.inspect_session_changes_calls.load(Ordering::SeqCst)
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // WT-009 — detach_session_worktree seeds + counter.
+    // ─────────────────────────────────────────────────────────────────
+
+    /// WT-009: force the next `detach_session_worktree` call to fail.
+    #[allow(dead_code)]
+    pub fn set_detach_session_worktree_error(&self, message: String) {
+        *self
+            .detach_session_worktree_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// WT-009: per-call counter for `detach_session_worktree`.
+    #[allow(dead_code)]
+    pub fn detach_session_worktree_calls(&self) -> usize {
+        self.detach_session_worktree_calls.load(Ordering::SeqCst)
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -3626,6 +3668,14 @@ impl FspecBackend for MockBackend {
     async fn prune_orphaned_worktrees(&self) -> Result<Vec<String>> {
         self.prune_orphaned_worktrees_calls
             .fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .prune_orphaned_worktrees_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
         Ok(self
             .pruned_sessions
             .lock()
@@ -3654,6 +3704,20 @@ impl FspecBackend for MockBackend {
             .lock()
             .expect("MockBackend mutex")
             .clone())
+    }
+
+    async fn detach_session_worktree(&self, _session_id: SessionId) -> Result<()> {
+        self.detach_session_worktree_calls
+            .fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .detach_session_worktree_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
     }
 
     // ─────────────────────────────────────────────────────────────────

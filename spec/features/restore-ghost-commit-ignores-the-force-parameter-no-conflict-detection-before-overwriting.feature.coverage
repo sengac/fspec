@@ -1,0 +1,173 @@
+{
+  "scenarios": [
+    {
+      "name": "Non-forced restore reports a conflict instead of overwriting modified files",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt010_restore_ghost_commit_force.rs",
+          "lines": "29-62",
+          "implMappings": [
+            {
+              "file": "rust/git/src/ghost_commit.rs",
+              "lines": [
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Forced restore overwrites modified files without conflict detection",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt010_restore_ghost_commit_force.rs",
+          "lines": "64-88",
+          "implMappings": [
+            {
+              "file": "rust/git/src/ghost_commit.rs",
+              "lines": [
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-forced restore refuses to delete files added after the checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt010_restore_ghost_commit_force.rs",
+          "lines": "90-124",
+          "implMappings": [
+            {
+              "file": "rust/git/src/ghost_commit.rs",
+              "lines": [
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/git/tests/wt010_restore_ghost_commit_force.rs"
+    ],
+    "implFiles": [
+      "rust/git/src/ghost_commit.rs"
+    ],
+    "totalLinesCovered": 203
+  }
+}

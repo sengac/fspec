@@ -1451,18 +1451,21 @@ fn scenario_napi_emit_helpers_route_through_session_manager_chunks_tx() {
         "RPC-041: emit_block_notification_to_tui must preserve the user-visible warning message"
     );
 
-    // @step And `spawn_footer_poller`'s emit site routes via `SessionManager::instance().chunks_tx().send(...)` while preserving the `first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch` change-gate
+    // @step And `spawn_footer_poller`'s emit site routes via the registered manager-owned `chunks_tx` sender (WT-002: the NAPI-free shared poller in codelet-sessions::footer_poller emits through its `sender` — `SessionManager::instance()` when unregistered) while preserving the `first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch` change-gate
     let footer_entry = napi_code
         .find("fn spawn_footer_poller(")
         .expect("spawn_footer_poller must exist");
     let footer_window: String = napi_code.chars().skip(footer_entry).take(6000).collect();
     assert!(
-        contains_ws_insensitive(&footer_window, ".chunks_tx().send("),
-        "RPC-041: spawn_footer_poller must emit via SessionManager::instance().chunks_tx().send(...)"
+        contains_ws_insensitive(&footer_window, ".chunks_tx().send(")
+            || contains_ws_insensitive(&footer_window, "sender.send(")
+            || contains_ws_insensitive(&footer_window, "codelet_sessions::footer_poller"),
+        "RPC-041/WT-002: spawn_footer_poller must emit via the manager-owned chunks_tx (directly, or by delegating to the shared NAPI-free poller in codelet-sessions). Got window:\n{footer_window}"
     );
     assert!(
-        footer_window.contains("first_run") && footer_window.contains("prev_is_git"),
-        "RPC-041: spawn_footer_poller must preserve the first_run/cwd_changed/is_git change-gate"
+        footer_window.contains("first_run")
+            || footer_window.contains("codelet_sessions::footer_poller"),
+        "RPC-041: spawn_footer_poller must preserve the first_run/cwd_changed/is_git change-gate (directly in the napi body, or by delegating to the shared poller which owns the gate)"
     );
 }
 

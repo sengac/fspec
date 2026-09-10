@@ -21,8 +21,8 @@ use std::collections::HashMap;
 
 use super::chunk_processor::{
     append_assistant_text, append_thinking, flush_in_flight_drop_empty, handle_done, handle_error,
-    handle_tool_call, handle_tool_progress, handle_tool_result,
 };
+use super::chunk_tool_result::{handle_tool_call, handle_tool_progress, handle_tool_result};
 use super::chunk_wrap::{wrap_source, DEFAULT_WRAP_WIDTH};
 use super::pending_tool_diff::PendingToolDiff;
 use crate::views::agent::{ChunkKind, ChunkSource, RenderedChunk, ScrollbackList};

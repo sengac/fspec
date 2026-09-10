@@ -258,7 +258,10 @@ pub fn reset_session_to_reminders(session: &mut Session) -> (usize, usize) {
 /// `call_id` is None, it falls back to `UserContent::tool_result(&id, ...)`.
 /// In both cases the **pairing key** on the resulting ToolResult is
 /// `call_id.unwrap_or(id)`. We mirror that here.
-fn tool_call_correlation_key(id: &str, call_id: Option<&str>) -> String {
+///
+/// Used by `validate_no_orphan_tool_calls` and the BUG-170 tail-strip
+/// (`strip_failed_tool_call_tail`).
+pub fn tool_call_correlation_key(id: &str, call_id: Option<&str>) -> String {
     match call_id {
         Some(cid) => cid.to_string(),
         None => id.to_string(),

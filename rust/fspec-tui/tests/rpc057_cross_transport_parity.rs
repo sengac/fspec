@@ -81,6 +81,7 @@ async fn merge_session_worktree_round_trips_identically_across_transports() {
         status: MergeStatus::Success,
         conflicts: vec![],
         merge_commit: Some("abc1234".to_string()),
+        worktree_path: None,
     });
     let (embedded, websocket) = dual_backends(service).await;
     let initial = stub.merge_session_worktree_calls();
@@ -256,6 +257,7 @@ async fn inspect_session_changes_round_trips_identically_across_transports() {
         insertions: 12,
         deletions: 5,
         commits: vec!["abc1234".to_string()],
+        files_ignored: 0,
     });
     let (embedded, websocket) = dual_backends(service).await;
     let initial = stub.inspect_session_changes_calls();

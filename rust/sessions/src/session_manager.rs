@@ -46,6 +46,7 @@
 #![allow(clippy::redundant_closure_for_method_calls)]
 #![allow(dead_code)]
 
+use std::path::PathBuf;
 use std::sync::{Arc, OnceLock, RwLock, Weak};
 
 use arc_swap::ArcSwap;
@@ -53,11 +54,8 @@ use indexmap::IndexMap;
 use tokio::sync::{broadcast, mpsc};
 use uuid::Uuid;
 
-use codelet_core::lifecycle_hooks::{load_lifecycle_hooks, run_pre_tool};
 use codelet_rpc_types::{LogRecord, SessionInfo, SessionStatus, StreamChunk};
-use codelet_tools::pre_tool_hook::{
-    register_pre_tool_hook, unregister_pre_tool_hook, PreToolHookDecision, PreToolHookHandler,
-};
+use codelet_tools::pre_tool_hook::unregister_pre_tool_hook;
 use codelet_tools::McpInjection;
 
 use crate::background_session::{BackgroundSession, PromptInput, SUPERVISOR_BROADCAST_CAPACITY};
@@ -241,7 +239,9 @@ impl SessionManager {
         self.hooks.store(Arc::new(hooks));
     }
 
-    fn hooks(&self) -> Arc<dyn SessionManagerHooks> {
+    /// WT-009: crate-visible hooks accessor — the `SessionManagerHandle`
+    /// impl (handle_impl.rs) re-spawns the footer poller on detach.
+    pub(crate) fn hooks(&self) -> Arc<dyn SessionManagerHooks> {
         let guard = self.hooks.load();
         (**guard).clone()
     }
@@ -363,6 +363,11 @@ impl SessionManager {
     /// belonging to the current project. In-memory sessions are inherently
     /// project-scoped (created with `std::env::current_dir()`), so only
     /// persisted sessions require explicit filtering.
+    ///
+    /// An EMPTY `project_path` means "no project filter" — persisted
+    /// sessions from ALL projects are merged (the pre-RPC-427 semantics),
+    /// so a caller without a known project root still sees its own
+    /// sessions rather than an empty list.
     pub fn list_sessions(&self, project_path: &str) -> Vec<SessionInfo> {
         let in_memory: Vec<SessionInfo> = self
             .sessions
@@ -378,61 +383,32 @@ impl SessionManager {
         );
 
         // RPC-427: Filter persisted sessions by project path instead of loading all.
-        let persisted: Vec<SessionInfo> = match codelet_core::persistence::list_sessions_for_project(
-            std::path::Path::new(project_path),
-        ) {
-            Ok(manifests) => {
-                tracing::info!(
-                    persisted_on_disk = manifests.len(),
-                    "list_sessions: loaded persisted session manifests from disk"
-                );
-                let in_memory_ids: std::collections::HashSet<String> =
-                    in_memory.iter().map(|s| s.id.clone()).collect();
-                let result: Vec<SessionInfo> = manifests
-                    .into_iter()
-                    .filter(|m| !in_memory_ids.contains(&m.id.to_string()))
-                    .map(|m| SessionInfo {
-                        id: m.id.to_string(),
-                        name: m.name,
-                        status: "idle".to_string(),
-                        project: m.project.to_string_lossy().to_string(),
-                        message_count: m.messages.len() as u32,
-                        provider_id: if m.provider.is_empty() {
-                            None
-                        } else {
-                            Some(
-                                m.provider
-                                    .split('/')
-                                    .next()
-                                    .unwrap_or(&m.provider)
-                                    .to_string(),
-                            )
-                        },
-                        model_id: if m.provider.is_empty() {
-                            None
-                        } else {
-                            m.provider.split('/').nth(1).map(|s| s.to_string())
-                        },
-                        is_isolated: false,
-                        worktree_path: None,
-                        role: None,
-                        updated_at_ms: Some(m.updated_at.timestamp_millis()),
-                    })
-                    .collect();
-                tracing::info!(
-                    persisted_new = result.len(),
-                    "list_sessions: merged persisted sessions not in memory"
-                );
-                result
-            }
-            Err(e) => {
+        // An empty project path means "no filter" (all projects) — callers that
+        // don't know the project root still get the full merged list.
+        let manifests: Vec<codelet_core::persistence::SessionManifest> = if project_path.is_empty()
+        {
+            codelet_core::persistence::list_all_sessions().unwrap_or_else(|e| {
                 tracing::warn!(
                     error = %e,
-                    "list_sessions: failed to load persisted sessions from disk"
+                    "list_sessions: failed to load all persisted sessions"
                 );
                 Vec::new()
-            }
+            })
+        } else {
+            codelet_core::persistence::list_sessions_for_project(std::path::Path::new(project_path))
+                .unwrap_or_else(|e| {
+                    tracing::warn!(
+                        error = %e,
+                        "list_sessions: failed to load persisted sessions from disk"
+                    );
+                    Vec::new()
+                })
         };
+        tracing::info!(
+            persisted_on_disk = manifests.len(),
+            "list_sessions: loaded persisted session manifests from disk"
+        );
+        let persisted = Self::persisted_manifests_to_infos(manifests, &in_memory);
 
         let mut all = in_memory;
         all.extend(persisted);
@@ -461,6 +437,108 @@ impl SessionManager {
         );
 
         all
+    }
+
+    /// RPC-427: convert persisted manifests into `SessionInfo`s, dropping
+    /// any session that still lives in memory (it is already reported via
+    /// `in_memory`). Shared by both the empty-path (all projects) and
+    /// filtered (single project) list paths.
+    fn persisted_manifests_to_infos(
+        manifests: Vec<codelet_core::persistence::SessionManifest>,
+        in_memory: &[SessionInfo],
+    ) -> Vec<SessionInfo> {
+        let in_memory_ids: std::collections::HashSet<String> =
+            in_memory.iter().map(|s| s.id.clone()).collect();
+        let result: Vec<SessionInfo> = manifests
+            .into_iter()
+            .filter(|m| !in_memory_ids.contains(&m.id.to_string()))
+            .map(|m| SessionInfo {
+                id: m.id.to_string(),
+                name: m.name,
+                status: "idle".to_string(),
+                project: m.project.to_string_lossy().to_string(),
+                message_count: m.messages.len() as u32,
+                provider_id: if m.provider.is_empty() {
+                    None
+                } else {
+                    Some(
+                        m.provider
+                            .split('/')
+                            .next()
+                            .unwrap_or(&m.provider)
+                            .to_string(),
+                    )
+                },
+                model_id: if m.provider.is_empty() {
+                    None
+                } else {
+                    m.provider.split('/').nth(1).map(|s| s.to_string())
+                },
+                is_isolated: false,
+                worktree_path: None,
+                role: None,
+                updated_at_ms: Some(m.updated_at.timestamp_millis()),
+            })
+            .collect();
+        tracing::info!(
+            persisted_new = result.len(),
+            "list_sessions: merged persisted sessions not in memory"
+        );
+        result
+    }
+
+    /// WT-003: IDs of every in-memory session (no project filter, no
+    /// persisted-only sessions). Used by the RPC-057 worktree surface to
+    /// build the active-session set for `prune_orphaned_worktrees` — a
+    /// session that is alive in this process must never be pruned,
+    /// regardless of which process directory the TUI was launched from.
+    pub fn all_in_memory_session_ids(&self) -> Vec<String> {
+        self.sessions
+            .read()
+            .expect("sessions lock poisoned")
+            .keys()
+            .map(|id| id.to_string())
+            .collect()
+    }
+
+    /// WT-003: the distinct project roots of all in-memory sessions
+    /// (deduplicated, deterministic order). The RPC-057 worktree surface
+    /// (list/prune) has no session id on the wire, so it enumerates these
+    /// roots instead of trusting the process cwd.
+    pub fn all_in_memory_project_roots(&self) -> Vec<String> {
+        let sessions = self.sessions.read().expect("sessions lock poisoned");
+        let mut roots: Vec<String> = sessions
+            .values()
+            .map(|s| s.project.clone())
+            .filter(|p| !p.is_empty())
+            .collect();
+        drop(sessions);
+        roots.sort();
+        roots.dedup();
+        roots
+    }
+
+    /// WT-003: resolve the repository path a session-worktree RPC op must
+    /// target for `session_id`. Resolution order:
+    /// 1. the in-memory session's recorded project root
+    ///    (`BackgroundSession.project` — captured at session creation),
+    /// 2. the git-session manifest's `project_root`
+    ///    (`~/.fspec/git-sessions/<id>.json` — survives a TUI restart),
+    /// 3. the process cwd (last-resort fallback so a completely
+    ///    unknown session id behaves as it did before WT-003).
+    pub fn resolve_worktree_repo_path(&self, session_id: &str) -> PathBuf {
+        if let Ok(session) = self.get_session(session_id) {
+            let project = session.project.clone();
+            if !project.is_empty() {
+                return PathBuf::from(project);
+            }
+        }
+        if let Ok(Some(manifest)) = codelet_git::read_manifest(session_id) {
+            if !manifest.project_root.as_os_str().is_empty() {
+                return manifest.project_root;
+            }
+        }
+        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
     }
 
     /// VIEWNV-001: Set the active (currently viewed) session
@@ -659,9 +737,10 @@ impl SessionManager {
             status_changes_tx: self.status_changes_tx.clone(),
         };
 
-        let provider_manager = codelet_providers::ProviderManager::with_model_support()
-            .await
-            .map_err(|e| format!("Failed to create provider manager: {}", e))?;
+        // WT-012: shared provider-manager funnel (registry selection vs
+        // profile/codex construction) — single source of truth in
+        // model_resolution::resolve_provider_manager.
+        let provider_manager = crate::model_resolution::resolve_provider_manager(model).await?;
 
         let result = create_background_session_inner(params, provider_manager).await?;
         let session = result.session;
@@ -837,6 +916,12 @@ impl SessionManager {
             is_codex_model,
             is_custom_model,
         };
+
+        // WT-007: re-read the codelet-git session manifest so a
+        // formerly-isolated session comes back isolated. `resolve`
+        // verifies the worktree (and its git admin dir) still exist and,
+        // if not, marks the strayed manifest terminated (WT-005 prune).
+        let resume_isolation = crate::resume_isolation::resolve(&uuid, project_path.as_path());
         let params = SessionCreationParams {
             uuid,
             name: &name,
@@ -845,16 +930,17 @@ impl SessionManager {
             parsed_model,
             provider_id,
             model_id,
-            worktree_path: None,
-            base_commit: None,
-            isolation: None,
+            worktree_path: resume_isolation.worktree_path.clone(),
+            base_commit: resume_isolation.base_commit.clone(),
+            isolation: resume_isolation.context.clone(),
             chunks_tx: self.chunks_tx.clone(),
             status_changes_tx: self.status_changes_tx.clone(),
         };
 
-        let provider_manager = codelet_providers::ProviderManager::with_model_support()
-            .await
-            .map_err(|e| format!("Failed to create provider manager: {}", e))?;
+        // WT-012: shared provider-manager funnel (registry selection vs
+        // profile/codex construction) — single source of truth in
+        // model_resolution::resolve_provider_manager.
+        let provider_manager = crate::model_resolution::resolve_provider_manager(model).await?;
 
         let result = create_background_session_inner(params, provider_manager).await?;
         let session = result.session;
@@ -889,16 +975,41 @@ impl SessionManager {
         self.set_active_session(uuid);
         self.maybe_start_scheduler(&project);
 
-        // RPC-041: Emit IsolationStateChange directly on the manager-owned chunks_tx
+        // RPC-041: Emit IsolationStateChange directly on the manager-owned chunks_tx.
+        // WT-007: a re-isolated resume mirrors the live isolated-create
+        // path — IsolationStateChange(true, worktree, base); a
+        // non-isolated resume keeps the historical (false, None) emission.
         let session_id_str = uuid.to_string();
-        let _ = self.chunks_tx.send((
-            codelet_rpc_types::SessionId::from(session_id_str.clone()),
-            codelet_rpc_types::StreamChunk::isolation_state_change(false, None),
-        ));
+        if let Some(resume_wt) = &resume_isolation.worktree_path {
+            let _ = self.chunks_tx.send((
+                codelet_rpc_types::SessionId::from(session_id_str.clone()),
+                codelet_rpc_types::StreamChunk::isolation_state_change_with_base(
+                    true,
+                    Some(resume_wt.to_string_lossy().to_string()),
+                    resume_isolation.base_commit.clone(),
+                ),
+            ));
+        } else {
+            let _ = self.chunks_tx.send((
+                codelet_rpc_types::SessionId::from(session_id_str.clone()),
+                codelet_rpc_types::StreamChunk::isolation_state_change(false, None),
+            ));
+        }
 
-        // TUI-091: footer poller via the hooks.
-        self.hooks()
-            .spawn_footer_poller(session_id_str, project.clone(), None);
+        // TUI-091: footer poller via the hooks. WT-007: a re-isolated
+        // resume polls the worktree cwd (mirroring the live path).
+        self.hooks().spawn_footer_poller(
+            session_id_str,
+            resume_isolation
+                .worktree_path
+                .clone()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_else(|| project.clone()),
+            resume_isolation
+                .worktree_path
+                .clone()
+                .map(|p| p.to_string_lossy().to_string()),
+        );
 
         codelet_tools::broadcast_metadata_update();
 
@@ -946,15 +1057,16 @@ impl SessionManager {
         )
         .map_err(|e| format!("Failed to create session manifest: {}", e))?;
 
-        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
+        // Isolation-specific env load (kept out of the shared helper — the two
+        // non-isolated paths do not run it): loads the process-CWD `.env` so
+        // provider credentials are visible to credential resolution below.
         let _ = dotenvy::dotenv();
 
-        // RPC-424: Parse model string using shared helper
+        // RPC-424: Parse model string using shared helper (the provider-manager
+        // funnel, WT-012, re-parses internally for its branch selection).
         let parsed = crate::model_parsing::parse_model_string(model)?;
         let registry_provider = parsed.registry_provider;
         let model_part = parsed.model_part;
-        let is_profile_model = parsed.is_profile_model;
-        let is_codex_model = parsed.is_codex_model;
 
         let (provider_id, model_id) = (
             Some(registry_provider.to_string()),
@@ -973,78 +1085,9 @@ impl SessionManager {
             );
         }
 
-        let provider_manager = if is_profile_model {
-            tracing::info!(
-                "PROV-007: Profile model detected, skipping registry validation for {}",
-                model
-            );
-            // PROV-121: bridge the profile's stored baseUrl/apiKey into the
-            // OPENAI_* env BEFORE constructing the provider manager, via the
-            // SAME shared helper the resolver path uses so the two cannot
-            // drift. `colon_idx`/`slash_idx` re-parse the profile name segment
-            // (between ':' and '/').
-            if let (Some(colon_idx), Some(slash_idx)) = (model.find(':'), model.find('/')) {
-                let profile_name = &model[colon_idx + 1..slash_idx];
-                if let Err(e) = crate::model_resolution::apply_profile_env_vars(
-                    registry_provider,
-                    profile_name,
-                    model_part,
-                ) {
-                    tracing::warn!(
-                        "PROV-121: apply_profile_env_vars failed for profile '{}': {}",
-                        profile_name,
-                        e
-                    );
-                }
-            }
-            codelet_providers::ProviderManager::with_provider_and_model(
-                registry_provider,
-                Some(model_part),
-                None,
-                None,
-            )
-            .map_err(|e| format!("Failed to create provider manager: {}", e))?
-        } else if is_codex_model {
-            tracing::info!(
-                "PROV-018: Codex model detected, skipping registry validation for {}",
-                model
-            );
-            codelet_providers::ProviderManager::with_provider_and_model(
-                registry_provider,
-                Some(model_part),
-                None,
-                None,
-            )
-            .map_err(|e| format!("Failed to create codex provider manager: {}", e))?
-        } else {
-            let mut pm = codelet_providers::ProviderManager::with_model_support()
-                .await
-                .map_err(|e| format!("Failed to create provider manager: {}", e))?;
-            pm.select_model(model)
-                .map_err(|e| format!("Failed to select model: {}", e))?;
-            pm
-        };
-
-        let initial_context_window = provider_manager.context_window() as u32;
-        let initial_max_output_tokens = provider_manager.max_output_tokens() as u32;
-
-        // BUG-168: store the resolved vision capability in the tool-layer
-        // registry so the Read tool can default non-vision sessions to text mode.
-        codelet_tools::model_capabilities::set_session_model_vision(
-            uuid,
-            crate::model_resolution::resolve_model_vision(&provider_manager),
-        );
-        // PROV-144: store the resolved per-profile image budget alongside the
-        // vision entry (absent => None => the Read tool applies its default
-        // of 4), sourced from the shared resolver so this create path cannot
-        // drift.
-        codelet_tools::model_capabilities::set_session_model_max_images(
-            uuid,
-            crate::model_resolution::resolve_profile_max_images(&provider_manager),
-        );
-
-        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
-
+        // WT-001: the isolation context the shared helper injects into the
+        // environment reminder (worktree path relative to the project root,
+        // base commit the worktree was forked from).
         let isolation = codelet_cli::session::context_gathering::IsolationContext {
             is_isolated: true,
             worktree_path: Some(
@@ -1056,109 +1099,67 @@ impl SessionManager {
             base_commit: Some(base_commit.clone()),
         };
 
-        inner.inject_context_reminders_with_isolation(Some(&isolation));
-
-        let lifecycle_hooks =
-            match load_lifecycle_hooks(Some(&project_path), dirs::home_dir().as_deref()) {
-                Ok(Some(compiled)) => Some(Arc::new(compiled)),
-                Ok(None) => None,
-                Err(e) => {
-                    tracing::warn!(
-                        "[HOOK-013] Failed to load lifecycle hooks for isolated session: {}",
-                        e
-                    );
-                    None
-                }
-            };
-
-        let session = Arc::new(BackgroundSession::new(
+        // WT-012: the shared bootstrap (model selection, vision/max-images
+        // seeding, Session construction + PROV-143 preserve-thinking seed,
+        // context-reminder injection, lifecycle-hook load, BackgroundSession
+        // construction, TUI-002 thinking-level seed, PROV-142 auto-continue
+        // seed, model limits, pre-tool hook registration, MCP init) runs in
+        // the RPC-425 helper — the isolated path no longer re-implements it.
+        let parsed_model = ParsedModelInfo {
+            model,
+            registry_provider,
+            is_profile_model: parsed.is_profile_model,
+            is_codex_model: parsed.is_codex_model,
+            is_custom_model: parsed.is_custom_model,
+        };
+        let params = SessionCreationParams {
             uuid,
-            name.to_string(),
-            project.to_string(),
+            name,
+            project,
+            project_path: project_path.as_path(),
+            parsed_model,
             provider_id,
             model_id,
-            inner,
-            input_tx,
-            Some(worktree_path.clone()),
-            Some(base_commit.clone()),
-            lifecycle_hooks.clone(),
-            self.chunks_tx.clone(),
-            self.status_changes_tx.clone(),
-        ));
+            worktree_path: Some(worktree_path.clone()),
+            base_commit: Some(base_commit.clone()),
+            isolation: Some(isolation),
+            chunks_tx: self.chunks_tx.clone(),
+            status_changes_tx: self.status_changes_tx.clone(),
+        };
+
+        // WT-012: shared provider-manager funnel — single source of truth in
+        // model_resolution::resolve_provider_manager.
+        let provider_manager = crate::model_resolution::resolve_provider_manager(model).await?;
+
+        let result = create_background_session_inner(params, provider_manager).await?;
+        let session = result.session;
+        let input_rx = result.input_rx;
+        let mcp_injection_rx = result.mcp_injection_rx;
 
         // RPC-386: stamp the owning-manager back-reference for isolated sessions
         // too (before spawn_agent_loop), so spawned isolated subordinates bind
         // their AgentManager handler to THIS manager rather than the singleton.
         session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
 
-        // TUI-002: re-apply the persisted default thinking level to isolated
-        // sessions too, so spawned/isolated sessions match the same idle badge
-        // behaviour as the primary session-creation path.
-        let isolated_thinking_level =
-            crate::default_thinking_level_persistence::load_default_thinking_level();
-        tracing::debug!(
-            level = isolated_thinking_level as u8,
-            "create_isolated_session: applying persisted default thinking level to isolated session"
-        );
-        session.set_base_thinking_level(isolated_thinking_level as u8);
-
-        let isolated_model_id = session
-            .model_id
-            .read()
-            .expect("model_id lock poisoned")
-            .clone();
-        let isolated_compaction_threshold =
-            codelet_cli::compaction_threshold::resolve_compaction_threshold(
-                initial_context_window as u64,
-                initial_max_output_tokens as u64,
-                isolated_model_id.as_deref(),
-                None,
-            ) as u32;
-        session.set_model_limits(
-            initial_context_window,
-            initial_max_output_tokens,
-            isolated_compaction_threshold,
-        );
-
-        if let Some(ref hooks) = lifecycle_hooks {
-            if !hooks.pre_tool_use.is_empty() {
-                let hooks_for_pre = hooks.clone();
-                let session_for_pre = session.clone();
-                let pre_handler: PreToolHookHandler = std::sync::Arc::new(
-                    move |_sid, tool_name, tool_input| {
-                        let ctx = session_for_pre.hook_context();
-                        let hooks = hooks_for_pre.clone();
-                        let name = tool_name.to_string();
-                        let input = tool_input.clone();
-                        let outcome = tokio::task::block_in_place(|| {
-                            tokio::runtime::Handle::current()
-                                .block_on(run_pre_tool(&hooks, &ctx, &name, &input))
-                        });
-                        match outcome.decision {
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Allow => {
-                                PreToolHookDecision::Allow
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Deny => {
-                                PreToolHookDecision::Deny(
-                                    outcome
-                                        .reason
-                                        .unwrap_or_else(|| "Denied by pre_tool_use hook".to_string()),
-                                )
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Continue => {
-                                PreToolHookDecision::Continue
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Ask => {
-                                PreToolHookDecision::Continue
-                            }
-                        }
-                    },
-                );
-                register_pre_tool_hook(uuid, pre_handler);
-            }
+        // WT-005: persist the session manifest to disk so /resume parity
+        // holds for isolated sessions exactly like the plain
+        // `create_session_with_id` path. Best-effort — a persistence
+        // failure never blocks session creation (the in-memory session is
+        // fully functional and the git-session manifest already exists).
+        let mut isolated_persist_manifest =
+            codelet_core::persistence::SessionManifest::with_provider(
+                name,
+                project_path.clone(),
+                model,
+            );
+        isolated_persist_manifest.id = uuid;
+        if let Err(e) = codelet_core::persistence::save_session(&isolated_persist_manifest) {
+            tracing::warn!(
+                session_id = %uuid,
+                error = %e,
+                "create_isolated_session_with_id: failed to persist session manifest (best-effort)"
+            );
         }
-
-        let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
 
         self.hooks()
             .spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
@@ -1180,11 +1181,14 @@ impl SessionManager {
         // RPC-041: Emit IsolationStateChange directly on the manager-owned
         // chunks_tx (the previous `hooks().emit_isolation_state_change(...)`
         // delegation is gone — the hook has been removed from the trait).
+        // WT-001: use the 3-arg constructor so the chunk carries the base
+        // commit SHA the worktree was forked from (RPC-036 wire contract).
         let _ = self.chunks_tx.send((
             codelet_rpc_types::SessionId::from(id.to_string()),
-            codelet_rpc_types::StreamChunk::isolation_state_change(
+            codelet_rpc_types::StreamChunk::isolation_state_change_with_base(
                 true,
                 Some(worktree_path.to_string_lossy().to_string()),
+                Some(base_commit.clone()),
             ),
         ));
 
@@ -1279,6 +1283,28 @@ impl SessionManager {
             // PROV-144: clear the image-budget entry alongside the vision entry.
             codelet_tools::model_capabilities::clear_session_model_max_images(uuid);
             codelet_tools::broadcast_metadata_update();
+
+            // WT-005: terminate-on-close. When the closed session was
+            // isolated, flip its git-session manifest (~/.fspec/git-sessions)
+            // to terminated=true so `codelet_git::is_orphaned` reports it as
+            // prunable and `prune_orphaned_worktrees` can reclaim the
+            // worktree. Best-effort: a missing manifest (worktree already
+            // merged/discarded — those paths delete it) is a silent no-op,
+            // and a failure (e.g. no home dir) is logged + swallowed so the
+            // close never fails. Non-isolated sessions skip entirely.
+            if session.worktree_path().is_some() {
+                match codelet_git::terminate_session(id) {
+                    Ok(()) => tracing::info!(
+                        session_id = %uuid,
+                        "destroy_session: git-session manifest marked terminated (worktree now prunable)"
+                    ),
+                    Err(e) => tracing::warn!(
+                        session_id = %uuid,
+                        error = %e,
+                        "destroy_session: failed to mark git-session manifest terminated (best-effort; close unaffected)"
+                    ),
+                }
+            }
 
             // PARITY FIX: Do NOT delete the session manifest from disk.
             // The TypeScript reference implementation's "Close Session" (exit dialog)

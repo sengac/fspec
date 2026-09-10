@@ -70,7 +70,7 @@ fn new_mode_view_files_exist_with_documented_surface() {
     // `Clear.render`; the Clear-first invariant is preserved inside the
     // shell (see views/full_screen_shell.rs tests).
     let resume_render_idx = resume_body
-        .find("pub fn render(&self, area: Rect, buf: &mut Buffer)")
+        .find("pub fn render(&mut self, area: Rect, buf: &mut Buffer)")
         .expect("resume render fn");
     let body_after = &resume_body[resume_render_idx..];
     let brace_idx = body_after.find('{').expect("opening brace");
@@ -84,7 +84,7 @@ fn new_mode_view_files_exist_with_documented_surface() {
     );
 
     let search_render_idx = search_body
-        .find("pub fn render(&self, area: Rect, buf: &mut Buffer)")
+        .find("pub fn render(&mut self, area: Rect, buf: &mut Buffer)")
         .expect("search render fn");
     let s_body_after = &search_body[search_render_idx..];
     let s_brace_idx = s_body_after.find('{').expect("opening brace");
@@ -165,8 +165,14 @@ fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
     // @step And the file declares the "search_view" field
     assert!(body.contains("search_view"));
     // @step And the file early-returns when a mode view is active
-    assert!(body.contains("self.resume_view.as_ref()"));
-    assert!(body.contains("self.search_view.as_ref()"));
+    // (BUG-163: the early-return moved from `agent.rs` into
+    // `pane_render.rs::render_session_pane`, which consumes
+    // `resume_view`/`search_view` via `as_mut()` before painting the
+    // session pane.)
+    let pane_render =
+        read_raw(&fspec_tui_src().join("views").join("agent").join("pane_render.rs"));
+    assert!(pane_render.contains("self.resume_view.as_mut()"));
+    assert!(pane_render.contains("self.search_view.as_mut()"));
 }
 
 /// Scenario: handle_slash_command dispatches the renamed Action variants

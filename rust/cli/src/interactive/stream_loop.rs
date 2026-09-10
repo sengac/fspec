@@ -2111,6 +2111,48 @@ where
                             }
                         }
                     }
+
+                    // BUG-170: A terminal "prompt is too long" error with a failed
+                    // tool pair at the tail of the stack would otherwise be replayed
+                    // on every subsequent user message. Surgically strip the
+                    // offending pair, invalidate the stale cache-token state
+                    // (the prefix the tracker's cache fields reference no longer
+                    // exists), and keep the session interactive — like the EXT-016
+                    // image-recovery path: surface the error, break, stay usable.
+                    // Any other terminal error keeps today's behavior exactly.
+                    if is_prompt_too_long && !is_interrupted.load(Acquire) {
+                        let stripped =
+                            super::recovery_unrecoverable::strip_failed_tool_call_tail(
+                                &mut session.messages,
+                            );
+                        if matches!(
+                            stripped,
+                            super::recovery_unrecoverable::StrippedTail::ToolPair
+                                | super::recovery_unrecoverable::StrippedTail::ToolCallOnly
+                        ) {
+                            session.token_tracker.cache_read_input_tokens = None;
+                            session.token_tracker.cache_creation_input_tokens = None;
+                            crate::interactive_helpers::recalculate_token_tracker(session);
+                            if let Ok(mut state) = token_state.lock() {
+                                state.compaction_needed = false;
+                                state.input_tokens = session.token_tracker.input_tokens;
+                                state.cache_read_input_tokens = 0;
+                                state.cache_creation_input_tokens = 0;
+                                state.output_tokens = 0;
+                            }
+                            info!(
+                                "BUG-170: stripped failed tool-call tail ({stripped:?}) — \
+                                 session remains interactive"
+                            );
+                            output.emit_error(&format!(
+                                "{error_str}\n\n\
+                                 [Removed the failed tool call from context; \
+                                 send your next message to continue]"
+                            ));
+                            break;
+                        }
+                    }
+
                     output.emit_error(&error_str);
                     return Err(anyhow::anyhow!("Agent error: {e}"));
                 }

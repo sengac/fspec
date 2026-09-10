@@ -138,12 +138,12 @@ fn test_restore_checkpoint_replaces_working_tree_files() {
     let content_before_restore = fs::read_to_string(&test_file).expect("Failed to read");
     assert_eq!(content_before_restore, "modified after checkpoint");
 
-    // @step When I restore the checkpoint
+    // @step When I restore the checkpoint with force
     let restore_result = ghost_commit::restore_ghost_commit(
         repo_path,
         "WORK-003",
         "before-modify",
-        false, // force
+        true, // force
     );
     assert!(
         restore_result.is_ok(),
@@ -197,14 +197,16 @@ fn test_multiple_checkpoints_have_unique_sha_identifiers() {
     );
 
     // @step And both checkpoints should be independently restorable
-    // Restore checkpoint-1
-    ghost_commit::restore_ghost_commit(repo_path, "WORK-004", "checkpoint-1", false)
+    // Restore checkpoint-1 (WT-010: force — the working dir holds
+    // checkpoint-2's content, which diverges from checkpoint-1)
+    ghost_commit::restore_ghost_commit(repo_path, "WORK-004", "checkpoint-1", true)
         .expect("Failed to restore checkpoint-1");
     let content1 = fs::read_to_string(&test_file).expect("Failed to read");
     assert_eq!(content1, "version 1");
 
-    // Restore checkpoint-2
-    ghost_commit::restore_ghost_commit(repo_path, "WORK-004", "checkpoint-2", false)
+    // Restore checkpoint-2 (force — the working dir now holds
+    // checkpoint-1's content, which diverges from checkpoint-2)
+    ghost_commit::restore_ghost_commit(repo_path, "WORK-004", "checkpoint-2", true)
         .expect("Failed to restore checkpoint-2");
     let content2 = fs::read_to_string(&test_file).expect("Failed to read");
     assert_eq!(content2, "version 2");
@@ -276,8 +278,10 @@ fn test_restore_checkpoint_deletes_files_added_after_checkpoint() {
     fs::write(&new_file, "I should be deleted").expect("Failed to write new file");
     assert!(new_file.exists(), "New file should exist before restore");
 
-    // @step When I restore the checkpoint
-    ghost_commit::restore_ghost_commit(repo_path, "WORK-006", "before-new-files", false)
+    // @step When I restore the checkpoint with force
+    // (WT-010: force required — the post-checkpoint file diverges from the
+    // checkpoint, and only a forced restore may delete it)
+    ghost_commit::restore_ghost_commit(repo_path, "WORK-006", "before-new-files", true)
         .expect("Failed to restore checkpoint");
 
     // @step Then the new files should be deleted

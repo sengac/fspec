@@ -439,12 +439,15 @@ pub struct BackgroundSession {
     base_environment_content: RwLock<String>,
 
     /// GIT-019: Path to worktree for isolated sessions
-    /// Only set when session was created with isolated=true
-    pub worktree_path: Option<PathBuf>,
+    /// Only set when session was created with isolated=true.
+    /// WT-009: interior-mutable so `detach_session_worktree` can clear it
+    /// in place on a shared (Arc'd) session without replacing the entry.
+    pub worktree_path: RwLock<Option<PathBuf>>,
 
     /// GIT-019: Base commit SHA for isolated sessions
-    /// The commit the worktree was created from
-    pub base_commit: Option<String>,
+    /// The commit the worktree was created from.
+    /// WT-009: cleared in place by `detach_session_worktree`.
+    pub base_commit: RwLock<Option<String>>,
 
     /// Flag controlling Layer 0 trimming in SessionSearch results.
     pub compaction_in_progress: Arc<AtomicBool>,
@@ -566,8 +569,9 @@ impl BackgroundSession {
             // TUI-059: Store base environment content for composing with work unit later
             base_environment_content: RwLock::new(gather_environment_info().to_reminder_content()),
             // GIT-019: Worktree path and base commit for isolated sessions
-            worktree_path,
-            base_commit,
+            // (WT-009: interior-mutable so detach can clear them in place)
+            worktree_path: RwLock::new(worktree_path),
+            base_commit: RwLock::new(base_commit),
             compaction_in_progress: Arc::new(AtomicBool::new(false)),
             pending_dag_content: Arc::new(std::sync::Mutex::new(None)),
             pre_compaction_tokens: AtomicU32::new(0),
@@ -625,9 +629,45 @@ impl BackgroundSession {
     /// - For isolated sessions: returns the worktree path
     /// - For non-isolated sessions: returns the project root
     pub fn effective_cwd(&self) -> PathBuf {
-        self.worktree_path
+        let worktree_path = self
+            .worktree_path
+            .read()
+            .expect("worktree_path lock poisoned");
+        worktree_path
             .clone()
             .unwrap_or_else(|| PathBuf::from(&self.project))
+    }
+
+    /// WT-009: snapshot the session's worktree path (`None` when the
+    /// session is not isolated).
+    pub fn worktree_path(&self) -> Option<PathBuf> {
+        self.worktree_path
+            .read()
+            .expect("worktree_path lock poisoned")
+            .clone()
+    }
+
+    /// WT-009: snapshot the session's base commit (`None` when the
+    /// session is not isolated).
+    pub fn base_commit(&self) -> Option<String> {
+        self.base_commit
+            .read()
+            .expect("base_commit lock poisoned")
+            .clone()
+    }
+
+    /// WT-009: clear the isolation state in place — the worktree path
+    /// and base commit are dropped so `effective_cwd()` falls back to
+    /// the project root. Used by `detach_session_worktree`.
+    pub fn clear_isolation(&self) {
+        *self
+            .worktree_path
+            .write()
+            .expect("worktree_path lock poisoned") = None;
+        *self
+            .base_commit
+            .write()
+            .expect("base_commit lock poisoned") = None;
     }
 
     /// HOOK-013: Build a HookContext for lifecycle hook execution.
@@ -649,22 +689,21 @@ impl BackgroundSession {
     fn build_isolation_context(
         &self,
     ) -> Option<codelet_cli::session::context_gathering::IsolationContext> {
-        if let Some(ref worktree_path) = self.worktree_path {
-            // Convert worktree path to relative path from project root
-            let project_root = PathBuf::from(&self.project);
-            let relative_path = worktree_path
-                .strip_prefix(&project_root)
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_else(|_| worktree_path.to_string_lossy().to_string());
+        // WT-009: read through the lock — detach can clear the value
+        // while this snapshot is being composed.
+        let worktree_path = self.worktree_path()?;
+        // Convert worktree path to relative path from project root
+        let project_root = PathBuf::from(&self.project);
+        let relative_path = worktree_path
+            .strip_prefix(&project_root)
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|_| worktree_path.to_string_lossy().to_string());
 
-            Some(codelet_cli::session::context_gathering::IsolationContext {
-                is_isolated: true,
-                worktree_path: Some(relative_path),
-                base_commit: self.base_commit.clone(),
-            })
-        } else {
-            None
-        }
+        Some(codelet_cli::session::context_gathering::IsolationContext {
+            is_isolated: true,
+            worktree_path: Some(relative_path),
+            base_commit: self.base_commit(),
+        })
     }
 
     /// GIT-021: Create a checkpoint capturing current worktree state
@@ -679,13 +718,10 @@ impl BackgroundSession {
     /// * `SessionError::NotIsolated` - Session is not isolated (no worktree)
     /// * `SessionError::GitError` - Git operation failed
     pub fn checkpoint(&self, label: &str) -> std::result::Result<GhostCheckpoint, SessionError> {
-        let worktree_path = self
-            .worktree_path
-            .as_ref()
-            .ok_or(SessionError::NotIsolated)?;
+        let worktree_path = self.worktree_path().ok_or(SessionError::NotIsolated)?;
 
         // Use session ID as the work_unit_id for checkpoint namespace
-        create_ghost_commit(worktree_path, &self.id.to_string(), label).map_err(SessionError::from)
+        create_ghost_commit(&worktree_path, &self.id.to_string(), label).map_err(SessionError::from)
     }
 
     /// GIT-021: Restore worktree to checkpoint state
@@ -700,12 +736,9 @@ impl BackgroundSession {
     /// * `SessionError::NotIsolated` - Session is not isolated (no worktree)
     /// * `SessionError::GitError` - Git operation failed
     pub fn restore(&self, label: &str) -> std::result::Result<RestoreResult, SessionError> {
-        let worktree_path = self
-            .worktree_path
-            .as_ref()
-            .ok_or(SessionError::NotIsolated)?;
+        let worktree_path = self.worktree_path().ok_or(SessionError::NotIsolated)?;
 
-        restore_ghost_commit(worktree_path, &self.id.to_string(), label, true)
+        restore_ghost_commit(&worktree_path, &self.id.to_string(), label, true)
             .map_err(SessionError::from)
     }
 
@@ -717,12 +750,9 @@ impl BackgroundSession {
     /// * `SessionError::NotIsolated` - Session is not isolated (no worktree)
     /// * `SessionError::GitError` - Git operation failed
     pub fn list_checkpoints(&self) -> std::result::Result<Vec<String>, SessionError> {
-        let worktree_path = self
-            .worktree_path
-            .as_ref()
-            .ok_or(SessionError::NotIsolated)?;
+        let worktree_path = self.worktree_path().ok_or(SessionError::NotIsolated)?;
 
-        list_ghost_checkpoints(worktree_path, &self.id.to_string()).map_err(SessionError::from)
+        list_ghost_checkpoints(&worktree_path, &self.id.to_string()).map_err(SessionError::from)
     }
 
     /// Get debug enabled state
@@ -1740,9 +1770,9 @@ impl BackgroundSession {
                 .expect("model_id lock poisoned")
                 .clone(),
             // GIT-029: Isolation state
-            is_isolated: self.worktree_path.is_some(),
+            is_isolated: self.worktree_path().is_some(),
             worktree_path: self
-                .worktree_path
+                .worktree_path()
                 .as_ref()
                 .map(|p| p.to_string_lossy().to_string()),
             // RPC-007: role surface for the session manager handle. NAPI

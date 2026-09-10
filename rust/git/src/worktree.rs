@@ -168,12 +168,17 @@ pub fn remove_worktree(repo_path: impl AsRef<Path>, session_id: &str) -> Result<
 /// Vector of WorktreeInfo for each worktree found
 pub fn list_worktrees(repo_path: impl AsRef<Path>) -> Result<Vec<WorktreeInfo>> {
     let repo_path = repo_path.as_ref();
-    let _repo = open_repo(repo_path)?;
+    let repo = open_repo(repo_path)?;
 
     let worktrees_dir = repo_path.join(FSPEC_WORKTREES_DIR);
     if !worktrees_dir.exists() {
         return Ok(Vec::new());
     }
+
+    // WT-011: resolve the metadata dir through the repo's ACTUAL git dir —
+    // `repo_path/.git/worktrees` is only correct for the standard layout,
+    // and linked git dirs (gitfile + external git dir) broke this.
+    let metadata_dir = repo.git_dir().join("worktrees");
 
     let mut worktrees = Vec::new();
     for entry in fs::read_dir(&worktrees_dir)? {
@@ -194,10 +199,7 @@ pub fn list_worktrees(repo_path: impl AsRef<Path>) -> Result<Vec<WorktreeInfo>> 
             continue;
         }
 
-        let head_path = repo_path
-            .join(".git/worktrees")
-            .join(&session_id)
-            .join("HEAD");
+        let head_path = metadata_dir.join(&session_id).join("HEAD");
 
         let (head_commit, is_detached) = read_worktree_head(&head_path);
 

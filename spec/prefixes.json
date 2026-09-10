@@ -429,6 +429,11 @@
       "prefix": "MUX",
       "description": "TUI multiplex (mux) mode — multiplexed top-level views with /mux configuration",
       "createdAt": "2026-08-25T11:52:20.782Z"
+    },
+    "WT": {
+      "prefix": "WT",
+      "description": "Worktree session-isolation & merge lifecycle bugs (isolation code audit)",
+      "createdAt": "2026-09-06T01:19:42.853Z"
     }
   }
 }

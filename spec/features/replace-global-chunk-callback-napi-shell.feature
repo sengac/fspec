@@ -82,7 +82,7 @@ Feature: Replace GLOBAL_CHUNK_CALLBACK with tokio::broadcast sender; rewire NAPI
     When I inspect the rewritten bodies of both functions
     Then `emit_block_notification_to_tui` emits the chunk via `let _ = SessionManager::instance().chunks_tx().send((codelet_rpc_types::SessionId::from(session_id_str), chunk))`
     And the user-visible warning message format `"AI was blocked from {action} - {reason}"` is preserved verbatim
-    And `spawn_footer_poller`'s emit site routes via `SessionManager::instance().chunks_tx().send(...)` while preserving the `first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch` change-gate
+    And `spawn_footer_poller`'s emit site routes via the registered manager-owned `chunks_tx` sender (the NAPI-free shared poller added by WT-002 defaults to `SessionManager::instance()` when no sender is registered) while preserving the `first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch` change-gate in the shared poller
 
   Scenario: The FspecHandler and bridge command_emitter gates consult a new is_global_chunk_callback_registered helper
     Given the FspecHandler closure registered inside the napi agent_loop previously short-circuited via `if GLOBAL_CHUNK_CALLBACK.get().is_none()`

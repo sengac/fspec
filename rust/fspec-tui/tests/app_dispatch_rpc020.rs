@@ -119,13 +119,14 @@ fn dispatch_quit_flips_should_quit() {
 
 /// Scenario: Pressing Enter on /isolation opens the CreateSessionDialog
 ///
-/// RPC-060: replaces the legacy "unimplemented command emits a notice"
-/// behaviour — every SlashCommandAction variant now has a real handler.
-/// /isolation dispatches `Action::OpenCreateSessionDialog` with
+/// RPC-060 (superseded by WT-009): /isolation probes
+/// `list_session_worktrees` and, for a non-isolated session with no live
+/// worktree, dispatches `Action::OpenCreateSessionDialog` with
 /// `preselect=Some(Isolated)` so the dialog opens with the worktree
-/// option highlighted.
-#[test]
-fn dispatch_unimplemented_command_emits_scrollback_notice() {
+/// option highlighted. The probe needs a runtime, so this is an async
+/// test.
+#[tokio::test]
+async fn dispatch_unimplemented_command_emits_scrollback_notice() {
     use codelet_fspec_tui::CreateSessionOption;
     // @step Given an AgentView whose slash popup is open with "/isolation" highlighted
     let (mut app, _mock) = fresh_app();
@@ -135,9 +136,23 @@ fn dispatch_unimplemented_command_emits_scrollback_notice() {
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Isolation));
 
     // @step Then App::dispatch emits Action::OpenCreateSessionDialog { preselect: Some(Isolated) }
-    let action = app
-        .try_recv_action()
-        .expect("OpenCreateSessionDialog should be queued");
+    // (SessionCreated queued a ModelInfoLoaded probe first — drain it.)
+    let mut action = None;
+    for _ in 0..100 {
+        while let Some(a) = app.try_recv_action() {
+            if matches!(
+                a,
+                Action::OpenCreateSessionDialog { .. }
+            ) {
+                action = Some(a);
+            }
+        }
+        if action.is_some() {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+    }
+    let action = action.expect("OpenCreateSessionDialog should be queued");
     match action {
         Action::OpenCreateSessionDialog { preselect } => {
             assert_eq!(preselect, Some(CreateSessionOption::Isolated));

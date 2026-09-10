@@ -131,8 +131,14 @@ async fn debug_calls_backend_toggle_debug_for_focused_session() {
     let last = mock.last_toggle_debug().expect("toggle_debug captured");
     assert_eq!(last.0, sid("s-1"));
 
-    // @step And the debug_dir argument equals ".fspec/debug"
-    assert_eq!(last.1, ".fspec/debug");
+    // @step And the debug_dir argument equals "~/.fspec" (RPC-430: the
+    // default resolves to the user home dir, matching TS
+    // getFspecUserDir(); the pre-RPC-430 ".fspec/debug" pin was
+    // superseded by spec/features/fix-debug-command-parity-gaps-in-rust-tui.feature)
+    assert_eq!(
+        last.1,
+        format!("{}/.fspec", std::env::var("HOME").expect("HOME set in test env"))
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

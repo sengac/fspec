@@ -7,6 +7,8 @@
 //! values back into editable strings) and `ProfileForm::build_definition`
 //! (parsing typed strings into the wire shape). No form state lives here.
 
+use codelet_rpc_types::ProfileDefinition;
+
 use crate::views::model_selector::form::parse_compaction_trigger;
 
 /// TS `compactionThresholdParser.ts` range constants (lines 15-21). Mirrored on
@@ -121,4 +123,63 @@ pub(super) fn parse_loop_detection_max_retries(raw: &str) -> Result<Option<u32>,
                 "Loop Retries must be a whole number (0 = never retry, 10 = default)".to_string()
             }),
     }
+}
+
+/// Build a [`ProfileDefinition`] from the current form values.
+///
+/// Moved from `profile_form.rs` to keep that file under the 300-LoC
+/// ceiling. Returns `Err(hint)` when the save must be REJECTED with a
+/// visible hint (PROV-142 non-numeric Auto-Continue; PROV-144
+/// non-numeric Max Images; PROV-145 non-numeric loop-detection fields);
+/// `Ok(None)` when base URL, API key, or the trimmed name is empty (TS
+/// `handleSave` guard — the form stays open silently); `Ok(Some(def))`
+/// on success.
+pub fn build_definition(
+    form: &super::profile_form::ProfileForm,
+) -> Result<Option<ProfileDefinition>, String> {
+    if form.base_url.is_empty() || form.api_key.is_empty() || form.name.trim().is_empty() {
+        return Ok(None);
+    }
+    // PROV-142: parse the Auto-Continue field. Empty ⇒ None (off, today's
+    // behavior); "0" ⇒ Some(0) (explicit-off sentinel); "n" (n >= 1) ⇒
+    // Some(n) (on with budget n); non-numeric ⇒ reject with a hint.
+    let auto_continue = parse_auto_continue(&form.auto_continue)?;
+    // PROV-144: parse the Max Images field. Empty ⇒ None (absent ⇒ default
+    // 4); "0" ⇒ Some(0) (no-vision sentinel); "n" (n >= 1) ⇒ Some(n)
+    // (cap of n images per Read result); non-numeric ⇒ reject with a hint.
+    let max_images = parse_max_images(&form.max_images)?;
+    // PROV-145: parse the loop-detection numeric fields. Empty ⇒ None
+    // (absent ⇒ the RIG-014 defaults 160 / 10 / 10); "n" ⇒ Some(n);
+    // non-numeric ⇒ reject with a hint naming the field.
+    let loop_detection_window = parse_loop_detection_window(&form.loop_window)?;
+    let loop_detection_max_repeats = parse_loop_detection_max_repeats(&form.loop_repeat)?;
+    let loop_detection_max_retries = parse_loop_detection_max_retries(&form.loop_retries)?;
+    let (compaction_threshold_type, compaction_threshold_value) =
+        profile_compaction_trigger(&form.compaction_threshold);
+    Ok(Some(ProfileDefinition {
+        base_url: form.base_url.clone(),
+        api_key: form.api_key.clone(),
+        context_window: form.context_window.trim().parse::<u32>().ok(),
+        max_output_tokens: form.max_output_tokens.trim().parse::<u32>().ok(),
+        compaction_threshold_type,
+        compaction_threshold_value,
+        streaming: Some(form.streaming),
+        auto_continue,
+        // PROV-143: always carry the explicit toggle so the on-disk
+        // profile reflects the form (true ⇒ preserved, false ⇒ stripped).
+        preserve_thinking: Some(form.preserve_thinking),
+        // PROV-144: carry the parsed Max Images limit (empty ⇒ None so the
+        // persistence read-modify-write REMOVES the key ⇒ default 4).
+        max_images,
+        // PROV-145: always carry the explicit loop-detection toggle so
+        // the on-disk profile reflects the form (true ⇒ detector on,
+        // false ⇒ detector off).
+        loop_detection_enabled: Some(form.loop_detection),
+        // PROV-145: carry the parsed loop-detection numeric fields
+        // (empty ⇒ None so the persistence read-modify-write REMOVES the
+        // keys ⇒ the RIG-014 defaults apply).
+        loop_detection_window,
+        loop_detection_max_repeats,
+        loop_detection_max_retries,
+    }))
 }

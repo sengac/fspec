@@ -185,8 +185,11 @@ fn search_history_render_delegates_to_shell() {
     let body = common::read_to_string_or_panic(&search);
 
     // @step When the source-shape test in tests/rpc026_source_shape.rs runs
+    // TUI-103 note: the render fn takes `&mut self` (it caches the
+    // scrollbar gutter rect on the view) — the pin was written against
+    // the pre-TUI-103 `&self` signature and updated here.
     let render_idx = body
-        .find("pub fn render(&self, area: Rect, buf: &mut Buffer)")
+        .find("pub fn render(&mut self, area: Rect, buf: &mut Buffer)")
         .expect("search render fn");
     let after = &body[render_idx..];
     let brace_idx = after.find('{').expect("opening brace");

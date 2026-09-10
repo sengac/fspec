@@ -10,6 +10,7 @@
 
 use crate::error::{GitError, Result};
 use crate::open_repo;
+use crate::tree_snapshot::TreeSnapshot;
 use crate::tree_utils::collect_worktree_files;
 use codelet_rpc_types::CheckpointCounts;
 use gix::bstr::BString;
@@ -138,40 +139,53 @@ pub fn create_ghost_commit(
             let files = crate::tree_utils::get_tree_files(&repo, &sha).unwrap_or_default();
             (sha, files)
         }
-        Err(_) => (String::new(), std::collections::HashMap::new()), // No commits yet
+        Err(_) => (String::new(), TreeSnapshot::new()), // No commits yet
     };
 
-    // Collect all files from working tree
+    // Collect all files from working tree (WT-006: rich snapshot)
     let files_map = collect_worktree_files(workdir)?;
 
-    // Compute changed files (files that differ from HEAD)
+    // Compute changed files (files that differ from HEAD). WT-006:
+    // kind-aware — symlinks compare by target, gitlinks are atomic
+    // (never reported as deleted when the worktree cannot clone them),
+    // and the executable bit is part of blob identity.
     let mut changed_files: Vec<String> = Vec::new();
 
-    // Files that exist in working tree - check if different from HEAD
-    for (path, content) in &files_map {
-        match head_files.get(path) {
-            Some(head_content) => {
-                // File exists in both - check if different
-                if content != head_content {
-                    changed_files.push(path.clone());
+    // Base-side: modified or deleted (gitlinks skipped — atomic)
+    for path in head_files.all_paths() {
+        if head_files.gitlinks.contains_key(&path) {
+            continue;
+        }
+        let head_content = head_files
+            .entry_bytes(&path)
+            .expect("path iterated from base snapshot");
+        match files_map.entry_bytes(&path) {
+            Some(work_content) => {
+                if work_content != head_content {
+                    changed_files.push(path);
                 }
             }
             None => {
-                // File only exists in working tree (new file)
-                changed_files.push(path.clone());
+                // File deleted in working tree
+                changed_files.push(path);
             }
         }
     }
 
-    // Files that exist in HEAD but not in working tree (deletions)
-    for path in head_files.keys() {
-        if !files_map.contains_key(path) {
-            changed_files.push(path.clone());
+    // Working-tree-side: added (new blobs/symlinks)
+    for path in files_map.all_paths() {
+        if head_files.contains_path(&path) {
+            continue;
+        }
+        if files_map.entry_is_blob(&path) || files_map.symlinks.contains_key(&path) {
+            changed_files.push(path);
         }
     }
+    changed_files.sort();
+    changed_files.dedup();
 
     // Build tree from working tree files (only files that exist)
-    let tree_id = build_tree_from_files(&repo, &files_map)?;
+    let tree_id = build_tree_from_snapshot(&repo, &files_map)?;
 
     // Create commit object
     let commit_id = create_commit_object(&repo, tree_id, &parent_sha)?;
@@ -190,73 +204,71 @@ pub fn create_ghost_commit(
     })
 }
 
-/// Build a tree object from a map of files
-fn build_tree_from_files(
-    repo: &gix::Repository,
-    files: &std::collections::HashMap<String, Vec<u8>>,
-) -> Result<gix::ObjectId> {
+/// Build a tree object from a [`TreeSnapshot`] (WT-006).
+///
+/// Unlike the old byte-map builder, this preserves every git entry
+/// kind:
+/// - blobs → Blob / BlobExecutable (the executable bit from the
+///   snapshot's `executables` set, captured from on-disk metadata)
+/// - symlinks → Link entries whose blob is the target path text
+/// - gitlinks → Commit entries carrying the submodule OID (atomic —
+///   the checkpoint tree keeps them so restores never report the
+///   submodule as deleted)
+///
+/// `ignored` paths are NOT part of the checkpoint tree: a checkpoint
+/// captures git-representable state, and gitignored files are never
+/// git state.
+///
+/// WT-008: `pub(crate)` so `merge_commit` reuses the same snapshot →
+/// tree builder for the merge commit (one tree-builder, no drift).
+pub(crate) fn build_tree_from_snapshot(repo: &gix::Repository, snap: &TreeSnapshot) -> Result<gix::ObjectId> {
     use std::collections::BTreeMap;
 
     // Handle empty tree case - all files deleted
-    if files.is_empty() {
-        // Create an empty tree
+    if snap.is_empty() {
         let empty_tree = gix::objs::Tree { entries: vec![] };
         return write_tree(repo, &empty_tree);
     }
 
-    // Group files by directory structure
-    // Key: directory path, Value: vec of (filename, blob_id, is_executable)
-    let mut dir_entries: BTreeMap<String, Vec<(String, gix::ObjectId, bool)>> = BTreeMap::new();
+    // (filename, object_id, entry_kind) per directory.
+    let mut dir_entries: BTreeMap<
+        String,
+        Vec<(String, gix::ObjectId, gix::object::tree::EntryKind)>,
+    > = BTreeMap::new();
 
     // Ensure root directory exists
     dir_entries.insert(String::new(), Vec::new());
 
-    // First, create blob objects for all files
-    for (path, content) in files {
+    // Blobs: create blob objects, record with the executable bit
+    for (path, content) in &snap.blobs {
         let blob_id = write_blob(repo, content)?;
-
-        // Split path into directory and filename
-        let path_obj = std::path::Path::new(path);
-        let parent = path_obj
-            .parent()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default();
-        let filename = path_obj
-            .file_name()
-            .map(|f| f.to_string_lossy().to_string())
-            .unwrap_or_default();
-
-        // Ensure all parent directories exist in dir_entries
-        // This is important for files like "spec/work-units.json" where "spec" needs to be added
-        let mut current_path = parent.clone();
-        while !current_path.is_empty() {
-            if !dir_entries.contains_key(&current_path) {
-                dir_entries.insert(current_path.clone(), Vec::new());
-            }
-            // Move up to parent
-            current_path = std::path::Path::new(&current_path)
-                .parent()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default();
-        }
-
-        // Check if file is executable (Unix only)
-        #[cfg(unix)]
-        let is_executable = {
-            use std::os::unix::fs::PermissionsExt;
-            let full_path = repo.workdir().unwrap().join(path);
-            full_path
-                .metadata()
-                .map(|m| m.permissions().mode() & 0o111 != 0)
-                .unwrap_or(false)
+        let kind = if snap.is_executable(path) {
+            gix::object::tree::EntryKind::BlobExecutable
+        } else {
+            gix::object::tree::EntryKind::Blob
         };
-        #[cfg(not(unix))]
-        let is_executable = false;
+        push_dir_entry(&mut dir_entries, path, blob_id, kind);
+    }
 
-        dir_entries
-            .entry(parent)
-            .or_default()
-            .push((filename, blob_id, is_executable));
+    // Symlinks: Link entries whose blob stores the target text
+    for (path, target) in &snap.symlinks {
+        let blob_id = write_blob(repo, target.as_bytes())?;
+        push_dir_entry(
+            &mut dir_entries,
+            path,
+            blob_id,
+            gix::object::tree::EntryKind::Link,
+        );
+    }
+
+    // Gitlinks: Commit entries carrying the submodule OID (atomic)
+    for (path, oid) in &snap.gitlinks {
+        push_dir_entry(
+            &mut dir_entries,
+            path,
+            *oid,
+            gix::object::tree::EntryKind::Commit,
+        );
     }
 
     // Build trees bottom-up (deepest directories first)
@@ -284,18 +296,11 @@ fn build_tree_from_files(
         // Build tree entries for this directory
         let mut tree_entries: Vec<gix::objs::tree::Entry> = Vec::new();
 
-        // Add blob entries
-        for (filename, blob_id, is_executable) in &entries {
-            let mode: gix::object::tree::EntryMode = if *is_executable {
-                gix::object::tree::EntryKind::BlobExecutable.into()
-            } else {
-                gix::object::tree::EntryKind::Blob.into()
-            };
-
+        for (filename, oid, kind) in &entries {
             tree_entries.push(gix::objs::tree::Entry {
-                mode,
+                mode: (*kind).into(),
                 filename: BString::from(filename.as_str()),
-                oid: *blob_id,
+                oid: *oid,
             });
         }
 
@@ -337,6 +342,46 @@ fn build_tree_from_files(
         .get("")
         .copied()
         .ok_or_else(|| GitError::Other("Failed to build root tree".to_string()))
+}
+
+/// Push a (filename, oid, kind) entry into the directory map for
+/// `path`, ensuring all parent directories are registered.
+fn push_dir_entry(
+    dir_entries: &mut std::collections::BTreeMap<
+        String,
+        Vec<(String, gix::ObjectId, gix::object::tree::EntryKind)>,
+    >,
+    path: &str,
+    oid: gix::ObjectId,
+    kind: gix::object::tree::EntryKind,
+) {
+    let path_obj = std::path::Path::new(path);
+    let parent = path_obj
+        .parent()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let filename = path_obj
+        .file_name()
+        .map(|f| f.to_string_lossy().to_string())
+        .unwrap_or_default();
+
+    // Ensure all parent directories exist in dir_entries
+    let mut current_path = parent.clone();
+    while !current_path.is_empty() {
+        if !dir_entries.contains_key(&current_path) {
+            dir_entries.insert(current_path.clone(), Vec::new());
+        }
+        // Move up to parent
+        current_path = std::path::Path::new(&current_path)
+            .parent()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
+    }
+
+    dir_entries
+        .entry(parent)
+        .or_default()
+        .push((filename, oid, kind));
 }
 
 /// Write a blob object to the repository
@@ -431,7 +476,11 @@ fn store_ref(repo: &gix::Repository, ref_name: &str, commit_id: &gix::ObjectId) 
 /// * `dir` - Path to the repository root
 /// * `work_unit_id` - Work unit identifier
 /// * `checkpoint_name` - Name of the checkpoint to restore
-/// * `force` - If true, overwrite without conflict detection
+/// * `force` - If true, overwrite without conflict detection. If false and
+///   the working tree diverges from the checkpoint (modified, deleted, or
+///   added files — checkpoint tree vs working dir, NOT git status), the
+///   function returns `GitError::RestoreConflict` listing the divergent
+///   files WITHOUT writing or deleting anything (WT-010).
 ///
 /// # Returns
 /// RestoreResult with success status and affected files
@@ -445,7 +494,7 @@ pub fn restore_ghost_commit(
     dir: &Path,
     work_unit_id: &str,
     checkpoint_name: &str,
-    _force: bool,
+    force: bool,
 ) -> Result<RestoreResult> {
     let repo = open_repo(dir)?;
 
@@ -467,35 +516,92 @@ pub fn restore_ghost_commit(
     // Get current working tree files
     let current_files = collect_worktree_files(&workdir)?;
 
+    // WT-010: honor `force` — when false, detect the checkpoint-vs-workdir
+    // divergence (modified / deleted-since-checkpoint /
+    // added-after-checkpoint, the same comparison get_checkpoint_diff_files
+    // uses) and bail out with a RestoreConflict BEFORE touching the tree.
+    // Gitlinks are atomic (WT-006): never reported as divergent.
+    let mut divergent: Vec<String> = Vec::new();
+    if !force {
+        let current_paths: HashSet<String> = current_files.all_paths().into_iter().collect();
+        let checkpoint_blob_paths: HashSet<String> = checkpoint_files
+            .blobs
+            .keys()
+            .cloned()
+            .chain(checkpoint_files.symlinks.keys().cloned())
+            .collect();
+        for path in checkpoint_files.all_paths() {
+            if checkpoint_files.gitlinks.contains_key(&path) {
+                continue; // atomic
+            }
+            if !current_paths.contains(&path) {
+                divergent.push(path);
+                continue;
+            }
+            let checkpoint_bytes = checkpoint_files.entry_bytes(&path);
+            let current_bytes = current_files.entry_bytes(&path);
+            if checkpoint_bytes != current_bytes {
+                divergent.push(path);
+            }
+        }
+        for path in current_files.all_paths() {
+            if !checkpoint_blob_paths.contains(&path) {
+                divergent.push(path);
+            }
+        }
+        if !divergent.is_empty() {
+            divergent.sort();
+            return Err(GitError::RestoreConflict { files: divergent });
+        }
+    }
+
     // Track files that will be restored and deleted
     let mut restored_files = Vec::new();
     let mut deleted_files = Vec::new();
 
-    // Build sets for comparison
-    let checkpoint_paths: HashSet<&String> = checkpoint_files.keys().collect();
-    let current_paths: HashSet<&String> = current_files.keys().collect();
-
-    // Restore files from checkpoint
-    for (path, content) in &checkpoint_files {
-        let full_path = workdir.join(path);
-
-        // Create parent directories if needed
+    // Restore files from checkpoint (blobs with mode, symlinks; gitlinks
+    // are atomic and skipped)
+    for path in checkpoint_files.all_paths() {
+        if checkpoint_files.gitlinks.contains_key(&path) {
+            continue;
+        }
+        let full_path = workdir.join(&path);
         if let Some(parent) = full_path.parent() {
             fs::create_dir_all(parent)?;
         }
-
-        fs::write(&full_path, content)?;
-        restored_files.push(path.clone());
+        let content = checkpoint_files
+            .entry_bytes(&path)
+            .ok_or_else(|| GitError::Other(format!("missing entry for {path}")))?;
+        if checkpoint_files.entry_is_blob(&path) {
+            let executable = checkpoint_files.executables.contains(&path);
+            crate::tree_snapshot::write_file_with_mode(&workdir, &path, &content, executable)?;
+        } else {
+            // symlink: entry_bytes is the target path
+            let target = String::from_utf8_lossy(&content).to_string();
+            if full_path.exists() {
+                fs::remove_file(&full_path)?;
+            }
+            std::os::unix::fs::symlink(&target, &full_path)?;
+        }
+        restored_files.push(path);
     }
 
     // Delete files that exist in working tree but not in checkpoint
-    for path in &current_paths {
-        if !checkpoint_paths.contains(*path) {
-            let full_path = workdir.join(*path);
-            if full_path.exists() {
-                fs::remove_file(&full_path)?;
-                deleted_files.push((*path).clone());
-            }
+    // (gitignored paths are never touched)
+    let checkpoint_blob_paths: HashSet<&str> = checkpoint_files
+        .blobs
+        .keys()
+        .chain(checkpoint_files.symlinks.keys())
+        .map(String::as_str)
+        .collect();
+    for path in current_files.all_paths() {
+        if checkpoint_blob_paths.contains(path.as_str()) {
+            continue;
+        }
+        let full_path = workdir.join(&path);
+        if full_path.exists() {
+            fs::remove_file(&full_path)?;
+            deleted_files.push(path);
         }
     }
 
@@ -542,12 +648,23 @@ pub fn restore_ghost_commit_file(
     let checkpoint_files = crate::tree_utils::get_tree_files(&repo, &commit_id.to_string())?;
 
     let full_path = workdir.join(path);
-    match checkpoint_files.get(path) {
+    match checkpoint_files.entry_bytes(path) {
         Some(content) => {
             if let Some(parent) = full_path.parent() {
                 fs::create_dir_all(parent)?;
             }
-            fs::write(&full_path, content)?;
+            if checkpoint_files.entry_is_blob(path) {
+                let executable = checkpoint_files.executables.contains(path);
+                crate::tree_snapshot::write_file_with_mode(&workdir, path, &content, executable)?;
+            } else if checkpoint_files.symlinks.contains_key(path) {
+                // symlink: content is the target path (atomic gitlinks are
+                // skipped — they never carry entry_bytes)
+                if full_path.exists() {
+                    fs::remove_file(&full_path)?;
+                }
+                let target = String::from_utf8_lossy(&content).to_string();
+                std::os::unix::fs::symlink(&target, &full_path)?;
+            }
         }
         None => {
             // File absent in the checkpoint — restoring means deleting it.
@@ -742,30 +859,16 @@ pub fn get_checkpoint_diff_files(
     // Get current working tree files
     let current_files = collect_worktree_files(&workdir)?;
 
-    let mut diff_files = Vec::new();
+    // WT-006: snapshot-aware diff — symlinks compare by target, the
+    // executable bit is implicit in byte comparison only for blobs, and
+    // gitlinks are atomic (never diffed).
+    let (files_changed, files_added, files_deleted, _diff) =
+        crate::session_diff::compute_session_diff(&checkpoint_files, &current_files);
 
-    // Find modified and deleted files
-    for (path, checkpoint_content) in &checkpoint_files {
-        match current_files.get(path) {
-            Some(current_content) => {
-                if checkpoint_content != current_content {
-                    diff_files.push(path.clone());
-                }
-            }
-            None => {
-                // File deleted since checkpoint
-                diff_files.push(path.clone());
-            }
-        }
-    }
-
-    // Find added files
-    for path in current_files.keys() {
-        if !checkpoint_files.contains_key(path) {
-            diff_files.push(path.clone());
-        }
-    }
-
+    let mut diff_files = files_changed;
+    diff_files.extend(files_added);
+    diff_files.extend(files_deleted);
     diff_files.sort();
+    diff_files.dedup();
     Ok(diff_files)
 }

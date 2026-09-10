@@ -130,13 +130,13 @@ Feature: Reduce codelet-napi to thin adapter (session_bindings.rs); update Cargo
 
   @rule:footer_poller_rs
   @footer_poller
-  Scenario: footer_poller.rs owns the FOOTER_POLLER_TOKENS static and the spawn/stop helpers
+  Scenario: footer_poller.rs is the NAPI shim over the shared NAPI-free footer poller (post-WT-002)
     Given the RPC-043 changes are applied to the codelet workspace
+    And the WT-002 lift moved the poller loop + FOOTER_POLLER_TOKENS into codelet_sessions::footer_poller
     When I open `rust/napi/src/footer_poller.rs`
-    Then the file declares the `FOOTER_POLLER_TOKENS` static via `once_cell::sync::Lazy`
-    And the file declares `pub(crate) fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Option<String>)`
-    And the file declares `pub(crate) fn stop_footer_poller(session_id: &str)`
-    And the `FOOTER_POLLER_TOKENS` static is private to the module (not `pub`)
+    Then the file declares the `fn spawn_footer_poller` shim that delegates to the shared NAPI-free poller in codelet-sessions (WT-002)
+    And the file declares the `fn stop_footer_poller` shim that delegates to the shared NAPI-free poller
+    And the file registers the singleton manager's chunks_tx as the NAPI emission target (preserving today's SessionManager::instance() behavior)
 
   @rule:bridges_rs
   @bridges

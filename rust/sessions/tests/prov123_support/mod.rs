@@ -37,6 +37,10 @@ pub fn manager_with_seeded_cache(
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    // SessionStore caches `sessions_dir` at first use — reset the
+    // persistence singletons BEFORE pointing the data directory at this
+    // test's fresh temp dir so session-manifest writes stay hermetic.
+    codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     let saved_user_dir = std::env::var("FSPEC_USER_DIR").ok();
     std::env::set_var("FSPEC_USER_DIR", data_dir.path());

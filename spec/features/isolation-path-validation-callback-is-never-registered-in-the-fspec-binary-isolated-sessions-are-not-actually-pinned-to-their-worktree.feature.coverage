@@ -1,0 +1,595 @@
+{
+  "scenarios": [
+    {
+      "name": "Isolated session under the fspec binary exposes its isolation context to the tool layer",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "186-215",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "build_service registers the tool-callbacks manager and all three tool callbacks",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "634-689",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Isolation lookup through the registered manager ignores the global singleton",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "226-262",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Write tool of an isolated session blocks absolute paths into the original project",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "266-308",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Write tool of an isolated session resolves relative paths into the worktree",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "312-338",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-isolated session keeps unrestricted path access",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "344-378",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown session ids degrade to no isolation",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "383-398",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit stage lookup under the fspec binary reads the session's work unit context",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "407-433",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit stage lookup returns None for sessions without a work unit",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "442-458",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A blocked tool action emits a warning notification on the manager's chunk stream",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "467-511",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The NAPI front door registers the shared codelet-sessions callback functions",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "697-756",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/bridges.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The NAPI isolation lookup falls back to the singleton manager when no manager is registered",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt004_session_tool_callbacks.rs",
+          "lines": "520-557",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/wt004_session_tool_callbacks.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_tool_callbacks.rs",
+      "rust/fspec/src/common.rs",
+      "rust/napi/src/bridges.rs"
+    ],
+    "totalLinesCovered": 816
+  }
+}

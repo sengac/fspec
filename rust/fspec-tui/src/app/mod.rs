@@ -20,7 +20,9 @@ pub mod bootstrap;
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;
+pub mod dispatch_attach;
 pub mod dispatch_blocklist;
+pub mod dispatch_capability;
 pub mod dispatch_changed_files;
 pub mod dispatch_checkpoint_delete;
 pub mod dispatch_checkpoint_diff;
@@ -34,12 +36,15 @@ pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
 pub mod dispatch_fspec_runner;
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
+pub mod dispatch_isolation_toggle; // WT-009: /isolation state toggle
 pub mod dispatch_merge_worktree;
 pub mod dispatch_model_selector;
 pub mod dispatch_model_thinking_dialogs;
 pub mod dispatch_mux; // MUX-001: mux mode Action arms + /mux apply
+pub mod dispatch_mux_apply; // MUX-001: /mux subcommand + dialog-draft applier
 pub mod dispatch_mux_config; // MUX-004: MuxConfigDialog open helper
 pub mod dispatch_pause_hitl;
+pub mod dispatch_pause_route;
 pub mod dispatch_pending_input;
 pub mod dispatch_provider_settings;
 pub mod dispatch_provider_settings_copilot;
@@ -64,11 +69,14 @@ pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
 pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
+pub mod dispatch_work_unit_entry;
 pub mod dispatch_work_unit_search;
+pub mod dispatch_worktrees; // WT-005: /worktrees listing + prune actions
 pub mod events;
 pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;
 pub mod mux_parser; // MUX-001: /mux slash-command grammar
+pub mod run_loop;
 pub mod schedule_parser;
 pub mod session_creation;
 pub mod slash_parser;

@@ -3762,7 +3762,7 @@ pub fn session_is_isolated(session_id: String) -> Option<bool> {
     let manager = SessionManager::instance();
 
     match manager.get_session(&session_id) {
-        Ok(session) => Some(session.worktree_path.is_some()),
+        Ok(session) => Some(session.worktree_path().is_some()),
         Err(_) => None,
     }
 }

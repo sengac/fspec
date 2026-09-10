@@ -8,8 +8,8 @@
 mod common;
 
 use codelet_git::{
-    create_session_manifest, discard_session, get_manifest_path, DerivedSessionStatus,
-    IsolatedSessionInfo,
+    create_session_manifest, create_worktree, discard_session, get_manifest_path,
+    DerivedSessionStatus,
 };
 use std::fs;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -52,18 +52,17 @@ fn test_discard_session_without_applying_changes() {
         fs::read_to_string(repo_path.join("src/main.rs")).expect("Failed to read original main.rs");
 
     // @step And a session worktree with a modified file "src/main.rs"
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Modify src/main.rs in session worktree
     fs::write(
@@ -121,18 +120,17 @@ fn test_discard_clean_session() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree with no changes
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // No changes made to worktree - it's clean
 
@@ -209,13 +207,12 @@ fn test_discard_orphaned_session() {
 
     // @step And an orphaned session worktree
     // Create worktree but NO manifest (orphaned = no manifest)
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // Explicitly NOT creating manifest - making it orphaned
     // The worktree exists but no manifest = Orphaned status
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // @step When I call discard_session with the session ID
     let result =
@@ -256,14 +253,13 @@ fn test_discard_session_cleans_up_manifest() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree with a manifest in ~/.fspec/git-sessions/
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
@@ -274,7 +270,7 @@ fn test_discard_session_cleans_up_manifest() {
         "Manifest should exist before discard"
     );
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // @step When I call discard_session with the session ID
     let _result = discard_session(repo_path, &session_id).expect("Failed to discard session");

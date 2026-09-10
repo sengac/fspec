@@ -139,7 +139,8 @@ fn scenario_codelet_sessions_imports_napi_free_mcp_injection() {
 }
 
 // =============================================================================
-// Scenario: session_manager.rs calls init_mcp_session in both create paths
+// Scenario: session_manager.rs delegates MCP init to the shared helper in
+// both create paths (WT-012: the isolated path no longer inlines it)
 // =============================================================================
 #[test]
 fn scenario_session_manager_calls_init_mcp_in_both_create_paths() {
@@ -149,42 +150,48 @@ fn scenario_session_manager_calls_init_mcp_in_both_create_paths() {
     // @step When I scan its source bytes after stripping Rust comments
     let src = strip_rust_comments(&raw);
 
-    // @step Then it contains exactly two occurrences of the substring "codelet_tools::init_mcp_session(uuid)"
-    let init_count = src.matches("codelet_tools::init_mcp_session(uuid)").count();
-    assert_eq!(
-        init_count, 2,
-        "expected exactly two `codelet_tools::init_mcp_session(uuid)` call sites in session_manager.rs, found {init_count}",
-    );
-
-    // @step And one occurrence sits inside the body of "pub async fn create_session_with_id"
-    let create_body = extract_fn_body(&src, "pub async fn create_session_with_id");
-    let init_in_create = create_body
+    // @step Then the isolated create path delegates MCP init to the shared helper
+    // (WT-012: `create_isolated_session_with_id` routes through
+    // `create_background_session_inner`, whose body in session_creation_helper.rs
+    // carries the `codelet_tools::init_mcp_session(uuid)` call — zero inline
+    // occurrences may remain in session_manager.rs)
+    let helper_src = strip_rust_comments(&read(
+        &workspace_root().join("sessions/src/session_creation_helper.rs"),
+    ));
+    let helper_init = helper_src
         .matches("codelet_tools::init_mcp_session(uuid)")
         .count();
     assert_eq!(
-        init_in_create, 1,
-        "expected exactly one `codelet_tools::init_mcp_session(uuid)` inside `create_session_with_id`, found {init_in_create}",
+        helper_init, 1,
+        "expected exactly one `codelet_tools::init_mcp_session(uuid)` call site in \
+         session_creation_helper.rs (the shared create path), found {helper_init}"
     );
 
-    // @step And the other occurrence sits inside the body of "pub async fn create_isolated_session_with_id"
-    let isolated_body = extract_fn_body(&src, "pub async fn create_isolated_session_with_id");
-    let init_in_isolated = isolated_body
-        .matches("codelet_tools::init_mcp_session(uuid)")
-        .count();
+    // @step And the shared helper is the single MCP init site for both create paths
+    // (zero inline `codelet_tools::init_mcp_session(uuid)` occurrences in session_manager.rs)
+    let sm_inline = src.matches("codelet_tools::init_mcp_session(uuid)").count();
     assert_eq!(
-        init_in_isolated, 1,
-        "expected exactly one `codelet_tools::init_mcp_session(uuid)` inside `create_isolated_session_with_id`, found {init_in_isolated}",
+        sm_inline, 0,
+        "WT-012: both create paths must source `init_mcp_session` from the shared \
+         helper — session_manager.rs must carry zero inline occurrences (found {sm_inline})"
     );
 
-    // @step And each occurrence is followed by an invocation of "spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx)"
+    // @step And each create path passes the helper's mcp_injection_rx to
+    // "spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx)"
     let spawn_call = "spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx)";
+    let create_body = extract_fn_body(&src, "pub async fn create_session_with_id");
     assert!(
         create_body.contains(spawn_call),
-        "create_session_with_id body must follow init_mcp_session with `{spawn_call}`",
+        "create_session_with_id body must pass the helper's mcp_injection_rx via `{spawn_call}`"
+    );
+    let isolated_body = extract_fn_body(&src, "pub async fn create_isolated_session_with_id");
+    assert!(
+        isolated_body.contains("create_background_session_inner"),
+        "create_isolated_session_with_id must delegate to create_background_session_inner"
     );
     assert!(
         isolated_body.contains(spawn_call),
-        "create_isolated_session_with_id body must follow init_mcp_session with `{spawn_call}`",
+        "create_isolated_session_with_id body must pass the helper's mcp_injection_rx via `{spawn_call}`"
     );
 }
 

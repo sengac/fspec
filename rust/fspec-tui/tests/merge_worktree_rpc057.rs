@@ -145,6 +145,7 @@ async fn slash_merge_worktree_with_no_changes_emits_nothing_to_merge() {
         insertions: 0,
         deletions: 0,
         commits: vec![],
+        files_ignored: 0,
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -189,6 +190,7 @@ async fn slash_merge_worktree_opens_dialog_on_changes() {
         insertions: 4,
         deletions: 2,
         commits: vec!["abc1234".to_string()],
+        files_ignored: 0,
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -231,6 +233,7 @@ fn merge_confirm_dialog_renders_change_summary() {
             insertions: 10,
             deletions: 3,
             commits: vec!["abc1234".to_string(), "def5678".to_string()],
+            files_ignored: 0,
         },
     );
 
@@ -268,6 +271,7 @@ fn merge_confirm_dialog_tab_cycles_focus_forward() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     );
 
@@ -301,6 +305,7 @@ fn merge_confirm_dialog_enter_on_merge_emits_merge() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     );
     assert_eq!(dialog.focused_button(), 0);
@@ -326,6 +331,7 @@ fn merge_confirm_dialog_enter_on_discard_emits_discard() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     );
     dialog.handle_key(KeyCode::Tab, KeyModifiers::NONE);
@@ -352,6 +358,7 @@ fn merge_confirm_dialog_esc_emits_cancel() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     );
 
@@ -363,11 +370,13 @@ fn merge_confirm_dialog_esc_emits_cancel() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Action::MergeConfirmed routes through backend.merge_session_worktree (Success)
+// Scenario: Action::MergeConfirmed Success tears down the session and emits
+// a success notice (superseded by WT-009: success now destroys the session
+// and returns to the board)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn merge_confirmed_success_emits_success_notice() {
+async fn merge_confirmed_success_tears_down_session_and_emits_notice() {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's merge_session_worktree returns Ok(MergeOutcome { status: Success, conflicts: [], merge_commit: Some("abc1234") })
@@ -375,6 +384,7 @@ async fn merge_confirmed_success_emits_success_notice() {
         status: MergeStatus::Success,
         conflicts: vec![],
         merge_commit: Some("abc1234".to_string()),
+        worktree_path: Some("/repo/.fspec/worktrees/s-1".to_string()),
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -386,6 +396,7 @@ async fn merge_confirmed_success_emits_success_notice() {
             insertions: 1,
             deletions: 0,
             commits: vec!["abc1234".to_string()],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;
@@ -397,7 +408,6 @@ async fn merge_confirmed_success_emits_success_notice() {
     app.dispatch(Action::MergeConfirmed {
         session_id: sid("s-1"),
     });
-    drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.merge_session_worktree is called exactly once with session_id "s-1"
     wait_until(
@@ -407,18 +417,36 @@ async fn merge_confirmed_success_emits_success_notice() {
     .await;
 
     // @step And within 1 second the compositor no longer contains a layer with id "merge-confirm-dialog"
-    wait_until(
-        || !app.compositor().contains("merge-confirm-dialog"),
-        "dialog popped",
-    )
-    .await;
-
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text starting with "[merge] success" is observed on the action bus
-    wait_until(
-        || session_scrollback_text(&app, &sid("s-1")).contains("[merge] success"),
-        "success notice",
-    )
-    .await;
+    // WT-009: Success now queues a MergeSuccess teardown that removes the
+    // session context, so capture the notice on the bus BEFORE the
+    // teardown action is dispatched.
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(1);
+    let mut saw_success = false;
+    while !saw_success && tokio::time::Instant::now() < deadline {
+        while let Some(handle) = app.next_pending_task() {
+            let _ = handle.await;
+        }
+        while let Some(action) = app.try_recv_action() {
+            if let Action::EmitSessionNotice(id, text) = &action {
+                if *id == sid("s-1") && text.starts_with("[merge] success") {
+                    saw_success = true;
+                }
+            }
+            app.dispatch(action);
+            while let Some(handle) = app.next_pending_task() {
+                let _ = handle.await;
+            }
+        }
+        if !saw_success {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }
+    assert!(saw_success, "expected a [merge] success notice for s-1");
+    assert!(
+        !app.compositor().contains("merge-confirm-dialog"),
+        "dialog should be popped"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -434,6 +462,7 @@ async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
         status: MergeStatus::NoChanges,
         conflicts: vec![],
         merge_commit: None,
+        worktree_path: None,
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -445,6 +474,7 @@ async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
             insertions: 0,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;
@@ -476,6 +506,7 @@ async fn merge_confirmed_conflict_seeds_input() {
         status: MergeStatus::Conflict,
         conflicts: vec!["src/a.rs".to_string(), "src/b.rs".to_string()],
         merge_commit: None,
+        worktree_path: None,
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -487,6 +518,7 @@ async fn merge_confirmed_conflict_seeds_input() {
             insertions: 0,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;
@@ -543,6 +575,7 @@ async fn merge_confirmed_err_emits_error_notice() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;
@@ -597,6 +630,7 @@ async fn discard_confirmed_routes_through_backend() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;
@@ -651,6 +685,7 @@ async fn discard_confirmed_err_emits_error_notice() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;
@@ -690,6 +725,7 @@ async fn cancel_merge_dialog_pops_without_backend_call() {
             insertions: 1,
             deletions: 0,
             commits: vec![],
+            files_ignored: 0,
         },
     });
     drain_pending(&mut app).await;

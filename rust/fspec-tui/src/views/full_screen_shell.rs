@@ -21,6 +21,31 @@ use crate::views::agent::mode_view_render::{render_footer_hint, render_title_wit
 /// footer). Body height = `area.height - CHROME_ROWS`.
 pub(crate) const CHROME_ROWS: u16 = 3;
 
+/// TUI-103: the 1-column scrollbar gutter rect the scaffold reserves in
+/// the rightmost body column when the content list exceeds
+/// `visible_rows` entries. Views with a TUI-101 click-and-drag
+/// `ScrollbarDrag` pre-compute this from the same body-rect geometry the
+/// shell splits into (title + separator on top, footer below) and cache
+/// it on render for mouse hit-testing. `None` when no scrollbar shows.
+pub(crate) fn mode_view_scrollbar_rect(area: Rect, visible_rows: usize, count: usize) -> Option<Rect> {
+    if count <= visible_rows {
+        return None;
+    }
+    let body = Rect {
+        x: area.x,
+        y: area.y.saturating_add(2), // title + separator
+        width: area.width,
+        height: area.height.saturating_sub(CHROME_ROWS), // title + separator + footer
+    };
+    let content_width = body.width.saturating_sub(1);
+    Some(Rect {
+        x: body.x + content_width,
+        y: body.y,
+        width: 1,
+        height: body.height,
+    })
+}
+
 /// Render the shared full-screen scaffold:
 ///   1. `Clear.render(area, buf)` — overwrite the underlying view.
 ///   2. Vertical split `[Length(1), Length(1), Min(0), Length(1)]`.

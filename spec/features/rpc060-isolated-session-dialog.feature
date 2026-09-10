@@ -98,10 +98,11 @@ Feature: Isolated session creation + AgentView /new isolated flow
 
   # ---- Slash command + dispatch scenarios --------------------------
   Scenario: /isolation slash command opens the CreateSessionDialog with "Yes - Isolated" preselected
-    Given an App with open session s-1
+    Given an App with open session s-1 whose isolation state is non-isolated
+    And the backend's session worktree listing has no row for session s-1
     When SlashCommandSelected(SlashCommandAction::Isolation) is dispatched
     Then a CreateSessionDialog is pushed onto the compositor at Priority::Foreground with preselect=Some(Isolated)
-    And no backend method is called
+    And no mutating backend method is called (only the read-only list_session_worktrees probe)
 
   Scenario: CreateSessionSubmitted{isolated:true} spawns backend.create_isolated_session
     Given an App with open session s-1 wired to a MockBackend whose create_isolated_session returns Ok(IsolatedSessionInfo { session_id: SessionId::new("iso-1"), worktree_path: "/tmp/.fspec/worktrees/iso-1", base_commit: "abc123" })

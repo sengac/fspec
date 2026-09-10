@@ -1017,6 +1017,44 @@ pub enum Action {
     /// RPC-057: user pressed Cancel/Esc. App::dispatch pops the
     /// dialog and fires no backend call.
     CancelMergeDialog,
+    /// WT-009: emitted by `route_merge_outcome` AFTER the `[merge]
+    /// success` notice for a `MergeStatus::Success` outcome. App::dispatch
+    /// runs the CloseSession-equivalent teardown for the merged session
+    /// (board detach, open_sessions removal, current-work-unit clear,
+    /// spawned `backend.destroy_session`) and returns to the board —
+    /// mirroring the TS merge → summary → destroySession → onExit flow.
+    /// Distinct from `MergeConfirmed` so the success notice lands in the
+    /// session's scrollback BEFORE the session context is removed.
+    MergeSuccess {
+        session_id: codelet_rpc_types::SessionId,
+    },
+    // ========================================================================
+    // WT-005: /worktrees session-worktree listing + prune actions.
+    // `/worktrees` dispatches `handle_open_session_worktrees_dialog`
+    // which spawns `backend.list_session_worktrees()`; the response
+    // lands as `SessionWorktreesLoaded` and pushes the
+    // SessionWorktreesDialog onto the Compositor. The dialog itself
+    // emits `PruneLeakedWorktrees` (Enter on Prune) or
+    // `CancelWorktreesDialog` (Enter on Cancel / Esc). App::dispatch
+    // routes Prune into `backend.prune_orphaned_worktrees()` and the
+    // outcome into a `[worktrees]` / `[error]` scrollback notice.
+    // ========================================================================
+    /// WT-005: result of a `backend.list_session_worktrees()` snapshot.
+    /// `App::dispatch` pushes the SessionWorktreesDialog (with the
+    /// dialog's action_tx wired) onto the Compositor at
+    /// Priority::Foreground, idempotently replacing any open layer.
+    SessionWorktreesLoaded(Vec<codelet_rpc_types::SessionWorktreeInfo>),
+    /// WT-005: user activated the Prune button in the
+    /// SessionWorktreesDialog. App::dispatch spawns
+    /// `backend.prune_orphaned_worktrees()` and emits
+    /// `[worktrees] pruned N leaked worktree(s)` /
+    /// `[worktrees] no leaked worktrees to prune` /
+    /// `[error] /worktrees prune: {e}` against the focused session.
+    PruneLeakedWorktrees,
+    /// WT-005: user activated Cancel or pressed Esc in the
+    /// SessionWorktreesDialog. App::dispatch pops the dialog with no
+    /// backend call.
+    CancelWorktreesDialog,
     /// RPC-058: user submitted a `/schedule …` slash command. The App
     /// catch-all dispatcher routes this to
     /// `dispatch_slash_schedule::handle_schedule_subcommand` which fans out to

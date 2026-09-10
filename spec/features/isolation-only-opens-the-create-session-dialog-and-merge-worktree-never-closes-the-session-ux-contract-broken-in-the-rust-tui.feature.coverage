@@ -1,0 +1,511 @@
+{
+  "scenarios": [
+    {
+      "name": "/isolation in a non-isolated session opens the create-session dialog preselecting Isolated",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "161-198",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_isolation_toggle.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/isolation in an isolated session detaches the session from its worktree",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "204-246",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_isolation_toggle.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/isolation in an isolated session surfaces the detach outcome as an error when the backend fails",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "253-285",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                2168,
+                2169,
+                2170,
+                2171,
+                2172,
+                2173,
+                2174,
+                2175,
+                2176,
+                2177,
+                2178,
+                2179,
+                2180,
+                2181,
+                2182,
+                2183,
+                2184,
+                2185,
+                2186,
+                2187,
+                2188,
+                2189,
+                2190,
+                2191,
+                2192,
+                2193,
+                2194,
+                2195,
+                2196,
+                2197,
+                2198,
+                2199,
+                2200,
+                2201,
+                2202,
+                2203,
+                2204,
+                2205,
+                2206,
+                2207,
+                2208,
+                2209,
+                2210,
+                2211,
+                2212,
+                2213,
+                2214,
+                2215,
+                2216,
+                2217,
+                2218,
+                2219,
+                2220,
+                2221,
+                2222,
+                2223,
+                2224,
+                2225,
+                2226,
+                2227,
+                2228,
+                2229,
+                2230,
+                2231,
+                2232,
+                2233,
+                2234,
+                2235,
+                2236
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/isolation with a live worktree the store does not track warns without a backend call",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "292-335",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_isolation_toggle.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/isolation with no active session is a silent no-op",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "341-371",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_isolation_toggle.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful merge closes the session and returns to the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "377-464",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NoChanges merge keeps the session open without any teardown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "470-533",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Conflict merge seeds the input with the worktree path instead of the session id",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs",
+          "lines": "540-598",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_isolation_toggle.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/wt009_isolation_toggle_merge_teardown.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_isolation_toggle.rs",
+      "rust/sessions/src/handle_impl.rs",
+      "rust/fspec-tui/src/app/dispatch_merge_worktree.rs"
+    ],
+    "totalLinesCovered": 765
+  }
+}

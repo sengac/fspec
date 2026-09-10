@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-05T12:39:20.696Z",
+    "lastUpdated": "2026-09-10T10:11:13.477Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 175,
+    "BUG": 178,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -93,7 +93,8 @@
     "WATCH": 24,
     "UPD": 4,
     "BOARD": 22,
-    "MUX": 8
+    "MUX": 8,
+    "WT": 12
   },
   "states": {
     "backlog": [
@@ -231,8 +232,7 @@
       "VIZ-002",
       "VIZ-003",
       "VIZ-004",
-      "WATCH-022",
-      "BUG-170"
+      "WATCH-022"
     ],
     "specifying": [
       "AGENT-001",
@@ -252,9 +252,7 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "PROV-142"
-    ],
+    "validating": [],
     "done": [
       "WATCH-024",
       "COV-007",
@@ -1685,7 +1683,23 @@
       "RPC-159",
       "PROV-145",
       "BUG-175",
-      "PROV-146"
+      "PROV-146",
+      "WT-001",
+      "WT-010",
+      "WT-002",
+      "WT-003",
+      "BUG-176",
+      "WT-004",
+      "WT-005",
+      "WT-006",
+      "WT-007",
+      "WT-008",
+      "WT-009",
+      "WT-011",
+      "WT-012",
+      "PROV-142",
+      "BUG-170",
+      "BUG-178"
     ],
     "blocked": [
       "QUERY-001",
@@ -224859,9 +224873,9 @@
       "id": "PROV-142",
       "title": "Per-profile Auto-Continue default in OpenAI profile form",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-08-20T02:53:31.043Z",
-      "updatedAt": "2026-08-20T06:11:57.363Z",
+      "updatedAt": "2026-09-10T03:50:20.566Z",
       "description": "Add an 'Auto-Continue' field to the OpenAI profile create/edit form so a profile can carry a persisted /continue default (off, or on with a budget). When a session is created against that profile, the session's auto-continue state is seeded from the profile's stored value.",
       "epic": "provider-resilience",
       "children": [],
@@ -224890,36 +224904,33 @@
         {
           "state": "validating",
           "timestamp": "2026-08-20T06:11:57.363Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-10T03:50:20.566Z"
         }
       ],
       "rules": [
         {
           "id": 0,
-          "text": "The OpenAI profile create/edit form gains a new 'Auto-Continue' field appended after Streaming. The field accepts: empty (no default — session starts with auto-continue off, today's behavior), 'off' (explicitly off), 'on' (on with DEFAULT_CONTINUE_BUDGET = 10), or a positive integer n >= 1 (on with budget n, e.g. '300').",
-          "deleted": true,
-          "createdAt": "2026-08-20T02:59:08.045Z",
-          "deletedAt": "2026-08-20T03:43:21.899Z"
-        },
-        {
-          "id": 1,
           "text": "The field is a single numeric text field (not a boolean + budget pair). Value 0 (or empty) means auto-continue OFF; any positive integer n >= 1 means auto-continue ON with budget n. This mirrors /continue's semantics where /continue 0 is rejected in favor of /continue off — here 0 is the OFF sentinel.",
           "deleted": false,
           "createdAt": "2026-08-20T02:59:22.071Z"
         },
         {
-          "id": 2,
+          "id": 1,
           "text": "The new field is a single flat Option<u32> on the wire shape (ProfileDefinition.auto_continue) and on the on-disk ProfileDef. None (key absent) or Some(0) both mean OFF; Some(n) with n >= 1 means ON with budget n. The canonical predicate is ProfileDefinition::auto_continue_enabled() mirroring streaming_enabled().",
           "deleted": false,
           "createdAt": "2026-08-20T03:03:10.259Z"
         },
         {
-          "id": 3,
+          "id": 2,
           "text": "When a session is created against a profile model (openai:<profile>/<model>), the session's auto-continue state is seeded from the profile's stored auto_continue value BEFORE the first user message is dispatched. The seed happens in the shared session creation helper (create_background_session_inner) so both create_session_with_id and create_session_from_manifest paths get it.",
           "deleted": false,
           "createdAt": "2026-08-20T03:03:29.105Z"
         },
         {
-          "id": 4,
+          "id": 3,
           "text": "The OpenAI profile create/edit form gains a new 'Auto-Continue' field appended after Streaming. The field accepts: empty (no default — session starts with auto-continue off, today's behavior), '0' (explicitly off), or a positive integer n >= 1 (on with budget n, e.g. '300'). Non-numeric input (e.g. 'abc') rejects the save with a hint mirroring /continue's invalid-argument rejection.",
           "deleted": false,
           "createdAt": "2026-08-20T03:43:30.599Z"
@@ -224929,25 +224940,18 @@
       "examples": [
         {
           "id": 0,
-          "text": "User opens the Edit Profile form for a profile with no autoContinue key. The Auto-Continue field is empty with placeholder '0 (off) or n (budget)'. User types '300' and presses Enter. The profile is saved with autoContinue: 300. A new session against that profile starts with continue_enabled=true, continue_budget=300.",
-          "deleted": true,
-          "createdAt": "2026-08-20T03:03:48.610Z",
-          "deletedAt": "2026-08-20T03:04:15.802Z"
-        },
-        {
-          "id": 1,
           "text": "User opens the Edit Profile form for a profile that has no Auto-Continue value stored. The new Auto-Continue field appears after Streaming, empty, with a dim placeholder hint. User types 300 and presses Enter to save. The profile is saved. The next time the user starts a session against that profile, the session begins in auto-continue mode with a budget of 300 nudges — as if the user had typed /continue 300 at the start of the session.",
           "deleted": false,
           "createdAt": "2026-08-20T03:04:27.268Z"
         },
         {
-          "id": 2,
+          "id": 1,
           "text": "User opens the Edit Profile form for a profile that has no Auto-Continue value stored. The new Auto-Continue field appears after Streaming, empty, with a dim placeholder hint. User types 0 and presses Enter to save. The profile is saved. The next time the user starts a session against that profile, the session begins with auto-continue OFF — the same behavior as today, no nudging.",
           "deleted": false,
           "createdAt": "2026-08-20T03:04:36.949Z"
         },
         {
-          "id": 3,
+          "id": 2,
           "text": "User has an existing profile 'spark' with no Auto-Continue value. User opens the Edit Profile form, navigates to the new Auto-Continue field (it appears after Streaming), types 500, and saves. Re-opening the form shows 500. Starting a session against spark/qwen, the session's auto-continue indicator in the footer shows 'on (budget 500)' from the very first turn.",
           "deleted": false,
           "createdAt": "2026-08-20T03:05:14.133Z"
@@ -224975,7 +224979,8 @@
           "createdAt": "2026-08-20T03:49:02.651Z"
         }
       ],
-      "nextNoteId": 3
+      "nextNoteId": 3,
+      "iterations": 1
     },
     "UPD-001": {
       "id": "UPD-001",
@@ -228653,15 +228658,116 @@
       "id": "BUG-170",
       "title": "Unrecoverable API error leaves failed tool call in context — replays same error on next message and skips cache-token invalidation",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-09-02T01:38:10.247Z",
-      "updatedAt": "2026-09-02T01:38:21.794Z",
+      "updatedAt": "2026-09-10T05:00:06.273Z",
       "description": "When an unrecoverable (terminal) API error occurs — most commonly a failing/oversized tool call whose tool result or arguments push the next request past the model's context window — the last message is NOT removed from the context window stack. The failed tool-call pair (Assistant ToolCall + User ToolResult) remains in session.messages and in the persisted session manifest, so the next user message replays the same failed tool call and the same error recurs every turn. Additionally, tracked cache-token state (TokenState / TokenTracker cache_read_input_tokens + cache_creation_input_tokens) is stale after a failed request and is never invalidated or recomputed; provider prompt caches are content-addressed server-side, so 'invalidation' means zeroing the tracked fields and recomputing input tokens from the trimmed history. The existing compaction cascade (Paths B/C/D via begin_compaction_recovery) would handle this correctly IF reached, but Path B's has_compactable_turns gate (convert_messages_to_turns only counts User/Assistant adjacent pairs) fails exactly when the tail is a failed tool pair, falling through to the terminal arm which removes nothing. Fix: (1) new surgical tail-stripping primitive in rust/cli/src/interactive/ that pops the failed tool-call pair (or trailing user prompt) off session.messages while preserving system reminders and satisfying validate_no_orphan_tool_calls; (2) cache-token invalidation on the stripped path (zero cache fields like reset_after_compaction, recompute input_tokens like recalculate_token_tracker); (3) relax the has_compactable_turns gate so a trailing tool result counts as compactable; (4) persistence primitive to drop the tail MessageRefs from the session manifest (or restore-time skip marker) so /resume does not replay the stripped pair; (5) invoke from the terminal error arm in stream_loop.rs and the agent-loop Err handler (agent_loop.rs ~1483). Research doc attached: spec/attachments/BUG-170/unrecoverable-api-error-tool-call-context-replay-research.md (also at docs/research/unrecoverable-api-error-tool-call-context-replay-research.md).",
       "epic": "provider-resilience",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-170/unrecoverable-api-error-tool-call-context-replay-research.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-10T03:56:36.536Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-10T04:36:36.987Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-10T04:36:48.397Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-10T04:57:29.450Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-10T05:00:06.273Z"
+        }
+      ],
+      "userStory": {
+        "role": "CLI agent session",
+        "action": "strip a failed tool-call pair from the context stack on a terminal API error",
+        "benefit": "the next user message does not replay the oversized tool call and the session stays usable"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The strip only runs when the error is a 'prompt too long' / context-length-exceeded error AND the tail of session.messages is a failed tool pair (User(ToolResult) with matching preceding Assistant(ToolCall), or Assistant ending in ToolCall). Any other terminal error keeps today's terminal behavior exactly (emit error, return Err).",
+          "deleted": false,
+          "createdAt": "2026-09-10T03:59:07.379Z"
+        },
+        {
+          "id": 1,
+          "text": "After a successful strip, stale cache-token state is invalidated: session.token_tracker cache fields (cache_read_input_tokens, cache_creation_input_tokens) are zeroed and input_tokens/output_tokens are recomputed from the trimmed message list (recalculate_token_tracker pattern), so the next turn's pre-prompt estimate and compaction-hook seed are honest.",
+          "deleted": false,
+          "createdAt": "2026-09-10T03:59:07.613Z"
+        },
+        {
+          "id": 2,
+          "text": "A new surgical primitive strip_failed_tool_call_tail(messages) removes, from the tail of the message stack: (1) a trailing User message whose content is (only) a ToolResult — popping that message AND removing the matching ToolCall item from the preceding Assistant message (keeping any Text items; dropping the whole Assistant message if it becomes empty); (2) else a trailing Assistant message whose items are all ToolCall — popping it; (3) else a trailing plain User prompt — popping it (existing begin_compaction_recovery semantics). It never removes system reminders and never leaves an orphan ToolCall (validate_no_orphan_tool_calls must pass after the strip).",
+          "deleted": false,
+          "createdAt": "2026-09-10T03:59:07.858Z"
+        },
+        {
+          "id": 3,
+          "text": "The session remains usable after a strip: the stream loop breaks out of the streaming loop (like the EXT-016 image recovery path), surfaces the error to the user via output.emit_error with a short '[removed failed tool call from context]' annotation, and does NOT return Err from the stream loop.",
+          "deleted": false,
+          "createdAt": "2026-09-10T03:59:08.095Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Context: after a successful strip, session.token_tracker shows cache_read_input_tokens = 0 and cache_creation_input_tokens = 0, and input_tokens equals the recompute over the trimmed message list (the pre-strip value was seeded from a history that no longer exists).",
+          "deleted": false,
+          "createdAt": "2026-09-10T04:00:38.643Z"
+        },
+        {
+          "id": 1,
+          "text": "Context: session stack ends with ... Assistant(ToolCall \"bash\", id=abc) User(ToolResult id=abc with 2MB of output); the next API call fails with 'prompt is too long'. After the terminal error arm runs, the stack ends at the message BEFORE the failed pair: Assistant(ToolCall) and User(ToolResult) are gone, validate_no_orphan_tool_calls passes, and the user's next prompt sends a history without the 2MB result.",
+          "deleted": false,
+          "createdAt": "2026-09-10T04:00:38.884Z"
+        },
+        {
+          "id": 2,
+          "text": "Context: the failed Assistant message carried Text + ToolCall (model narrated, then called a tool that produced the oversized result). After the strip, the Assistant message still contains its Text items, only the ToolCall item is removed, the ToolResult User message is popped, and no new message is created.",
+          "deleted": false,
+          "createdAt": "2026-09-10T04:00:39.103Z"
+        },
+        {
+          "id": 3,
+          "text": "Context: a transient network error (NOT prompt-too-long) hits the terminal arm with a tool pair at the tail. Nothing is stripped — the terminal behavior is unchanged (error emitted, Err returned), so the strip is surgical and scoped to context-length errors only.",
+          "deleted": false,
+          "createdAt": "2026-09-10T04:00:39.317Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "assumptions": [
+        "Persistence (removing the stripped MessageRefs from the manifest so /resume does not replay the pair) is OUT OF SCOPE for this card — the strip operates on the in-memory session.messages stack only; the append-only store has no delete API and that work gets a follow-up card.",
+        "Strip first, let the existing threshold machinery handle the rest: if the context is still over threshold after stripping the pair, the pre-prompt estimate / compaction hook will catch it on the next call (the pre-prompt gate also counts the trailing tool result once relaxed)."
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Token invalidation at the call site in stream_loop.rs after a successful strip: zero session.token_tracker cache_read_input_tokens/cache_creation_input_tokens and call recalculate_token_tracker(session) (interactive_helpers.rs:205) so input_tokens reflects the trimmed list and output_tokens resets for the new turn.",
+          "deleted": false,
+          "createdAt": "2026-09-10T04:01:08.831Z"
+        },
+        {
+          "id": 1,
+          "text": "New file rust/cli/src/interactive/recovery_unrecoverable.rs (sibling of recovery_image.rs) with pub fn strip_failed_tool_call_tail(messages: &mut Vec<Message>) -> StrippedTail. StrippedTail enum: {ToolPair, ToolCallOnly, TrailingUser, None}. Uses tool_call_correlation_key semantics from interactive_helpers (call_id.unwrap_or(id)) to match the ToolResult to its ToolCall item. Postcondition: validate_no_orphan_tool_calls passes. Wired into stream_loop.rs terminal arm (before emit_error/return Err) when is_prompt_too_long_error(error_str) is true and the tail matches; on success → emit_error with annotation + break (session stays interactive), never return Err.",
+          "deleted": false,
+          "createdAt": "2026-09-10T04:01:09.043Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "iterations": 1
     },
     "BUG-171": {
       "id": "BUG-171",
@@ -229355,6 +229461,1334 @@
         }
       ],
       "nextExampleId": 3,
+      "estimate": 2
+    },
+    "WT-001": {
+      "id": "WT-001",
+      "title": "IsolationStateChange stream chunk drops base_commit — TUI isolation badge can never show the worktree base",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:36:32.935Z",
+      "updatedAt": "2026-09-06T04:17:27.051Z",
+      "description": "SessionManager::create_isolated_session_with_id emits StreamChunk::isolation_state_change(true, Some(worktree_path)) — the 2-arg constructor that hardcodes base_commit: None. The wire type (RPC-036) carries base_commit and the 3-arg constructor isolation_state_change_with_base exists and is documented for exactly this call site, but it is never used. The TUI AgentViewStore isolation_state_by_session therefore always holds base_commit: None for live-created sessions.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-001/wt-001.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-06T02:33:10.541Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-06T02:54:47.240Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-06T03:03:55.889Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-06T03:26:06.383Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-06T04:17:27.051Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec TUI developer",
+        "action": "see the IsolationStateChange chunk carry the worktree's base commit when an isolated session is created",
+        "benefit": "the TUI isolation badge and any client logic can show which commit the worktree was forked from without a second round-trip"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "create_isolated_session_with_id must emit IsolationStateChange via StreamChunk::isolation_state_change_with_base(true, Some(worktree_path), Some(base_commit)), threading the base_commit returned by codelet_git::create_worktree",
+          "deleted": false,
+          "createdAt": "2026-09-06T02:34:21.661Z"
+        },
+        {
+          "id": 1,
+          "text": "De-isolation emit sites (isolation_state_change(false, None)) stay on the 2-arg constructor — when a session is no longer isolated there is no base commit to carry",
+          "deleted": false,
+          "createdAt": "2026-09-06T02:34:30.346Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "SessionManager::create_isolated_session_with_id creates a worktree forked at HEAD abc123; the IsolationStateChange chunk sent on chunks_tx has base_commit == Some(\"abc123\") and the same SHA is returned in IsolatedSessionInfo.base_commit",
+          "deleted": false,
+          "createdAt": "2026-09-06T02:34:30.170Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "iterations": 1
+    },
+    "WT-002": {
+      "id": "WT-002",
+      "title": "Footer poller never runs in the fspec binary — session footer never shows the isolated worktree's detached state",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:36:33.570Z",
+      "updatedAt": "2026-09-06T12:55:03.057Z",
+      "description": "The per-session footer poller (5s git-status poller emitting StreamChunk::FooterStateUpdate) is only implemented in the NAPI adapter (rust/napi/src/footer_poller.rs, installed via install_napi_session_manager_hooks). FspecAgentHooks::spawn_footer_poller in rust/agent-loop/src/hooks.rs is a documented no-op ('Footer poller stays NAPI-only for now'). In the fspec binary (combined/daemon mode, build_service in rust/fspec/src/common.rs) the hooks are FspecAgentHooks, so isolated sessions' footers never receive branch/is-git updates. Since fspec worktrees use a detached HEAD, the footer stays blank-branch for the session's whole life.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-002/wt-002.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-06T08:13:01.844Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-06T09:05:24.439Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-06T12:29:31.865Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-06T12:33:06.398Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-06T12:55:03.057Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running the fspec binary",
+        "action": "create an isolated (worktree) session and see its git state in the session footer",
+        "benefit": "the footer reflects the worktree's branch/detached state instead of staying blank for the session's whole life"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The footer poller logic lives in a single NAPI-free location (codelet-agent-loop) and is called by BOTH hook impls — FspecAgentHooks (binary) and the NAPI session hooks — so the two front doors cannot drift (CLAUDE.md two-front-doors rule)",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:16:18.493Z"
+        },
+        {
+          "id": 1,
+          "text": "A session created under FspecAgentHooks (the fspec binary) gets a per-session footer poller that polls the footer-cwd registry + get_current_branch on a 5s cadence and emits StreamChunk::FooterStateUpdate chunks through the SessionManager chunks_tx broadcast — the same contract as the NAPI poller (RPC-043/TUI-091)",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:16:25.078Z"
+        },
+        {
+          "id": 2,
+          "text": "For a detached-HEAD worktree (branch=None, repo discovered) the poller emits FooterStateUpdate with is_git_repo=true and branch=None — NOT is_git_repo=false, so the TUI footer shows the worktree CWD with a visible detached marker instead of collapsing to a blank branch",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:31:47.335Z"
+        },
+        {
+          "id": 3,
+          "text": "The NAPI hook impl continues to delegate to the exact same NAPI-free poller code path (no behavior drift) — the two front doors share one implementation, and the NAPI shape tests pinning `crate::footer_poller::spawn_footer_poller` delegation remain green",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:31:53.835Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Session created under FspecAgentHooks (the fspec binary): within one poll cycle (first tick) a FooterStateUpdate chunk with the session's CWD is emitted on the manager's chunks_tx broadcast",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:31:59.689Z"
+        },
+        {
+          "id": 1,
+          "text": "A developer opens the fspec TUI and creates a session: the session footer shows that session's working directory and, when it is a git repo, its branch name — without running any Bash command first",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:32:04.013Z"
+        },
+        {
+          "id": 2,
+          "text": "A developer creates an isolated (worktree) session in the fspec TUI: the footer shows the worktree path and a detached-HEAD indicator (not a blank branch), matching the isolation badge",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:32:10.513Z"
+        },
+        {
+          "id": 3,
+          "text": "A session's Bash tool runs in a different directory: on the next poll tick the footer CWD follows the session's effective CWD (same dynamic-CWD behavior the NAPI poller already had)",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:32:16.322Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "The fspec binary (build_service in rust/fspec/src/common.rs) owns a NON-singleton SessionManager; chunks reach the TUI only via THAT manager's chunks_tx. The NAPI-free poller (codelet-agent-loop) must resolve its sender via a process-global manager-sender slot that each hook impl registers before spawning; defaulting to SessionManager::instance() when unregistered preserves today's NAPI behavior",
+          "deleted": false,
+          "createdAt": "2026-09-06T08:42:22.648Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 5
+    },
+    "WT-003": {
+      "id": "WT-003",
+      "title": "Session worktree RPC ops resolve repo path via process cwd, so /merge-worktree fails when TUI was launched outside the project root",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:36:34.103Z",
+      "updatedAt": "2026-09-07T05:34:25.798Z",
+      "description": "handle_impl.rs resolves repo_path via std::env::current_dir() for merge_session_worktree, discard_session_worktree, inspect_session_changes, list_session_worktrees and prune_orphaned_worktrees. Worktrees are created under <project>/.fspec/worktrees/<sid> (project captured at session creation), but the merge path opens the repo at the process cwd. Launching `fspec` from anywhere other than the project root (e.g. the rust/ subdir or home dir) makes /merge-worktree fail with 'Not a repository' / 'no worktree found' even though the session's worktree exists. Confirmed live: merge_session from a foreign cwd -> Err(OpenRepository{NotARepository}).",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-003/wt-003.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-06T21:00:27.023Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-06T22:29:39.964Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-06T23:38:12.168Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-07T03:18:10.737Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-07T05:34:25.798Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running the fspec binary from any directory",
+        "action": "run the session-worktree RPC ops (merge, discard, inspect, list, prune)",
+        "benefit": "the operations target the session's own project root instead of the process cwd, so they work no matter where the TUI was launched from"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "merge_session_worktree, discard_session_worktree and inspect_session_changes must resolve the repository path from the session's own recorded project root (in-memory BackgroundSession.project), NOT from std::env::current_dir() at call time",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:18:52.135Z"
+        },
+        {
+          "id": 1,
+          "text": "prune_orphaned_worktrees must build its active-session set from the ids of ALL in-memory sessions (no project-path filter, no persisted-only sessions) — a session that is alive in this process must never be pruned, regardless of which process directory the TUI was launched from",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:34:54.978Z"
+        },
+        {
+          "id": 2,
+          "text": "Session-scoped ops (merge/discard/inspect) with a session id that is not in memory must fall back to the git-session manifest's project_root (~/.fspec/git-sessions/<id>.json) before falling back to the process cwd, so a merge right after a restart of the TUI still targets the right repository",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:41:24.442Z"
+        },
+        {
+          "id": 3,
+          "text": "list_session_worktrees and prune_orphaned_worktrees (no session id on the wire) must enumerate the distinct project roots of all in-memory sessions (deduplicated), run the git operation per root, and aggregate the results — never driven by the process cwd",
+          "deleted": false,
+          "createdAt": "2026-09-06T22:05:42.165Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A session for project X has a worktree with changes; the process cwd is X/rust (a subdirectory, not a repo root); calling merge_session_worktree succeeds and the changes land in X (today it fails with NotARepository)",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:40:48.643Z"
+        },
+        {
+          "id": 1,
+          "text": "A session for project X has a worktree; the process cwd is an unrelated directory (e.g. the home dir); discard_session_worktree removes X/.fspec/worktrees/<id> and its git metadata (today it fails with NotARepository)",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:40:56.961Z"
+        },
+        {
+          "id": 2,
+          "text": "A session for project X has a worktree with pending changes; the process cwd is a foreign directory; inspect_session_changes returns the file/diff summary from X's worktree (today it errors with NotARepository)",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:41:02.705Z"
+        },
+        {
+          "id": 3,
+          "text": "Two sessions live in different project roots (X and Y); the process cwd is foreign; list_session_worktrees returns the union of worktrees from both X and Y (today it lists only the cwd project, which is neither)",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:41:07.974Z"
+        },
+        {
+          "id": 4,
+          "text": "Project X has a worktree whose session was closed (manifest terminated) while an active session lives in project Y; the process cwd is foreign; prune_orphaned_worktrees removes X's orphaned worktree and reports its session id, but Y's active session worktree is left untouched",
+          "deleted": false,
+          "createdAt": "2026-09-06T21:59:37.418Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 3
+    },
+    "WT-004": {
+      "id": "WT-004",
+      "title": "Isolation path-validation callback is never registered in the fspec binary — isolated sessions are not actually pinned to their worktree",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:36:34.734Z",
+      "updatedAt": "2026-09-08T04:41:57.580Z",
+      "description": "get_isolation_context/get_effective_cwd in codelet-tools (GIT-020/TOOL-014) read a OnceLock callback that is ONLY registered inside the NAPI adapter (rust/napi/src/bridges.rs::init_block_notification_callbacks -> set_get_effective_cwd_callback). The fspec binary's build_service never registers it. Result: in the Rust binary every tool wrapper's validate_and_resolve_path gets isolation_ctx == None, so isolated-session sessions can read/write ANY path (project root included), BashTool executes commands in the process cwd instead of the worktree, and the worktree isolation is silently a no-op. The whole TOOL-014 enforcement layer is dead in the primary frontend.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-004/wt-004.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-07T22:26:18.691Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-08T00:08:56.663Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-08T04:34:30.926Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-08T04:34:35.607Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-08T04:41:57.580Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running the fspec binary (combined/daemon mode)",
+        "action": "create an isolated (worktree) session and have every per-session tool honor that isolation",
+        "benefit": "the worktree is an actual boundary, not a cosmetic badge"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The isolation-context callback must be resolvable from the non-singleton SessionManager that a front door owns: when codelet-sessions::session_tool_callbacks::register_manager(manager) has been called, codelet_tools::get_isolation_context(session_id) looks up the session in THAT manager; when unregistered it falls back to SessionManager::instance() (today's NAPI behavior).",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:47:28.242Z"
+        },
+        {
+          "id": 1,
+          "text": "codelet-sessions MUST expose the isolation lookup as a plain function pointer (fn(String) -> Option<codelet_tools::facade::IsolationContext>) so it can be stored in codelet-tools' OnceLock without changing the existing callback type; no OnceLock/OnceCell may be added to codelet-tools for this purpose.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:47:38.810Z"
+        },
+        {
+          "id": 2,
+          "text": "The fspec binary's build_service MUST register its non-singleton SessionManager as the tool-callbacks manager (codelet_sessions::session_tool_callbacks::register_manager(manager)) immediately after constructing the manager and installing hooks — BEFORE any session can be created — so tool path isolation, stage-gated writes, and block notifications are live from the first session.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:49:07.478Z"
+        },
+        {
+          "id": 3,
+          "text": "Isolation context resolution semantics (unchanged): for isolated sessions Some(IsolationContext{worktree_path, blocked_project_path: session project root}); for non-isolated sessions, sessions not found in the manager, and the unregistered-manager case, None — tools degrade to today's allow-all behavior, never stricter.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:57:47.282Z"
+        },
+        {
+          "id": 4,
+          "text": "The NAPI front door must stay green: codelet-napi's init_block_notification_callbacks (and any napi shape tests asserting its shape) keep registering the shared codelet-sessions callback functions; the shared isolation lookup and block-notification emitters become the single source of truth used by BOTH front doors (two-front-doors rule), with NAPI registering SessionManager::instance() as its manager.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:57:54.831Z"
+        },
+        {
+          "id": 5,
+          "text": "The work-unit-stage callback (BLOCK-006 stage-gated writes) and the block-notification callback must also be live in the fspec binary: codelet-sessions owns a shared work-unit-stage lookup (session -> work unit context status) and a shared block-notification emitter that sends a UserNotification(Warning) chunk \"AI was blocked from {action} - {reason}\" on the registered manager's chunks_tx (register_chunk_sender slot, singleton fallback); both are wired into codelet-tools' OnceLocks by the same registration step.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:58:03.271Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In the fspec binary (combined mode), after build_service, an isolated session created against a temp git repo has get_isolation_context(session_id) == Some(ctx) where ctx.worktree_path == <repo>/.fspec/worktrees/<id>/ and ctx.blocked_project_path == the repo root.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:58:09.267Z"
+        },
+        {
+          "id": 1,
+          "text": "Under the fspec binary, an isolated session's Write tool targeting an absolute path inside the original project root fails with a validation error naming the blocked project path, while a Write to a relative path lands in the worktree.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:58:15.254Z"
+        },
+        {
+          "id": 2,
+          "text": "A non-isolated session created under the fspec binary still reads/writes anywhere (e.g. /tmp) exactly as before — isolation only applies to sessions that have a worktree.",
+          "deleted": false,
+          "createdAt": "2026-09-07T23:58:30.316Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "codelet-sessions gains a NAPI-free module session_tool_callbacks (sibling of footer_poller, same manager-slot pattern): register_manager(Arc<SessionManager>) stores the manager in a std::sync::Mutex<Option<Arc<SessionManager>>>; a private fn manager() reads the slot falling back to SessionManager::instance(); pub fn isolation_context(session_id_str) -> Option<codelet_tools::facade::IsolationContext> (Some only for isolated sessions: worktree_path from session.worktree_path, blocked_project_path from session.project), pub fn work_unit_stage(session_id_str) -> Option<String> (session.get_work_unit_context().and_then(|c| c.status)), and pub fn emit_block_notification(session_id_str, action, reason) (UserNotification(Warning) chunk \"AI was blocked from {action} - {reason}\" on the footer_poller chunk-sender slot, singleton fallback). All three are plain fn pointers matching codelet-tools' existing callback types, so no OnceLock type changes in codelet-tools.",
+          "deleted": false,
+          "createdAt": "2026-09-08T00:03:49.424Z"
+        },
+        {
+          "id": 1,
+          "text": "build_service (rust/fspec/src/common.rs) registers the tool callbacks immediately after manager construction + set_hooks + the WT-002 register_chunk_sender call: codelet_sessions::session_tool_callbacks::register_manager(manager.clone()); codelet_tools::set_get_effective_cwd_callback(codelet_sessions::session_tool_callbacks::isolation_context); codelet_tools::set_get_work_unit_stage_callback(codelet_sessions::session_tool_callbacks::work_unit_stage); codelet_tools::set_block_notification_callback(codelet_sessions::session_tool_callbacks::emit_block_notification). build_service returns before any session exists, so registration ordering vs session creation is safe; the OnceLocks accept the first set only — build_service is the only caller in the binary's process.",
+          "deleted": false,
+          "createdAt": "2026-09-08T00:04:00.211Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI parity (rust/napi/src/bridges.rs): init_block_notification_callbacks keeps its name and signature (the napi shape test pins it) but registers the SHARED codelet-sessions functions instead of its local ones: set_block_notification_callback(codelet_sessions::session_tool_callbacks::emit_block_notification), set_get_work_unit_stage_callback(codelet_sessions::session_tool_callbacks::work_unit_stage), set_get_effective_cwd_callback(codelet_sessions::session_tool_callbacks::isolation_context). NAPI does NOT call register_manager — the shared callbacks' manager slot falls back to SessionManager::instance(), which IS the NAPI session store, preserving today's behavior byte-for-byte. Only the fspec binary's build_service (non-singleton manager) calls register_manager. The local emit_block_notification_to_tui / get_session_work_unit_stage / get_session_effective_cwd closures in bridges.rs are deleted (their logic moved to the shared module); the shape test's assertion list is updated accordingly while init_block_notification_callbacks itself stays.",
+          "deleted": false,
+          "createdAt": "2026-09-08T00:04:39.972Z"
+        }
+      ],
+      "nextNoteId": 4
+    },
+    "WT-005": {
+      "id": "WT-005",
+      "title": "Destroying/closing an isolated session orphans its worktree with no recovery path",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:37:41.640Z",
+      "updatedAt": "2026-09-08T07:35:15.890Z",
+      "description": "SessionManager::destroy_session removes the in-memory session and cleans up tool-layer registries but never touches the git session worktree or the ~/.fspec/git-sessions manifest (documented parity choice). codelet_git::terminate_session (the only thing that marks a manifest terminated=true so prune can reclaim it) is never called from production code — grep shows only test callers. codelet_git::prune_orphaned only treats sessions as orphaned when their manifest is missing or terminated, so worktrees of closed-but-not-terminated sessions survive forever. The TUI exposes no UI for listing/pruning session worktrees and no /command reaches prune_orphaned_worktrees (the RPC method exists but has no frontend caller). Result: repeated /isolation + close cycles leak .fspec/worktrees/<uuid>/ dirs and manifests.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-005/wt-005.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-08T04:51:23.166Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-08T05:11:12.318Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-08T07:33:42.446Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-08T07:33:47.384Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-08T07:35:15.890Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using an isolated session",
+        "action": "close the session and see/clean up leftover worktrees",
+        "benefit": "not accumulate stale worktree directories and be able to recover work from closed sessions"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Closing an isolated session (SessionManager::destroy_session, the 'Close session' exit path) must mark the codelet-git session manifest terminated=true (codelet_git::terminate_session) so the session becomes prunable. The <project>/.fspec persistence manifest MUST remain on disk (PARITY FIX — /resume support) and the worktree directory MUST remain on disk (recovery case) — closing only flips the terminated flag.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:11.617Z"
+        },
+        {
+          "id": 1,
+          "text": "Terminate-on-close is best-effort: if terminate_session fails (e.g. no home dir), destroy_session still succeeds — the error is logged via tracing::warn and never fails the close. If the git manifest is already gone (worktree was merged/discarded earlier) the step is a silent no-op. Non-isolated sessions (no worktree) skip the step entirely.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:11.828Z"
+        },
+        {
+          "id": 2,
+          "text": "The /worktrees listing overlay must offer a 'Prune' action that calls backend.prune_orphaned_worktrees() and reports the outcome: on success with N>0 pruned ids emit '[worktrees] pruned N leaked worktree(s)'; on success with 0 pruned emit '[worktrees] no leaked worktrees to prune'; on error emit '[error] /worktrees prune: {e}'. Pruning never touches in-memory (active) sessions — the backend already excludes them via the active-set.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:17.101Z"
+        },
+        {
+          "id": 3,
+          "text": "A new TUI slash command /worktrees (registry entry 'worktrees', description 'List session worktrees and prune leaked ones') routes through the existing RPC surface: backend.list_session_worktrees() populates a read-only listing overlay (SessionWorktreesDialog) showing one row per worktree with session id (active/dirty markers) and worktree path; it does NOT mutate anything.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:17.316Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User closes an isolated session whose worktree was already merged earlier via /merge-worktree (manifest already deleted by the merge): closing the session still succeeds silently — terminate-on-close finds no manifest and is a no-op.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:45.457Z"
+        },
+        {
+          "id": 1,
+          "text": "User closes a NON-isolated session: the close still succeeds, no git-session manifest is created or mutated for that session, and /worktrees shows no row for it.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:45.673Z"
+        },
+        {
+          "id": 2,
+          "text": "User closes an isolated session without merging, then runs /worktrees and sees that session's worktree listed (session id, dirty marker, path); pressing Prune removes it and the conversation shows '[worktrees] pruned 1 leaked worktree(s)'.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:01:47.192Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "codelet-sessions destroy_session: before the PARITY FIX no-delete block, if the removed session's worktree_path is Some, call codelet_git::terminate_session(id) (reads ~/.fspec/git-sessions/<id>.json, marks terminated=true, no-op when the manifest is already gone after merge/discard). Errors are logged with tracing::warn and swallowed (best-effort, rule 2). destroy_session runs in a sync context — terminate_session is a plain fs write, no tokio needed.",
+          "deleted": false,
+          "createdAt": "2026-09-08T05:00:52.240Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 5
+    },
+    "WT-006": {
+      "id": "WT-006",
+      "title": "Session merge/diff machinery ignores gitignored + symlinked files and loses file modes",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:37:42.240Z",
+      "updatedAt": "2026-09-09T01:10:38.913Z",
+      "description": "collect_worktree_files (tree_utils.rs) skips .gitignore-excluded untracked files, so an isolated session's build artifacts (e.g. target/) are invisible to get_session_diff/inspect_session_changes (the dialog shows 'nothing to merge' while the worktree is dirty) and to the re-merge path of apply_session_changes (files the user built after the worktree was created can be silently deleted from the main worktree — main_files is used for conflict detection but excluded files are missing from it). get_tree_files and checkout_to_worktree skip symlinks entirely (tree entries kind Link: 'Skip symlinks and submodules for simplicity'), so repos containing symlinks cannot be represented in a worktree, and symlinks disappear from merged results. build_tree_from_index (repo_ops.rs) only preserves the executable flag — file modes like 0o644/0o444 are flattened.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-006/wt-006.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-08T11:33:50.672Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-08T13:57:25.729Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-08T14:04:48.845Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-09T00:10:21.467Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-09T01:10:38.913Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using isolated sessions (or an AI agent in one)",
+        "action": "diff, merge, checkpoint, stage and commit a worktree that contains symlinks, ignored artifacts, and special file modes",
+        "benefit": "the session diff/merge machinery represents git state faithfully so nothing is silently lost, deleted, or misreported"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "get_session_diff / inspect_session_changes report gitignored untracked files in a worktree as a separate 'files_ignored' list: they never count toward files_changed/added/deleted, never appear in the unified diff, and never affect merge conflict detection (merge stays tracked-only), so 'nothing to merge' is honest about ignored artifacts",
+          "deleted": false,
+          "createdAt": "2026-09-08T12:46:28.081Z"
+        },
+        {
+          "id": 1,
+          "text": "Symlinks are first-class in worktree creation and the session diff/merge pipeline: committed symlink tree entries are materialized as real symlinks in the worktree, the diff treats them as changed/deleted when their target path changes, and merging back to main recreates the symlink (not a plain file containing the target text)",
+          "deleted": false,
+          "createdAt": "2026-09-08T12:46:35.233Z"
+        },
+        {
+          "id": 2,
+          "text": "Merging a session applies only git-representable (tracked or stageable) changes: gitignored files are never copied, overwritten, or deleted in the main worktree as a side effect of a merge",
+          "deleted": false,
+          "createdAt": "2026-09-08T13:02:34.696Z"
+        },
+        {
+          "id": 3,
+          "text": "The executable bit is preserved across session merge and ghost-checkpoint round trips — git's full blob-mode space is 100644/100755, so 'mode preservation' means the executable flag; non-executable blobs are normalized to 0o644 by git convention",
+          "deleted": false,
+          "createdAt": "2026-09-08T13:02:34.949Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A worktree with only build artifacts (a .gitignored target/ dir with files) → get_session_diff reports files_changed/added/deleted empty AND files_ignored listing the artifacts; the /merge-worktree inspect reports 0 files changed so the TUI says 'nothing to merge' honestly",
+          "deleted": false,
+          "createdAt": "2026-09-08T13:04:59.972Z"
+        },
+        {
+          "id": 1,
+          "text": "A worktree with an executable script (mode 100755) committed at base, unchanged in the session, merged to main → the merged file keeps its executable bit",
+          "deleted": false,
+          "createdAt": "2026-09-08T13:05:12.298Z"
+        },
+        {
+          "id": 2,
+          "text": "A repo with a committed symlink 'config/link' → 'real/target' → create an isolated session, modify a regular file in it and merge → 'config/link' in main is still a symlink pointing at 'real/target' (not a plain text file containing the target)",
+          "deleted": false,
+          "createdAt": "2026-09-08T13:05:12.503Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "assumptions": [
+        "Submodules (gitlinks) are treated atomically, not materialized: a base-tree gitlink is never reported as deleted, merge never touches the main submodule directory, and a changed/added gitlink OID is reported as a conflict (the worktree can never clone submodule content). Full submodule round-tripping is a follow-up card.",
+        "git_add/git_commit working in a linked worktree (hardcoded .git/index joins, wt-006 audit item d) is a separate defect and is NOT in scope for this card; this card covers the diff/merge/checkpoint machinery only."
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "get_tree_files and collect_worktree_files move from HashMap<String,Vec<u8>> to a richer TreeSnapshot { blobs: HashMap<String,Vec<u8>>, symlinks: HashMap<String,String>, gitlinks: HashMap<String,gix::ObjectId>, executables: HashSet<String>, ignored: Vec<String> }. All three-way callers (get_session_diff, apply_session_changes, detect_conflicts, write_conflict_markers, apply_worktree_to_main, ghost_commit checkpoint/restore, get_checkpoint_diff_files) carry the new snapshot so symlink targets and exec bits round-trip.",
+          "deleted": false,
+          "createdAt": "2026-09-08T13:12:10.219Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8
+    },
+    "WT-007": {
+      "id": "WT-007",
+      "title": "Isolated sessions are indistinguishable after restart — /resume loses worktree isolation",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:37:42.802Z",
+      "updatedAt": "2026-09-09T02:03:14.829Z",
+      "description": "SessionManager::create_session_from_manifest (the /resume path) constructs SessionCreationParams with worktree_path: None, base_commit: None, isolation: None, hard-coded. The persistence SessionManifest (rust/core/src/persistence/manifest.rs) has no fields for worktree_path/base_commit, and the codelet-git manifest at ~/.fspec/git-sessions/<id>.json (which does store both) is never read on resume. So resuming a formerly-isolated session reattaches it to the main project root: no IsolationStateChange chunk, no IsolationContext reminder, no worktree cwd — the session silently loses isolation while its worktree sits on disk.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-007/wt-007.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T01:11:10.588Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T01:13:00.872Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T01:38:33.299Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-09T01:38:36.826Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-09T01:42:18.529Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-09T02:03:14.829Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using isolated sessions",
+        "action": "resume a formerly-isolated session after a restart",
+        "benefit": "the session comes back isolated in its worktree instead of silently reattaching to the main project"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A resumed isolated session gets exactly the isolation surface the live create path gets: worktree_path + base_commit on the BackgroundSession, IsolationContext injected into environment reminders, IsolationStateChange(true, worktree, base) chunk emitted after insert, and the footer poller started with the worktree cwd",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:11:44.861Z"
+        },
+        {
+          "id": 1,
+          "text": "Re-isolation is only applied when BOTH the worktree directory and the git worktree admin dir (<repo>/.git/worktrees/<id>) still exist; if either is gone the session resumes non-isolated with a warning log and the git manifest is marked terminated so /worktrees prune can reclaim strays",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:11:45.112Z"
+        },
+        {
+          "id": 2,
+          "text": "On resume (create_session_from_manifest), the codelet-git session manifest at ~/.fspec/git-sessions/<id>.json is consulted: if it exists and has a worktree_path, that path is the candidate for re-isolating the session",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:11:45.357Z"
+        },
+        {
+          "id": 3,
+          "text": "Resuming a session whose git manifest has no worktree_path (a never-isolated session) resumes exactly as today — non-isolated, no extra chunks, no behavior change",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:11:45.602Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A session created isolated (worktree at .fspec-worktrees/<id>, manifest at ~/.fspec/git-sessions/<id>.json with worktree_path) → restart → /resume <id> → the BackgroundSession has worktree_path = Some, base_commit = Some, an IsolationStateChange(true, worktree, base) chunk is broadcast, and the footer poller runs with the worktree cwd",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:12:00.659Z"
+        },
+        {
+          "id": 1,
+          "text": "A formerly-isolated session whose worktree dir was manually deleted (but the git manifest still claims a worktree_path) → /resume → the session resumes non-isolated, a warning is logged, and the git manifest is marked terminated=true so /worktrees prune can reclaim it",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:12:00.874Z"
+        },
+        {
+          "id": 2,
+          "text": "A never-isolated session (no git manifest, or git manifest with worktree_path = null) → /resume → resumes non-isolated exactly as before the fix (IsolationStateChange(false, None), footer poller with project cwd)",
+          "deleted": false,
+          "createdAt": "2026-09-09T01:12:01.093Z"
+        }
+      ],
+      "nextExampleId": 3
+    },
+    "WT-008": {
+      "id": "WT-008",
+      "title": "/merge-worktree does not commit anything and the 'FastForward' strategy is silently ignored",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:37:43.456Z",
+      "updatedAt": "2026-09-09T04:28:20.765Z",
+      "description": "The TUI calls backend.merge_session_worktree(sid, MergeStrategy::FastForward) but handle_impl.rs does 'let _ = strategy' — the codelet-git layer has a single copy-files algorithm (merge_session -> apply_session_changes) that copies changed files into the main working tree WITHOUT committing them. Consequences: (1) the slash-command description 'Merge worktree changes and close session' over-promises — nothing is committed; (2) MergeOutcome.merge_commit is always None so the success notice can never show a commit SHA; (3) MergeStrategy is wire-dead — a future 'rebase'/'commit' strategy would be a lie; (4) merged files land uncommitted in the user's main worktree, which is surprising for a feature named 'merge'.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-008/wt-008.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T02:09:15.786Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T04:08:19.247Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-09T04:08:22.391Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-09T04:08:25.183Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-09T04:28:20.765Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using isolated sessions",
+        "action": "merge an isolated session back into main with /merge-worktree",
+        "benefit": "the merge commits the changes to a real commit (SHA surfaced in the result) and unsupported strategies are rejected instead of silently behaving as the default"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Only MergeStrategy::FastForward is supported; any other strategy (Squash, ThreeWay) returns an explicit error (MergeStatus/Err UnsupportedStrategy) instead of silently behaving as FastForward",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:18:57.022Z"
+        },
+        {
+          "id": 1,
+          "text": "The merge commit uses the repo's git user.name/user.email config when set, and falls back to a fixed fspec identity otherwise — never fails a merge because the repo lacks identity config",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:24:10.387Z"
+        },
+        {
+          "id": 2,
+          "text": "The merge commit message is 'fspec: merge session <session-id>' and is authored/committed at merge time; the commit is created in the MAIN repo and becomes the new HEAD of the checked-out branch",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:26:53.104Z"
+        },
+        {
+          "id": 3,
+          "text": "A successful /merge-worktree commits in the MAIN repo a tree built from the session's post-copy state (the session worktree's full snapshot — blobs with exec bits, symlinks, gitlinks; gitignored files excluded), parented on HEAD: the commit contains exactly the session's changes and never sweeps in the user's own unrelated working-tree files",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:35:15.485Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Merge an isolated session with tracked changes using the default FastForward strategy → the changes are committed in the main repo, the success notice shows the new commit SHA, and the main working tree is clean (git status clean) after the merge",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:24:13.419Z"
+        },
+        {
+          "id": 1,
+          "text": "Merge an isolated session requesting the Squash strategy → an explicit 'unsupported strategy' error is returned and nothing is committed, copied, or merged",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:24:18.155Z"
+        },
+        {
+          "id": 2,
+          "text": "Merge an isolated session whose only delta is gitignored build artifacts (no tracked changes) → the merge reports nothing to merge and does NOT create a commit (no empty commit is produced)",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:24:24.459Z"
+        },
+        {
+          "id": 3,
+          "text": "Merge a session in a repo with user.name/user.email set in git config → the merge commit is authored by that identity; in a repo with no identity config the commit still succeeds with a fallback fspec identity",
+          "deleted": false,
+          "createdAt": "2026-09-09T02:26:48.345Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5
+    },
+    "WT-009": {
+      "id": "WT-009",
+      "title": "/isolation only opens the create-session dialog and /merge-worktree never closes the session — UX contract broken in the Rust TUI",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:39:25.189Z",
+      "updatedAt": "2026-09-09T11:48:05.929Z",
+      "description": "Two UX-contract breaks vs the reference (merge-worktree-command.feature, @done for the TS TUI): (1) /isolation is described as 'Toggle worktree isolation' but SlashCommandAction::Isolation only opens the CreateSessionDialog preselecting Isolated (RPC-060) — there is no toggle-off (detach from worktree) and no 'isolate the CURRENT session' action; if an isolated session already exists, /isolation just opens the dialog again. (2) The TS flow's 'merge -> summary -> destroySession -> onExit (back to board)' is not implemented in dispatch_merge_worktree.rs: on MergeStatus::Success it emits a '[merge] success' notice and stops — the session is NOT destroyed, the board is NOT re-shown, and the worktree is gone server-side while the user is still chatting in a session whose cwd/registry point at a deleted directory (BashTool cwd, footer poller, isolation context all dangle).",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-009/wt-009.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T04:37:20.915Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T05:44:51.714Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-09T11:40:04.025Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-09T11:40:56.376Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-09T11:48:05.929Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the Rust TUI",
+        "action": "toggle worktree isolation with /isolation and have /merge-worktree close the session on success",
+        "benefit": "the UX contract matches the TS reference: /isolation is a real toggle and a successful merge cleans up the session instead of leaving it pointing at a deleted worktree"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "/isolation is a state toggle on the current session: a non-isolated session with no session worktrees opens the CreateSessionDialog preselecting Isolated (existing RPC-060 behavior); an isolated session detaches from its worktree (new backend.detach_session_worktree RPC) and keeps the session; a session with a live worktree the TUI does not track emits a 'session still isolated — use /merge-worktree' notice without a backend call",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:26:18.280Z"
+        },
+        {
+          "id": 1,
+          "text": "A new backend RPC detach_session_worktree(session_id) is added across the SessionManagerHandle trait (safe default), codelet-sessions handle_impl (clears the session's worktree_path/base_commit, clears the footer-cwd registry, re-spawns the footer poller with the project cwd, emits IsolationStateChange(false, None), deletes the git-session manifest so the worktree becomes prunable, and re-injects the environment context without isolation context), FspecService, FspecBackend, and both TUI transports",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:27:02.907Z"
+        },
+        {
+          "id": 2,
+          "text": "On MergeStatus::Success in the Rust TUI merge flow: emit the [merge] success notice to the merged session, then run the CloseSession-equivalent teardown (BoardStore detach of the session's work unit, AgentViewStore open_sessions removal + mux window re-sync, current-work-unit pointer clear), spawn backend.destroy_session(sid), and dispatch BackToBoard so the user lands on the board — mirroring the TS merge → summary → cleanupCurrentSessionHandler() + destroySession() + onExit() flow",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:33:52.539Z"
+        },
+        {
+          "id": 3,
+          "text": "The /isolation slash-command description must be updated to reflect the toggle behavior: 'Toggle worktree isolation (detach or create isolated session)'",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:38:29.015Z"
+        },
+        {
+          "id": 4,
+          "text": "NoChanges, Conflict, and Err merge outcomes must NOT destroy the session or flip to the board view — only Success triggers the teardown, matching the TS reference where the conflict path keeps the session open for resolution and error paths show a generic message",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:39:15.086Z"
+        },
+        {
+          "id": 5,
+          "text": "MergeOutcome gains a worktree_path: Option<String> field populated from the session's resolved repo path + .fspec/worktrees/<id> (or None for the default/NoChanges paths), and the conflict-context message ('Effective worktree: ...') prints that worktree path instead of the session UUID so the LLM can act on it",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:39:15.293Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User in a non-isolated session runs /isolation → the CreateSessionDialog opens preselecting 'Yes - Isolated' (today's RPC-060 behavior is preserved)",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:38:34.082Z"
+        },
+        {
+          "id": 1,
+          "text": "User in an isolated session (store shows is_isolated=true with a worktree path) runs /isolation → backend.detach_session_worktree is called, the session keeps running with effective cwd = project root, the IsolationStateChange(false, None) chunk lands in the store, and the worktree dir is marked prunable",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:38:34.296Z"
+        },
+        {
+          "id": 2,
+          "text": "User in a non-isolated session whose worktree listing still shows a live worktree for the session runs /isolation → the TUI emits the notice 'session still isolated — use /merge-worktree' and makes no backend detach call",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:38:46.586Z"
+        },
+        {
+          "id": 3,
+          "text": "User in an isolated session runs /merge-worktree and the merge succeeds with a commit SHA → the scrollback shows the [merge] success notice, the session tab closes, the session is destroyed on the backend, and the user lands back on the board view",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:38:46.814Z"
+        },
+        {
+          "id": 4,
+          "text": "User confirms a merge that has nothing to merge (NoChanges) → the '[merge] nothing to merge' notice is shown, the session stays open, and the view does not change",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:39:19.527Z"
+        },
+        {
+          "id": 5,
+          "text": "User runs /isolation with no active session → nothing happens (silent no-op, no dialog, no backend call)",
+          "deleted": false,
+          "createdAt": "2026-09-09T05:39:19.728Z"
+        }
+      ],
+      "nextExampleId": 6
+    },
+    "WT-010": {
+      "id": "WT-010",
+      "title": "restore_ghost_commit ignores the force parameter — no conflict detection before overwriting",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:39:25.881Z",
+      "updatedAt": "2026-09-06T07:14:38.845Z",
+      "description": "ghost_commit.rs::restore_ghost_commit(dir, work_unit_id, name, _force: bool) takes force but the parameter is underscore-prefixed and unused; the function unconditionally overwrites every checkpoint file and deletes every newer file (fs::write / fs::remove_file) regardless of local modifications. The NAPI binding (restore_ghost_checkpoint force: Option<bool>) and the documented contract ('force - If true, overwrite without conflict detection') both promise that force=false performs conflict detection. The fspec checkpoint command surface (fspec-core restore-checkpoint / TUI) can therefore destroy un-saved work with no warning.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-010/wt-010.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-06T04:39:08.925Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-06T05:21:19.131Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-06T06:06:35.610Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-06T06:54:56.464Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-06T07:14:12.685Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec checkpoints",
+        "action": "restore a checkpoint without force and get a conflict error instead of silently losing local modifications",
+        "benefit": "checkpoint restore can no longer destroy uncommitted work made after the checkpoint was taken"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "restore_ghost_commit must honor its force parameter: when force is false and the working tree differs from the checkpoint (modified, deleted, or added files), it must return Err(GitError::ConflictError { files }) WITHOUT writing or deleting any file; when force is true it keeps today's unconditional clobber semantics",
+          "deleted": false,
+          "createdAt": "2026-09-06T04:49:27.258Z"
+        },
+        {
+          "id": 1,
+          "text": "Conflict detection for force=false must be checkpoint-tree vs working-dir based (the same machinery get_checkpoint_diff_files uses: checkpoint tree files vs collect_worktree_files), NOT based on git status/index dirtiness — so a restore of a checkpoint whose state matches the working dir proceeds cleanly even in a dirty repo",
+          "deleted": false,
+          "createdAt": "2026-09-06T04:49:35.079Z"
+        },
+        {
+          "id": 2,
+          "text": "fspec-core restore-checkpoint must surface a codelet-git ConflictError as a conflict result (conflictsDetected=true + the conflicted files), not as the 'checkpoint not found' sentinel — so the force=false conflict path reaches the user with the right message",
+          "deleted": false,
+          "createdAt": "2026-09-06T04:52:43.210Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Checkpoint taken with test.txt='v1'; user edits test.txt to 'v2' afterwards; restore with force=false → Err(ConflictError { files: [\"test.txt\"] }) and test.txt on disk is still 'v2'",
+          "deleted": false,
+          "createdAt": "2026-09-06T04:49:48.988Z"
+        },
+        {
+          "id": 1,
+          "text": "Same setup (test.txt modified after checkpoint), but restore with force=true → Ok(RestoreResult) and test.txt on disk is back to 'v1' (today's clobber semantics, unchanged)",
+          "deleted": false,
+          "createdAt": "2026-09-06T04:49:57.554Z"
+        },
+        {
+          "id": 2,
+          "text": "A file added after the checkpoint exists in the working dir; restore with force=false → Err(ConflictError) listing the added file, and the added file is NOT deleted",
+          "deleted": false,
+          "createdAt": "2026-09-06T04:50:08.838Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 3
+    },
+    "WT-011": {
+      "id": "WT-011",
+      "title": "Worktree metadata hardcodes <repo>/.git assumptions (list_worktrees HEAD path, commindir) and isolated_session.rs is dead production code",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:39:26.308Z",
+      "updatedAt": "2026-09-09T22:25:53.554Z",
+      "description": "Two related defects in codelet-git. (1) write_worktree_metadata hardcodes commindir='../..\\n' (only correct when the main git dir is exactly <repo>/.git, i.e. exactly two levels above the worktree git dir), and list_worktrees reads HEAD from repo_path.join(\".git/worktrees\") instead of repo.git_dir().join(\"worktrees\") (create/remove use repo.git_dir()). For any repo where the git dir lives elsewhere (linked worktrees of fspec's own repo checked out as submodules, GIT_DIR-override layouts) list_worktrees returns 'unknown' HEAD or misses entries. (2) codelet_git::IsolatedSessionInfo (git/src/isolated_session.rs, GIT-019) is exported from lib.rs but used by no production code — session_manager calls create_worktree directly and builds the rpc-types IsolatedSessionInfo itself; only codelet-git's own integration tests exercise it.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-011/wt-011.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T11:51:20.752Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T12:10:52.948Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T12:50:44.878Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T12:54:45.768Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T12:57:49.320Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T13:01:20.202Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-09T13:01:32.996Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-09T21:54:17.638Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-09T22:25:53.554Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "create/list git worktrees on repos whose git dir is not <repo>/.git",
+        "benefit": "worktree plumbing no longer hardcodes the standard layout and the dead isolation-info type is removed"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "list_worktrees must read each worktree's HEAD from repo.git_dir().join(\"worktrees\")/<sid>/HEAD — the same resolution create_worktree_at_ref and remove_worktree already use — so repos whose git dir is not <repo>/.git report a correct head_commit and is_detached",
+          "deleted": false,
+          "createdAt": "2026-09-09T11:54:08.915Z"
+        },
+        {
+          "id": 1,
+          "text": "codelet_git::IsolatedSessionInfo (git/src/isolated_session.rs) has zero production call sites and duplicates the wire codelet_rpc_types::IsolatedSessionInfo — it must be deleted along with its lib.rs re-export, and the codelet-git tests plus the napi importability test that exercise it must be rewritten to use create_worktree/create_worktree_at_ref directly",
+          "deleted": false,
+          "createdAt": "2026-09-09T11:54:41.311Z"
+        },
+        {
+          "id": 2,
+          "text": "write_worktree_metadata must write the commondir metadata file (currently misspelled \"commindir\" in worktree.rs:298 — git and gix only recognize \"commondir\") with the relative path from worktree_git_dir back to repo.git_dir() (e.g. \"../..\" when the worktree git dir is <git_dir>/worktrees/<sid>), so gix-based operations in the worktree resolve the common objects/config directory for any git-dir layout",
+          "deleted": false,
+          "createdAt": "2026-09-09T12:51:10.403Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Repo whose git dir is /repo/.git (standard): list_worktrees after create_worktree reports head_commit = the base commit SHA and is_detached = true; commindir resolves to /repo/.git",
+          "deleted": false,
+          "createdAt": "2026-09-09T11:55:07.377Z"
+        },
+        {
+          "id": 1,
+          "text": "Repo with a linked git dir (gitfile: repo/.git -> /elsewhere/repo.git): create_worktree writes commindir = '../..' relative to /elsewhere/repo.git/worktrees/<sid> resolving back to /elsewhere/repo.git, and list_worktrees still reports the correct head_commit",
+          "deleted": false,
+          "createdAt": "2026-09-09T11:55:19.980Z"
+        },
+        {
+          "id": 2,
+          "text": "After the cleanup, `cargo grep 'codelet_git::IsolatedSessionInfo'` finds no production-code hits — only the rpc-types wire type remains — and codelet-git + codelet-napi still build and pass their tests",
+          "deleted": false,
+          "createdAt": "2026-09-09T11:55:31.558Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 5
+    },
+    "WT-012": {
+      "id": "WT-012",
+      "title": "create_isolated_session_with_id duplicates the pre-RPC-425 session-creation code path instead of using the shared helper",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-06T01:39:26.482Z",
+      "updatedAt": "2026-09-10T03:23:42.521Z",
+      "description": "RPC-425 extracted create_session_with_id and create_session_from_manifest into session_creation_helper.rs (create_background_session_inner), but create_isolated_session_with_id in session_manager.rs (~300 lines) was never migrated: it re-implements model parsing, provider-manager construction (profile/codex/registry branches), vision + max-images seeding, context-reminder injection, lifecycle-hook loading, pre-tool hook registration, thinking-level seeding, model-limit computation, MCP init and agent-loop spawn inline. Any future change to session bootstrap (PROV-* / HOOK-* / RPC-* cards) has to be applied twice and the isolated path silently drifts — exactly the failure mode RPC-425 was created to prevent.",
+      "epic": "worktree-isolation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WT-012/wt-012.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-09T22:39:09.334Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-09T22:43:51.048Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-09T22:53:21.645Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-10T00:55:43.003Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-10T03:23:42.521Z"
+        }
+      ],
+      "userStory": {
+        "role": "Rust developer",
+        "action": "route create_isolated_session_with_id through the shared session-creation helper",
+        "benefit": "future session-bootstrap changes (PROV-*, HOOK-*, RPC-*) apply once and the isolated path cannot silently drift"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A shared resolve_provider_manager(model: &str) -> Result<ProviderManager, String> helper (sessions crate) builds the provider manager for ALL model kinds — registry (with_model_support + select_model), profile (with_provider_and_model + apply_profile_env_vars bridge), codex and custom (with_provider_and_model) — so all three creation paths (create_session_with_id, create_session_from_manifest, create_isolated_session_with_id) share one construction+selection funnel and cannot drift; provider manager resolution must happen AFTER credential resolution (resolve_and_set_env_var) so the registry re-detects freshly set credentials",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:40:55.299Z"
+        },
+        {
+          "id": 1,
+          "text": "create_isolated_session_with_id must delegate its shared bootstrap steps (model selection, vision/max-images seeding, Session construction + PROV-143 preserve-thinking seed, context-reminder injection, lifecycle-hook load, BackgroundSession construction, thinking-level seed, PROV-142 auto-continue seed, model limits, pre-tool hook registration, MCP init) to create_background_session_inner via SessionCreationParams carrying worktree_path, base_commit and the IsolationContext — isolation-specific work (create_worktree, git-session manifest write, best-effort session manifest persist, IsolationStateChange emission, footer poller with worktree cwd, IsolatedSessionInfo return) stays in the manager method",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:40:55.557Z"
+        },
+        {
+          "id": 2,
+          "text": "create_session_with_id and create_session_from_manifest must keep their existing observable behavior after the migration: registry models via with_model_support+select_model (profile/codex/custom via with_provider_and_model), the shared helper for the bootstrap, manifest persistence placement unchanged (with_id persists a fresh manifest before the session map insert; from_manifest never writes a manifest), set_default_model + maybe_start_scheduler still only on those two paths",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:41:18.325Z"
+        },
+        {
+          "id": 3,
+          "text": "An isolated session created against a profile model (provider:profile/model) must seed preserve_thinking_enabled from the profile's stored preserveThinking default (absent ⇒ false) and auto-continue from the profile's stored autoContinue value (≥1 ⇒ on with that budget, 0/absent ⇒ off with the default budget of 10) — identical seeding to non-isolated profile-model sessions, via the shared helper",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:41:18.680Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A git repo with one commit; creating an isolated session with a registry model (anthropic/claude-opus-4-5) yields IsolatedSessionInfo{worktree_path=<repo>/.fspec/worktrees/<id>, base_commit=<HEAD sha>}; the BackgroundSession carries worktree_path + base_commit, the isolation context reminder is injected, the session manifest is persisted (best-effort), the IsolationStateChange(true, worktree, base) chunk is broadcast, and the footer poller runs with the worktree cwd — exactly as before the refactor",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:06.162Z"
+        },
+        {
+          "id": 1,
+          "text": "A stored profile 'spark' (autoContinue 300, preserveThinking false) against model openai:spark/o3: an ISOLATED session created via create_isolated_session_with_id seeds auto-continue ON with budget 300 and preserve_thinking_enabled=false — the same seeds a non-isolated profile-model session receives from the shared helper (the two known drifts, PROV-142/PROV-143, are closed for isolated sessions)",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:06.365Z"
+        },
+        {
+          "id": 2,
+          "text": "Source shape: the create_isolated_session_with_id body calls create_background_session_inner and NO LONGER inlines BackgroundSession::new, load_lifecycle_hooks, register_pre_tool_hook, init_mcp_session, set_base_thinking_level, set_model_limits or set_session_model_vision — those live only in session_creation_helper.rs; the method still contains create_worktree, create_session_manifest, isolation_state_change_with_base and the worktree-cwd footer poller",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:13.853Z"
+        },
+        {
+          "id": 3,
+          "text": "End-to-end hooks: a project whose spec/fspec-hooks.json defines a pre_tool_use command matching Bash and printing {\"hookSpecificOutput\":{\"permissionDecision\":\"deny\",\"reason\":\"no bash\"}}: a tool call in an ISOLATED session is denied with the hook's reason — the pre-tool hook registered by the shared helper is live for isolated sessions",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:14.079Z"
+        },
+        {
+          "id": 4,
+          "text": "Error path: create_isolated_session_with_id against a non-git directory fails with a 'Failed to create worktree' error before any session bootstrap runs, and calling it again for an already-created session id still fails with 'Session <id> already exists' (the manager prechecks stay in the method)",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:19.436Z"
+        },
+        {
+          "id": 5,
+          "text": "Parity regression: a non-isolated profile-model session created via create_session_with_id against a profile with autoContinue 300 / preserveThinking true still seeds auto-continue ON budget 300 and preserve_thinking_enabled=true, and a registry-model session via create_session_with_id still succeeds with the with_model_support + select_model funnel (registry validation, credentials re-detection) — the shared provider-manager helper is behavior-preserving for the two migrated callers",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:19.656Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Design: add resolve_provider_manager(model: &str) -> Result<ProviderManager, String> in rust/sessions/src/model_resolution.rs funneling the three construction branches (registry: with_model_support + select_model; profile: with_provider_and_model + apply_profile_env_vars; codex/custom: with_provider_and_model). All three creation methods call it after credential resolution. create_isolated_session_with_id then builds SessionCreationParams (worktree_path, base_commit, Some(IsolationContext)) and delegates to create_background_session_inner; it keeps worktree creation, git-session manifest write, best-effort persistence manifest, IsolationStateChange emission (WT-001 3-arg), worktree-cwd footer poller, and the IsolatedSessionInfo return. Non-isolated callers gain the shared funnel (selection branch moves into the helper, PM construction stays at the call site).",
+          "deleted": false,
+          "createdAt": "2026-09-09T22:42:35.327Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8,
+      "iterations": 1
+    },
+    "BUG-176": {
+      "id": "BUG-176",
+      "title": "Fix 23 pre-existing failing codelet-fspec-tui tests documented in FIXME.md",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2026-09-07T08:46:36.322Z",
+      "updatedAt": "2026-09-07T11:08:06.276Z",
+      "description": "Fix all 23 failing codelet-fspec-tui test binaries itemized in FIXME.md (2026-09-07 baseline): (A) 300-LoC source-shape ceilings — extract modules in 20 oversized files under src/{views/navigator.rs,app/,views/agent/,views/provider_settings/,components/help_dialog.rs,store/agent_view/}; (B) HelpDialog mouse handling — extract TUI-101 drag + RPC-396 wheel out of help_dialog.rs into a helper so the shell has no Event::Mouse literal and the wheel path is reachable again; (C) stale test pins — rpc095 placeholder pin (superseded by RPC-426), rpc079 doc-comment FspecDialog literal false positive, rpc026 resume_view field-access pin; (D) behavioral — rpc028 resume scroll/click pins under TUI-096 two-line rows (incl. a real row-to-session click-mapping bug), resume_formatting_diagnostic frame mismatch, rpc339 search render delegation pin, reconnect_resubscribe_rpc415 chunk delivery; (E) environment isolation — resume_session_removal_bug (global data dir / DATA_DIR_MUTEX poisoning) and slash_debug_rpc055 (real ~/.fspec leaking into the debug path assertion). Mark each section of FIXME.md off as it is verified green.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-07T08:46:39.909Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-07T11:08:00.119Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-07T11:08:02.400Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-07T11:08:06.276Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "components/help_dialog.rs must not contain an Event::Mouse literal (RPC-023 pin); all mouse handling (TUI-101 scrollbar drag + RPC-396 wheel) moves into a helper in help_dialog_scroll.rs (or sibling) taking the whole &Event, while keeping wheel-down actually scrolling (rpc396 s3) and drag behaviour unchanged",
+          "deleted": false,
+          "createdAt": "2026-09-07T08:46:44.250Z"
+        },
+        {
+          "id": 1,
+          "text": "No production file under rust/fspec-tui/src/{app,views/agent,store/agent_view} or any RPC-pinned file (views/navigator.rs, views/provider_settings/profile_form.rs, components/help_dialog.rs) may reach 300 lines; oversized files get extracted into new sibling submodules that themselves stay under 300 lines",
+          "deleted": false,
+          "createdAt": "2026-09-07T08:46:44.442Z"
+        },
+        {
+          "id": 2,
+          "text": "Stale pins are updated to the current supersedes behavior, not the reverse: rpc095 idle placeholder pin adopts the RPC-426 'Ctrl+J' constant; rpc079 scan skips doc-comment lines (or the loading_dialog doc comment drops the literal 'FspecDialog {'); rpc026 field-access pin is updated to the current resume_view access shape",
+          "deleted": false,
+          "createdAt": "2026-09-07T08:46:48.777Z"
+        },
+        {
+          "id": 3,
+          "text": "Behavioral fixes: rpc028 resume view keeps TUI-096 two-line row geometry but its pins are reconciled with the spec (scroll offset semantics for 2-row sessions) and the left-click row-to-session mapping must actually select the session under the clicked visual row; reconnect_resubscribe_rpc415 post-reconnect chunk must reach the App; COPY-008 selection must track the visible rows after scrolling; resume_formatting_diagnostic frame must match; rpc339 search render delegation pin reconciled with current code",
+          "deleted": false,
+          "createdAt": "2026-09-07T08:46:48.965Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "estimate": 13
+    },
+    "BUG-178": {
+      "id": "BUG-178",
+      "title": "SessionHeader [ISOLATED] badge never paints — chrome_paint hardcodes is_isolated: false",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-10T06:16:29.852Z",
+      "updatedAt": "2026-09-10T10:11:13.477Z",
+      "description": "paint_header_and_role (rust/fspec-tui/src/views/agent/chrome_paint.rs:67) passes a literal `is_isolated: false` to SessionHeader instead of reading `AgentViewStore::isolation_state_for(sid)`. The store slot IS populated by StreamChunk::IsolationStateChange (dispatch_stream_chunks.rs:80-93) and IS read by the /isolation slash toggle, so only the header badge is blind. Fix: read the per-session slot exactly like is_debug_enabled.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-10T06:16:53.488Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-10T09:06:54.599Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-10T09:09:41.523Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-10T10:01:29.203Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-10T10:11:13.477Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "see a green [ISOLATED] badge in the SessionHeader of an isolated session",
+        "benefit": "know at a glance which sessions run in an isolated git worktree"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "chrome_paint::paint_header_and_role MUST source SessionHeader.is_isolated from AgentViewStore::isolation_state_for(sid) — never a hardcoded false — mirroring the is_debug_enabled read from store.debug_enabled_for(sid)",
+          "deleted": false,
+          "createdAt": "2026-09-10T06:17:10.126Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "I start an agent session that forks into an isolated git worktree; the header row of that session's view immediately shows a green [ISOLATED] badge next to the other badges, and it disappears the moment the session stops being isolated (merge or /isolation toggle)",
+          "deleted": false,
+          "createdAt": "2026-09-10T08:48:06.411Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix is a one-line read in rust/fspec-tui/src/views/agent/chrome_paint.rs::paint_header_and_role (is_isolated: false → mirror the is_debug_enabled pattern: sid.and_then(|s| store.isolation_state_for(s)).map(|i| i.is_isolated).unwrap_or(false)); the store slot is already written by App::handle_stream_chunk_state_updates on StreamChunk::IsolationStateChange and read by the /isolation toggle — no new state, no wire changes",
+          "deleted": false,
+          "createdAt": "2026-09-10T09:06:00.955Z"
+        }
+      ],
+      "nextNoteId": 1,
       "estimate": 2
     }
   }

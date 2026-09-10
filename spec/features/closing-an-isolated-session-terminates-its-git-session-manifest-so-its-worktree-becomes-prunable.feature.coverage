@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "Closing an isolated session marks its git-session manifest terminated and keeps the worktree recoverable",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt005_terminate_on_close.rs",
+          "lines": "131-180",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1388,
+                1389,
+                1390,
+                1391,
+                1392,
+                1393,
+                1394,
+                1395,
+                1396,
+                1397,
+                1398,
+                1399,
+                1400,
+                1401,
+                1402,
+                1403,
+                1404,
+                1405,
+                1406,
+                1407,
+                1408,
+                1409,
+                1410
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Closing an isolated session whose worktree was already merged is a silent no-op for termination",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt005_terminate_on_close.rs",
+          "lines": "187-232",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1388,
+                1389,
+                1390,
+                1391,
+                1392,
+                1393,
+                1394,
+                1395,
+                1396,
+                1397,
+                1398,
+                1399,
+                1400,
+                1401,
+                1402,
+                1403,
+                1404,
+                1405,
+                1406,
+                1407,
+                1408,
+                1409,
+                1410
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Closing a non-isolated session never touches git-session manifests",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt005_terminate_on_close.rs",
+          "lines": "240-270",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1388,
+                1389,
+                1390,
+                1391,
+                1392,
+                1393,
+                1394,
+                1395,
+                1396,
+                1397,
+                1398,
+                1399,
+                1400,
+                1401,
+                1402,
+                1403,
+                1404,
+                1405,
+                1406,
+                1407,
+                1408,
+                1409,
+                1410
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A terminate failure does not fail the close",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt005_terminate_on_close.rs",
+          "lines": "277-335",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1388,
+                1389,
+                1390,
+                1391,
+                1392,
+                1393,
+                1394,
+                1395,
+                1396,
+                1397,
+                1398,
+                1399,
+                1400,
+                1401,
+                1402,
+                1403,
+                1404,
+                1405,
+                1406,
+                1407,
+                1408,
+                1409,
+                1410
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/wt005_terminate_on_close.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 278
+  }
+}

@@ -8,7 +8,7 @@
 @rpc-062
 Feature: RPC-062 MCP Injection Source Shape
   """
-  Source-shape regression test for RPC-062. Pins the four MCP wiring touchpoints inside rust/sessions/src/session_manager.rs (McpInjection import, two init_mcp_session call sites, one cleanup_mcp_session call site, spawn_agent_loop trait signature) and asserts the NAPI-side consumer in rust/napi/src/agent_loop.rs still consumes the receiver. Also asserts the negative invariant that no MCP method has leaked into rust/core/src/session_manager_handle.rs, rust/rpc/src/lib.rs, or rust/fspec-tui/src/transport/mod.rs.
+  Source-shape regression test for RPC-062. Pins the four MCP wiring touchpoints inside rust/sessions/src/session_manager.rs (McpInjection import, the shared-helper MCP init delegation from both create paths — WT-012 moved the isolated create path onto create_background_session_inner, so session_creation_helper.rs is the single init_mcp_session site for both — one cleanup_mcp_session call site, spawn_agent_loop trait signature) and asserts the NAPI-side consumer in rust/napi/src/agent_loop.rs still consumes the receiver. Also asserts the negative invariant that no MCP method has leaked into rust/core/src/session_manager_handle.rs, rust/rpc/src/lib.rs, or rust/fspec-tui/src/transport/mod.rs.
 
   Companion feature: spec/features/rpc-062-mcp-injection-lifecycle.feature
   """
@@ -27,10 +27,9 @@ Feature: RPC-062 MCP Injection Source Shape
   Scenario: session_manager.rs calls init_mcp_session in both create paths
     Given the file rust/sessions/src/session_manager.rs is compiled
     When I scan its source bytes after stripping Rust comments
-    Then it contains exactly two occurrences of the substring "codelet_tools::init_mcp_session(uuid)"
-    And one occurrence sits inside the body of "pub async fn create_session_with_id"
-    And the other occurrence sits inside the body of "pub async fn create_isolated_session_with_id"
-    And each occurrence is followed by an invocation of "spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx)"
+    Then the isolated create path delegates MCP init to the shared helper (WT-012: `create_isolated_session_with_id` routes through `create_background_session_inner`, whose body in session_creation_helper.rs carries the `codelet_tools::init_mcp_session(uuid)` call)
+    And the shared helper is the single MCP init site for both create paths (zero inline `codelet_tools::init_mcp_session(uuid)` occurrences remain in session_manager.rs)
+    And each create path passes the helper's mcp_injection_rx to `spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx)`
 
   Scenario: session_manager.rs calls cleanup_mcp_session in destroy_session
     Given the file rust/sessions/src/session_manager.rs is compiled

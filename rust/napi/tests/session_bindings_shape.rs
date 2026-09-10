@@ -554,44 +554,51 @@ fn scenario_persist_rs_owns_five_persist_helpers() {
 }
 
 // =============================================================================
-// Scenario: footer_poller.rs owns the FOOTER_POLLER_TOKENS static and the
-// spawn/stop helpers
+// Scenario: footer_poller.rs is the NAPI shim over the shared NAPI-free
+// footer poller (post-WT-002)
 // =============================================================================
 
 #[test]
 fn scenario_footer_poller_rs_owns_tokens_and_spawn_stop_helpers() {
     // @step Given the RPC-043 changes are applied to the codelet workspace
+    // @step And the WT-002 lift moved the poller loop + FOOTER_POLLER_TOKENS
+    // into codelet_sessions::footer_poller
     // @step When I open `rust/napi/src/footer_poller.rs`
     let src = read(&napi_src().join("footer_poller.rs"));
     let stripped = strip_line_comments(&src);
 
-    // @step Then the file declares the `FOOTER_POLLER_TOKENS` static via `once_cell::sync::Lazy`
-    assert!(
-        stripped.contains("FOOTER_POLLER_TOKENS"),
-        "RPC-043: footer_poller.rs must declare `FOOTER_POLLER_TOKENS`"
-    );
-    assert!(
-        stripped.contains("Lazy") || stripped.contains("once_cell"),
-        "RPC-043: FOOTER_POLLER_TOKENS must use `once_cell::sync::Lazy`"
-    );
-
-    // @step And the file declares `pub(crate) fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Option<String>)`
+    // @step Then the file declares the `spawn_footer_poller` shim that
+    // delegates to the shared NAPI-free poller in codelet-sessions (WT-002)
     assert!(
         stripped.contains("fn spawn_footer_poller"),
-        "RPC-043: footer_poller.rs must declare `fn spawn_footer_poller`"
+        "RPC-043/WT-002: footer_poller.rs must declare `fn spawn_footer_poller`"
+    );
+    assert!(
+        stripped.contains("codelet_sessions::footer_poller::spawn_footer_poller"),
+        "WT-002: the napi footer_poller.rs shim must delegate to codelet_sessions::footer_poller::spawn_footer_poller"
     );
 
-    // @step And the file declares `pub(crate) fn stop_footer_poller(session_id: &str)`
+    // @step And the file declares the `stop_footer_poller` shim that
+    // delegates to the shared NAPI-free poller
     assert!(
         stripped.contains("fn stop_footer_poller"),
-        "RPC-043: footer_poller.rs must declare `fn stop_footer_poller`"
+        "RPC-043/WT-002: footer_poller.rs must declare `fn stop_footer_poller`"
+    );
+    assert!(
+        stripped.contains("codelet_sessions::footer_poller::stop_footer_poller"),
+        "WT-002: the napi footer_poller.rs shim must delegate to codelet_sessions::footer_poller::stop_footer_poller"
     );
 
-    // @step And the `FOOTER_POLLER_TOKENS` static is private to the module (not `pub`)
+    // @step And the file registers the singleton manager's chunks_tx as the
+    // NAPI emission target (preserving today's SessionManager::instance()
+    // behavior — the shared poller falls back to the singleton otherwise)
     assert!(
-        !stripped.contains("pub static FOOTER_POLLER_TOKENS")
-            && !stripped.contains("pub(crate) static FOOTER_POLLER_TOKENS"),
-        "RPC-043: FOOTER_POLLER_TOKENS must remain private to footer_poller.rs"
+        stripped.contains("codelet_sessions::footer_poller::register_chunk_sender"),
+        "WT-002: the napi footer_poller.rs shim must register the singleton manager's chunks_tx via register_chunk_sender"
+    );
+    assert!(
+        stripped.contains("SessionManager::instance().chunks_tx()"),
+        "WT-002: the registered sender must be the singleton manager's chunks_tx"
     );
 }
 

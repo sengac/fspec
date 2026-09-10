@@ -17,6 +17,7 @@ mod recovery_network;
 mod recovery_stall;
 mod recovery_thinking;
 mod recovery_truncation;
+mod recovery_unrecoverable; // BUG-170: strip failed tool-call tail on terminal API error
 mod stream_handlers;
 pub mod stream_loop;
 
@@ -51,4 +52,5 @@ pub use recovery_truncation::{
     build_truncation_budget_exhausted_message, build_truncation_recovery_message,
     MAX_TRUNCATION_RETRIES,
 };
+pub use recovery_unrecoverable::{strip_failed_tool_call_tail, StrippedTail};
 pub use stream_loop::{run_agent_stream, run_agent_stream_with_images};

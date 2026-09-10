@@ -70,3 +70,6 @@ tokio = { workspace = true, features = ["test-util"] }
 # RPC-347: custom-model RPC surface tests mutate the process-global
 # FSPEC_USER_DIR env var, so they must run serially.
 serial_test.workspace = true
+# WT-005: terminate-failure test captures a WARN-level log line from
+# `destroy_session` via a custom tracing fmt layer.
+tracing-subscriber = { workspace = true }

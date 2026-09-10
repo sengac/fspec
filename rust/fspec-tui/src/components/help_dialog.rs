@@ -21,7 +21,7 @@
 //!
 //! TUI-101: scrollbar click-and-drag navigation via `ScrollbarDrag`.
 
-use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
+use crossterm::event::{Event, KeyCode};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::text::Span;
@@ -29,14 +29,11 @@ use ratatui::text::Span;
 use super::dialog_theme::{render_dialog_at, Accent, DialogRow};
 use super::dialog_theme_rows::build_dialog;
 use super::help_content::{agent_help_lines, board_help_lines};
-use super::help_dialog_scroll::{
-    content_rows, fill_rect, gutter_rect, max_offset, wheel_direction,
-};
+use super::help_dialog_scroll::{content_rows, fill_rect, gutter_rect, max_offset};
 use super::list_scrollbar::render_list_scrollbar;
 use super::scroll_viewport::WheelVelocity;
 use super::{Callback, Component, EventResult, Priority};
-use crate::mouse::rect_contains;
-use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
+use crate::mouse::scrollbar_drag::ScrollbarDrag;
 
 /// Critical-priority modal dialog listing view-specific keybindings.
 ///
@@ -46,14 +43,16 @@ use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 /// `"help-dialog"` so the compositor `.contains` guards are unaffected.
 pub struct HelpDialog {
     id: String,
-    lines: Vec<String>,
-    scroll_offset: usize,
-    visible_rows: usize,
-    wheel: WheelVelocity,
+    /// `pub(super)`: `handle_dialog_mouse` in `help_dialog_scroll.rs`
+    /// drives scroll/wheel/drag state (TUI-101 + RPC-396).
+    pub(super) lines: Vec<String>,
+    pub(super) scroll_offset: usize,
+    pub(super) visible_rows: usize,
+    pub(super) wheel: WheelVelocity,
     /// TUI-101: scrollbar click-and-drag state machine.
-    scrollbar_drag: ScrollbarDrag,
+    pub(super) scrollbar_drag: ScrollbarDrag,
     /// TUI-101: cached gutter rect from last render for hit-testing.
-    last_gutter: Option<Rect>,
+    pub(super) last_gutter: Option<Rect>,
 }
 
 impl Default for HelpDialog {
@@ -114,7 +113,7 @@ impl HelpDialog {
         self.visible_rows
     }
 
-    fn max_offset(&self) -> usize {
+    pub(super) fn max_offset(&self) -> usize {
         max_offset(self.lines.len(), self.visible_rows)
     }
 
@@ -168,58 +167,12 @@ impl Component for HelpDialog {
                 _ => {}
             }
         }
-        // TUI-101: scrollbar click-and-drag navigation.
-        if let Event::Mouse(mouse_event) = event {
-            let max = self.max_offset();
-            let total = self.lines.len();
-            let visible = self.visible_rows;
-
-            // Only handle left button events when scrollbar is visible.
-            if total > visible {
-                // Hit-test against the cached gutter rect.
-                if let Some(gutter) = self.last_gutter {
-                    let inside = rect_contains(gutter, mouse_event.column, mouse_event.row);
-
-                    match mouse_event.kind {
-                        MouseEventKind::Down(MouseButton::Left)
-                        | MouseEventKind::Drag(MouseButton::Left)
-                        | MouseEventKind::Up(MouseButton::Left) => {
-                            if inside {
-                                let geom = ScrollbarGeometry {
-                                    area_height: visible,
-                                    total_items: total,
-                                    visible_items: visible,
-                                    current_offset: self.scroll_offset,
-                                };
-                                if let Some(offset) =
-                                    self.scrollbar_drag.on_mouse(*mouse_event, geom)
-                                {
-                                    self.scroll_offset = offset.min(max);
-                                }
-                                return EventResult::consumed();
-                            } else {
-                                // Reset drag state when clicking outside scrollbar
-                                if matches!(mouse_event.kind, MouseEventKind::Up(MouseButton::Left))
-                                {
-                                    self.scrollbar_drag.reset();
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            return EventResult::ignored();
-        }
-        // RPC-396: mouse wheel scrolls the content. The `Event::Mouse`
-        // match lives in `help_dialog_scroll::wheel_direction` so this
-        // dialog shell stays `Event::Key`-only (RPC-023 source-shape
-        // guard) while still gaining wheel scrolling.
-        if let Some(dir) = wheel_direction(event) {
-            let step = self.wheel.step(dir);
-            let proposed = self.scroll_offset as i64 + step as i64;
-            self.scroll_offset = proposed.clamp(0, max as i64) as usize;
-            return EventResult::consumed();
+        // TUI-101 (drag) + RPC-396 (wheel): all mouse handling lives in
+        // `help_dialog_scroll::handle_dialog_mouse` so this shell stays
+        // `Event::Key`-only (RPC-023 source-shape guard) and under the
+        // 300-LoC ceiling.
+        if let Some(result) = super::help_dialog_scroll::handle_dialog_mouse(self, event) {
+            return result;
         }
         // RPC-403 review: Critical modal — consume (swallow) pastes so
         // they can never leak into the agent input hidden behind this

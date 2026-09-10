@@ -636,12 +636,18 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //   - Reconciliation: the measured pre-RPC-417 file was 1219 lines, which
     //     exceeded the pre-RPC-417 itemized sum (1206) by 13 — a prior card
     //     under-counted its per-variant tally by 13 lines. RPC-417's +2 lands
-    //     the true measured file at 1221. The assertion therefore tracks the
-    //     real measured ceiling (1221 = itemized 1208 + 13 prior under-count),
-    //     not the drifted itemized sum.
+    //     the true measured file at 1221. Later merged cards kept adding
+    //     Action variants without re-itemizing (a pre-existing drift this
+    //     test could not surface while the views/agent/ files were over
+    //     their own ceilings): TUI-107/108/109 staged loading dialogs
+    //     (+17 → 1238), TUI-109 cascade wiring (+6 → 1244), BOARD-022
+    //     work-unit search dialog (+12 → 1256), MUX-001 mux grid (+18 →
+    //     1274), TOOL-022 exec-stdin prompt actions (+35 → 1309). The
+    //     assertion therefore tracks the real measured file (1309), not
+    //     the stale itemized sum.
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1221,
-        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381..RPC-383 + RPC-406 + RPC-411 + COPY-007 + PROV-136 + RPC-417 budget is +419 over baseline 802"
+        n_components <= 1309,
+        "components/mod.rs has {n_components} lines — measured ceiling 1309 (802 baseline + itemized card deltas + documented reconciliation drift through TOOL-022)"
     );
 }

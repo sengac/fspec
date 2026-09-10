@@ -69,7 +69,7 @@ Feature: Ghost commits for checkpoint snapshots
     Given I have a git repository with a ghost commit checkpoint
     And the checkpoint contains specific file contents
     And I have modified files since the checkpoint was created
-    When I restore the checkpoint
+    When I restore the checkpoint with force
     Then the working tree files should match the checkpoint contents
     And modified files should be reverted to checkpoint state
 
@@ -98,7 +98,7 @@ Feature: Ghost commits for checkpoint snapshots
   Scenario: Restore checkpoint deletes files added after checkpoint
     Given I have a git repository with a ghost commit checkpoint
     And I create new files after the checkpoint was created
-    When I restore the checkpoint
+    When I restore the checkpoint with force
     Then the new files should be deleted
     And the working tree should match the exact state at checkpoint creation
 

@@ -458,12 +458,20 @@ pub struct MergeResult {
     pub files_added: Vec<String>,
     /// Files that were deleted from main
     pub files_deleted: Vec<String>,
+    /// WT-008: the new commit created in the MAIN repo by the merge,
+    /// or `None` when the merge had no tracked changes to commit.
+    pub merge_commit: Option<String>,
 }
 
 /// Merge session changes to main worktree
 ///
-/// Applies all changes from session to main and removes worktree on success.
-/// Returns conflict error if main has diverged since session base commit.
+/// Applies all changes from session to main, removes worktree on
+/// success, and commits the merged state in the MAIN repository
+/// (WT-008). Returns conflict error if main has diverged since
+/// session base commit.
+///
+/// This is the default-strategy entry point — it delegates to
+/// [`merge_session_with_strategy`] with `FastForward`.
 ///
 /// # Algorithm
 /// 1. Get session diff to know what changed (for return value)
@@ -473,7 +481,8 @@ pub struct MergeResult {
 ///    - Deletes removed files from main
 ///    - Removes worktree on success
 /// 3. Delete session manifest
-/// 4. Return MergeResult with file lists
+/// 4. Commit the merged state to main (fast-forward on HEAD)
+/// 5. Return MergeResult with file lists and the new commit SHA
 ///
 /// # Arguments
 /// * `repo_path` - Path to the main git repository
@@ -483,44 +492,69 @@ pub struct MergeResult {
 /// MergeResult on success, or error if:
 /// - WorktreeNotFound: Session doesn't exist
 /// - ConflictError: Main worktree has conflicting changes
-///
-/// # Example
-/// ```ignore
-/// match merge_session(repo_path, session_id) {
-///     Ok(result) => {
-///         println!("Merged {} files",
-///             result.files_modified.len() +
-///             result.files_added.len() +
-///             result.files_deleted.len()
-///         );
-///     }
-///     Err(GitError::ConflictError { files }) => {
-///         eprintln!("Conflict: {:?}", files);
-///         // Worktree is still intact - user can resolve and retry
-///     }
-///     Err(e) => return Err(e),
-/// }
-/// ```
 pub fn merge_session(repo_path: impl AsRef<Path>, session_id: &str) -> Result<MergeResult> {
+    use codelet_rpc_types::MergeStrategy;
+
+    merge_session_with_strategy(repo_path, session_id, &MergeStrategy::FastForward)
+}
+
+/// WT-008: merge a session with an explicit strategy gate.
+///
+/// Only [`codelet_rpc_types::MergeStrategy::FastForward`] is
+/// implemented; any other strategy returns
+/// [`GitError::UnsupportedMergeStrategy`] BEFORE anything is copied or
+/// committed, so a client never silently gets a different algorithm
+/// than it asked for.
+///
+/// On success, after the working-tree copy, the merged state is
+/// committed in the MAIN repository (parented on HEAD, identity from
+/// the repo-local git config with an fspec fallback) and the new SHA
+/// is returned in [`MergeResult::merge_commit`] (`None` when the
+/// session had no tracked changes).
+pub fn merge_session_with_strategy(
+    repo_path: impl AsRef<Path>,
+    session_id: &str,
+    strategy: &codelet_rpc_types::MergeStrategy,
+) -> Result<MergeResult> {
+    use crate::merge_commit::commit_merged_session;
     use crate::session_result::apply_session_changes;
+    use crate::GitError;
+    use codelet_rpc_types::MergeStrategy;
 
     let repo_path = repo_path.as_ref();
+
+    // Strategy gate: reject unsupported strategies up front.
+    if *strategy != MergeStrategy::FastForward {
+        return Err(GitError::UnsupportedMergeStrategy);
+    }
 
     // 1. Get diff first (to capture what will change)
     let diff = get_session_diff(repo_path, session_id)?;
 
-    // 2. Apply changes (this handles conflicts and cleanup of worktree)
-    apply_session_changes(repo_path, session_id)?;
+    // 2. Apply changes (conflict handling + worktree cleanup; returns
+    //    the post-apply worktree snapshot for the commit tree)
+    let applied = apply_session_changes(repo_path, session_id)?;
 
     // 3. Delete manifest (cleanup session state)
     delete_manifest(session_id)?;
 
-    // 4. Return what was merged
+    // 4. Commit the merged state — only when tracked changes exist,
+    //    so a no-op merge produces no empty commit.
+    let has_changes =
+        !diff.files_changed.is_empty() || !diff.files_added.is_empty() || !diff.files_deleted.is_empty();
+    let merge_commit = if has_changes {
+        Some(commit_merged_session(repo_path, session_id, &applied, &diff)?)
+    } else {
+        None
+    };
+
+    // 5. Return what was merged
     Ok(MergeResult {
         session_id: session_id.to_string(),
         files_modified: diff.files_changed,
         files_added: diff.files_added,
         files_deleted: diff.files_deleted,
+        merge_commit,
     })
 }
 

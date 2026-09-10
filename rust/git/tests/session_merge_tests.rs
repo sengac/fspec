@@ -7,7 +7,7 @@
 
 mod common;
 
-use codelet_git::{create_session_manifest, delete_manifest, merge_session, IsolatedSessionInfo};
+use codelet_git::{create_session_manifest, create_worktree, delete_manifest, merge_session};
 use std::fs;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -45,19 +45,18 @@ fn test_merge_session_changes_to_main() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree with a modified file "src/main.rs"
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // Create manifest
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Modify src/main.rs in session worktree
     fs::write(
@@ -112,18 +111,17 @@ fn test_merge_session_applies_added_files() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree with a new file "src/new.rs"
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Add new file in session worktree
     fs::write(
@@ -182,18 +180,17 @@ fn test_merge_session_applies_deleted_files() {
     );
 
     // @step And a session worktree where "src/old.rs" has been deleted
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Delete src/old.rs in session worktree
     fs::remove_file(worktree_path.join("src/old.rs")).expect("Failed to delete old.rs in worktree");
@@ -243,18 +240,17 @@ fn test_merge_session_fails_on_conflict() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree where "src/config.rs" has been modified
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Modify src/config.rs in session worktree
     fs::write(
@@ -316,18 +312,17 @@ fn test_merge_session_fails_on_added_file_conflict() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree with a new file "src/feature.rs" containing "session content"
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Add new file in session worktree
     fs::write(worktree_path.join("src/feature.rs"), "// Session content\n")
@@ -387,12 +382,9 @@ fn test_merge_multiple_sessions_in_order() {
     let repo_path = tmp_dir.path();
 
     // @step And three session worktrees "session-A", "session-B", "session-C" each with different changes
-    let info_a = IsolatedSessionInfo::new_isolated(repo_path, &session_a)
-        .expect("Failed to create session A");
-    let info_b = IsolatedSessionInfo::new_isolated(repo_path, &session_b)
-        .expect("Failed to create session B");
-    let info_c = IsolatedSessionInfo::new_isolated(repo_path, &session_c)
-        .expect("Failed to create session C");
+    let info_a = create_worktree(repo_path, &session_a).expect("Failed to create session A");
+    let info_b = create_worktree(repo_path, &session_b).expect("Failed to create session B");
+    let info_c = create_worktree(repo_path, &session_c).expect("Failed to create session C");
 
     // Create manifests
     for (id, info) in [
@@ -403,25 +395,16 @@ fn test_merge_multiple_sessions_in_order() {
         create_session_manifest(
             id,
             repo_path,
-            info.worktree_path.clone(),
-            info.base_commit.clone(),
+            Some(info.info.path.clone()),
+            Some(info.base_commit.clone()),
         )
         .expect("Failed to create session manifest");
     }
 
     // Add different files to each session
-    let wt_a = info_a
-        .worktree_path
-        .as_ref()
-        .expect("Should have worktree A");
-    let wt_b = info_b
-        .worktree_path
-        .as_ref()
-        .expect("Should have worktree B");
-    let wt_c = info_c
-        .worktree_path
-        .as_ref()
-        .expect("Should have worktree C");
+    let wt_a = info_a.info.path.clone();
+    let wt_b = info_b.info.path.clone();
+    let wt_c = info_c.info.path.clone();
 
     fs::write(wt_a.join("file_a.txt"), "Content from A\n")
         .expect("Failed to create file in session A");
@@ -494,18 +477,17 @@ fn test_merge_clean_session_removes_worktree() {
     let repo_path = tmp_dir.path();
 
     // @step And a session worktree with no changes
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // No changes made to worktree - it's clean
 

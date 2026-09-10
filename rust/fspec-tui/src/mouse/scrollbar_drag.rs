@@ -287,4 +287,9 @@ mod tests {
         // @step And the state should return to idle
         assert!(!drag.is_dragging());
     }
+
 }
+
+#[cfg(test)]
+#[path = "scrollbar_drag_tui103_tests.rs"]
+mod tui103_tests;

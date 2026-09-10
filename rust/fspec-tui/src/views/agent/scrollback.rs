@@ -36,10 +36,11 @@ impl Default for ScrollState {
 /// Windowed scrollback panel. Per-frame work is O(viewport_height).
 #[derive(Debug, Default)]
 pub struct ScrollbackList {
-    chunks: Vec<RenderedChunk>,
-    scroll_state: ScrollState,
+    /// `pub(super)`: `scrollback_tail` derives total-row math.
+    pub(super) chunks: Vec<RenderedChunk>,
+    pub(super) scroll_state: ScrollState,
     /// Latest observed viewport height (rows).
-    viewport_height: u16,
+    pub(super) viewport_height: u16,
     /// Latest viewport width (cols). Drives per-chunk re-wrap on resize (RPC-078).
     viewport_width: u16,
     /// RPC-094: cached layout rect; `mouse_dispatch` hit-tests this.
@@ -260,25 +261,6 @@ impl ScrollbackList {
         visited
     }
 
-    /// Sum of `chunk.lines.len()` across every chunk — the total visible row count once everything is unfurled.
-    pub(crate) fn total_visual_rows(&self) -> usize {
-        self.chunks.iter().map(|c| c.lines.len()).sum()
-    }
-
-    fn max_offset_for_viewport(&self) -> usize {
-        let total = self.total_visual_rows();
-        let vh = self.viewport_height as usize;
-        if vh == 0 || total <= vh {
-            0
-        } else {
-            total.saturating_sub(vh)
-        }
-    }
-
-    fn recompute_offset_for_stick(&mut self) {
-        self.scroll_state.offset = self.max_offset_for_viewport();
-    }
-
     /// RPC-094: most-recent layout rect, set inside `render_count_visited`.
     pub fn last_rect(&self) -> Option<Rect> {
         self.last_rect
@@ -300,6 +282,8 @@ impl Widget for &mut ScrollbackList {
 
 #[path = "scrollback_copy.rs"]
 mod copy;
+#[path = "scrollback_tail.rs"]
+mod scrollback_tail;
 #[path = "scrollback_select.rs"]
 mod select;
 #[cfg(test)]

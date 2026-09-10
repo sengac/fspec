@@ -15,10 +15,7 @@
 
 use codelet_rpc_types::ProfileDefinition;
 
-use super::profile_form_parse::{
-    opt_num, parse_auto_continue, parse_loop_detection_max_repeats, parse_loop_detection_max_retries,
-    parse_loop_detection_window, parse_max_images, profile_compaction_trigger, render_threshold,
-};
+use super::profile_form_parse::{opt_num, render_threshold};
 
 /// Default base URL for a brand-new profile (TS `DEFAULT_PROFILE_BASE_URL`).
 pub const DEFAULT_PROFILE_BASE_URL: &str = "http://localhost:8888";
@@ -273,60 +270,16 @@ impl ProfileForm {
 
     /// Build a [`ProfileDefinition`] from the current values.
     ///
-    /// Returns `Err(hint)` when the save must be REJECTED with a visible hint:
-    /// PROV-142 — a non-numeric Auto-Continue value (mirroring `/continue`'s
-    /// invalid-argument rejection); PROV-144 — a non-numeric Max Images value.
-    /// Returns `Ok(None)` when base URL, API key, or the trimmed name is empty
-    /// (TS `handleSave` guard — the form stays open silently). Returns
-    /// `Ok(Some(def))` on success.
+    /// Delegates to `profile_form_parse::build_definition` (moved there to
+    /// keep this file under the 300-LoC ceiling). Returns `Err(hint)` when
+    /// the save must be REJECTED with a visible hint; `Ok(None)` when base
+    /// URL, API key, or the trimmed name is empty; `Ok(Some(def))` on
+    /// success.
     pub fn build_definition(&self) -> Result<Option<ProfileDefinition>, String> {
-        if self.base_url.is_empty() || self.api_key.is_empty() || self.name.trim().is_empty() {
-            return Ok(None);
-        }
-        // PROV-142: parse the Auto-Continue field. Empty ⇒ None (off, today's
-        // behavior); "0" ⇒ Some(0) (explicit-off sentinel); "n" (n >= 1) ⇒
-        // Some(n) (on with budget n); non-numeric ⇒ reject with a hint.
-        let auto_continue = parse_auto_continue(&self.auto_continue)?;
-        // PROV-144: parse the Max Images field. Empty ⇒ None (absent ⇒ default
-        // 4); "0" ⇒ Some(0) (no-vision sentinel); "n" (n >= 1) ⇒ Some(n)
-        // (cap of n images per Read result); non-numeric ⇒ reject with a hint.
-        let max_images = parse_max_images(&self.max_images)?;
-        // PROV-145: parse the loop-detection numeric fields. Empty ⇒ None
-        // (absent ⇒ the RIG-014 defaults 160 / 10 / 10); "n" ⇒ Some(n);
-        // non-numeric ⇒ reject with a hint naming the field.
-        let loop_detection_window = parse_loop_detection_window(&self.loop_window)?;
-        let loop_detection_max_repeats = parse_loop_detection_max_repeats(&self.loop_repeat)?;
-        let loop_detection_max_retries = parse_loop_detection_max_retries(&self.loop_retries)?;
-        let (compaction_threshold_type, compaction_threshold_value) =
-            profile_compaction_trigger(&self.compaction_threshold);
-        Ok(Some(ProfileDefinition {
-            base_url: self.base_url.clone(),
-            api_key: self.api_key.clone(),
-            context_window: self.context_window.trim().parse::<u32>().ok(),
-            max_output_tokens: self.max_output_tokens.trim().parse::<u32>().ok(),
-            compaction_threshold_type,
-            compaction_threshold_value,
-            streaming: Some(self.streaming),
-            auto_continue,
-            // PROV-143: always carry the explicit toggle so the on-disk
-            // profile reflects the form (true ⇒ preserved, false ⇒ stripped).
-            preserve_thinking: Some(self.preserve_thinking),
-            // PROV-144: carry the parsed Max Images limit (empty ⇒ None so the
-            // persistence read-modify-write REMOVES the key ⇒ default 4).
-            max_images,
-            // PROV-145: always carry the explicit loop-detection toggle so
-            // the on-disk profile reflects the form (true ⇒ detector on,
-            // false ⇒ detector off).
-            loop_detection_enabled: Some(self.loop_detection),
-            // PROV-145: carry the parsed loop-detection numeric fields
-            // (empty ⇒ None so the persistence read-modify-write REMOVES the
-            // keys ⇒ the RIG-014 defaults apply).
-            loop_detection_window,
-            loop_detection_max_repeats,
-            loop_detection_max_retries,
-        }))
+        super::profile_form_parse::build_definition(self)
     }
 }
+
 
 /// Outcome of routing one key through the open form. Owned here (form
 /// internals drive it); consumed by the sibling `profile_form_submit` module,

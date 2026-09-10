@@ -1,5 +1,6 @@
+@profiles
+@done
 @PROV-142
-@wip
 @rust
 @rpc
 Feature: Per-profile autoContinue wire schema

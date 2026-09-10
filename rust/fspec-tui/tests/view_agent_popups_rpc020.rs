@@ -243,13 +243,15 @@ fn pressing_enter_on_help_emits_help_action() {
 
 /// Scenario: Pressing Enter on /isolation opens the CreateSessionDialog
 ///
-/// RPC-060: replaces the legacy "unimplemented command emits a notice"
-/// behaviour. /isolation now dispatches
-/// `Action::OpenCreateSessionDialog { preselect: Some(Isolated) }` —
-/// the catch-all `[notice] /<name> not yet implemented` fallback was
-/// removed because every SlashCommandAction variant has a handler.
-#[test]
-fn pressing_enter_on_unimplemented_command_emits_notice() {
+/// RPC-060 (superseded by WT-009): /isolation probes
+/// `list_session_worktrees` and, for a non-isolated session with no live
+/// worktree, dispatches `Action::OpenCreateSessionDialog` with
+/// `preselect=Some(Isolated)` — the catch-all `[notice] /<name> not yet
+/// implemented` fallback was removed because every SlashCommandAction
+/// variant has a handler. The probe needs a runtime, so the dispatch
+/// half is an async test.
+#[tokio::test]
+async fn pressing_enter_on_unimplemented_command_emits_notice() {
     use codelet_fspec_tui::CreateSessionOption;
     // @step Given an AgentView whose slash popup is open with "/isolation" highlighted
     let (mut view, mut rx) = fresh_view();
@@ -273,10 +275,21 @@ fn pressing_enter_on_unimplemented_command_emits_notice() {
     seed_session(&mut app, "s-1");
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Isolation));
-    let pending = app
-        .try_recv_action()
-        .expect("OpenCreateSessionDialog should be queued");
-    match pending {
+    // (SessionCreated queued a ModelInfoLoaded probe first — drain it.)
+    let mut action = None;
+    for _ in 0..100 {
+        while let Some(a) = app.try_recv_action() {
+            if matches!(a, Action::OpenCreateSessionDialog { .. }) {
+                action = Some(a);
+            }
+        }
+        if action.is_some() {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+    }
+    let action = action.expect("OpenCreateSessionDialog should be queued");
+    match action {
         Action::OpenCreateSessionDialog { preselect } => {
             assert_eq!(preselect, Some(CreateSessionOption::Isolated));
         }

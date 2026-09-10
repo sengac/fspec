@@ -841,6 +841,11 @@ pub enum MergeStatus {
 ///   relative paths whose merge produced a conflict.
 /// * `merge_commit` — short SHA of the resulting merge commit if the
 ///   underlying codelet-git layer surfaces one; `None` otherwise.
+/// * `worktree_path` — WT-009: absolute path of the session's worktree
+///   (the resolved repo root + `.fspec/worktrees/<id>`), `None` when the
+///   session has no resolvable worktree path. Lets the TUI print the
+///   "Effective worktree: ..." conflict footer against a real path the
+///   LLM can act on, instead of the session UUID.
 ///
 /// Wire shape is a flat struct so `napi_derive::napi(object)` stays
 /// valid; no discriminated enums.
@@ -850,6 +855,7 @@ pub struct MergeOutcome {
     pub status: MergeStatus,
     pub conflicts: Vec<String>,
     pub merge_commit: Option<String>,
+    pub worktree_path: Option<String>,
 }
 
 /// One row in the `list_session_worktrees` RPC response. Mirrors
@@ -878,6 +884,11 @@ pub struct SessionChangesSummary {
     /// Short SHAs (typically 7 chars) of every commit on the session
     /// branch that is not yet on the base branch.
     pub commits: Vec<String>,
+    /// WT-006: count of gitignored untracked files in the session
+    /// worktree. Never part of the tracked change set — surfaced so the
+    /// TUI can stay honest when "nothing to merge" hides ignored
+    /// build artifacts.
+    pub files_ignored: u32,
 }
 
 // ============================================================================

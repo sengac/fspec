@@ -68,7 +68,11 @@ async fn scenario_session_manager_satisfies_trait_object() {
     // (Reaching this line proves the cast compiled.)
 
     // @step And calling "handle.list_sessions()" on the trait object returns an empty "Vec<SessionInfo>"
-    let sessions = handle.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = handle.list_sessions(
+        &std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    );
     assert!(
         sessions.is_empty(),
         "expected empty session list, got {} entries",
@@ -586,14 +590,15 @@ fn scenario_impl_block_exists_with_every_override() {
     let block_on_count = after_impl
         .matches("tokio::runtime::Handle::current().block_on(")
         .count();
-    // The upper bound tracks the current bridge inventory: 5 per-method
+    // The upper bound tracks the current bridge inventory: 6 per-method
     // bridges in handle_impl.rs (resume_session, compact_session,
     // restore_session_messages, create_isolated_session,
-    // test_provider_connection) plus the shared sync→async bridge helper,
-    // plus the profile_sections.rs `/v1/models` probe bridge = 7.
+    // test_provider_connection, detach_session_worktree [WT-009]) plus the
+    // shared sync→async bridge helper, plus the profile_sections.rs
+    // `/v1/models` probe bridge = 8.
     assert!(
-        (1..=7).contains(&block_on_count),
-        "expected 1..=7 `tokio::runtime::Handle::current().block_on(` occurrences inside the SessionManagerHandle impl, found {block_on_count}",
+        (1..=8).contains(&block_on_count),
+        "expected 1..=8 `tokio::runtime::Handle::current().block_on(` occurrences inside the SessionManagerHandle impl, found {block_on_count}",
     );
 }
 

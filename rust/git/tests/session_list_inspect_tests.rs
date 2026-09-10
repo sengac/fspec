@@ -9,8 +9,8 @@
 mod common;
 
 use codelet_git::{
-    create_session_manifest, delete_manifest, inspect_session, list_sessions, DerivedSessionStatus,
-    IsolatedSessionInfo, SessionFilter,
+    create_session_manifest, create_worktree, delete_manifest, inspect_session, list_sessions,
+    DerivedSessionStatus, SessionFilter,
 };
 use std::collections::HashSet;
 use std::fs;
@@ -54,27 +54,27 @@ fn test_list_all_sessions_with_status() {
     let session_orphan = unique_session_id("orphan");
 
     // Create three sessions
-    let info_active = IsolatedSessionInfo::new_isolated(repo_path, &session_active)
-        .expect("Failed to create active session");
-    let info_pending = IsolatedSessionInfo::new_isolated(repo_path, &session_pending)
-        .expect("Failed to create pending session");
-    let _info_orphan = IsolatedSessionInfo::new_isolated(repo_path, &session_orphan)
-        .expect("Failed to create orphan session");
+    let info_active =
+        create_worktree(repo_path, &session_active).expect("Failed to create active session");
+    let info_pending =
+        create_worktree(repo_path, &session_pending).expect("Failed to create pending session");
+    let _info_orphan =
+        create_worktree(repo_path, &session_orphan).expect("Failed to create orphan session");
 
     // Create manifests for active and pending sessions
     create_session_manifest(
         &session_active,
         repo_path,
-        info_active.worktree_path.clone(),
-        info_active.base_commit.clone(),
+        Some(info_active.info.path.clone()),
+        Some(info_active.base_commit.clone()),
     )
     .expect("Failed to create active session manifest");
 
     create_session_manifest(
         &session_pending,
         repo_path,
-        info_pending.worktree_path.clone(),
-        info_pending.base_commit.clone(),
+        Some(info_pending.info.path.clone()),
+        Some(info_pending.base_commit.clone()),
     )
     .expect("Failed to create pending session manifest");
 
@@ -84,10 +84,7 @@ fn test_list_all_sessions_with_status() {
 
     // @step And one session has pending merge status
     // Add changes to pending session's worktree
-    let pending_worktree = info_pending
-        .worktree_path
-        .as_ref()
-        .expect("Should have worktree");
+    let pending_worktree = info_pending.info.path.clone();
     fs::write(pending_worktree.join("new_file.txt"), "New content\n")
         .expect("Failed to write file to pending worktree");
 
@@ -158,19 +155,19 @@ fn test_list_only_orphaned_sessions() {
     let session_orphan2 = unique_session_id("orphan2");
 
     // Create three sessions
-    let info_active = IsolatedSessionInfo::new_isolated(repo_path, &session_active)
-        .expect("Failed to create active session");
-    let _info_orphan1 = IsolatedSessionInfo::new_isolated(repo_path, &session_orphan1)
-        .expect("Failed to create orphan1 session");
-    let _info_orphan2 = IsolatedSessionInfo::new_isolated(repo_path, &session_orphan2)
-        .expect("Failed to create orphan2 session");
+    let info_active =
+        create_worktree(repo_path, &session_active).expect("Failed to create active session");
+    let _info_orphan1 =
+        create_worktree(repo_path, &session_orphan1).expect("Failed to create orphan1 session");
+    let _info_orphan2 =
+        create_worktree(repo_path, &session_orphan2).expect("Failed to create orphan2 session");
 
     // Create manifest only for active session
     create_session_manifest(
         &session_active,
         repo_path,
-        info_active.worktree_path.clone(),
-        info_active.base_commit.clone(),
+        Some(info_active.info.path.clone()),
+        Some(info_active.base_commit.clone()),
     )
     .expect("Failed to create active session manifest");
 
@@ -222,33 +219,30 @@ fn test_list_pending_merge_sessions() {
     let session_clean = unique_session_id("clean");
 
     // Create two sessions
-    let info_pending = IsolatedSessionInfo::new_isolated(repo_path, &session_pending)
-        .expect("Failed to create pending session");
-    let info_clean = IsolatedSessionInfo::new_isolated(repo_path, &session_clean)
-        .expect("Failed to create clean session");
+    let info_pending =
+        create_worktree(repo_path, &session_pending).expect("Failed to create pending session");
+    let info_clean =
+        create_worktree(repo_path, &session_clean).expect("Failed to create clean session");
 
     // Create manifests for both
     create_session_manifest(
         &session_pending,
         repo_path,
-        info_pending.worktree_path.clone(),
-        info_pending.base_commit.clone(),
+        Some(info_pending.info.path.clone()),
+        Some(info_pending.base_commit.clone()),
     )
     .expect("Failed to create pending session manifest");
 
     create_session_manifest(
         &session_clean,
         repo_path,
-        info_clean.worktree_path.clone(),
-        info_clean.base_commit.clone(),
+        Some(info_clean.info.path.clone()),
+        Some(info_clean.base_commit.clone()),
     )
     .expect("Failed to create clean session manifest");
 
     // @step And some sessions have uncommitted changes
-    let pending_worktree = info_pending
-        .worktree_path
-        .as_ref()
-        .expect("Should have worktree");
+    let pending_worktree = info_pending.info.path.clone();
     fs::write(pending_worktree.join("changes.txt"), "Some changes\n")
         .expect("Failed to write file to pending worktree");
 
@@ -320,10 +314,9 @@ fn test_inspect_session_diff() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // @step And the session has files_changed, files_added, and files_deleted
     // Modify existing file
@@ -393,10 +386,9 @@ fn test_inspect_session_shows_deleted_files() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
 
     // Delete README.md (exists in base commit)
     fs::remove_file(worktree_path.join("README.md")).expect("Failed to delete README");
@@ -430,8 +422,7 @@ fn test_inspect_clean_session() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let _info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let _info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // No modifications made - worktree is clean
 

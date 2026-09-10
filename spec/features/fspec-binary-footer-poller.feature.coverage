@@ -1,0 +1,303 @@
+{
+  "scenarios": [
+    {
+      "name": "A session created under the fspec binary's hooks receives a footer state update on the first poll tick",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/wt002_footer_poller_parity.rs",
+          "lines": "135-183",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/footer_poller.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            },
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A session in a git repository shows its branch in the footer without any Bash command first",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/wt002_footer_poller_parity.rs",
+          "lines": "190-244",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/hooks.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An isolated worktree session reports a detached git state, not a blank non-repo state",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/wt002_footer_poller_parity.rs",
+          "lines": "251-310",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/footer_poller.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The footer follows the session's effective CWD when the Bash tool moves the session to another directory",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/wt002_footer_poller_parity.rs",
+          "lines": "317-374",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/footer_poller.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The NAPI hook path delegates to the same shared footer poller implementation",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/wt002_footer_poller_parity.rs",
+          "lines": "381-419",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/footer_poller.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/wt002_footer_poller_parity.rs",
+      "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/footer_poller.rs",
+      "rust/fspec/src/common.rs",
+      "rust/agent-loop/src/hooks.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/napi/src/footer_poller.rs"
+    ],
+    "totalLinesCovered": 532
+  }
+}

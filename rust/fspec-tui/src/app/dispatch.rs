@@ -76,51 +76,7 @@ impl App {
                 // live `Checkpoints: N Manual, M Auto` text.
                 self.board_store.set_checkpoint_counts(*counts);
             }
-            Action::EnterWorkUnit(id) => {
-                let status = self
-                    .board_store
-                    .column_units(self.board_store.focused_column())
-                    .iter()
-                    .find(|u| u.id == *id)
-                    .map(|u| u.status.clone());
-                self.agent_view_store
-                    .set_current_work_unit(Some(id.clone()), status);
-                // MUX-001 R8: in mux mode, Enter on a board work unit
-                // binds the unit + focuses the agent pane WITHOUT
-                // flipping the whole view.
-                // BUG-175: gate on the LIVE view, not the persisted
-                // `mux.config().enabled` flag — with the flag leaked
-                // across a restart (saved while in the grid) the mux
-                // path would have swallowed the flip and stranded the
-                // user on the Board with a bound-but-unopened unit.
-                if self.navigator.active_view == ViewMode::Mux {
-                    let _ = self.action_tx.send(Action::MuxEnterWorkUnit(id.clone()));
-                } else {
-                    self.navigator.active_view = ViewMode::Agent;
-                }
-                // RPC-050: bind work unit to current session via the
-                // attach action; lazy SessionCreated re-dispatches below.
-                let _ = self
-                    .action_tx
-                    .send(Action::AttachWorkUnitToSession(id.clone()));
-                if self.agent_view_store.current_session().is_none() {
-                    let backend = self.backend.clone();
-                    let action_tx = self.action_tx.clone();
-                    let active_session_tx = self.active_session_tx.clone();
-                    let handle = tokio::spawn(async move {
-                        if let Ok(session) = backend.create_session(None).await {
-                            // PROV-101 FIX 1: empty id == decline; surface it
-                            // explicitly, never seed an empty active session.
-                            crate::app::session_creation::route_bootstrap_create_session(
-                                session,
-                                &active_session_tx,
-                                &action_tx,
-                            );
-                        }
-                    });
-                    self.pending_tasks.push(handle);
-                }
-            }
+            Action::EnterWorkUnit(id) => self.handle_enter_work_unit(id),
             Action::OpenAgentView(target) => {
                 self.handle_open_agent_view(target.clone());
             }
@@ -325,39 +281,9 @@ impl App {
             a if App::is_mux_action(a) => self.dispatch_mux(a),
             // Capability dispatchers: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
-                let _ = self.try_dispatch_model_selector(&action)
-                    || self.try_dispatch_model_thinking_dialogs(&action)
-                    || self.try_dispatch_pause_hitl(&action)
-                    || self.try_dispatch_exec_stdin(&action)
-                    || self.try_dispatch_provider_settings(&action)
-                    || self.try_dispatch_blocklist(&action)
-                    || self.try_dispatch_changed_files(&action)
-                    || self.try_dispatch_viewer(&action)
-                    || self.try_dispatch_work_unit_search(&action)
-                    || self.try_dispatch_checkpoints(&action)
-                    || self.try_dispatch_merge_worktree(&action)
-                    || self.try_dispatch_slash_schedule(&action)
-                    || self.try_dispatch_slash_loop(&action)
-                    || self.try_dispatch_create_session_dialog(&action)
-                    || self.try_dispatch_supervisor_links(&action)
-                    || self.try_dispatch_dialog_dismiss(&action);
+                let _ = self.dispatch_capability_fallback(&action);
             }
         }
-        self.navigator.apply_action(&action);
-        let _ = self.compositor.update(action);
-        // MUX-001: keep the persisted MuxState config in lockstep with
-        // the live Navigator mux layout so `app.mux_state().config()`
-        // always reflects the current grid (tests + /mux save read it).
-        self.mux_state
-            .config_mut()
-            .clone_from(self.navigator.mux.config());
-        // R6: auto-save on mux exit — persist the post-exit config
-        // (enabled=false) so a restart comes back with mux off.
-        if mux_enabled_before && !self.navigator.mux.config().enabled {
-            if let Err(err) = self.save_mux_config() {
-                tracing::warn!(error = %err, "mux-exit auto-save failed (non-fatal)");
-            }
-        }
-        self.should_render = true;
+        self.finish_dispatch_tick(action, mux_enabled_before);
     }
 }

@@ -1,0 +1,458 @@
+{
+  "scenarios": [
+    {
+      "name": "A failed tool pair at the tail is stripped on a prompt-too-long terminal error",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "110-149",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Text plus ToolCall assistant turn keeps its text after the strip",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "155-196",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A trailing tool-call-only assistant message is popped when the tool never produced a result",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "206-230",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "203-222",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A trailing plain user prompt is popped as a last-resort strip",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "232-267",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "228-259",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminders survive the strip",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "265-299",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-prompt-too-long terminal errors leave the stack untouched",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "362-393",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2115,
+                2116,
+                2117,
+                2118,
+                2119,
+                2120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stale cache-token state is invalidated after a successful strip",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "305-355",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2115,
+                2116,
+                2117,
+                2118,
+                2119,
+                2120,
+                2121,
+                2122,
+                2123,
+                2124,
+                2125,
+                2126,
+                2127,
+                2128,
+                2129,
+                2130,
+                2131,
+                2132,
+                2133,
+                2134,
+                2135,
+                2136,
+                2137,
+                2138,
+                2139,
+                2140,
+                2141,
+                2142,
+                2143,
+                2144,
+                2145,
+                2146,
+                2147,
+                2148,
+                2149,
+                2150,
+                2151,
+                2152,
+                2153,
+                2154,
+                2155,
+                2156,
+                2157,
+                2158,
+                2159,
+                2160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The session remains interactive after the strip",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
+          "lines": "401-459",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2141,
+                2142,
+                2143,
+                2144,
+                2145,
+                2146,
+                2147,
+                2148,
+                2149,
+                2150,
+                2151,
+                2152,
+                2153,
+                2154,
+                2155,
+                2156,
+                2157,
+                2158,
+                2159,
+                2160
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/recovery_unrecoverable.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 663
+  }
+}

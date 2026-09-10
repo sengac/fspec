@@ -1590,6 +1590,10 @@
           "description": "Inter-process communication features using Unix sockets or named pipes"
         },
         {
+          "name": "@isolation",
+          "description": "Worktree session-isolation scenarios — isolated sessions, IsolationStateChange stream chunks, isolation badge and toggles"
+        },
+        {
           "name": "@isomorphic-git",
           "description": "Uses isomorphic-git library for pure JavaScript git operations"
         },
@@ -2330,6 +2334,10 @@
           "description": "Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command"
         },
         {
+          "name": "@bug-178",
+          "description": "Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid)"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2532,6 +2540,46 @@
         {
           "name": "@wip",
           "description": "Work In Progress"
+        },
+        {
+          "name": "@wt-001",
+          "description": "Work unit identifier for WT-001 — IsolationStateChange stream chunk drops base_commit: create_isolated_session_with_id must emit via isolation_state_change_with_base so the TUI isolation badge can show the worktree base commit (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-002",
+          "description": "Work unit identifier for WT-002 — fspec binary footer poller: FspecAgentHooks must spawn the NAPI-free footer poller so isolated worktree sessions show their git state in the footer (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-003",
+          "description": "Work unit identifier for WT-003 — session worktree RPC ops must resolve the repo path from the session's own project root instead of the process cwd (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-004",
+          "description": "Work unit identifier for WT-004 — isolation path-validation callback registration in the fspec binary: build_service registers the non-singleton SessionManager + shared codelet-sessions tool callbacks so worktree isolation is live (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-006",
+          "description": "Work unit identifier for WT-006 — session merge/diff machinery is git-blind: surface gitignored files honestly, round-trip symlinks, and preserve the executable bit across merge and checkpoint (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-007",
+          "description": "Work unit identifier for WT-007 — /resume loses worktree isolation: create_session_from_manifest must re-read the git session manifest and re-isolate formerly-isolated sessions (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-008",
+          "description": "Work unit identifier for WT-008 — /merge-worktree commits nothing and FastForward is ignored: the merge must create a real commit in the main repo and reject unsupported strategies (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-009",
+          "description": "Work unit identifier for WT-009 — /isolation must be a real toggle and /merge-worktree success must close the session and return to the board in the Rust TUI (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-010",
+          "description": "Work unit identifier for WT-010 — restore_ghost_commit ignores the force parameter: non-forced restore must detect checkpoint-vs-workdir divergence and return Err(GitError::RestoreConflict) without clobbering local work (worktree-isolation epic)"
+        },
+        {
+          "name": "@wt-012",
+          "description": "Work unit identifier for WT-012 — create_isolated_session_with_id duplicates the pre-RPC-425 session bootstrap: migrate it onto create_background_session_inner via a shared resolve_provider_manager helper so all three creation paths share one funnel (worktree-isolation epic)"
         }
       ],
       "rule": "Update status tags as features progress through development lifecycle."
@@ -2978,7 +3026,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-05T11:49:09.281Z",
+    "lastUpdated": "2026-09-10T08:46:11.547Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

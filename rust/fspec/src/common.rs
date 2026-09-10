@@ -133,6 +133,34 @@ pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
     // subordinates land in the daemon-owned manager.
     manager.init_self_weak();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
+    // WT-002: register THIS (non-singleton) manager's chunks_tx as the
+    // footer-poller emission target. FspecAgentHooks now spawns the shared
+    // NAPI-free poller (codelet-sessions::footer_poller), which emits on
+    // the registered sender — so isolated (detached-HEAD worktree)
+    // sessions show their git state in the TUI footer instead of staying
+    // blank for the session's whole life.
+    codelet_sessions::footer_poller::register_chunk_sender(manager.chunks_tx().clone());
+    // WT-004: register THIS (non-singleton) manager as the tool-callbacks
+    // manager and wire the three shared NAPI-free callbacks (GIT-020
+    // isolation context, BLOCK-006 work-unit stage, block-notification
+    // emitter) into codelet-tools' process-global OnceLocks. Before WT-004
+    // these were registered ONLY by the NAPI adapter, so in this binary
+    // every tool wrapper's `validate_and_resolve_path` got
+    // `isolation_ctx == None` and isolated sessions could read/write ANY
+    // path — the worktree was a cosmetic badge. build_service returns
+    // before any session exists, so registering here (before the service
+    // is handed out) is safe: the OnceLocks accept the first set only and
+    // this process never registers a second manager.
+    codelet_sessions::session_tool_callbacks::register_manager(Arc::clone(&manager));
+    codelet_tools::facade::set_get_effective_cwd_callback(
+        codelet_sessions::session_tool_callbacks::isolation_context,
+    );
+    codelet_tools::facade::set_get_work_unit_stage_callback(
+        codelet_sessions::session_tool_callbacks::work_unit_stage,
+    );
+    codelet_tools::facade::set_block_notification_callback(
+        codelet_sessions::session_tool_callbacks::emit_block_notification,
+    );
 
     // RPC-066: under the `test-stub-provider` feature, install the
     // deterministic stub LlmProvider into the process-global in-memory

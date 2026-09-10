@@ -954,6 +954,13 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    async fn detach_session_worktree(&self, session_id: SessionId) -> Result<()> {
+        self.client
+            .detach_session_worktree(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // RPC-058 — /schedule
     // ─────────────────────────────────────────────────────────────────

@@ -244,12 +244,15 @@ fn idle_placeholder_text_verbatim() {
     // @step When the AgentView renders the input row
     // @step Then the input row shows the placeholder text "Type a message..."
 
-    // The placeholder constant gained the RPC-402 Shift+Enter newline
-    // hint (leading, so it survives 80-col truncation; the whole
-    // string fits a 100-col render) — verbatim assert.
+    // The placeholder constant's leading newline hint is now owned by
+    // RPC-426, which switched the primary newline binding to 'Ctrl+J'
+    // (Emacs-style, universal across terminals) — the older RPC-402
+    // 'Shift+Enter' pin was superseded. Verbatim assert against the
+    // RPC-426 constant (also pinned by
+    // tests/agent_input_newline_bindings_rpc426.rs).
     assert_eq!(
         INPUT_PLACEHOLDER_HINT,
-        "Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
+        "Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
     );
 }
 

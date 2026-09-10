@@ -243,6 +243,7 @@ pub fn get_session_diff(repo_path: String, session_id: String) -> napi::Result<S
 #[napi]
 pub fn apply_session_changes(repo_path: String, session_id: String) -> napi::Result<()> {
     codelet_git::apply_session_changes(&repo_path, &session_id)
+        .map(|_| ())
         .map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
@@ -528,6 +529,10 @@ pub struct MergeResultJs {
     pub files_added: Vec<String>,
     /// Files that were deleted from main
     pub files_deleted: Vec<String>,
+    /// WT-008: the new commit created in the MAIN repo by the merge
+    /// (FastForward strategy), or `None` when there were no tracked
+    /// changes to commit.
+    pub merge_commit: Option<String>,
 }
 
 /// Result of discarding a session
@@ -630,6 +635,7 @@ pub fn merge_session(repo_path: String, session_id: String) -> napi::Result<Merg
         files_modified: result.files_modified,
         files_added: result.files_added,
         files_deleted: result.files_deleted,
+        merge_commit: result.merge_commit,
     })
 }
 

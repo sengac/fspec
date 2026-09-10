@@ -9,7 +9,7 @@
 
 mod common;
 
-use codelet_git::{IsolatedSessionInfo, FSPEC_WORKTREES_DIR};
+use codelet_git::{create_worktree, FSPEC_WORKTREES_DIR};
 use std::process::Command;
 
 // =============================================================================
@@ -44,7 +44,7 @@ fn test_worktree_has_all_tracked_files_in_git_index() {
     );
 
     // @step When I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, "test-index-session")
+    let info = create_worktree(repo_path, "test-index-session")
         .expect("Failed to create isolated session");
 
     // @step Then the worktree should exist at ".fspec/worktrees/<session-id>/"
@@ -56,7 +56,7 @@ fn test_worktree_has_all_tracked_files_in_git_index() {
     // @step And "git ls-files" in the worktree should return all tracked files
     let worktree_ls_files = Command::new("git")
         .args(["ls-files"])
-        .current_dir(info.effective_cwd())
+        .current_dir(&info.info.path)
         .output()
         .expect("Failed to run git ls-files in worktree");
 
@@ -98,13 +98,13 @@ fn test_worktree_has_clean_git_status_after_creation() {
     let repo_path = tmp_dir.path();
 
     // @step When I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, "test-status-session")
+    let info = create_worktree(repo_path, "test-status-session")
         .expect("Failed to create isolated session");
 
     // @step Then "git status" in the worktree should show clean state
     let git_status = Command::new("git")
         .args(["status", "--porcelain"])
-        .current_dir(info.effective_cwd())
+        .current_dir(&info.info.path)
         .output()
         .expect("Failed to run git status in worktree");
 
@@ -154,11 +154,11 @@ fn test_session_diff_shows_accurate_file_change_count() {
     let tmp_dir = common::setup_test_repo_with_files();
     let repo_path = tmp_dir.path();
 
-    let info = IsolatedSessionInfo::new_isolated(repo_path, "test-diff-session")
-        .expect("Failed to create isolated session");
+    let info =
+        create_worktree(repo_path, "test-diff-session").expect("Failed to create isolated session");
 
     // @step When I modify a file in the worktree
-    let worktree_path = info.effective_cwd();
+    let worktree_path = info.info.path.clone();
     let file_to_modify = worktree_path.join("src/main.rs");
     fs::write(&file_to_modify, "fn main() { println!(\"modified\"); }\n")
         .expect("Failed to modify file");
@@ -219,11 +219,11 @@ fn test_session_diff_detects_corrupted_empty_index() {
     let tmp_dir = common::setup_test_repo_with_files();
     let repo_path = tmp_dir.path();
 
-    let info = IsolatedSessionInfo::new_isolated(repo_path, "test-corrupted-session")
+    let info = create_worktree(repo_path, "test-corrupted-session")
         .expect("Failed to create isolated session");
 
     // Corrupt the index by removing it (simulates the bug)
-    let worktree_path = info.effective_cwd();
+    let worktree_path = info.info.path.clone();
     let index_path = worktree_path.join(".git"); // This is a file pointing to the real git dir
 
     // Read the gitdir reference

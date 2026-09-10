@@ -77,14 +77,20 @@ impl SessionManagerHooks for FspecAgentHooks {
 
     fn spawn_footer_poller(
         &self,
-        _session_id: String,
-        _cwd: String,
-        _worktree_path: Option<String>,
+        session_id: String,
+        cwd: String,
+        worktree_path: Option<String>,
     ) {
-        // Footer poller stays NAPI-only for now (TUI-091).
+        // WT-002: run the NAPI-free shared poller (codelet-sessions) so the
+        // fspec binary emits FooterStateUpdate chunks — the emission target
+        // is the manager's chunks_tx registered by build_service (falling
+        // back to the singleton when unregistered).
+        codelet_sessions::footer_poller::spawn_footer_poller(session_id, cwd, worktree_path);
     }
 
-    fn stop_footer_poller(&self, _session_id: &str) {}
+    fn stop_footer_poller(&self, session_id: &str) {
+        codelet_sessions::footer_poller::stop_footer_poller(session_id);
+    }
 
     /// RPC-059 parity: abort + remove every registered loop bound to the
     /// destroyed session so the process-global `LoopStore` does not

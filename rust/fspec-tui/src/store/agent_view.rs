@@ -14,12 +14,14 @@ use std::collections::HashMap;
 pub mod blocklist_state;
 pub mod chrome_state;
 pub mod chunk_processor;
+pub mod chunk_tool_result;
 pub mod chunk_wrap;
 pub mod diff_codec;
 pub mod diff_context;
 pub mod diff_decode;
 pub mod diff_format;
 pub mod exec_stdin_state; // TOOL-022 P2
+pub mod history_accessors;
 pub mod history_state;
 pub mod hitl_state; // RPC-411
 pub mod isolation_state;
@@ -31,6 +33,10 @@ pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
 pub mod role_state;
 pub mod sanitize;
+#[cfg(test)]
+pub mod sanitize_tests;
+#[cfg(test)]
+pub mod sanitize_tests_streaming;
 pub mod session_context;
 pub mod session_indexing;
 pub mod stderr;
@@ -265,35 +271,5 @@ impl AgentViewStore {
         } else {
             (self.current_session_index + 1, len)
         }
-    }
-}
-
-impl AgentViewStore {
-    // ── RPC-025 per-session history accessors ───────────────────────────
-
-    /// Borrow the current HistoryNavState for `session`, if any.
-    pub fn history_state_for(&self, session: &SessionId) -> Option<&HistoryNavState> {
-        self.history_state_by_session.get(session)
-    }
-
-    /// Mutable accessor — inserts a default state when missing.
-    pub fn history_state_for_mut(&mut self, session: &SessionId) -> &mut HistoryNavState {
-        self.history_state_by_session
-            .entry(session.clone())
-            .or_default()
-    }
-
-    pub fn cached_history_snapshot(&self, session: &SessionId) -> Option<&Vec<String>> {
-        self.cached_history_snapshot.get(session)
-    }
-
-    pub fn set_history_snapshot(&mut self, session: SessionId, snapshot: Vec<String>) {
-        self.cached_history_snapshot.insert(session, snapshot);
-    }
-
-    pub fn reset_history_state(&mut self, session: &SessionId) {
-        self.history_state_by_session
-            .insert(session.clone(), HistoryNavState::default());
-        self.cached_history_snapshot.remove(session);
     }
 }

@@ -101,14 +101,14 @@ impl App {
                 is_git_repo,
                 branch,
             } => {
-                // RPC-045: collapse the FooterStateUpdate shape onto the
-                // existing single-slot `workspace` field. The full
-                // (`display_path`, `is_git_repo`) detail is deferred to
-                // a future card that introduces a richer footer state —
-                // for now the SessionFooter only reads `cwd` and
-                // `git_branch`, which we set here. `is_git_repo == false`
-                // collapses the branch to `None`.
-                let git_branch = if *is_git_repo { branch.clone() } else { None };
+                // RPC-045 + WT-002: collapse onto the single-slot `workspace`
+                // field. is_git_repo=false → blank branch; is_git_repo=true
+                // + branch=None is a DETACHED-HEAD worktree → "(detached)".
+                let git_branch = match (*is_git_repo, branch.clone()) {
+                    (true, Some(b)) => Some(b),
+                    (true, None) => Some("(detached)".to_string()),
+                    (false, _) => None,
+                };
                 self.agent_view_store.set_workspace(Some(WorkspaceInfo {
                     cwd: cwd.clone(),
                     git_branch,

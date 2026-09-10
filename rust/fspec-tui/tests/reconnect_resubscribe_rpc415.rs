@@ -60,8 +60,14 @@ fn sid(s: &str) -> SessionId {
 /// Drain the App's action bus until a matching action arrives or the
 /// deadline elapses. Drains every currently-queued action each tick so a
 /// backlog does not starve the predicate before the deadline.
+///
+/// 2s deadline (raised from 500ms): the respawned subscriber tasks must be
+/// scheduled AND polled at least once after `Action::Reconnected` before
+/// they observe the post-reconnect events. Under CI/host load a fresh
+/// tokio task can be starved well past 500ms, which turns a correct
+/// respawn into a false-negative "event must reach the App" failure.
 async fn wait_for_action<F: Fn(&Action) -> bool>(app: &mut App, pred: F) -> Option<Action> {
-    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(500);
+    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(2000);
     while std::time::Instant::now() < deadline {
         while let Some(action) = app.try_recv_action() {
             if pred(&action) {
@@ -120,7 +126,9 @@ async fn each_broadcast_stream_delivers_a_post_reconnect_event_to_the_app() {
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.bootstrap().await.expect("bootstrap");
-    // Prime the chunks filter with a session id so the chunks subscriber forwards.
+    // Seed the mock's in-memory work units so the RPC-011 re-bootstrap
+    // refetch (list_work_units on Reconnected) carries a live snapshot.
+    mock.seed_work_units(vec![wu("SEED", "backlog")]);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     mock.disconnect_all();
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
@@ -128,51 +136,125 @@ async fn each_broadcast_stream_delivers_a_post_reconnect_event_to_the_app() {
     // @step When the App dispatches Action::Reconnected and the backend then emits one event on each of the work_units, chunks, logs, status_changes and session_created streams
     mock.reconnect_all();
     app.dispatch(Action::Reconnected);
-    // Allow the respawned subscriber tasks to subscribe to the new senders.
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-    mock.push_work_units(vec![wu("AUTH-LIVE", "backlog")]);
-    mock.push_chunk(sid("s-1"), StreamChunk::text("live".to_string()));
-    mock.push_status_change(sid("s-1"), codelet_rpc_types::SessionStatus::Running);
-    mock.push_session_created(sid("s-live"));
+    // RPC-415 determinism: `Action::Reconnected` also spawns a one-shot
+    // RPC-011 re-bootstrap (list_work_units refetch + create_session)
+    // whose WorkUnitsLoaded lands on the same bus as the broadcast
+    // events below. Wait for BOTH refetch backend calls to have run
+    // (polling the mock's call counters) so the refetch snapshot is
+    // already queued — and drained by the next bus sweep — BEFORE the
+    // broadcast events are pushed.
+    let baseline_list = mock.list_work_units_calls();
+    let baseline_create = mock.create_session_calls();
+    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(2000);
+    while std::time::Instant::now() < deadline
+        && (mock.list_work_units_calls() <= baseline_list
+            || mock.create_session_calls() <= baseline_create)
+    {
+        tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+    }
+    assert!(
+        mock.list_work_units_calls() > baseline_list,
+        "Reconnected must trigger the RPC-011 list_work_units refetch"
+    );
+    assert!(
+        mock.create_session_calls() > baseline_create,
+        "Reconnected must trigger the RPC-011 create_session refetch"
+    );
+    // Determinism harness: each RESPAWNED subscriber only binds to the
+    // new broadcast channel on its FIRST poll, and a broadcast send to
+    // a channel that currently has ZERO live receivers is silently
+    // dropped. So a push right after `Reconnected` can, under host
+    // load, land on a stream whose respawned subscriber has not yet
+    // polled — the EVENT is lost, not the subscriber (the observed
+    // flake: the failure hops between the chunk / status /
+    // session_created assertions depending on which stream's task got
+    // scheduled first). The loop below re-emits every not-yet-observed
+    // event each round (bounded at 5s total): a genuinely broken
+    // respawn (subscriber bound to the OLD client's receivers, or a
+    // stream that was never respawned) would never observe the
+    // re-emitted events either, so the scenario's discriminating power
+    // is unchanged — only the subscribe-vs-push race is removed.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    let mut wu_action = None;
+    let mut chunk_action = None;
+    let mut status_action = None;
+    let mut created_action = None;
+    while (wu_action.is_none()
+        || chunk_action.is_none()
+        || status_action.is_none()
+        || created_action.is_none())
+        && std::time::Instant::now() < deadline
+    {
+        if wu_action.is_none() {
+            mock.push_work_units(vec![wu("AUTH-LIVE", "backlog")]);
+        }
+        if chunk_action.is_none() {
+            mock.push_chunk(sid("s-1"), StreamChunk::text("live".to_string()));
+        }
+        if status_action.is_none() {
+            mock.push_status_change(sid("s-1"), codelet_rpc_types::SessionStatus::Running);
+        }
+        if created_action.is_none() {
+            mock.push_session_created(sid("s-live"));
+        }
+        // Drain the bus for up to 200ms, assigning each post-reconnect
+        // action to its slot (first match wins; duplicates of the
+        // re-emitted events are ignored).
+        let tick_deadline = std::time::Instant::now() + std::time::Duration::from_millis(200);
+        while std::time::Instant::now() < tick_deadline {
+            while let Some(action) = app.try_recv_action() {
+                if wu_action.is_none()
+                    && matches!(
+                        &action,
+                        Action::WorkUnitsLoaded(units)
+                            if units.iter().any(|u| u.id == "AUTH-LIVE")
+                    )
+                {
+                    wu_action = Some(action);
+                } else if chunk_action.is_none()
+                    && matches!(&action, Action::ChunkReceived(id, _) if id == &sid("s-1"))
+                {
+                    chunk_action = Some(action);
+                } else if status_action.is_none()
+                    && matches!(&action, Action::SessionStatusChanged(id, _) if id == &sid("s-1"))
+                {
+                    status_action = Some(action);
+                } else if created_action.is_none()
+                    && matches!(&action, Action::SessionCreated(id) if id.value == "s-live")
+                {
+                    created_action = Some(action);
+                }
+            }
+            if wu_action.is_some()
+                && chunk_action.is_some()
+                && status_action.is_some()
+                && created_action.is_some()
+            {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+    }
 
     // @step Then the App receives a WorkUnitsLoaded action carrying the post-reconnect work_units update
-    let wu_action = wait_for_action(&mut app, |a| {
-        matches!(a, Action::WorkUnitsLoaded(units) if units.iter().any(|u| u.id == "AUTH-LIVE"))
-    })
-    .await;
     assert!(
         wu_action.is_some(),
         "post-reconnect work_units update must reach the App"
     );
 
     // @step And the App receives a ChunkReceived action for the post-reconnect chunk
-    let chunk_action = wait_for_action(
-        &mut app,
-        |a| matches!(a, Action::ChunkReceived(id, _) if id == &sid("s-1")),
-    )
-    .await;
     assert!(
         chunk_action.is_some(),
         "post-reconnect chunk must reach the App"
     );
 
     // @step And the App receives a SessionStatusChanged action for the post-reconnect status change
-    let status_action = wait_for_action(
-        &mut app,
-        |a| matches!(a, Action::SessionStatusChanged(id, _) if id == &sid("s-1")),
-    )
-    .await;
     assert!(
         status_action.is_some(),
         "post-reconnect status change must reach the App"
     );
 
     // @step And the App receives a SessionCreated action for the post-reconnect session_created event
-    let created_action = wait_for_action(
-        &mut app,
-        |a| matches!(a, Action::SessionCreated(id) if id.value == "s-live"),
-    )
-    .await;
     assert!(
         created_action.is_some(),
         "post-reconnect session_created event must reach the App"

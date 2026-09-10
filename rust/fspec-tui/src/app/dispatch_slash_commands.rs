@@ -13,7 +13,6 @@
 //! `dispatch_slash_submit.rs` so both files stay under the 300-LoC
 //! ceiling.
 
-use crate::components::create_session_dialog::CreateSessionOption;
 use crate::components::help_dialog::HelpDialog;
 use crate::components::Action;
 use crate::views::agent::slash_commands::SlashCommandAction;
@@ -154,11 +153,23 @@ impl App {
                 // dispatch_mux_config.rs.
                 self.handle_open_mux_config_dialog();
             }
+            SlashCommandAction::Worktrees => {
+                // WT-005: /worktrees (palette pick or bare /worktrees
+                // submit) opens the SessionWorktreesDialog. Handler body
+                // lives in dispatch_worktrees.rs — spawns
+                // backend.list_session_worktrees() and pushes the dialog
+                // on the response.
+                self.handle_open_session_worktrees_dialog();
+            }
             SlashCommandAction::Isolation => {
-                // RPC-060: routed via try_dispatch_create_session_dialog in app/dispatch.rs.
-                let _ = self.action_tx.send(Action::OpenCreateSessionDialog {
-                    preselect: Some(CreateSessionOption::Isolated),
-                });
+                // RPC-060 + WT-009: /isolation is a real state toggle —
+                // tracked-isolated sessions detach (backend
+                // .detach_session_worktree), untracked live worktrees
+                // warn with the still-isolated notice, and everything
+                // else keeps the RPC-060 OpenCreateSessionDialog
+                // preselect CreateSessionOption::Isolated path.
+                // Handler body lives in dispatch_isolation_toggle.rs.
+                self.handle_slash_isolation_toggle();
             }
         }
     }

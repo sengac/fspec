@@ -1,0 +1,245 @@
+{
+  "scenarios": [
+    {
+      "name": "The /worktrees slash command lists session worktrees",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt005_worktrees_command.rs",
+          "lines": "121-172",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_worktrees.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The /worktrees slash command with no worktrees shows an empty-state row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt005_worktrees_command.rs",
+          "lines": "180-206",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/session_worktrees_dialog.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pruning from the /worktrees dialog removes leaked worktrees",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt005_worktrees_command.rs",
+          "lines": "250-281",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_worktrees.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pruning when nothing is leaked reports no leaked worktrees",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt005_worktrees_command.rs",
+          "lines": "288-310",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_worktrees.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prune failures surface an error notice",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt005_worktrees_command.rs",
+          "lines": "317-340",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_worktrees.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/wt005_worktrees_command.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_worktrees.rs",
+      "rust/fspec-tui/src/views/agent/session_worktrees_dialog.rs"
+    ],
+    "totalLinesCovered": 306
+  }
+}

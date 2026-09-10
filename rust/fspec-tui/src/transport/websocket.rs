@@ -1300,6 +1300,16 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    async fn detach_session_worktree(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .detach_session_worktree(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // RPC-058 — /schedule.
     // ─────────────────────────────────────────────────────────────────

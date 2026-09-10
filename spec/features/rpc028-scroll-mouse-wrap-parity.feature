@@ -99,7 +99,7 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
   @page-keys
   Scenario: ResumeSessionView Home jumps to the first session and scrolls to the top
     Given the /resume session picker is open with 20 sessions and visible_rows is 8
-    And the selected_index is 15 with scroll_offset 8
+    And the selected_index is 15 with scroll_offset 12
     When the user presses Home
     Then the selected_index is 0
     And the scroll_offset is 0
@@ -119,9 +119,9 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
   @mouse
   Scenario: Left-click on a row in /resume picker selects that row
     Given the /resume session picker is open with 20 sessions and visible_rows is 8
-    And the scroll_offset is 5 so rows 5..12 are visible
+    And the scroll_offset is 9 so sessions 9..12 are visible
     When the user left-clicks on the second visible row
-    Then the selected_index becomes 6
+    Then the selected_index becomes 10
     And the row is highlighted with the inverse style
 
   @thinking-level

@@ -8,6 +8,7 @@
 #![allow(dead_code)]
 
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
 
@@ -16,49 +17,57 @@ use tempfile::TempDir;
 /// Creates a repo with README.md and src/main.rs - suitable for most tests.
 pub fn setup_test_repo() -> TempDir {
     let tmp_dir = TempDir::new().expect("Failed to create temp dir");
-    let repo_path = tmp_dir.path();
+    let repo_path = tmp_dir.path().to_path_buf();
+    setup_repo_in(&repo_path);
+    tmp_dir
+}
+
+/// Create a basic test git repository (README.md + src/main.rs, one commit)
+/// at the given path. Returns the (canonicalized) repo path.
+pub fn setup_repo_in(path: &Path) -> PathBuf {
+    fs::create_dir_all(path).expect("Failed to create repo dir");
 
     // Initialize git repo
     Command::new("git")
         .args(["init"])
-        .current_dir(repo_path)
+        .current_dir(path)
         .output()
         .expect("Failed to init git repo");
 
     // Configure git user for commits
     Command::new("git")
         .args(["config", "user.email", "test@example.com"])
-        .current_dir(repo_path)
+        .current_dir(path)
         .output()
         .expect("Failed to configure git email");
 
     Command::new("git")
         .args(["config", "user.name", "Test User"])
-        .current_dir(repo_path)
+        .current_dir(path)
         .output()
         .expect("Failed to configure git user");
 
     // Create initial file and commit
-    fs::write(repo_path.join("README.md"), "# Test Repository\n").expect("Failed to write README");
+    fs::write(path.join("README.md"), "# Test Repository\n").expect("Failed to write README");
 
     // Create src directory with a file (needed by session_result tests)
-    let src_dir = repo_path.join("src");
+    let src_dir = path.join("src");
     fs::create_dir_all(&src_dir).expect("Failed to create src dir");
     fs::write(src_dir.join("main.rs"), "fn main() {}\n").expect("Failed to write main.rs");
 
     Command::new("git")
         .args(["add", "."])
-        .current_dir(repo_path)
+        .current_dir(path)
         .output()
         .expect("Failed to stage files");
 
     Command::new("git")
         .args(["commit", "-m", "Initial commit"])
-        .current_dir(repo_path)
+        .current_dir(path)
         .output()
         .expect("Failed to create commit");
 
-    tmp_dir
+    path.to_path_buf()
 }
 
 /// Create a test git repository with multiple source files

@@ -42,6 +42,9 @@ pub enum SlashCommandAction {
     /// MUX-004: `/mux` — open the MuxConfigDialog (bare /mux opens the
     /// config dialog; the on/off toggle lives inside the dialog).
     Mux,
+    /// WT-005: `/worktrees` — open the SessionWorktreesDialog listing
+    /// overlay (Prune action wired to `prune_orphaned_worktrees`).
+    Worktrees,
 }
 
 impl SlashCommandAction {
@@ -71,6 +74,7 @@ impl SlashCommandAction {
             SlashCommandAction::Goal => "goal",
             SlashCommandAction::Update => "update",
             SlashCommandAction::Mux => "mux",
+            SlashCommandAction::Worktrees => "worktrees",
         }
     }
 
@@ -144,7 +148,7 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     },
     SlashCommand {
         action: SlashCommandAction::Isolation,
-        description: "Toggle worktree isolation",
+        description: "Toggle worktree isolation (detach or create isolated session)",
     },
     SlashCommand {
         action: SlashCommandAction::Blocklist,
@@ -181,6 +185,10 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     SlashCommand {
         action: SlashCommandAction::Mux,
         description: "Configure the mux layout",
+    },
+    SlashCommand {
+        action: SlashCommandAction::Worktrees,
+        description: "List session worktrees and prune leaked ones",
     },
 ];
 

@@ -895,6 +895,16 @@ pub trait FspecBackend: Send + Sync {
         Ok(SessionChangesSummary::default())
     }
 
+    /// WT-009: detach a session from its isolation worktree (the
+    /// `/isolation` toggle-off path). The session keeps running; the
+    /// backend clears its worktree state, marks the worktree prunable,
+    /// and emits `IsolationStateChange(false, None)`.
+    async fn detach_session_worktree(&self, _session_id: SessionId) -> Result<()> {
+        Err(anyhow::anyhow!(
+            "detach_session_worktree is not supported by this transport"
+        ))
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // RPC-058 — /schedule.
     // ─────────────────────────────────────────────────────────────────

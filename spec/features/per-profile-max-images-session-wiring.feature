@@ -11,10 +11,11 @@ Feature: Per-profile Max Images session wiring
   session creation and on every mid-session model switch. The budget comes
   from the shared resolver resolve_profile_max_images (rust/sessions/src/
   model_resolution.rs) so no set-site can drift. It is registered alongside
-  the existing vision entry at all five set-sites that call
+  the existing vision entry at all set-sites that call
   set_session_model_vision: the shared create helper
-  (session_creation_helper.rs), the isolated-session create
-  (session_manager.rs), the mid-session set_model (handle_impl.rs), and the
+  (session_creation_helper.rs — serves BOTH the plain and the isolated
+  create paths after WT-012 migrated create_isolated_session_with_id onto
+  it), the mid-session set_model (handle_impl.rs), and the
   two NAPI model-switch bindings (session_bindings.rs). It is cleared on
   session destroy alongside the vision entry. maxImages is a tool-layer
   concern only — it is NOT bridged into OPENAI_* env vars by
@@ -31,7 +32,7 @@ Feature: Per-profile Max Images session wiring
   # ========================================
 
   Scenario: Session creation and model-switch set-sites register the max-images budget
-    Given the shared create, isolated create, mid-session set_model, and both NAPI model-switch set-sites exist
+    Given the shared create helper (plain + isolated create), mid-session set_model, and both NAPI model-switch set-sites exist
     When the max-images budget is resolved through the shared resolver
     Then each set-site registers the budget alongside the vision entry
     And the session destroy path clears the budget alongside the vision entry

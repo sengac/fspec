@@ -9,8 +9,8 @@
 mod common;
 
 use codelet_git::{
-    complete_session, create_session_manifest, delete_manifest, derive_session_status,
-    read_manifest, terminate_session, DerivedSessionStatus, IsolatedSessionInfo,
+    complete_session, create_session_manifest, create_worktree, delete_manifest,
+    derive_session_status, read_manifest, terminate_session, DerivedSessionStatus,
     FSPEC_WORKTREES_DIR,
 };
 use std::collections::HashSet;
@@ -55,8 +55,7 @@ fn test_isolated_session_completion_leaves_worktree() {
     let repo_path = tmp_dir.path();
 
     // @step And I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // @step And the session has a worktree
     let worktree_path = repo_path.join(FSPEC_WORKTREES_DIR).join(&session_id);
@@ -64,8 +63,8 @@ fn test_isolated_session_completion_leaves_worktree() {
         worktree_path.exists(),
         "Worktree should exist after creation"
     );
-    assert!(
-        info.worktree_path.is_some(),
+    assert_eq!(
+        info.info.path, worktree_path,
         "Session should have worktree_path"
     );
 
@@ -108,15 +107,14 @@ fn test_session_without_changes_has_clean_status() {
     let repo_path = tmp_dir.path();
 
     // @step And I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // Create the session manifest (normally done by BackgroundSession)
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
@@ -163,20 +161,19 @@ fn test_session_with_changes_has_pending_merge_status() {
     let repo_path = tmp_dir.path();
 
     // @step And I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // Create the session manifest (normally done by BackgroundSession)
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
     // @step And the session worktree has uncommitted changes
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
     fs::write(worktree_path.join("new_file.txt"), "New content\n")
         .expect("Failed to write file to worktree");
 
@@ -222,15 +219,14 @@ fn test_active_session_returns_active_status() {
     let repo_path = tmp_dir.path();
 
     // @step And I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // Create the session manifest (normally done by BackgroundSession)
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
@@ -239,7 +235,7 @@ fn test_active_session_returns_active_status() {
     active_sessions.insert(session_id.clone());
 
     // @step And the session worktree has uncommitted changes
-    let worktree_path = info.worktree_path.as_ref().expect("Should have worktree");
+    let worktree_path = &info.info.path;
     fs::write(worktree_path.join("new_file.txt"), "New content\n")
         .expect("Failed to write file to worktree");
 
@@ -277,8 +273,7 @@ fn test_worktree_without_manifest_is_orphaned() {
     let repo_path = tmp_dir.path();
 
     // @step And a worktree exists
-    let _info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let _info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     let worktree_path = repo_path.join(FSPEC_WORKTREES_DIR).join(&session_id);
     assert!(worktree_path.exists(), "Worktree should exist");
@@ -314,8 +309,7 @@ fn test_terminated_manifest_is_orphaned() {
     let repo_path = tmp_dir.path();
 
     // @step And a worktree exists
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     let worktree_path = repo_path.join(FSPEC_WORKTREES_DIR).join(&session_id);
     assert!(worktree_path.exists(), "Worktree should exist");
@@ -324,8 +318,8 @@ fn test_terminated_manifest_is_orphaned() {
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 
@@ -362,15 +356,14 @@ fn test_session_completion_updates_manifest() {
     let repo_path = tmp_dir.path();
 
     // @step And I create an isolated session
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // @step And a session manifest exists without completed_at
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create session manifest");
 

@@ -1,22 +1,24 @@
 //! PROV-144: Source-shape regression tests pinning the per-session image
-//! budget wiring across the five `set_session_model_vision` set-sites and
-//! the destroy-session clear path, plus the no-env-bridge invariant.
+//! budget wiring across the `set_session_model_vision` set-sites and the
+//! destroy-session clear path, plus the no-env-bridge invariant.
 //!
 //! Feature: spec/features/per-profile-max-images-session-wiring.feature
 //!
 //! Rule [2] of the work unit: the effective image budget is stored in the
 //! tool-layer session capability registry at session creation and on every
-//! mid-session model switch (all five set-sites that call
+//! mid-session model switch (all set-sites that call
 //! `set_session_model_vision`) and cleared on session destroy alongside the
 //! vision entry. Rule: `maxImages` is a tool-layer concern only — it is NOT
 //! bridged into `OPENAI_*` env vars by `apply_profile_env_vars`.
 //!
+//! WT-012: the isolated-session create path now routes through the shared
+//! helper (`create_background_session_inner`), so the set-site inventory is
+//! the shared helper (plain + isolated create), mid-session set_model
+//! (handle_impl.rs), and the two NAPI model-switch bindings
+//! (session_bindings.rs).
+//!
 //! Pattern mirrors `mcp_injection_source_shape.rs` (RPC-062): comment-stripped
 //! substring scans + `extract_fn_body` for the negative env-bridge check.
-//!
-//! RED PHASE: `set_session_model_max_images` / `clear_session_model_max_images`
-//! / `resolve_profile_max_images` do not exist in production source yet, so
-//! these tests FAIL until the implementation lands.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -131,23 +133,30 @@ fn scenario_shared_create_helper_sets_the_max_images_budget() {
 
 #[test]
 fn scenario_isolated_session_create_sets_the_max_images_budget() {
+    // WT-012: the isolated-session create path (create_isolated_session_with_id)
+    // delegates its bootstrap to the shared helper, so the max-images budget is
+    // registered for it by the shared create path — session_manager.rs no
+    // longer carries a direct `set_session_model_max_images(` set-site.
+    //
     // The file rust/sessions/src/session_manager.rs exists
     let src = source("sessions/src/session_manager.rs");
 
-    // The isolated-session create path is inspected
+    // @step Then each set-site registers the budget alongside the vision entry
+    // (the isolated create path registers it via the shared helper, not inline)
     let set_count = src.matches("set_session_model_max_images(").count();
-
-    // Asserts: it registers the max-images budget alongside the vision entry
     assert_eq!(
-        set_count, 1,
-        "expected exactly one `set_session_model_max_images(` call in \
-         session_manager.rs (create_isolated_session_with_id), found {set_count}"
+        set_count, 0,
+        "WT-012: create_isolated_session_with_id must register the max-images \
+         budget via the shared helper — session_manager.rs must carry \
+         zero direct `set_session_model_max_images(` call sites (found {set_count})"
     );
 
-    // Asserts: budget comes from the shared resolver
+    // Asserts: the isolated create path delegates to the shared helper
+    // (which registers the budget from `resolve_profile_max_images`)
     assert!(
-        src.contains("resolve_profile_max_images("),
-        "session_manager.rs must source the budget from `resolve_profile_max_images`"
+        src.contains("create_background_session_inner"),
+        "create_isolated_session_with_id must delegate to create_background_session_inner \
+         (the shared create path registers the max-images budget)"
     );
 }
 

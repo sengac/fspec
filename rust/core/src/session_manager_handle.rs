@@ -826,6 +826,7 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
             status: MergeStatus::NoChanges,
             conflicts: Vec::new(),
             merge_commit: None,
+            worktree_path: None,
         })
     }
 
@@ -859,7 +860,21 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
             insertions: 0,
             deletions: 0,
             commits: Vec::new(),
+            files_ignored: 0,
         })
+    }
+
+    /// WT-009: detach a session from its isolation worktree — the flip
+    /// side of session creation. Clears the session's `worktree_path`
+    /// and `base_commit`, deletes the git-session manifest so the
+    /// worktree becomes prunable, and emits
+    /// `IsolationStateChange(false, None)`. The session itself keeps
+    /// running with an effective cwd of the project root. The default
+    /// impl returns a safe "not isolated" error so existing handles
+    /// compile unchanged.
+    fn detach_session_worktree(&self, session_id: &SessionId) -> Result<(), String> {
+        let _ = session_id;
+        Err("session is not isolated".to_string())
     }
 
     // ========================================================================
@@ -1006,6 +1021,8 @@ pub struct StubSessionManagerHandle {
     prune_orphaned_worktrees_calls: AtomicU64,
     list_session_worktrees_calls: AtomicU64,
     inspect_session_changes_calls: AtomicU64,
+    // WT-009: per-call counter for the `detach_session_worktree` RPC.
+    detach_session_worktree_calls: AtomicU64,
     // RPC-058: per-stub seeded payloads + per-call counters for the
     // /schedule RPC surface (add / list / pause / resume / remove).
     scheduled_jobs: Arc<Mutex<Vec<ScheduledJob>>>,
@@ -1113,6 +1130,7 @@ impl StubSessionManagerHandle {
                 status: MergeStatus::NoChanges,
                 conflicts: Vec::new(),
                 merge_commit: None,
+                worktree_path: None,
             })),
             pruned_sessions: Arc::new(Mutex::new(Vec::new())),
             session_worktrees: Arc::new(Mutex::new(Vec::new())),
@@ -1121,12 +1139,14 @@ impl StubSessionManagerHandle {
                 insertions: 0,
                 deletions: 0,
                 commits: Vec::new(),
+                files_ignored: 0,
             })),
             merge_session_worktree_calls: AtomicU64::new(0),
             discard_session_worktree_calls: AtomicU64::new(0),
             prune_orphaned_worktrees_calls: AtomicU64::new(0),
             list_session_worktrees_calls: AtomicU64::new(0),
             inspect_session_changes_calls: AtomicU64::new(0),
+            detach_session_worktree_calls: AtomicU64::new(0),
             scheduled_jobs: Arc::new(Mutex::new(Vec::new())),
             schedule_add_calls: AtomicU64::new(0),
             schedule_list_calls: AtomicU64::new(0),
@@ -1264,6 +1284,11 @@ impl StubSessionManagerHandle {
     /// RPC-057: per-call counter — `inspect_session_changes`.
     pub fn inspect_session_changes_calls(&self) -> u64 {
         self.inspect_session_changes_calls.load(Ordering::SeqCst)
+    }
+
+    /// WT-009: per-call counter — `detach_session_worktree`.
+    pub fn detach_session_worktree_calls(&self) -> u64 {
+        self.detach_session_worktree_calls.load(Ordering::SeqCst)
     }
 
     /// RPC-057: seed the [`MergeOutcome`] returned by every subsequent
@@ -2272,6 +2297,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
                 status: MergeStatus::NoChanges,
                 conflicts: Vec::new(),
                 merge_commit: None,
+                worktree_path: None,
             }),
         }
     }
@@ -2313,8 +2339,15 @@ impl SessionManagerHandle for StubSessionManagerHandle {
                 insertions: 0,
                 deletions: 0,
                 commits: Vec::new(),
+                files_ignored: 0,
             }),
         }
+    }
+
+    fn detach_session_worktree(&self, _session_id: &SessionId) -> Result<(), String> {
+        self.detach_session_worktree_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(())
     }
 
     // ─────────────────────────────────────────────────────────────────

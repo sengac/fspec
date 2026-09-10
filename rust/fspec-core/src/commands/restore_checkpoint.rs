@@ -208,8 +208,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 ///
 /// When not forced and the working tree is dirty with files differing from
 /// the checkpoint, returns a conflict result WITHOUT touching the tree.
-/// Otherwise restores via codelet-git. Any codelet-git error (e.g. a missing
-/// ref) degrades to the not-found sentinel result (mirrors the TS bare-catch).
+/// Otherwise restores via codelet-git. A codelet-git `RestoreConflict`
+/// error (WT-010: the lower layer detected the divergence itself —
+/// reachable when the git working tree is clean) is surfaced as a
+/// conflict result; any OTHER codelet-git error (e.g. a missing ref)
+/// degrades to the not-found sentinel result (mirrors the TS bare-catch).
 fn restore_util(
     project_root: &Path,
     work_unit_id: &str,
@@ -243,6 +246,18 @@ fn restore_util(
             conflicted_files: Vec::new(),
             system_reminder: String::new(),
             requires_test_validation: false,
+        },
+        // WT-010: the lower layer detects the checkpoint-vs-workdir
+        // divergence itself when force=false (reachable when the git
+        // working tree is clean, e.g. the change was committed after the
+        // checkpoint). Surface it as a conflict, not the not-found
+        // sentinel.
+        Err(codelet_git::GitError::RestoreConflict { files }) => UtilResult {
+            success: false,
+            conflicts_detected: true,
+            conflicted_files: files.clone(),
+            system_reminder: conflict_reminder(checkpoint_name, work_unit_id, &files),
+            requires_test_validation: true,
         },
         Err(_) => not_found_result(checkpoint_name, work_unit_id),
     }

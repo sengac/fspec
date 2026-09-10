@@ -102,6 +102,72 @@ pub(crate) fn wheel_direction(event: &crossterm::event::Event) -> Option<WheelDi
     None
 }
 
+/// TUI-101 + RPC-396: all mouse handling for [`super::help_dialog::HelpDialog`],
+/// factored out of the shell so `help_dialog.rs` stays `Event::Key`-only
+/// (the RPC-023 source-shape guard) and under the 300-LoC ceiling.
+///
+/// Returns:
+/// * `Some(Ok(result))` — the event is a mouse event the dialog handles
+///   (drag navigation on the gutter, or wheel scroll);
+/// * `Some(Err(ignored))` — a mouse event the dialog ignores (falls
+///   through to the App);
+/// * `None` — not a mouse event; the caller continues with its
+///   key/paste handling.
+pub(crate) fn handle_dialog_mouse(
+    dialog: &mut super::help_dialog::HelpDialog,
+    event: &crossterm::event::Event,
+) -> Option<super::EventResult> {
+    use crossterm::event::{Event, MouseButton, MouseEventKind};
+    let mouse = match event {
+        Event::Mouse(m) => m,
+        _ => return None,
+    };
+
+    // TUI-101: scrollbar click-and-drag navigation.
+    let max = dialog.max_offset();
+    let total = dialog.lines.len();
+    let visible = dialog.visible_rows;
+    if total > visible {
+        if let Some(gutter) = dialog.last_gutter {
+            let inside =
+                crate::mouse::rect_contains(gutter, mouse.column, mouse.row);
+            match mouse.kind {
+                MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left) => {
+                    if inside {
+                        let geom = crate::mouse::scrollbar_drag::ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: dialog.scroll_offset,
+                        };
+                        if let Some(offset) = dialog.scrollbar_drag.on_mouse(*mouse, geom) {
+                            dialog.scroll_offset = offset.min(max);
+                        }
+                        return Some(super::EventResult::consumed());
+                    } else {
+                        // Reset drag state when clicking outside scrollbar
+                        if matches!(mouse.kind, MouseEventKind::Up(MouseButton::Left)) {
+                            dialog.scrollbar_drag.reset();
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    // RPC-396: mouse wheel scrolls the content (any wheel event while the
+    // dialog is open is ours — it is centered/topmost, so no hit-testing).
+    if let Some(dir) = wheel_direction(event) {
+        let step = dialog.wheel.step(dir);
+        let proposed = dialog.scroll_offset as i64 + step as i64;
+        dialog.scroll_offset = proposed.clamp(0, max as i64) as usize;
+        return Some(super::EventResult::consumed());
+    }
+    Some(super::EventResult::ignored())
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]

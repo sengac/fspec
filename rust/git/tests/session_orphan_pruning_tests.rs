@@ -8,8 +8,8 @@
 mod common;
 
 use codelet_git::{
-    create_session_manifest, delete_manifest, get_manifest_path, is_orphaned, prune_orphaned,
-    read_manifest, terminate_session, IsolatedSessionInfo,
+    create_session_manifest, create_worktree, delete_manifest, get_manifest_path, is_orphaned,
+    prune_orphaned, read_manifest, terminate_session,
 };
 use std::collections::HashSet;
 use std::fs;
@@ -51,8 +51,7 @@ fn test_detect_orphaned_when_manifest_missing() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let _info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let _info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // @step And no session manifest exists for "session-1"
     // NOTE: We deliberately do NOT create a manifest
@@ -94,15 +93,14 @@ fn test_detect_orphaned_when_manifest_terminated() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // @step And a session manifest exists for "session-2" with terminated flag set to true
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create manifest");
 
@@ -147,8 +145,7 @@ fn test_active_session_not_orphaned_even_without_manifest() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let _info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let _info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // @step And no session manifest exists for "session-3"
     // NOTE: We deliberately do NOT create a manifest
@@ -189,15 +186,14 @@ fn test_session_with_valid_manifest_not_orphaned() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let info = IsolatedSessionInfo::new_isolated(repo_path, &session_id)
-        .expect("Failed to create isolated session");
+    let info = create_worktree(repo_path, &session_id).expect("Failed to create isolated session");
 
     // @step And a session manifest exists for "session-4" with terminated flag set to false
     create_session_manifest(
         &session_id,
         repo_path,
-        info.worktree_path.clone(),
-        info.base_commit.clone(),
+        Some(info.info.path.clone()),
+        Some(info.base_commit.clone()),
     )
     .expect("Failed to create manifest");
 
@@ -251,16 +247,13 @@ fn test_prune_all_orphaned_worktrees() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let info_1 = IsolatedSessionInfo::new_isolated(repo_path, &session_1)
-        .expect("Failed to create session 1");
-    let info_2 = IsolatedSessionInfo::new_isolated(repo_path, &session_2)
-        .expect("Failed to create session 2");
-    let info_3 = IsolatedSessionInfo::new_isolated(repo_path, &session_3)
-        .expect("Failed to create session 3");
+    let info_1 = create_worktree(repo_path, &session_1).expect("Failed to create session 1");
+    let info_2 = create_worktree(repo_path, &session_2).expect("Failed to create session 2");
+    let info_3 = create_worktree(repo_path, &session_3).expect("Failed to create session 3");
 
-    let worktree_1 = info_1.worktree_path.clone().unwrap();
-    let worktree_2 = info_2.worktree_path.clone().unwrap();
-    let worktree_3 = info_3.worktree_path.clone().unwrap();
+    let worktree_1 = info_1.info.path.clone();
+    let worktree_2 = info_2.info.path.clone();
+    let worktree_3 = info_3.info.path.clone();
 
     // Verify worktrees exist
     assert!(worktree_1.exists(), "Worktree 1 should exist");
@@ -346,28 +339,26 @@ fn test_prune_returns_zero_when_no_orphans() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let info_1 = IsolatedSessionInfo::new_isolated(repo_path, &session_1)
-        .expect("Failed to create session 1");
-    let info_2 = IsolatedSessionInfo::new_isolated(repo_path, &session_2)
-        .expect("Failed to create session 2");
+    let info_1 = create_worktree(repo_path, &session_1).expect("Failed to create session 1");
+    let info_2 = create_worktree(repo_path, &session_2).expect("Failed to create session 2");
 
-    let worktree_1 = info_1.worktree_path.clone().unwrap();
-    let worktree_2 = info_2.worktree_path.clone().unwrap();
+    let worktree_1 = info_1.info.path.clone();
+    let worktree_2 = info_2.info.path.clone();
 
     // @step And all sessions have valid non-terminated manifest files
     create_session_manifest(
         &session_1,
         repo_path,
-        info_1.worktree_path.clone(),
-        info_1.base_commit.clone(),
+        Some(info_1.info.path.clone()),
+        Some(info_1.base_commit.clone()),
     )
     .expect("Failed to create manifest 1");
 
     create_session_manifest(
         &session_2,
         repo_path,
-        info_2.worktree_path.clone(),
-        info_2.base_commit.clone(),
+        Some(info_2.info.path.clone()),
+        Some(info_2.base_commit.clone()),
     )
     .expect("Failed to create manifest 2");
 
@@ -428,21 +419,19 @@ fn test_prune_returns_list_of_pruned_ids() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let _info_orphan_1 =
-        IsolatedSessionInfo::new_isolated(repo_path, &orphan_1).expect("Failed to create orphan 1");
-    let _info_orphan_2 =
-        IsolatedSessionInfo::new_isolated(repo_path, &orphan_2).expect("Failed to create orphan 2");
+    let _info_orphan_1 = create_worktree(repo_path, &orphan_1).expect("Failed to create orphan 1");
+    let _info_orphan_2 = create_worktree(repo_path, &orphan_2).expect("Failed to create orphan 2");
 
     // @step And 1 active session worktree "active-1"
-    let info_active = IsolatedSessionInfo::new_isolated(repo_path, &active_1)
-        .expect("Failed to create active session");
+    let info_active =
+        create_worktree(repo_path, &active_1).expect("Failed to create active session");
 
     // Create manifest for active session (so it's not orphaned due to valid manifest)
     create_session_manifest(
         &active_1,
         repo_path,
-        info_active.worktree_path.clone(),
-        info_active.base_commit.clone(),
+        Some(info_active.info.path.clone()),
+        Some(info_active.base_commit.clone()),
     )
     .expect("Failed to create manifest for active session");
 
@@ -479,7 +468,7 @@ fn test_prune_returns_list_of_pruned_ids() {
 
     // Verify active session worktree still exists
     assert!(
-        info_active.worktree_path.as_ref().unwrap().exists(),
+        info_active.info.path.exists(),
         "Active session worktree should still exist"
     );
 

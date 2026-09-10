@@ -55,6 +55,36 @@ fn uuid_from(id: &SessionId) -> Uuid {
     Uuid::parse_str(id.value.as_str()).unwrap_or_else(|_| Uuid::nil())
 }
 
+/// WT-003: the distinct repository roots a no-session-id worktree op
+/// (list/prune) must run against: the union of the in-memory sessions'
+/// project roots and the project roots recorded in every git-session
+/// manifest (`~/.fspec/git-sessions/`). Closed sessions leave their
+/// manifest behind, which is the only place their worktree's project
+/// root is recorded once the in-memory session is gone.
+fn session_worktree_repo_roots(manager: &SessionManager) -> Vec<String> {
+    let mut roots: std::collections::BTreeSet<String> =
+        manager.all_in_memory_project_roots().into_iter().collect();
+    if let Some(dir) = codelet_git::get_sessions_dir() {
+        if let Ok(entries) = std::fs::read_dir(&dir) {
+            for entry in entries.flatten() {
+                let name = entry.file_name();
+                let Some(name) = name.to_str() else {
+                    continue;
+                };
+                let Some(id) = name.strip_suffix(".json") else {
+                    continue;
+                };
+                if let Ok(Some(m)) = codelet_git::read_manifest(id) {
+                    if !m.project_root.as_os_str().is_empty() {
+                        roots.insert(m.project_root.to_string_lossy().into_owned());
+                    }
+                }
+            }
+        }
+    }
+    roots.into_iter().collect()
+}
+
 /// Production `SessionManagerHandle` impl for the extracted
 /// `SessionManager`.
 ///
@@ -1924,11 +1954,18 @@ impl codelet_core::SessionManagerHandle for SessionManager {
 
     // ========================================================================
     // RPC-057: Merge/worktree surface — delegates to `codelet-git`.
-    // The repo_path is resolved at call time via std::env::current_dir(),
-    // matching the blocklist_list pattern above. MergeStrategy is accepted
-    // on the trait surface for future evolution but the underlying
-    // codelet-git layer uses a single fast-forward-style algorithm
-    // (parity with the current TS sessionMergeChanges).
+    //
+    // WT-003: repo_path resolution. Session-scoped ops (merge/discard/
+    // inspect) resolve the repository from the session's own recorded
+    // project root (in-memory `BackgroundSession.project`, falling back
+    // to the git-session manifest's `project_root`, then the process
+    // cwd) — see `SessionManager::resolve_worktree_repo_path`. The
+    // no-session-id ops (list/prune) enumerate the distinct project
+    // roots of all in-memory sessions and run per root, aggregating
+    // results — never driven by the process cwd. MergeStrategy is
+    // accepted on the trait surface for future evolution but the
+    // underlying codelet-git layer uses a single fast-forward-style
+    // algorithm (parity with the current TS sessionMergeChanges).
     // ========================================================================
 
     fn merge_session_worktree(
@@ -1936,76 +1973,130 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         session_id: &SessionId,
         strategy: MergeStrategy,
     ) -> Result<MergeOutcome, String> {
-        // The strategy is reserved for future evolution — the codelet-git
-        // layer currently has only one merge algorithm.
-        let _ = strategy;
-        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
-        match codelet_git::merge_session(&repo_path, &session_id.value) {
+        // WT-008: the strategy is enforced in codelet-git — only
+        // FastForward is supported; anything else errors up front.
+        // WT-003: resolve the repo from the session's own project root,
+        // NOT the process cwd (the cwd only matters when neither an
+        // in-memory session nor a git-session manifest exists).
+        let repo_path = self.resolve_worktree_repo_path(&session_id.value);
+        // WT-009: resolve the worktree path for the outcome so the TUI's
+        // "Effective worktree: ..." conflict footer prints a real path the
+        // LLM can act on (instead of the session UUID).
+        let worktree_path = Some(
+            repo_path
+                .join(codelet_git::FSPEC_WORKTREES_DIR)
+                .join(&session_id.value)
+                .to_string_lossy()
+                .to_string(),
+        );
+        match codelet_git::merge_session_with_strategy(&repo_path, &session_id.value, &strategy) {
             Ok(result) => {
                 let total_changed = result.files_modified.len()
                     + result.files_added.len()
                     + result.files_deleted.len();
-                let status = if total_changed == 0 {
-                    MergeStatus::NoChanges
-                } else {
-                    MergeStatus::Success
-                };
+                if total_changed == 0 {
+                    // WT-009: NoChanges carries no worktree path — there is
+                    // nothing to act on in the worktree.
+                    return Ok(MergeOutcome {
+                        status: MergeStatus::NoChanges,
+                        conflicts: Vec::new(),
+                        merge_commit: result.merge_commit,
+                        worktree_path: None,
+                    });
+                }
                 Ok(MergeOutcome {
-                    status,
+                    status: MergeStatus::Success,
                     conflicts: Vec::new(),
-                    // codelet_git::merge_session does not surface the
-                    // resulting commit SHA today — None until it does.
-                    merge_commit: None,
+                    merge_commit: result.merge_commit,
+                    worktree_path,
                 })
             }
             Err(codelet_git::GitError::ConflictError { files }) => Ok(MergeOutcome {
                 status: MergeStatus::Conflict,
                 conflicts: files,
                 merge_commit: None,
+                worktree_path,
             }),
             Err(e) => Err(format!("{e}")),
         }
     }
 
     fn discard_session_worktree(&self, session_id: &SessionId) -> Result<(), String> {
-        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
+        // WT-003: resolve the repo from the session's own project root.
+        let repo_path = self.resolve_worktree_repo_path(&session_id.value);
         codelet_git::discard_session(&repo_path, &session_id.value)
             .map(|_| ())
             .map_err(|e| format!("{e}"))
     }
 
     fn prune_orphaned_worktrees(&self) -> Result<Vec<String>, String> {
-        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
-        // The active-session set is sourced from the live SessionManager.
-        let active: std::collections::HashSet<String> = self
-            .list_sessions(
-                &std::env::current_dir()
-                    .map(|p| p.to_string_lossy().to_string())
-                    .unwrap_or_default(),
-            )
-            .into_iter()
-            .map(|s| s.id)
-            .collect();
-        codelet_git::prune_orphaned(&repo_path, &active)
-            .map(|r| r.pruned)
-            .map_err(|e| format!("{e}"))
+        // WT-003: no session id on the wire — enumerate the distinct
+        // project roots of ALL in-memory sessions plus every git-session
+        // manifest (closed sessions leave their manifest behind, and it
+        // records the project root), and prune each root, aggregating the
+        // pruned ids. The active-session set is every in-memory session
+        // id (no project filter, no persisted-only sessions) so a live
+        // session is never pruned regardless of the process cwd the TUI
+        // was launched from.
+        let active = self.all_in_memory_session_ids();
+        let active_set: std::collections::HashSet<String> = active.into_iter().collect();
+        let roots = session_worktree_repo_roots(self);
+        let root_count = roots.len();
+        let mut pruned = Vec::new();
+        let mut last_error: Option<String> = None;
+        for root in &roots {
+            match codelet_git::prune_orphaned(root, &active_set) {
+                Ok(result) => pruned.extend(result.pruned),
+                Err(e) => {
+                    // A non-repository project root is expected (sessions
+                    // don't require a git repo) — warn and continue.
+                    tracing::warn!(
+                        project_root = %root,
+                        error = %e,
+                        "prune_orphaned_worktrees: skipping project root that is not a git repository"
+                    );
+                    last_error = Some(format!("{e}"));
+                }
+            }
+        }
+        // WT-003: only surface an error when NO root could be pruned at
+        // all (no in-memory sessions, no manifests, or the single known
+        // root is not a repository) — a mixed aggregate (some roots
+        // pruned, one root not a repo) must still return the pruned ids.
+        match (root_count, pruned.is_empty(), last_error) {
+            (0, _, _) => match std::env::current_dir() {
+                Ok(cwd) => codelet_git::prune_orphaned(&cwd, &active_set)
+                    .map(|r| r.pruned)
+                    .map_err(|e| format!("{e}")),
+                Err(e) => Err(format!("current_dir: {e}")),
+            },
+            (1, true, Some(err)) => Err(err),
+            _ => Ok(pruned),
+        }
     }
 
     fn list_session_worktrees(&self) -> Vec<SessionWorktreeInfo> {
-        let repo_path = match std::env::current_dir() {
-            Ok(p) => p,
-            Err(_) => return Vec::new(),
-        };
-        let worktrees = match codelet_git::list_worktrees(&repo_path) {
-            Ok(w) => w,
-            Err(_) => return Vec::new(),
-        };
-        worktrees
-            .into_iter()
-            .map(|w| {
+        // WT-003: no session id on the wire — enumerate the distinct
+        // project roots of all in-memory sessions plus every git-session
+        // manifest and aggregate the per-root worktree listings
+        // (deduplicated by session id).
+        let roots = session_worktree_repo_roots(self);
+        let mut out: Vec<SessionWorktreeInfo> = Vec::new();
+        let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
+        for root in &roots {
+            let worktrees = match codelet_git::list_worktrees(root) {
+                Ok(w) => w,
+                Err(_) => continue, // non-repository project roots are expected
+            };
+            for w in worktrees {
+                if !seen.insert(w.session_id.clone()) {
+                    continue;
+                }
                 // Dirty heuristic: a non-empty session diff means uncommitted
                 // changes are present in the worktree.
-                let dirty = codelet_git::get_session_diff(&repo_path, &w.session_id)
+                let diff = codelet_git::get_session_diff(root, &w.session_id);
+                let dirty = diff
+                    .as_ref()
                     .map(|r| {
                         !r.files_changed.is_empty()
                             || !r.files_added.is_empty()
@@ -2014,25 +2105,28 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     .unwrap_or(false);
                 // base_commit is the session's base; falls back to the
                 // worktree HEAD when the session_result is unavailable.
-                let base_commit = codelet_git::get_session_diff(&repo_path, &w.session_id)
-                    .map(|r| r.base_commit)
+                let base_commit = diff
+                    .as_ref()
+                    .map(|r| r.base_commit.clone())
                     .unwrap_or_else(|_| w.head_commit.clone());
-                SessionWorktreeInfo {
+                out.push(SessionWorktreeInfo {
                     session_id: SessionId::new(w.session_id),
                     worktree_path: w.path.to_string_lossy().to_string(),
                     base_commit,
                     head_commit: w.head_commit,
                     dirty,
-                }
-            })
-            .collect()
+                });
+            }
+        }
+        out
     }
 
     fn inspect_session_changes(
         &self,
         session_id: &SessionId,
     ) -> Result<SessionChangesSummary, String> {
-        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
+        // WT-003: resolve the repo from the session's own project root.
+        let repo_path = self.resolve_worktree_repo_path(&session_id.value);
         let result = codelet_git::inspect_session(&repo_path, &session_id.value)
             .map_err(|e| format!("{e}"))?;
         let files_changed = (result.files_changed.len()
@@ -2059,7 +2153,86 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             // codelet-git does not yet surface a session commit log;
             // leave empty until it does.
             commits: Vec::new(),
+            // WT-006: gitignored untracked files are honest, not changes.
+            files_ignored: result.files_ignored.len() as u32,
         })
+    }
+
+    /// WT-009: detach a session from its isolation worktree — the flip
+    /// side of session creation. Clears the session's `worktree_path`
+    /// and `base_commit` (interior-mutable on `BackgroundSession`),
+    /// deletes the git-session manifest so the worktree becomes
+    /// prunable, re-registers the footer poller against the project
+    /// root, and emits `IsolationStateChange(false, None)`. The
+    /// session itself keeps running.
+    fn detach_session_worktree(&self, session_id: &SessionId) -> Result<(), String> {
+        let session = self
+            .get_session(&session_id.value)
+            .map_err(|_| format!("session {} not found", session_id.value))?;
+
+        // Only isolated sessions can be detached.
+        let worktree = session
+            .worktree_path()
+            .ok_or_else(|| format!("session {} is not isolated", session_id.value))?;
+
+        // 1. Clear the in-memory isolation state — effective cwd falls
+        //    back to the project root from here on.
+        session.clear_isolation();
+
+        // 2. Delete the git-session manifest so
+        //    `codelet_git::is_orphaned` reports the worktree as prunable
+        //    (mirrors the WT-005 terminate-on-close cleanup; here the
+        //    session stays alive, so deletion is the ONLY signal).
+        //    Best-effort: a missing manifest (already merged/discarded)
+        //    is a silent no-op; a failure is logged and swallowed so the
+        //    detach never fails on bookkeeping.
+        match codelet_git::delete_manifest(&session_id.value) {
+            Ok(()) => tracing::info!(
+                session_id = %session_id.value,
+                "detach_session_worktree: git-session manifest deleted (worktree now prunable)"
+            ),
+            Err(e) => tracing::warn!(
+                session_id = %session_id.value,
+                error = %e,
+                "detach_session_worktree: failed to delete git-session manifest (best-effort)"
+            ),
+        }
+
+        // 3. Re-register the footer cwd registry against the project
+        //    root and re-spawn the footer poller so the footer stops
+        //    polling the (now untracked) worktree.
+        let project = session.project.clone();
+        let sid = session_id.value.clone();
+        self.hooks().stop_footer_poller(&sid);
+        codelet_tools::unregister_footer_cwd(uuid_from(session_id));
+        self.hooks().spawn_footer_poller(sid, project, None);
+
+        // 4. Re-inject the environment context WITHOUT isolation context
+        //    so the LLM's next reminder reflects the non-isolated state.
+        //    `session.inner` is a tokio mutex — bridge sync→async the
+        //    same way the other RPC-070 bridges do (multi-thread
+        //    runtime precondition).
+        let inner_mutex = session.inner.clone();
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async move {
+                let mut inner = inner_mutex.lock().await;
+                inner.inject_context_reminders();
+            })
+        });
+
+        // 5. Emit IsolationStateChange(false, None) on the manager-owned
+        //    chunks_tx so the TUI store flips the isolation badge off.
+        let _ = SessionManager::chunks_tx(self).send((
+            codelet_rpc_types::SessionId::from(session_id.value.clone()),
+            codelet_rpc_types::StreamChunk::isolation_state_change(false, None),
+        ));
+
+        tracing::info!(
+            session_id = %session_id.value,
+            former_worktree = %worktree.to_string_lossy(),
+            "detach_session_worktree: session detached from worktree"
+        );
+        Ok(())
     }
 
     // ─────────────────────────────────────────────────────────────────

@@ -6,9 +6,12 @@
 //! GIT-019: Add isolated parameter to session creation, track worktree info,
 //! implement effective_cwd() method.
 //!
-//! NOTE: The core isolation logic is tested in codelet-git::IsolatedSessionInfo tests.
-//! These tests verify the NAPI layer integration - that BackgroundSession correctly
-//! stores and exposes the isolation fields.
+//! NOTE: The core isolation logic is tested via codelet-git create_worktree /
+//! create_worktree_at_ref (WT-011: IsolatedSessionInfo was deleted).
+//! These tests verify the NAPI layer integration - that BackgroundSession
+//! correctly stores and exposes the isolation fields. The BackgroundSession
+//! struct now lives in the codelet-sessions crate
+//! (rust/sessions/src/background_session.rs).
 
 use std::fs;
 use std::path::Path;
@@ -17,8 +20,15 @@ use std::path::Path;
 // Source Code Verification Helpers
 // =============================================================================
 
+fn read_background_session_source() -> String {
+    // BackgroundSession was lifted from codelet-napi into the codelet-sessions
+    // crate (3affacdd: major architecture overhaul).
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../sessions/src/background_session.rs");
+    fs::read_to_string(&path).expect("Failed to read background_session.rs")
+}
+
 fn read_session_manager_source() -> String {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/session_manager.rs");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../sessions/src/session_manager.rs");
     fs::read_to_string(&path).expect("Failed to read session_manager.rs")
 }
 
@@ -33,13 +43,14 @@ fn read_session_manager_source() -> String {
 #[test]
 fn test_background_session_has_worktree_path_field() {
     // @step Given the BackgroundSession struct in session_manager.rs
-    let source = read_session_manager_source();
+    let source = read_background_session_source();
 
     // @step Then it should have a worktree_path field of type Option<PathBuf>
-    // Look for the field declaration with GIT-019 comment
+    // WT-009: interior-mutable (RwLock) so detach can clear it in place,
+    // still an Option<PathBuf>.
     assert!(
-        source.contains("pub worktree_path: Option<PathBuf>"),
-        "BackgroundSession should have pub worktree_path: Option<PathBuf> field"
+        source.contains("pub worktree_path: RwLock<Option<PathBuf>>"),
+        "BackgroundSession should have a worktree_path field of type Option<PathBuf>"
     );
 
     // Verify it has the GIT-019 documentation
@@ -59,11 +70,12 @@ fn test_background_session_has_worktree_path_field() {
 /// @step Then it should have a base_commit field of type Option<String>
 #[test]
 fn test_background_session_has_base_commit_field() {
-    let source = read_session_manager_source();
+    let source = read_background_session_source();
 
+    // @step Then it should have a base_commit field of type Option<String>
     assert!(
-        source.contains("pub base_commit: Option<String>"),
-        "BackgroundSession should have pub base_commit: Option<String> field"
+        source.contains("pub base_commit: RwLock<Option<String>>"),
+        "BackgroundSession should have a base_commit field of type Option<String>"
     );
 
     assert!(
@@ -83,7 +95,7 @@ fn test_background_session_has_base_commit_field() {
 /// @step And the method should return PathBuf
 #[test]
 fn test_background_session_has_effective_cwd_method() {
-    let source = read_session_manager_source();
+    let source = read_background_session_source();
 
     // Check for the method signature
     assert!(
@@ -102,20 +114,20 @@ fn test_background_session_has_effective_cwd_method() {
 // Scenario: effective_cwd returns worktree_path when Some
 // =============================================================================
 
-/// Verify effective_cwd uses worktree_path.unwrap_or_else pattern
+/// Verify effective_cwd uses worktree_path.unwrap_or pattern
 ///
 /// @step Given the effective_cwd implementation
 /// @step Then it should return worktree_path when Some
 /// @step And it should return project root when None
 #[test]
 fn test_effective_cwd_uses_correct_pattern() {
-    let source = read_session_manager_source();
+    let source = read_background_session_source();
 
     // Find the effective_cwd method body
     let method_start = source
         .find("pub fn effective_cwd(&self) -> PathBuf")
         .expect("effective_cwd method not found");
-    let method_body = &source[method_start..method_start + 200];
+    let method_body = &source[method_start..method_start + 400];
 
     // Verify it uses the correct pattern
     assert!(
@@ -142,13 +154,13 @@ fn test_default_session_creation_passes_none_for_worktree() {
     // Find BackgroundSession::new call in create_session_with_id
     // It should pass None for both worktree_path and base_commit
     assert!(
-        source.contains("None, // GIT-019: worktree_path (non-isolated by default)"),
-        "Default session creation should pass None for worktree_path with GIT-019 comment"
+        source.contains("worktree_path: None"),
+        "Default session creation should pass None for worktree_path"
     );
 
     assert!(
-        source.contains("None, // GIT-019: base_commit (non-isolated by default)"),
-        "Default session creation should pass None for base_commit with GIT-019 comment"
+        source.contains("base_commit: None"),
+        "Default session creation should pass None for base_commit"
     );
 }
 
@@ -163,13 +175,13 @@ fn test_default_session_creation_passes_none_for_worktree() {
 /// @step And it should accept base_commit: Option<String>
 #[test]
 fn test_background_session_new_accepts_worktree_params() {
-    let source = read_session_manager_source();
+    let source = read_background_session_source();
 
-    // Find the new() method signature
-    let new_method_start = source
-        .find("pub(crate) fn new(")
-        .expect("BackgroundSession::new not found");
-    let new_method_sig = &source[new_method_start..new_method_start + 500];
+    // Find the BackgroundSession::new signature (marked by its GIT-019 doc line)
+    let doc_start = source
+        .find("GIT-019: Added worktree_path and base_commit parameters")
+        .expect("BackgroundSession::new GIT-019 doc not found");
+    let new_method_sig = &source[doc_start..doc_start + 900];
 
     assert!(
         new_method_sig.contains("worktree_path: Option<PathBuf>"),
@@ -180,23 +192,4 @@ fn test_background_session_new_accepts_worktree_params() {
         new_method_sig.contains("base_commit: Option<String>"),
         "BackgroundSession::new should accept base_commit parameter"
     );
-}
-
-// =============================================================================
-// Integration Test: Verify codelet-git IsolatedSessionInfo is available
-// =============================================================================
-
-/// Verify that IsolatedSessionInfo from codelet-git can be used
-///
-/// This test ensures the integration between codelet-napi and codelet-git
-/// for the IsolatedSessionInfo type.
-#[test]
-fn test_isolated_session_info_is_importable() {
-    // This compiles only if IsolatedSessionInfo is properly exported
-    use codelet_git::IsolatedSessionInfo;
-
-    // Verify we can create instances
-    let info = IsolatedSessionInfo::new_non_isolated("/project");
-    assert!(!info.is_isolated());
-    assert_eq!(info.effective_cwd(), std::path::PathBuf::from("/project"));
 }

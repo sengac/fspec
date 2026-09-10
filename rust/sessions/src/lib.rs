@@ -21,6 +21,7 @@ pub mod credentials;
 pub mod default_model_persistence;
 pub mod default_thinking_level_persistence;
 pub mod exec_stdin_mapping;
+pub mod footer_poller;
 pub mod handle_impl;
 pub mod hitl_mapping;
 pub mod last_used_model_persistence;
@@ -30,8 +31,10 @@ pub mod mux_config_persistence;
 pub mod navigation;
 pub mod profile_persistence;
 pub mod profile_sections;
+pub mod resume_isolation;
 pub mod session_creation_helper;
 pub mod session_manager;
+pub mod session_tool_callbacks;
 pub mod startup_model_resolution;
 pub mod startup_model_utils;
 

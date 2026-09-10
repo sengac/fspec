@@ -15,7 +15,7 @@ use ratatui::Terminal;
 use tokio::time::timeout;
 
 mod common;
-use common::{buffer_to_rows, render_one_frame, test_app, MockBackend};
+use common::{buffer_to_rows, render_one_frame, MockBackend};
 
 fn sid(s: &str) -> SessionId {
     SessionId::new(s)
@@ -68,12 +68,6 @@ async fn resume_flow_renders_text_correctly() {
     assert!(result.is_ok(), "drain_pending should not timeout");
 
     // @step When I render the App into an 80x24 buffer
-    let (mut app, _terminal) = {
-        let backend: Arc<dyn FspecBackend> = mock.clone();
-        test_app(backend)
-    };
-    // Re-attach to the app we built above — we need to use the same app state.
-    // Actually, let's just render directly.
     let backend = TestBackend::new(80, 24);
     let mut terminal = Terminal::new(backend).expect("Terminal::new");
     let buf = render_one_frame(&mut terminal, &mut app);

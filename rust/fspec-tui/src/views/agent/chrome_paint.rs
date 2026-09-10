@@ -52,6 +52,12 @@ pub fn paint_header_and_role(
     let is_debug_enabled = sid
         .and_then(|s| store.debug_enabled_for(s))
         .unwrap_or(false);
+    // BUG-178: source the [ISOLATED] badge from the per-session slot
+    // populated by StreamChunk::IsolationStateChange — exactly the way
+    // is_debug_enabled reads its slot (never a hardcoded false).
+    let is_isolated = sid
+        .and_then(|s| store.isolation_state_for(s))
+        .is_some_and(|i| i.is_isolated);
     let subordinate_label =
         sid.and_then(|s| super::header_build::format_subordinate_label(store.supervisors_for(s)));
     SessionHeader {
@@ -64,7 +70,7 @@ pub fn paint_header_and_role(
         tokens,
         work_unit_id,
         work_unit_status,
-        is_isolated: false,
+        is_isolated,
         is_debug_enabled,
         is_select_mode,
         // RPC-099 — source these from the per-session TokenState so

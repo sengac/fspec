@@ -422,6 +422,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@interrupt` | Interrupt and cancellation handling features |
 | `@investigation` | Investigation and research tasks for evaluating technical approaches |
 | `@ipc` | Inter-process communication features using Unix sockets or named pipes |
+| `@isolation` | Worktree session-isolation scenarios — isolated sessions, IsolationStateChange stream chunks, isolation badge and toggles |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
 | `@item-mode` | Item mode for virtual list components |
 | `@jira` | JIRA integration and API features |
@@ -628,6 +629,7 @@ Tags tracking development status of features.
 | `@blocked` | Blocked |
 | `@bug` | Bug fix work units |
 | `@bug-169` | Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command |
+| `@bug-178` | Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid) |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
@@ -679,6 +681,16 @@ Tags tracking development status of features.
 | `@todo` | To Do |
 | `@tool-022` | Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt) |
 | `@wip` | Work In Progress |
+| `@wt-001` | Work unit identifier for WT-001 — IsolationStateChange stream chunk drops base_commit: create_isolated_session_with_id must emit via isolation_state_change_with_base so the TUI isolation badge can show the worktree base commit (worktree-isolation epic) |
+| `@wt-002` | Work unit identifier for WT-002 — fspec binary footer poller: FspecAgentHooks must spawn the NAPI-free footer poller so isolated worktree sessions show their git state in the footer (worktree-isolation epic) |
+| `@wt-003` | Work unit identifier for WT-003 — session worktree RPC ops must resolve the repo path from the session's own project root instead of the process cwd (worktree-isolation epic) |
+| `@wt-004` | Work unit identifier for WT-004 — isolation path-validation callback registration in the fspec binary: build_service registers the non-singleton SessionManager + shared codelet-sessions tool callbacks so worktree isolation is live (worktree-isolation epic) |
+| `@wt-006` | Work unit identifier for WT-006 — session merge/diff machinery is git-blind: surface gitignored files honestly, round-trip symlinks, and preserve the executable bit across merge and checkpoint (worktree-isolation epic) |
+| `@wt-007` | Work unit identifier for WT-007 — /resume loses worktree isolation: create_session_from_manifest must re-read the git session manifest and re-isolate formerly-isolated sessions (worktree-isolation epic) |
+| `@wt-008` | Work unit identifier for WT-008 — /merge-worktree commits nothing and FastForward is ignored: the merge must create a real commit in the main repo and reject unsupported strategies (worktree-isolation epic) |
+| `@wt-009` | Work unit identifier for WT-009 — /isolation must be a real toggle and /merge-worktree success must close the session and return to the board in the Rust TUI (worktree-isolation epic) |
+| `@wt-010` | Work unit identifier for WT-010 — restore_ghost_commit ignores the force parameter: non-forced restore must detect checkpoint-vs-workdir divergence and return Err(GitError::RestoreConflict) without clobbering local work (worktree-isolation epic) |
+| `@wt-012` | Work unit identifier for WT-012 — create_isolated_session_with_id duplicates the pre-RPC-425 session bootstrap: migrate it onto create_background_session_inner via a shared resolve_provider_manager helper so all three creation paths share one funnel (worktree-isolation epic) |
 
 **Rule**: Update status tags as features progress through development lifecycle.
 
@@ -764,4 +776,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-05T11:49:09.281Z_
+_Last updated: 2026-09-10T08:46:11.547Z_

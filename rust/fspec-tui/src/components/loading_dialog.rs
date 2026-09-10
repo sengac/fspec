@@ -76,9 +76,9 @@ impl LoadingDialog {
 }
 
 /// Paint `dialog` over `area`/`buf` (the pattern-B paint-over-the-panes
-/// helper): builds an `FspecDialog { accent: Cyan, title,
-/// rows: [spinner line, optional "(idx/total)"], footer: "",
-/// min_width: 40 }` and delegates the pixel paint to the single shared
+/// helper): builds a cyan `FspecDialog` spec with `title` and
+/// `rows: [spinner line, optional "(idx/total)"]` (empty footer,
+/// `min_width: 40`) and delegates the pixel paint to the single shared
 /// [`render_dialog`] implementation.
 pub fn render_loading_dialog(
     area: Rect,

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "80-110",
+          "lines": "86-116",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
@@ -49,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "116-180",
+          "lines": "123-262",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
@@ -93,7 +93,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "186-220",
+          "lines": "268-302",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
@@ -137,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "226-271",
+          "lines": "308-353",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",

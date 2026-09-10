@@ -299,6 +299,35 @@ pub fn apply_model_selection(
     })
 }
 
+/// WT-012: build a `ProviderManager` for a model string, funneling the
+/// construction + selection that was previously copy-pasted across
+/// `create_session_with_id`, `create_session_from_manifest` and
+/// `create_isolated_session_with_id`.
+///
+/// The funnel is `with_model_support()` (full registry) +
+/// [`apply_model_selection`] — the EXACT sequence the RPC-425 shared helper
+/// applies after construction, so every creation path (non-isolated create,
+/// resume, and now isolated create) resolves model selection through one
+/// code path:
+///
+/// * **registry model** (`provider/model`) — `select_model` (full registry
+///   validation, credential re-detection) + facade clear (RPC-348).
+/// * **profile model** (`provider:profile/model`) —
+///   `set_model_direct_with_profile` + the PROV-121 credential bridge
+///   (`apply_profile_env_vars`).
+/// * **codex / custom model** — `set_model_direct` + the RPC-348
+///   custom-provider facade re-resolution.
+///
+/// Must be called AFTER `credentials::resolve_and_set_env_var` so the
+/// registry re-detects freshly set credentials (PROV-057 staleness rule).
+pub async fn resolve_provider_manager(model: &str) -> Result<ProviderManager, String> {
+    let mut provider_manager = ProviderManager::with_model_support()
+        .await
+        .map_err(|e| format!("Failed to create provider manager: {e}"))?;
+    apply_model_selection(&mut provider_manager, model)?;
+    Ok(provider_manager)
+}
+
 /// PROV-121: bridge a selected local-server profile's stored credentials into
 /// the process environment the OpenAI client reads at dispatch time. This is
 /// the SINGLE source of truth for the credential bridge — both the shared

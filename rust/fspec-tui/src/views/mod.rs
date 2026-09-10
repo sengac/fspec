@@ -31,6 +31,7 @@ pub mod model_selector;
 pub mod multiplex;
 pub mod navigator;
 pub mod navigator_events;
+pub mod navigator_mux_events;
 pub mod provider_settings;
 
 pub use agent::{AgentView, RenderedChunk as AgentRenderedChunk};

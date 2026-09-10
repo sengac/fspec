@@ -1,0 +1,63 @@
+{
+  "scenarios": [
+    {
+      "name": "Isolated session creation chunk carries the worktree base commit",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt001_isolation_state_change_base_commit.rs",
+          "lines": "125-177",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1190,
+                1191,
+                1192,
+                1193
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-isolated session creation still emits a base_commit-free IsolationStateChange",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt001_isolation_state_change_base_commit.rs",
+          "lines": "179-222",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                740,
+                741,
+                742,
+                743
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/wt001_isolation_state_change_base_commit.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 112
+  }
+}

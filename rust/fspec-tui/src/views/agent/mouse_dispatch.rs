@@ -13,7 +13,6 @@ use ratatui::layout::Rect;
 
 use crate::components::scroll_viewport::WheelDirection;
 use crate::components::{Action, EventResult};
-use crate::mouse::gesture::SelectionGesture;
 use crate::mouse::scrollbar_drag::ScrollbarGeometry;
 
 use super::file_search_popup::FilePopupOutcome;
@@ -91,32 +90,47 @@ impl AgentView {
             MouseEventKind::Down(MouseButton::Left)
             | MouseEventKind::Drag(MouseButton::Left)
             | MouseEventKind::Up(MouseButton::Left) => {
-                // TUI-103: check if the click is on the scrollbar gutter
-                if let Some(sb_rect) = self.turn_modal_scrollbar_rect {
-                    if crate::mouse::rect_contains(sb_rect, ev.column, ev.row) {
-                        let total = self.turn_modal_total_rows;
-                        let viewport = self.turn_modal_viewport_rows;
-                        if total > viewport {
-                            let geom = ScrollbarGeometry {
-                                area_height: viewport,
-                                total_items: total,
-                                visible_items: viewport,
-                                current_offset: self.turn_modal_offset,
-                            };
-                            // Convert to body-local row
-                            let body = self.turn_modal_body_origin?;
-                            let local_row = ev.row.saturating_sub(body.y);
-                            let local_ev = MouseEvent {
-                                row: local_row,
-                                ..ev
-                            };
-                            if let Some(offset) =
-                                self.turn_modal_scrollbar_drag.on_mouse(local_ev, geom)
-                            {
-                                self.emit(Action::TurnModalJumpToOffset(offset));
-                            }
-                            return Some(EventResult::consumed());
+                // TUI-103: check if the click is on the scrollbar gutter.
+                // Mirror the TUI-102 scrollback routing semantics: only the
+                // DOWN event decides whether the interaction targets the
+                // scrollbar. A Drag/Up continues to the text-selection
+                // recognizer unless the Down was on the gutter (drag state
+                // active) — so a content press/drag/release can never be
+                // stolen by the `ScrollbarDrag` quick-click jump.
+                let scrollbar_active = self.turn_modal_scrollbar_drag.is_active();
+                let on_gutter = self
+                    .turn_modal_scrollbar_rect
+                    .map(|sb_rect| crate::mouse::rect_contains(sb_rect, ev.column, ev.row))
+                    .unwrap_or(false);
+                let route_to_scrollbar = match ev.kind {
+                    MouseEventKind::Down(MouseButton::Left) => on_gutter,
+                    MouseEventKind::Drag(MouseButton::Left)
+                    | MouseEventKind::Up(MouseButton::Left) => scrollbar_active,
+                    _ => false,
+                };
+                if route_to_scrollbar {
+                    let total = self.turn_modal_total_rows;
+                    let viewport = self.turn_modal_viewport_rows;
+                    if total > viewport {
+                        let geom = ScrollbarGeometry {
+                            area_height: viewport,
+                            total_items: total,
+                            visible_items: viewport,
+                            current_offset: self.turn_modal_offset,
+                        };
+                        // Convert to body-local row
+                        let body = self.turn_modal_body_origin?;
+                        let local_row = ev.row.saturating_sub(body.y);
+                        let local_ev = MouseEvent {
+                            row: local_row,
+                            ..ev
+                        };
+                        if let Some(offset) =
+                            self.turn_modal_scrollbar_drag.on_mouse(local_ev, geom)
+                        {
+                            self.emit(Action::TurnModalJumpToOffset(offset));
                         }
+                        return Some(EventResult::consumed());
                     }
                 }
                 // Click outside scrollbar: fall through to text selection
@@ -265,50 +279,6 @@ impl AgentView {
             self.emit(Action::CopyToClipboard(text));
         }
         Some(EventResult::consumed())
-    }
-
-    /// COPY-006: feed a left press/drag/release to the selection
-    /// recognizer with scrollback-relative coords (subtract the rect
-    /// origin) and fan the resulting gestures onto the action bus.
-    fn feed_selection_recognizer(&mut self, ev: MouseEvent, rect: Rect) {
-        let local = MouseEvent {
-            column: ev.column.saturating_sub(rect.x),
-            row: ev.row.saturating_sub(rect.y),
-            ..ev
-        };
-        let gestures = self.recognizer.on_mouse(local, std::time::Instant::now());
-        self.apply_selection_gestures(&gestures);
-    }
-
-    /// COPY-006: poll the recognizer from the run loop's render tick so a
-    /// stationary long-press fires its `Begin` gesture (~0.5s).
-    pub(crate) fn poll_selection_tick(&mut self) {
-        let gestures = self.recognizer.tick(std::time::Instant::now());
-        self.apply_selection_gestures(&gestures);
-    }
-
-    /// COPY-006: translate recognizer gestures into `Action`s and track
-    /// the view-local `text_selection_active` flag (rule [10]). Commit
-    /// keeps the flag set so the highlight persists (rule [2]).
-    fn apply_selection_gestures(&mut self, gestures: &[SelectionGesture]) {
-        for gesture in gestures {
-            match gesture {
-                SelectionGesture::Begin(cell) => {
-                    self.text_selection_active = true;
-                    self.emit(Action::SelectionBegin(*cell));
-                }
-                SelectionGesture::BeginLine(cell) => {
-                    self.text_selection_active = true;
-                    self.emit(Action::SelectionBeginLine(*cell));
-                }
-                SelectionGesture::Extend(cell) => self.emit(Action::SelectionExtend(*cell)),
-                SelectionGesture::Commit => self.emit(Action::SelectionCommit),
-                SelectionGesture::Cancel => {
-                    self.text_selection_active = false;
-                    self.emit(Action::SelectionClear);
-                }
-            }
-        }
     }
 }
 

@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "The footer renders a detached indicator for a detached-HEAD worktree instead of a blank branch",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt002_footer_detached_indicator.rs",
+          "lines": "38-71",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                1248,
+                1249,
+                1250,
+                1251,
+                1252,
+                1253,
+                1254,
+                1255,
+                1256,
+                1257,
+                1258,
+                1259,
+                1260,
+                1261,
+                1262,
+                1263,
+                1264
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The footer still collapses to a blank branch for a CWD that is not a git repository",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/wt002_footer_detached_indicator.rs",
+          "lines": "78-105",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/wt002_footer_detached_indicator.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
+    ],
+    "totalLinesCovered": 115
+  }
+}

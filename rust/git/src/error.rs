@@ -72,9 +72,22 @@ pub enum GitError {
     #[error("Conflict detected: {files:?} have been modified in both session and main worktree")]
     ConflictError { files: Vec<String> },
 
+    /// WT-010: conflict detected when restoring a ghost-commit checkpoint
+    /// with force=false — the working tree diverges from the checkpoint.
+    /// No files were written or deleted.
+    #[error("Restore conflict: {files:?} have changed since checkpoint (use force to overwrite)")]
+    RestoreConflict { files: Vec<String> },
+
     /// Git index is corrupted or missing
     #[error("Corrupted git index: {message}")]
     CorruptedIndex { message: String },
+
+    /// WT-008: the requested merge strategy is not supported. Only
+    /// FastForward is implemented; Squash/ThreeWay are rejected up
+    /// front so a client never silently gets a different algorithm than
+    /// it asked for. No files were copied or committed.
+    #[error("Unsupported merge strategy: only FastForward is supported")]
+    UnsupportedMergeStrategy,
 
     /// Other error
     #[error("{0}")]

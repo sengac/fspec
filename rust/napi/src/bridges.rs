@@ -25,18 +25,18 @@
 //!   that mirror the closure captures so unit tests can exercise the
 //!   capture-time semantics without spinning up a session (lines 2022-
 //!   2032 and 2039-2046).
-//! - `get_session_work_unit_stage()` and `get_session_effective_cwd()`
-//!   — the work-unit-stage and isolation-context callbacks consumed by
-//!   `FileToolFacadeWrapper` / `BashToolFacadeWrapper` (lines 4002-
-//!   4054). Kept private to bridges.rs because their sole consumer is
-//!   `init_block_notification_callbacks()` above.
+//! - WT-004: `emit_block_notification_to_tui()` is now a thin shim over the
+//!   shared `codelet_sessions::session_tool_callbacks::emit_block_notification`
+//!   (two-front-doors rule); `get_session_work_unit_stage()` and
+//!   `get_session_effective_cwd()` were removed in favor of the shared
+//!   `work_unit_stage` / `isolation_context` functions registered by
+//!   `init_block_notification_callbacks()`.
 //!
-//! No behaviour changes — every function body is byte-identical to the
-//! pre-RPC-043 `session_manager.rs` version. Only the import paths and
-//! the visibility modifiers (`fn` → `pub(crate) fn` for the call-sites
+//! No behaviour changes — every surviving function body is byte-identical
+//! to the pre-RPC-043 `session_manager.rs` version. Only the import paths
+//! and the visibility modifiers (`fn` → `pub(crate) fn` for the call-sites
 //! that survive in `session_manager.rs`) differ.
 
-use crate::types::{NotificationSeverity, StreamChunk};
 use codelet_sessions::session_manager::SessionManager;
 use codelet_tools::facade::{
     set_block_notification_callback, set_get_effective_cwd_callback,
@@ -45,6 +45,11 @@ use codelet_tools::facade::{
 use uuid::Uuid;
 
 // RPC-043: imports consumed only by the test modules migrated below.
+// WT-004: StreamChunk is no longer used by the production code in this
+// file (the block-notification emitter now delegates to the shared
+// codelet-sessions module) — tests still use it via `use super::*`.
+#[cfg(test)]
+use crate::types::StreamChunk;
 #[cfg(test)]
 use codelet_sessions::background_session::SUPERVISOR_BROADCAST_CAPACITY;
 #[cfg(test)]
@@ -176,15 +181,27 @@ pub(crate) fn extract_agent_manager_handler_values(
 
 /// Initialize the block notification callbacks for the tools crate.
 /// This is called once when the global chunk callback is set.
+///
+/// WT-004 (two-front-doors rule): registers the SHARED NAPI-free callback
+/// functions from `codelet_sessions::session_tool_callbacks` — the same
+/// single source of truth the fspec binary's `build_service` registers.
+/// The NAPI path does NOT call `register_manager`: the shared callbacks'
+/// manager slot stays empty and their lookups fall back to
+/// `SessionManager::instance()`, which is the session store this adapter
+/// drives (today's behavior, byte-for-byte).
 pub(crate) fn init_block_notification_callbacks() {
     // Register the block notification callback
     set_block_notification_callback(emit_block_notification_to_tui);
 
-    // Register the work unit stage callback
-    set_get_work_unit_stage_callback(get_session_work_unit_stage);
+    // Register the work unit stage callback (WT-004: shared impl)
+    set_get_work_unit_stage_callback(
+        codelet_sessions::session_tool_callbacks::work_unit_stage,
+    );
 
-    // GIT-020: Register the effective_cwd callback
-    set_get_effective_cwd_callback(get_session_effective_cwd);
+    // GIT-020: Register the effective_cwd callback (WT-004: shared impl)
+    set_get_effective_cwd_callback(
+        codelet_sessions::session_tool_callbacks::isolation_context,
+    );
 }
 
 /// BRIDGE-SESSION: Register session list and model info providers with the bridge relay.
@@ -291,84 +308,23 @@ pub(crate) fn init_bridge_session_and_terminal_creators() {
 /// Callback function that emits a block notification to the TUI.
 /// Called by BashToolFacadeWrapper and FileToolFacadeWrapper when an action is blocked.
 ///
-/// RPC-041: routes the UserNotification chunk through
-/// `SessionManager::instance().chunks_tx().send(...)` — the napi-side
-/// fan-out task subscribed by `session_set_global_chunk_callback`
-/// delivers it to the TS callback exactly as before.
+/// WT-004: the implementation moved to the shared NAPI-free module
+/// (`codelet_sessions::session_tool_callbacks::emit_block_notification`) so
+/// both front doors run the same code (two-front-doors rule). This function
+/// is now a thin delegating shim that keeps the `emit_block_notification_to_tui`
+/// name pinned by the RPC-043 shape tests. The shared emitter targets the
+/// footer-poller chunk-sender slot, which in this process is the singleton
+/// manager's `chunks_tx` (re-registered by the NAPI footer-poller shim on
+/// every spawn) — or the singleton by fallback. Either way the chunk lands
+/// on `SessionManager::instance().chunks_tx()`, exactly as before
+/// (RPC-041: the napi-side fan-out task subscribed by
+/// `session_set_global_chunk_callback` delivers it to the TS callback).
 pub(crate) fn emit_block_notification_to_tui(
     session_id_str: String,
     action: String,
     reason: String,
 ) {
-    // Format the notification message: "AI was blocked from {action} - {reason}"
-    let message = format!("AI was blocked from {} - {}", action, reason);
-
-    // Create a UserNotification chunk with Warning severity
-    let chunk = StreamChunk::user_notification(message, NotificationSeverity::Warning);
-
-    // RPC-041: emit via the manager-owned chunks_tx broadcast (was
-    // previously dispatched through the deleted chunk-callback OnceCell static).
-    let _ = SessionManager::instance()
-        .chunks_tx()
-        .send((codelet_rpc_types::SessionId::from(session_id_str), chunk));
-}
-
-/// Callback function that retrieves the current work unit stage for a session.
-/// Called by FileToolFacadeWrapper to check stage permissions.
-fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
-    // Try to get the session from the SessionManager
-    let manager = SessionManager::instance();
-
-    // Get the session by ID (handles UUID parsing internally)
-    if let Ok(session) = manager.get_session(&session_id_str) {
-        // Get the work unit context from the session
-        if let Some(ctx) = session.get_work_unit_context() {
-            // Return the status (stage) if available
-            return ctx.status;
-        }
-    }
-
-    None
-}
-
-/// GIT-020: Callback function that retrieves the isolation context for a session.
-/// Called by FileToolFacadeWrapper and BashToolFacadeWrapper for isolated session support.
-///
-/// For isolated sessions, returns Some(IsolationContext) with:
-/// - worktree_path: Where file operations ARE allowed (the isolated worktree)
-/// - blocked_project_path: Where file operations are BLOCKED (the original project)
-///
-/// For non-isolated sessions, returns None to SKIP path validation entirely.
-///
-/// CRITICAL: Non-isolated sessions MUST return None so they can access ANY path
-/// (e.g., /tmp, /etc, anywhere on the filesystem). Only isolated sessions should
-/// have their file access restricted.
-///
-/// GIT-020 FIX: The isolation should ONLY block the original project directory,
-/// NOT all paths outside the worktree. Paths like /tmp, /etc are ALLOWED.
-fn get_session_effective_cwd(
-    session_id_str: String,
-) -> Option<codelet_tools::facade::IsolationContext> {
-    // Try to get the session from the SessionManager
-    let manager = SessionManager::instance();
-
-    // Get the session by ID (handles UUID parsing internally)
-    if let Ok(session) = manager.get_session(&session_id_str) {
-        // CRITICAL: Only return Some(...) for isolated sessions.
-        // Non-isolated sessions must return None to skip path validation.
-        // session.worktree_path is Some only for isolated sessions.
-        if let Some(ref worktree_path) = session.worktree_path {
-            // Create IsolationContext with:
-            // - worktree_path: The isolated worktree (ALLOWED)
-            // - blocked_project_path: The original project (BLOCKED)
-            return Some(codelet_tools::facade::IsolationContext {
-                worktree_path: worktree_path.clone(),
-                blocked_project_path: std::path::PathBuf::from(&session.project),
-            });
-        }
-    }
-
-    None
+    codelet_sessions::session_tool_callbacks::emit_block_notification(session_id_str, action, reason);
 }
 
 // ============================================================================

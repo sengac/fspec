@@ -8,9 +8,9 @@
 //! operations.
 
 use crate::error::Result;
+use crate::tree_snapshot::TreeSnapshot;
 use crate::utils::is_binary_content;
 use diffy::{ConflictStyle, MergeOptions};
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -60,50 +60,59 @@ pub fn three_way_merge_text(base: &str, session: &str, main: &str) -> MergeOutco
 /// Write conflict markers into worktree files for detected conflicts.
 ///
 /// For each conflicting file:
-/// - Text files: perform three-way merge, write result to worktree
-/// - Binary files: skip (no markers possible), keep session version
+/// - Text blob files: perform three-way merge, write result to worktree
+/// - Symlinks and gitlinks: cannot carry conflict markers — reported as
+///   conflicts as-is (WT-006)
+/// - Binary blob files: skip (no markers possible), keep session version
 ///
 /// Returns the list of files that have actual unresolvable conflicts
 /// (auto-merged files are removed from the conflict list).
 ///
 /// # Arguments
 /// * `worktree_path` - Path to the session worktree directory
-/// * `potential_conflicts` - Files detected as diverged (both sides changed)
-/// * `base_tree_files` - Content of each file at the base commit
-/// * `worktree_files` - Content of each file in the session worktree
-/// * `main_files` - Content of each file in the main worktree
+/// * `potential_conflicts` - Paths detected as diverged (both sides changed)
+/// * `base` - TreeSnapshot of the base commit
+/// * `worktree` - TreeSnapshot of the session worktree
+/// * `main` - TreeSnapshot of the main worktree
 pub fn write_conflict_markers(
     worktree_path: &Path,
     potential_conflicts: &[String],
-    base_tree_files: &HashMap<String, Vec<u8>>,
-    worktree_files: &HashMap<String, Vec<u8>>,
-    main_files: &HashMap<String, Vec<u8>>,
+    base: &TreeSnapshot,
+    worktree: &TreeSnapshot,
+    main: &TreeSnapshot,
 ) -> Result<Vec<String>> {
     let mut actual_conflicts = Vec::new();
 
     for path in potential_conflicts {
-        let session_content = worktree_files.get(path);
-        let main_content = main_files.get(path);
-        let base_content = base_tree_files.get(path);
+        // WT-006: symlinks and gitlinks cannot be conflict-marked — they
+        // remain conflicts (the session's version stays in the worktree).
+        if worktree.symlinks.contains_key(path)
+            || worktree.gitlinks.contains_key(path)
+            || base.symlinks.contains_key(path)
+            || base.gitlinks.contains_key(path)
+        {
+            actual_conflicts.push(path.clone());
+            continue;
+        }
 
         // Get the raw bytes for each version (empty if not present)
-        let session_bytes = session_content.map(|v| v.as_slice()).unwrap_or(&[]);
-        let main_bytes = main_content.map(|v| v.as_slice()).unwrap_or(&[]);
-        let base_bytes = base_content.map(|v| v.as_slice()).unwrap_or(&[]);
+        let session_bytes = worktree.entry_bytes(path).unwrap_or_default();
+        let main_bytes = main.entry_bytes(path).unwrap_or_default();
+        let base_bytes = base.entry_bytes(path).unwrap_or_default();
 
         // Skip three-way merge for binary files — they remain as conflicts
-        if is_binary_content(session_bytes)
-            || is_binary_content(main_bytes)
-            || is_binary_content(base_bytes)
+        if is_binary_content(&session_bytes)
+            || is_binary_content(&main_bytes)
+            || is_binary_content(&base_bytes)
         {
             actual_conflicts.push(path.clone());
             continue;
         }
 
         // Convert to UTF-8 (lossy) for text merge
-        let base_str = String::from_utf8_lossy(base_bytes);
-        let session_str = String::from_utf8_lossy(session_bytes);
-        let main_str = String::from_utf8_lossy(main_bytes);
+        let base_str = String::from_utf8_lossy(&base_bytes);
+        let session_str = String::from_utf8_lossy(&session_bytes);
+        let main_str = String::from_utf8_lossy(&main_bytes);
 
         match three_way_merge_text(&base_str, &session_str, &main_str) {
             MergeOutcome::Clean(merged) => {
@@ -320,21 +329,23 @@ mod tests {
         // Create the worktree file with session content
         std::fs::write(worktree_path.join("logo.png"), &session_content).unwrap();
 
-        let mut base_tree = HashMap::new();
-        base_tree.insert("logo.png".to_string(), base_content);
+        let mut base_tree = TreeSnapshot::new();
+        base_tree.blobs.insert("logo.png".to_string(), base_content);
 
-        let mut worktree_files = HashMap::new();
-        worktree_files.insert("logo.png".to_string(), session_content.clone());
+        let mut worktree_snap = TreeSnapshot::new();
+        worktree_snap
+            .blobs
+            .insert("logo.png".to_string(), session_content.clone());
 
-        let mut main_files = HashMap::new();
-        main_files.insert("logo.png".to_string(), main_content);
+        let mut main_snap = TreeSnapshot::new();
+        main_snap.blobs.insert("logo.png".to_string(), main_content);
 
         let actual_conflicts = write_conflict_markers(
             worktree_path,
             &["logo.png".to_string()],
             &base_tree,
-            &worktree_files,
-            &main_files,
+            &worktree_snap,
+            &main_snap,
         )
         .unwrap();
 
@@ -424,24 +435,24 @@ mod tests {
         std::fs::write(worktree_path.join("a.txt"), &session_a).unwrap();
         std::fs::write(worktree_path.join("b.txt"), &session_b).unwrap();
 
-        let mut base_tree = HashMap::new();
-        base_tree.insert("a.txt".to_string(), base_a);
-        base_tree.insert("b.txt".to_string(), base_b);
+        let mut base_tree = TreeSnapshot::new();
+        base_tree.blobs.insert("a.txt".to_string(), base_a);
+        base_tree.blobs.insert("b.txt".to_string(), base_b);
 
-        let mut worktree_files = HashMap::new();
-        worktree_files.insert("a.txt".to_string(), session_a);
-        worktree_files.insert("b.txt".to_string(), session_b);
+        let mut worktree_snap = TreeSnapshot::new();
+        worktree_snap.blobs.insert("a.txt".to_string(), session_a);
+        worktree_snap.blobs.insert("b.txt".to_string(), session_b);
 
-        let mut main_files = HashMap::new();
-        main_files.insert("a.txt".to_string(), main_a);
-        main_files.insert("b.txt".to_string(), main_b);
+        let mut main_snap = TreeSnapshot::new();
+        main_snap.blobs.insert("a.txt".to_string(), main_a);
+        main_snap.blobs.insert("b.txt".to_string(), main_b);
 
         let actual_conflicts = write_conflict_markers(
             worktree_path,
             &["a.txt".to_string(), "b.txt".to_string()],
             &base_tree,
-            &worktree_files,
-            &main_files,
+            &worktree_snap,
+            &main_snap,
         )
         .unwrap();
 

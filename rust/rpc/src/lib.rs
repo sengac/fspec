@@ -630,6 +630,12 @@ pub trait FspecService {
         session_id: SessionId,
     ) -> Result<SessionChangesSummary, String>;
 
+    /// WT-009: detach a session from its isolation worktree (clears the
+    /// session's worktree path/base commit, deletes the git-session
+    /// manifest, re-spawns the footer poller with the project cwd, emits
+    /// IsolationStateChange(false, None)). The session keeps running.
+    async fn detach_session_worktree(session_id: SessionId) -> Result<(), String>;
+
     /// RPC-058: persist a new scheduled job.
     async fn schedule_add(job: ScheduledJob) -> Result<ScheduledJob, String>;
 
@@ -1248,13 +1254,19 @@ impl FspecService for FspecServiceImpl {
         // `codelet_git::status::get_current_branch`. When no cwd is
         // attached we fall back to `std::env::current_dir()` for the
         // cwd string but DELIBERATELY skip the git probe so the
-        // SessionFooter degrades to a bare-cwd render (no `[⌥ branch]`).
+        // SessionFooter degrades to a bare-cwd render (no `[⎇ branch]`).
+        //
+        // WT-002: a detached-HEAD cwd is still a git repo — the footer
+        // shows a "(detached)" indicator (the dispatch layer derives it
+        // from `git_branch == Some("(detached)")`) rather than a blank
+        // branch.
         match self.inner.cwd() {
             Some(cwd_buf) => {
                 let cwd_buf = cwd_buf.clone();
-                let git_branch = codelet_git::status::get_current_branch(&cwd_buf)
-                    .ok()
-                    .flatten();
+                let git_branch = match codelet_git::status::get_current_branch(&cwd_buf) {
+                    Ok(branch) => branch.or(Some("(detached)".to_string())),
+                    Err(_) => None,
+                };
                 WorkspaceInfo {
                     cwd: cwd_buf.to_string_lossy().into_owned(),
                     git_branch,
@@ -2162,6 +2174,17 @@ impl FspecService for FspecServiceImpl {
         match self.inner.session_manager() {
             Some(handle) => handle.inspect_session_changes(&session_id),
             None => Ok(SessionChangesSummary::default()),
+        }
+    }
+
+    async fn detach_session_worktree(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.detach_session_worktree(&session_id),
+            None => Err("no session manager available".to_string()),
         }
     }
 
