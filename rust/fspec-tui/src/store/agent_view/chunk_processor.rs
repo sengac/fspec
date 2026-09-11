@@ -106,26 +106,12 @@ pub fn finalize_in_flight_thinking(ctx: &mut SessionContext) {
 
 /// Mirrors `processStreamingChunk` Done branch
 /// (`chunkProcessor.ts:538-558`).
+///
+/// RPC-432: the markdown-table formatting moved into
+/// [`flush_in_flight_drop_empty`] (shared by every flush trigger), so
+/// Done is just the shared flush plus the thinking-slot clear.
 pub fn handle_done(ctx: &mut SessionContext) {
-    if let Some(idx) = ctx.in_flight_assistant {
-        let is_empty = ctx
-            .scrollback
-            .chunks()
-            .get(idx)
-            .and_then(|c| c.source.as_ref())
-            .map(|s| s.text.is_empty())
-            .unwrap_or(true);
-        if is_empty {
-            ctx.scrollback.chunks_mut().remove(idx);
-        } else if let Some(chunk) = ctx.scrollback.chunks_mut().get_mut(idx) {
-            if let Some(source) = chunk.source.as_mut() {
-                source.text = format_markdown_tables(&source.text);
-                source.is_streaming = false;
-            }
-            ctx.scrollback.rewrap_at(idx);
-        }
-        ctx.in_flight_assistant = None;
-    }
+    flush_in_flight_drop_empty(ctx);
     // RPC-093: Done is a turn boundary. Slot-only clear — the
     // existing thinking chunk is left untouched (still visible,
     // still is_streaming=true on the chunk) so it remains as the
@@ -167,6 +153,12 @@ pub fn flush_in_flight_drop_empty(ctx: &mut SessionContext) {
             ctx.scrollback.chunks_mut().remove(idx);
         } else if let Some(chunk) = ctx.scrollback.chunks_mut().get_mut(idx) {
             if let Some(source) = chunk.source.as_mut() {
+                // RPC-432: format at every assistant-message finalization,
+                // not only at turn Done. Every flush trigger (ToolCall,
+                // Error, Interrupted, UserInput, Done) routes through here,
+                // so tables in intermediate messages render as grids too.
+                // Idempotent — grids contain no pipe+dash-separator rows.
+                source.text = format_markdown_tables(&source.text);
                 source.is_streaming = false;
             }
             ctx.scrollback.rewrap_at(idx);

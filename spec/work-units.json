@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-10T10:11:13.477Z",
+    "lastUpdated": "2026-09-11T10:51:38.806Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -74,7 +74,7 @@
     "REVIEW": 1,
     "RIG": 15,
     "RLM": 2,
-    "RPC": 431,
+    "RPC": 432,
     "SCHED": 14,
     "SESS": 2,
     "TAG": 4,
@@ -1699,7 +1699,8 @@
       "WT-012",
       "PROV-142",
       "BUG-170",
-      "BUG-178"
+      "BUG-178",
+      "RPC-432"
     ],
     "blocked": [
       "QUERY-001",
@@ -230790,6 +230791,95 @@
       ],
       "nextNoteId": 1,
       "estimate": 2
+    },
+    "RPC-432": {
+      "id": "RPC-432",
+      "title": "Render markdown tables at each assistant-message finalization, not only at turn Done",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-11T09:50:16.066Z",
+      "updatedAt": "2026-09-11T10:51:38.806Z",
+      "description": "The Rust TUI AgentView runs format_markdown_tables only on StreamChunk::Done (end of agent turn) — handle_done in rust/fspec-tui/src/store/agent_view/chunk_processor.rs. Markdown tables in intermediate assistant messages (text between tool calls) are finalised by flush_in_flight_drop_empty on ToolCall/Error/Interrupted/UserInput and stay raw pipe rows, while only the turn's final message gets the box-drawing grid. Move the format_markdown_tables call into flush_in_flight_drop_empty so every assistant message renders as a grid when it is finalised, and reduce handle_done to the shared flush plus the thinking-slot clear. Intentional divergence from the TS Ink reference (RPC-091/RPC-370), which only formats at Done.",
+      "children": [],
+      "userStory": {
+        "role": "user reading AI responses in the Rust TUI AgentView",
+        "action": "see every assistant message's markdown tables rendered as box-drawing grids at message finalization",
+        "benefit": "tables between tool calls align and read as cleanly as the turn-final message"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-11T09:50:42.420Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-11T10:09:21.084Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-11T10:25:22.863Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-11T10:31:12.420Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-11T10:51:38.806Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Every non-empty in-flight AssistantText chunk MUST be run through format_markdown_tables at finalization, regardless of which chunk finalizes it (ToolCall, Error, Interrupted, UserInput, or Done) — grid rendering is a property of message completion, not of turn completion",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:50:49.876Z"
+        },
+        {
+          "id": 1,
+          "text": "format_markdown_tables MUST run exactly once per assistant message — the flush trigger applies it when the in-flight chunk is non-empty, and StreamChunk::Done must not re-apply it to text that was already flushed as a message",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:50:56.282Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Assistant streams '| h1 | h2 |\\n|---|---|\\n| a | b |' then ToolCall(Bash) arrives → the in-flight assistant chunk is formatted at ToolCall time, so the scrollback shows the box-drawing grid BEFORE the tool-call card, with no re-formatting when Done later arrives",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:51:52.241Z"
+        },
+        {
+          "id": 1,
+          "text": "A table in the turn's final message still renders as a grid — the single-message turn ('| a | b |\\n|---|---|\\n| 1 | 2 |' → Done) shows the box-drawing grid exactly as before",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:52:03.586Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "assumptions": [
+        "format_markdown_tables is idempotent: already-rendered box-drawing grids contain no pipe rows with a dash separator row, so a second pass leaves them unchanged — which is why routing every finalization through one format call is safe even though Done may arrive after a ToolCall already formatted the last message"
+      ],
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Move `source.text = format_markdown_tables(&source.text)` from handle_done into flush_in_flight_drop_empty (rust/fspec-tui/src/store/agent_view/chunk_processor.rs:157), so every flush trigger (ToolCall, Error, Interrupted, UserInput) finalizes the in-flight assistant message with the box-drawing grid. handle_done reduces to flush_in_flight_drop_empty(ctx) + ctx.in_flight_thinking = None. No new call sites beyond the existing flush_triggers. format_markdown_tables is idempotent (grids contain no pipe+dash-separator rows) so Done after a ToolCall is a no-op re-format.",
+          "deleted": false,
+          "createdAt": "2026-09-11T10:08:06.284Z"
+        },
+        {
+          "id": 1,
+          "text": "Intentional divergence from the TS Ink chunkProcessor reference (RPC-091/RPC-370), which only runs formatMarkdownTables on Done. The Rust TUI deliberately formats at every assistant-message finalization so tables between tool calls render as grids. The RPC-091 feature scenarios (Done runs formatMarkdownTables, ToolCall flushes) remain behaviorally true — the grid just also appears on the flush paths.",
+          "deleted": false,
+          "createdAt": "2026-09-11T10:08:13.285Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/RPC-432/ast-research-per-message-finalization.md"
+      ]
     }
   }
 }
