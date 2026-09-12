@@ -2338,6 +2338,10 @@
           "description": "Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid)"
         },
         {
+          "name": "@bug-179",
+          "description": "Bug fix work unit BUG-179 — mux keyboard-isolation gate swallows Event::Paste: bracketed paste and terminal file-drop-as-paste do nothing in the focused agent pane. Fix routes Event::Paste to the focused mux pane (forward_mux_event_to_focused_pane) and mirrors the post-Navigator sync_mux_focus_to_session in App::handle_paste"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -3026,7 +3030,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-10T08:46:11.547Z",
+    "lastUpdated": "2026-09-11T22:50:15.285Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

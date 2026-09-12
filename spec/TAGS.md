@@ -630,6 +630,7 @@ Tags tracking development status of features.
 | `@bug` | Bug fix work units |
 | `@bug-169` | Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command |
 | `@bug-178` | Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid) |
+| `@bug-179` | Bug fix work unit BUG-179 — mux keyboard-isolation gate swallows Event::Paste: bracketed paste and terminal file-drop-as-paste do nothing in the focused agent pane. Fix routes Event::Paste to the focused mux pane (forward_mux_event_to_focused_pane) and mirrors the post-Navigator sync_mux_focus_to_session in App::handle_paste |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
@@ -776,4 +777,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-10T08:46:11.547Z_
+_Last updated: 2026-09-11T22:50:15.285Z_

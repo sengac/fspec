@@ -223,6 +223,18 @@ impl App {
         }
         let event = Event::Paste(text.to_string());
         let nav_result = self.navigator.handle_event(&event, &self.board_store);
+        // BUG-179: keep the store's current session in lockstep with the
+        // mux's focused agent pane — the same post-Navigator step as
+        // App::handle_event (events.rs:117-121), so the RPC-024/052 draft
+        // round-trip always targets the focused pane's window session
+        // even when the paste arrives during a focus divergence (e.g.
+        // right after a Shift+Right rotation, whose pre-Navigator
+        // intercept never syncs).
+        if matches!(self.navigator.active_view, ViewMode::Mux)
+            && self.navigator.mux.config().enabled
+        {
+            self.sync_mux_focus_to_session();
+        }
         self.should_render = true;
         nav_result
     }

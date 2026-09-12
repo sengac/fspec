@@ -1,0 +1,250 @@
+{
+  "scenarios": [
+    {
+      "name": "multi-line paste into the focused agent pane is inserted into the composer",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "123-160",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "paste while the board pane is focused is ignored",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "166-194",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "paste after click-to-focus lands in the newly focused session's composer",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "201-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "201-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "paste never mutates the ghost draft of an unfocused agent pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "242-277",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "paste while the focused session is compacting is suppressed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "283-318",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "single-view paste is unchanged when the mux layout is disabled",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "324-355",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a terminal file drop delivered as a bracketed paste inserts the path verbatim",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+          "lines": "362-394",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/fspec-tui/src/app/events.rs"
+    ],
+    "totalLinesCovered": 386
+  }
+}

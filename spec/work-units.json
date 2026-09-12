@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-11T10:51:38.806Z",
+    "lastUpdated": "2026-09-12T01:37:48.447Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 178,
+    "BUG": 179,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1700,7 +1700,8 @@
       "PROV-142",
       "BUG-170",
       "BUG-178",
-      "RPC-432"
+      "RPC-432",
+      "BUG-179"
     ],
     "blocked": [
       "QUERY-001",
@@ -230880,6 +230881,123 @@
       "attachments": [
         "spec/attachments/RPC-432/ast-research-per-message-finalization.md"
       ]
+    },
+    "BUG-179": {
+      "id": "BUG-179",
+      "title": "AgentView input ignores paste and terminal file drop while mux mode is active",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-11T21:04:30.076Z",
+      "updatedAt": "2026-09-12T01:37:48.447Z",
+      "description": "In mux mode (ViewMode::Mux, mux.config().enabled) the agent input area is dead to both clipboard paste and terminal file drop: bracketed paste (Ctrl+V) inserts nothing into the live composer, and dropping a screenshot/file onto the input area does nothing. In single-view Agent mode both work. Research shows a shared root cause in the mux keyboard-isolation gate (Navigator::handle_mux_event) which drops every non-Event::Key event, and crossterm 0.28 having no file-drop Event variant (terminals synthesize drops as typed text / bracketed paste). Full research attached as bug179-research.md.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-11T21:11:13.432Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-11T23:32:13.983Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-12T01:10:03.534Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-12T01:14:20.370Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-12T01:37:48.447Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user supervising agents in mux mode",
+        "action": "paste text or drop a file into the focused agent pane's input",
+        "benefit": "the composer receives the text exactly as it does in single-view Agent mode"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A bracketed paste (Event::Paste) delivered while mux is active is routed to the FOCUSED pane only — same keyboard-isolation rule as keys (R2); the Board/Files/Checkpoints panes ignore it, the Agent pane inserts it into the live composer",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:11:43.184Z"
+        },
+        {
+          "id": 1,
+          "text": "Composer precedence and gates in mux are IDENTICAL to single view: HITL freeform/exec-stdin/pause prompt routes win over the composer (dispatch.rs paste arms), the RPC-095 compacting block_edits gate suppresses paste, CRLF is normalized to LF, and PendingInputChanged is emitted only when the buffer changed",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:11:51.446Z"
+        },
+        {
+          "id": 2,
+          "text": "After mux paste routing, App::handle_paste runs the same post-Navigator mux focus sync as App::handle_event (sync_mux_focus_to_session), so the RPC-024/052 draft round-trip always targets the focused pane's window session",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:08.378Z"
+        },
+        {
+          "id": 3,
+          "text": "A paste must never mutate the ghost input_draft of an unfocused agent pane — the single shared MultiLineInput belongs to the focused pane's session only (BUG-163 model)",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:08.605Z"
+        },
+        {
+          "id": 4,
+          "text": "No behavior change outside mux (R10): when mux.config().enabled is false the event flow is byte-for-byte unchanged and the existing RPC-403 paste routing tests stay green",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:08.867Z"
+        },
+        {
+          "id": 5,
+          "text": "Scope is limited to the unified root-cause fix: route Event::Paste to the focused mux pane (reusing the existing AgentView paste precedence/gate chain) and mirror the mux focus sync in App::handle_paste. No file:// decoding, no drop toast — single-view mode has no such behavior, so mux parity means identical semantics. file://-URL handling and a dedicated drop UX are out of scope (documented as non-goals in the attached research).",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:13:12.029Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Repro (drop): drag a screenshot onto the agent pane's input area in mux mode — terminals deliver the drop as a bracketed paste (path string) or as typed characters; after the fix a paste-style drop inserts the path into the focused pane's composer exactly like single-view mode, while typed-character drops already flow to the focused pane under R2",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:30.327Z"
+        },
+        {
+          "id": 1,
+          "text": "Repro: enter mux with /mux board agent agent, focus the agent pane (Shift+Right or click inside it), then Ctrl+V a 3-line snippet — today nothing is inserted; after the fix all 3 lines land in the composer with the cursor at the end",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:30.778Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the fix scope be limited to routing Event::Paste (bracketed paste / drop-as-paste) to the focused mux pane (the unified root-cause fix — typed-character drops already flow to the focused pane under R2), or should it also add file://-URL decoding or a drop-specific UX (e.g. a toast showing the dropped path)?",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:13:02.461Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Scope is limited to the unified root-cause fix: route Event::Paste to the focused mux pane (reusing the existing AgentView paste precedence/gate chain) and mirror the mux focus sync in App::handle_paste. No file:// decoding, no drop toast — single-view mode has no such behavior, so mux parity means identical semantics. file://-URL handling and a dedicated drop UX are out of scope (documented as non-goals in the attached research)."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix touches exactly 2 files: (1) views/navigator_mux_events.rs — add an Event::Paste branch in handle_mux_event that forwards to the focused pane via forward_mux_event_to_focused_pane (same path as keys), placed after the mouse branch and before the Event::Key guard; (2) app/events.rs — App::handle_paste must call sync_mux_focus_to_session() after Navigator routing (mirrors the post-Navigator step at events.rs:117-121 in App::handle_event). No AgentView/MultiLineInput/mux-layout changes; all existing gate/precedence logic (HITL, exec-stdin, pause, RPC-095 compacting block_edits, CRLF normalization, RPC-403 routing) is reused verbatim.",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:13:31.370Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/BUG-179/bug179-research.md"
+      ],
+      "estimate": 3
     }
   }
 }

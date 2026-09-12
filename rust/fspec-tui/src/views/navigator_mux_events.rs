@@ -73,6 +73,17 @@ impl Navigator {
                 mux_mouse::MouseDecision::Gap => EventResult::ignored(),
             };
         }
+        // BUG-179: a bracketed paste (Event::Paste) — including a terminal
+        // file drop delivered as a paste — honours the same keyboard
+        // isolation as keys: it reaches the FOCUSED pane only. The focused
+        // pane's handler decides: the Agent pane's paste precedence/gate
+        // chain (HITL / exec-stdin / compacting / CRLF) inserts into the
+        // live composer; the Board/Files/Checkpoints panes ignore it.
+        // Pre-fix the Event::Key guard below dropped every non-key event
+        // here, so the paste was silently lost.
+        if matches!(event, Event::Paste(_)) {
+            return self.forward_mux_event_to_focused_pane(event, board_store);
+        }
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };
