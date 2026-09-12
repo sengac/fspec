@@ -88,6 +88,7 @@ const RELATED: &[&str] = &["show-work-unit", "list-work-units", "board", "auto-a
 
 const NOTES: &[&str] = &[
     "ACDD enforces strict workflow: you cannot skip states",
+    "Tasks skip the testing phase: backlog → specifying → implementing → validating → done (tasks cannot move to testing)",
     "FEAT-011: Temporal ordering is enforced - files must be created AFTER entering their required state",
     "Moving to testing: feature files must be created AFTER entering specifying state",
     "Moving to implementing: test files must be created AFTER entering testing state",

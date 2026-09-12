@@ -52,6 +52,12 @@ fn read_work_units(project_root: &Path) -> Value {
 /// none). `state_history` is the raw array body for stateHistory (without
 /// brackets; pass "" for none).
 fn doc(id: &str, status: &str, extra_fields: &str) -> String {
+    doc_typed(id, status, "story", extra_fields)
+}
+
+/// Same as [`doc`] but with an explicit work-unit type (`"story"`, `"task"`,
+/// `"bug"`).
+fn doc_typed(id: &str, status: &str, work_type: &str, extra_fields: &str) -> String {
     let states = state_arrays(id, status);
     let extra = if extra_fields.trim().is_empty() {
         String::new()
@@ -64,7 +70,7 @@ fn doc(id: &str, status: &str, extra_fields: &str) -> String {
   "meta": {{ "version": "1.0.0", "lastUpdated": "2026-06-01T00:00:00.000Z" }},
   "workUnits": {{
     "{id}": {{
-      "id": "{id}", "title": "Login", "type": "story", "status": "{status}",
+      "id": "{id}", "title": "Login", "type": "{work_type}", "status": "{status}",
       "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"{extra}
     }}
   }},
@@ -721,6 +727,574 @@ fn blocking_pre_hook_failure_prevents_transition() {
         "blocking hook stderr must be surfaced; got error={:?} reminder={:?}",
         result.error, result.system_reminder
     );
+}
+
+// ---------- type-specific lane rules (task vs story) ----------
+
+#[test]
+fn task_work_unit_cannot_move_to_testing() {
+    // Scenario: Task work unit cannot move to testing
+
+    // @step Given a task work unit "CLEAN-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc_typed("CLEAN-001", "specifying", "task", ""),
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "CLEAN-001" with status "testing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "CLEAN-001", "status": "testing"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message explains "Tasks do not have a testing phase"
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Tasks do not have a testing phase"),
+        "missing task-testing message; got: {msg}"
+    );
+
+    // @step And the work unit status remains "specifying"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "CLEAN-001"), "specifying");
+}
+
+#[test]
+fn task_work_unit_skips_the_testing_phase_from_specifying() {
+    // Scenario: Task work unit skips the testing phase from specifying
+
+    // @step Given a task work unit "CLEAN-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc_typed("CLEAN-001", "specifying", "task", ""),
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "CLEAN-001" with status "implementing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "CLEAN-001", "status": "implementing"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "implementing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "CLEAN-001"), "implementing");
+}
+
+#[test]
+fn task_work_unit_skips_step_and_coverage_gates_when_moving_to_validating() {
+    // Scenario: Task work unit skips step and coverage gates when moving to validating
+
+    // @step Given a task work unit "CLEAN-001" exists with status "implementing"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc_typed("CLEAN-001", "implementing", "task", ""),
+    );
+
+    // @step And its linked feature has scenarios without test coverage mappings
+    write_feature(
+        tmp.path(),
+        "audit-coverage",
+        "CLEAN-001",
+        "Scenario: Audit coverage files\n    Given coverage files exist\n    When I audit them\n    Then I see the report",
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "CLEAN-001" with status "validating"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "CLEAN-001", "status": "validating", "skipTemporalValidation": true}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(
+        result.success,
+        "tasks are exempt from step/coverage gates; got {result:?}"
+    );
+
+    // @step And the work unit status becomes "validating"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "CLEAN-001"), "validating");
+}
+
+#[test]
+fn story_work_unit_cannot_skip_the_testing_phase() {
+    // Scenario: Story work unit cannot skip the testing phase
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "specifying", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "implementing"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message says to move to "testing" state first
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Invalid state transition from 'specifying' to 'implementing'"),
+        "missing invalid-transition text; got: {msg}"
+    );
+    assert!(
+        msg.contains("Must move to 'testing' state first"),
+        "missing must-move-to-testing text; got: {msg}"
+    );
+
+    // @step And the error message explains "ACDD requires tests before implementation"
+    assert!(
+        msg.contains("ACDD requires tests before implementation"),
+        "missing ACDD hint; got: {msg}"
+    );
+
+    // @step And the work unit status remains "specifying"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "specifying");
+}
+
+// ---------- review validation hard blocks (REMIND-014) ----------
+
+#[test]
+fn specifying_to_testing_blocked_when_example_mapping_incomplete() {
+    // Scenario: specifying to testing is blocked when Example Mapping is incomplete
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "specifying", ""));
+
+    // @step And the work unit has no rules or examples
+    // (no Example Mapping fields on the fixture)
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "testing"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message reports "Cannot transition to testing - Example Mapping incomplete"
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Cannot transition to testing - Example Mapping incomplete"),
+        "missing example-mapping text; got: {msg}"
+    );
+}
+
+// ---------- bug type rules ----------
+
+#[test]
+fn bug_work_unit_must_link_an_existing_feature_file_before_testing() {
+    // Scenario: Bug work unit must link an existing feature file before testing
+
+    // @step Given a bug work unit "BUG-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc_typed("BUG-001", "specifying", "bug", ""));
+
+    // @step And the bug has no linked feature file
+    // (no linkedFeatures field, no @BUG-001-tagged feature file)
+
+    // @step When the dispatcher runs update-work-unit-status for "BUG-001" with status "testing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "BUG-001", "status": "testing"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message requires linking an existing feature file
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Bugs must link to existing feature file before moving to testing"),
+        "missing bug-linking text; got: {msg}"
+    );
+}
+
+#[test]
+fn bug_work_unit_can_move_to_testing_when_feature_is_linked() {
+    // Scenario: Bug work unit can move to testing when a feature file is linked
+
+    // @step Given a bug work unit "BUG-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    // Bugs are exempt from Level-1 review validation, so REVIEW_OK fields are
+    // unnecessary; linkedFeatures + the @BUG-001 tag satisfy the bug-specific
+    // link check and the scenarios-required gate.
+    write_work_units(
+        tmp.path(),
+        &doc_typed(
+            "BUG-001",
+            "specifying",
+            "bug",
+            r#""linkedFeatures": ["login-failure"]"#,
+        ),
+    );
+
+    // @step And a feature file is tagged with "@BUG-001" and listed in linkedFeatures
+    write_feature(
+        tmp.path(),
+        "login-failure",
+        "BUG-001",
+        "Scenario: Login fails on mobile\n    Given I am on iOS Safari\n    When I enter my credentials\n    Then I see a blank screen",
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "BUG-001" with status "testing" and skipTemporalValidation true
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "BUG-001", "status": "testing", "skipTemporalValidation": true}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "testing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "BUG-001"), "testing");
+}
+
+// ---------- unanswered questions gate (BUG-060) ----------
+
+#[test]
+fn specifying_to_testing_blocked_when_questions_unanswered() {
+    // Scenario: specifying to testing is blocked when questions are unanswered
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    // Satisfies review validation (rules + examples + architecture notes +
+    // AST research attachment) so the questions gate is the one that fires.
+    write_work_units(
+        tmp.path(),
+        &doc(
+            "AUTH-001",
+            "specifying",
+            &format!(
+                r#""questions": [{{ "id": 0, "text": "@human: What happens after 3 failed attempts?", "deleted": false }}], {REVIEW_OK}"#
+            ),
+        ),
+    );
+
+    // @step And the work unit has an unanswered question
+    // (the question above is neither deleted nor selected)
+
+    // @step And a scenario is tagged with "@AUTH-001"
+    write_feature(
+        tmp.path(),
+        "user-login",
+        "AUTH-001",
+        "Scenario: Login with valid credentials\n    Given I am on the login page\n    When I enter valid credentials\n    Then I see the dashboard",
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "testing", "skipTemporalValidation": true}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message reports "Unanswered questions prevent state transition"
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Unanswered questions prevent state transition"),
+        "missing unanswered-questions text; got: {msg}"
+    );
+}
+
+// ---------- dependency gates ----------
+
+/// Two-unit work-units.json: `id` in `status`, plus `blocker_id` in
+/// `blocker_status`. `extra_fields` is raw JSON for the primary unit.
+fn doc_with_second_unit(
+    id: &str,
+    status: &str,
+    extra_fields: &str,
+    blocker_id: &str,
+    blocker_status: &str,
+) -> String {
+    let states = |s: &str| -> String {
+        let mut ids: Vec<&str> = Vec::new();
+        if s == status {
+            ids.push(id);
+        }
+        if s == blocker_status {
+            ids.push(blocker_id);
+        }
+        format!(
+            "[{}]",
+            ids.iter()
+                .map(|i| format!("\"{i}\""))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    let extra = if extra_fields.trim().is_empty() {
+        String::new()
+    } else {
+        format!(", {extra_fields}")
+    };
+    format!(
+        r#"{{
+  "version": "0.7.1",
+  "meta": {{ "version": "1.0.0", "lastUpdated": "2026-06-01T00:00:00.000Z" }},
+  "workUnits": {{
+    "{id}": {{
+      "id": "{id}", "title": "Login", "type": "story", "status": "{status}",
+      "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"{extra}
+    }},
+    "{blocker_id}": {{
+      "id": "{blocker_id}", "title": "API", "type": "story", "status": "{blocker_status}",
+      "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"
+    }}
+  }},
+  "states": {{
+    "backlog": {backlog}, "specifying": {specifying}, "testing": {testing},
+    "implementing": {implementing}, "validating": {validating}, "done": {done}, "blocked": {blocked}
+  }}
+}}"#,
+        backlog = states("backlog"),
+        specifying = states("specifying"),
+        testing = states("testing"),
+        implementing = states("implementing"),
+        validating = states("validating"),
+        done = states("done"),
+        blocked = states("blocked"),
+    )
+}
+
+#[test]
+fn starting_work_is_blocked_by_incomplete_hard_dependencies() {
+    // Scenario: Starting work is blocked by incomplete hard dependencies
+
+    // @step Given a work unit "AUTH-001" exists with status "backlog"
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step And work unit "API-001" is blocking "AUTH-001" with status "implementing"
+    write_work_units(
+        tmp.path(),
+        &doc_with_second_unit(
+            "AUTH-001",
+            "backlog",
+            r#""blockedBy": ["API-001"]"#,
+            "API-001",
+            "implementing",
+        ),
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "specifying"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message names "API-001" as an active blocker
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Cannot start work on AUTH-001")
+            && msg.contains("API-001 (status: implementing)"),
+        "missing active-blockers text; got: {msg}"
+    );
+
+    // @step And the work unit status remains "backlog"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "backlog");
+}
+
+#[test]
+fn soft_dependencies_produce_a_warning_but_not_a_block() {
+    // Scenario: Soft dependencies produce a warning but not a block
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    // AUTH-001 satisfies review validation and carries a soft dependency on
+    // AUTH-002 which is not done — the transition must succeed with a warning.
+    write_work_units(
+        tmp.path(),
+        &doc_with_second_unit(
+            "AUTH-001",
+            "specifying",
+            &format!(r#""dependsOn": ["AUTH-002"], {REVIEW_OK}"#),
+            "AUTH-002",
+            "backlog",
+        ),
+    );
+
+    // @step And work unit "AUTH-002" is not done and listed in dependsOn
+    // (see fixture above)
+
+    // @step And a scenario is tagged with "@AUTH-001"
+    write_feature(
+        tmp.path(),
+        "user-login",
+        "AUTH-001",
+        "Scenario: Login with valid credentials\n    Given I am on the login page\n    When I enter valid credentials\n    Then I see the dashboard",
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "testing", "skipTemporalValidation": true}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the output includes a warning about incomplete soft dependencies
+    assert!(
+        result.data.contains(
+            "Work unit has soft dependencies that are not complete: AUTH-002 (status: backlog)"
+        ),
+        "missing soft-dependency warning; got data={:?}",
+        result.data
+    );
+}
+
+// ---------- backward transitions and reason recording ----------
+
+#[test]
+fn backward_transition_to_specifying_records_the_reason() {
+    // Scenario: Backward transition to specifying records the reason
+
+    // @step Given a work unit "AUTH-001" exists with status "validating"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "validating", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying" and reason "Acceptance criteria incomplete"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({
+            "workUnitId": "AUTH-001",
+            "status": "specifying",
+            "reason": "Acceptance criteria incomplete"
+        }),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "specifying"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "specifying");
+
+    // @step And a state-history entry for "specifying" carries the reason
+    let history = data["workUnits"]["AUTH-001"]["stateHistory"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let entry = history
+        .iter()
+        .rfind(|h| h["state"].as_str() == Some("specifying"))
+        .expect("state-history entry for 'specifying'");
+    assert_eq!(
+        entry["reason"].as_str(),
+        Some("Acceptance criteria incomplete")
+    );
+}
+
+#[test]
+fn done_work_unit_can_move_backward_to_implementing() {
+    // Scenario: A done work unit can move backward to implementing
+
+    // @step Given a work unit "AUTH-001" exists with status "done"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "done", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "implementing"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "implementing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "implementing");
+}
+
+// ---------- done gates ----------
+
+#[test]
+fn parent_cannot_be_marked_done_while_children_incomplete() {
+    // Scenario: Parent cannot be marked done while children are incomplete
+
+    // @step Given a work unit "AUTH-001" exists with status "validating"
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step And work unit "AUTH-002" has parent "AUTH-001" and status "implementing"
+    write_work_units(
+        tmp.path(),
+        &doc_with_second_unit(
+            "AUTH-001",
+            "validating",
+            r#""children": ["AUTH-002"]"#,
+            "AUTH-002",
+            "implementing",
+        ),
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "done"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "done"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message reports "Cannot mark parent as done while children are incomplete"
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Cannot mark parent as done while children are incomplete: AUTH-002 (status: implementing)")
+            && msg.contains("Complete all children first"),
+        "missing incomplete-children text; got: {msg}"
+    );
+}
+
+#[test]
+fn the_reason_is_recorded_in_the_state_history() {
+    // Scenario: The reason is recorded in the state history
+
+    // @step Given a work unit "AUTH-001" exists with status "backlog"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "backlog", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying" and reason "kickoff"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "specifying", "reason": "kickoff"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the state-history entry for "specifying" carries the reason "kickoff"
+    let data = read_work_units(tmp.path());
+    let history = data["workUnits"]["AUTH-001"]["stateHistory"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let entry = history
+        .iter()
+        .find(|h| h["state"].as_str() == Some("specifying"))
+        .expect("state-history entry for 'specifying'");
+    assert_eq!(entry["reason"].as_str(), Some("kickoff"));
 }
 
 #[test]

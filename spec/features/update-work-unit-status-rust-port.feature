@@ -30,6 +30,17 @@ Feature: Port update-work-unit-status command to Rust
   #   9. A dirty working directory triggers an automatic git checkpoint before the transition (skipped for backlog)
   #   10. Transitioning to done compacts the work unit and cleans auto-checkpoints while preserving manual ones
   #   11. Pre/post hooks run around the transition; a blocking pre-hook failure prevents the transition
+  #   12. Task work units cannot move to testing (type-specific lane rule)
+  #   13. Task work units skip the testing phase (specifying→implementing) and are exempt from step/coverage gates
+  #   14. Story work units cannot skip testing (specifying→implementing is rejected with an ACDD hint)
+  #   15. specifying→testing is hard-blocked when Example Mapping (rules+examples) is incomplete (REMIND-014 Level 1)
+  #   16. Bug work units must link an existing feature file before testing; they are exempt from Level-1 review validation
+  #   17. Unanswered (non-deleted, non-selected) questions block specifying→testing (BUG-060)
+  #   18. Hard blockedBy dependencies that are not done block movement into active states (specifying/testing/implementing/validating)
+  #   19. Soft dependsOn dependencies that are not done emit a warning but never block
+  #   20. Backward transitions (e.g. validating→specifying) are allowed and record the reason; done→implementing is allowed (ACDD backward movement)
+  #   21. A parent cannot be marked done while children are incomplete (COV-006)
+  #   22. An optional reason is recorded in stateHistory on the transition entry
   #
   # ========================================
   Background: User Story
@@ -130,6 +141,107 @@ Feature: Port update-work-unit-status command to Rust
     Then the command fails
     And the work unit status remains "specifying"
     And the blocking hook stderr is surfaced in a system-reminder
+
+  Scenario: Task work unit cannot move to testing
+    Given a task work unit "CLEAN-001" exists with status "specifying"
+    When the dispatcher runs update-work-unit-status for "CLEAN-001" with status "testing"
+    Then the command fails
+    And the error message explains "Tasks do not have a testing phase"
+    And the work unit status remains "specifying"
+
+  Scenario: Task work unit skips the testing phase from specifying
+    Given a task work unit "CLEAN-001" exists with status "specifying"
+    When the dispatcher runs update-work-unit-status for "CLEAN-001" with status "implementing"
+    Then the command succeeds
+    And the work unit status becomes "implementing"
+
+  Scenario: Task work unit skips step and coverage gates when moving to validating
+    Given a task work unit "CLEAN-001" exists with status "implementing"
+    And its linked feature has scenarios without test coverage mappings
+    When the dispatcher runs update-work-unit-status for "CLEAN-001" with status "validating"
+    Then the command succeeds
+    And the work unit status becomes "validating"
+
+  Scenario: Story work unit cannot skip the testing phase
+    Given a work unit "AUTH-001" exists with status "specifying"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing"
+    Then the command fails
+    And the error message says to move to "testing" state first
+    And the error message explains "ACDD requires tests before implementation"
+    And the work unit status remains "specifying"
+
+  Scenario: specifying to testing is blocked when Example Mapping is incomplete
+    Given a work unit "AUTH-001" exists with status "specifying"
+    And the work unit has no rules or examples
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    Then the command fails
+    And the error message reports "Cannot transition to testing - Example Mapping incomplete"
+
+  Scenario: Bug work unit must link an existing feature file before testing
+    Given a bug work unit "BUG-001" exists with status "specifying"
+    And the bug has no linked feature file
+    When the dispatcher runs update-work-unit-status for "BUG-001" with status "testing"
+    Then the command fails
+    And the error message requires linking an existing feature file
+
+  Scenario: Bug work unit can move to testing when a feature file is linked
+    Given a bug work unit "BUG-001" exists with status "specifying"
+    And a feature file is tagged with "@BUG-001" and listed in linkedFeatures
+    When the dispatcher runs update-work-unit-status for "BUG-001" with status "testing" and skipTemporalValidation true
+    Then the command succeeds
+    And the work unit status becomes "testing"
+
+  Scenario: specifying to testing is blocked when questions are unanswered
+    Given a work unit "AUTH-001" exists with status "specifying"
+    And the work unit satisfies review validation
+    And the work unit has an unanswered question
+    And a scenario is tagged with "@AUTH-001"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
+    Then the command fails
+    And the error message reports "Unanswered questions prevent state transition"
+
+  Scenario: Starting work is blocked by incomplete hard dependencies
+    Given a work unit "AUTH-001" exists with status "backlog"
+    And work unit "API-001" is blocking "AUTH-001" with status "implementing"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    Then the command fails
+    And the error message names "API-001" as an active blocker
+    And the work unit status remains "backlog"
+
+  Scenario: Soft dependencies produce a warning but not a block
+    Given a work unit "AUTH-001" exists with status "specifying"
+    And the work unit satisfies review validation
+    And work unit "AUTH-002" is not done and listed in dependsOn
+    And a scenario is tagged with "@AUTH-001"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
+    Then the command succeeds
+    And the output includes a warning about incomplete soft dependencies
+
+  Scenario: Backward transition to specifying records the reason
+    Given a work unit "AUTH-001" exists with status "validating"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying" and reason "Acceptance criteria incomplete"
+    Then the command succeeds
+    And the work unit status becomes "specifying"
+    And a state-history entry for "specifying" carries the reason
+
+  Scenario: A done work unit can move backward to implementing
+    Given a work unit "AUTH-001" exists with status "done"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing"
+    Then the command succeeds
+    And the work unit status becomes "implementing"
+
+  Scenario: Parent cannot be marked done while children are incomplete
+    Given a work unit "AUTH-001" exists with status "validating"
+    And work unit "AUTH-002" has parent "AUTH-001" and status "implementing"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "done"
+    Then the command fails
+    And the error message reports "Cannot mark parent as done while children are incomplete"
+
+  Scenario: The reason is recorded in the state history
+    Given a work unit "AUTH-001" exists with status "backlog"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying" and reason "kickoff"
+    Then the command succeeds
+    And the state-history entry for "specifying" carries the reason "kickoff"
 
   Scenario: IPC notification is a no-op in the Rust port
     Given a work unit "AUTH-001" exists with status "backlog"

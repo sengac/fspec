@@ -51,6 +51,11 @@ fn write_feature(cwd: &Path, name: &str, id: &str, body: &str) {
 
 /// Single-unit work-units.json placing `id` in the `status` state array.
 fn doc(id: &str, status: &str, extra_fields: &str) -> String {
+    doc_typed(id, status, "story", extra_fields)
+}
+
+/// Same as [`doc`] but with an explicit work-unit type.
+fn doc_typed(id: &str, status: &str, work_type: &str, extra_fields: &str) -> String {
     let mut parts = Vec::new();
     for s in [
         "backlog",
@@ -79,12 +84,71 @@ fn doc(id: &str, status: &str, extra_fields: &str) -> String {
   "meta": {{ "version": "1.0.0", "lastUpdated": "2026-06-01T00:00:00.000Z" }},
   "workUnits": {{
     "{id}": {{
-      "id": "{id}", "title": "Login", "type": "story", "status": "{status}",
+      "id": "{id}", "title": "Login", "type": "{work_type}", "status": "{status}",
       "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"{extra}
     }}
   }},
   "states": {{ {states} }}
 }}"#
+    )
+}
+
+/// Two-unit work-units.json: `id` in `status`, `blocker_id` in
+/// `blocker_status`, and `extra_fields` for the primary unit.
+fn doc_with_second_unit(
+    id: &str,
+    status: &str,
+    extra_fields: &str,
+    blocker_id: &str,
+    blocker_status: &str,
+) -> String {
+    let states = |s: &str| -> String {
+        let mut ids: Vec<&str> = Vec::new();
+        if s == status {
+            ids.push(id);
+        }
+        if s == blocker_status {
+            ids.push(blocker_id);
+        }
+        format!(
+            "[{}]",
+            ids.iter()
+                .map(|i| format!("\"{i}\""))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    let extra = if extra_fields.trim().is_empty() {
+        String::new()
+    } else {
+        format!(", {extra_fields}")
+    };
+    format!(
+        r#"{{
+  "version": "0.7.1",
+  "meta": {{ "version": "1.0.0", "lastUpdated": "2026-06-01T00:00:00.000Z" }},
+  "workUnits": {{
+    "{id}": {{
+      "id": "{id}", "title": "Login", "type": "story", "status": "{status}",
+      "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"{extra}
+    }},
+    "{blocker_id}": {{
+      "id": "{blocker_id}", "title": "API", "type": "story", "status": "{blocker_status}",
+      "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"
+    }}
+  }},
+  "states": {{
+    "backlog": {backlog}, "specifying": {specifying}, "testing": {testing},
+    "implementing": {implementing}, "validating": {validating}, "done": {done}, "blocked": {blocked}
+  }}
+}}"#,
+        backlog = states("backlog"),
+        specifying = states("specifying"),
+        testing = states("testing"),
+        implementing = states("implementing"),
+        validating = states("validating"),
+        done = states("done"),
+        blocked = states("blocked"),
     )
 }
 
@@ -285,6 +349,78 @@ fn scenario_cli_surfaces_blocking_hook_failure_on_stderr() {
     assert!(
         stderr.contains("<system-reminder>") || stderr.contains("BLOCKING HOOK"),
         "blocking hook stderr must be wrapped in a system-reminder; got:\n{stderr}"
+    );
+}
+
+// ---------- pushback rules (TS parity) ----------
+
+#[test]
+fn scenario_cli_rejects_task_transition_to_testing() {
+    // @step Given a task work unit "CLEAN-001" exists with status "specifying"
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_work_units(ws.path(), &doc_typed("CLEAN-001", "specifying", "task", ""));
+
+    // @step When I run `fspec update-work-unit-status CLEAN-001 testing`
+    let (code, _stdout, stderr) = run_uwus(ws.path(), &["CLEAN-001", "testing"]);
+
+    // @step Then the command exits with a non-zero code
+    assert_ne!(code, 0, "expected non-zero exit");
+
+    // @step And stderr explains that tasks have no testing phase
+    assert!(
+        stderr.contains("Tasks do not have a testing phase"),
+        "stderr must explain the task lane rule; got:\n{stderr}"
+    );
+}
+
+#[test]
+fn scenario_cli_rejects_story_skip_of_testing_with_acdd_hint() {
+    // @step Given a story work unit "AUTH-001" exists with status "specifying"
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_work_units(ws.path(), &doc("AUTH-001", "specifying", ""));
+
+    // @step When I run `fspec update-work-unit-status AUTH-001 implementing`
+    let (code, _stdout, stderr) = run_uwus(ws.path(), &["AUTH-001", "implementing"]);
+
+    // @step Then the command exits with a non-zero code
+    assert_ne!(code, 0, "expected non-zero exit");
+
+    // @step And stderr requires moving to the testing state first
+    assert!(
+        stderr.contains("Must move to 'testing' state first")
+            && stderr.contains("ACDD requires tests before implementation"),
+        "stderr must carry the ACDD hint; got:\n{stderr}"
+    );
+}
+
+#[test]
+fn scenario_cli_rejects_start_when_hard_dependency_is_incomplete() {
+    // @step Given a work unit "AUTH-001" exists with status "backlog"
+    let ws = tempfile::tempdir().expect("tempdir");
+
+    // @step And work unit "API-001" is blocking "AUTH-001" with status "implementing"
+    write_work_units(
+        ws.path(),
+        &doc_with_second_unit(
+            "AUTH-001",
+            "backlog",
+            r#""blockedBy": ["API-001"]"#,
+            "API-001",
+            "implementing",
+        ),
+    );
+
+    // @step When I run `fspec update-work-unit-status AUTH-001 specifying`
+    let (code, _stdout, stderr) = run_uwus(ws.path(), &["AUTH-001", "specifying"]);
+
+    // @step Then the command exits with a non-zero code
+    assert_ne!(code, 0, "expected non-zero exit");
+
+    // @step And stderr names the active blocker
+    assert!(
+        stderr.contains("Cannot start work on AUTH-001")
+            && stderr.contains("API-001 (status: implementing)"),
+        "stderr must name the active blocker; got:\n{stderr}"
     );
 }
 
