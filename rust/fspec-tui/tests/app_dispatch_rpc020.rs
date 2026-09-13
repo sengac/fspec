@@ -140,10 +140,7 @@ async fn dispatch_unimplemented_command_emits_scrollback_notice() {
     let mut action = None;
     for _ in 0..100 {
         while let Some(a) = app.try_recv_action() {
-            if matches!(
-                a,
-                Action::OpenCreateSessionDialog { .. }
-            ) {
+            if matches!(a, Action::OpenCreateSessionDialog { .. }) {
                 action = Some(a);
             }
         }

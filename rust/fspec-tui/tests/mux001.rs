@@ -115,8 +115,7 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let tmp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
 }
 

@@ -25,10 +25,7 @@ use rig::message::{AssistantContent, Message};
 /// Assistant messages that become EMPTY after the strip (reasoning-only
 /// messages) are dropped entirely — an assistant message with no content is
 /// invalid on the OpenAI-compat wire format.
-pub fn strip_reasoning_from_history(
-    history: &[Message],
-    preserve_thinking: bool,
-) -> Vec<Message> {
+pub fn strip_reasoning_from_history(history: &[Message], preserve_thinking: bool) -> Vec<Message> {
     if preserve_thinking {
         return history.to_vec();
     }
@@ -59,7 +56,10 @@ pub fn strip_reasoning_from_history(
                         continue;
                     }
                 };
-                out.push(Message::Assistant { id: id.clone(), content });
+                out.push(Message::Assistant {
+                    id: id.clone(),
+                    content,
+                });
             }
             other => out.push(other.clone()),
         }
@@ -88,8 +88,7 @@ mod tests {
     fn disabled_strip_removes_reasoning_keeps_text() {
         let history = vec![Message::Assistant {
             id: None,
-            content: OneOrMany::many(vec![reasoning(), text("answer")])
-                .expect("two items"),
+            content: OneOrMany::many(vec![reasoning(), text("answer")]).expect("two items"),
         }];
         let out = strip_reasoning_from_history(&history, false);
         let Message::Assistant { content, .. } = &out[0] else {
@@ -110,8 +109,7 @@ mod tests {
     fn enabled_flag_returns_history_unchanged() {
         let history = vec![Message::Assistant {
             id: None,
-            content: OneOrMany::many(vec![reasoning(), text("answer")])
-                .expect("two items"),
+            content: OneOrMany::many(vec![reasoning(), text("answer")]).expect("two items"),
         }];
         let out = strip_reasoning_from_history(&history, true);
         let src: Vec<_> = match &history[0] {
@@ -139,7 +137,9 @@ mod tests {
         ];
         let out = strip_reasoning_from_history(&history, false);
         assert_eq!(out.len(), 1, "reasoning-only message must be dropped");
-        assert!(matches!(&out[0], Message::Assistant { content, .. } if content.iter().any(|c| matches!(c, AssistantContent::Text(_)))));
+        assert!(
+            matches!(&out[0], Message::Assistant { content, .. } if content.iter().any(|c| matches!(c, AssistantContent::Text(_))))
+        );
     }
 
     #[test]

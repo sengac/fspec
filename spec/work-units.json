@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-13T09:05:06.959Z",
+    "lastUpdated": "2026-09-13T22:07:09.393Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 180,
+    "BUG": 181,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1703,7 +1703,8 @@
       "RPC-432",
       "BUG-179",
       "BUG-180",
-      "TUI-111"
+      "TUI-111",
+      "BUG-181"
     ],
     "blocked": [
       "QUERY-001",
@@ -231277,6 +231278,108 @@
         "The sanitize_for_terminal behaviour (ANSI regex + control-char set + tab/CR handling) is already correct and frozen — this card is a STRUCTURAL refactor (where sanitization happens), not a behaviour change. If behaviour needs to change, that is a separate card."
       ],
       "estimate": 13
+    },
+    "BUG-181": {
+      "id": "BUG-181",
+      "title": "Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-13T10:13:33.169Z",
+      "updatedAt": "2026-09-13T22:07:09.393Z",
+      "description": "The BoardView header checkpoint counter (`Checkpoints: N Manual, M Auto`) only updates at bootstrap and after in-TUI restore/delete (RefreshCheckpointCounts). Checkpoints added/removed via agent tool calls (fspec checkpoint, auto-checkpoints on update-work-unit-status), CLI in another terminal, or direct git ref ops never reach BoardStore.checkpoint_counts, so the header paints a stale value until the TUI restarts. Root cause: the TS 'checkpoint-changed' IPC push was dropped in the Rust port (documented NO-OP in fspec-core/checkpoint.rs), FspecBackend has no push surface for checkpoint changes, and no App-level test covers the existing RefreshCheckpointCounts → BoardStore path. Full research doc attached. See attached research doc for the proposed fix (push broadcast channel + RPC-compliance gaps).",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-181/BUG-181-board-checkpoint-counter-stale-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-13T10:13:53.818Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-13T12:21:36.369Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-13T21:52:21.578Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-13T21:52:30.745Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-13T22:07:09.393Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the fspec TUI board",
+        "action": "see the checkpoint counter update immediately whenever a checkpoint is added or removed, from any code path",
+        "benefit": "the board header is a trustworthy live view of checkpoint state instead of a stale bootstrap snapshot"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The BoardStore.checkpoint_counts field must be updated for EVERY checkpoint mutation path: manual create (fspec checkpoint), auto-checkpoint on update-work-unit-status transitions, auto-checkpoint cleanup on →done, restore (TUI + CLI), and delete (TUI + CLI)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:05.132Z"
+        },
+        {
+          "id": 1,
+          "text": "The checkpoint-changed push must be transport-agnostic: FspecBackend gains checkpoint_counts_changed_rx() with a closed-receiver default so test doubles and the WebSocket transport compile unchanged (mirrors checkpoints_progress_rx, TUI-109)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:15.429Z"
+        },
+        {
+          "id": 2,
+          "text": "The push producer lives in the shared layer (fspec-core command layer / rpc service), not in the TUI, so BOTH front doors (LLM tool dispatcher and standalone CLI) emit the notification — two-front-doors invariant",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:15.682Z"
+        },
+        {
+          "id": 3,
+          "text": "The existing in-TUI RefreshCheckpointCounts follow-up (after restore/delete in the Checkpoints view) must keep working; the new push channel must reuse Action::CheckpointCountsLoaded and BoardStore::set_checkpoint_counts rather than adding a second writer path",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:25.962Z"
+        },
+        {
+          "id": 4,
+          "text": "The WebSocket transport degrades gracefully: when the checkpoint-changed channel is not forwarded (closed receiver), the App subscriber exits cleanly and the header falls back to bootstrap value + in-view refresh — no panic, no hang (documented, like TUI-109 checkpoints_progress_rx)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:26.192Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent tool call `fspec checkpoint AUTH-001 baseline` runs in-process while the TUI is open: the board header flips from `Checkpoints: None` to `Checkpoints: 1 Manual` without any TUI re-open or restart",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:34.932Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent tool call `fspec update-work-unit-status AUTH-001 testing` creates auto-checkpoint AUTH-001-auto-specifying on a dirty tree: the header flips from `Checkpoints: None` to `Checkpoints: 0 Manual, 1 Auto`",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:35.189Z"
+        },
+        {
+          "id": 2,
+          "text": "In the Checkpoints view the user deletes a manual checkpoint (`d` → `y`): the header flips from `Checkpoints: 1 Manual, 1 Auto` to `Checkpoints: 0 Manual, 1 Auto` (this path already works via RefreshCheckpointCounts — regression guard)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:45.716Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs `fspec cleanup-checkpoints AUTH-001 --keep-last 1` in a second terminal while the TUI is open: the header counts drop to reflect only the surviving checkpoint",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:45.981Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 8
     }
   }
 }

@@ -10,6 +10,12 @@ description = "Core agent execution for codelet - runner loop, message history, 
 codelet-common.workspace = true
 codelet-tools.workspace = true
 codelet-providers.workspace = true
+# BUG-181: CheckpointsWatcher re-runs count_checkpoints on every
+# debounced checkpoint-location change. The arrow core → git is
+# permitted (codelet-git depends only on codelet-rpc-types + gix,
+# never back on codelet-core or codelet-napi) — mirrors the
+# rpc → git arrow established by RPC-015 for checkpoint_counts.
+codelet-git.workspace = true
 # RPC-006: pure-Rust WorkUnitsWatcher returns Vec<WorkUnitInfo> — the lifted
 # shared type lives in codelet-rpc-types. Default features only (no NAPI).
 codelet-rpc-types = { workspace = true }

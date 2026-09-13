@@ -48,8 +48,7 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let tmp = TempDir::new().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
 }
 
@@ -604,8 +603,7 @@ async fn mux_save_persists_every_split_entry_and_a_fresh_bootstrap_restores_them
     app.dispatch(Action::InputSubmitted("/mux save".to_string()));
     // @step Then the tui.mux key in fspec-config.json contains all n-1 split entries
     let data_dir = codelet_common::get_data_dir().expect("data dir");
-    let raw =
-        std::fs::read_to_string(data_dir.join("fspec-config.json")).expect("read config");
+    let raw = std::fs::read_to_string(data_dir.join("fspec-config.json")).expect("read config");
     assert!(raw.contains("20"), "splits[0]=20 must round-trip: {raw}");
     assert!(raw.contains("45"), "splits[1]=45 must round-trip: {raw}");
     // @step And a fresh bootstrap followed by /mux on restores the same non-equal scale

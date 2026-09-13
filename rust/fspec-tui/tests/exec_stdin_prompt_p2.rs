@@ -21,7 +21,7 @@ use codelet_fspec_tui::{
     Action, AgentView, AgentViewStore, App, FspecBackend, SessionContext, ViewMode,
 };
 use codelet_rpc_types::{
-    ExecStdinRequest, HitlRequest, HitlQuestion, PauseKind, PauseState, SessionId,
+    ExecStdinRequest, HitlQuestion, HitlRequest, PauseKind, PauseState, SessionId,
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -212,10 +212,7 @@ fn pane_text(buf: &ratatui::buffer::Buffer, pane: Rect) -> String {
 fn tui_renders_the_exec_stdin_prompt_in_the_composer_slot() {
     // @step Given an agent session has a pending exec-stdin request for command "git commit" quiet for 5 seconds
     let (mut view, mut store) = view_harness(&["s-1"]);
-    store.set_exec_stdin(
-        sid("s-1"),
-        exec_request("exec-abc", "git commit", 5),
-    );
+    store.set_exec_stdin(sid("s-1"), exec_request("exec-abc", "git commit", 5));
 
     // @step And the agent view is focused on that agent session
     // (view_harness focuses index 0; s-1 is the only session)
@@ -338,11 +335,15 @@ fn hitl_prompt_takes_precedence_over_the_exec_stdin_prompt() {
         "exec-stdin header must not paint while HITL occupies the slot; rows: {input_rows:?}"
     );
     assert!(
-        !input_rows.iter().any(|r| r.contains("Type to send to the command")),
+        !input_rows
+            .iter()
+            .any(|r| r.contains("Type to send to the command")),
         "exec-stdin shared-input placeholder must not paint; rows: {input_rows:?}"
     );
     assert!(
-        !input_rows.iter().any(|r| r.contains("(Enter Send | Esc Dismiss)")),
+        !input_rows
+            .iter()
+            .any(|r| r.contains("(Enter Send | Esc Dismiss)")),
         "exec-stdin footer must not paint; rows: {input_rows:?}"
     );
 }
@@ -575,9 +576,7 @@ async fn ghost_panes_do_not_render_the_exec_stdin_prompt() {
 
     // @step And agent session B is focused while agent session A is a ghost pane
     // (mux board + agent + agent; B = the second agent pane, focused)
-    app.dispatch(Action::InputSubmitted(
-        "/mux board agent agent".to_string(),
-    ));
+    app.dispatch(Action::InputSubmitted("/mux board agent agent".to_string()));
     drain_pending(&mut app).await;
     let rects = app.navigator().mux.pane_rects();
     let b_pane = *rects.get(2).expect("pane 2 (agent B) rect must exist");
@@ -693,9 +692,10 @@ async fn a_failed_submit_keeps_the_slot_and_sends_nothing_else() {
         .session_context_for(&sid("s-1"))
         .expect("session context");
     let leaked = ctx.scrollback.chunks().iter().any(|chunk| {
-        chunk.lines.iter().any(|line| {
-            line.spans.iter().any(|span| span.content.contains("boom"))
-        })
+        chunk
+            .lines
+            .iter()
+            .any(|line| line.spans.iter().any(|span| span.content.contains("boom")))
     });
     assert!(
         !leaked,

@@ -997,4 +997,21 @@ pub trait FspecBackend: Send + Sync {
         drop(tx);
         rx
     }
+
+    /// BUG-181: subscribe to the checkpoint-changed push — fresh
+    /// `CheckpointCounts` snapshots broadcast by the shared layer's
+    /// `CheckpointsWatcher` on every debounced checkpoint-location
+    /// change. The embedded transport forwards
+    /// `SharedFspecService::checkpoint_counts_changed_rx()`; the
+    /// default returns a closed receiver so transports that don't
+    /// forward the frames (e.g. WebSocket) degrade gracefully — the
+    /// App subscriber observes `RecvError::Closed` immediately and the
+    /// header falls back to the bootstrap value + in-view
+    /// `RefreshCheckpointCounts` re-poll (documented, like
+    /// `checkpoints_progress_rx` for TUI-109).
+    fn checkpoint_counts_changed_rx(&self) -> broadcast::Receiver<CheckpointCounts> {
+        let (tx, rx) = broadcast::channel(1);
+        drop(tx);
+        rx
+    }
 }

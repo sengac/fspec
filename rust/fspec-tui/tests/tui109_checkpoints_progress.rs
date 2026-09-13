@@ -373,10 +373,10 @@ async fn tui_bootstrap_spawns_checkpoints_progress_subscriber_forwarding_to_the_
     app.bootstrap().await.expect("bootstrap");
     // TUI-109 adds a 6th subscriber (checkpoints_progress_rx) alongside
     // the existing five (work_units / chunks / logs / status_changes /
-    // session_created).
+    // session_created). BUG-181 adds a 7th (checkpoint_counts_changed_rx).
     assert_eq!(
         app.subscriber_task_count(),
-        6,
+        7,
         "bootstrap must spawn the checkpoints-progress subscriber task"
     );
 

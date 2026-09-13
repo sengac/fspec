@@ -24,9 +24,7 @@ use std::sync::Arc;
 use codelet_fspec_tui::views::ViewMode;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{SessionId, SessionStatus};
-use crossterm::event::{
-    Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
-};
+use crossterm::event::{Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -75,11 +73,7 @@ async fn enter_mux_board_agent_agent(app: &mut App) {
     drain_pending(app).await;
     submit(app, "/mux board agent agent");
     drain_pending(app).await;
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Mux,
-        "/mux must enter the grid"
-    );
+    assert_eq!(app.active_view(), ViewMode::Mux, "/mux must enter the grid");
     assert!(
         app.navigator().mux.config().enabled,
         "the mux config flag must be ON inside the grid"

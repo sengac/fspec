@@ -114,7 +114,10 @@ fn exec_stdin_slot<'a>(app: &'a App, session: &SessionId) -> Option<&'a ExecStdi
 async fn exec_stdin_request_chunk_populates_the_composer_overlay() {
     // @step Given the agent session is Running with no exec-stdin slot
     let (mut app, _mock) = fresh_app(&["s-1"]);
-    assert!(exec_stdin_slot(&app, &sid("s-1")).is_none(), "slot must start empty");
+    assert!(
+        exec_stdin_slot(&app, &sid("s-1")).is_none(),
+        "slot must start empty"
+    );
 
     // @step When an exec-stdin request StreamChunk arrives for that session
     // (delivered the way the chunks subscriber forwards broadcast chunks:
@@ -142,11 +145,15 @@ async fn exec_stdin_request_chunk_populates_the_composer_overlay() {
     // With only the exec-stdin slot set, the overlay wins over the
     // plain composer; no HITL/pause slot is present for this scenario.
     assert!(
-        app.agent_view_store().hitl_prompt_for(&sid("s-1")).is_none(),
+        app.agent_view_store()
+            .hitl_prompt_for(&sid("s-1"))
+            .is_none(),
         "no HITL slot may be present for this scenario"
     );
     assert!(
-        app.agent_view_store().pause_state_for(&sid("s-1")).is_none(),
+        app.agent_view_store()
+            .pause_state_for(&sid("s-1"))
+            .is_none(),
         "no pause slot may be present for this scenario"
     );
 
@@ -154,7 +161,9 @@ async fn exec_stdin_request_chunk_populates_the_composer_overlay() {
     // The request-chunk reducer must not synthesize a status flip — the
     // pause slot stays empty.
     assert!(
-        app.agent_view_store().pause_state_for(&sid("s-1")).is_none(),
+        app.agent_view_store()
+            .pause_state_for(&sid("s-1"))
+            .is_none(),
         "the request chunk must not flip the session into a paused state"
     );
 }
@@ -181,7 +190,10 @@ async fn the_cleared_chunk_clears_the_tui_slot_without_sending_anything() {
     );
 
     // @step When an exec-stdin cleared StreamChunk arrives for that session
-    app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::ExecStdinRequestCleared));
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::ExecStdinRequestCleared,
+    ));
     drain_pending(&mut app).await;
 
     // @step Then the exec-stdin slot is cleared
@@ -239,10 +251,7 @@ async fn existing_pull_probe_sites_still_surface_and_clear_the_overlay() {
     // (two sessions; s-2 is focused after SessionCreated ordering, s-1
     //  carries the pending exec-stdin request)
     let (mut app, mock) = fresh_app(&["s-1", "s-2"]);
-    mock.script_exec_stdin_request(
-        sid("s-1"),
-        Some(exec_request("exec-live", "git commit", 4)),
-    );
+    mock.script_exec_stdin_request(sid("s-1"), Some(exec_request("exec-live", "git commit", 4)));
 
     // @step When the user switches focus away and back
     // (SessionPrev moves focus s-2 → s-1 and runs the focus-switch probe
@@ -291,7 +300,8 @@ async fn existing_pull_probe_sites_still_surface_and_clear_the_overlay() {
 
 /// Scenario: End-to-end — interactive command surfaces the overlay without a focus switch or status flip
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn end_to_end_interactive_command_surfaces_the_overlay_without_a_focus_switch_or_status_flip() {
+async fn end_to_end_interactive_command_surfaces_the_overlay_without_a_focus_switch_or_status_flip()
+{
     // @step Given the agent runs an interactive Bash command that reads stdin and the session stays focused and Running
     let (mut app, mock) = fresh_app(&["s-1"]);
     // The chunk stream delivers the push (the sessions half of the
@@ -319,7 +329,9 @@ async fn end_to_end_interactive_command_surfaces_the_overlay_without_a_focus_swi
         "overlay must paint in the focused pane; rows: {rows:?}"
     );
     assert!(
-        app.agent_view_store().pause_state_for(&sid("s-1")).is_none(),
+        app.agent_view_store()
+            .pause_state_for(&sid("s-1"))
+            .is_none(),
         "no status/pause change may accompany the overlay"
     );
 

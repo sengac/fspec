@@ -274,5 +274,34 @@ impl App {
             }
         });
         self.subscriber_tasks.push(checkpoints_progress_task);
+
+        // (g) BUG-181: checkpoint_counts_changed_rx →
+        //     Action::CheckpointCountsLoaded. The shared layer's
+        //     CheckpointsWatcher re-counts on every debounced
+        //     checkpoint-location change and broadcasts full
+        //     CheckpointCounts snapshots; this subscriber folds them
+        //     onto the EXISTING CheckpointCountsLoaded →
+        //     BoardStore::set_checkpoint_counts path (no new Action
+        //     variant, no second writer path). Transports that don't
+        //     forward the push (websocket) return a closed receiver —
+        //     this loop exits immediately on RecvError::Closed and
+        //     the header falls back to bootstrap value +
+        //     RefreshCheckpointCounts (documented, like TUI-109).
+        let tx = self.action_tx.clone();
+        let mut rx = self.backend.checkpoint_counts_changed_rx();
+        let checkpoint_counts_task = tokio::spawn(async move {
+            loop {
+                match rx.recv().await {
+                    Ok(counts) => {
+                        let _ = tx.send(Action::CheckpointCountsLoaded(counts));
+                    }
+                    Err(broadcast::error::RecvError::Lagged(n)) => {
+                        debug!("checkpoint_counts subscriber lagged by {n}; continuing");
+                    }
+                    Err(broadcast::error::RecvError::Closed) => break,
+                }
+            }
+        });
+        self.subscriber_tasks.push(checkpoint_counts_task);
     }
 }

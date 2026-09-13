@@ -91,9 +91,7 @@ fn reasoning_only_assistant_message_is_dropped_from_the_outgoing_history() {
         },
         Message::Assistant {
             id: None,
-            content: OneOrMany::one(AssistantContent::Reasoning(
-                Reasoning::new("only thinking"),
-            )),
+            content: OneOrMany::one(AssistantContent::Reasoning(Reasoning::new("only thinking"))),
         },
         Message::User {
             content: OneOrMany::one(UserContent::text("follow-up")),
@@ -110,7 +108,9 @@ fn reasoning_only_assistant_message_is_dropped_from_the_outgoing_history() {
         "a reasoning-only assistant message must be dropped, leaving the two user messages: {outgoing:?}"
     );
     assert!(
-        outgoing.iter().all(|m| !matches!(m, Message::Assistant { content, .. } if content.is_empty())),
+        outgoing
+            .iter()
+            .all(|m| !matches!(m, Message::Assistant { content, .. } if content.is_empty())),
         "no empty assistant message may reach the LLM"
     );
 }
@@ -153,7 +153,8 @@ fn stripping_keeps_message_count_and_user_messages_intact() {
         "stripping must not drop messages, only Reasoning blocks"
     );
     assert!(
-        matches!(&outgoing[0], Message::User { .. }) && matches!(&outgoing[2], Message::User { .. }),
+        matches!(&outgoing[0], Message::User { .. })
+            && matches!(&outgoing[2], Message::User { .. }),
         "user messages must survive verbatim"
     );
 }

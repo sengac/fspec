@@ -132,15 +132,14 @@ fn open_session(app: &mut App, id: &str) {
 /// Set the store's isolation state for `id` (mirrors what the
 /// `IsolationStateChange` chunk pipeline would have recorded).
 fn set_isolated(app: &mut App, id: &str, path: &str) {
-    app.agent_view_store_mut()
-        .set_isolation_state(
-            sid(id),
-            IsolationState {
-                is_isolated: true,
-                worktree_path: Some(path.to_string()),
-                base_commit: None,
-            },
-        );
+    app.agent_view_store_mut().set_isolation_state(
+        sid(id),
+        IsolationState {
+            is_isolated: true,
+            worktree_path: Some(path.to_string()),
+            base_commit: None,
+        },
+    );
 }
 
 fn seed_worktree_row(mock: &MockBackend, id: &str) {
@@ -165,15 +164,14 @@ async fn isolation_in_non_isolated_session_opens_create_dialog_preselecting_isol
     let mut app = fresh_app(mock.clone());
     open_session(&mut app, "s-1");
     drain_pending(&mut app).await;
-    app.agent_view_store_mut()
-        .set_isolation_state(
-            sid("s-1"),
-            IsolationState {
-                is_isolated: false,
-                worktree_path: None,
-                base_commit: None,
-            },
-        );
+    app.agent_view_store_mut().set_isolation_state(
+        sid("s-1"),
+        IsolationState {
+            is_isolated: false,
+            worktree_path: None,
+            base_commit: None,
+        },
+    );
 
     // @step And the session worktree listing has no row for session s-1
     mock.seed_session_worktrees(Vec::new());
@@ -295,15 +293,14 @@ async fn isolation_with_untracked_live_worktree_warns_without_backend_call() {
     let mut app = fresh_app(mock.clone());
     open_session(&mut app, "s-1");
     drain_pending(&mut app).await;
-    app.agent_view_store_mut()
-        .set_isolation_state(
-            sid("s-1"),
-            IsolationState {
-                is_isolated: false,
-                worktree_path: None,
-                base_commit: None,
-            },
-        );
+    app.agent_view_store_mut().set_isolation_state(
+        sid("s-1"),
+        IsolationState {
+            is_isolated: false,
+            worktree_path: None,
+            base_commit: None,
+        },
+    );
 
     // @step And the backend's session worktree listing contains a row for session s-1
     seed_worktree_row(&mock, "s-1");
@@ -501,8 +498,10 @@ async fn no_changes_merge_keeps_session_open_without_teardown() {
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[merge] nothing to merge" is observed on the action bus
     wait_until(
-        || session_scrollback_text_opt(&app, &sid("s-1"))
-            .is_some_and(|t| t.contains("[merge] nothing to merge")),
+        || {
+            session_scrollback_text_opt(&app, &sid("s-1"))
+                .is_some_and(|t| t.contains("[merge] nothing to merge"))
+        },
         "nothing-to-merge notice",
     )
     .await;
@@ -571,11 +570,15 @@ async fn conflict_merge_seeds_input_with_worktree_path() {
 
     // @step Then within 1 second the seeded input draft contains "Effective worktree: /repo/.fspec/worktrees/s-1"
     wait_until(
-        || app
-            .agent_view_store()
-            .session_context_for(&sid("s-1"))
-            .map(|ctx| ctx.input_draft.contains("Effective worktree: /repo/.fspec/worktrees/s-1"))
-            .unwrap_or(false),
+        || {
+            app.agent_view_store()
+                .session_context_for(&sid("s-1"))
+                .map(|ctx| {
+                    ctx.input_draft
+                        .contains("Effective worktree: /repo/.fspec/worktrees/s-1")
+                })
+                .unwrap_or(false)
+        },
         "seeded conflict context with worktree path",
     )
     .await;

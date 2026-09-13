@@ -169,8 +169,12 @@ fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
     // `pane_render.rs::render_session_pane`, which consumes
     // `resume_view`/`search_view` via `as_mut()` before painting the
     // session pane.)
-    let pane_render =
-        read_raw(&fspec_tui_src().join("views").join("agent").join("pane_render.rs"));
+    let pane_render = read_raw(
+        &fspec_tui_src()
+            .join("views")
+            .join("agent")
+            .join("pane_render.rs"),
+    );
     assert!(pane_render.contains("self.resume_view.as_mut()"));
     assert!(pane_render.contains("self.search_view.as_mut()"));
 }

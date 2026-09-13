@@ -1054,8 +1054,10 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
                 "_synthetic": true,
                 "_compactionSummary": true
             });
-            envelopes.push(serde_json::to_string(&synthetic)
-                .map_err(|e| format!("Failed to serialize synthetic envelope: {e}"))?);
+            envelopes.push(
+                serde_json::to_string(&synthetic)
+                    .map_err(|e| format!("Failed to serialize synthetic envelope: {e}"))?,
+            );
             continue;
         }
 
@@ -1134,10 +1136,7 @@ pub fn update_session_tokens(
 /// Takes the full [`TokenUsage`] so the /resume restore path can re-seed
 /// every field (including the session-cumulative reasoning value for the
 /// SessionHeader 🧠 counter) in one call.
-pub fn set_session_tokens(
-    session: &mut SessionManifest,
-    usage: &TokenUsage,
-) -> Result<(), String> {
+pub fn set_session_tokens(session: &mut SessionManifest, usage: &TokenUsage) -> Result<(), String> {
     session.token_usage.current_context_tokens = usage.current_context_tokens;
     session.token_usage.cumulative_billed_input = usage.cumulative_billed_input;
     session.token_usage.cumulative_billed_output = usage.cumulative_billed_output;

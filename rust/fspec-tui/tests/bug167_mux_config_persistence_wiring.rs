@@ -70,15 +70,14 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let tmp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
 }
 
 /// Read the user-scope shared config as a JSON value.
 fn read_user_config(data_dir: &std::path::Path) -> serde_json::Value {
-    let raw = fs::read_to_string(data_dir.join("fspec-config.json"))
-        .expect("read fspec-config.json");
+    let raw =
+        fs::read_to_string(data_dir.join("fspec-config.json")).expect("read fspec-config.json");
     serde_json::from_str(&raw).expect("parse fspec-config.json")
 }
 
@@ -130,10 +129,7 @@ async fn slash_mux_save_persists_with_no_manual_persist_dirs_wiring() {
     assert_eq!(config["tui"]["mux"]["enabled"], json!(true));
     assert_eq!(config["tui"]["mux"]["orientation"], json!("Horizontal"));
     assert_eq!(config["tui"]["mux"]["splits"], json!([50]));
-    assert_eq!(
-        config["tui"]["mux"]["panes"],
-        json!(["Board", "Agent"])
-    );
+    assert_eq!(config["tui"]["mux"]["panes"], json!(["Board", "Agent"]));
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -242,12 +238,11 @@ async fn a_project_scope_tui_mux_overrides_the_user_scope_value_on_load() {
     // @step When a fresh TUI bootstrap loads the persisted mux config
     // (the path-injectable core — the App-level load reads the same
     // deep-merged view through the shared-config globals)
-    let value =
-        codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
-            user.path(),
-            project.path(),
-        )
-        .expect("project tui.mux must load");
+    let value = codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
+        user.path(),
+        project.path(),
+    )
+    .expect("project tui.mux must load");
     // @step Then the live mux config is vertical with a 40/60 split (the project value wins)
     let cfg: MuxConfig = serde_json::from_value(value).expect("MuxConfig round-trip");
     assert_eq!(cfg.orientation, MuxOrientation::Vertical);

@@ -527,8 +527,8 @@ fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
         // RPC-383: `render_dialog_at` is the shared visual-contract
         // implementation that `render_dialog` delegates to; both count as
         // delegation (fixed-rect dialogs like WorkUnitSearchDialog use it).
-        let delegates = fn_body_only.contains("render_dialog(")
-            || fn_body_only.contains("render_dialog_at(");
+        let delegates =
+            fn_body_only.contains("render_dialog(") || fn_body_only.contains("render_dialog_at(");
         assert!(
             delegates,
             "FspecDialog literal at {file:?}:{lineno} does not delegate to render_dialog in same fn"

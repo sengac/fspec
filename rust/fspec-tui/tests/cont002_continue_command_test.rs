@@ -371,4 +371,3 @@ fn an_invalid_continue_argument_leaves_state_unchanged() {
     assert!(!result.enabled);
     assert_eq!(result.budget, DEFAULT_CONTINUE_BUDGET);
 }
-

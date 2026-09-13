@@ -86,7 +86,11 @@ fn isolated_badge_i_col(buf: &Buffer) -> u16 {
     let row = header_text(buf);
     let idx = row.find("[ISOLATED]").expect("find [ISOLATED] badge");
     let col = row[..idx].chars().count() as u16 + 1; // skip the '['
-    assert_eq!(buf[(col, 0)].symbol(), "I", "cell at col {col} should be 'I'");
+    assert_eq!(
+        buf[(col, 0)].symbol(),
+        "I",
+        "cell at col {col} should be 'I'"
+    );
     col
 }
 

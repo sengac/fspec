@@ -1072,4 +1072,11 @@ impl FspecBackend for EmbeddedFspecBackend {
     ) -> broadcast::Receiver<codelet_rpc_types::CheckpointsProgress> {
         self.service.checkpoints_progress_rx()
     }
+
+    /// BUG-181: forward the shared service's checkpoint-changed push so
+    /// live `CheckpointCounts` frames (watcher-driven, cwd-attached)
+    /// reach the App subscriber on the embedded transport.
+    fn checkpoint_counts_changed_rx(&self) -> broadcast::Receiver<CheckpointCounts> {
+        self.service.checkpoint_counts_changed_rx()
+    }
 }

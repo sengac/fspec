@@ -39,7 +39,10 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
     }
 }
 
-fn fresh() -> (Navigator, tokio::sync::mpsc::UnboundedReceiver<codelet_fspec_tui::components::Action>) {
+fn fresh() -> (
+    Navigator,
+    tokio::sync::mpsc::UnboundedReceiver<codelet_fspec_tui::components::Action>,
+) {
     let (tx, rx) = unbounded_channel();
     (Navigator::new(Arc::new(Theme::default()), tx), rx)
 }
@@ -102,8 +105,7 @@ fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() {
     for x in 0..buf.area.width {
         let cell = &buf[(x, footer_row)];
         assert_eq!(
-            cell.bg,
-            MUX_FOOTER_PURPLE,
+            cell.bg, MUX_FOOTER_PURPLE,
             "footer cell ({x}, {footer_row}) must carry the dark purple background; got {:?}",
             cell.bg
         );

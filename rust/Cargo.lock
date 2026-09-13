@@ -1216,6 +1216,7 @@ dependencies = [
  "chrono-tz",
  "codelet-agent-loop",
  "codelet-common",
+ "codelet-git",
  "codelet-providers",
  "codelet-rpc-types",
  "codelet-test-helpers",

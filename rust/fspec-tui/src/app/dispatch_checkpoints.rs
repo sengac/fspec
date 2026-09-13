@@ -23,9 +23,14 @@ impl App {
     /// Open the checkpoints view: reset the owned view + kick off the
     /// initial `list_checkpoints()` load. The Navigator's `apply_action`
     /// arm has already flipped `active_view` to `Checkpoints`.
+    ///
+    /// BUG-181: also re-poll the checkpoint counts on open — the board
+    /// header must repaint with live counts when the view (re)opens,
+    /// mirroring the close re-poll.
     pub(crate) fn handle_open_checkpoints_view(&mut self) {
         self.navigator.checkpoints = crate::views::CheckpointsView::new();
         self.spawn_list_checkpoints();
+        self.spawn_refresh_checkpoint_counts();
     }
 
     fn spawn_list_checkpoints(&mut self) {
@@ -245,9 +250,13 @@ impl App {
             } => {
                 self.handle_delete_result(work_unit_id, name, *all, error.as_deref());
             }
-            // CloseCheckpointsView has no App-side state beyond the
-            // Navigator flip (handled in apply_action).
-            Action::CloseCheckpointsView => {}
+            // BUG-181: closing the view re-polls the counts (degraded-
+            // transport mitigation — mirrors the open re-poll; keeps the
+            // board header fresh when the push channel is closed, e.g.
+            // WebSocket).
+            Action::CloseCheckpointsView => {
+                self.spawn_refresh_checkpoint_counts();
+            }
             _ => return false,
         }
         true
