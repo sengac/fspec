@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-12T01:37:48.447Z",
+    "lastUpdated": "2026-09-12T22:34:58.429Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 179,
+    "BUG": 180,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1701,7 +1701,8 @@
       "BUG-170",
       "BUG-178",
       "RPC-432",
-      "BUG-179"
+      "BUG-179",
+      "BUG-180"
     ],
     "blocked": [
       "QUERY-001",
@@ -230998,6 +230999,48 @@
         "spec/attachments/BUG-179/bug179-research.md"
       ],
       "estimate": 3
+    },
+    "BUG-180": {
+      "id": "BUG-180",
+      "title": "SessionHeader work-unit status goes stale when status changes externally",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-12T12:54:43.226Z",
+      "updatedAt": "2026-09-12T22:34:58.429Z",
+      "description": "When a work unit's status changes (via update-work-unit-status, any fspec command, or direct file edit), the SessionHeader in AgentView continues to display the OLD status. Root cause: the WorkUnitsWatcher push (Action::WorkUnitsLoaded) only updates BoardStore.replace_work_units() but never syncs the new status into AgentViewStore.work_unit_context_by_session for sessions that have that unit bound. The per-session WorkUnitContext.status is a frozen snapshot taken at attach-time.",
+      "epic": "rust-frontend",
+      "children": [],
+      "userStory": {
+        "role": "fspec TUI user with an agent session attached to a work unit",
+        "action": "see the SessionHeader reflect the work unit's current status after any external status change",
+        "benefit": "the AgentView chrome never paints a stale status that disagrees with the board"
+      },
+      "attachments": [
+        "spec/attachments/BUG-180/bug-180-findings.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-12T21:48:06.356Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-12T22:09:31.809Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-12T22:09:50.064Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-12T22:11:15.538Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-12T22:34:58.429Z"
+        }
+      ],
+      "estimate": 2
     }
   }
 }

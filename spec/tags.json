@@ -1254,6 +1254,10 @@
           "description": "Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag."
         },
         {
+          "name": "@bug-180",
+          "description": "Bug fix work unit BUG-180 — SessionHeader work-unit status stale: WorkUnitsLoaded push re-seeds BoardStore but never syncs AgentViewStore.work_unit_context_by_session / legacy fallback slots, leaving the per-session chip frozen at attach-time status"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -3030,7 +3034,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-11T22:50:15.285Z",
+    "lastUpdated": "2026-09-12T21:44:23.539Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

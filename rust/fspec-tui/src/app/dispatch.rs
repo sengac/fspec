@@ -69,6 +69,13 @@ impl App {
             }
             Action::WorkUnitsLoaded(units) => {
                 self.board_store.replace_work_units(units.clone());
+                // BUG-180: project the fresh snapshot onto the
+                // per-session WorkUnitContext bindings (+ legacy
+                // fallback slots) so the SessionHeader chip tracks the
+                // LIVE status. The push already arrived via the
+                // transport-agnostic `work_units_rx` subscriber; this
+                // completes the reducer at the single mutation point.
+                self.agent_view_store.sync_work_unit_contexts(units);
             }
             Action::CheckpointCountsLoaded(counts) => {
                 // RPC-015: bootstrap delivered fresh checkpoint counts;

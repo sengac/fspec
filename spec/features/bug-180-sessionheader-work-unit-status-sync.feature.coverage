@@ -1,0 +1,369 @@
+{
+  "scenarios": [
+    {
+      "name": "WorkUnitsLoaded syncs per-session WorkUnitContext status",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
+          "lines": "97-134",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitsLoaded syncs legacy fallback slots for the focused session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
+          "lines": "142-163",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitsLoaded does not destroy a binding whose unit was deleted",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
+          "lines": "171-190",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitsLoaded leaves detached sessions untouched",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
+          "lines": "197-226",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionHeader repaints with the fresh status after WorkUnitsLoaded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
+          "lines": "234-265",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitsLoaded syncs the title along with the status",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
+          "lines": "273-294",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug180_wu_status_sync.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs"
+    ],
+    "totalLinesCovered": 409
+  }
+}

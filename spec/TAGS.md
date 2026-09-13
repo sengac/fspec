@@ -338,6 +338,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-168` | Work unit BUG-168 - Read tool PDF visual mode ignores offset/limit and returns unbounded page images; adds pagination, configurable page cap, truncation notice, vision-capability-aware default mode, and rig-patch image count defense |
 | `@bug-171` | Bug fix work unit BUG-171 — exec-stdin TUI overlay never appeared: pull probe had no push trigger while the session stayed Running. Fix: detector observes the end of the prompt condition and pushes clear StreamChunks; set_exec_stdin_request is the sole emission point for ExecStdinRequest / ExecStdinRequestCleared push chunks; non-exit clear resets the per-exec-session cooldown |
 | `@bug-175` | Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag. |
+| `@bug-180` | Bug fix work unit BUG-180 — SessionHeader work-unit status stale: WorkUnitsLoaded push re-seeds BoardStore but never syncs AgentViewStore.work_unit_context_by_session / legacy fallback slots, leaving the per-session chip frozen at attach-time status |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -777,4 +778,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-11T22:50:15.285Z_
+_Last updated: 2026-09-12T21:44:23.539Z_
