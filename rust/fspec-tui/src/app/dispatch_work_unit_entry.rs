@@ -38,7 +38,9 @@ impl App {
         }
         // RPC-050: bind work unit to current session via the
         // attach action; lazy SessionCreated re-dispatches below.
-        let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id.clone()));
+        let _ = self
+            .action_tx
+            .send(Action::AttachWorkUnitToSession(id.clone()));
         if self.agent_view_store.current_session().is_none() {
             let backend = self.backend.clone();
             let action_tx = self.action_tx.clone();

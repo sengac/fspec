@@ -39,6 +39,7 @@ use super::diff_format::{
     build_diff_rows, calculate_start_line, format_edit_diff, format_with_tree_connectors, to_line,
     DiffDisplayRow, CONTEXT_LINES,
 };
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// **RPC-394**: serialize already-built [`DiffDisplayRow`]s to the canonical
 /// display string (each row via [`to_line`], then tree connectors). Used by the
@@ -114,6 +115,10 @@ fn read_context(
 
 /// Build `Context` rows for file lines in the 0-based half-open range
 /// `[from .. to)`, each numbered with its real 1-based file line number.
+///
+/// **TUI-111**: file lines are SOURCE lines (read from disk) — they are
+/// sanitized BEFORE the diff codec encodes them, so the canonical
+/// encoded rows are never run through the sanitizer again downstream.
 fn slice_context(lines: &[&str], from: usize, to: usize) -> Vec<DiffDisplayRow> {
     let to = to.min(lines.len());
     if from >= to {
@@ -124,7 +129,7 @@ fn slice_context(lines: &[&str], from: usize, to: usize) -> Vec<DiffDisplayRow> 
         .enumerate()
         .map(|(offset, text)| DiffDisplayRow::Context {
             line_no: from + offset + 1,
-            text: (*text).to_string(),
+            text: sanitize_for_terminal(text),
         })
         .collect()
 }

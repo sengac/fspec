@@ -16,6 +16,7 @@
 use crate::components::load_state::LoadTracker;
 use crate::components::loading_dialog::LoadingDialog;
 use crate::components::scroll_viewport::{ensure_visible, WheelVelocity};
+use crate::terminal::sanitize::sanitize_for_terminal;
 use codelet_rpc_types::ChangedFile;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Rect;
@@ -145,7 +146,14 @@ impl ChangedFilesView {
     /// be empty — a failed load degrades to the real empty state). The
     /// App dispatcher keeps its own `mark_list_flushed` call for the
     /// diff-stage hand-off; the tracker's flag is idempotent.
+    ///
+    /// **TUI-111**: paths + change types are sanitized on ingress.
     pub fn set_files(&mut self, files: Vec<ChangedFile>) {
+        let mut files = files;
+        for file in files.iter_mut() {
+            file.path = sanitize_for_terminal(&file.path);
+            file.change_type = sanitize_for_terminal(&file.change_type);
+        }
         self.files = files;
         self.selected_index = 0;
         self.file_scroll = 0;
@@ -158,7 +166,12 @@ impl ChangedFilesView {
 
     /// Fold a `FileDiffLoaded` response. Ignored when the loaded path no
     /// longer matches the selected file (stale async result).
+    ///
+    /// **TUI-111**: diff lines are sanitized on ingress (the path is
+    /// sanitized first so the stale-drop match against the stored
+    /// sanitized `files` row still lines up).
     pub fn set_diff(&mut self, path: &str, diff: Option<String>) {
+        let path = sanitize_for_terminal(path);
         let matches_selection = self
             .selected_file()
             .map(|f| f.path == path)
@@ -166,10 +179,10 @@ impl ChangedFilesView {
         if !matches_selection {
             return;
         }
-        self.diff_path = Some(path.to_string());
+        self.diff_path = Some(path);
         self.diff_scroll = 0;
         self.diff_lines = match diff {
-            Some(text) if !text.is_empty() => text.split('\n').map(ToString::to_string).collect(),
+            Some(text) if !text.is_empty() => text.split('\n').map(sanitize_for_terminal).collect(),
             _ => vec!["No changes to display".to_string()],
         };
     }

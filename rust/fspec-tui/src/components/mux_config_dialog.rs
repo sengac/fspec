@@ -32,10 +32,10 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use crate::views::multiplex::{MuxConfig, MuxOrientation, MuxPaneKind};
 
+use super::dialog_theme::{render_dialog, Accent, FspecDialog};
 use super::mux_config_dialog_rows::{
     build_rows, MUX_CONFIG_DIALOG_FOOTER, MUX_CONFIG_DIALOG_TITLE,
 };
-use super::dialog_theme::{render_dialog, Accent, FspecDialog};
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove` AND
@@ -116,7 +116,11 @@ impl MuxConfigDialog {
     fn move_up(&mut self) {
         // Wrap: Up from the first row goes to the LAST pane row (R4).
         let n = self.row_count();
-        self.cursor = if self.cursor == 0 { n - 1 } else { self.cursor - 1 };
+        self.cursor = if self.cursor == 0 {
+            n - 1
+        } else {
+            self.cursor - 1
+        };
     }
 
     fn move_down(&mut self) {
@@ -287,8 +291,8 @@ mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
     use super::*;
-    use crossterm::event::KeyModifiers;
     use crate::views::multiplex::MuxConfig;
+    use crossterm::event::KeyModifiers;
 
     fn two_pane() -> MuxConfig {
         MuxConfig {

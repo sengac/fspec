@@ -17,6 +17,7 @@ use super::diff_format::{
     build_edit_diff_rows_with_context, calculate_start_line, format_diff_for_display,
     format_write_diff, with_tree_connectors, DIFF_COLLAPSED_LINES,
 };
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Which side of the Edit/Write family produced this pending entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -89,25 +90,34 @@ pub fn produce_diff_strings(pending: &PendingToolDiff) -> (String, String) {
             new_string,
             file_path,
         } => {
+            // TUI-111: sanitize the SOURCE lines before the diff codec
+            // encodes them — the encoded canonical lines (with the \u{1}
+            // elision sentinel) must never be re-sanitized downstream.
+            // (start_line was already computed from the raw strings at
+            // capture time.)
+            let clean_old = sanitize_for_terminal(old_string);
+            let clean_new = sanitize_for_terminal(new_string);
             // RPC-394: read the post-edit file and inject up to CONTEXT_LINES
             // real unchanged file lines before/after the change; falls back to
             // fragments-only when the file is missing/unreadable.
             let path = file_path.as_deref();
             let collapsed_rows = build_edit_diff_rows_with_context(
-                old_string,
-                new_string,
+                &clean_old,
+                &clean_new,
                 path,
                 DIFF_COLLAPSED_LINES,
             );
             let full_rows =
-                build_edit_diff_rows_with_context(old_string, new_string, path, usize::MAX);
+                build_edit_diff_rows_with_context(&clean_old, &clean_new, path, usize::MAX);
             (
                 with_tree_connectors(&collapsed_rows),
                 with_tree_connectors(&full_rows),
             )
         }
         PendingDiffKind::Write { content } => {
-            let lines = format_write_diff(content);
+            // TUI-111: sanitize the Write content lines before encoding.
+            let clean_content = sanitize_for_terminal(content);
+            let lines = format_write_diff(&clean_content);
             let collapsed =
                 format_diff_for_display(&lines, DIFF_COLLAPSED_LINES, pending.start_line);
             let full = format_diff_for_display(&lines, lines.len().max(1), pending.start_line);

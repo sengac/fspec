@@ -29,6 +29,7 @@
 use codelet_rpc_types::{SessionId, WorkUnitContext, WorkUnitInfo};
 
 use super::AgentViewStore;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 impl AgentViewStore {
     /// Borrow the per-session `WorkUnitContext` bound to `session`, if any.
@@ -85,11 +86,16 @@ impl AgentViewStore {
         // Fast lookup: unit id → (title, status). Built per call; the
         // snapshot is at most the board size (hundreds), and this runs
         // once per watcher push, not per frame.
+        //
+        // TUI-111: the snapshot title is sanitized on ingress so the
+        // SessionHeader WU chip (and legacy fallback slots) always
+        // paint clean text — same field definition as
+        // `crate::store::work_unit_sanitize::sanitize_work_unit`.
         let lookup = |id: &str| -> Option<(String, String)> {
             units
                 .iter()
                 .find(|u| u.id == id)
-                .map(|u| (u.title.clone(), u.status.clone()))
+                .map(|u| (sanitize_for_terminal(&u.title), u.status.clone()))
         };
 
         for ctx in self.work_unit_context_by_session.values_mut() {

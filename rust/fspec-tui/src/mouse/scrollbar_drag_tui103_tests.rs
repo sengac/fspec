@@ -223,8 +223,14 @@ fn scrollbar_drag_state_resets_when_content_changes() {
         current_offset: 0,
     };
 
-    drag.on_mouse(mouse_event(MouseEventKind::Down(MouseButton::Left), 0, 0), geom);
-    drag.on_mouse(mouse_event(MouseEventKind::Drag(MouseButton::Left), 0, 10), geom);
+    drag.on_mouse(
+        mouse_event(MouseEventKind::Down(MouseButton::Left), 0, 0),
+        geom,
+    );
+    drag.on_mouse(
+        mouse_event(MouseEventKind::Drag(MouseButton::Left), 0, 10),
+        geom,
+    );
     assert!(drag.is_dragging());
 
     // When: content changes → reset

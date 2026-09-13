@@ -34,6 +34,7 @@ use tokio::time::Instant;
 
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 use super::{Action, Callback, Component, EventResult, Priority};
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Canonical id used by [`crate::compositor::Compositor::remove`].
 pub const NOTIFICATION_DIALOG_ID: &str = "notification-dialog";
@@ -99,10 +100,12 @@ impl NotificationDialog {
     /// message + severity. Defaults `auto_dismiss_ms` to
     /// [`DEFAULT_AUTO_DISMISS_MS`] (2000ms). No timer task is spawned
     /// until [`Self::with_action_tx`] attaches an action channel.
+    ///
+    /// **TUI-111**: the message is sanitized at ingress.
     pub fn new(message: impl Into<String>, severity: NotificationSeverity) -> Self {
         Self {
             id: NOTIFICATION_DIALOG_ID.to_string(),
-            message: message.into(),
+            message: sanitize_for_terminal(&message.into()),
             severity,
             auto_dismiss_ms: DEFAULT_AUTO_DISMISS_MS,
             created_at: Instant::now(),

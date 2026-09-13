@@ -10,12 +10,18 @@
 //! being loaded (the "progress" for many-checkpoint repos — TUI-109
 //! later feeds the per-item `(idx/total)` counter).
 //!
-//! Stale-drop invariance: `complete_stage(key)` is a no-op (returns
+//! stale-drop invariance: `complete_stage(key)` is a no-op (returns
 //! `false`) when `key` does not match the currently-in-flight stage, so
 //! a late result for a de-selected item can never clear the current
 //! stage's loading. This mirrors the two views' existing matching-key
 //! stale-drop in `set_files` / `set_diff` (RPC-364 / RPC-356), which stay
 //! untouched.
+//!
+//! **TUI-111**: stage labels (which embed file paths / checkpoint
+//! names) are sanitized at ingress in `new` / `begin_stage` — the
+//! loading dialog's spinner line always paints clean text.
+
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// One in-flight cascade stage (an identity key for stale-drop + the
 /// spinner line label displayed by the loading dialog).
@@ -42,7 +48,7 @@ impl LoadTracker {
     /// Construct a tracker with the list/scan stage in flight.
     pub fn new(list_label: impl Into<String>) -> Self {
         Self {
-            list_label: list_label.into(),
+            list_label: sanitize_for_terminal(&list_label.into()),
             list_loaded: false,
             stage: None,
         }
@@ -73,11 +79,11 @@ impl LoadTracker {
 
     /// A cascade stage load was requested. `key` is the stale-drop
     /// identity (see `files_stage_key` / `diff_stage_key`); `label` is
-    /// the view-owned spinner-line text (views sanitize before passing).
+    /// the view-owned spinner-line text, sanitized at ingress (TUI-111).
     pub fn begin_stage(&mut self, key: &str, label: impl Into<String>) {
         self.stage = Some(Stage {
             key: key.to_string(),
-            label: label.into(),
+            label: sanitize_for_terminal(&label.into()),
         });
     }
 

@@ -107,7 +107,11 @@ impl SessionWorktreesDialog {
     /// Esc emits `Cancel` regardless of focused button; Tab/Right cycle
     /// focus forward; Shift+Tab/Left cycle focus backward; Enter
     /// confirms the focused button.
-    pub fn handle_key(&mut self, code: KeyCode, mods: KeyModifiers) -> SessionWorktreesDialogOutcome {
+    pub fn handle_key(
+        &mut self,
+        code: KeyCode,
+        mods: KeyModifiers,
+    ) -> SessionWorktreesDialogOutcome {
         if mods.contains(KeyModifiers::CONTROL) || mods.contains(KeyModifiers::ALT) {
             return SessionWorktreesDialogOutcome::Ignored;
         }

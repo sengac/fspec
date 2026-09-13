@@ -247,7 +247,6 @@ impl App {
         self.compositor.render(area, buf);
         self.should_render = false;
     }
-
 }
 
 /// Helper: synthesise a Key Press event with no modifiers.

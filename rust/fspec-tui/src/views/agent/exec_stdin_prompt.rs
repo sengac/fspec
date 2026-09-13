@@ -71,8 +71,7 @@ pub fn render_exec_stdin_prompt(
         return None;
     }
     // Row 0: header.
-    Paragraph::new(Line::from(header_spans(request)))
-        .render(area, buf);
+    Paragraph::new(Line::from(header_spans(request))).render(area, buf);
     // Rows 1..h-1: the shared MultiLineInput (placeholder "Type to
     // send to the command…"). The last row is reserved for the dim
     // footer (only when there is room for it).

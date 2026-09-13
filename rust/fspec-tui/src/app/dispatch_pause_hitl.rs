@@ -121,9 +121,7 @@ impl App {
                     });
                 }
                 Ok(None) => {
-                    let _ = action_tx.send(Action::ExecStdinDismissed {
-                        agent_session: id,
-                    });
+                    let _ = action_tx.send(Action::ExecStdinDismissed { agent_session: id });
                 }
                 Err(err) => {
                     tracing::debug!(
@@ -146,9 +144,6 @@ impl App {
         self.agent_view_store.clear_hitl_prompt(&session_id);
         self.should_render = true;
     }
-
-
-
 
     /// RPC-053: fire-and-forget `backend.pause_confirm(session, accept)`.
     /// RPC-406: clears the per-session pause slot so the inline prompt
@@ -243,5 +238,4 @@ impl App {
         });
         self.pending_tasks.push(handle);
     }
-
 }

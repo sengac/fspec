@@ -23,6 +23,7 @@ use std::collections::HashMap;
 use codelet_rpc_types::{HitlAnswer, HitlQuestion, HitlRequest, SessionId};
 
 use super::AgentViewStore;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// What `advance_or_submit` decided: keep prompting or submit all
 /// accumulated answers (the caller sends ONE `HitlResponse`).
@@ -124,6 +125,22 @@ impl HitlPromptState {
 /// Slot map type held by [`AgentViewStore`].
 pub type HitlPromptBySession = HashMap<SessionId, HitlPromptState>;
 
+/// **TUI-111**: sanitize the user-visible text of an LLM-generated
+/// [`HitlRequest`] on ingress (questions: header, question; options:
+/// label, description). Question ids are machine identifiers and are
+/// left untouched.
+pub fn sanitize_hitl_request(mut request: HitlRequest) -> HitlRequest {
+    for question in request.questions.iter_mut() {
+        question.header = sanitize_for_terminal(&question.header);
+        question.question = sanitize_for_terminal(&question.question);
+        for option in question.options.iter_mut() {
+            option.label = sanitize_for_terminal(&option.label);
+            option.description = sanitize_for_terminal(&option.description);
+        }
+    }
+    request
+}
+
 impl AgentViewStore {
     /// Read the active HITL prompt state for `session`. `None` when no
     /// request is pending (or it was answered / cancelled / cleared).
@@ -139,9 +156,15 @@ impl AgentViewStore {
 
     /// Persist a fetched [`HitlRequest`] for `session`, resetting the
     /// machine state (fresh request = fresh flow).
+    ///
+    /// **TUI-111**: the request's display text (headers, questions,
+    /// option labels + descriptions) is sanitized on ingress — the
+    /// inline HITL prompt rows always paint clean text.
     pub fn set_hitl_prompt(&mut self, session: SessionId, request: HitlRequest) {
-        self.hitl_prompt_by_session
-            .insert(session, HitlPromptState::new(request));
+        self.hitl_prompt_by_session.insert(
+            session,
+            HitlPromptState::new(sanitize_hitl_request(request)),
+        );
     }
 
     /// Drop the HITL slot for `session` — called after submit/cancel

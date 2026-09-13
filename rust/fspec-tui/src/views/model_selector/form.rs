@@ -11,6 +11,7 @@
 //! transforms — no rendering, no key routing (those live in the parent
 //! `mod.rs`).
 
+use crate::terminal::sanitize::sanitize_for_terminal;
 use codelet_rpc_types::CustomModelDefinition;
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -186,6 +187,9 @@ impl CustomModelForm {
     /// Build a transport [`CustomModelDefinition`] from the current values,
     /// or `None` when the required Model ID is blank. Empty optional fields
     /// are omitted (left `None`) so they round-trip to skipped JSON keys.
+    ///
+    /// **TUI-111**: the display name is sanitized on commit (bracketed
+    /// paste could carry control characters).
     pub fn build_definition(&self) -> Option<CustomModelDefinition> {
         let id = self.id.trim();
         if id.is_empty() {
@@ -198,7 +202,7 @@ impl CustomModelForm {
             if dn.is_empty() {
                 None
             } else {
-                Some(dn.to_string())
+                Some(sanitize_for_terminal(dn))
             }
         };
         Some(CustomModelDefinition {

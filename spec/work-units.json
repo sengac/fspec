@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-12T22:34:58.429Z",
+    "lastUpdated": "2026-09-13T09:05:06.959Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -83,7 +83,7 @@
     "TOKEN": 3,
     "TOOL": 22,
     "TOOLS": 4,
-    "TUI": 110,
+    "TUI": 111,
     "UX": 2,
     "VAL": 7,
     "VID": 2,
@@ -1702,7 +1702,8 @@
       "BUG-178",
       "RPC-432",
       "BUG-179",
-      "BUG-180"
+      "BUG-180",
+      "TUI-111"
     ],
     "blocked": [
       "QUERY-001",
@@ -231041,6 +231042,241 @@
         }
       ],
       "estimate": 2
+    },
+    "TUI-111": {
+      "id": "TUI-111",
+      "title": "Refactor: centralize terminal output sanitization at ingress for ALL TUI views",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-13T02:50:27.442Z",
+      "updatedAt": "2026-09-13T09:05:06.959Z",
+      "description": "Today sanitize_for_terminal() (TUI-100) only covers ToolResult/ToolProgress scrollback text, plus ad-hoc call sites in diff_common (TUI-104) and checkpoint labels. All other external strings reaching the TUI (BoardView work-unit titles/descriptions, assistant/thinking text, notifications, error dialogs, HITL/pause/exec-stdin prompts, role banners, loading-dialog cascade labels, blocklist/model-selector rows, turn modal, copy) are painted unsanitized. Refactor to sanitize ALL output at the store/action/dialog ingress boundaries (Option A in the attached research), promote the sanitizer to a crate-level terminal::sanitize module, delete the per-view call sites, and add buffer-level invariant + idempotence (proptest) tests. Research attached.",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-111/TUI-111-centralized-terminal-output-sanitization-research.md",
+        "spec/attachments/TUI-111/ast-research-tui-111-sanitization-ingress.md"
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "see clean, terminal-safe output in every TUI view (AgentView, BoardView, Changed Files, Checkpoints, dialogs, prompts)",
+        "benefit": "no view can display raw ANSI sequences, control characters, tabs or carriage returns from LLM, backend, filesystem or user data"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-13T02:54:25.793Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-13T03:34:02.903Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-13T09:02:29.300Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-13T09:02:38.704Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-13T09:05:06.959Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The canonical terminal sanitizer lives in ONE crate-level module (terminal::sanitize) re-exported from the crate root; no view, store, or component re-implements ANSI/control-character stripping",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:32.891Z"
+        },
+        {
+          "id": 1,
+          "text": "Sanitization happens at DATA INGRESS (store setters, the stream-chunk recorder, action handlers, dialog constructors) so that every view paints data that was cleaned exactly once; views never sanitize",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:37.930Z"
+        },
+        {
+          "id": 2,
+          "text": "Every StreamChunk variant that produces visible scrollback text is sanitized at SessionContext::record_chunk before it is stored: Text, Thinking, UserInput, Error, UserNotification, IncomingMessage, ToolCall (name+args), ToolResult, ToolProgress",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:43.841Z"
+        },
+        {
+          "id": 3,
+          "text": "BoardStore::replace_work_units sanitizes WorkUnitInfo fields on ingress (id, title, description, epic, attachment paths) so BoardView cards, details strip, search dialog and mux board pane all render clean text",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:52.200Z"
+        },
+        {
+          "id": 4,
+          "text": "Store setters that write user-visible prompt/chrome text sanitize on write: set_hitl_prompt (headers, questions, options, descriptions), set_pause_state (prompt, details/tool_call_id), set_exec_stdin (prompt, details), set_role (role text)",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:03.620Z"
+        },
+        {
+          "id": 5,
+          "text": "Dialog constructors sanitize caller-supplied text in new(): ErrorDialog (message), NotificationDialog (message), StatusDialog (message), LoadingDialog (title + label — catches cascade stage labels that embed file paths / checkpoint names)",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:11.463Z"
+        },
+        {
+          "id": 6,
+          "text": "Mode-view state setters sanitize incoming rows on ingress: ChangedFilesView set_files/set_diff_lines, CheckpointsView set_checkpoints/set_files/set_diff_lines, ResumeSessionView set_sessions, SearchHistoryView rows, BlocklistView set_rules (id, pattern, reason, guidance, source), model-selector rows",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:22.302Z"
+        },
+        {
+          "id": 7,
+          "text": "Edit/Write tool-diff SOURCE lines (tool input strings + context file lines read from disk) are sanitized BEFORE the diff codec encodes them with the \\u{1} elision sentinel — the encoded canonical lines are never run through the sanitizer post-encode",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:31.228Z"
+        },
+        {
+          "id": 8,
+          "text": "The LLM receives RAW unsanitized tool output (TUI-100 rule 6 is preserved): sanitization happens only inside fspec-tui; rust/tools and the session engine are untouched",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:39.972Z"
+        },
+        {
+          "id": 9,
+          "text": "Stderr marker ordering is preserved: ToolProgress/ToolResult text is sanitized FIRST, then the STDERR_MARKER (⚠stderr⚠) is applied by maybe_mark; the marker is still stripped at render time by strip_marker",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:46.834Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A work unit whose title contains ANSI color codes and a tab (e.g. from an LLM-authored fspec create-story) displays as plain text in the BoardView card label, the details strip title row, and the work-unit search dialog — no escape glyphs, no terminal trashing",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:58:50.073Z"
+        },
+        {
+          "id": 1,
+          "text": "An assistant message containing control characters (\\x00\\x07) and carriage returns displays as clean text in the AgentView scrollback, the turn-content modal (Enter on the turn), and when copied to the clipboard",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:58:56.360Z"
+        },
+        {
+          "id": 2,
+          "text": "A thinking chunk with ANSI cursor-movement sequences (neofetch-style) shows readable plain text under the [Thinking] header in the scrollback",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:02.154Z"
+        },
+        {
+          "id": 3,
+          "text": "A tool call whose argument strings contain escape sequences (e.g. file_path or command with \\x1b codes) shows clean argument text in the tool-card header line",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:15.275Z"
+        },
+        {
+          "id": 4,
+          "text": "An Edit/Write tool with escape sequences in its input shows a clean colored diff inline in the tool card AND in the turn-content modal, while the diff's elision hint rows (\"... (N lines)\") still render correctly",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:28.753Z"
+        },
+        {
+          "id": 5,
+          "text": "A provider error chunk (StreamChunk::Error) with ANSI in the error text shows clean text both in the inline \"API Error: ...\" scrollback line and in the centred ErrorDialog modal",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:41.172Z"
+        },
+        {
+          "id": 6,
+          "text": "A HITL prompt (request_user_input) whose question/options carry control characters shows clean text in the inline pause-style prompt rows (header, question, option labels + descriptions)",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:54.744Z"
+        },
+        {
+          "id": 7,
+          "text": "A role set via /role with a control character shows clean single-line text in the RoleBanner under the SessionHeader",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:59.972Z"
+        },
+        {
+          "id": 8,
+          "text": "A session notice (Action::EmitSessionNotice) whose text carries escape sequences lands as a clean line in the originating session's scrollback",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:07.886Z"
+        },
+        {
+          "id": 9,
+          "text": "A changed file whose path and diff content contain ANSI codes shows clean rows in the Changed Files dual-pane (file list + diff pane)",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:27.156Z"
+        },
+        {
+          "id": 10,
+          "text": "A checkpoint with a name containing control characters and a diff with tabs shows clean rows in the Checkpoints three-pane (checkpoint list, files, diff) and in the restore dialog",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:33.446Z"
+        },
+        {
+          "id": 11,
+          "text": "While the Changed Files diff stage is in flight, the shared loading dialog's spinner label (which embeds the file path) shows clean text even when the path carries control characters",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:39.330Z"
+        },
+        {
+          "id": 12,
+          "text": "A blocklist rule whose pattern/reason/guidance contain escape sequences shows clean rows in the BlocklistView list pane and details pane",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:46.075Z"
+        },
+        {
+          "id": 13,
+          "text": "Plain text with no escape sequences or control characters passes through sanitization byte-for-byte unchanged in every sink (no visual difference after the refactor)",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:54.071Z"
+        }
+      ],
+      "nextExampleId": 15,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Sanitizer module moves from store/agent_view/sanitize.rs to a new crate-level terminal::sanitize module (fspec-tui/src/terminal/sanitize.rs + moved test files), re-exported via lib.rs as `pub use terminal::sanitize::sanitize_for_terminal` so existing in-crate importers (views/diff_common, views/checkpoints) keep working; existing 5 call sites migrate to the new path. Function signature and behaviour (ANSI regex, tab→2 spaces, CR drop, C0 control-char drop, newline keep) are UNCHANGED.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:01:14.074Z"
+        },
+        {
+          "id": 1,
+          "text": "terminal.rs becomes terminal/mod.rs (file move, no content change) + terminal/sanitize.rs (moved from store/agent_view/sanitize.rs) + moved test files terminal/sanitize_tests.rs, terminal/sanitize_tests_streaming.rs. store/agent_view/sanitize.rs and its two test files are deleted; the #[path]-style test module includes in sanitize.rs migrate unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:01:38.423Z"
+        },
+        {
+          "id": 2,
+          "text": "Prompt/chrome store setters sanitize these exact fields on write: set_hitl_prompt → HitlRequest.questions[].{header,question,options[].label,options[].description}; set_pause_state → PauseState.{prompt, tool_call_id}; set_exec_stdin → ExecStdinRequest.command; set_role → the role string. Sanitize before storing (HitlPromptState::new receives the sanitized request; PauseState/ExecStdinRequest/role are sanitized in the setter body).",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:03:50.716Z"
+        },
+        {
+          "id": 3,
+          "text": "Mode-view + dialog ingress field lists: BoardStore::replace_work_units sanitizes WorkUnitInfo.{id,title,description,epic,attachments[]} (work_type/status are closed vocabularies — skipped); a shared fn sanitize_work_unit(&mut WorkUnitInfo) is used by both replace_work_units and AgentViewStore::sync_work_unit_contexts so the SessionHeader WU chip stays clean. ChangedFiles: ChangedFile.{path,change_type} at set_files + diff lines at set_diff_lines. Checkpoints: CheckpointInfo.{work_unit_id,name} at set_checkpoints + file rows + diff lines. ResumeSessionView::set_sessions → SessionInfo.{name,project,worktree_path,role}. SearchHistoryView rows → HistoryMatch.text. BlocklistView::set_rules → BlocklistRuleInfo.{id,pattern,reason,guidance,source} (action is closed vocabulary — skipped). Model selector: ProviderInfo/ModelInfo display_name fields via set_providers + the form's display_name on commit.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:04:06.069Z"
+        },
+        {
+          "id": 4,
+          "text": "Test strategy: (1) moved unit tests keep the TUI-100 golden behaviour; (2) proptest property on sanitize_for_terminal: output contains no \\x1b and no char in the forbidden control set for arbitrary input, plus idempotence sanitize(sanitize(x)) == sanitize(x); (3) per-sink ingress unit tests (store-level: feed hostile WorkUnitInfo/HitlRequest/PauseState/ExecStdinRequest/BlocklistRuleInfo/SessionInfo/ChangedFile/CheckpointInfo through the setters and assert stored text is clean); (4) integration tests in fspec-tui/tests/ using the mock-backend harness: drive hostile StreamChunks + WorkUnitsLoaded + dialog actions through the App and assert the rendered Buffer contains no control/ANSI bytes for board card, details strip, scrollback, error dialog, loading dialog label, HITL/pause prompt, role banner, checkpoint label, changed-files rows. Existing golden-string parity tests (chunkprocessor-parity, chunk_rendering_parity, scrollback_pty) are the regression net for the record_chunk move.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:04:28.678Z"
+        },
+        {
+          "id": 5,
+          "text": "record_chunk ingress design: each visible-text arm sanitizes its payload at the top of the arm, BEFORE the chunk-processor helpers see it — Text/Thinking/UserInput/Error/UserNotification/IncomingMessage sanitize the payload string; ToolCall sanitizes the tool name + the extracted args display string (extract_tool_args_display output is sanitized when building the header in handle_tool_call); ToolResult/ToolProgress sanitize at the record_chunk arm entry and the now-redundant calls in chunk_tool_result.rs are deleted (the maybe_mark call stays AFTER sanitization, preserving rule 9). The diff path is separate: pending_tool_diff::produce_diff_strings sanitizes each source line (Edit old/new strings, Write content, and context file lines in diff_context) BEFORE diff_format encodes rows via to_line — the \\u{1} elision sentinel is only introduced by the codec and must survive to parse_line. IncomingMessage sanitizes the role + body segments BEFORE the [W] prefix formatting.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:04:52.127Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "assumptions": [
+        "The sanitize_for_terminal behaviour (ANSI regex + control-char set + tab/CR handling) is already correct and frozen — this card is a STRUCTURAL refactor (where sanitization happens), not a behaviour change. If behaviour needs to change, that is a separate card."
+      ],
+      "estimate": 13
     }
   }
 }

@@ -130,8 +130,7 @@ impl AgentView {
         // exec-stdin > pause > composer). Pure overlay — the session
         // status is NOT flipped, so the agent keeps streaming while the
         // prompt is showing.
-        if let Some((session, request)) =
-            sid.and_then(|s| store.exec_stdin_for(s).map(|r| (s, r)))
+        if let Some((session, request)) = sid.and_then(|s| store.exec_stdin_for(s).map(|r| (s, r)))
         {
             // The shared input paints below the header — keep its
             // viewport in sync (same geometry as the HITL freeform
@@ -139,10 +138,7 @@ impl AgentView {
             let input_body_width = multiline_input_render::input_body_width(input_area.width);
             self.input
                 .sync_viewport(input_body_width, input_area.height);
-            self.last_exec_stdin = Some((
-                session.clone(),
-                request.exec_session_id.clone(),
-            ));
+            self.last_exec_stdin = Some((session.clone(), request.exec_session_id.clone()));
             // Anchor the hardware cursor on the input row (row 1, below
             // the 1-row header) the way the HITL freeform branch does
             // via its header offset.

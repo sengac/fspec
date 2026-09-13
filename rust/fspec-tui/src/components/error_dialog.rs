@@ -19,6 +19,7 @@ use ratatui::text::Span;
 
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 use super::{Callback, Component, EventResult, Priority};
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Canonical id used by [`crate::compositor::Compositor::remove`] when
 /// the dialog dismisses.
@@ -34,10 +35,13 @@ pub struct ErrorDialog {
 impl ErrorDialog {
     /// Construct a fresh ErrorDialog with the canonical id and the
     /// supplied error message body.
+    ///
+    /// **TUI-111**: the message is sanitized at ingress — provider
+    /// error strings can carry ANSI sequences / control characters.
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             id: ERROR_DIALOG_ID.to_string(),
-            message: message.into(),
+            message: sanitize_for_terminal(&message.into()),
         }
     }
 

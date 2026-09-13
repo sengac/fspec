@@ -280,7 +280,6 @@ impl ProfileForm {
     }
 }
 
-
 /// Outcome of routing one key through the open form. Owned here (form
 /// internals drive it); consumed by the sibling `profile_form_submit` module,
 /// which handles the submit / cancel / restore side effects.

@@ -18,13 +18,12 @@ use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
     CompactionProgress, CompactionResult, CustomModelDefinition, ExecStdinRequest, FspecResult,
-    HealthInfo,
-    HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
-    MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState, ProviderCredentialInfo,
-    ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
-    SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
-    StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
-    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo,
+    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
+    ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
+    SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
+    SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
+    TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -1104,7 +1103,10 @@ impl FspecBackend for WebSocketFspecBackend {
             .await?)
     }
 
-    async fn get_exec_stdin_request(&self, session_id: SessionId) -> Result<Option<ExecStdinRequest>> {
+    async fn get_exec_stdin_request(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<ExecStdinRequest>> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client

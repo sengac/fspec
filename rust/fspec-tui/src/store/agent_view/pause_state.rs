@@ -20,6 +20,7 @@
 use codelet_rpc_types::{PauseState, SessionId};
 
 use super::AgentViewStore;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Number of options on the triple prompt (wraparound modulus).
 pub const TRIPLE_PAUSE_OPTIONS: usize = 3;
@@ -37,6 +38,10 @@ impl AgentViewStore {
     /// triple-pause selection when the pause KIND changes (TS parity:
     /// `AgentView.tsx:1326-1331` resets whenever the kind is no longer
     /// `triple`); a same-kind refresh keeps the user's selection.
+    ///
+    /// **TUI-111**: the prompt (and tool_call_id display) is sanitized
+    /// on ingress so the inline pause prompt rows always paint clean
+    /// text.
     pub fn set_pause_state(&mut self, session: SessionId, state: PauseState) {
         let kind_changed = self
             .pause_state_by_session
@@ -46,7 +51,15 @@ impl AgentViewStore {
             self.triple_pause_selection_by_session
                 .insert(session.clone(), 0);
         }
-        self.pause_state_by_session.insert(session, state);
+        let clean = PauseState {
+            prompt: sanitize_for_terminal(&state.prompt),
+            tool_call_id: state
+                .tool_call_id
+                .as_ref()
+                .map(|id| sanitize_for_terminal(id)),
+            ..state
+        };
+        self.pause_state_by_session.insert(session, clean);
     }
 
     /// Drop the pause slot for `session` and reset its selection —

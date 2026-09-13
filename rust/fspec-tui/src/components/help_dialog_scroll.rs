@@ -129,8 +129,7 @@ pub(crate) fn handle_dialog_mouse(
     let visible = dialog.visible_rows;
     if total > visible {
         if let Some(gutter) = dialog.last_gutter {
-            let inside =
-                crate::mouse::rect_contains(gutter, mouse.column, mouse.row);
+            let inside = crate::mouse::rect_contains(gutter, mouse.column, mouse.row);
             match mouse.kind {
                 MouseEventKind::Down(MouseButton::Left)
                 | MouseEventKind::Drag(MouseButton::Left)

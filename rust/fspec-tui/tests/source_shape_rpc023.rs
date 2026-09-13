@@ -90,7 +90,7 @@ fn no_raw_sgr_mouse_escape_strings_appear_anywhere_in_src() {
 fn enable_disable_mouse_capture_appear_only_in_terminal_and_mouse_toggle() {
     // @step Given the directory rust/fspec-tui/src
     let rs_files = common::collect_rs_files(&src_dir());
-    let terminal = src_dir().join("terminal.rs");
+    let terminal = src_dir().join("terminal").join("mod.rs");
     let toggle = src_dir().join("mouse").join("toggle.rs");
     // @step When a test scans every .rs file with comments stripped for EnableMouseCapture / DisableMouseCapture identifiers
     let mut violations: Vec<String> = Vec::new();

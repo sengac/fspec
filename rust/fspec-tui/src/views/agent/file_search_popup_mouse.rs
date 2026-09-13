@@ -120,5 +120,4 @@ impl FileSearchPopup {
             _ => FilePopupOutcome::Ignored,
         }
     }
-
 }

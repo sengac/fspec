@@ -12,10 +12,10 @@ use ratatui::style::Color;
 
 use super::chunk_processor::{finalize_in_flight_thinking, flush_in_flight_drop_empty};
 use super::pending_tool_diff::{capture_pending_diff, produce_diff_strings};
-use super::sanitize::sanitize_for_terminal;
 use super::session_context::SessionContext;
 use super::stderr::maybe_mark;
 use super::tool_args::extract_tool_args_display;
+use crate::terminal::sanitize::sanitize_for_terminal;
 use crate::views::agent::{ChunkKind, ChunkSource};
 
 /// Mirrors `processStreamingChunk` ToolCall branch
@@ -33,8 +33,12 @@ pub fn handle_tool_call(ctx: &mut SessionContext, info: &ToolCallInfo) {
         ctx.pending_tool_diffs.insert(info.id.clone(), pending);
     }
     let args = extract_tool_args_display(&info.name, &info.input);
+    // TUI-111: the header line (tool name + args display) is LLM
+    // controlled — sanitize at ingress before the card is stored.
+    let name = sanitize_for_terminal(&info.name);
+    let args = sanitize_for_terminal(&args);
     ctx.push_chunk(ChunkSource {
-        text: format!("{}({})", info.name, args),
+        text: format!("{name}({args})"),
         color: Color::White,
         kind: ChunkKind::ToolCall {
             tool_call_id: info.id.clone(),
@@ -91,10 +95,12 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                         .collect::<Vec<_>>()
                         .join("\n");
                     if body.is_empty() {
-                        let sanitized = sanitize_for_terminal(&info.content);
-                        if !sanitized.trim().is_empty() {
+                        // TUI-111: content was already sanitized at
+                        // record_chunk ingress — no re-sanitize here.
+                        let clean = info.content.clone();
+                        if !clean.trim().is_empty() {
                             source.text.push('\n');
-                            source.text.push_str(&sanitized);
+                            source.text.push_str(&clean);
                         }
                     }
                 }
@@ -142,9 +148,9 @@ pub fn handle_tool_progress(ctx: &mut SessionContext, info: &ToolProgressInfo) {
                 }
                 // RPC-400: an is_stderr chunk is prefixed per line with
                 // STDERR_MARKER so it renders red; is_stderr=false verbatim.
-                // TUI-100: sanitize before marking to strip ANSI/control chars.
-                let sanitized = sanitize_for_terminal(&info.output_chunk);
-                let marked = maybe_mark(&sanitized, info.is_stderr);
+                // TUI-111: output_chunk was sanitized at record_chunk
+                // ingress — the marker is applied AFTER (rule [10]).
+                let marked = maybe_mark(&info.output_chunk, info.is_stderr);
                 source.text.push_str(marked.trim_end_matches('\n'));
                 // RPC-389: live progress keeps the card streaming (last-10
                 // tail window) until a ToolResult settles it.

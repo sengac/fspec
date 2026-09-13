@@ -13,6 +13,7 @@ use super::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 use super::mode_view_render::render_session_rows;
 use crate::components::scroll_viewport::{ensure_visible, wrap_index, WheelVelocity};
 use crate::mouse::scrollbar_drag::ScrollbarDrag;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 const CHROME_ROWS: u16 = 3;
 const DOUBLE_CLICK_TIMEOUT: Duration = Duration::from_millis(300);
@@ -117,7 +118,20 @@ impl ResumeSessionView {
     }
 
     /// Replace the session list.
+    ///
+    /// **TUI-111**: user-visible fields (name, project, worktree_path,
+    /// role) are sanitized on ingress.
     pub fn set_sessions(&mut self, sessions: Vec<SessionInfo>) {
+        let mut sessions = sessions;
+        for session in sessions.iter_mut() {
+            session.name = sanitize_for_terminal(&session.name);
+            session.project = sanitize_for_terminal(&session.project);
+            session.worktree_path = session
+                .worktree_path
+                .as_ref()
+                .map(|p| sanitize_for_terminal(p));
+            session.role = session.role.as_ref().map(|r| sanitize_for_terminal(r));
+        }
         self.sessions = sessions;
         self.selected_index = 0;
         self.scroll_offset = 0;
@@ -251,12 +265,11 @@ impl ResumeSessionView {
         // TUI-101: cache the scrollbar gutter rect from the same
         // body-rect geometry the shell uses (title + separator on top,
         // footer below).
-        self.last_scrollbar_rect =
-            crate::views::full_screen_shell::mode_view_scrollbar_rect(
-                area,
-                Self::visible_rows_for(area) / 2,
-                self.sessions.len(),
-            );
+        self.last_scrollbar_rect = crate::views::full_screen_shell::mode_view_scrollbar_rect(
+            area,
+            Self::visible_rows_for(area) / 2,
+            self.sessions.len(),
+        );
     }
 
     /// Heuristic visible-row hint for `handle_key`'s `visible_rows` argument.

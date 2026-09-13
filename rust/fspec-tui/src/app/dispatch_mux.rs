@@ -61,7 +61,6 @@ impl App {
         }
     }
 
-
     /// Push a one-line mux error into the focused session's scrollback
     /// (R7). No session → silent no-op.
     pub(crate) fn push_mux_error(&mut self, message: &str) {

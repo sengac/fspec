@@ -103,7 +103,6 @@ pub fn finalize_in_flight_thinking(ctx: &mut SessionContext) {
     }
 }
 
-
 /// Mirrors `processStreamingChunk` Done branch
 /// (`chunkProcessor.ts:538-558`).
 ///

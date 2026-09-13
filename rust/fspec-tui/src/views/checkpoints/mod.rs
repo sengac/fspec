@@ -18,6 +18,7 @@ use ratatui::layout::Rect;
 use crate::components::load_state::LoadTracker;
 use crate::components::loading_dialog::LoadingDialog;
 use crate::components::scroll_viewport::{WheelDirection, WheelVelocity};
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 mod checkpoint_row;
 mod delete;
@@ -180,7 +181,16 @@ impl CheckpointsView {
     /// be empty — a failed load degrades to the real empty state). The
     /// App dispatcher keeps its own `mark_list_flushed` call for the
     /// files-stage hand-off; the tracker's flag is idempotent.
+    ///
+    /// **TUI-111**: `work_unit_id` + `name` are sanitized on ingress so
+    /// the checkpoint label rows and the restore dialog always paint
+    /// clean text.
     pub fn set_checkpoints(&mut self, checkpoints: Vec<CheckpointInfo>) {
+        let mut checkpoints = checkpoints;
+        for checkpoint in checkpoints.iter_mut() {
+            checkpoint.work_unit_id = sanitize_for_terminal(&checkpoint.work_unit_id);
+            checkpoint.name = sanitize_for_terminal(&checkpoint.name);
+        }
         self.checkpoints = checkpoints;
         self.selected_checkpoint = 0;
         self.checkpoint_scroll = 0;
@@ -205,30 +215,46 @@ impl CheckpointsView {
 
     /// Fold a `CheckpointFilesLoaded` response. Ignored when the loaded
     /// key no longer matches the selected checkpoint (stale async result).
+    ///
+    /// **TUI-111**: file paths + change types are sanitized on ingress
+    /// (the key parameters are sanitized too so the stale-drop match
+    /// against the stored sanitized list lines up).
     pub fn set_files(&mut self, work_unit_id: &str, name: &str, files: Vec<ChangedFile>) {
-        if !self.selection_matches(work_unit_id, name) {
+        let work_unit_id = sanitize_for_terminal(work_unit_id);
+        let name = sanitize_for_terminal(name);
+        if !self.selection_matches(&work_unit_id, &name) {
             return;
+        }
+        let mut files = files;
+        for file in files.iter_mut() {
+            file.path = sanitize_for_terminal(&file.path);
+            file.change_type = sanitize_for_terminal(&file.change_type);
         }
         self.files = files;
         self.selected_file = 0;
         self.file_scroll = 0;
-        self.files_key = Some((work_unit_id.to_string(), name.to_string()));
+        self.files_key = Some((work_unit_id, name));
         self.clear_diff();
     }
 
     /// Fold a `CheckpointFileDiffLoaded` response. Ignored when the key
     /// no longer matches the selected checkpoint + file.
+    ///
+    /// **TUI-111**: diff lines are sanitized on ingress.
     pub fn set_diff(&mut self, work_unit_id: &str, name: &str, path: &str, diff: Option<String>) {
-        if !self.selection_matches(work_unit_id, name) {
+        let work_unit_id = sanitize_for_terminal(work_unit_id);
+        let name = sanitize_for_terminal(name);
+        let path = sanitize_for_terminal(path);
+        if !self.selection_matches(&work_unit_id, &name) {
             return;
         }
-        if self.selected_file_path().as_deref() != Some(path) {
+        if self.selected_file_path().as_deref() != Some(path.as_str()) {
             return;
         }
-        self.diff_key = Some((work_unit_id.to_string(), name.to_string(), path.to_string()));
+        self.diff_key = Some((work_unit_id, name, path));
         self.diff_scroll = 0;
         self.diff_lines = match diff {
-            Some(text) if !text.is_empty() => text.split('\n').map(ToString::to_string).collect(),
+            Some(text) if !text.is_empty() => text.split('\n').map(sanitize_for_terminal).collect(),
             _ => vec!["No changes to display".to_string()],
         };
     }

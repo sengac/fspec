@@ -172,20 +172,25 @@ fn agent_view_store_stays_under_300_loc_with_history_fields() {
         body.contains("cached_history_snapshot"),
         "agent_view.rs must declare a `cached_history_snapshot` field"
     );
-    // @step And the file declares "pub fn history_state_for"
+    // @step And store/agent_view/history_accessors.rs declares "pub fn history_state_for"
+    let history_accessors = fspec_tui_src()
+        .join("store")
+        .join("agent_view")
+        .join("history_accessors.rs");
+    let accessors = read_raw(&history_accessors);
     assert!(
-        body.contains("pub fn history_state_for"),
-        "agent_view.rs must declare `pub fn history_state_for`"
+        accessors.contains("pub fn history_state_for"),
+        "store/agent_view/history_accessors.rs must declare `pub fn history_state_for`"
     );
-    // @step And the file declares "pub fn reset_history_state"
+    // @step And store/agent_view/history_accessors.rs declares "pub fn reset_history_state"
     assert!(
-        body.contains("pub fn reset_history_state"),
-        "agent_view.rs must declare `pub fn reset_history_state`"
+        accessors.contains("pub fn reset_history_state"),
+        "store/agent_view/history_accessors.rs must declare `pub fn reset_history_state`"
     );
-    // @step And the file declares "pub fn set_history_snapshot"
+    // @step And store/agent_view/history_accessors.rs declares "pub fn set_history_snapshot"
     assert!(
-        body.contains("pub fn set_history_snapshot"),
-        "agent_view.rs must declare `pub fn set_history_snapshot`"
+        accessors.contains("pub fn set_history_snapshot"),
+        "store/agent_view/history_accessors.rs must declare `pub fn set_history_snapshot`"
     );
 }
 

@@ -59,11 +59,11 @@ pub mod dispatch_session_cycle;
 pub mod dispatch_slash_clear;
 pub mod dispatch_slash_commands;
 pub mod dispatch_slash_continue; // CONT-002: /continue apply + backend round-trip
-pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-submit path
 pub mod dispatch_slash_debug;
 pub mod dispatch_slash_goal; // CONT-003: /goal apply + backend round-trip
 pub mod dispatch_slash_loop;
 pub mod dispatch_slash_schedule;
+pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-submit path
 pub mod dispatch_slash_update; // UPD-002: /update apply + shared engine round-trip
 pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
@@ -75,6 +75,7 @@ pub mod dispatch_worktrees; // WT-005: /worktrees listing + prune actions
 pub mod events;
 pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;
+pub mod merge_worktree_success;
 pub mod mux_parser; // MUX-001: /mux slash-command grammar
 pub mod run_loop;
 pub mod schedule_parser;

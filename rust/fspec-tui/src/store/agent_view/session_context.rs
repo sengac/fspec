@@ -19,12 +19,9 @@ use codelet_rpc_types::{SessionId, StreamChunk};
 use ratatui::style::Color;
 use std::collections::HashMap;
 
-use super::chunk_processor::{
-    append_assistant_text, append_thinking, flush_in_flight_drop_empty, handle_done, handle_error,
-};
-use super::chunk_tool_result::{handle_tool_call, handle_tool_progress, handle_tool_result};
 use super::chunk_wrap::{wrap_source, DEFAULT_WRAP_WIDTH};
 use super::pending_tool_diff::PendingToolDiff;
+use crate::terminal::sanitize::sanitize_for_terminal;
 use crate::views::agent::{ChunkKind, ChunkSource, RenderedChunk, ScrollbackList};
 
 #[derive(Debug)]
@@ -77,91 +74,23 @@ impl SessionContext {
     /// Append a chunk's rendered lines to this session's scrollback,
     /// using the TS Ink chunkProcessor accumulation algorithm
     /// (RPC-091). All variant-specific logic lives in
-    /// [`super::chunk_processor`].
+    /// [`super::record_chunk`].
+    ///
+    /// **TUI-111**: ingress sanitization — every visible-text payload is
+    /// run through `sanitize_for_terminal` BEFORE it is stored, so all
+    /// downstream consumers (scrollback, turn modal, copy, re-wrap, mux
+    /// panes) paint text cleaned exactly once.
     pub fn record_chunk(&mut self, chunk: &StreamChunk) {
-        match chunk {
-            StreamChunk::Text { text, .. } => append_assistant_text(self, text),
-            StreamChunk::UserInput { text } => {
-                flush_in_flight_drop_empty(self);
-                // RPC-093: UserInput is a turn boundary. Clear the
-                // thinking slot WITHOUT mutating the existing chunk
-                // (parity with TS findActiveThinkingBlock returning -1
-                // once a user-input message follows).
-                self.in_flight_thinking = None;
-                self.push_chunk(ChunkSource {
-                    text: text.clone(),
-                    color: Color::Green,
-                    kind: ChunkKind::UserInput,
-                    is_streaming: false,
-                    full_text: None,
-                });
-            }
-            StreamChunk::Thinking { thinking, .. } => {
-                // RPC-093: port of TS appendThinking — accumulate into
-                // the in-flight thinking chunk, or splice a new one
-                // (BEFORE in_flight_assistant when present).
-                append_thinking(self, thinking);
-            }
-            StreamChunk::ToolCall { tool_call, .. } => handle_tool_call(self, tool_call),
-            StreamChunk::ToolResult { tool_result, .. } => handle_tool_result(self, tool_result),
-            StreamChunk::ToolProgress { tool_progress, .. } => {
-                handle_tool_progress(self, tool_progress)
-            }
-            StreamChunk::Done => handle_done(self),
-            StreamChunk::Error { error } => handle_error(self, error),
-            StreamChunk::Interrupted { .. } => {
-                flush_in_flight_drop_empty(self);
-                // RPC-093: Interrupted is a flush trigger. Clear the
-                // thinking slot WITHOUT mutating the existing chunk.
-                self.in_flight_thinking = None;
-                self.push_chunk(ChunkSource {
-                    text: "\u{26A0} Interrupted".to_string(),
-                    color: Color::White,
-                    kind: ChunkKind::Interrupted,
-                    is_streaming: false,
-                    full_text: None,
-                });
-            }
-            StreamChunk::UserNotification { message, .. } => {
-                self.push_chunk(ChunkSource {
-                    text: message.clone(),
-                    color: Color::White,
-                    kind: ChunkKind::Notification,
-                    is_streaming: false,
-                    full_text: None,
-                });
-            }
-            StreamChunk::IncomingMessage { text, .. } => {
-                let (role, body) = parse_supervisor_envelope(text);
-                self.push_chunk(ChunkSource {
-                    text: format!("[W] {role}> {body}"),
-                    color: Color::Magenta,
-                    kind: ChunkKind::Incoming,
-                    is_streaming: false,
-                    full_text: None,
-                });
-            }
-            // State-only chunks — consumed elsewhere.
-            StreamChunk::SessionStateChange { .. }
-            | StreamChunk::IsolationStateChange { .. }
-            | StreamChunk::DebugStateChange { .. }
-            | StreamChunk::FooterStateUpdate { .. }
-            | StreamChunk::FspecCommandRequest { .. }
-            | StreamChunk::FspecCommandResult { .. }
-            | StreamChunk::WorkUnitsUpdate { .. }
-            | StreamChunk::SupervisorPendingInjection { .. }
-            | StreamChunk::CompactionComplete { .. }
-            | StreamChunk::TokenUpdate { .. }
-            | StreamChunk::ContinueStateUpdate { .. }
-            | StreamChunk::ContextFillUpdate { .. }
-            | StreamChunk::ExecStdinRequest { .. }
-            | StreamChunk::ExecStdinRequestCleared => {}
-        }
+        super::record_chunk::record_chunk(self, chunk);
     }
 
+    /// **TUI-111**: `push_line` is the single choke point for every
+    /// direct scrollback line (session notices, reconnect notices,
+    /// slash-command echoes) — the payload is sanitized on write so the
+    /// stored line is always terminal-safe.
     pub fn push_line<S: Into<String>>(&mut self, line: S) {
         let source = ChunkSource {
-            text: line.into(),
+            text: sanitize_for_terminal(&line.into()),
             color: Color::White,
             kind: ChunkKind::Notification,
             is_streaming: false,
@@ -218,32 +147,6 @@ impl SessionContext {
     }
 }
 
-/// Parse a `StreamChunk::IncomingMessage` body of the form
-/// `"[SUPERVISOR: <role> | Session: <sid>]<sep><body>"` where `<sep>` is a
-/// space or a newline. The backend (`format_incoming_message`) uses a space;
-/// replay/legacy paths may use `\n`. Mirrors the TS reference
-/// (`src/tui/utils/chunkProcessor.ts`), which consumes the header up to `]`
-/// and an optional newline, so the body survives either separator.
-fn parse_supervisor_envelope(raw: &str) -> (String, String) {
-    if !raw.starts_with('[') {
-        return ("supervisor".to_string(), raw.to_string());
-    }
-    let Some(close_idx) = raw.find(']') else {
-        return ("supervisor".to_string(), raw.to_string());
-    };
-    let header = &raw[..close_idx]; // excludes ']'
-    let body = raw[close_idx + 1..]
-        .trim_start_matches(['\n', ' '])
-        .to_string();
-    let inner = header.trim_start_matches('[');
-    let role_segment = inner.split('|').next().unwrap_or(inner).trim();
-    let role = role_segment
-        .strip_prefix("SUPERVISOR:")
-        .map(|s| s.trim().to_string())
-        .unwrap_or_else(|| "supervisor".to_string());
-    (role, body)
-}
-
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -278,20 +181,5 @@ mod tests {
         assert_eq!(ctx.scrollback.chunk_count(), 0);
         assert_eq!(ctx.scrollback_next_seq, 0);
         assert!(ctx.in_flight_assistant.is_none());
-    }
-
-    #[test]
-    fn parse_supervisor_envelope_extracts_role_and_body() {
-        let (role, body) =
-            parse_supervisor_envelope("[SUPERVISOR: reviewer | Session: s-2]\nplease check this");
-        assert_eq!(role, "reviewer");
-        assert_eq!(body, "please check this");
-    }
-
-    #[test]
-    fn parse_supervisor_envelope_falls_back_to_default_role() {
-        let (role, body) = parse_supervisor_envelope("raw body without header");
-        assert_eq!(role, "supervisor");
-        assert_eq!(body, "raw body without header");
     }
 }
