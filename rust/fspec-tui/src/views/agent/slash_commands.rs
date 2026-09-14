@@ -80,7 +80,10 @@ impl SlashCommandAction {
 
     /// BUG-169: case-insensitive registry lookup; `None` for unregistered/empty names.
     pub fn from_name(name: &str) -> Option<Self> {
-        SLASH_COMMANDS.iter().find(|c| c.name().eq_ignore_ascii_case(name)).map(|c| c.action)
+        SLASH_COMMANDS
+            .iter()
+            .find(|c| c.name().eq_ignore_ascii_case(name))
+            .map(|c| c.action)
     }
 }
 

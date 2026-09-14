@@ -1266,6 +1266,10 @@
           "description": "Mux mode views don't work (frozen loading dialog, no loads, no git polling) — centralized git polling fix"
         },
         {
+          "name": "@bug-183",
+          "description": "Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view)"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -3042,7 +3046,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-13T23:19:13.487Z",
+    "lastUpdated": "2026-09-14T06:29:10.450Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

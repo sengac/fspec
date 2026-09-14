@@ -290,7 +290,8 @@ impl ProviderSettingsView {
     }
 
     pub fn visible_rows_for(area: Rect) -> usize {
-        area.height.saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
+        area.height
+            .saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
     }
 }
 

@@ -20,11 +20,13 @@
 //!   - `keys.rs`   — keyboard routing classification
 //!   - `mouse.rs`  — hit-test, click-to-focus, per-divider drag
 //!   - `presets.rs`— default preset + pane-count expansion
+//!   - `panes.rs`  — BUG-183 live pane close (Esc on a lazy pane, transient)
 
 pub mod flash;
 pub mod keys;
 pub mod layout;
 pub mod mouse;
+pub mod panes;
 pub mod presets;
 pub mod rects;
 pub mod render;
@@ -73,6 +75,7 @@ impl MultiplexLayout {
         self.rendered_panes = self.config.panes.clone();
         self.window_start = 0;
         self.pending_new_agent = false;
+        self.closed_panes.clear();
         self.pane_rects.clear();
         self.divider_rects.clear();
         self.is_dragging = false;
@@ -97,6 +100,7 @@ impl MultiplexLayout {
         self.rendered_panes = self.config.panes.clone();
         self.window_start = 0;
         self.pending_new_agent = false;
+        self.closed_panes.clear();
         let n = self.config.panes.len().max(1);
         self.focus = self.config.focused_pane.min(n - 1);
         self.pane_rects.clear();
@@ -119,6 +123,7 @@ impl MultiplexLayout {
         self.drag_axis = None;
         self.window_start = 0;
         self.pending_new_agent = false;
+        self.closed_panes.clear();
         self.rendered_panes = Vec::new();
         self.pane_rects.clear();
         self.divider_rects.clear();
@@ -144,6 +149,7 @@ impl MultiplexLayout {
         let panes: Vec<MuxPaneKind> = DEFAULT_PANES.iter().take(count).copied().collect();
         self.rendered_panes = panes.clone();
         self.config.panes = panes;
+        self.closed_panes.clear();
         self.config.splits = scale_scales(&self.config.splits, count);
         self.config.enabled = true;
         let n = self.config.panes.len().max(1);
@@ -180,6 +186,7 @@ impl MultiplexLayout {
         // as the full list when no sessions are open yet).
         self.window_start = 0;
         self.pending_new_agent = false;
+        self.closed_panes.clear();
         self.rendered_panes = self.config.panes.clone();
         let n = self.rendered_panes.len().max(1);
         // MUX-006: a pane-list (re)layout re-arms the flash on the

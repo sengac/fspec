@@ -190,6 +190,7 @@ impl Navigator {
         if focus >= self.mux.effective_panes().len() {
             return EventResult::consumed();
         }
+        let action_tx = self.action_tx.as_ref();
         mux_keys::forward_to_pane(
             event,
             board_store,
@@ -198,6 +199,7 @@ impl Navigator {
             &mut self.changed_files,
             &mut self.checkpoints,
             kind,
+            action_tx,
         )
     }
 }

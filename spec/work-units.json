@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-14T02:56:31.585Z",
+    "lastUpdated": "2026-09-14T08:55:36.820Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 182,
+    "BUG": 183,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1705,7 +1705,8 @@
       "BUG-180",
       "TUI-111",
       "BUG-181",
-      "BUG-182"
+      "BUG-182",
+      "BUG-183"
     ],
     "blocked": [
       "QUERY-001",
@@ -231505,6 +231506,86 @@
       ],
       "nextExampleId": 5,
       "estimate": 8
+    },
+    "BUG-183": {
+      "id": "BUG-183",
+      "title": "Mux: Esc on the Files/Checkpoints pane does nothing — it must close that pane (transient, like agent session close)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-14T06:22:23.804Z",
+      "updatedAt": "2026-09-14T08:55:36.820Z",
+      "description": "In mux mode, pressing Esc while the Changed Files or Checkpoints mux pane is focused is swallowed: forward_to_pane maps the view's Close outcome to a plain consumed() without any effect, so the pane can never be dismissed (only /mux can reconfigure it). Expected: Esc closes the pane — the pane kind is removed from the LIVE grid only (saved tui.mux layout untouched, so /mux on brings it back — same transience as the agent slot dropping on session close), remaining panes rescale proportionally, focus stays on a surviving pane, and if only the Board pane remains the grid stays in Mux showing the full-width Board pane. Esc must still be ignored while the pane is mid-initial-load (the TUI-107 rule the views already enforce), and the single-view Esc-close, the board-pane exit dialog, and the agent-pane exit cascade must be unchanged.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-14T06:26:16.813Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-14T06:31:25.052Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-14T08:39:23.452Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-14T08:54:36.873Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-14T08:55:36.820Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: Esc on the focused Changed Files or Checkpoints mux pane closes THAT PANE from the live rendered grid only: the pane kind is removed (last occurrence) from the live rendered pane list, the saved tui.mux config (persisted layout preference) is UNTOUCHED — transient, same rule as the agent slot dropping on session close, so /mux off then /mux on still restores the full layout. The mux stays in ViewMode::Mux, focus stays on a surviving pane (clamped to the new list), and the remaining panes rescale over the freed space via the existing rect recompute.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:27:06.869Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: Esc stays IGNORED on a Files/Checkpoints mux pane while the view is mid-initial-load (the TUI-107 rule the views already enforce in single-view mode — a reflex Esc must not close a pane that has no data yet); the view returns Ignored and the key falls through to the App-level shortcuts exactly as today. In-view dialogs (restore/delete confirm) keep their precedence: their Esc cancels the dialog, it does NOT close the pane.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:28:31.485Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: When the pane removal leaves no more panes (degenerate — all-agent grid, zero sessions, Esc on the transient Board pane), the grid exits ViewMode::Mux back to the single Board view (pre_mux_view fallback = Board, the same rule /mux off uses). The normal close keeps the grid: with at least one surviving pane the mux stays active, and with only the Board pane remaining the grid shows the full-width Board pane in Mux (user decision — do NOT auto-exit in that case).",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:28:49.523Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: single-view and the other mux panes are unchanged — Esc in the single ChangedFiles/Checkpoints view still closes to the Board (existing CloseChangedFilesView/CloseCheckpointsView flip), Esc on the focused Board mux pane still pushes the BoardExitConfirmationDialog (BUG-165), and Esc on a focused Agent pane still opens the agent exit-confirmation cascade (Detach/Close Session/Cancel). The new pane-close path fires ONLY in ViewMode::Mux with the Files or Checkpoints pane focused.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:29:07.424Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "userStory": {
+        "role": "developer supervising agents in the fspec TUI mux mode",
+        "action": "close a Files or Checkpoints mux pane with Esc",
+        "benefit": "the live grid shrinks exactly like closing an agent session, without losing the saved layout"
+      },
+      "examples": [
+        {
+          "id": 0,
+          "text": "Mux grid Board|Agent|Files|Checkpoints with the Files pane focused: press Esc → the Files pane is gone, the grid is Board|Agent|Checkpoints, the saved tui.mux still lists all four panes, focus clamps to a surviving pane, the Checkpoints pane now absorbs the Files pane's share, and the mux footer shows 'MUX 3 panes [Board|Agent|Checkpoints]'.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:28:56.495Z"
+        },
+        {
+          "id": 1,
+          "text": "Mux grid Board|Checkpoints with one agent session open (so the grid actually renders Board|Agent|Checkpoints) — the user closes the agent session (Close Session) and then focuses the Checkpoints pane and presses Esc → the grid is Board|Agent and the Checkpoints pane is gone; later /mux off then /mux on brings the Checkpoints pane back from the saved layout.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:29:00.335Z"
+        }
+      ],
+      "nextExampleId": 2
     }
   }
 }

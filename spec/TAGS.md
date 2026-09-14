@@ -341,6 +341,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-180` | Bug fix work unit BUG-180 — SessionHeader work-unit status stale: WorkUnitsLoaded push re-seeds BoardStore but never syncs AgentViewStore.work_unit_context_by_session / legacy fallback slots, leaving the per-session chip frozen at attach-time status |
 | `@bug-181` | Bug fix work unit BUG-181 — Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI). Fix: CheckpointsWatcher push channel (codelet-core) + FspecBackend::checkpoint_counts_changed_rx + App subscriber folding onto Action::CheckpointCountsLoaded |
 | `@bug-182` | Mux mode views don't work (frozen loading dialog, no loads, no git polling) — centralized git polling fix |
+| `@bug-183` | Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view) |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -780,4 +781,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-13T23:19:13.487Z_
+_Last updated: 2026-09-14T06:29:10.450Z_

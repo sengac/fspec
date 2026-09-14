@@ -147,6 +147,10 @@ impl App {
             // Mux stayed OFF: only refresh the stored layout (the live
             // grid was untouched while the dialog was open — R5).
             self.navigator.mux.config_mut().clone_from(&config);
+            // BUG-183: a committed layout replaces the saved pane list —
+            // the live-only closed-pane set applies to the OLD layout
+            // and must not filter the new one.
+            self.navigator.mux.clear_closed_panes();
         }
     }
 
@@ -160,6 +164,17 @@ impl App {
         self.navigator.mux.config_mut().enabled = true;
         self.navigator.mux.set_focus(0);
         self.navigator.active_view = crate::views::ViewMode::Mux;
+        // BUG-183: `/mux on` re-enters the grid from the SAVED layout —
+        // clear the live-only `closed_panes` set (the panes the user
+        // Esc-closed come back — the transient rule) and re-derive the
+        // live rendered pane list + rects so `pane_rects()` is valid
+        // before the first render (same tail as the `/mux` subcommand
+        // apply).
+        self.navigator.mux.clear_closed_panes();
+        self.mux_sync_window();
+        self.navigator.mux.recompute_rects();
+        // BUG-182 R7: re-entering mux loads any un-loaded lazy pane.
+        self.mux_load_lazy_panes();
     }
 
     /// `/mux off` — disable, return to the pre-mux view (R1).
