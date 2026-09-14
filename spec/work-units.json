@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-13T22:07:09.393Z",
+    "lastUpdated": "2026-09-14T02:56:31.585Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 181,
+    "BUG": 182,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1704,7 +1704,8 @@
       "BUG-179",
       "BUG-180",
       "TUI-111",
-      "BUG-181"
+      "BUG-181",
+      "BUG-182"
     ],
     "blocked": [
       "QUERY-001",
@@ -231379,6 +231380,130 @@
         }
       ],
       "nextExampleId": 4,
+      "estimate": 8
+    },
+    "BUG-182": {
+      "id": "BUG-182",
+      "title": "Mux views don't work: frozen loading dialog, no loads, no git polling; add centralized git polling",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-13T23:08:25.822Z",
+      "updatedAt": "2026-09-14T02:56:31.585Z",
+      "description": "In mux mode: (1) the loading dialog spinner freezes because is_view_loading() only checks single-view modes (ChangedFiles/Checkpoints) and never the mux panes, (2) the ChangedFiles and Checkpoints mux panes never load data on mux entry, (3) nothing polls git periodically to refresh the changed-files list, the checkpoints list, and the chrome-bar git branch indicator (currently only fetched at bootstrap). Fix per user directive: one centralized git polling mechanism (DRY/SOLID — a GitStateWatcher that extends the BUG-181 CheckpointsWatcher pattern with a periodic timer and git-branch snapshot) feeding the changed-files view, checkpoints view, and chrome bar; keep the currently-selected item on refresh; mux-aware is_view_loading; initial loads on mux entry.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-13T23:12:08.392Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-14T01:01:29.293Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-14T02:34:13.911Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-14T02:35:33.664Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-14T02:56:31.585Z",
+          "reason": "All tests green: TUI 2803 passed / 0 failed, core+rpc 40 suites ok, clippy clean (only pre-existing warnings). Coverage 100% on git-state-watcher + git-state-watcher-core + live-checkpoint-counts features. CheckpointsWatcher removed (one watcher), GitStateWatcher = single source, mux lazy-pane loads + stable selection + mux-aware redraw gate live."
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising agents in the fspec TUI mux mode",
+        "action": "see the Changed Files and Checkpoints mux panes load, stay live, and animate like their single-view counterparts, with the chrome bar's git branch always current",
+        "benefit": "mux mode is a trustworthy live view of the repository instead of frozen, un-loaded panes"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: A new codelet-core GitStateWatcher is the ONE centralized git polling mechanism (DRY/SOLID — it replaces CheckpointsWatcher as the checkpoint-count source so there is exactly one watcher). It keeps the BUG-181 debounced .git fs-watch AND adds a 10-second tokio timer that re-runs the git snapshot (branch + checkpoint counts + changed-files list + checkpoints list). A fresh snapshot is broadcast on a tokio broadcast channel ONLY when the snapshot differs from the last published one; a non-repo cwd degrades to empty state and watches the root for .git creation; watcher setup failure degrades to a static snapshot.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:12:55.054Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: The SharedFspecService exposes git_state_changed_rx() + git_state_snapshot() mirroring the BUG-181 checkpoint_counts_changed_rx()/checkpoint_counts_snapshot() pair; the embedded transport forwards them on FspecBackend::git_state_changed_rx() (default = closed receiver so the WebSocket transport + MockBackend compile unchanged and degrade to bootstrap values + the existing RefreshCheckpointCounts re-poll, documented like TUI-109).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:12:59.067Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: The App bootstrap spawns ONE 8th subscriber task on git_state_changed_rx (in addition to the existing 7; the BUG-181 checkpoint-counts push is folded into this stream so no separate checkpoint-changed subscriber remains). It folds each GitState frame onto the existing writer paths — BoardStore::set_checkpoint_counts (via CheckpointCountsLoaded), AgentViewStore::set_workspace (via WorkspaceInfoLoaded with the fresh git_branch) — so there is exactly one writer path per store field (no second writer, DRY).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:13:03.288Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: The GitState frame feeds the lazy views: when a frame arrives and the Changed Files view is visible (active single view OR a rendered mux pane), the App re-fetches the changed-files list through the existing Action::ChangedFilesLoaded path with a brief 'Refreshing changed files…' loading stage; same for the Checkpoints view (list → files → diff cascade, mirroring the open flow). The initial-load stage is never double-started: a refresh whose view is still in its initial load is dropped.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:22:19.130Z"
+        },
+        {
+          "id": 4,
+          "text": "R5: The run loop's redraw gate is mux-aware: Navigator::is_view_loading() returns true iff ANY loaded-then-loading lazy view is visible — the active single view (existing behavior) OR, in ViewMode::Mux, each rendered mux pane of kind ChangedFiles / Checkpoints that has a LoadTracker stage in flight. Without this the loading dialog's 80ms-cadence braille spinner freezes in mux mode because the 16ms tick stops drawing when nothing else demands a frame.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:26:06.075Z"
+        },
+        {
+          "id": 5,
+          "text": "R6: Refreshing a loaded list keeps the existing selection stable — the changed-files view re-selects the SAME file path (not index) and the checkpoints view re-selects the SAME (work_unit_id, name) after a refresh, so the user's context survives a git poll. If the selected item no longer exists (file deleted / checkpoint gone) the selection falls back to the first row and the diff/files re-load for it. Scroll offsets are preserved where the selection maps to a stable row.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:26:10.784Z"
+        },
+        {
+          "id": 6,
+          "text": "R7: Entering mux mode (any path: /mux on, /mux default, /mux <count>, /mux <kinds>, config-dialog commit) triggers an initial load for every rendered lazy pane that has not loaded yet — the ChangedFiles pane runs the existing open flow (reset view + spawn changed_files) and the Checkpoints pane runs its (reset view + spawn list_checkpoints + re-poll counts) WITHOUT flipping the whole view (R8 semantics: panes load in place). Already-loaded views are not reset (no gratuitous reload on /mux on/off cycling).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:16.216Z"
+        },
+        {
+          "id": 7,
+          "text": "R8: The poll interval is configurable on the watcher (default 10 seconds per the user directive; tests inject a short interval such as 200ms) so the periodic-refresh behavior is testable deterministically. The fs-watch debounce remains 100ms as in BUG-181.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:35:06.296Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "TUI runs in mux mode with a Files pane; the user's agent commits a new file in the repo; within ~10 seconds the Files pane shows the new file without the user re-opening the view (fs-watch event → re-fetch).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:21.085Z"
+        },
+        {
+          "id": 1,
+          "text": "In the Files mux pane the user has a file selected while a 10-second poll lands a refresh: the same file remains selected (by path), the diff pane still shows its diff, and the scroll positions of the file list and diff panes are preserved.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:24.424Z"
+        },
+        {
+          "id": 2,
+          "text": "The user switches from the `main` branch to a feature branch via another terminal; the chrome bar of the agent view (bottom right) shows the new branch within one poll (≤ ~10 s) without restarting the TUI.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:28.294Z"
+        },
+        {
+          "id": 3,
+          "text": "Entering mux mode with a Files pane shows the animated loading dialog (braille spinner advancing at 80ms cadence) while the file list loads — exactly like the single-view F key flow — and the dialog dismisses to the real file list when the load flushes.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:32.321Z"
+        },
+        {
+          "id": 4,
+          "text": "In the Checkpoints mux pane the user has a checkpoint selected; a poll refresh lands while a checkpoint created by another terminal exists: the new checkpoint appears in the list, the user's previous checkpoint selection is kept (by work-unit + name), and its files/diff re-load.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:36.429Z"
+        }
+      ],
+      "nextExampleId": 5,
       "estimate": 8
     }
   }

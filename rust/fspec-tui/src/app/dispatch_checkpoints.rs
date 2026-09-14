@@ -76,6 +76,29 @@ impl App {
         }
     }
 
+    /// BUG-182 R6: fold a git-state REFRESH of the checkpoint list —
+    /// re-apply preserving the selection by (work_unit_id, name) (the
+    /// open flow's `CheckpointsLoaded` resets the view instead), then
+    /// kick off the files → diff cascade for the (re-)selected
+    /// checkpoint, mirroring the open flow.
+    pub(crate) fn handle_git_checkpoints_loaded(&mut self, list: Vec<CheckpointInfo>) {
+        let view = &mut self.navigator.checkpoints;
+        view.refresh_checkpoints_preserving_selection(list);
+        let selection = view
+            .selected_checkpoint_info()
+            .map(|cp| (cp.work_unit_id.clone(), cp.name.clone()));
+        if let Some((work_unit_id, name)) = &selection {
+            view.load.begin_stage(
+                &LoadTracker::files_stage_key(work_unit_id, name),
+                format!("Loading files for {name}…"),
+            );
+            view.sync_loading_label();
+        }
+        if let Some((work_unit_id, name)) = selection {
+            self.spawn_checkpoint_files(work_unit_id, name);
+        }
+    }
+
     /// TUI-109: fold a per-item checkpoint-enumeration progress frame
     /// into the CheckpointsView LoadingDialog's counter row. Stale-drop:
     /// applied ONLY while the Checkpoints view is active AND the list
@@ -176,6 +199,11 @@ impl App {
             }
             Action::CheckpointsLoaded(list) => {
                 self.handle_checkpoints_loaded(list.clone());
+            }
+            // BUG-182: git-state refresh (R6: selection preserved by
+            // work-unit + name).
+            Action::GitCheckpointsLoaded(list) => {
+                self.handle_git_checkpoints_loaded(list.clone());
             }
             // TUI-109: per-item progress frame from the
             // checkpoints_progress_rx subscriber. Stale-drop: once the

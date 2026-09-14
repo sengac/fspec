@@ -24,13 +24,13 @@
 //! NAPI is one listener, not the only listener.
 
 use arc_swap::ArcSwap;
-use codelet_core::checkpoints_watcher::CheckpointsWatcher;
+use codelet_core::git_state::GitStateWatcher;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
     CheckpointsProgress, CompactionProgress, CompactionResult, CustomModelDefinition,
-    ExecStdinRequest, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
+    ExecStdinRequest, FspecResult, GitState, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
     IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
     ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
@@ -687,11 +687,11 @@ pub const DEFAULT_WORK_UNITS_CAPACITY: usize = 256;
 /// still lands, and the list RPC itself carries the full result).
 pub const DEFAULT_CHECKPOINTS_PROGRESS_CAPACITY: usize = 256;
 
-/// BUG-181: broadcast capacity for the checkpoint-changed push. Frames
-/// are full `CheckpointCounts` snapshots (two u32s), so a lagging
+/// BUG-182: broadcast capacity for the git-state push. Frames are full
+/// `GitState` snapshots (bounded: 200 checkpoints max), so a lagging
 /// subscriber simply resyncs on the next frame — 64 mirrors the
-/// `CheckpointsWatcher`'s own channel capacity.
-pub const DEFAULT_CHECKPOINTS_COUNTS_CAPACITY: usize = 64;
+/// `GitStateWatcher`'s own channel capacity.
+pub const DEFAULT_GIT_STATE_CAPACITY: usize = 64;
 
 /// RPC-011: read-only handle to per-server runtime stats so the shared
 /// service can answer `health()` from BOTH transports. The concrete
@@ -746,12 +746,13 @@ pub struct SharedFspecService {
     /// the TUI. Transports that don't forward the frames degrade to
     /// spinner-only automatically (no producer → no frames).
     checkpoints_progress_tx: broadcast::Sender<CheckpointsProgress>,
-    /// BUG-181: live checkpoint-count watcher over the attached cwd.
-    /// `None` when no cwd has been attached (in-process callers that
-    /// don't care about checkpoint state) — in that case
-    /// `checkpoint_counts_snapshot()` returns zero counts and
-    /// `checkpoint_counts_changed_rx()` returns a closed receiver.
-    checkpoints_watcher: Option<CheckpointsWatcher>,
+    /// BUG-182: the ONE centralized git-state watcher over the attached
+    /// cwd (replaces BUG-181's `CheckpointsWatcher`). `None` when no cwd
+    /// has been attached (in-process callers that don't care about git
+    /// state) — in that case `git_state_snapshot()` returns
+    /// `GitState::default()` and `git_state_changed_rx()` returns a
+    /// closed receiver.
+    git_state_watcher: Option<GitStateWatcher>,
 }
 
 impl SharedFspecService {
@@ -774,7 +775,7 @@ impl SharedFspecService {
             stats: AsyncMutex::new(None),
             cwd: None,
             checkpoints_progress_tx,
-            checkpoints_watcher: None,
+            git_state_watcher: None,
         }
     }
 
@@ -800,7 +801,7 @@ impl SharedFspecService {
             stats: AsyncMutex::new(None),
             cwd: None,
             checkpoints_progress_tx,
-            checkpoints_watcher: None,
+            git_state_watcher: None,
         }
     }
 
@@ -817,11 +818,13 @@ impl SharedFspecService {
     /// );
     /// ```
     pub fn with_cwd(mut self, cwd: PathBuf) -> Self {
-        // BUG-181: attach the live checkpoint-count watcher on the same
-        // cwd — the debounced fs-watch covers every mutation source
+        // BUG-182: attach the ONE centralized git-state watcher on the
+        // same cwd — the debounced fs-watch covers every mutation source
         // (in-process agent tool calls, CLI in another terminal, raw
-        // git update-ref) because every path lands under `.git`.
-        self.checkpoints_watcher = Some(CheckpointsWatcher::new(&cwd));
+        // git update-ref) because every path lands under `.git`, and the
+        // 10-second periodic poll catches working-tree changes that emit
+        // no `.git` event.
+        self.git_state_watcher = Some(GitStateWatcher::new(&cwd));
         self.cwd = Some(cwd);
         self
     }
@@ -953,33 +956,33 @@ impl SharedFspecService {
         self.checkpoints_progress_tx.clone()
     }
 
-    /// BUG-181: subscribe to the checkpoint-changed push — a fresh
-    /// `CheckpointCounts` snapshot broadcast on every debounced
-    /// checkpoint-location change (see `CheckpointsWatcher`). Returns a
-    /// CLOSED receiver when no cwd (and therefore no watcher) is
-    /// attached: embedded callers without a cwd get a receiver that
-    /// immediately observes `RecvError::Closed`, mirroring
-    /// `checkpoints_progress_rx`.
-    pub fn checkpoint_counts_changed_rx(&self) -> broadcast::Receiver<CheckpointCounts> {
-        match &self.checkpoints_watcher {
+    /// BUG-182: subscribe to the git-state push — a fresh `GitState`
+    /// snapshot broadcast on every debounced `.git` change AND every
+    /// poll tick that produced a DIFFERENT snapshot (dedup; see
+    /// `GitStateWatcher`). Returns a CLOSED receiver when no cwd (and
+    /// therefore no watcher) is attached: embedded callers without a cwd
+    /// get a receiver that immediately observes `RecvError::Closed`,
+    /// mirroring `checkpoints_progress_rx`.
+    pub fn git_state_changed_rx(&self) -> broadcast::Receiver<GitState> {
+        match &self.git_state_watcher {
             Some(watcher) => watcher.subscribe(),
             None => {
-                let (tx, rx) = broadcast::channel(DEFAULT_CHECKPOINTS_COUNTS_CAPACITY);
+                let (tx, rx) = broadcast::channel(DEFAULT_GIT_STATE_CAPACITY);
                 drop(tx);
                 rx
             }
         }
     }
 
-    /// BUG-181: backfill snapshot of the most recent checkpoint counts
-    /// for the attached cwd (zero counts when no cwd is attached).
-    /// Pairs with [`Self::checkpoint_counts_changed_rx`] for
-    /// late-joining subscribers: the watcher only broadcasts frames
-    /// emitted after they subscribe.
-    pub fn checkpoint_counts_snapshot(&self) -> CheckpointCounts {
-        match &self.checkpoints_watcher {
+    /// BUG-182: backfill snapshot of the most recent git state for the
+    /// attached cwd (empty `GitState` when no cwd is attached). Pairs
+    /// with [`Self::git_state_changed_rx`] for late-joining
+    /// subscribers: the watcher only broadcasts frames emitted after
+    /// they subscribe.
+    pub fn git_state_snapshot(&self) -> GitState {
+        match &self.git_state_watcher {
             Some(watcher) => watcher.snapshot(),
-            None => CheckpointCounts::default(),
+            None => GitState::default(),
         }
     }
 

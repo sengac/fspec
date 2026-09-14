@@ -164,6 +164,46 @@ impl ChangedFilesView {
         self.sync_loading_label();
     }
 
+    /// BUG-182 R6: replace the file list from a git-state refresh,
+    /// keeping the existing selection stable by PATH (not index). The
+    /// previously selected path is re-looked-up in the fresh list; when
+    /// it no longer exists (file deleted / staged) the selection falls
+    /// back to the first row. The diff cache is cleared so the App
+    /// re-loads the diff for the (re-)selected path.
+    ///
+    /// Never touches the load tracker — a refresh of a LOADED view must
+    /// not re-open the loading dialog.
+    pub fn refresh_files_preserving_selection(&mut self, files: Vec<ChangedFile>) {
+        let previous = self.selected_path();
+        let mut files = files;
+        for file in files.iter_mut() {
+            file.path = sanitize_for_terminal(&file.path);
+            file.change_type = sanitize_for_terminal(&file.change_type);
+        }
+        self.files = files;
+        self.selected_index = previous
+            .as_ref()
+            .and_then(|path| self.files.iter().position(|f| f.path == *path))
+            .unwrap_or(0);
+        // Scroll: preserve the offset when the (re-)selection maps to a
+        // stable row; reset only when it fell back.
+        if self.selected_index >= self.file_scroll {
+            // keep file_scroll (stable row); nothing to do
+        } else {
+            self.file_scroll = 0;
+        }
+        self.diff_lines.clear();
+        self.diff_path = None;
+        self.sync_loading_label();
+    }
+
+    /// Test/R6 seam: move the selection to an explicit index (clamped).
+    pub fn set_selected_index(&mut self, index: usize) {
+        if !self.files.is_empty() {
+            self.selected_index = index.min(self.files.len().saturating_sub(1));
+        }
+    }
+
     /// Fold a `FileDiffLoaded` response. Ignored when the loaded path no
     /// longer matches the selected file (stale async result).
     ///

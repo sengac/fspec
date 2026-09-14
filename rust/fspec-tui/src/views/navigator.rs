@@ -108,10 +108,24 @@ impl Navigator {
     /// (`app/state.rs`); the run loop feeds this into the 4th
     /// `tick_should_draw` operand to keep the loading dialog's
     /// braille spinner animated.
+    ///
+    /// BUG-182 R5: mux-aware — in `ViewMode::Mux` the gate also stays
+    /// open for any RENDERED mux pane of kind ChangedFiles / Checkpoints
+    /// whose LoadTracker has a stage in flight (including the initial
+    /// load). Without this the 16ms tick stops drawing when nothing else
+    /// demands a frame and the loading dialog's braille spinner freezes
+    /// in mux mode.
     pub fn is_view_loading(&self) -> bool {
         match self.active_view {
             ViewMode::Checkpoints => self.checkpoints.is_loading(),
             ViewMode::ChangedFiles => self.changed_files.is_loading(),
+            ViewMode::Mux => {
+                let panes = self.mux.effective_panes();
+                (panes.contains(&crate::views::multiplex::MuxPaneKind::ChangedFiles)
+                    && self.changed_files.is_loading())
+                    || (panes.contains(&crate::views::multiplex::MuxPaneKind::Checkpoints)
+                        && self.checkpoints.is_loading())
+            }
             _ => false,
         }
     }

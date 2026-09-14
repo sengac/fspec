@@ -662,10 +662,9 @@ fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
     let modal_out = render_to_text(|buf| modal.render(Rect::new(0, 0, 120, 30), buf));
 
     let mut list = ScrollbackList::new();
-    let source_for_list = source.clone();
     let lines = wrap_source(
         &ChunkSource {
-            text: source_for_list.text.clone(),
+            text: source.text.clone(),
             color: Color::White,
             kind: ChunkKind::AssistantText,
             is_streaming: false,
@@ -676,7 +675,7 @@ fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
     list.push(RenderedChunk {
         seq: 0,
         lines,
-        source: Some(source_for_list),
+        source: Some(source),
     });
     let copied = list.selected_text(&[RowSpan {
         row: 0,

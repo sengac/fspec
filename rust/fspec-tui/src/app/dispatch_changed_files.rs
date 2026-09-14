@@ -116,6 +116,18 @@ impl App {
         view.sync_loading_label();
     }
 
+    /// BUG-182 R6: fold a git-state REFRESH of the changed-files list —
+    /// re-apply preserving the selection by PATH (the open flow's
+    /// `ChangedFilesLoaded` resets the view instead), then re-load the
+    /// diff for the (re-)selected file.
+    pub(crate) fn handle_git_changed_files_loaded(&mut self, files: Vec<ChangedFile>) {
+        let view = &mut self.navigator.changed_files;
+        view.refresh_files_preserving_selection(files);
+        if let Some(path) = view.selected_path() {
+            self.spawn_file_diff(path);
+        }
+    }
+
     /// Route the RPC-356 Action variants through their helpers. Called
     /// from the catch-all arm of `App::dispatch`'s match.
     pub(crate) fn try_dispatch_changed_files(&mut self, action: &Action) -> bool {
@@ -125,6 +137,10 @@ impl App {
             }
             Action::ChangedFilesLoaded(files) => {
                 self.handle_changed_files_loaded(files.clone());
+            }
+            // BUG-182: git-state refresh (R6: selection preserved by path).
+            Action::GitChangedFilesLoaded(files) => {
+                self.handle_git_changed_files_loaded(files.clone());
             }
             Action::LoadFileDiff(path) => {
                 self.handle_load_file_diff(path.clone());

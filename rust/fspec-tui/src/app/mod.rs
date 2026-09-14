@@ -17,6 +17,7 @@
 //!     `App::render` / `App::run` (terminal + crossterm + render-tick).
 
 pub mod bootstrap;
+pub mod bootstrap_git_state; // BUG-182: (g) git_state_changed_rx subscriber (300-LoC ceiling)
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;
@@ -34,6 +35,7 @@ pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
 pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
 pub mod dispatch_fspec_runner;
+pub mod dispatch_git_state; // BUG-182: git-state frame fold (R3/R4)
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
 pub mod dispatch_isolation_toggle; // WT-009: /isolation state toggle

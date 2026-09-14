@@ -199,6 +199,50 @@ impl CheckpointsView {
         self.sync_loading_label();
     }
 
+    /// Replace the checkpoint list from a git-state refresh, keeping the
+    /// existing selection stable by (work_unit_id, name). The previously
+    /// selected checkpoint is re-looked-up in the fresh list; when it no
+    /// longer exists (checkpoint deleted) the selection falls back to the
+    /// first row. Dependent files + diff are cleared so the App re-loads
+    /// the cascade for the (re-)selected checkpoint.
+    ///
+    /// Never touches the load tracker — a refresh of a LOADED view must
+    /// not re-open the loading dialog.
+    pub fn refresh_checkpoints_preserving_selection(&mut self, checkpoints: Vec<CheckpointInfo>) {
+        let previous = self
+            .selected_checkpoint_info()
+            .map(|c| (c.work_unit_id.clone(), c.name.clone()));
+        let mut checkpoints = checkpoints;
+        for checkpoint in checkpoints.iter_mut() {
+            checkpoint.work_unit_id = sanitize_for_terminal(&checkpoint.work_unit_id);
+            checkpoint.name = sanitize_for_terminal(&checkpoint.name);
+        }
+        self.checkpoints = checkpoints;
+        self.selected_checkpoint = previous
+            .as_ref()
+            .and_then(|(w, n)| {
+                self.checkpoints
+                    .iter()
+                    .position(|c| &c.work_unit_id == w && &c.name == n)
+            })
+            .unwrap_or(0);
+        if self.selected_checkpoint >= self.checkpoint_scroll {
+            // stable row: keep the scroll offset
+        } else {
+            self.checkpoint_scroll = 0;
+        }
+        self.clear_files();
+        self.sync_loading_label();
+    }
+
+    /// Test/R6 seam: move the checkpoint selection to an explicit index
+    /// (clamped).
+    pub fn set_selected_checkpoint(&mut self, index: usize) {
+        if !self.checkpoints.is_empty() {
+            self.selected_checkpoint = index.min(self.checkpoints.len().saturating_sub(1));
+        }
+    }
+
     fn clear_files(&mut self) {
         self.files.clear();
         self.selected_file = 0;

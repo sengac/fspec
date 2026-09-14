@@ -3,11 +3,11 @@
 //! RigAgent for LLM communication and tool execution.
 //! All tool execution uses rig::tool::Tool trait.
 
-pub mod checkpoints_watcher;
 pub mod compaction;
 pub mod compaction_hook;
 pub mod file_search;
 pub mod gemini_history_hook;
+pub mod git_state;
 pub mod history_strip;
 pub mod lifecycle_hooks;
 pub mod loops;

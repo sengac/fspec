@@ -241,8 +241,12 @@ impl FileSearchPopup {
         // shrink-to-content dialog rect (geometry lives in
         // `file_search_popup_mouse::scrollbar_geometry` so this file
         // stays under the 300-LoC ceiling).
-        let (sb_rect, body_origin) =
-            super::file_search_popup_mouse::scrollbar_geometry(&dialog, vr, self.matches.len(), area);
+        let (sb_rect, body_origin) = super::file_search_popup_mouse::scrollbar_geometry(
+            &dialog,
+            vr,
+            self.matches.len(),
+            area,
+        );
 
         render_dialog(area, buf, &dialog);
 
@@ -267,10 +271,8 @@ mod tests {
 
     use super::*;
 
-    // Legacy + RPC-028 tests moved to tests/rpc028_popup_scroll.rs so
-    // this file stays under the 300-LoC source-shape budget. Only the
-    // snapshot test stays inline so the insta snapshot path remains
-    // co-located with the renderer.
+    // Legacy + RPC-028 tests moved to tests/rpc028_popup_scroll.rs (300-LoC
+    // budget); only the insta snapshot test stays co-located with the renderer.
 
     #[test]
     fn file_search_popup_rendering_is_byte_equal_across_runs_insta_snapshot() {
@@ -286,14 +288,13 @@ mod tests {
             })
             .expect("draw");
         let buf = terminal.backend().buffer().clone();
-        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
-        for y in 0..buf.area.height {
-            let mut row = String::with_capacity(buf.area.width as usize);
-            for x in 0..buf.area.width {
-                row.push_str(buf[(x, y)].symbol());
-            }
-            rows.push(row);
-        }
+        let rows = (0..buf.area.height)
+            .map(|y| {
+                (0..buf.area.width)
+                    .map(|x| buf[(x, y)].symbol().to_string())
+                    .collect()
+            })
+            .collect::<Vec<String>>();
         insta::assert_yaml_snapshot!("file_search_popup__centered_popup_80x24", rows);
     }
 }

@@ -649,9 +649,12 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     38 lines (provider-profile option action variants + exec-stdin
     //     prompt action variants) without re-itemizing — the assertion
     //     tracks the measured file at the release commit (1347).
+    //   - BUG-182 added 10 lines (GitStateChanged / GitChangedFilesLoaded /
+    //     GitCheckpointsLoaded variants + compressed docs) — the assertion
+    //     tracks the measured file (1357).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1347,
-        "components/mod.rs has {n_components} lines — measured ceiling 1347 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release)"
+        n_components <= 1357,
+        "components/mod.rs has {n_components} lines — measured ceiling 1357 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants)"
     );
 }

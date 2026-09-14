@@ -20,12 +20,13 @@ use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo,
     CompactionProgress, CompactionResult, CustomModelDefinition, ExecStdinRequest, FspecResult,
-    HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo,
-    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, OAuthDeviceStart,
-    OAuthHeadlessStart, PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
-    RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo, SessionModel,
-    SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult,
-    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    GitState, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
+    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo,
+    OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProviderCredentialInfo,
+    ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
+    SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
+    StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
+    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;
@@ -1073,10 +1074,10 @@ impl FspecBackend for EmbeddedFspecBackend {
         self.service.checkpoints_progress_rx()
     }
 
-    /// BUG-181: forward the shared service's checkpoint-changed push so
-    /// live `CheckpointCounts` frames (watcher-driven, cwd-attached)
-    /// reach the App subscriber on the embedded transport.
-    fn checkpoint_counts_changed_rx(&self) -> broadcast::Receiver<CheckpointCounts> {
-        self.service.checkpoint_counts_changed_rx()
+    /// BUG-182: forward the shared service's git-state push so live
+    /// `GitState` frames (watcher-driven, cwd-attached) reach the App
+    /// subscriber on the embedded transport.
+    fn git_state_changed_rx(&self) -> broadcast::Receiver<GitState> {
+        self.service.git_state_changed_rx()
     }
 }

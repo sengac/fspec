@@ -1262,6 +1262,10 @@
           "description": "Bug fix work unit BUG-181 — Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI). Fix: CheckpointsWatcher push channel (codelet-core) + FspecBackend::checkpoint_counts_changed_rx + App subscriber folding onto Action::CheckpointCountsLoaded"
         },
         {
+          "name": "@bug-182",
+          "description": "Mux mode views don't work (frozen loading dialog, no loads, no git polling) — centralized git polling fix"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -3038,7 +3042,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-13T12:06:56.897Z",
+    "lastUpdated": "2026-09-13T23:19:13.487Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
