@@ -342,6 +342,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-181` | Bug fix work unit BUG-181 — Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI). Fix: CheckpointsWatcher push channel (codelet-core) + FspecBackend::checkpoint_counts_changed_rx + App subscriber folding onto Action::CheckpointCountsLoaded |
 | `@bug-182` | Mux mode views don't work (frozen loading dialog, no loads, no git polling) — centralized git polling fix |
 | `@bug-183` | Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view) |
+| `@bug-184` | Bug fix work unit BUG-184 — mux Files/Checkpoints 10s refresh: no-op ticks dropped before re-fetch (list signature), scroll position + selection preserved on change-bearing refreshes, cascade same-key reloads keep dependent pane scroll |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -781,4 +782,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-14T06:29:10.450Z_
+_Last updated: 2026-09-14T21:02:12.733Z_

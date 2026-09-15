@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-14T08:55:36.820Z",
+    "lastUpdated": "2026-09-15T01:11:59.375Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 183,
+    "BUG": 184,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -1706,7 +1706,8 @@
       "TUI-111",
       "BUG-181",
       "BUG-182",
-      "BUG-183"
+      "BUG-183",
+      "BUG-184"
     ],
     "blocked": [
       "QUERY-001",
@@ -231586,6 +231587,119 @@
         }
       ],
       "nextExampleId": 2
+    },
+    "BUG-184": {
+      "id": "BUG-184",
+      "title": "Mux Files/Checkpoints panes: 10s refresh loses scroll position and lacks loading dialog parity with single-view mode",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-14T20:55:12.835Z",
+      "updatedAt": "2026-09-15T01:11:59.375Z",
+      "description": "The GitStateWatcher (BUG-182) polls git state every 10s and pushes a GitState frame containing changed_files + checkpoints. The TUI re-fetches the visible lazy panes on every frame, even when the list is unchanged. Problems: (1) in mux mode the Files/Checkpoints panes show no loading dialog while the view is loading (single-view mode shows one); (2) on every 10s refresh the pane loses scroll position and can flicker. User decisions (Example Mapping): dialog scope = 'Initial only' — show the full loading dialog when a mux pane first loads, keep the 10s background refresh seamless (no dialog) but preserve scroll + selection; scroll scope = 'All panes' — preserve scroll in every sub-pane. Working-tree research (uncommitted at discovery): dispatch_git_state.rs (signature-based drop of no-op refreshes), load_state.rs (list_signature on LoadTracker), changed_files/mod.rs + checkpoints/mod.rs (signature recording + scroll preservation).",
+      "epic": "rust-frontend",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-14T20:57:26.259Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-14T21:08:23.817Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-15T00:52:35.295Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-15T00:52:52.400Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-15T01:11:59.375Z"
+        }
+      ],
+      "attachments": [
+        "spec/attachments/BUG-184/BUG-184-research.md"
+      ],
+      "userStory": {
+        "role": "TUI user watching live git state in mux mode",
+        "action": "see the Files/Checkpoints panes update every 10 seconds without jumping",
+        "benefit": "a stable view: no dialog flash, no lost scroll position, no flicker"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A git-state frame whose changed-files leg is byte-identical to the list a displayed ChangedFilesView shows (same sanitized paths + change types + staged flags, same order) must NOT trigger a re-fetch — no RPC, no dialog, no scroll/selection churn",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:57:42.996Z"
+        },
+        {
+          "id": 1,
+          "text": "A git-state frame whose checkpoints leg is byte-identical to the list a displayed CheckpointsView shows (same sanitized work_unit_id + name + auto flag, same order; the timestamp leg is EXCLUDED because the row rendering never shows it) must NOT trigger a re-fetch",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:57:51.776Z"
+        },
+        {
+          "id": 2,
+          "text": "When a change-bearing refresh lands on a loaded Files or Checkpoints list, the list scroll offset is PRESERVED as a raw offset and clamped to the fresh list length (max = list_len - visible_rows; a list shorter than the window falls back to the top).",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:57:52.050Z"
+        },
+        {
+          "id": 3,
+          "text": "A cascade re-load of the SAME key (checkpoints Files pane: same work_unit_id + name; Diff pane: same work_unit_id + name + path) preserves that pane's scroll/selection; only a key CHANGE resets it to the top.",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:04.106Z"
+        },
+        {
+          "id": 4,
+          "text": "After a refresh re-lookup, the selected row must lie inside the preserved scroll window; if the re-looked-up row falls above the window, the selection snaps to the first visible row; if it falls past the bottom, the selection snaps to the last visible row and the window scrolls to keep it visible (highlighted row and scroll window never diverge).",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:04.340Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Steady-state tick: a 10s GitState frame whose changed_files list equals the displayed list (same paths, change types, staged flags, order) → no re-fetch RPC, pane bytes unchanged, scroll + selection intact",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:53.041Z"
+        },
+        {
+          "id": 1,
+          "text": "Change-bearing refresh: two files above the scrolled window get committed (list starts at file02.txt) → the file04.txt selection survives by path, the scroll offset keeps its point (does not jump to the top)",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:53.996Z"
+        },
+        {
+          "id": 2,
+          "text": "List shrinks beneath the window: scrolled to the bottom of 30 files; a refresh lands only 4 files (all shorter than the window) → the window falls back to the top and the (path-stable) selection stays inside the window",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:09.598Z"
+        },
+        {
+          "id": 3,
+          "text": "Selected file committed: scrolled to the bottom, selected file29.txt; a refresh lands a list without it → the selection falls back to the first row and the window snaps to the top (highlighted row and scroll window stay together)",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:10.574Z"
+        },
+        {
+          "id": 4,
+          "text": "Checkpoints steady-state tick: a 10s GitState frame whose checkpoints list renders byte-identically to the displayed list (timestamps may differ — they are never rendered) → no re-fetch, checkpoint scroll + selection intact",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:21.704Z"
+        },
+        {
+          "id": 5,
+          "text": "Cascade same-key reload: a change-bearing checkpoint refresh re-fetches the (re-)selected checkpoint's files and diff → the Files pane keeps its scroll/selection and the Diff pane keeps its scroll (clamped to the new diff length); selecting a DIFFERENT checkpoint resets both panes to the top",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:22.141Z"
+        }
+      ],
+      "nextExampleId": 6
     }
   }
 }

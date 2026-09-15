@@ -161,7 +161,18 @@ impl ChangedFilesView {
         self.diff_lines.clear();
         self.diff_path = None;
         self.load.mark_list_flushed();
+        // BUG-184: the view now displays this list — record its identity
+        // (stage/staged flags included, so an unstaged→staged transition
+        // is a visible change) so a no-op git-state refresh can be
+        // dropped before it spawns a re-fetch.
+        self.load.set_list_signature(&list_signature(&self.files));
         self.sync_loading_label();
+    }
+
+    /// BUG-184: the displayed-list identity the refresh dedup compares
+    /// against — one entry per file, `path:letter:s`.
+    pub(crate) fn list_signature(&self) -> String {
+        list_signature(&self.files)
     }
 
     /// BUG-182 R6: replace the file list from a git-state refresh,
@@ -170,6 +181,16 @@ impl ChangedFilesView {
     /// it no longer exists (file deleted / staged) the selection falls
     /// back to the first row. The diff cache is cleared so the App
     /// re-loads the diff for the (re-)selected path.
+    ///
+    /// BUG-184: the file-list scroll position is PRESERVED as an offset
+    /// and clamped to the fresh list length (max = `new_len - visible`;
+    /// a list shorter than the window falls back to the top). The
+    /// selection follows the preserved window: when the re-looked-up row
+    /// falls outside the visible window it moves to the window's anchor
+    /// row (the first visible row for a fallback above the window, the
+    /// last visible row when it slid past the bottom) — so the
+    /// highlighted row and the scroll window never diverge (same anchor
+    /// rule `move_selection`'s `ensure_visible` implements).
     ///
     /// Never touches the load tracker — a refresh of a LOADED view must
     /// not re-open the loading dialog.
@@ -181,16 +202,42 @@ impl ChangedFilesView {
             file.change_type = sanitize_for_terminal(&file.change_type);
         }
         self.files = files;
+        let new_len = self.files.len();
         self.selected_index = previous
             .as_ref()
             .and_then(|path| self.files.iter().position(|f| f.path == *path))
             .unwrap_or(0);
-        // Scroll: preserve the offset when the (re-)selection maps to a
-        // stable row; reset only when it fell back.
-        if self.selected_index >= self.file_scroll {
-            // keep file_scroll (stable row); nothing to do
-        } else {
-            self.file_scroll = 0;
+        // BUG-184: preserve the scroll offset, clamped to the fresh list.
+        // (Before: the window reset to 0 whenever the re-selected row sat
+        // below the old window — the 10s refresh jolted the list up.)
+        let old_window = self
+            .last_files_rect
+            .map(|r| r.height as usize)
+            .filter(|h| *h > 0);
+        // Selection/scroll consistency: the re-selected row must lie
+        // inside the preserved window, otherwise the window's anchor row
+        // (first visible when the selection falls above, last visible
+        // when it slides past the bottom) takes it.
+        match old_window {
+            Some(visible) if visible > 0 => {
+                if new_len > visible {
+                    let max_scroll = new_len - visible;
+                    self.file_scroll = self.file_scroll.min(max_scroll);
+                    if self.selected_index < self.file_scroll {
+                        self.selected_index = self.file_scroll;
+                    } else if self.selected_index >= self.file_scroll + visible {
+                        self.selected_index = self.file_scroll + visible - 1;
+                        self.file_scroll = self.selected_index + 1 - visible;
+                    }
+                } else {
+                    // List shorter than the window: fall back to the top.
+                    self.file_scroll = 0;
+                    self.selected_index = 0;
+                }
+            }
+            _ => {
+                self.file_scroll = 0;
+            }
         }
         self.diff_lines.clear();
         self.diff_path = None;
@@ -247,6 +294,11 @@ impl ChangedFilesView {
 
     pub fn diff_scroll(&self) -> usize {
         self.diff_scroll
+    }
+
+    /// BUG-184: number of files in the displayed list (test seam).
+    pub fn files_len(&self) -> usize {
+        self.files.len()
     }
 
     pub fn file_scroll(&self) -> usize {
@@ -399,4 +451,23 @@ impl ChangedFilesView {
         };
         (h.max(1)) as i32
     }
+}
+
+/// BUG-184: identity of a changed-files list — one `path:letter:s` entry
+/// per file (sanitized fields, in list order). Two lists with the same
+/// paths + change types + staged flags are byte-identical for rendering
+/// purposes, so the refresh path can skip re-fetching them.
+fn list_signature(files: &[ChangedFile]) -> String {
+    files
+        .iter()
+        .map(|f| {
+            format!(
+                "{}:{}:{}",
+                f.path,
+                f.change_type,
+                if f.staged { "s" } else { "w" }
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }

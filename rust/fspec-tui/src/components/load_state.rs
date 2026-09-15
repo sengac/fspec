@@ -40,6 +40,11 @@ pub struct LoadTracker {
     /// Set to true once the list stage flushed (the load may be empty —
     /// a failed load degrades to the real empty state, current behavior).
     list_loaded: bool,
+    /// BUG-184: identity of the list the view currently displays — set
+    /// by the App dispatchers when the view replaces its list (initial
+    /// load OR a git-state refresh). Lets the refresh path skip
+    /// no-op re-fetches of unchanged lists (see `git_state.rs` R1).
+    list_signature: String,
     /// The in-flight cascade stage after the list, if any.
     stage: Option<Stage>,
 }
@@ -50,8 +55,22 @@ impl LoadTracker {
         Self {
             list_label: sanitize_for_terminal(&list_label.into()),
             list_loaded: false,
+            list_signature: String::new(),
             stage: None,
         }
+    }
+
+    /// BUG-184: record the identity of the list the view now displays.
+    /// Called by the App dispatchers whenever the view replaces its list
+    /// (initial load, git-state refresh, or a reset by a re-open).
+    pub fn set_list_signature(&mut self, signature: &str) {
+        self.list_signature = signature.to_string();
+    }
+
+    /// BUG-184: identity of the list the view currently displays
+    /// (`""` before the first list has flushed).
+    pub fn list_signature(&self) -> &str {
+        &self.list_signature
     }
 
     /// True while a lazy load is in flight (list not yet flushed OR a
@@ -150,6 +169,20 @@ mod tests {
             t.active_label().as_deref(),
             Some("Loading checkpoint list…")
         );
+    }
+
+    #[test]
+    fn list_signature_starts_empty_and_records_the_displayed_list() {
+        let mut t = LoadTracker::new("Loading changed files…");
+        assert_eq!(t.list_signature(), "");
+        t.set_list_signature("sig-a");
+        assert_eq!(t.list_signature(), "sig-a");
+        t.set_list_signature("sig-b");
+        assert_eq!(t.list_signature(), "sig-b");
+        // The signature is independent of the stage bookkeeping.
+        t.mark_list_flushed();
+        t.begin_stage(&LoadTracker::diff_stage_key_path("a.txt"), "…");
+        assert_eq!(t.list_signature(), "sig-b");
     }
 
     #[test]

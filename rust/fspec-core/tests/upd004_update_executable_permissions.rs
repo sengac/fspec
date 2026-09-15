@@ -61,7 +61,10 @@ mod unix {
         axum::extract::State(s): axum::extract::State<MockStateArc>,
         axum::extract::Path(name): axum::extract::Path<String>,
     ) -> (
-        [(axum::http::header::HeaderName, axum::http::header::HeaderValue); 1],
+        [(
+            axum::http::header::HeaderName,
+            axum::http::header::HeaderValue,
+        ); 1],
         Vec<u8>,
     ) {
         let st = s.lock().expect("mock state lock");
@@ -164,8 +167,7 @@ mod unix {
         let meta = fs::metadata(&install).expect("read installed metadata");
         let mode = meta.permissions().mode() & 0o777;
         assert_eq!(
-            mode,
-            0o755,
+            mode, 0o755,
             "installed binary must be executable (0o755), got 0o{mode:o}"
         );
     }

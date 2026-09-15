@@ -259,6 +259,13 @@ pub struct MockBackend {
     /// flow + git-state refresh drive.
     changed_files_calls: AtomicUsize,
     list_checkpoints_calls: AtomicUsize,
+    /// BUG-184: scripted payloads for the lazy-view RPCs so App-level
+    /// tests can drive a LOADED Files/Checkpoints pane (the trait
+    /// defaults return empty Vecs).
+    scripted_changed_files: Mutex<Vec<codelet_rpc_types::ChangedFile>>,
+    scripted_checkpoints: Mutex<Vec<codelet_rpc_types::CheckpointInfo>>,
+    scripted_checkpoint_files: Mutex<Option<(String, String, Vec<codelet_rpc_types::ChangedFile>)>>,
+    scripted_checkpoint_file_diffs: Mutex<Option<(String, String, String, Option<String>)>>,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
@@ -752,6 +759,10 @@ impl Default for MockBackend {
             git_state_changed_tx: Mutex::new(Some(git_state_changed_tx)),
             changed_files_calls: AtomicUsize::new(0),
             list_checkpoints_calls: AtomicUsize::new(0),
+            scripted_changed_files: Mutex::new(Vec::new()),
+            scripted_checkpoints: Mutex::new(Vec::new()),
+            scripted_checkpoint_files: Mutex::new(None),
+            scripted_checkpoint_file_diffs: Mutex::new(None),
             list_work_units_calls: AtomicUsize::new(0),
             create_session_calls: AtomicUsize::new(0),
             send_input_calls: AtomicUsize::new(0),
@@ -1244,6 +1255,65 @@ impl MockBackend {
     /// entry / git-state refresh drives it).
     pub fn list_checkpoints_calls(&self) -> usize {
         self.list_checkpoints_calls.load(Ordering::SeqCst)
+    }
+
+    /// BUG-184: script the payload `changed_files()` returns so an
+    /// App-level test can drive a LOADED changed-files pane (the trait
+    /// default returns an empty Vec).
+    pub fn set_changed_files(&self, files: Vec<codelet_rpc_types::ChangedFile>) {
+        *self
+            .scripted_changed_files
+            .lock()
+            .expect("MockBackend mutex") = files;
+    }
+
+    /// BUG-184: script the payload `list_checkpoints()` returns.
+    pub fn set_checkpoints(&self, checkpoints: Vec<codelet_rpc_types::CheckpointInfo>) {
+        *self.scripted_checkpoints.lock().expect("MockBackend mutex") = checkpoints;
+    }
+
+    /// BUG-184: snapshot of the scripted `changed_files()` payload (the
+    /// count a test expects the pane to display).
+    pub fn scripted_changed_files_snapshot(&self) -> usize {
+        self.scripted_changed_files
+            .lock()
+            .expect("MockBackend mutex")
+            .len()
+    }
+
+    /// BUG-184: script the payload `checkpoint_diff_files(wu, name)`
+    /// returns for ONE (work_unit_id, name) key.
+    pub fn set_checkpoint_files(
+        &self,
+        work_unit_id: &str,
+        name: &str,
+        files: Vec<codelet_rpc_types::ChangedFile>,
+    ) {
+        *self
+            .scripted_checkpoint_files
+            .lock()
+            .expect("MockBackend mutex") =
+            Some((work_unit_id.to_string(), name.to_string(), files));
+    }
+
+    /// BUG-184: script the payload `checkpoint_file_diff(wu, name, path)`
+    /// returns for ONE key.
+    pub fn set_checkpoint_file_diff(
+        &self,
+        work_unit_id: &str,
+        name: &str,
+        path: &str,
+        diff: Option<String>,
+    ) {
+        *self
+            .scripted_checkpoint_file_diffs
+            .lock()
+            .expect("MockBackend mutex") = Some((
+            work_unit_id.to_string(),
+            name.to_string(),
+            path.to_string(),
+            diff,
+        ));
     }
 
     pub fn checkpoint_counts_calls(&self) -> usize {
@@ -2813,14 +2883,58 @@ impl FspecBackend for MockBackend {
 
     /// BUG-182: count the lazy-view RPC calls (the trait defaults would
     /// otherwise hide them from the mux-entry / refresh assertions).
+    /// BUG-184: honor the scripted payload so tests can drive a LOADED
+    /// pane (empty when unscripted — the prior behavior).
     async fn changed_files(&self) -> Result<Vec<codelet_rpc_types::ChangedFile>> {
         self.changed_files_calls.fetch_add(1, Ordering::SeqCst);
-        Ok(Vec::new())
+        Ok(self
+            .scripted_changed_files
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn list_checkpoints(&self) -> Result<Vec<codelet_rpc_types::CheckpointInfo>> {
         self.list_checkpoints_calls.fetch_add(1, Ordering::SeqCst);
-        Ok(Vec::new())
+        Ok(self
+            .scripted_checkpoints
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
+    }
+
+    /// BUG-184: the scripted checkpoint-files payload (key match →
+    /// payload; anything else → empty, as before).
+    async fn checkpoint_diff_files(
+        &self,
+        work_unit_id: String,
+        name: String,
+    ) -> Result<Vec<codelet_rpc_types::ChangedFile>> {
+        Ok(self
+            .scripted_checkpoint_files
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+            .filter(|(wu, n, _)| *wu == work_unit_id && *n == name)
+            .map(|(_, _, files)| files)
+            .unwrap_or_default())
+    }
+
+    /// BUG-184: the scripted checkpoint-file-diff payload (key match →
+    /// payload; anything else → `None`, as before).
+    async fn checkpoint_file_diff(
+        &self,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<Option<String>> {
+        Ok(self
+            .scripted_checkpoint_file_diffs
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+            .filter(|(wu, n, p, _)| *wu == work_unit_id && *n == name && *p == path)
+            .and_then(|(_, _, _, diff)| diff))
     }
 
     async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>> {

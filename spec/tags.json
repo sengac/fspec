@@ -1270,6 +1270,10 @@
           "description": "Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view)"
         },
         {
+          "name": "@bug-184",
+          "description": "Bug fix work unit BUG-184 — mux Files/Checkpoints 10s refresh: no-op ticks dropped before re-fetch (list signature), scroll position + selection preserved on change-bearing refreshes, cascade same-key reloads keep dependent pane scroll"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -3046,7 +3050,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-14T06:29:10.450Z",
+    "lastUpdated": "2026-09-14T21:02:12.733Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

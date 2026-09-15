@@ -196,6 +196,11 @@ impl CheckpointsView {
         self.checkpoint_scroll = 0;
         self.clear_files();
         self.load.mark_list_flushed();
+        // BUG-184: the view now displays this list — record its identity
+        // so a no-op git-state refresh can be dropped before it spawns a
+        // re-fetch (see `git_state.rs` R1).
+        self.load
+            .set_list_signature(&list_signature(&self.checkpoints));
         self.sync_loading_label();
     }
 
@@ -205,6 +210,16 @@ impl CheckpointsView {
     /// longer exists (checkpoint deleted) the selection falls back to the
     /// first row. Dependent files + diff are cleared so the App re-loads
     /// the cascade for the (re-)selected checkpoint.
+    ///
+    /// BUG-184: the checkpoint-list scroll position is PRESERVED as an
+    /// offset and clamped to the fresh list length (max =
+    /// `new_len - visible`; a list shorter than the window falls back
+    /// to the top). The selection follows the preserved window: when
+    /// the re-looked-up row falls outside the visible window it moves
+    /// to the window's anchor row (first visible for a fallback, last
+    /// visible when it slid past the bottom) — so the highlighted row
+    /// and the scroll window never diverge (same anchor rule
+    /// `move_checkpoint_selection`'s `ensure_visible` implements).
     ///
     /// Never touches the load tracker — a refresh of a LOADED view must
     /// not re-open the loading dialog.
@@ -218,6 +233,7 @@ impl CheckpointsView {
             checkpoint.name = sanitize_for_terminal(&checkpoint.name);
         }
         self.checkpoints = checkpoints;
+        let new_len = self.checkpoints.len();
         self.selected_checkpoint = previous
             .as_ref()
             .and_then(|(w, n)| {
@@ -226,12 +242,46 @@ impl CheckpointsView {
                     .position(|c| &c.work_unit_id == w && &c.name == n)
             })
             .unwrap_or(0);
-        if self.selected_checkpoint >= self.checkpoint_scroll {
-            // stable row: keep the scroll offset
-        } else {
-            self.checkpoint_scroll = 0;
+        // BUG-184: preserve the scroll offset, clamped to the fresh list.
+        // (Before: the window reset to 0 whenever the re-selected row sat
+        // below the old window — the 10s refresh jolted the list up.)
+        let old_window = self
+            .last_checkpoints_rect
+            .map(|r| r.height as usize)
+            .filter(|h| *h > 0);
+        // BUG-184: preserve the scroll offset, clamped to the fresh list.
+        // (Before: the window reset to 0 whenever the re-selected row sat
+        // below the old window — the 10s refresh jolted the list up.)
+        // Selection/scroll consistency: the re-selected row must lie
+        // inside the preserved window, otherwise the window's anchor row
+        // (first visible when the selection falls above, last visible
+        // when it slides past the bottom) takes it.
+        match old_window {
+            Some(visible) if visible > 0 => {
+                if new_len > visible {
+                    let max_scroll = new_len - visible;
+                    self.checkpoint_scroll = self.checkpoint_scroll.min(max_scroll);
+                    if self.selected_checkpoint < self.checkpoint_scroll {
+                        self.selected_checkpoint = self.checkpoint_scroll;
+                    } else if self.selected_checkpoint >= self.checkpoint_scroll + visible {
+                        self.selected_checkpoint = self.checkpoint_scroll + visible - 1;
+                        self.checkpoint_scroll = self.selected_checkpoint + 1 - visible;
+                    }
+                } else {
+                    // List shorter than the window: fall back to the top.
+                    self.checkpoint_scroll = 0;
+                    self.selected_checkpoint = 0;
+                }
+            }
+            _ => {
+                self.checkpoint_scroll = 0;
+            }
         }
         self.clear_files();
+        // BUG-184: the fresh files/diff re-load for the (re-)selected
+        // checkpoint replaces the files by the SAME key — the Files pane
+        // scroll offset survives it (set_files only resets the offset on
+        // a key CHANGE; the diff is clamped, not zeroed, on re-load).
         self.sync_loading_label();
     }
 
@@ -263,6 +313,11 @@ impl CheckpointsView {
     /// **TUI-111**: file paths + change types are sanitized on ingress
     /// (the key parameters are sanitized too so the stale-drop match
     /// against the stored sanitized list lines up).
+    ///
+    /// BUG-184: a re-load of the SAME key (the git-state refresh cascade
+    /// re-fetches the (re-)selected checkpoint's files) preserves the
+    /// Files-pane scroll offset; only a key CHANGE (a different
+    /// checkpoint was selected) resets it.
     pub fn set_files(&mut self, work_unit_id: &str, name: &str, files: Vec<ChangedFile>) {
         let work_unit_id = sanitize_for_terminal(work_unit_id);
         let name = sanitize_for_terminal(name);
@@ -274,11 +329,47 @@ impl CheckpointsView {
             file.path = sanitize_for_terminal(&file.path);
             file.change_type = sanitize_for_terminal(&file.change_type);
         }
+        let same_key = self.files_key.as_ref() == Some(&(work_unit_id.clone(), name.clone()));
         self.files = files;
-        self.selected_file = 0;
-        self.file_scroll = 0;
+        if !same_key {
+            self.selected_file = 0;
+            self.file_scroll = 0;
+            // A different checkpoint was selected: its diff is a different
+            // document — drop the cached diff so the cascade re-loads it.
+            self.clear_diff();
+        } else {
+            // BUG-184: same-key re-load — keep the Files-pane point,
+            // clamped to the fresh list (the list may have shrunk
+            // beneath the preserved selection/window). The diff is NOT
+            // cleared: the App re-fetches the (re-)selected file's diff
+            // and it lands via `set_diff`'s same-key path (which
+            // preserves the Diff-pane scroll).
+            let len = self.files.len();
+            self.selected_file = self.selected_file.min(len.saturating_sub(1));
+            let visible = self
+                .last_files_rect
+                .map(|r| r.height as usize)
+                .filter(|h| *h > 0);
+            match visible {
+                Some(v) if v > 0 && len > v => {
+                    self.file_scroll = self.file_scroll.min(len - v);
+                }
+                _ => {
+                    self.file_scroll = 0;
+                }
+            }
+            if let Some(v) = visible {
+                if v > 0 {
+                    if self.selected_file < self.file_scroll {
+                        self.selected_file = self.file_scroll;
+                    } else if self.selected_file >= self.file_scroll + v {
+                        self.selected_file = self.file_scroll + v - 1;
+                        self.file_scroll = self.selected_file + 1 - v;
+                    }
+                }
+            }
+        }
         self.files_key = Some((work_unit_id, name));
-        self.clear_diff();
     }
 
     /// Fold a `CheckpointFileDiffLoaded` response. Ignored when the key
@@ -295,12 +386,30 @@ impl CheckpointsView {
         if self.selected_file_path().as_deref() != Some(path.as_str()) {
             return;
         }
+        // BUG-184: a re-load of the SAME key (the git-state refresh
+        // cascade re-fetches the selected file's diff) preserves the
+        // Diff-pane scroll offset (clamped to the fresh diff length);
+        // only a key CHANGE (a different checkpoint/file) resets it.
+        let same_key =
+            self.diff_key.as_ref() == Some(&(work_unit_id.clone(), name.clone(), path.clone()));
         self.diff_key = Some((work_unit_id, name, path));
-        self.diff_scroll = 0;
         self.diff_lines = match diff {
             Some(text) if !text.is_empty() => text.split('\n').map(sanitize_for_terminal).collect(),
             _ => vec!["No changes to display".to_string()],
         };
+        if same_key {
+            let viewport = self
+                .last_diff_rect
+                .map(|r| r.height as usize)
+                .filter(|h| *h > 0);
+            let max_scroll = match viewport {
+                Some(v) if self.diff_lines.len() > v => self.diff_lines.len() - v,
+                _ => 0,
+            };
+            self.diff_scroll = self.diff_scroll.min(max_scroll);
+        } else {
+            self.diff_scroll = 0;
+        }
     }
 
     fn selection_matches(&self, work_unit_id: &str, name: &str) -> bool {
@@ -338,6 +447,17 @@ impl CheckpointsView {
         self.selected_checkpoint
     }
 
+    /// The checkpoint-list scroll offset (test seam + the BUG-184
+    /// refresh clamp).
+    pub fn checkpoint_scroll(&self) -> usize {
+        self.checkpoint_scroll
+    }
+
+    /// The Files-pane scroll offset (BUG-184 test seam).
+    pub fn file_scroll(&self) -> usize {
+        self.file_scroll
+    }
+
     pub fn selected_file(&self) -> usize {
         self.selected_file
     }
@@ -353,6 +473,14 @@ impl CheckpointsView {
     /// TUI-109: number of checkpoints folded into the view (test seam).
     pub fn checkpoints_len(&self) -> usize {
         self.checkpoints.len()
+    }
+
+    /// BUG-184: the displayed-list identity the refresh dedup compares
+    /// against — one `work_unit_id/name:auto` entry per checkpoint (in
+    /// list order; the timestamp leg is excluded — rows never render
+    /// it).
+    pub(crate) fn list_signature(&self) -> String {
+        list_signature(&self.checkpoints)
     }
 
     /// RPC-365: borrow the active restore dialog, if any. Used by the
@@ -427,4 +555,28 @@ impl CheckpointsView {
     fn wheel_step(&mut self, dir: WheelDirection) -> i32 {
         self.wheel.step(dir)
     }
+}
+
+/// BUG-184: identity of the checkpoint list as DISPLAYED — one
+/// `work_unit_id/name:auto` entry per checkpoint (in list order). The
+/// row rendering (`checkpoint_label`) depends only on work_unit_id +
+/// name (+ the auto flag), NOT the timestamp — so the frame's timestamp
+/// leg (a fallback "now" stamp when no index sidecar exists, which
+/// churns on every watcher capture) must NOT participate: two frames
+/// whose lists render byte-identically are the same displayed list, and
+/// the refresh path skips re-fetching them. Order participates because
+/// a re-ordered list IS a visible change.
+fn list_signature(checkpoints: &[CheckpointInfo]) -> String {
+    checkpoints
+        .iter()
+        .map(|c| {
+            format!(
+                "{}/{}:{}",
+                c.work_unit_id,
+                c.name,
+                if c.is_automatic { "auto" } else { "manual" }
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }

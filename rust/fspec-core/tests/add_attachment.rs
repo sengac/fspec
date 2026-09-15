@@ -849,8 +849,7 @@ fn bug_151_duplicate_from_different_source_does_not_overwrite_registered_attachm
     // (i.e. the registered attachment was NOT overwritten by "different content")
     let content = fs::read(&notes).expect("read notes.md after duplicate add");
     assert_eq!(
-        content,
-        b"important research",
+        content, b"important research",
         "BUG-151: duplicate guard must fire BEFORE the copy — the registered \
          attachment must NOT be overwritten by the different source"
     );

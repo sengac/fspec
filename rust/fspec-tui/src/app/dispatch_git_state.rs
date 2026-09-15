@@ -15,10 +15,16 @@
 //! It then re-fetches the visible lazy views (R4) — Changed Files and
 //! Checkpoints — dropping the refresh while a view is still in its
 //! initial load (the initial-load stage is never double-started).
+//!
+//! BUG-184: a refresh whose list is unchanged (identical signature to
+//! the list the view already displays) is dropped BEFORE the re-fetch —
+//! no re-fetch, no dialog flash, no scroll/selection churn (the 10 s
+//! poll's steady-state tick is a no-op on the pane).
 
-use codelet_rpc_types::GitState;
+use codelet_rpc_types::{ChangedFile, CheckpointInfo, GitState};
 
 use crate::components::Action;
+use crate::sanitize_for_terminal;
 use crate::views::multiplex::MuxPaneKind;
 use crate::views::ViewMode;
 
@@ -60,10 +66,10 @@ impl App {
         // R4: re-fetch the visible lazy views (active single view OR a
         // rendered mux pane).
         if self.is_changed_files_visible() {
-            self.refresh_changed_files_view();
+            self.refresh_changed_files_view(state);
         }
         if self.is_checkpoints_visible() {
-            self.refresh_checkpoints_view();
+            self.refresh_checkpoints_view(state);
         }
     }
 
@@ -98,12 +104,21 @@ impl App {
     /// R4: re-fetch the changed-files list when the view is already
     /// loaded. DROPPED while the initial load is still in flight (the
     /// initial-load stage is never double-started — no extra
-    /// `changed_files` RPC). The result lands via
+    /// `changed_files` RPC).
+    ///
+    /// BUG-184: DROPPED when the frame's file list matches the list the
+    /// view already displays (identical signature — the 10 s poll's
+    /// steady-state tick). The drop keeps the pane byte-stable: no
+    /// re-fetch, no diff re-load, no dialog flash, no scroll/selection
+    /// churn. The result of a change-bearing refresh lands via
     /// `Action::GitChangedFilesLoaded` (R6: selection preserved by
-    /// path).
-    fn refresh_changed_files_view(&mut self) {
+    /// path; BUG-184: scroll preserved).
+    fn refresh_changed_files_view(&mut self, state: &GitState) {
         let view = &mut self.navigator.changed_files;
         if !view.load.is_loaded() {
+            return;
+        }
+        if view.list_signature() == changed_files_signature(&state.changed_files) {
             return;
         }
         self.spawn_changed_files_refresh();
@@ -111,12 +126,20 @@ impl App {
 
     /// R4: re-fetch the checkpoint list when the view is already loaded.
     /// DROPPED while the initial load is still in flight (mirrors the
-    /// changed-files rule). The result lands via
-    /// `Action::GitCheckpointsLoaded` (R6: selection preserved by
-    /// work-unit + name).
-    fn refresh_checkpoints_view(&mut self) {
+    /// changed-files rule).
+    ///
+    /// BUG-184: DROPPED when the frame's checkpoint list matches the
+    /// list the view already displays (identical signature — the
+    /// steady-state tick). Same byte-stable drop rule as
+    /// `refresh_changed_files_view`. The result of a change-bearing
+    /// refresh lands via `Action::GitCheckpointsLoaded` (R6: selection
+    /// preserved by work-unit + name; BUG-184: scroll preserved).
+    fn refresh_checkpoints_view(&mut self, state: &GitState) {
         let view = &mut self.navigator.checkpoints;
         if !view.load.is_loaded() {
+            return;
+        }
+        if view.list_signature() == checkpoints_signature(&state.checkpoints) {
             return;
         }
         self.spawn_checkpoints_refresh();
@@ -166,4 +189,45 @@ impl App {
         });
         self.pending_tasks.push(handle);
     }
+}
+
+/// BUG-184: signature of a frame's `changed_files` leg — the SAME shape
+/// the ChangedFilesView stores (sanitized `path` + `change_type` +
+/// staged flag, in list order). The comparison against
+/// `ChangedFilesView::list_signature` (recorded from the view's stored
+/// rows) is therefore exact: identical lists compare equal even though
+/// the frame's fields are raw (unsanitized) on the wire.
+fn changed_files_signature(files: &[ChangedFile]) -> String {
+    files
+        .iter()
+        .map(|f| {
+            format!(
+                "{}:{}:{}",
+                sanitize_for_terminal(&f.path),
+                sanitize_for_terminal(&f.change_type),
+                if f.staged { "s" } else { "w" }
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// BUG-184: signature of a frame's `checkpoints` leg — the SAME shape
+/// the CheckpointsView stores (sanitized `work_unit_id` + `name` + auto
+/// flag, in list order; the timestamp leg is excluded — the row
+/// rendering never shows it and the fallback "now" stamp churns on
+/// every capture when no index sidecar exists).
+fn checkpoints_signature(checkpoints: &[CheckpointInfo]) -> String {
+    checkpoints
+        .iter()
+        .map(|c| {
+            format!(
+                "{}/{}:{}",
+                sanitize_for_terminal(&c.work_unit_id),
+                sanitize_for_terminal(&c.name),
+                if c.is_automatic { "auto" } else { "manual" }
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
