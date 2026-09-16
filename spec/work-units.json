@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-15T01:11:59.375Z",
+    "lastUpdated": "2026-09-16T01:24:22.544Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -93,7 +93,7 @@
     "WATCH": 24,
     "UPD": 4,
     "BOARD": 22,
-    "MUX": 8,
+    "MUX": 9,
     "WT": 12
   },
   "states": {
@@ -1707,7 +1707,8 @@
       "BUG-181",
       "BUG-182",
       "BUG-183",
-      "BUG-184"
+      "BUG-184",
+      "MUX-009"
     ],
     "blocked": [
       "QUERY-001",
@@ -231700,6 +231701,111 @@
         }
       ],
       "nextExampleId": 6
+    },
+    "MUX-009": {
+      "id": "MUX-009",
+      "title": "Board 'M' key opens the Mux config dialog + top-of-screen Mux hint",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-15T09:22:03.426Z",
+      "updatedAt": "2026-09-16T01:24:22.544Z",
+      "description": "The /mux command shows the MuxConfigDialog from the AgentView. Bind the modifier-free 'M' key in the BoardView to open the SAME MuxConfigDialog (the MUX-004 dialog), so mux can be turned on/off from the Board view without an agent session. The binding must also work when the Board pane is focused inside the mux grid (the dialog overlays per MUX-001 R9). Additionally, the BoardView's top-of-screen keybinding hint chord (views/board/keybinding_shortcuts.rs: 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search') must list the new binding (append 'M Mux' to the chord) so it is discoverable. Ctrl+M must NOT open the dialog (modifier-free only, consistent with the existing a/c/f/d guards). The dialog stays idempotent (exactly one instance) per MUX-004 R2.",
+      "epic": "mux",
+      "children": [],
+      "userStory": {
+        "role": "developer working from the Board view",
+        "action": "open the mux configuration dialog with the 'M' key and see it advertised in the Board's top hint chord",
+        "benefit": "turn mux on/off and reconfigure the layout without switching to an agent session"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-15T09:22:43.379Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-15T09:43:43.705Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-15T09:59:42.555Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-15T23:40:19.795Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-16T01:24:22.544Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: the binding is modifier-free only — Ctrl+M (or any Ctrl-chorded m/M) must NOT open the dialog and falls through to the existing App-level handling, consistent with the existing 'a'/'c'/'f'/'d' guard pattern in BoardView::handle_event.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:12.608Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: pressing modifier-free 'm' or 'M' in the single Board view (ViewMode::Board) opens the MuxConfigDialog via the existing App::handle_open_mux_config_dialog path (MUX-004: idempotent, seeded from the live mux config). The key is always consumed (no fall-through).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:13.637Z"
+        },
+        {
+          "id": 2,
+          "text": "R4: the BoardView's top-of-screen keybinding hint chord (views/board/keybinding_shortcuts.rs, row 3 of the board header: 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search') appends the new binding, rendering as 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux'. The hint stays a single plain primary-fg span (no per-chord styling change).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:32.598Z"
+        },
+        {
+          "id": 3,
+          "text": "R3: when mux is active (ViewMode::Mux) and the focused pane is the Board pane, the same modifier-free 'm'/'M' opens the MuxConfigDialog (the dialog overlays the grid per MUX-001 R9; Board pane keyboard input routes through BoardView::handle_event via views/multiplex/keys.rs, so the single binding serves both surfaces).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:33.590Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In the single Board view (mux off), the user presses 'm'. The MuxConfigDialog opens (Priority::Foreground, overlaying the board) seeded from the live mux config — 'Enabled: Off', 'Orientation: Horizontal', 'Pane 1: Board', 'Pane 2: Agent' — exactly as /mux opens it from the AgentView. The board view is still visible underneath; mux is not yet active.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:57.350Z"
+        },
+        {
+          "id": 1,
+          "text": "In the single Board view, the user presses Ctrl+M. The MuxConfigDialog does NOT open — Ctrl-chorded m/M falls through the BoardView binding untouched (the modifier-free-only guard mirrors the existing a/c/f/d guards).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:58.186Z"
+        },
+        {
+          "id": 2,
+          "text": "With mux active (Board | Agent grid) and the Board pane focused, the user presses 'M'. The MuxConfigDialog opens over the whole grid (the dialog overlays the mux per MUX-001 R9) with the live enabled layout — 'Enabled: On' and the current pane rows. Pressing 's' saves + closes and the grid keeps the committed layout; pressing Esc cancels and the live grid is untouched.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:27:10.205Z"
+        },
+        {
+          "id": 3,
+          "text": "In the single Board view, the board header's top chord row reads 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux' — the new 'M Mux' chord is appended after the existing chords, same plain foreground styling.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:27:11.275Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New `Action::OpenMuxConfigDialog` variant (components/mod.rs Action enum, near the MuxConfigApplied variants) emitted by BoardView::handle_event on modifier-free 'm'/'M' (guard: no CONTROL modifier, mirroring the a/c/f/d guards). App::dispatch adds an arm (app/dispatch_mux_config.rs) that calls the existing handle_open_mux_config_dialog() — idempotent, seeds from navigator.mux.config(). BoardView::handle_event gains the binding in the same match as 'f'/'c' (RPC-356/RPC-364 pattern). views/board/keybinding_shortcuts.rs appends ' ◆ M Mux' to the literal chord string. No new state; MuxConfig serde shape unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:27:37.652Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 1,
+      "attachments": [
+        "spec/attachments/MUX-009/ast-research-mux009-board-m-key.md"
+      ]
     }
   }
 }

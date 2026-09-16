@@ -1754,6 +1754,10 @@
           "description": "Marks features/scenarios for state-mutating commands (writes to spec/*.json)"
         },
         {
+          "name": "@mux-009",
+          "description": "Work unit MUX-009 — Board 'M' key opens the Mux config dialog + top-of-screen Mux hint"
+        },
+        {
           "name": "@napi",
           "description": "NAPI-RS native module bindings for Node.js"
         },
@@ -3050,7 +3054,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-14T21:02:12.733Z",
+    "lastUpdated": "2026-09-15T09:29:57.833Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

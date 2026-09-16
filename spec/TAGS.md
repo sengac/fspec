@@ -463,6 +463,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multimodal` | Multimodal content handling (images, PDFs, etc.) |
 | `@multiple-bridges` | Multiple bridge connection scenarios |
 | `@mutation` | Marks features/scenarios for state-mutating commands (writes to spec/*.json) |
+| `@mux-009` | Work unit MUX-009 — Board 'M' key opens the Mux config dialog + top-of-screen Mux hint |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@no-logging` | Ensuring secrets are not logged |
@@ -782,4 +783,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-14T21:02:12.733Z_
+_Last updated: 2026-09-15T09:29:57.833Z_

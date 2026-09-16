@@ -20,6 +20,7 @@ impl App {
             Action::MuxEnterWorkUnit(_)
                 | Action::MuxConfigApplied(_)
                 | Action::MuxConfigAppliedAndSaved(_)
+                | Action::OpenMuxConfigDialog
         )
     }
 
@@ -57,6 +58,11 @@ impl App {
                     }
                 }
             }
+            // MUX-009: the Board 'm'/'M' keybinding (single Board view or
+            // the focused Board pane in mux mode) opens the MuxConfigDialog
+            // — the exact same entry point bare /mux uses (MUX-004 R2:
+            // idempotent, seeded from the live mux config).
+            Action::OpenMuxConfigDialog => self.handle_open_mux_config_dialog(),
             _ => {}
         }
     }

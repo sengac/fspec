@@ -42,6 +42,7 @@ pub mod footer;
 pub mod grid;
 pub mod header;
 pub mod keybinding_shortcuts;
+pub mod keys;
 pub mod logo;
 pub mod mouse;
 pub mod render;
@@ -229,47 +230,6 @@ impl BoardView {
                 self.emit(Action::ReorderDown);
                 return EventResult::consumed();
             }
-            // RPC-356: open the dual-pane Changed Files view.
-            KeyCode::Char('f') | KeyCode::Char('F') => {
-                self.emit(Action::OpenChangedFilesView);
-                return EventResult::consumed();
-            }
-            // RPC-364: open the three-pane Checkpoints view.
-            KeyCode::Char('c') | KeyCode::Char('C') => {
-                self.emit(Action::OpenCheckpointsView);
-                return EventResult::consumed();
-            }
-            // RPC-373: open FOUNDATION.md in the browser via the viewer server.
-            // Modifier-free only: `Ctrl+D` is reserved as the App-level
-            // hard-quit shortcut (RPC-102) and must fall through to Stage 4.
-            KeyCode::Char('d') | KeyCode::Char('D')
-                if !key.modifiers.contains(KeyModifiers::CONTROL) =>
-            {
-                self.emit(Action::OpenFoundation);
-                return EventResult::consumed();
-            }
-            // RPC-374: open the attachment picker for the selected work unit.
-            // Always consume the key; emit the picker action only when the
-            // selected unit has at least one attachment (silent no-op otherwise).
-            // Modifier-free only, so Ctrl-chorded keys fall through.
-            KeyCode::Char('a') | KeyCode::Char('A')
-                if !key.modifiers.contains(KeyModifiers::CONTROL) =>
-            {
-                if store
-                    .selected_work_unit()
-                    .is_some_and(|u| !u.attachments.is_empty())
-                {
-                    self.emit(Action::OpenAttachmentPicker);
-                }
-                return EventResult::consumed();
-            }
-            // RPC-395: '.' starts a new agent — mirror of the Shift+Right
-            // handler above. Modifier-free so Ctrl-chorded keys fall through.
-            KeyCode::Char('.') if !key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let target = self.selected_session(store);
-                self.emit(Action::OpenAgentView(target));
-                return EventResult::consumed();
-            }
             // BOARD-022: '/' opens the work-unit search dialog. Always
             // consumes the key; modifier-free so Ctrl-chorded keys (e.g.
             // the terminal's Ctrl+/ toggle) fall through.
@@ -277,13 +237,20 @@ impl BoardView {
                 self.emit(Action::OpenWorkUnitSearch);
                 return EventResult::consumed();
             }
-            _ => {}
+            // MUX-009/RPC-356/364/373/374/395: mode-view shortcut arms
+            // (f/c/m/d/a/.) live in `keys.rs` so this file stays under
+            // the 300 LoC ceiling (same split as `mouse.rs`).
+            _ => {
+                if let Some(result) = keys::handle_mode_view_key(self, key, store) {
+                    return result;
+                }
+            }
         }
 
         EventResult::ignored()
     }
 
-    fn selected_session(&self, store: &BoardStore) -> Option<SessionId> {
+    pub(super) fn selected_session(&self, store: &BoardStore) -> Option<SessionId> {
         let unit = store.selected_work_unit()?;
         store.session_for(&unit.id).cloned()
     }

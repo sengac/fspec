@@ -1317,6 +1317,12 @@ pub enum Action {
     /// shared `fspec-config.json` `tui.mux` key ('s' keybinding). Emitted
     /// by `MuxConfigDialog` on 's'.
     MuxConfigAppliedAndSaved(crate::views::multiplex::MuxConfig),
+    /// MUX-009: the Board view's modifier-free 'm'/'M' keybinding opens
+    /// the same MuxConfigDialog `/mux` opens (MUX-004) — the Board pane
+    /// inside the mux grid reuses the binding (R3). Emitted by
+    /// `BoardView::handle_event`; App::dispatch routes it to
+    /// `handle_open_mux_config_dialog` (idempotent, one instance).
+    OpenMuxConfigDialog,
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

@@ -5,11 +5,13 @@
 //! Card: RPC-015.
 //!
 //! Paints the literal chord line:
-//!   `C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search`
+//!   `C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux`
 //!
 //! The C / F / D keybindings are hint-only in this card; the `.` New
-//! Agent binding is wired in RPC-395 (opens AgentView) and the `/`
-//! Search binding in BOARD-022 (work-unit search dialog).
+//! Agent binding is wired in RPC-395 (opens AgentView), the `/` Search
+//! binding in BOARD-022 (work-unit search dialog), and the `M` Mux
+//! binding in MUX-009 (opens the MuxConfigDialog — the same dialog bare
+//! `/mux` opens from the AgentView).
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -30,7 +32,8 @@ pub fn render(area: Rect, buf: &mut Buffer, theme: &Theme) {
     // styled with the theme's primary fg.
     let style = Style::default().fg(theme.fg);
     let line = Line::from(Span::styled(
-        "C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search".to_string(),
+        "C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux"
+            .to_string(),
         style,
     ));
     Paragraph::new(line).render(
