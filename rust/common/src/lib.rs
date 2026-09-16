@@ -15,6 +15,7 @@ pub mod fspec_config;
 pub mod image_dimensions;
 pub mod logging;
 pub mod token_estimator;
+pub mod tool_usage;
 pub mod types;
 pub mod web_search;
 

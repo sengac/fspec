@@ -69,12 +69,11 @@ Feature: Unrecoverable API error leaves failed tool call in context — replays 
     When the strip removes a failed tool pair from the tail
     Then all system reminder messages remain at the front of the stack, unchanged
 
-  Scenario: Non-prompt-too-long terminal errors leave the stack untouched
-    Given a session message stack ends with a failed tool pair (Assistant(ToolCall) + User(ToolResult))
-    When the API fails with a transient network error (not prompt-too-long)
-    Then no message is removed from the session message stack
-    And the terminal behavior is unchanged: the error is emitted and the agent turn returns an error
-
+  # SUPERSEDED (BUG-185, 2026-09-16): non-prompt-too-long terminal errors
+  # strip the failed tool pair too — see
+  # spec/features/strip-failed-tool-call-tail-on-any-terminal-api-error.feature
+  # (original scenario: "Non-prompt-too-long terminal errors leave the stack
+  #  untouched"). Kept as documentation of the historical BUG-170 scope.
   Scenario: Stale cache-token state is invalidated after a successful strip
     Given the session token tracker carries cache_read_input_tokens and cache_creation_input_tokens from the last successful request
     When a successful strip removes the failed tool pair from the session message stack

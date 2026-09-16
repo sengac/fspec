@@ -27,7 +27,11 @@ pub(crate) const CHROME_ROWS: u16 = 3;
 /// `ScrollbarDrag` pre-compute this from the same body-rect geometry the
 /// shell splits into (title + separator on top, footer below) and cache
 /// it on render for mouse hit-testing. `None` when no scrollbar shows.
-pub(crate) fn mode_view_scrollbar_rect(area: Rect, visible_rows: usize, count: usize) -> Option<Rect> {
+pub(crate) fn mode_view_scrollbar_rect(
+    area: Rect,
+    visible_rows: usize,
+    count: usize,
+) -> Option<Rect> {
     if count <= visible_rows {
         return None;
     }

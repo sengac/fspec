@@ -185,4 +185,3 @@ fn views_do_not_directly_import_forbidden_crates() {
     }
     assert!(violations.is_empty(), "violations: {violations:?}");
 }
-

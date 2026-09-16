@@ -1254,6 +1254,26 @@
           "description": "Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag."
         },
         {
+          "name": "@bug-180",
+          "description": "Bug fix work unit BUG-180 — SessionHeader work-unit status stale: WorkUnitsLoaded push re-seeds BoardStore but never syncs AgentViewStore.work_unit_context_by_session / legacy fallback slots, leaving the per-session chip frozen at attach-time status"
+        },
+        {
+          "name": "@bug-181",
+          "description": "Bug fix work unit BUG-181 — Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI). Fix: CheckpointsWatcher push channel (codelet-core) + FspecBackend::checkpoint_counts_changed_rx + App subscriber folding onto Action::CheckpointCountsLoaded"
+        },
+        {
+          "name": "@bug-182",
+          "description": "Mux mode views don't work (frozen loading dialog, no loads, no git polling) — centralized git polling fix"
+        },
+        {
+          "name": "@bug-183",
+          "description": "Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view)"
+        },
+        {
+          "name": "@bug-184",
+          "description": "Bug fix work unit BUG-184 — mux Files/Checkpoints 10s refresh: no-op ticks dropped before re-fetch (list signature), scroll position + selection preserved on change-bearing refreshes, cascade same-key reloads keep dependent pane scroll"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -1732,6 +1752,10 @@
         {
           "name": "@mutation",
           "description": "Marks features/scenarios for state-mutating commands (writes to spec/*.json)"
+        },
+        {
+          "name": "@mux-009",
+          "description": "Work unit MUX-009 — Board 'M' key opens the Mux config dialog + top-of-screen Mux hint"
         },
         {
           "name": "@napi",
@@ -2338,6 +2362,14 @@
           "description": "Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid)"
         },
         {
+          "name": "@bug-179",
+          "description": "Bug fix work unit BUG-179 — mux keyboard-isolation gate swallows Event::Paste: bracketed paste and terminal file-drop-as-paste do nothing in the focused agent pane. Fix routes Event::Paste to the focused mux pane (forward_mux_event_to_focused_pane) and mirrors the post-Navigator sync_mux_focus_to_session in App::handle_paste"
+        },
+        {
+          "name": "@bug-185",
+          "description": "Work unit BUG-185 — the failed tool-call tail must be stripped on ANY terminal API error (supersedes BUG-170 rule [0] which gated the strip on prompt-too-long only)"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2536,6 +2568,14 @@
         {
           "name": "@tool-022",
           "description": "Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt)"
+        },
+        {
+          "name": "@tool-023",
+          "description": "Work unit identifier for TOOL-023 — tool-call arg errors include recovery guidance (did-you-mean for unknown fspec commands, usage hints on InvalidArgs, dedicated string-vs-object args errors in provider facades)"
+        },
+        {
+          "name": "@tool-024",
+          "description": "Work unit identifier for TOOL-024 — post-deserialization arg errors include recovery guidance (TOOL-023 follow-up): empty/missing-value validation failures in direct tools get the full usage block; tool_usage union-schema rendering fixes; registered-name casing"
         },
         {
           "name": "@wip",
@@ -3026,7 +3066,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-10T08:46:11.547Z",
+    "lastUpdated": "2026-09-16T07:47:06.909Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

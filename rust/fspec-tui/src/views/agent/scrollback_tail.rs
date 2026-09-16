@@ -26,4 +26,3 @@ impl ScrollbackList {
         self.scroll_state.offset = self.max_offset_for_viewport();
     }
 }
-

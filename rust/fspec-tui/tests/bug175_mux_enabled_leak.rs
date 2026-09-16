@@ -86,8 +86,7 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let tmp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
 }
 
@@ -130,8 +129,7 @@ async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layou
         "the persisted enabled=true must NOT leak into the live layout (BUG-175)"
     );
     assert!(
-        app.mux_state().config().enabled
-            == app.navigator().mux.config().enabled,
+        app.mux_state().config().enabled == app.navigator().mux.config().enabled,
         "the persistence mirror and the live layout must agree on the enabled flag"
     );
     // The saved LAYOUT is a preference — it must survive the force-off.
@@ -177,7 +175,8 @@ async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layou
 
 /// Scenario: back-to-board lands on the single Board view when the persisted mux flag is on but the grid is not active
 #[tokio::test]
-async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_grid_is_not_active() {
+async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_grid_is_not_active()
+{
     // @step Given the TUI is on the single Agent view with one agent session open
     let (mut app, mock) = fresh_app();
     app_with_sessions(&mut app, 1).await;
@@ -208,7 +207,11 @@ async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_
     let _ = app.handle_event(&right()); // Detach -> Close Session
     let _ = app.handle_event(&enter());
     drain_pending(&mut app).await;
-    assert_eq!(mock.destroy_session_calls(), 1, "the session must be destroyed");
+    assert_eq!(
+        mock.destroy_session_calls(),
+        1,
+        "the session must be destroyed"
+    );
     assert!(
         app.agent_view_store().open_sessions().is_empty(),
         "the closed session must be gone from the open-session list"

@@ -57,8 +57,8 @@ pub use components::work_unit_search_dialog::{WorkUnitSearchDialog, WORK_UNIT_SE
 pub use components::{Action, Callback, Component, EventResult, Priority};
 pub use compositor::Compositor;
 pub use store::agent_view::extract_tool_args_display;
-pub use store::agent_view::sanitize::sanitize_for_terminal;
 pub use store::{AgentViewStore, BoardStore, IsolationState, SessionContext, COLUMN_ORDER};
+pub use terminal::sanitize::sanitize_for_terminal;
 pub use terminal::TerminalGuard;
 pub use theme::Theme;
 pub use transport::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};

@@ -218,6 +218,10 @@ impl MultiplexLayout {
     fn recompute_effective_panes(&mut self) {
         let available = self.sessions.len();
         let mut agent_seen = 0usize;
+        // BUG-183: user-closed panes (Esc on a lazy pane) are filtered
+        // out of the LIVE rendered list — the saved `config.panes` is
+        // untouched, so `/mux off` → `/mux on` restores them (the
+        // transient rule; `closed_panes` clears on every (re)layout).
         self.rendered_panes = self
             .config
             .panes
@@ -227,6 +231,8 @@ impl MultiplexLayout {
                     let keep = agent_seen < available;
                     agent_seen += 1;
                     keep
+                } else if matches!(**k, MuxPaneKind::ChangedFiles | MuxPaneKind::Checkpoints) {
+                    !self.closed_panes.contains(k)
                 } else {
                     true
                 }

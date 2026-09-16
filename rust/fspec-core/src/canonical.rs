@@ -839,6 +839,79 @@ pub fn lookup(name: &str) -> Option<&'static CanonicalCommand> {
     CANONICAL_COMMANDS.iter().find(|c| c.name == name)
 }
 
+/// TOOL-023: fuzzy "did you mean" matching over the canonical command names
+/// plus the Rust-only `foundation-status` extension (DISC-003).
+///
+/// Scoring: an exact match always wins. Otherwise candidates are ranked by
+/// Levenshtein edit distance (capped at 3) on the hyphen-stripped names;
+/// lower distance wins, ties break by shorter name, then lexicographically.
+/// Returns `None` when no candidate is within distance 3 or when the input
+/// is empty/oversized (> 120 chars).
+pub fn suggest_command(input: &str) -> Option<&'static str> {
+    if input.is_empty() || input.len() > 120 {
+        return None;
+    }
+    let input_stripped: String = input.chars().filter(|c| *c != '-').collect();
+    if input_stripped.is_empty() {
+        return None;
+    }
+    // (distance, stripped-length, name) — closest match wins; ties break by
+    // shorter name, then lexicographically.
+    let mut best: Option<(usize, usize, &'static str)> = None;
+    for name in command_name_source() {
+        if name == input {
+            return Some(name);
+        }
+        let candidate_stripped: String = name.chars().filter(|c| *c != '-').collect();
+        let Some(distance) =
+            levenshtein_capped(input_stripped.as_bytes(), candidate_stripped.as_bytes(), 3)
+        else {
+            continue;
+        };
+        let rank = (distance, candidate_stripped.len(), name);
+        match best {
+            Some(b) if b <= rank => {}
+            _ => best = Some(rank),
+        }
+    }
+    best.map(|(_, _, name)| name)
+}
+
+/// Levenshtein edit distance capped at `max`: returns `None` as soon as the
+/// row minimum proves the distance exceeds `max`, so the common
+/// far-apart case stays cheap (O(n·m) worst case only near the cap).
+fn levenshtein_capped(a: &[u8], b: &[u8], max: usize) -> Option<usize> {
+    if a.len().abs_diff(b.len()) > max {
+        return None;
+    }
+    let mut prev: Vec<usize> = (0..=b.len()).collect();
+    let mut cur = vec![0usize; b.len() + 1];
+    for (i, &ca) in a.iter().enumerate() {
+        cur[0] = i + 1;
+        let mut row_min = cur[0];
+        for j in 0..b.len() {
+            let cost = usize::from(ca != b[j]);
+            let v = (prev[j + 1] + 1).min(cur[j] + 1).min(prev[j] + cost);
+            cur[j + 1] = v;
+            row_min = row_min.min(v);
+        }
+        if row_min > max {
+            return None;
+        }
+        std::mem::swap(&mut prev, &mut cur);
+    }
+    Some(prev[b.len()])
+}
+
+/// Every command name a typo suggestion may reference: the 162 canonical
+/// commands + the DISC-003 Rust-only extension `foundation-status`.
+fn command_name_source() -> impl Iterator<Item = &'static str> {
+    CANONICAL_COMMANDS
+        .iter()
+        .map(|c| c.name)
+        .chain(std::iter::once("foundation-status"))
+}
+
 /// Commands that have a real Rust implementation. This set grows
 /// monotonically as RPC-XXX child cards land. Tests that assert phase-1 stub
 /// invariants (e.g. `every_canonical_command_has_a_module_or_is_stubbed`)

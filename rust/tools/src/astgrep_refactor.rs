@@ -1137,18 +1137,45 @@ impl rig::tool::Tool for AstGrepRefactorTool {
             .execute(serde_json::Value::Object(value_map))
             .await
             .map_err(|e| ToolError::Execution {
-                tool: "astgrep_refactor",
+                tool: "AstGrepRefactor",
                 message: e.to_string(),
             })?;
 
+        // TOOL-024: argument-validation failures from execute() (empty or
+        // missing pattern/language/source_file, conflicting modes) get the
+        // full recovery surface; execution failures (no matches, transform
+        // errors, file I/O) pass through unchanged.
         if result.is_error {
-            Err(ToolError::Execution {
-                tool: "astgrep_refactor",
+            if Self::is_arg_validation_error(&result.content) {
+                let schema = self.definition(String::new()).await.parameters;
+                return Err(ToolError::Validation {
+                    tool: "AstGrepRefactor",
+                    message: codelet_common::tool_usage::append_usage_to_message(
+                        "AstGrepRefactor",
+                        &schema,
+                        &result.content,
+                    ),
+                });
+            }
+            return Err(ToolError::Execution {
+                tool: "AstGrepRefactor",
                 message: result.content,
-            })
-        } else {
-            Ok(result.content)
+            });
         }
+        Ok(result.content)
+    }
+}
+
+impl AstGrepRefactorTool {
+    /// TOOL-024: classify a `ToolOutput` error message raised by
+    /// `execute()` — messages about missing/conflicting required
+    /// parameters are argument validation; everything else is an
+    /// execution failure.
+    fn is_arg_validation_error(content: &str) -> bool {
+        content.contains("parameter is required")
+            || content.contains("must be provided")
+            || content.contains("Cannot specify both")
+            || content.contains("not supported in extract mode")
     }
 }
 

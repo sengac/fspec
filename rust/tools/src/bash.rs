@@ -93,6 +93,22 @@ impl BashTool {
         resolved
     }
 
+    /// TOOL-024: an empty `command` is an argument-validation failure — the
+    /// LLM's recovery surface must keep the original message, name the tool
+    /// by its registered name, list the accepted parameters, and show a
+    /// canonical example call.
+    async fn empty_command_error(&self) -> ToolError {
+        let schema = self.definition(String::new()).await.parameters;
+        ToolError::Validation {
+            tool: Self::NAME,
+            message: codelet_common::tool_usage::append_usage_to_message(
+                Self::NAME,
+                &schema,
+                "command parameter is required",
+            ),
+        }
+    }
+
     /// Execute command with streaming output to UI.
     ///
     /// Streams output line-by-line via callback while buffering complete output for LLM.
@@ -110,10 +126,7 @@ impl BashTool {
         stream_callback: Option<StreamCallback>,
     ) -> Result<String, ToolError> {
         if args.command.is_empty() {
-            return Err(ToolError::Validation {
-                tool: "bash",
-                message: "command parameter is required".to_string(),
-            });
+            return Err(self.empty_command_error().await);
         }
 
         // If no streaming callback, use the non-streaming path
@@ -181,10 +194,7 @@ impl rig::tool::Tool for BashTool {
         }
 
         if args.command.is_empty() {
-            return Err(ToolError::Validation {
-                tool: "bash",
-                message: "command parameter is required".to_string(),
-            });
+            return Err(self.empty_command_error().await);
         }
 
         // Check command against blocklist before execution

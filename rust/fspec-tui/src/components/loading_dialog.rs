@@ -27,6 +27,7 @@ use ratatui::text::Span;
 
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 use super::spinner::current_frame_glyph;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Stateless modal value owned by one lazy mode-view while a cascade
 /// load is in flight. Present ⇒ painting over the panes via
@@ -45,10 +46,15 @@ pub struct LoadingDialog {
 
 impl LoadingDialog {
     /// Construct a dialog in the list/scan stage.
+    ///
+    /// **TUI-111**: `title` and `label` are sanitized at ingress so the
+    /// dialog never paints ANSI sequences or control characters.
     pub fn new(title: impl Into<String>, label: impl Into<String>) -> Self {
+        let title = title.into();
+        let label = label.into();
         Self {
-            title: title.into(),
-            label: label.into(),
+            title: sanitize_for_terminal(&title),
+            label: sanitize_for_terminal(&label),
             progress: None,
         }
     }

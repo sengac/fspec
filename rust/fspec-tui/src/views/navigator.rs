@@ -108,10 +108,24 @@ impl Navigator {
     /// (`app/state.rs`); the run loop feeds this into the 4th
     /// `tick_should_draw` operand to keep the loading dialog's
     /// braille spinner animated.
+    ///
+    /// BUG-182 R5: mux-aware — in `ViewMode::Mux` the gate also stays
+    /// open for any RENDERED mux pane of kind ChangedFiles / Checkpoints
+    /// whose LoadTracker has a stage in flight (including the initial
+    /// load). Without this the 16ms tick stops drawing when nothing else
+    /// demands a frame and the loading dialog's braille spinner freezes
+    /// in mux mode.
     pub fn is_view_loading(&self) -> bool {
         match self.active_view {
             ViewMode::Checkpoints => self.checkpoints.is_loading(),
             ViewMode::ChangedFiles => self.changed_files.is_loading(),
+            ViewMode::Mux => {
+                let panes = self.mux.effective_panes();
+                (panes.contains(&crate::views::multiplex::MuxPaneKind::ChangedFiles)
+                    && self.changed_files.is_loading())
+                    || (panes.contains(&crate::views::multiplex::MuxPaneKind::Checkpoints)
+                        && self.checkpoints.is_loading())
+            }
             _ => false,
         }
     }
@@ -156,27 +170,13 @@ impl Navigator {
             Action::OpenAgentView(None) => {}
             Action::BackToBoard => {
                 // MUX-001: retain the mux grid when it is active —
-                // "back to board" focuses the board pane within the
+                // "back to board" focuses the board pane WITHIN the
                 // grid instead of flipping the whole view out of Mux.
                 // BUG-175: gate on the LIVE view, not the persisted
                 // `mux.config().enabled` flag (the App dispatch arm
                 // applies the same rule first; this arm re-runs per
-                // action, so it needs the identical guard). The flag
-                // is a saved layout preference that survives restarts;
-                // acting on it while the grid is not entered used to
-                // strand BackToBoard as a no-op (session close from
-                // single-view mode landed on a blank Agent).
-                if self.active_view == ViewMode::Mux {
-                    let board_idx = self
-                        .mux
-                        .effective_panes()
-                        .iter()
-                        .position(|k| *k == crate::views::multiplex::MuxPaneKind::Board)
-                        .unwrap_or(0);
-                    self.mux.set_focus(board_idx);
-                } else {
-                    self.active_view = ViewMode::Board;
-                }
+                // action, so it needs the identical guard).
+                self.apply_back_to_board();
             }
             Action::OpenProviderSettingsView => {
                 self.active_view = ViewMode::ProviderSettings;
@@ -209,6 +209,20 @@ impl Navigator {
             Action::OpenCheckpointsView => self.active_view = ViewMode::Checkpoints,
             Action::CloseCheckpointsView if self.active_view == ViewMode::Checkpoints => {
                 self.active_view = ViewMode::Board;
+            }
+            // BUG-183: mux pane-close — the focused Files / Checkpoints
+            // pane was dismissed with Esc (the close fires ONLY in
+            // `ViewMode::Mux`; R4: the single-view arms above keep
+            // their precedence). Body lives in `navigator_mux_events.rs`
+            // so this file stays under the 300-LoC ceiling: remove the
+            // pane kind from the LIVE rendered list only (the saved
+            // `tui.mux` config is untouched — `/mux off` then `/mux on`
+            // restores the full layout) and exit to the pre-mux view
+            // when the close leaves NO rendered panes.
+            Action::CloseChangedFilesView | Action::CloseCheckpointsView
+                if self.active_view == ViewMode::Mux =>
+            {
+                self.apply_mux_pane_close(action);
             }
             // MUX-001: R8 — Enter on a board work unit in mux mode
             // focuses the agent pane WITHOUT flipping the whole view

@@ -1,0 +1,249 @@
+{
+  "scenarios": [
+    {
+      "name": "Unknown fspec command error suggests the closest canonical command",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "26-64",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/dispatch.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown fspec command with no close match gets no suggestion line",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "67-89",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/dispatch.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown fspec command suggests the Rust-only foundation-status extension",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "92-109",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/canonical.rs",
+              "lines": [
+                908,
+                909,
+                910,
+                911,
+                912,
+                913
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "suggest_command returns the closest name for small typos",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "112-131",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/canonical.rs",
+              "lines": [
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "suggest_command ignores empty or oversized input",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "134-144",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/canonical.rs",
+              "lines": [
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed inner args on a ported command include a usage hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "147-181",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/dispatch.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing required inner field on a ported command includes a usage hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+          "lines": "184-212",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/dispatch.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
+      "rust/tools/tests/tool023_universal_arg_errors.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/dispatch.rs",
+      "rust/fspec-core/src/canonical.rs",
+      "rust/patches/rig-core/src/tool/mod.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/common/src/tool_usage.rs"
+    ],
+    "totalLinesCovered": 589
+  }
+}

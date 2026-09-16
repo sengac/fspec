@@ -18,6 +18,7 @@
 //! Forbidden imports (per source-shape regression): this widget does
 //! NOT depend on the legacy floating-popup machinery.
 
+use crate::terminal::sanitize::sanitize_for_terminal;
 use codelet_rpc_types::HistoryMatch;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
@@ -113,9 +114,15 @@ impl SearchHistoryView {
 
     /// Replace the match list. Selection is clamped; scroll is reset
     /// to keep the top row visible after refresh.
+    ///
+    /// **TUI-111**: match text is sanitized on ingress.
     pub fn set_matches(&mut self, matches: Vec<HistoryMatch>) {
         // TUI-103: reset scrollbar drag state when content changes
         self.scrollbar_drag.reset();
+        let mut matches = matches;
+        for match_ in matches.iter_mut() {
+            match_.text = sanitize_for_terminal(&match_.text);
+        }
         self.matches = matches;
         if self.matches.is_empty() {
             self.selected_index = 0;

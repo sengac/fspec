@@ -5,7 +5,7 @@
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-    use crate::store::agent_view::sanitize::sanitize_for_terminal;
+    use crate::terminal::sanitize::sanitize_for_terminal;
 
     // Feature: spec/features/sanitize-bash-tool-output-before-tui-rendering-to-prevent-terminal-trashing.feature
 
@@ -235,5 +235,4 @@ mod tests {
         // @step And newline characters are preserved so multi-line output renders correctly
         then_newlines_preserved(&output);
     }
-
 }

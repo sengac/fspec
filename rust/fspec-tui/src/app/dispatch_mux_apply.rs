@@ -96,6 +96,10 @@ impl App {
             self.navigator.active_view = crate::views::ViewMode::Mux;
             self.mux_sync_window();
             self.navigator.mux.recompute_rects();
+            // BUG-182 R7: entering mux mode triggers an initial load for
+            // every rendered lazy pane that has not loaded yet (panes
+            // load IN PLACE — no whole-view flip).
+            self.mux_load_lazy_panes();
         }
     }
 
@@ -126,6 +130,8 @@ impl App {
             self.navigator.active_view = crate::views::ViewMode::Mux;
             self.mux_sync_window();
             self.navigator.mux.recompute_rects();
+            // BUG-182 R7: OFF → ON entry loads un-loaded lazy panes.
+            self.mux_load_lazy_panes();
         } else if was_enabled {
             // Exit mux mode (R7): the draft layout is recorded on the
             // stored config first so the next dialog open (and the R6
@@ -141,6 +147,10 @@ impl App {
             // Mux stayed OFF: only refresh the stored layout (the live
             // grid was untouched while the dialog was open — R5).
             self.navigator.mux.config_mut().clone_from(&config);
+            // BUG-183: a committed layout replaces the saved pane list —
+            // the live-only closed-pane set applies to the OLD layout
+            // and must not filter the new one.
+            self.navigator.mux.clear_closed_panes();
         }
     }
 
@@ -154,11 +164,52 @@ impl App {
         self.navigator.mux.config_mut().enabled = true;
         self.navigator.mux.set_focus(0);
         self.navigator.active_view = crate::views::ViewMode::Mux;
+        // BUG-183: `/mux on` re-enters the grid from the SAVED layout —
+        // clear the live-only `closed_panes` set (the panes the user
+        // Esc-closed come back — the transient rule) and re-derive the
+        // live rendered pane list + rects so `pane_rects()` is valid
+        // before the first render (same tail as the `/mux` subcommand
+        // apply).
+        self.navigator.mux.clear_closed_panes();
+        self.mux_sync_window();
+        self.navigator.mux.recompute_rects();
+        // BUG-182 R7: re-entering mux loads any un-loaded lazy pane.
+        self.mux_load_lazy_panes();
     }
 
     /// `/mux off` — disable, return to the pre-mux view (R1).
     fn handle_mux_off(&mut self) {
         let view = self.navigator.mux.disable();
         self.navigator.active_view = view;
+    }
+
+    /// BUG-182 R7: on mux entry, trigger the initial load for every
+    /// rendered lazy pane that has not loaded yet — the ChangedFiles
+    /// pane runs the existing open flow (reset view + spawn
+    /// changed_files) and the Checkpoints pane its (reset view + spawn
+    /// list_checkpoints + re-poll counts) WITHOUT flipping the whole
+    /// view (R8 semantics: panes load in place). Already-loaded views
+    /// are not reset (no gratuitous reload on /mux on/off cycling; a
+    /// single-view open already in flight is not double-started).
+    fn mux_load_lazy_panes(&mut self) {
+        let panes = self.navigator.mux.effective_panes().to_vec();
+        let changed_rendered = panes.contains(&crate::views::multiplex::MuxPaneKind::ChangedFiles);
+        let checkpoints_rendered =
+            panes.contains(&crate::views::multiplex::MuxPaneKind::Checkpoints);
+        if changed_rendered {
+            let single_view = self.navigator.active_view == crate::views::ViewMode::ChangedFiles;
+            if !single_view && !self.navigator.changed_files.load.is_loaded() {
+                // The owned view may still be mid-initial-load from a
+                // prior single-view open — the open flow resets the view
+                // and spawns, exactly like the `F` key.
+                self.handle_open_changed_files_view();
+            }
+        }
+        if checkpoints_rendered {
+            let single_view = self.navigator.active_view == crate::views::ViewMode::Checkpoints;
+            if !single_view && !self.navigator.checkpoints.load.is_loaded() {
+                self.handle_open_checkpoints_view();
+            }
+        }
     }
 }

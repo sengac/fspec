@@ -484,17 +484,40 @@ impl rig::tool::Tool for AstGrepTool {
             .execute(serde_json::Value::Object(value_map))
             .await
             .map_err(|e| ToolError::Execution {
-                tool: "astgrep",
+                tool: "AstGrep",
                 message: e.to_string(),
             })?;
 
+        // TOOL-024: argument-validation failures from execute() (empty or
+        // missing pattern/language) get the full recovery surface;
+        // execution failures (invalid AST pattern, unsupported language,
+        // multi-line pattern, …) pass through unchanged.
         if result.is_error {
-            Err(ToolError::Execution {
-                tool: "astgrep",
+            if Self::is_arg_validation_error(&result.content) {
+                let schema = self.definition(String::new()).await.parameters;
+                return Err(ToolError::Validation {
+                    tool: "AstGrep",
+                    message: codelet_common::tool_usage::append_usage_to_message(
+                        "AstGrep",
+                        &schema,
+                        &result.content,
+                    ),
+                });
+            }
+            return Err(ToolError::Execution {
+                tool: "AstGrep",
                 message: result.content,
-            })
-        } else {
-            Ok(result.content)
+            });
         }
+        Ok(result.content)
+    }
+}
+
+impl AstGrepTool {
+    /// TOOL-024: classify a `ToolOutput` error message raised by
+    /// `execute()` — "parameter is required" is argument validation,
+    /// everything else is an execution failure.
+    fn is_arg_validation_error(content: &str) -> bool {
+        content.contains("parameter is required")
     }
 }

@@ -10,12 +10,18 @@
 //! being loaded (the "progress" for many-checkpoint repos — TUI-109
 //! later feeds the per-item `(idx/total)` counter).
 //!
-//! Stale-drop invariance: `complete_stage(key)` is a no-op (returns
+//! stale-drop invariance: `complete_stage(key)` is a no-op (returns
 //! `false`) when `key` does not match the currently-in-flight stage, so
 //! a late result for a de-selected item can never clear the current
 //! stage's loading. This mirrors the two views' existing matching-key
 //! stale-drop in `set_files` / `set_diff` (RPC-364 / RPC-356), which stay
 //! untouched.
+//!
+//! **TUI-111**: stage labels (which embed file paths / checkpoint
+//! names) are sanitized at ingress in `new` / `begin_stage` — the
+//! loading dialog's spinner line always paints clean text.
+
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// One in-flight cascade stage (an identity key for stale-drop + the
 /// spinner line label displayed by the loading dialog).
@@ -34,6 +40,11 @@ pub struct LoadTracker {
     /// Set to true once the list stage flushed (the load may be empty —
     /// a failed load degrades to the real empty state, current behavior).
     list_loaded: bool,
+    /// BUG-184: identity of the list the view currently displays — set
+    /// by the App dispatchers when the view replaces its list (initial
+    /// load OR a git-state refresh). Lets the refresh path skip
+    /// no-op re-fetches of unchanged lists (see `git_state.rs` R1).
+    list_signature: String,
     /// The in-flight cascade stage after the list, if any.
     stage: Option<Stage>,
 }
@@ -42,10 +53,24 @@ impl LoadTracker {
     /// Construct a tracker with the list/scan stage in flight.
     pub fn new(list_label: impl Into<String>) -> Self {
         Self {
-            list_label: list_label.into(),
+            list_label: sanitize_for_terminal(&list_label.into()),
             list_loaded: false,
+            list_signature: String::new(),
             stage: None,
         }
+    }
+
+    /// BUG-184: record the identity of the list the view now displays.
+    /// Called by the App dispatchers whenever the view replaces its list
+    /// (initial load, git-state refresh, or a reset by a re-open).
+    pub fn set_list_signature(&mut self, signature: &str) {
+        self.list_signature = signature.to_string();
+    }
+
+    /// BUG-184: identity of the list the view currently displays
+    /// (`""` before the first list has flushed).
+    pub fn list_signature(&self) -> &str {
+        &self.list_signature
     }
 
     /// True while a lazy load is in flight (list not yet flushed OR a
@@ -73,11 +98,11 @@ impl LoadTracker {
 
     /// A cascade stage load was requested. `key` is the stale-drop
     /// identity (see `files_stage_key` / `diff_stage_key`); `label` is
-    /// the view-owned spinner-line text (views sanitize before passing).
+    /// the view-owned spinner-line text, sanitized at ingress (TUI-111).
     pub fn begin_stage(&mut self, key: &str, label: impl Into<String>) {
         self.stage = Some(Stage {
             key: key.to_string(),
-            label: label.into(),
+            label: sanitize_for_terminal(&label.into()),
         });
     }
 
@@ -144,6 +169,20 @@ mod tests {
             t.active_label().as_deref(),
             Some("Loading checkpoint list…")
         );
+    }
+
+    #[test]
+    fn list_signature_starts_empty_and_records_the_displayed_list() {
+        let mut t = LoadTracker::new("Loading changed files…");
+        assert_eq!(t.list_signature(), "");
+        t.set_list_signature("sig-a");
+        assert_eq!(t.list_signature(), "sig-a");
+        t.set_list_signature("sig-b");
+        assert_eq!(t.list_signature(), "sig-b");
+        // The signature is independent of the stage bookkeeping.
+        t.mark_list_flushed();
+        t.begin_stage(&LoadTracker::diff_stage_key_path("a.txt"), "…");
+        assert_eq!(t.list_signature(), "sig-b");
     }
 
     #[test]

@@ -131,7 +131,8 @@ fn bug170_failed_tool_pair_at_tail_is_stripped() {
         "both halves of the failed pair must be removed, got {messages:?}"
     );
     assert_eq!(
-        messages[0], user_text_message("Read the build log"),
+        messages[0],
+        user_text_message("Read the build log"),
         "only the original user prompt may remain"
     );
 
@@ -174,15 +175,18 @@ fn bug170_text_plus_tool_call_keeps_text_after_strip() {
     // @step And the ToolCall item is removed from the Assistant message
     // @step And the User(ToolResult) message is popped
     // @step And no new message is created
-    assert_eq!(messages.len(), 2, "only the ToolResult message may be popped");
+    assert_eq!(
+        messages.len(),
+        2,
+        "only the ToolResult message may be popped"
+    );
     match &messages[1] {
         Message::Assistant { content, .. } => {
             let items: Vec<_> = content.iter().collect();
             assert_eq!(items.len(), 1, "Text item must survive, ToolCall removed");
             match &items[0] {
                 AssistantContent::Text(t) => assert_eq!(
-                    t.text,
-                    "Let me check the disk usage",
+                    t.text, "Let me check the disk usage",
                     "the narration text must be preserved verbatim"
                 ),
                 other => panic!("expected surviving Text item, got {other:?}"),
@@ -191,7 +195,10 @@ fn bug170_text_plus_tool_call_keeps_text_after_strip() {
         other => panic!("expected Assistant message at tail, got {other:?}"),
     }
     assert!(!has_tool_call(&messages), "the ToolCall item must be gone");
-    assert!(!has_tool_result(&messages), "the ToolResult message must be popped");
+    assert!(
+        !has_tool_result(&messages),
+        "the ToolResult message must be popped"
+    );
     assert!(validate_no_orphan_tool_calls(&messages).is_ok());
     assert_eq!(result, codelet_cli::interactive::StrippedTail::ToolPair);
 }
@@ -214,7 +221,11 @@ fn bug170_tool_call_only_assistant_tail_is_popped() {
     let result = strip_failed_tool_call_tail(&mut messages);
 
     // @step Then the Assistant message is popped from the stack
-    assert_eq!(messages.len(), 1, "the tool-call-only assistant message must be popped");
+    assert_eq!(
+        messages.len(),
+        1,
+        "the tool-call-only assistant message must be popped"
+    );
     assert_eq!(messages[0], user_text_message("Do the thing"));
 
     // @step And the remaining stack passes the no-orphan-tool-calls validation
@@ -248,7 +259,11 @@ fn bug170_trailing_plain_user_prompt_is_popped() {
 
     // @step Then the trailing User prompt is popped
     // @step And no system reminder message is ever removed
-    assert_eq!(messages.len(), 4, "only the trailing plain User prompt may be popped");
+    assert_eq!(
+        messages.len(),
+        4,
+        "only the trailing plain User prompt may be popped"
+    );
     match &messages[3] {
         Message::Assistant { content, .. } => match content.first() {
             AssistantContent::Text(t) => assert_eq!(t.text, "Here is the answer"),
@@ -355,42 +370,30 @@ fn bug170_stale_cache_token_state_is_invalidated_after_strip() {
     assert_eq!(session.messages.len(), 1, "history must be trimmed");
 }
 
-// =============================================================================
-// Scenario: Non-prompt-too-long terminal errors leave the stack untouched
-// (classifier gate — the strip helper is only invoked for prompt-too-long errors)
-// =============================================================================
+// NOTE (BUG-185, 2026-09-16): the former scenario "Non-prompt-too-long
+// terminal errors leave the stack untouched" is SUPERSEDED — the terminal arm
+// now strips the failed tool-call tail for ANY terminal API error, not only
+// prompt-too-long. The superseding scenarios live in
+// tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs and
+// spec/features/strip-failed-tool-call-tail-on-any-terminal-api-error.feature.
+//
+// The classifier itself is still exercised below (it gates the EARLIER
+// compaction-recovery cascade in stream_loop.rs, which is unchanged).
 
 #[test]
-fn bug170_non_prompt_too_long_errors_are_gated_out() {
+fn bug170_prompt_too_long_classifier_positive() {
     use codelet_cli::interactive::is_prompt_too_long_error;
 
-    // @step Given a session message stack ends with a failed tool pair (Assistant(ToolCall) + User(ToolResult))
-    // @step When the API fails with a transient network error (not prompt-too-long)
-    assert!(!is_prompt_too_long_error("Network timeout after 30s"), "gate: network error");
-    assert!(!is_prompt_too_long_error("Rate limit exceeded (429)"), "gate: rate limit");
-    assert!(!is_prompt_too_long_error("Authentication failed (401)"), "gate: auth error");
-
-    // @step Then no message is removed from the session message stack
-    // (The terminal arm only calls strip_failed_tool_call_tail when
-    // is_prompt_too_long_error is true — verified by the source-shape test below.)
-    let messages = [
-        assistant_tool_call_message(make_tool_call("toolu_07", Some("call_7"), "bash")),
-        user_tool_result_message("toolu_07", Some("call_7"), "output"),
-    ];
-    assert_eq!(messages.len(), 2, "no gate, no strip");
-
-    // @step And the terminal behavior is unchanged: the error is emitted and the agent turn returns an error
-}
-
-#[test]
-fn bug170_prompt_too_long_gate_positive() {
-    use codelet_cli::interactive::is_prompt_too_long_error;
-
-    assert!(is_prompt_too_long_error("prompt is too long: 190000 tokens > 180000 limit"));
+    assert!(is_prompt_too_long_error(
+        "prompt is too long: 190000 tokens > 180000 limit"
+    ));
     assert!(is_prompt_too_long_error(
         r#"{"message":"context_length_exceeded"}"#
     ));
     assert!(is_prompt_too_long_error("maximum context length exceeded"));
+    assert!(!is_prompt_too_long_error("Network timeout after 30s"));
+    assert!(!is_prompt_too_long_error("Rate limit exceeded (429)"));
+    assert!(!is_prompt_too_long_error("Authentication failed (401)"));
 }
 
 // =============================================================================
@@ -402,9 +405,10 @@ fn bug170_prompt_too_long_gate_positive() {
 #[test]
 fn bug170_terminal_arm_wires_strip_before_returning_err() {
     // @step Given the strip removes a failed tool pair from the session message stack
-    let source = std::fs::read_to_string(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/src/interactive/stream_loop.rs"),
-    );
+    let source = std::fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/interactive/stream_loop.rs"
+    ));
     let source = match source {
         Ok(s) => s,
         Err(e) => panic!("failed to read stream_loop.rs: {e}"),
@@ -422,10 +426,25 @@ fn bug170_terminal_arm_wires_strip_before_returning_err() {
             || source.contains("invalidate_stale_cache_tokens"),
         "terminal arm must invalidate stale cache-token state after a successful strip"
     );
-    // ...and the strip must only run for prompt-too-long errors (BUG-170 rule 1).
+    // BUG-185 (supersedes BUG-170 rule [0]): the terminal-arm strip is NOT
+    // gated on the prompt-too-long classifier — it runs for ANY terminal API
+    // error. (is_prompt_too_long_error still gates the EARLIER
+    // compaction-recovery cascade earlier in the same function; that usage
+    // must remain.)
     assert!(
         source.contains("is_prompt_too_long"),
-        "strip must be gated on the prompt-too-long classifier"
+        "the prompt-too-long classifier must still gate the compaction-recovery cascade"
+    );
+    let terminal_arm_pos = source
+        .find("NAPI-008: Log error with full details")
+        .expect("final terminal error arm present");
+    let strip_pos = source
+        .find("strip_failed_tool_call_tail")
+        .expect("strip wiring present");
+    let terminal_region = &source[terminal_arm_pos..strip_pos + 200];
+    assert!(
+        !terminal_region.contains("if is_prompt_too_long"),
+        "BUG-185: the terminal-arm strip must not be gated on is_prompt_too_long"
     );
 
     // @step When the stream loop surfaces the terminal error

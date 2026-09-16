@@ -189,7 +189,26 @@ impl<T: Tool> ToolDyn for T {
                     .and_then(|output| {
                         serde_json::to_string(&output).map_err(ToolError::JsonError)
                     }),
-                Err(e) => Err(ToolError::JsonError(e)),
+                // TOOL-023: an arg-deserialization failure is the LLM's ONLY
+                // recovery surface — it must name the tool, keep the serde
+                // reason verbatim, list the tool's accepted parameters (from
+                // its schema), and show a canonical example call. The blanket
+                // impl is the single choke point for every direct tool
+                // (WebSearch, Read, Write, Bash, …), so all of them gain the
+                // full usage at once.
+                Err(e) => {
+                    let reason = e.to_string();
+                    let name = Self::NAME;
+                    let definition = <Self as Tool>::definition(self, String::new()).await;
+                    let message = codelet_common::tool_usage::arg_error_recovery(
+                        name,
+                        &reason,
+                        &definition.parameters,
+                    );
+                    Err(ToolError::ToolCallError(Box::new(
+                        codelet_common::tool_usage::ToolArgRecoveryError { message },
+                    )))
+                }
             }
         })
     }

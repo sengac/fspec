@@ -26,6 +26,7 @@ pub mod dispatch_select;
 mod exec_stdin_keys;
 pub mod exec_stdin_prompt;
 pub mod file_search_popup;
+pub mod file_search_popup_keys;
 pub mod file_search_popup_mouse;
 pub mod file_search_popup_rows;
 pub mod footer;

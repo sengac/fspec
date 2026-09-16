@@ -1,0 +1,494 @@
+{
+  "scenarios": [
+    {
+      "name": "An exhausted network retry with a failed tool pair at the tail strips the pair and stays interactive",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "88-138",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2115,
+                2116,
+                2117,
+                2118,
+                2119,
+                2120,
+                2121,
+                2122,
+                2123,
+                2124,
+                2125,
+                2126,
+                2127,
+                2128,
+                2129,
+                2130,
+                2131,
+                2132,
+                2133,
+                2134,
+                2135,
+                2136,
+                2137,
+                2138,
+                2139,
+                2140,
+                2141,
+                2142,
+                2143,
+                2144,
+                2145,
+                2146,
+                2147,
+                2148,
+                2149,
+                2150,
+                2151,
+                2152,
+                2153,
+                2154,
+                2155,
+                2156,
+                2157,
+                2158,
+                2159,
+                2160
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "343-380",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2127,
+                2128,
+                2129,
+                2130,
+                2131,
+                2132,
+                2133,
+                2134,
+                2135,
+                2136,
+                2137,
+                2138,
+                2139,
+                2140,
+                2141,
+                2142,
+                2143,
+                2144,
+                2145,
+                2146,
+                2147,
+                2148,
+                2149,
+                2150,
+                2151,
+                2152,
+                2153,
+                2154,
+                2155,
+                2156,
+                2157,
+                2158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A terminal auth error with a failed tool pair at the tail strips the pair and stays interactive",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "145-178",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2127,
+                2128,
+                2129,
+                2130,
+                2131,
+                2132,
+                2133,
+                2134,
+                2135,
+                2136,
+                2137,
+                2138,
+                2139,
+                2140,
+                2141,
+                2142,
+                2143,
+                2144,
+                2145,
+                2146,
+                2147,
+                2148,
+                2149,
+                2150,
+                2151,
+                2152,
+                2153,
+                2154,
+                2155,
+                2156,
+                2157,
+                2158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A trailing tool-call-only assistant message is stripped on any terminal error",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "185-221",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_unrecoverable.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A terminal error with no tool tail falls through to the existing terminal behavior",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "228-254",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2155,
+                2156,
+                2157,
+                2158,
+                2159,
+                2160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed tool execution is never stripped",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "260-303",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_handlers.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "260-303",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_handlers.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The prompt-too-long recovery cascade still takes precedence",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs",
+          "lines": "310-336",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1806,
+                1807,
+                1808,
+                1809,
+                1810,
+                1811,
+                1812,
+                1813,
+                1814,
+                1815,
+                1816,
+                1817,
+                1818,
+                1819,
+                1820,
+                1821,
+                1822,
+                1823,
+                1824,
+                1825,
+                1826,
+                1827,
+                1828,
+                1829,
+                1830,
+                1831,
+                1832,
+                1833,
+                1834,
+                1835,
+                1836,
+                1837,
+                1838,
+                1839,
+                1840,
+                1841,
+                1842,
+                1843,
+                1844,
+                1845,
+                1846,
+                1847,
+                1848,
+                1849,
+                1850,
+                1851,
+                1852,
+                1853,
+                1854,
+                1855,
+                1856,
+                1857
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/cli/src/interactive/recovery_unrecoverable.rs",
+      "rust/cli/src/interactive/stream_handlers.rs"
+    ],
+    "totalLinesCovered": 660
+  }
+}

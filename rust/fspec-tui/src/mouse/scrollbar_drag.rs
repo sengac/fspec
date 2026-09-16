@@ -287,7 +287,6 @@ mod tests {
         // @step And the state should return to idle
         assert!(!drag.is_dragging());
     }
-
 }
 
 #[cfg(test)]

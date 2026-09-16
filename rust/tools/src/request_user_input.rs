@@ -258,6 +258,63 @@ impl RequestUserInputTool {
     }
 }
 
+/// The tool's JSON-schema parameters (the single source of truth shared by
+/// `definition()` and the TOOL-024 argument-recovery enrichment).
+fn request_user_input_schema() -> serde_json::Value {
+    json!({
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "RequestUserInputArgs",
+        "type": "object",
+        "required": ["questions"],
+        "properties": {
+            "questions": {
+                "type": "array",
+                "description": "Array of 1-3 questions to present to the user.",
+                "minItems": 1,
+                "maxItems": 3,
+                "items": {
+                    "type": "object",
+                    "required": ["id", "header", "question"],
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "description": "Stable snake_case identifier for mapping answers."
+                        },
+                        "header": {
+                            "type": "string",
+                            "description": "Short label shown in UI (max 12 chars)."
+                        },
+                        "question": {
+                            "type": "string",
+                            "description": "Single-sentence prompt shown to user."
+                        },
+                        "options": {
+                            "type": "array",
+                            "description": "Optional mutually exclusive choices (2-3 items).",
+                            "minItems": 2,
+                            "maxItems": 3,
+                            "items": {
+                                "type": "object",
+                                "required": ["label", "description"],
+                                "properties": {
+                                    "label": {
+                                        "type": "string",
+                                        "description": "1-5 word label. Suffix recommended option with '(Recommended)'."
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "One sentence explaining impact."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 impl Tool for RequestUserInputTool {
     const NAME: &'static str = "request_user_input";
 
@@ -276,58 +333,7 @@ impl Tool for RequestUserInputTool {
                 "that cannot be inferred from context."
             )
             .to_string(),
-            parameters: json!({
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "title": "RequestUserInputArgs",
-                "type": "object",
-                "required": ["questions"],
-                "properties": {
-                    "questions": {
-                        "type": "array",
-                        "description": "Array of 1-3 questions to present to the user.",
-                        "minItems": 1,
-                        "maxItems": 3,
-                        "items": {
-                            "type": "object",
-                            "required": ["id", "header", "question"],
-                            "properties": {
-                                "id": {
-                                    "type": "string",
-                                    "description": "Stable snake_case identifier for mapping answers."
-                                },
-                                "header": {
-                                    "type": "string",
-                                    "description": "Short label shown in UI (max 12 chars)."
-                                },
-                                "question": {
-                                    "type": "string",
-                                    "description": "Single-sentence prompt shown to user."
-                                },
-                                "options": {
-                                    "type": "array",
-                                    "description": "Optional mutually exclusive choices (2-3 items).",
-                                    "minItems": 2,
-                                    "maxItems": 3,
-                                    "items": {
-                                        "type": "object",
-                                        "required": ["label", "description"],
-                                        "properties": {
-                                            "label": {
-                                                "type": "string",
-                                                "description": "1-5 word label. Suffix recommended option with '(Recommended)'."
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "description": "One sentence explaining impact."
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }),
+            parameters: request_user_input_schema(),
         }
     }
 
@@ -348,16 +354,40 @@ impl Tool for RequestUserInputTool {
             questions: args.questions,
         };
 
-        let response =
-            execute_hitl(self.session_id, request).map_err(|e| ToolError::Execution {
-                tool: "request_user_input",
-                message: e,
-            })?;
+        let response = execute_hitl(self.session_id, request).map_err(|e| map_hitl_error(&e))?;
 
         serde_json::to_string_pretty(&response).map_err(|e| ToolError::Execution {
-            tool: "request_user_input",
+            tool: Self::NAME,
             message: format!("Failed to serialize response: {e}"),
         })
+    }
+}
+
+/// TOOL-024: classify an `execute_hitl` error. Argument-validation
+/// failures (the questions array failed `validate_questions` — empty
+/// array, too many questions, bad question fields) get the full recovery
+/// surface as `ToolError::Validation`; handler/infrastructure failures
+/// (no handler registered, lock acquisition failure) stay
+/// `ToolError::Execution`.
+fn map_hitl_error(message: &str) -> ToolError {
+    let is_arg_validation =
+        message.starts_with("questions array") || message.starts_with("question[");
+    if is_arg_validation {
+        // The schema is the static hand-written JSON from definition() —
+        // build it inline to avoid requiring &self/async here.
+        let schema = request_user_input_schema();
+        return ToolError::Validation {
+            tool: "request_user_input",
+            message: codelet_common::tool_usage::append_usage_to_message(
+                "request_user_input",
+                &schema,
+                message,
+            ),
+        };
+    }
+    ToolError::Execution {
+        tool: "request_user_input",
+        message: message.to_string(),
     }
 }
 

@@ -274,5 +274,13 @@ impl App {
             }
         });
         self.subscriber_tasks.push(checkpoints_progress_task);
+
+        // (g) BUG-182: git_state_changed_rx → Action::GitStateChanged —
+        // the ONE centralized git poll stream (R3: folds onto the
+        // existing CheckpointCountsLoaded / WorkspaceInfoLoaded writer
+        // paths; R4: re-fetches the visible lazy views). Body + the
+        // websocket closed-receiver degradation live in
+        // app/bootstrap_git_state.rs (300-LoC ceiling).
+        self.spawn_git_state_subscriber();
     }
 }

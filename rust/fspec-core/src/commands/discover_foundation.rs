@@ -770,7 +770,7 @@ mod tests {
             "personas": [ { "name": "p", "description": "d", "goals": ["g"] } ]
         });
         let rows = guidance::scan_fields(&draft);
-        assert!(rows.iter().all(|r| r.is_complete()));
+        assert!(rows.iter().all(guidance::FieldRow::is_complete));
         assert!(guidance::next_field_reminder(&draft, Path::new("/nonexistent")).is_none());
     }
 

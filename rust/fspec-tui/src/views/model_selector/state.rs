@@ -5,6 +5,7 @@
 //! methods; field/method visibility unchanged.
 
 use super::*;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 impl ModelSelectorView {
     pub fn new() -> Self {
@@ -44,7 +45,17 @@ impl ModelSelectorView {
     /// `ModelSelectorScreen.tsx:93-119`) every provider starts collapsed and
     /// only the section containing the current model is auto-expanded, so the
     /// list fits the viewport on first open instead of overflowing.
+    ///
+    /// **TUI-111**: provider + model display names are sanitized on
+    /// ingress so the selector rows always paint clean text.
     pub fn set_providers(&mut self, providers: Vec<ProviderInfo>) {
+        let mut providers = providers;
+        for provider in providers.iter_mut() {
+            provider.display_name = sanitize_for_terminal(&provider.display_name);
+            for model in provider.models.iter_mut() {
+                model.display_name = sanitize_for_terminal(&model.display_name);
+            }
+        }
         // RPC-342: start all-collapsed, then expand ONLY the section that
         // contains the current model (if any).
         self.expanded = HashSet::new();

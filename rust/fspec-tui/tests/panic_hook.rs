@@ -28,7 +28,8 @@ fn terminal_guard_init_enables_alt_screen_raw_mode_mouse_and_bracketed_paste() {
     let path = common::workspace_root()
         .join("fspec-tui")
         .join("src")
-        .join("terminal.rs");
+        .join("terminal")
+        .join("mod.rs");
     let raw = common::read_to_string_or_panic(&path);
     let src = common::strip_rust_comments(&raw);
 
@@ -73,7 +74,8 @@ fn terminal_guard_drop_restores_the_terminal() {
     let path = common::workspace_root()
         .join("fspec-tui")
         .join("src")
-        .join("terminal.rs");
+        .join("terminal")
+        .join("mod.rs");
     let raw = common::read_to_string_or_panic(&path);
     let src = common::strip_rust_comments(&raw);
 
@@ -118,7 +120,8 @@ fn panic_mid_render_restores_terminal_via_registered_panic_hook() {
     let path = common::workspace_root()
         .join("fspec-tui")
         .join("src")
-        .join("terminal.rs");
+        .join("terminal")
+        .join("mod.rs");
     let raw = common::read_to_string_or_panic(&path);
     let src = common::strip_rust_comments(&raw);
 
@@ -165,7 +168,8 @@ fn panic_hook_registration_is_idempotent() {
     let path = common::workspace_root()
         .join("fspec-tui")
         .join("src")
-        .join("terminal.rs");
+        .join("terminal")
+        .join("mod.rs");
     let raw = common::read_to_string_or_panic(&path);
     let src = common::strip_rust_comments(&raw);
 

@@ -68,6 +68,21 @@ impl ScheduleTool {
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
+
+    /// TOOL-024: classify a schedule handler error message. Missing or
+    /// invalid parameters (required-field failures, invalid
+    /// cron/timezone/job_type values, unknown actions) are
+    /// argument-validation failures; operational failures (schedule not
+    /// found, file I/O, no handler registered, duplicate name) are
+    /// execution failures.
+    fn is_arg_validation_error(message: &str) -> bool {
+        message.contains("is required")
+            || message.contains("Invalid cron expression")
+            || message.contains("Invalid timezone")
+            || message.contains("Invalid job_type")
+            || message.contains("jobs require")
+            || message.starts_with("Unknown action")
+    }
 }
 
 impl Tool for ScheduleTool {
@@ -131,6 +146,7 @@ impl Tool for ScheduleTool {
                     "overlap_policy": {
                         "type": ["string", "null"],
                         "enum": ["skip", "queue"],
+                        "default": "skip",
                         "description": "Overlap policy (optional for add, default: skip)"
                     }
                 },
@@ -147,27 +163,62 @@ impl Tool for ScheduleTool {
             &serde_json::to_value(&args).unwrap_or_default(),
         ) {
             return Err(ToolError::Blocked {
-                tool: "schedule",
+                tool: "Schedule",
                 message: reason,
             });
         }
 
         let request = ScheduleRequest {
-            action: args.action,
-            name: args.name,
-            cron: args.cron,
-            timezone: args.timezone,
-            job_type: args.job_type,
-            role: args.role,
-            prompt: args.prompt,
-            command: args.command,
-            overlap_policy: args.overlap_policy,
+            action: args.action.clone(),
+            name: args.name.clone(),
+            cron: args.cron.clone(),
+            timezone: args.timezone.clone(),
+            job_type: args.job_type.clone(),
+            role: args.role.clone(),
+            prompt: args.prompt.clone(),
+            command: args.command.clone(),
+            overlap_policy: args.overlap_policy.clone(),
         };
 
         let result = execute_schedule_command(self.session_id, request);
 
+        // TOOL-024: a failed ScheduleResult must surface as a proper tool
+        // error, not a serialized JSON blob. Argument-validation failures
+        // (missing/invalid parameters on the requested action) get the
+        // full recovery surface; other failures (unknown schedule, file
+        // I/O, no handler registered) stay execution errors.
+        if !result.success {
+            let error = result
+                .error
+                .clone()
+                .unwrap_or_else(|| "Unknown schedule error".to_string());
+            if Self::is_arg_validation_error(&error) {
+                let schema = self.definition(String::new()).await.parameters;
+                // State the action context: the handler message (e.g.
+                // "Cron expression is required") is preserved verbatim as
+                // a substring, and the rewording makes the
+                // conditionally-required parameter explicit ("cron is
+                // required for the add action").
+                let message = format!("{} action: {error}", args.action);
+                // The synthesized example covers only schema-`required`
+                // fields, but add's parameters are conditionally required —
+                // supply the canonical add call explicitly.
+                let example = r#"{"action": "add", "name": "<name>", "cron": "0 2 * * *", "timezone": "UTC", "job_type": "agent", "role": "<role>", "prompt": "<prompt>", "overlap_policy": "skip"}"#;
+                return Err(ToolError::Validation {
+                    tool: "Schedule",
+                    message: codelet_common::tool_usage::append_usage_to_message_with_example(
+                        "Schedule", &schema, &message, example,
+                    ),
+                });
+            }
+            return Err(ToolError::Execution {
+                tool: "Schedule",
+                message: error,
+            });
+        }
+
         serde_json::to_string_pretty(&result).map_err(|e| ToolError::Execution {
-            tool: "schedule",
+            tool: "Schedule",
             message: format!("Failed to serialize result: {e}"),
         })
     }

@@ -84,5 +84,4 @@ impl MultiLineInput {
         let _ = self.textarea.input(input);
         InputEventOutcome::Continued
     }
-
 }

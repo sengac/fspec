@@ -79,6 +79,13 @@ pub struct MultiplexLayout {
     /// MUX-002: rendered pane list (agent slots beyond the open-session
     /// count are dropped — no blank panes).
     pub(super) rendered_panes: Vec<MuxPaneKind>,
+    /// BUG-183: pane kinds the user has closed from the LIVE grid via
+    /// Esc (transient — cleared on `/mux off` / `/mux on` / pane-list
+    /// changes). `recompute_effective_panes` filters these out so the
+    /// closed pane does not re-appear on the next `sync_window` call.
+    /// The saved `config.panes` is untouched (same transience rule as
+    /// the agent slot dropping on session close).
+    pub(super) closed_panes: Vec<MuxPaneKind>,
     /// MUX-002: a new-agent prompt was requested by Shift+Right at the
     /// right edge; consumed by `note_session_created`.
     pub(super) pending_new_agent: bool,
@@ -118,6 +125,7 @@ impl MultiplexLayout {
             window_start: 0,
             sessions: Vec::new(),
             rendered_panes: Vec::new(),
+            closed_panes: Vec::new(),
             pending_new_agent: false,
             // MUX-002: seed a 120x23 body (24 rows minus the footer row)
             // so `recompute_rects` produces rects BEFORE the first render

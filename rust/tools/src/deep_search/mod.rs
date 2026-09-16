@@ -455,11 +455,19 @@ impl Tool for DeepSearchTool {
             });
         }
 
-        // Validate query is not empty
+        // Validate query is not empty — an argument-validation failure,
+        // not an execution failure (TOOL-024). The recovery surface keeps
+        // the original message and appends the accepted-parameter
+        // reference plus a canonical example call.
         if args.query.trim().is_empty() {
-            return Err(ToolError::Execution {
+            let schema = self.definition(String::new()).await.parameters;
+            return Err(ToolError::Validation {
                 tool: "DeepSearch",
-                message: "query is required and must not be empty".to_string(),
+                message: codelet_common::tool_usage::append_usage_to_message(
+                    "DeepSearch",
+                    &schema,
+                    "query is required and must not be empty",
+                ),
             });
         }
 

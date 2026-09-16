@@ -35,6 +35,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::style::Color;
 
 use crate::components::Action;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 mod panes;
 mod render;
@@ -94,7 +95,20 @@ impl BlocklistView {
     /// `Action::BlocklistRulesLoaded`. Caps `selected_index` so it
     /// stays in range and resets `scroll_offset` so a shorter list can
     /// never leave a stale offset (BLOCK-008).
+    ///
+    /// **TUI-111**: user-visible fields (id, pattern, reason,
+    /// guidance, source) are sanitized on ingress. `action` is a
+    /// closed vocabulary ("block" | "allow" | "prompt") and is
+    /// skipped.
     pub fn set_rules(&mut self, rules: Vec<BlocklistRuleInfo>) {
+        let mut rules = rules;
+        for rule in rules.iter_mut() {
+            rule.id = sanitize_for_terminal(&rule.id);
+            rule.pattern = sanitize_for_terminal(&rule.pattern);
+            rule.reason = sanitize_for_terminal(&rule.reason);
+            rule.guidance = rule.guidance.as_ref().map(|g| sanitize_for_terminal(g));
+            rule.source = sanitize_for_terminal(&rule.source);
+        }
         let max = rules.len().saturating_sub(1);
         if self.selected_index > max {
             self.selected_index = max;

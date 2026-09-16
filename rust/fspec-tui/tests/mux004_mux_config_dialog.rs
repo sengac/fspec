@@ -46,8 +46,7 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let tmp = TempDir::new().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
 }
 
@@ -192,7 +191,11 @@ async fn mux_on_enters_mux_mode_without_opening_the_dialog() {
     submit(&mut app, "/mux on");
     drain_pending(&mut app).await;
     // @step Then mux mode is active with the default preset
-    assert_eq!(app.active_view(), ViewMode::Mux, "/mux on must enter mux mode");
+    assert_eq!(
+        app.active_view(),
+        ViewMode::Mux,
+        "/mux on must enter mux mode"
+    );
     assert!(
         app.mux_state().config().enabled,
         "mux config must be enabled after /mux on"
@@ -450,7 +453,11 @@ async fn adding_a_third_pane_and_applying_it_rebuilds_the_grid() {
     // @step Then the MuxConfigDialog is closed
     assert_dialog_closed(&app);
     // @step And mux mode is active with three panes: Board, Agent and Files
-    assert_eq!(app.active_view(), ViewMode::Mux, "mux must be active after apply");
+    assert_eq!(
+        app.active_view(),
+        ViewMode::Mux,
+        "mux must be active after apply"
+    );
     let cfg = app.mux_state().config();
     assert_eq!(cfg.panes.len(), 3, "must have three panes");
     assert_eq!(cfg.panes[0], MuxPaneKind::Board);
@@ -591,10 +598,7 @@ async fn s_applies_the_draft_and_persists_it_to_the_shared_config() {
     assert_eq!(cfg.panes[1], MuxPaneKind::Agent);
     // @step And the shared fspec-config.json tui.mux key contains the vertical orientation and the two-pane list
     let path = data.path().join("fspec-config.json");
-    assert!(
-        path.exists(),
-        "fspec-config.json must exist after 's' save"
-    );
+    assert!(path.exists(), "fspec-config.json must exist after 's' save");
     let raw = fs::read_to_string(&path).expect("read fspec-config.json");
     assert!(
         raw.contains("\"mux\""),
@@ -819,10 +823,7 @@ async fn the_slash_popup_lists_mux_with_a_description_and_picking_it_opens_the_d
     // And the popup pick emits Action::SlashCommandSelected(Mux)
     let mut saw_mux_pick = false;
     while let Ok(a) = rx.try_recv() {
-        if matches!(
-            a,
-            Action::SlashCommandSelected(SlashCommandAction::Mux)
-        ) {
+        if matches!(a, Action::SlashCommandSelected(SlashCommandAction::Mux)) {
             saw_mux_pick = true;
         }
     }
@@ -863,7 +864,10 @@ fn the_agent_help_dialog_lists_mux_from_the_registry() {
     // (agent_help_lines() in components/help_content.rs iterates
     // SLASH_COMMANDS — no manual help edit needed for new rows)
     let registry = filter_commands("mux");
-    assert!(!registry.is_empty(), "the registry must include a mux entry");
+    assert!(
+        !registry.is_empty(),
+        "the registry must include a mux entry"
+    );
     let mux_cmd = &registry[0];
     assert_eq!(mux_cmd.name(), "mux");
     assert!(!mux_cmd.description.is_empty());
@@ -877,7 +881,11 @@ fn the_agent_help_dialog_lists_mux_from_the_registry() {
         .expect("draw");
     let buf = terminal.backend().buffer().clone();
     let text = (0..buf.area.height)
-        .map(|y| (0..buf.area.width).map(|x| buf[(x, y)].symbol()).collect::<String>())
+        .map(|y| {
+            (0..buf.area.width)
+                .map(|x| buf[(x, y)].symbol())
+                .collect::<String>()
+        })
         .collect::<Vec<String>>()
         .join("\n");
 
@@ -936,9 +944,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")

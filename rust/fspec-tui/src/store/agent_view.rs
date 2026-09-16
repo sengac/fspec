@@ -31,12 +31,8 @@ pub mod navigation;
 pub mod pause_state;
 pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
+pub mod record_chunk;
 pub mod role_state;
-pub mod sanitize;
-#[cfg(test)]
-pub mod sanitize_tests;
-#[cfg(test)]
-pub mod sanitize_tests_streaming;
 pub mod session_context;
 pub mod session_indexing;
 pub mod stderr;

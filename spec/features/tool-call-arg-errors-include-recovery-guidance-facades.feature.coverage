@@ -1,0 +1,257 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude facade rejects args sent as a JSON object with a dedicated explanation",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
+          "lines": "24-63",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/fspec_facade.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Claude facade rejects non-string project_root with a type explanation",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
+          "lines": "66-93",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/fspec_facade.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini facade args sent as an object gets the same dedicated explanation",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
+          "lines": "95-123",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/fspec_facade.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ZAI facade arguments sent as an object gets the same dedicated explanation",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
+          "lines": "125-154",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/fspec_facade.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing command field error includes a usage example",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
+          "lines": "156-190",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/fspec_facade.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Facades pass unknown command names through unchanged",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
+          "lines": "193-214",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/fspec_facade.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/tool023_fspec_facade_args.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/facade/fspec_facade.rs"
+    ],
+    "totalLinesCovered": 329
+  }
+}

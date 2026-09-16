@@ -99,11 +99,7 @@ fn scenario_embedded_template_is_valid_and_complete() {
     let total = ids.len();
     ids.sort_unstable();
     ids.dedup();
-    assert_eq!(
-        ids.len(),
-        total,
-        "all template rule ids must be unique"
-    );
+    assert_eq!(ids.len(), total, "all template rule ids must be unique");
 }
 
 /// Scenario: Template is installed and active on first check when no system blocklist exists
@@ -136,9 +132,9 @@ fn scenario_template_is_installed_and_active_on_first_check_when_no_system_block
     );
 
     // @step And the command is blocked with rule id "git-stash-block"
-    let err = result
-        .err()
-        .unwrap_or_else(|| panic!("git stash must be blocked by the freshly installed template in the same call"));
+    let err = result.err().unwrap_or_else(|| {
+        panic!("git stash must be blocked by the freshly installed template in the same call")
+    });
     assert_eq!(
         err.rule_id, "git-stash-block",
         "blocked error must carry the template rule id"
@@ -236,7 +232,10 @@ fn scenario_deleted_system_blocklist_is_reinstalled_on_the_next_check() {
 
     // @step Given a fresh environment where the first check already installed "~/.fspec/blocklist.json"
     let first = check_bash_command("git stash", uuid::Uuid::nil());
-    assert!(first.is_err(), "first check must be blocked by the installed template");
+    assert!(
+        first.is_err(),
+        "first check must be blocked by the installed template"
+    );
     assert!(
         _guard.system_blocklist().exists(),
         "first check must have installed the template"

@@ -37,8 +37,8 @@ impl Navigator {
                     if self.mux.is_dragging {
                         if let Some((col, row)) = mux_mouse::mouse_pos(event) {
                             let (pos, total) = self.mux_drag_axis(col, row, index);
-                            let horizontal = self.mux.config().orientation
-                                == MuxOrientation::Horizontal;
+                            let horizontal =
+                                self.mux.config().orientation == MuxOrientation::Horizontal;
                             let cursor = if horizontal { col } else { row };
                             // BUG-166: live width = cursor minus the
                             // DRAGGED pane's origin (the drag tracks the
@@ -72,6 +72,17 @@ impl Navigator {
                 }
                 mux_mouse::MouseDecision::Gap => EventResult::ignored(),
             };
+        }
+        // BUG-179: a bracketed paste (Event::Paste) — including a terminal
+        // file drop delivered as a paste — honours the same keyboard
+        // isolation as keys: it reaches the FOCUSED pane only. The focused
+        // pane's handler decides: the Agent pane's paste precedence/gate
+        // chain (HITL / exec-stdin / compacting / CRLF) inserts into the
+        // live composer; the Board/Files/Checkpoints panes ignore it.
+        // Pre-fix the Event::Key guard below dropped every non-key event
+        // here, so the paste was silently lost.
+        if matches!(event, Event::Paste(_)) {
+            return self.forward_mux_event_to_focused_pane(event, board_store);
         }
         let Event::Key(key) = event else {
             return EventResult::ignored();
@@ -141,11 +152,11 @@ impl Navigator {
             .get(index)
             .map(|r| if horizontal { r.x } else { r.y })
             .unwrap_or(0);
-        let first = self
-            .mux
-            .pane_rects()
-            .first()
-            .map_or(pane_start, |r| if horizontal { r.x } else { r.y });
+        let first =
+            self.mux
+                .pane_rects()
+                .first()
+                .map_or(pane_start, |r| if horizontal { r.x } else { r.y });
         let last_end = self.mux.pane_rects().last().map_or(pane_start + 1, |r| {
             if horizontal {
                 r.x + r.width
@@ -179,6 +190,7 @@ impl Navigator {
         if focus >= self.mux.effective_panes().len() {
             return EventResult::consumed();
         }
+        let action_tx = self.action_tx.as_ref();
         mux_keys::forward_to_pane(
             event,
             board_store,
@@ -187,6 +199,7 @@ impl Navigator {
             &mut self.changed_files,
             &mut self.checkpoints,
             kind,
+            action_tx,
         )
     }
 }

@@ -338,6 +338,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-168` | Work unit BUG-168 - Read tool PDF visual mode ignores offset/limit and returns unbounded page images; adds pagination, configurable page cap, truncation notice, vision-capability-aware default mode, and rig-patch image count defense |
 | `@bug-171` | Bug fix work unit BUG-171 — exec-stdin TUI overlay never appeared: pull probe had no push trigger while the session stayed Running. Fix: detector observes the end of the prompt condition and pushes clear StreamChunks; set_exec_stdin_request is the sole emission point for ExecStdinRequest / ExecStdinRequestCleared push chunks; non-exit clear resets the per-exec-session cooldown |
 | `@bug-175` | Bug fix work unit BUG-175 — mux enabled=true in persisted config leaks into non-mux view routing: closing a session from single-view mode after a restart strands the user on a blank, unresponsive full-screen AgentView (Esc dead). Fix: bootstrap force-disables the persisted mux enabled flag, and BackToBoard/EnterWorkUnit route on the live ViewMode::Mux instead of the persisted config flag. |
+| `@bug-180` | Bug fix work unit BUG-180 — SessionHeader work-unit status stale: WorkUnitsLoaded push re-seeds BoardStore but never syncs AgentViewStore.work_unit_context_by_session / legacy fallback slots, leaving the per-session chip frozen at attach-time status |
+| `@bug-181` | Bug fix work unit BUG-181 — Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI). Fix: CheckpointsWatcher push channel (codelet-core) + FspecBackend::checkpoint_counts_changed_rx + App subscriber folding onto Action::CheckpointCountsLoaded |
+| `@bug-182` | Mux mode views don't work (frozen loading dialog, no loads, no git polling) — centralized git polling fix |
+| `@bug-183` | Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view) |
+| `@bug-184` | Bug fix work unit BUG-184 — mux Files/Checkpoints 10s refresh: no-op ticks dropped before re-fetch (list signature), scroll position + selection preserved on change-bearing refreshes, cascade same-key reloads keep dependent pane scroll |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -458,6 +463,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multimodal` | Multimodal content handling (images, PDFs, etc.) |
 | `@multiple-bridges` | Multiple bridge connection scenarios |
 | `@mutation` | Marks features/scenarios for state-mutating commands (writes to spec/*.json) |
+| `@mux-009` | Work unit MUX-009 — Board 'M' key opens the Mux config dialog + top-of-screen Mux hint |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@no-logging` | Ensuring secrets are not logged |
@@ -630,6 +636,8 @@ Tags tracking development status of features.
 | `@bug` | Bug fix work units |
 | `@bug-169` | Bug fix work unit BUG-169 — slash-command autocomplete not intercepted when the full command is typed (Tab/Esc then Enter sends it to the LLM): registry-driven submit-time interception in parse_slash_command |
 | `@bug-178` | Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid) |
+| `@bug-179` | Bug fix work unit BUG-179 — mux keyboard-isolation gate swallows Event::Paste: bracketed paste and terminal file-drop-as-paste do nothing in the focused agent pane. Fix routes Event::Paste to the focused mux pane (forward_mux_event_to_focused_pane) and mirrors the post-Navigator sync_mux_focus_to_session in App::handle_paste |
+| `@bug-185` | Work unit BUG-185 — the failed tool-call tail must be stripped on ANY terminal API error (supersedes BUG-170 rule [0] which gated the strip on prompt-too-long only) |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
@@ -680,6 +688,8 @@ Tags tracking development status of features.
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
 | `@tool-022` | Work unit identifier for TOOL-022 — surface exec-session stdin prompts in the TUI composer slot (P1 LLM signal + P2 TUI inline prompt) |
+| `@tool-023` | Work unit identifier for TOOL-023 — tool-call arg errors include recovery guidance (did-you-mean for unknown fspec commands, usage hints on InvalidArgs, dedicated string-vs-object args errors in provider facades) |
+| `@tool-024` | Work unit identifier for TOOL-024 — post-deserialization arg errors include recovery guidance (TOOL-023 follow-up): empty/missing-value validation failures in direct tools get the full usage block; tool_usage union-schema rendering fixes; registered-name casing |
 | `@wip` | Work In Progress |
 | `@wt-001` | Work unit identifier for WT-001 — IsolationStateChange stream chunk drops base_commit: create_isolated_session_with_id must emit via isolation_state_change_with_base so the TUI isolation badge can show the worktree base commit (worktree-isolation epic) |
 | `@wt-002` | Work unit identifier for WT-002 — fspec binary footer poller: FspecAgentHooks must spawn the NAPI-free footer poller so isolated worktree sessions show their git state in the footer (worktree-isolation epic) |
@@ -776,4 +786,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-10T08:46:11.547Z_
+_Last updated: 2026-09-16T07:47:06.909Z_

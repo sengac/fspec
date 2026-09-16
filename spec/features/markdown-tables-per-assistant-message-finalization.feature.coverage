@@ -1,0 +1,336 @@
+{
+  "scenarios": [
+    {
+      "name": "ToolCall finalizes the intermediate assistant message with a box-drawing grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "117-157",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error finalizes the in-flight assistant message with a box-drawing grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "159-190",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupted finalizes the in-flight assistant message with a box-drawing grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "192-223",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UserInput finalizes the in-flight assistant message with a box-drawing grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "225-256",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done still formats the turn-final assistant message exactly once",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "258-284",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done after a ToolCall leaves the already-formatted message unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "286-323",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An intermediate assistant message without a table is unchanged at flush",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "325-351",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every assistant message in a multi-message turn renders its own grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
+          "lines": "353-391",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs"
+    ],
+    "totalLinesCovered": 460
+  }
+}

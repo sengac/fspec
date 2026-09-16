@@ -270,7 +270,7 @@ fn no_trailer_is_emitted_when_a_mutation_fails() {
     assert!(!result.success, "expected failure, got {result:?}");
 
     // @step And the error message contains 'foundation.json not found'
-    let err = result.error.clone().unwrap_or_default();
+    let err = result.error.unwrap_or_default();
     assert!(
         err.contains("foundation.json not found"),
         "must surface canonical error; got: {err}"

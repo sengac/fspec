@@ -13,6 +13,8 @@ use std::collections::HashMap;
 
 use codelet_rpc_types::{CheckpointCounts, SessionId, WorkUnitInfo};
 
+use super::work_unit_sanitize::sanitize_work_unit;
+
 /// Canonical column order — must match `STATES` in
 /// `src/tui/components/UnifiedBoardLayout.tsx`.
 pub const COLUMN_ORDER: [&str; 7] = [
@@ -66,7 +68,15 @@ impl BoardStore {
     /// clamping the prior numeric index when the previously selected id
     /// no longer lives in that column. Unknown statuses (not in
     /// [`COLUMN_ORDER`]) are silently dropped.
+    ///
+    /// **TUI-111**: every unit is sanitized on ingress (see
+    /// [`sanitize_work_unit`]) so the board cards, details strip, and
+    /// search dialog always paint clean text.
     pub fn replace_work_units(&mut self, units: Vec<WorkUnitInfo>) {
+        let mut units = units;
+        for unit in units.iter_mut() {
+            sanitize_work_unit(unit);
+        }
         // Capture id-of-selection per column BEFORE we rebuild so we
         // can re-anchor the cursor to follow the moved item. Per
         // RPC-017 rule [6]: "the focused-column selection follows the

@@ -21,7 +21,9 @@ use std::time::Duration;
 
 use codelet_tools::bash::BashArgs;
 use codelet_tools::bash::BashTool;
-use codelet_tools::unified_exec::{global_store, set_exec_stdin_request_callback, ExecStdinRequest};
+use codelet_tools::unified_exec::{
+    global_store, set_exec_stdin_request_callback, ExecStdinRequest,
+};
 use rig::tool::Tool;
 use uuid::Uuid;
 
@@ -49,12 +51,11 @@ async fn scenario_bash_delegation_surfaces_exec_stdin_prompt() {
 
     // @step When the Bash tool executes the command via the unified exec session machinery
     let handle = tokio::spawn(async move {
-        tool
-            .call(BashArgs {
-                command: "sh -c 'echo PAGER=$PAGER; sleep 10'".to_string(),
-                cwd: None,
-            })
-            .await
+        tool.call(BashArgs {
+            command: "sh -c 'echo PAGER=$PAGER; sleep 10'".to_string(),
+            cwd: None,
+        })
+        .await
     });
 
     // The P2 detector fires when quiet >= 3s (2s tick cadence) — wait past
@@ -113,7 +114,8 @@ async fn bash_delegation_preserves_one_shot_result_contract() {
     // @step When the Bash tool executes the command via the unified exec session machinery
     let result = tool
         .call(BashArgs {
-            command: "sh -c 'echo pager=$PAGER; echo out-line; echo err-line >&2; exit 3'".to_string(),
+            command: "sh -c 'echo pager=$PAGER; echo out-line; echo err-line >&2; exit 3'"
+                .to_string(),
             cwd: None,
         })
         .await;
@@ -148,12 +150,11 @@ async fn bash_delegation_stdin_is_piped_and_writable() {
     // @step Given an agent session on any provider runs a command via the Bash tool that will not exit quickly
     let tool = BashTool::new(Uuid::new_v4());
     let handle = tokio::spawn(async move {
-        tool
-            .call(BashArgs {
-                command: "sh -c 'read line; echo got-$line'".to_string(),
-                cwd: None,
-            })
-            .await
+        tool.call(BashArgs {
+            command: "sh -c 'read line; echo got-$line'".to_string(),
+            cwd: None,
+        })
+        .await
     });
 
     // @step When the Bash tool executes the command via the unified exec session machinery

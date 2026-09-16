@@ -24,6 +24,7 @@ use std::collections::HashMap;
 use codelet_rpc_types::{ExecStdinRequest, SessionId};
 
 use super::AgentViewStore;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Slot map type held by [`AgentViewStore`].
 pub type ExecStdinBySession = HashMap<SessionId, ExecStdinRequest>;
@@ -37,8 +38,15 @@ impl AgentViewStore {
 
     /// Persist a fetched [`ExecStdinRequest`] for `session`. Overwrites
     /// any prior slot (a fresh detector fire = fresh quiet_seconds).
+    ///
+    /// **TUI-111**: the command display string is sanitized on ingress
+    /// so the exec-stdin prompt always paints clean text.
     pub fn set_exec_stdin(&mut self, session: SessionId, request: ExecStdinRequest) {
-        self.exec_stdin_by_session.insert(session, request);
+        let clean = ExecStdinRequest {
+            command: sanitize_for_terminal(&request.command),
+            ..request
+        };
+        self.exec_stdin_by_session.insert(session, clean);
     }
 
     /// Drop the exec-stdin slot for `session` — called after a

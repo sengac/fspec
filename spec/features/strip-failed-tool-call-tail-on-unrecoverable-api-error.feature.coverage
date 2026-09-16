@@ -322,28 +322,6 @@
       ]
     },
     {
-      "name": "Non-prompt-too-long terminal errors leave the stack untouched",
-      "testMappings": [
-        {
-          "file": "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs",
-          "lines": "362-393",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2115,
-                2116,
-                2117,
-                2118,
-                2119,
-                2120
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Stale cache-token state is invalidated after a successful strip",
       "testMappings": [
         {
@@ -443,8 +421,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
       "rust/cli/tests/bug170_strip_failed_tool_call_tail.rs"

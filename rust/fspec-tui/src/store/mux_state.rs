@@ -105,12 +105,11 @@ mod tests {
             "the tui.mux key must round-trip: {raw}"
         );
 
-        let reloaded_value =
-            codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
-                data.path(),
-                cwd.path(),
-            )
-            .expect("load");
+        let reloaded_value = codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
+            data.path(),
+            cwd.path(),
+        )
+        .expect("load");
         let mut reloaded = MuxState::new();
         reloaded.config = serde_json::from_value(reloaded_value).expect("round-trip");
         assert_eq!(reloaded.config().orientation, MuxOrientation::Vertical);
@@ -125,11 +124,10 @@ mod tests {
     fn missing_key_falls_back_to_default() {
         let data = TempDir::new().expect("data dir");
         let cwd = TempDir::new().expect("cwd");
-        let value =
-            codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
-                data.path(),
-                cwd.path(),
-            );
+        let value = codelet_sessions::mux_config_persistence::load_mux_config_with_dirs(
+            data.path(),
+            cwd.path(),
+        );
         assert!(value.is_none(), "missing tui.mux must load as None");
     }
 

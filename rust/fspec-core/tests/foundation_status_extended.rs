@@ -64,7 +64,7 @@ fn show_foundation_with_a_draft_present_shows_the_draft_by_default() {
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success, got {result:?}");
-    let data = result.data.clone();
+    let data = &result.data;
 
     // @step And the returned output starts with the banner 'Showing DRAFT (foundation.json.draft)'
     assert!(
@@ -125,7 +125,7 @@ fn show_foundation_without_a_draft_is_byte_identical_to_today() {
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success, got {result:?}");
-    let data = result.data.clone();
+    let data = &result.data;
 
     // @step And the returned output contains the exact line '=== PROJECT ==='
     assert!(
@@ -260,7 +260,7 @@ fn show_foundation_event_storm_with_an_unknown_context_errors_and_lists_availabl
         "must fail on unknown context; got {result:?}"
     );
 
-    let err = result.error.clone().unwrap_or_default();
+    let err = result.error.unwrap_or_default();
 
     // @step And the error message contains 'Unknown context'
     assert!(

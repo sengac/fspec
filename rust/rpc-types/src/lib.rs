@@ -81,6 +81,32 @@ pub struct CheckpointCounts {
 }
 
 // ============================================================================
+// BUG-182: GitState wire type (the ONE centralized git polling frame)
+// ============================================================================
+
+/// BUG-182: one `GitState` snapshot broadcast by codelet-core's
+/// `GitStateWatcher` on every debounced `.git` fs-event AND every 10-second
+/// poll tick — ONLY when the snapshot differs from the last published one
+/// (dedup). Replaces the BUG-181 `CheckpointCounts`-only push: the
+/// checkpoint counts now ride this frame, alongside the chrome-bar branch,
+/// the changed-files list, and the checkpoint list.
+///
+/// `git_branch` is `None` on a non-repo cwd (the SessionFooter degrades to
+/// a bare-cwd render, mirroring RPC-018's degraded contract).
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GitState {
+    /// Manual + auto checkpoint counts (BUG-181 contract).
+    pub checkpoint_counts: CheckpointCounts,
+    /// Current branch name, or `None` when detached / not a git repo.
+    pub git_branch: Option<String>,
+    /// Changed working-tree files (staged + unstaged + untracked).
+    pub changed_files: Vec<ChangedFile>,
+    /// Checkpoint list, sorted most-recent-first, capped at 200.
+    pub checkpoints: Vec<CheckpointInfo>,
+}
+
+// ============================================================================
 // RPC-355: Changed-file wire type
 // ============================================================================
 

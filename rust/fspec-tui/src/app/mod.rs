@@ -17,6 +17,7 @@
 //!     `App::render` / `App::run` (terminal + crossterm + render-tick).
 
 pub mod bootstrap;
+pub mod bootstrap_git_state; // BUG-182: (g) git_state_changed_rx subscriber (300-LoC ceiling)
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;
@@ -34,6 +35,7 @@ pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
 pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
 pub mod dispatch_fspec_runner;
+pub mod dispatch_git_state; // BUG-182: git-state frame fold (R3/R4)
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
 pub mod dispatch_isolation_toggle; // WT-009: /isolation state toggle
@@ -59,11 +61,11 @@ pub mod dispatch_session_cycle;
 pub mod dispatch_slash_clear;
 pub mod dispatch_slash_commands;
 pub mod dispatch_slash_continue; // CONT-002: /continue apply + backend round-trip
-pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-submit path
 pub mod dispatch_slash_debug;
 pub mod dispatch_slash_goal; // CONT-003: /goal apply + backend round-trip
 pub mod dispatch_slash_loop;
 pub mod dispatch_slash_schedule;
+pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-submit path
 pub mod dispatch_slash_update; // UPD-002: /update apply + shared engine round-trip
 pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
@@ -75,6 +77,7 @@ pub mod dispatch_worktrees; // WT-005: /worktrees listing + prune actions
 pub mod events;
 pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;
+pub mod merge_worktree_success;
 pub mod mux_parser; // MUX-001: /mux slash-command grammar
 pub mod run_loop;
 pub mod schedule_parser;

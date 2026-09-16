@@ -26,9 +26,7 @@ use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_server::bind_and_serve;
-use codelet_rpc_types::{
-    MergeOutcome, MergeStatus, SessionId, SessionWorktreeInfo,
-};
+use codelet_rpc_types::{MergeOutcome, MergeStatus, SessionId, SessionWorktreeInfo};
 use tempfile::TempDir;
 
 fn workspace_with_seed(cwd: &Path) {
@@ -163,8 +161,14 @@ async fn list_session_worktrees_round_trips_with_widened_merge_outcome() {
     let (embedded, websocket) = dual_backends(service).await;
 
     // @step When list_session_worktrees is called via both transports
-    let em = embedded.list_session_worktrees().await.expect("embedded list");
-    let ws = websocket.list_session_worktrees().await.expect("websocket list");
+    let em = embedded
+        .list_session_worktrees()
+        .await
+        .expect("embedded list");
+    let ws = websocket
+        .list_session_worktrees()
+        .await
+        .expect("websocket list");
 
     // @step Then both calls return the seeded row
     assert_eq!(em.len(), 1);

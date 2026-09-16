@@ -650,7 +650,8 @@
         "PROV-142",
         "BUG-170",
         "PROV-144",
-        "PROV-145"
+        "PROV-145",
+        "BUG-185"
       ]
     },
     "local-change-protocols": {
@@ -1005,7 +1006,11 @@
         "BUG-160",
         "BUG-161",
         "BUG-162",
-        "BUG-174"
+        "BUG-174",
+        "BUG-180",
+        "TUI-111",
+        "BUG-181",
+        "BUG-184"
       ]
     },
     "rust-cli-port": {
@@ -1326,7 +1331,9 @@
       "workUnits": [
         "TOOL-021",
         "BUG-171",
-        "BUG-172"
+        "BUG-172",
+        "TOOL-023",
+        "TOOL-024"
       ]
     },
     "tui-lazy-load": {
@@ -1386,7 +1393,11 @@
         "MUX-006",
         "MUX-007",
         "MUX-008",
-        "BUG-175"
+        "BUG-175",
+        "BUG-179",
+        "BUG-182",
+        "BUG-183",
+        "MUX-009"
       ]
     },
     "provider-settings": {

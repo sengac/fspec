@@ -295,4 +295,3 @@ fn handle_summary_key_source_contains_no_test_provider_connection_dispatch() {
         "RPC-154: handle_summary_key body must NOT write the literal status string \"Testing…\" — that was set only by the now-removed `t` arm. Body was:\n{body}"
     );
 }
-

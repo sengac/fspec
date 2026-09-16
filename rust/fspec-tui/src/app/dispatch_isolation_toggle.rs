@@ -67,9 +67,7 @@ impl App {
                     Vec::new()
                 }
             };
-            let has_live_worktree = tracked_rows
-                .iter()
-                .any(|w| w.session_id == sid);
+            let has_live_worktree = tracked_rows.iter().any(|w| w.session_id == sid);
 
             if store_isolated {
                 // Path 2: tracked isolated session → detach.

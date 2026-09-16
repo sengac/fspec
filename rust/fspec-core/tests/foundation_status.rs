@@ -93,7 +93,7 @@ fn foundation_status_reports_missing_phase_when_no_foundation_exists() {
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success; got {result:?}");
-    let data = result.data.clone();
+    let data = &result.data;
 
     // @step And the returned status reports phase 'none'
     assert!(
@@ -122,7 +122,7 @@ fn foundation_status_on_fresh_draft_lists_every_remaining_field_with_fix_command
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success; got {result:?}");
-    let data = result.data.clone();
+    let data = &result.data;
 
     // @step And the returned status reports phase 'draft' with 'Progress: 0/8 fields complete'
     assert!(
@@ -201,7 +201,7 @@ fn foundation_status_on_partially_filled_draft_reports_correct_per_field_status(
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success; got {result:?}");
-    let data = result.data.clone();
+    let data = &result.data;
 
     // @step And the returned status reports 'Progress: 3/8 fields complete'
     assert!(
@@ -252,7 +252,7 @@ fn foundation_status_on_finalized_foundation_reports_final_phase_with_no_remaini
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success; got {result:?}");
-    let data = result.data.clone();
+    let data = &result.data;
 
     // @step And the returned status reports phase 'final'
     assert!(

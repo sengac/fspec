@@ -23,9 +23,14 @@ impl App {
     /// Open the checkpoints view: reset the owned view + kick off the
     /// initial `list_checkpoints()` load. The Navigator's `apply_action`
     /// arm has already flipped `active_view` to `Checkpoints`.
+    ///
+    /// BUG-181: also re-poll the checkpoint counts on open — the board
+    /// header must repaint with live counts when the view (re)opens,
+    /// mirroring the close re-poll.
     pub(crate) fn handle_open_checkpoints_view(&mut self) {
         self.navigator.checkpoints = crate::views::CheckpointsView::new();
         self.spawn_list_checkpoints();
+        self.spawn_refresh_checkpoint_counts();
     }
 
     fn spawn_list_checkpoints(&mut self) {
@@ -66,6 +71,29 @@ impl App {
             );
         }
         view.sync_loading_label();
+        if let Some((work_unit_id, name)) = selection {
+            self.spawn_checkpoint_files(work_unit_id, name);
+        }
+    }
+
+    /// BUG-182 R6: fold a git-state REFRESH of the checkpoint list —
+    /// re-apply preserving the selection by (work_unit_id, name) (the
+    /// open flow's `CheckpointsLoaded` resets the view instead), then
+    /// kick off the files → diff cascade for the (re-)selected
+    /// checkpoint, mirroring the open flow.
+    pub(crate) fn handle_git_checkpoints_loaded(&mut self, list: Vec<CheckpointInfo>) {
+        let view = &mut self.navigator.checkpoints;
+        view.refresh_checkpoints_preserving_selection(list);
+        let selection = view
+            .selected_checkpoint_info()
+            .map(|cp| (cp.work_unit_id.clone(), cp.name.clone()));
+        if let Some((work_unit_id, name)) = &selection {
+            view.load.begin_stage(
+                &LoadTracker::files_stage_key(work_unit_id, name),
+                format!("Loading files for {name}…"),
+            );
+            view.sync_loading_label();
+        }
         if let Some((work_unit_id, name)) = selection {
             self.spawn_checkpoint_files(work_unit_id, name);
         }
@@ -172,6 +200,11 @@ impl App {
             Action::CheckpointsLoaded(list) => {
                 self.handle_checkpoints_loaded(list.clone());
             }
+            // BUG-182: git-state refresh (R6: selection preserved by
+            // work-unit + name).
+            Action::GitCheckpointsLoaded(list) => {
+                self.handle_git_checkpoints_loaded(list.clone());
+            }
             // TUI-109: per-item progress frame from the
             // checkpoints_progress_rx subscriber. Stale-drop: once the
             // list stage has flushed (CheckpointsLoaded folded) the
@@ -245,9 +278,13 @@ impl App {
             } => {
                 self.handle_delete_result(work_unit_id, name, *all, error.as_deref());
             }
-            // CloseCheckpointsView has no App-side state beyond the
-            // Navigator flip (handled in apply_action).
-            Action::CloseCheckpointsView => {}
+            // BUG-181: closing the view re-polls the counts (degraded-
+            // transport mitigation — mirrors the open re-poll; keeps the
+            // board header fresh when the push channel is closed, e.g.
+            // WebSocket).
+            Action::CloseCheckpointsView => {
+                self.spawn_refresh_checkpoint_counts();
+            }
             _ => return false,
         }
         true

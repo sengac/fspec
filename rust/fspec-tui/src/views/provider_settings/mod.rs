@@ -15,7 +15,6 @@ use std::collections::{HashMap, HashSet};
 use crate::components::scroll_viewport::ensure_visible;
 use crate::components::Action;
 use crate::views::agent::confirm_dialog::ConfirmDialog;
-use crate::views::agent::slash_commands::SlashCommandAction;
 
 mod body_render;
 mod copy;
@@ -290,10 +289,7 @@ impl ProviderSettingsView {
     }
 
     pub fn visible_rows_for(area: Rect) -> usize {
-        area.height.saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
+        area.height
+            .saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
     }
-}
-
-pub fn is_provider_action(action: SlashCommandAction) -> bool {
-    matches!(action, SlashCommandAction::Provider)
 }

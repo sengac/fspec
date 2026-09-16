@@ -467,13 +467,40 @@ impl rig::tool::Tool for GrepTool {
                 message: e.to_string(),
             })?;
 
+        // TOOL-024: an error output from execute() is either an
+        // argument-validation failure ("parameter is required") or an
+        // execution failure (e.g. an invalid regex). Validation failures
+        // get the full recovery surface — registered tool name, accepted
+        // parameters, example call — while execution failures pass
+        // through unchanged.
         if result.is_error {
-            Err(ToolError::Execution {
-                tool: "grep",
+            if Self::is_arg_validation_error(&result.content) {
+                let schema = self.definition(String::new()).await.parameters;
+                return Err(ToolError::Validation {
+                    tool: "Grep",
+                    message: codelet_common::tool_usage::append_usage_to_message(
+                        "Grep",
+                        &schema,
+                        &result.content,
+                    ),
+                });
+            }
+            return Err(ToolError::Execution {
+                tool: "Grep",
                 message: result.content,
-            })
-        } else {
-            Ok(result.content)
+            });
         }
+        Ok(result.content)
+    }
+}
+
+impl GrepTool {
+    /// TOOL-024: classify a `ToolOutput` error message raised by
+    /// `execute()`. Messages of the form "Error: <param> parameter is
+    /// required" are argument-validation failures (the args deserialized
+    /// but a required value was empty/missing) — everything else is an
+    /// execution failure.
+    fn is_arg_validation_error(content: &str) -> bool {
+        content.contains("parameter is required")
     }
 }

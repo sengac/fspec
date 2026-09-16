@@ -13,9 +13,9 @@
 
 use std::sync::Arc;
 
+use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App};
 use codelet_rpc_types::{SessionChangesSummary, SessionId};
-use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 
 mod common;
 use common::MockBackend;
@@ -59,7 +59,9 @@ async fn slash_merge_worktree_with_only_ignored_changes_emits_nothing_to_merge()
     drain_pending(&mut app).await;
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::MergeWorktree));
+    app.dispatch(Action::SlashCommandSelected(
+        SlashCommandAction::MergeWorktree,
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second Action::EmitSessionNotice carrying "[merge] nothing to merge" for s-1 is observed on the action bus
@@ -70,7 +72,14 @@ async fn slash_merge_worktree_with_only_ignored_changes_emits_nothing_to_merge()
         .unwrap_or_default();
     let text: String = chunks
         .iter()
-        .flat_map(|c| c.lines.iter().map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>()))
+        .flat_map(|c| {
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
+        })
         .collect::<Vec<String>>()
         .join("\n");
     assert!(

@@ -90,9 +90,7 @@ impl ResumeSessionView {
                     if self.double_click.record_click(candidate, now) {
                         // Double-click: resume session immediately
                         let info = &self.sessions[candidate];
-                        return ResumeSessionViewOutcome::Selected(SessionId::new(
-                            info.id.clone(),
-                        ));
+                        return ResumeSessionViewOutcome::Selected(SessionId::new(info.id.clone()));
                     }
                     // Single-click: move selection
                     self.selected_index = candidate;

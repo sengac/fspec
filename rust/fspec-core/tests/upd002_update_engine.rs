@@ -57,7 +57,10 @@ async fn asset(
     axum::extract::State(s): axum::extract::State<MockStateArc>,
     axum::extract::Path(name): axum::extract::Path<String>,
 ) -> (
-    [(axum::http::header::HeaderName, axum::http::header::HeaderValue); 1],
+    [(
+        axum::http::header::HeaderName,
+        axum::http::header::HeaderValue,
+    ); 1],
     Vec<u8>,
 ) {
     let st = s.lock().expect("mock state lock");
@@ -105,7 +108,10 @@ async fn start_mock(tag: &str, asset_bytes: &[u8], correct_digest: bool) -> (Str
         digest,
     }));
     let app = axum::Router::new()
-        .route("/repos/sengac/fspec/releases/latest", axum::routing::get(releases_latest))
+        .route(
+            "/repos/sengac/fspec/releases/latest",
+            axum::routing::get(releases_latest),
+        )
         .route("/assets/{name}", axum::routing::get(asset))
         .with_state(state.clone());
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
@@ -242,7 +248,10 @@ async fn scenario_engine_verifies_the_checksum_before_replacing_the_binary() {
     let cfg = config_for(&base, "0.9.3", &install);
 
     // @step When the engine performs an update
-    let err = cfg.perform_update().await.expect_err("must fail on bad checksum");
+    let err = cfg
+        .perform_update()
+        .await
+        .expect_err("must fail on bad checksum");
 
     // @step Then it returns a checksum mismatch error
     assert!(

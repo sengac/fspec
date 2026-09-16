@@ -28,8 +28,12 @@ pub enum FspecCoreError {
     /// likely a typo or a removed command. The message MUST contain the
     /// literal substring `"Unknown fspec command"` and the offending command
     /// name, and MUST NOT contain `"not yet ported"`.
-    #[error("Unknown fspec command: {command}")]
-    UnknownCommand { command: String },
+    ///
+    /// TOOL-023: `recovery` carries appended, pre-rendered guidance
+    /// (a "Did you mean" suggestion and/or a `--help` pointer). Empty for
+    /// construction sites that have no suggestion context.
+    #[error("Unknown fspec command: {command}{recovery}")]
+    UnknownCommand { command: String, recovery: String },
 
     /// The command name is known and ported, but the supplied `args_json`
     /// could not be parsed or validated.

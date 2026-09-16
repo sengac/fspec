@@ -68,8 +68,7 @@ impl App {
         if self.compositor.contains(SESSION_WORKTREES_DIALOG_ID) {
             let _ = self.compositor.remove(SESSION_WORKTREES_DIALOG_ID);
         }
-        let dialog = SessionWorktreesDialog::new(rows)
-            .with_action_tx(self.action_tx.clone());
+        let dialog = SessionWorktreesDialog::new(rows).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 
@@ -91,9 +90,7 @@ impl App {
         let sid_for_task = session_id;
         let handle: JoinHandle<()> = tokio::spawn(async move {
             let text = match backend.prune_orphaned_worktrees().await {
-                Ok(ids) if ids.is_empty() => {
-                    "[worktrees] no leaked worktrees to prune".to_string()
-                }
+                Ok(ids) if ids.is_empty() => "[worktrees] no leaked worktrees to prune".to_string(),
                 Ok(ids) => format!("[worktrees] pruned {} leaked worktree(s)", ids.len()),
                 Err(e) => format!("[error] /worktrees prune: {e}"),
             };

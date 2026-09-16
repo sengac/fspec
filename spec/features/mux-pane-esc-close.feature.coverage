@@ -1,0 +1,497 @@
+{
+  "scenarios": [
+    {
+      "name": "Esc on the focused Files mux pane closes the pane and keeps the saved layout",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "171-266",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/panes.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on the focused Checkpoints mux pane closes the pane and keeps the saved layout",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "276-348",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/panes.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on a Files pane mid-initial-load does not close the pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "357-417",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "closing the last rendered pane exits mux to the single Board view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "427-470",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/panes.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on the focused Board mux pane still shows the exit dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "653-692",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
+              "lines": [
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on the focused Agent mux pane still shows the agent exit dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "696-732",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
+              "lines": [
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in the single Changed Files view still closes to the Board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
+          "lines": "736-764",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/multiplex/panes.rs",
+      "rust/fspec-tui/src/views/multiplex/keys.rs",
+      "rust/fspec-tui/src/views/navigator.rs"
+    ],
+    "totalLinesCovered": 727
+  }
+}

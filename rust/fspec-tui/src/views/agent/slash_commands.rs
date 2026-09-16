@@ -3,15 +3,10 @@
 //! Feature: spec/features/rpc020-slash-and-file-popups.feature
 //!
 //! Static list of every `/`-prefixed command surfaced by AgentView's
-//! palette, plus the three-tier `filter_commands` helper that mirrors
-//! `src/tui/utils/slashCommands.ts::filterCommands` so the Rust TUI
-//! and the Ink TS TUI agree on filter ordering.
-//!
-//! `SlashCommandAction` lives here (rather than in `components/mod.rs`)
-//! so the Action enum's new `SlashCommandSelected(SlashCommandAction)`
-//! variant has a stable home. The registry itself is `const`-friendly:
-//! both `SlashCommand` and `SlashCommandAction` derive `Clone, Copy,
-//! Debug`, and `SLASH_COMMANDS` is a `&'static [SlashCommand]`.
+//! palette + the three-tier `filter_commands` helper mirroring
+//! `src/tui/utils/slashCommands.ts::filterCommands`. `SlashCommandAction`
+//! lives here so the Action enum's `SlashCommandSelected` variant has a
+//! stable home; `SLASH_COMMANDS` is a `&'static [SlashCommand]`.
 
 /// Concrete action emitted by the palette on Enter — App::dispatch
 /// branches over this enum to wire the live handlers (Help / Clear /
@@ -80,7 +75,10 @@ impl SlashCommandAction {
 
     /// BUG-169: case-insensitive registry lookup; `None` for unregistered/empty names.
     pub fn from_name(name: &str) -> Option<Self> {
-        SLASH_COMMANDS.iter().find(|c| c.name().eq_ignore_ascii_case(name)).map(|c| c.action)
+        SLASH_COMMANDS
+            .iter()
+            .find(|c| c.name().eq_ignore_ascii_case(name))
+            .map(|c| c.action)
     }
 }
 
@@ -199,10 +197,8 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
 /// 3. Substring matches in the description (excluding any name match).
 ///
 /// Empty `filter` returns the full registry verbatim. Matching is
-/// case-insensitive.
-///
-/// Mirrors `src/tui/utils/slashCommands.ts::filterCommands` exactly so
-/// the Rust TUI and the Ink TS TUI rank suggestions identically.
+/// case-insensitive. Mirrors `src/tui/utils/slashCommands.ts::
+/// filterCommands` exactly so both TUIs rank suggestions identically.
 pub fn filter_commands(filter: &str) -> Vec<&'static SlashCommand> {
     if filter.is_empty() {
         return SLASH_COMMANDS.iter().collect();

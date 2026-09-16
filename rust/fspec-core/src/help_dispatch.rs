@@ -72,9 +72,9 @@ fn render_command_help(name: &str) -> DispatchResult {
     }
 
     // Not a canonical command at all → UnknownCommand naming the stripped name.
-    failure(FspecCoreError::UnknownCommand {
-        command: name.to_string(),
-    })
+    // TOOL-023: reuse the dispatcher's recovery builder so a typo'd
+    // `<name> --help` also gets the did-you-mean suggestion.
+    failure(crate::dispatch::unknown_command_with_recovery(name))
 }
 
 /// Parse `args_json` defensively and extract a non-blank `command` field.

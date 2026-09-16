@@ -37,7 +37,12 @@ use uuid::Uuid;
 use crate::ToolError;
 
 /// Tool name as exposed to the model.
-pub const DONE_TOOL_NAME: &str = "done";
+///
+/// TOOL-024: the registered rig name is `Done` (matching Read/Write/Edit
+/// casing and the system-prompt tool description). Argument-validation
+/// errors must self-identify with this registered name, not a lowercase
+/// alias.
+pub const DONE_TOOL_NAME: &str = "Done";
 
 /// Default bounded timeout for the Tier 2 verify command (doc §4).
 const DEFAULT_VERIFY_TIMEOUT: Duration = Duration::from_secs(300);
@@ -314,11 +319,17 @@ impl Tool for DoneTool {
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         // Tier-0 validation: a non-empty summary is required.
+        // TOOL-024: argument-validation failures get the full recovery
+        // surface — registered tool name, accepted parameters, example call.
         if args.summary.trim().is_empty() {
+            let schema = self.definition(String::new()).await.parameters;
             return Err(ToolError::Validation {
-                tool: "done",
-                message: "done() requires a non-empty summary describing what was completed"
-                    .to_string(),
+                tool: Self::NAME,
+                message: codelet_common::tool_usage::append_usage_to_message(
+                    Self::NAME,
+                    &schema,
+                    "done() requires a non-empty summary describing what was completed",
+                ),
             });
         }
 

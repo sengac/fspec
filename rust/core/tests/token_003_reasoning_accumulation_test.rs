@@ -89,7 +89,8 @@ fn reasoning_tokens_accumulate_across_api_segments_within_a_single_turn() {
          not be overwritten by the latest segment's 300"
     );
     assert_eq!(
-        display.current().reasoning_tokens, 800,
+        display.current().reasoning_tokens,
+        800,
         "current() must report the session-cumulative reasoning value"
     );
 
@@ -98,8 +99,8 @@ fn reasoning_tokens_accumulate_across_api_segments_within_a_single_turn() {
     // so the emitted update must carry 800 — feeding the end-of-turn
     // session tracker from the same value keeps the header in sync.
     let mut tracker = TokenTracker::default();
-    let end_of_turn_usage = ApiTokenUsage::new(2_000, 0, 0, 75)
-        .with_reasoning_tokens(update2.reasoning_tokens);
+    let end_of_turn_usage =
+        ApiTokenUsage::new(2_000, 0, 0, 75).with_reasoning_tokens(update2.reasoning_tokens);
     tracker.update_from_usage(&end_of_turn_usage, update2.output_tokens);
     assert_eq!(
         tracker.reasoning_tokens, 800,
@@ -118,7 +119,8 @@ fn reasoning_tokens_accumulate_across_turns() {
     // (the 6 stream_loop.rs seed sites + 2 gemini_continuation.rs sites).
     let mut display = StreamingTokenDisplay::new(1_000, 0, 0, 0).with_prev_reasoning(800);
     assert_eq!(
-        display.current().reasoning_tokens, 800,
+        display.current().reasoning_tokens,
+        800,
         "before turn 2 reports anything, the display must continue from the \
          previous session's cumulative 800"
     );
@@ -240,8 +242,7 @@ fn cumulative_reasoning_does_not_affect_compaction_threshold_math() {
     // The fill badge is driven by per-request physical usage
     // (`emit_context_fill_from_usage` consumes `ApiTokenUsage::total_context`),
     // never by the session tracker's cumulative reasoning display value.
-    let per_segment_usage =
-        ApiTokenUsage::new(1_000, 0, 0, 75).with_reasoning_tokens(300);
+    let per_segment_usage = ApiTokenUsage::new(1_000, 0, 0, 75).with_reasoning_tokens(300);
     let fill_basis = per_segment_usage.total_context();
 
     // @step Then the threshold check uses physical context occupancy (input + current-segment output + current-segment reasoning)
@@ -299,8 +300,7 @@ fn token_tracker_update_from_usage_stores_cumulative_reasoning() {
 
     // The end-of-turn call sites must pass the turn's CUMULATIVE reasoning
     // value (from StreamingTokenDisplay.current()) via with_reasoning_tokens.
-    let usage =
-        ApiTokenUsage::new(100_000, 50_000, 5_000, 10_000).with_reasoning_tokens(1_000);
+    let usage = ApiTokenUsage::new(100_000, 50_000, 5_000, 10_000).with_reasoning_tokens(1_000);
     tracker.update_from_usage(&usage, 220);
 
     assert_eq!(
@@ -350,8 +350,7 @@ fn reasoning_tokens_persist_across_session_restore() {
     // @step When the session is closed and restored via /resume
     // Closing: the end-of-turn persist path writes the session-cumulative
     // reasoning value into the manifest.
-    persist_token_state(&session_id, 100, 50, 1_000)
-        .expect("persist_token_state must succeed");
+    persist_token_state(&session_id, 100, 50, 1_000).expect("persist_token_state must succeed");
 
     // Restoring: /resume re-seeds the manifest token state via
     // set_session_tokens, which must carry the reasoning value through.

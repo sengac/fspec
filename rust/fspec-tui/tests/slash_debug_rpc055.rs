@@ -137,7 +137,10 @@ async fn debug_calls_backend_toggle_debug_for_focused_session() {
     // superseded by spec/features/fix-debug-command-parity-gaps-in-rust-tui.feature)
     assert_eq!(
         last.1,
-        format!("{}/.fspec", std::env::var("HOME").expect("HOME set in test env"))
+        format!(
+            "{}/.fspec",
+            std::env::var("HOME").expect("HOME set in test env")
+        )
     );
 }
 

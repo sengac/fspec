@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-10T10:11:13.477Z",
+    "lastUpdated": "2026-09-16T07:47:52.625Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 178,
+    "BUG": 185,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
@@ -74,16 +74,16 @@
     "REVIEW": 1,
     "RIG": 15,
     "RLM": 2,
-    "RPC": 431,
+    "RPC": 432,
     "SCHED": 14,
     "SESS": 2,
     "TAG": 4,
     "TECH": 3,
     "TEST": 40,
     "TOKEN": 3,
-    "TOOL": 22,
+    "TOOL": 24,
     "TOOLS": 4,
-    "TUI": 110,
+    "TUI": 111,
     "UX": 2,
     "VAL": 7,
     "VID": 2,
@@ -93,7 +93,7 @@
     "WATCH": 24,
     "UPD": 4,
     "BOARD": 22,
-    "MUX": 8,
+    "MUX": 9,
     "WT": 12
   },
   "states": {
@@ -1699,7 +1699,19 @@
       "WT-012",
       "PROV-142",
       "BUG-170",
-      "BUG-178"
+      "BUG-178",
+      "RPC-432",
+      "BUG-179",
+      "BUG-180",
+      "TUI-111",
+      "BUG-181",
+      "BUG-182",
+      "BUG-183",
+      "BUG-184",
+      "MUX-009",
+      "TOOL-023",
+      "TOOL-024",
+      "BUG-185"
     ],
     "blocked": [
       "QUERY-001",
@@ -230790,6 +230802,1408 @@
       ],
       "nextNoteId": 1,
       "estimate": 2
+    },
+    "RPC-432": {
+      "id": "RPC-432",
+      "title": "Render markdown tables at each assistant-message finalization, not only at turn Done",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-11T09:50:16.066Z",
+      "updatedAt": "2026-09-11T10:51:38.806Z",
+      "description": "The Rust TUI AgentView runs format_markdown_tables only on StreamChunk::Done (end of agent turn) — handle_done in rust/fspec-tui/src/store/agent_view/chunk_processor.rs. Markdown tables in intermediate assistant messages (text between tool calls) are finalised by flush_in_flight_drop_empty on ToolCall/Error/Interrupted/UserInput and stay raw pipe rows, while only the turn's final message gets the box-drawing grid. Move the format_markdown_tables call into flush_in_flight_drop_empty so every assistant message renders as a grid when it is finalised, and reduce handle_done to the shared flush plus the thinking-slot clear. Intentional divergence from the TS Ink reference (RPC-091/RPC-370), which only formats at Done.",
+      "children": [],
+      "userStory": {
+        "role": "user reading AI responses in the Rust TUI AgentView",
+        "action": "see every assistant message's markdown tables rendered as box-drawing grids at message finalization",
+        "benefit": "tables between tool calls align and read as cleanly as the turn-final message"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-11T09:50:42.420Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-11T10:09:21.084Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-11T10:25:22.863Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-11T10:31:12.420Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-11T10:51:38.806Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Every non-empty in-flight AssistantText chunk MUST be run through format_markdown_tables at finalization, regardless of which chunk finalizes it (ToolCall, Error, Interrupted, UserInput, or Done) — grid rendering is a property of message completion, not of turn completion",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:50:49.876Z"
+        },
+        {
+          "id": 1,
+          "text": "format_markdown_tables MUST run exactly once per assistant message — the flush trigger applies it when the in-flight chunk is non-empty, and StreamChunk::Done must not re-apply it to text that was already flushed as a message",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:50:56.282Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Assistant streams '| h1 | h2 |\\n|---|---|\\n| a | b |' then ToolCall(Bash) arrives → the in-flight assistant chunk is formatted at ToolCall time, so the scrollback shows the box-drawing grid BEFORE the tool-call card, with no re-formatting when Done later arrives",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:51:52.241Z"
+        },
+        {
+          "id": 1,
+          "text": "A table in the turn's final message still renders as a grid — the single-message turn ('| a | b |\\n|---|---|\\n| 1 | 2 |' → Done) shows the box-drawing grid exactly as before",
+          "deleted": false,
+          "createdAt": "2026-09-11T09:52:03.586Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "assumptions": [
+        "format_markdown_tables is idempotent: already-rendered box-drawing grids contain no pipe rows with a dash separator row, so a second pass leaves them unchanged — which is why routing every finalization through one format call is safe even though Done may arrive after a ToolCall already formatted the last message"
+      ],
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Move `source.text = format_markdown_tables(&source.text)` from handle_done into flush_in_flight_drop_empty (rust/fspec-tui/src/store/agent_view/chunk_processor.rs:157), so every flush trigger (ToolCall, Error, Interrupted, UserInput) finalizes the in-flight assistant message with the box-drawing grid. handle_done reduces to flush_in_flight_drop_empty(ctx) + ctx.in_flight_thinking = None. No new call sites beyond the existing flush_triggers. format_markdown_tables is idempotent (grids contain no pipe+dash-separator rows) so Done after a ToolCall is a no-op re-format.",
+          "deleted": false,
+          "createdAt": "2026-09-11T10:08:06.284Z"
+        },
+        {
+          "id": 1,
+          "text": "Intentional divergence from the TS Ink chunkProcessor reference (RPC-091/RPC-370), which only runs formatMarkdownTables on Done. The Rust TUI deliberately formats at every assistant-message finalization so tables between tool calls render as grids. The RPC-091 feature scenarios (Done runs formatMarkdownTables, ToolCall flushes) remain behaviorally true — the grid just also appears on the flush paths.",
+          "deleted": false,
+          "createdAt": "2026-09-11T10:08:13.285Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/RPC-432/ast-research-per-message-finalization.md"
+      ]
+    },
+    "BUG-179": {
+      "id": "BUG-179",
+      "title": "AgentView input ignores paste and terminal file drop while mux mode is active",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-11T21:04:30.076Z",
+      "updatedAt": "2026-09-12T01:37:48.447Z",
+      "description": "In mux mode (ViewMode::Mux, mux.config().enabled) the agent input area is dead to both clipboard paste and terminal file drop: bracketed paste (Ctrl+V) inserts nothing into the live composer, and dropping a screenshot/file onto the input area does nothing. In single-view Agent mode both work. Research shows a shared root cause in the mux keyboard-isolation gate (Navigator::handle_mux_event) which drops every non-Event::Key event, and crossterm 0.28 having no file-drop Event variant (terminals synthesize drops as typed text / bracketed paste). Full research attached as bug179-research.md.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-11T21:11:13.432Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-11T23:32:13.983Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-12T01:10:03.534Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-12T01:14:20.370Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-12T01:37:48.447Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user supervising agents in mux mode",
+        "action": "paste text or drop a file into the focused agent pane's input",
+        "benefit": "the composer receives the text exactly as it does in single-view Agent mode"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A bracketed paste (Event::Paste) delivered while mux is active is routed to the FOCUSED pane only — same keyboard-isolation rule as keys (R2); the Board/Files/Checkpoints panes ignore it, the Agent pane inserts it into the live composer",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:11:43.184Z"
+        },
+        {
+          "id": 1,
+          "text": "Composer precedence and gates in mux are IDENTICAL to single view: HITL freeform/exec-stdin/pause prompt routes win over the composer (dispatch.rs paste arms), the RPC-095 compacting block_edits gate suppresses paste, CRLF is normalized to LF, and PendingInputChanged is emitted only when the buffer changed",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:11:51.446Z"
+        },
+        {
+          "id": 2,
+          "text": "After mux paste routing, App::handle_paste runs the same post-Navigator mux focus sync as App::handle_event (sync_mux_focus_to_session), so the RPC-024/052 draft round-trip always targets the focused pane's window session",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:08.378Z"
+        },
+        {
+          "id": 3,
+          "text": "A paste must never mutate the ghost input_draft of an unfocused agent pane — the single shared MultiLineInput belongs to the focused pane's session only (BUG-163 model)",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:08.605Z"
+        },
+        {
+          "id": 4,
+          "text": "No behavior change outside mux (R10): when mux.config().enabled is false the event flow is byte-for-byte unchanged and the existing RPC-403 paste routing tests stay green",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:08.867Z"
+        },
+        {
+          "id": 5,
+          "text": "Scope is limited to the unified root-cause fix: route Event::Paste to the focused mux pane (reusing the existing AgentView paste precedence/gate chain) and mirror the mux focus sync in App::handle_paste. No file:// decoding, no drop toast — single-view mode has no such behavior, so mux parity means identical semantics. file://-URL handling and a dedicated drop UX are out of scope (documented as non-goals in the attached research).",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:13:12.029Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Repro (drop): drag a screenshot onto the agent pane's input area in mux mode — terminals deliver the drop as a bracketed paste (path string) or as typed characters; after the fix a paste-style drop inserts the path into the focused pane's composer exactly like single-view mode, while typed-character drops already flow to the focused pane under R2",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:30.327Z"
+        },
+        {
+          "id": 1,
+          "text": "Repro: enter mux with /mux board agent agent, focus the agent pane (Shift+Right or click inside it), then Ctrl+V a 3-line snippet — today nothing is inserted; after the fix all 3 lines land in the composer with the cursor at the end",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:12:30.778Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the fix scope be limited to routing Event::Paste (bracketed paste / drop-as-paste) to the focused mux pane (the unified root-cause fix — typed-character drops already flow to the focused pane under R2), or should it also add file://-URL decoding or a drop-specific UX (e.g. a toast showing the dropped path)?",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:13:02.461Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Scope is limited to the unified root-cause fix: route Event::Paste to the focused mux pane (reusing the existing AgentView paste precedence/gate chain) and mirror the mux focus sync in App::handle_paste. No file:// decoding, no drop toast — single-view mode has no such behavior, so mux parity means identical semantics. file://-URL handling and a dedicated drop UX are out of scope (documented as non-goals in the attached research)."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix touches exactly 2 files: (1) views/navigator_mux_events.rs — add an Event::Paste branch in handle_mux_event that forwards to the focused pane via forward_mux_event_to_focused_pane (same path as keys), placed after the mouse branch and before the Event::Key guard; (2) app/events.rs — App::handle_paste must call sync_mux_focus_to_session() after Navigator routing (mirrors the post-Navigator step at events.rs:117-121 in App::handle_event). No AgentView/MultiLineInput/mux-layout changes; all existing gate/precedence logic (HITL, exec-stdin, pause, RPC-095 compacting block_edits, CRLF normalization, RPC-403 routing) is reused verbatim.",
+          "deleted": false,
+          "createdAt": "2026-09-11T21:13:31.370Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/BUG-179/bug179-research.md"
+      ],
+      "estimate": 3
+    },
+    "BUG-180": {
+      "id": "BUG-180",
+      "title": "SessionHeader work-unit status goes stale when status changes externally",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-12T12:54:43.226Z",
+      "updatedAt": "2026-09-12T22:34:58.429Z",
+      "description": "When a work unit's status changes (via update-work-unit-status, any fspec command, or direct file edit), the SessionHeader in AgentView continues to display the OLD status. Root cause: the WorkUnitsWatcher push (Action::WorkUnitsLoaded) only updates BoardStore.replace_work_units() but never syncs the new status into AgentViewStore.work_unit_context_by_session for sessions that have that unit bound. The per-session WorkUnitContext.status is a frozen snapshot taken at attach-time.",
+      "epic": "rust-frontend",
+      "children": [],
+      "userStory": {
+        "role": "fspec TUI user with an agent session attached to a work unit",
+        "action": "see the SessionHeader reflect the work unit's current status after any external status change",
+        "benefit": "the AgentView chrome never paints a stale status that disagrees with the board"
+      },
+      "attachments": [
+        "spec/attachments/BUG-180/bug-180-findings.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-12T21:48:06.356Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-12T22:09:31.809Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-12T22:09:50.064Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-12T22:11:15.538Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-12T22:34:58.429Z"
+        }
+      ],
+      "estimate": 2
+    },
+    "TUI-111": {
+      "id": "TUI-111",
+      "title": "Refactor: centralize terminal output sanitization at ingress for ALL TUI views",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-13T02:50:27.442Z",
+      "updatedAt": "2026-09-13T09:05:06.959Z",
+      "description": "Today sanitize_for_terminal() (TUI-100) only covers ToolResult/ToolProgress scrollback text, plus ad-hoc call sites in diff_common (TUI-104) and checkpoint labels. All other external strings reaching the TUI (BoardView work-unit titles/descriptions, assistant/thinking text, notifications, error dialogs, HITL/pause/exec-stdin prompts, role banners, loading-dialog cascade labels, blocklist/model-selector rows, turn modal, copy) are painted unsanitized. Refactor to sanitize ALL output at the store/action/dialog ingress boundaries (Option A in the attached research), promote the sanitizer to a crate-level terminal::sanitize module, delete the per-view call sites, and add buffer-level invariant + idempotence (proptest) tests. Research attached.",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-111/TUI-111-centralized-terminal-output-sanitization-research.md",
+        "spec/attachments/TUI-111/ast-research-tui-111-sanitization-ingress.md"
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "see clean, terminal-safe output in every TUI view (AgentView, BoardView, Changed Files, Checkpoints, dialogs, prompts)",
+        "benefit": "no view can display raw ANSI sequences, control characters, tabs or carriage returns from LLM, backend, filesystem or user data"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-13T02:54:25.793Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-13T03:34:02.903Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-13T09:02:29.300Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-13T09:02:38.704Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-13T09:05:06.959Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The canonical terminal sanitizer lives in ONE crate-level module (terminal::sanitize) re-exported from the crate root; no view, store, or component re-implements ANSI/control-character stripping",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:32.891Z"
+        },
+        {
+          "id": 1,
+          "text": "Sanitization happens at DATA INGRESS (store setters, the stream-chunk recorder, action handlers, dialog constructors) so that every view paints data that was cleaned exactly once; views never sanitize",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:37.930Z"
+        },
+        {
+          "id": 2,
+          "text": "Every StreamChunk variant that produces visible scrollback text is sanitized at SessionContext::record_chunk before it is stored: Text, Thinking, UserInput, Error, UserNotification, IncomingMessage, ToolCall (name+args), ToolResult, ToolProgress",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:43.841Z"
+        },
+        {
+          "id": 3,
+          "text": "BoardStore::replace_work_units sanitizes WorkUnitInfo fields on ingress (id, title, description, epic, attachment paths) so BoardView cards, details strip, search dialog and mux board pane all render clean text",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:56:52.200Z"
+        },
+        {
+          "id": 4,
+          "text": "Store setters that write user-visible prompt/chrome text sanitize on write: set_hitl_prompt (headers, questions, options, descriptions), set_pause_state (prompt, details/tool_call_id), set_exec_stdin (prompt, details), set_role (role text)",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:03.620Z"
+        },
+        {
+          "id": 5,
+          "text": "Dialog constructors sanitize caller-supplied text in new(): ErrorDialog (message), NotificationDialog (message), StatusDialog (message), LoadingDialog (title + label — catches cascade stage labels that embed file paths / checkpoint names)",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:11.463Z"
+        },
+        {
+          "id": 6,
+          "text": "Mode-view state setters sanitize incoming rows on ingress: ChangedFilesView set_files/set_diff_lines, CheckpointsView set_checkpoints/set_files/set_diff_lines, ResumeSessionView set_sessions, SearchHistoryView rows, BlocklistView set_rules (id, pattern, reason, guidance, source), model-selector rows",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:22.302Z"
+        },
+        {
+          "id": 7,
+          "text": "Edit/Write tool-diff SOURCE lines (tool input strings + context file lines read from disk) are sanitized BEFORE the diff codec encodes them with the \\u{1} elision sentinel — the encoded canonical lines are never run through the sanitizer post-encode",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:31.228Z"
+        },
+        {
+          "id": 8,
+          "text": "The LLM receives RAW unsanitized tool output (TUI-100 rule 6 is preserved): sanitization happens only inside fspec-tui; rust/tools and the session engine are untouched",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:39.972Z"
+        },
+        {
+          "id": 9,
+          "text": "Stderr marker ordering is preserved: ToolProgress/ToolResult text is sanitized FIRST, then the STDERR_MARKER (⚠stderr⚠) is applied by maybe_mark; the marker is still stripped at render time by strip_marker",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:57:46.834Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A work unit whose title contains ANSI color codes and a tab (e.g. from an LLM-authored fspec create-story) displays as plain text in the BoardView card label, the details strip title row, and the work-unit search dialog — no escape glyphs, no terminal trashing",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:58:50.073Z"
+        },
+        {
+          "id": 1,
+          "text": "An assistant message containing control characters (\\x00\\x07) and carriage returns displays as clean text in the AgentView scrollback, the turn-content modal (Enter on the turn), and when copied to the clipboard",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:58:56.360Z"
+        },
+        {
+          "id": 2,
+          "text": "A thinking chunk with ANSI cursor-movement sequences (neofetch-style) shows readable plain text under the [Thinking] header in the scrollback",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:02.154Z"
+        },
+        {
+          "id": 3,
+          "text": "A tool call whose argument strings contain escape sequences (e.g. file_path or command with \\x1b codes) shows clean argument text in the tool-card header line",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:15.275Z"
+        },
+        {
+          "id": 4,
+          "text": "An Edit/Write tool with escape sequences in its input shows a clean colored diff inline in the tool card AND in the turn-content modal, while the diff's elision hint rows (\"... (N lines)\") still render correctly",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:28.753Z"
+        },
+        {
+          "id": 5,
+          "text": "A provider error chunk (StreamChunk::Error) with ANSI in the error text shows clean text both in the inline \"API Error: ...\" scrollback line and in the centred ErrorDialog modal",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:41.172Z"
+        },
+        {
+          "id": 6,
+          "text": "A HITL prompt (request_user_input) whose question/options carry control characters shows clean text in the inline pause-style prompt rows (header, question, option labels + descriptions)",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:54.744Z"
+        },
+        {
+          "id": 7,
+          "text": "A role set via /role with a control character shows clean single-line text in the RoleBanner under the SessionHeader",
+          "deleted": false,
+          "createdAt": "2026-09-13T02:59:59.972Z"
+        },
+        {
+          "id": 8,
+          "text": "A session notice (Action::EmitSessionNotice) whose text carries escape sequences lands as a clean line in the originating session's scrollback",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:07.886Z"
+        },
+        {
+          "id": 9,
+          "text": "A changed file whose path and diff content contain ANSI codes shows clean rows in the Changed Files dual-pane (file list + diff pane)",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:27.156Z"
+        },
+        {
+          "id": 10,
+          "text": "A checkpoint with a name containing control characters and a diff with tabs shows clean rows in the Checkpoints three-pane (checkpoint list, files, diff) and in the restore dialog",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:33.446Z"
+        },
+        {
+          "id": 11,
+          "text": "While the Changed Files diff stage is in flight, the shared loading dialog's spinner label (which embeds the file path) shows clean text even when the path carries control characters",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:39.330Z"
+        },
+        {
+          "id": 12,
+          "text": "A blocklist rule whose pattern/reason/guidance contain escape sequences shows clean rows in the BlocklistView list pane and details pane",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:46.075Z"
+        },
+        {
+          "id": 13,
+          "text": "Plain text with no escape sequences or control characters passes through sanitization byte-for-byte unchanged in every sink (no visual difference after the refactor)",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:00:54.071Z"
+        }
+      ],
+      "nextExampleId": 15,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Sanitizer module moves from store/agent_view/sanitize.rs to a new crate-level terminal::sanitize module (fspec-tui/src/terminal/sanitize.rs + moved test files), re-exported via lib.rs as `pub use terminal::sanitize::sanitize_for_terminal` so existing in-crate importers (views/diff_common, views/checkpoints) keep working; existing 5 call sites migrate to the new path. Function signature and behaviour (ANSI regex, tab→2 spaces, CR drop, C0 control-char drop, newline keep) are UNCHANGED.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:01:14.074Z"
+        },
+        {
+          "id": 1,
+          "text": "terminal.rs becomes terminal/mod.rs (file move, no content change) + terminal/sanitize.rs (moved from store/agent_view/sanitize.rs) + moved test files terminal/sanitize_tests.rs, terminal/sanitize_tests_streaming.rs. store/agent_view/sanitize.rs and its two test files are deleted; the #[path]-style test module includes in sanitize.rs migrate unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:01:38.423Z"
+        },
+        {
+          "id": 2,
+          "text": "Prompt/chrome store setters sanitize these exact fields on write: set_hitl_prompt → HitlRequest.questions[].{header,question,options[].label,options[].description}; set_pause_state → PauseState.{prompt, tool_call_id}; set_exec_stdin → ExecStdinRequest.command; set_role → the role string. Sanitize before storing (HitlPromptState::new receives the sanitized request; PauseState/ExecStdinRequest/role are sanitized in the setter body).",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:03:50.716Z"
+        },
+        {
+          "id": 3,
+          "text": "Mode-view + dialog ingress field lists: BoardStore::replace_work_units sanitizes WorkUnitInfo.{id,title,description,epic,attachments[]} (work_type/status are closed vocabularies — skipped); a shared fn sanitize_work_unit(&mut WorkUnitInfo) is used by both replace_work_units and AgentViewStore::sync_work_unit_contexts so the SessionHeader WU chip stays clean. ChangedFiles: ChangedFile.{path,change_type} at set_files + diff lines at set_diff_lines. Checkpoints: CheckpointInfo.{work_unit_id,name} at set_checkpoints + file rows + diff lines. ResumeSessionView::set_sessions → SessionInfo.{name,project,worktree_path,role}. SearchHistoryView rows → HistoryMatch.text. BlocklistView::set_rules → BlocklistRuleInfo.{id,pattern,reason,guidance,source} (action is closed vocabulary — skipped). Model selector: ProviderInfo/ModelInfo display_name fields via set_providers + the form's display_name on commit.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:04:06.069Z"
+        },
+        {
+          "id": 4,
+          "text": "Test strategy: (1) moved unit tests keep the TUI-100 golden behaviour; (2) proptest property on sanitize_for_terminal: output contains no \\x1b and no char in the forbidden control set for arbitrary input, plus idempotence sanitize(sanitize(x)) == sanitize(x); (3) per-sink ingress unit tests (store-level: feed hostile WorkUnitInfo/HitlRequest/PauseState/ExecStdinRequest/BlocklistRuleInfo/SessionInfo/ChangedFile/CheckpointInfo through the setters and assert stored text is clean); (4) integration tests in fspec-tui/tests/ using the mock-backend harness: drive hostile StreamChunks + WorkUnitsLoaded + dialog actions through the App and assert the rendered Buffer contains no control/ANSI bytes for board card, details strip, scrollback, error dialog, loading dialog label, HITL/pause prompt, role banner, checkpoint label, changed-files rows. Existing golden-string parity tests (chunkprocessor-parity, chunk_rendering_parity, scrollback_pty) are the regression net for the record_chunk move.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:04:28.678Z"
+        },
+        {
+          "id": 5,
+          "text": "record_chunk ingress design: each visible-text arm sanitizes its payload at the top of the arm, BEFORE the chunk-processor helpers see it — Text/Thinking/UserInput/Error/UserNotification/IncomingMessage sanitize the payload string; ToolCall sanitizes the tool name + the extracted args display string (extract_tool_args_display output is sanitized when building the header in handle_tool_call); ToolResult/ToolProgress sanitize at the record_chunk arm entry and the now-redundant calls in chunk_tool_result.rs are deleted (the maybe_mark call stays AFTER sanitization, preserving rule 9). The diff path is separate: pending_tool_diff::produce_diff_strings sanitizes each source line (Edit old/new strings, Write content, and context file lines in diff_context) BEFORE diff_format encodes rows via to_line — the \\u{1} elision sentinel is only introduced by the codec and must survive to parse_line. IncomingMessage sanitizes the role + body segments BEFORE the [W] prefix formatting.",
+          "deleted": false,
+          "createdAt": "2026-09-13T03:04:52.127Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "assumptions": [
+        "The sanitize_for_terminal behaviour (ANSI regex + control-char set + tab/CR handling) is already correct and frozen — this card is a STRUCTURAL refactor (where sanitization happens), not a behaviour change. If behaviour needs to change, that is a separate card."
+      ],
+      "estimate": 13
+    },
+    "BUG-181": {
+      "id": "BUG-181",
+      "title": "Board header checkpoint counter goes stale after checkpoint add/remove (no push to TUI)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-13T10:13:33.169Z",
+      "updatedAt": "2026-09-13T22:07:09.393Z",
+      "description": "The BoardView header checkpoint counter (`Checkpoints: N Manual, M Auto`) only updates at bootstrap and after in-TUI restore/delete (RefreshCheckpointCounts). Checkpoints added/removed via agent tool calls (fspec checkpoint, auto-checkpoints on update-work-unit-status), CLI in another terminal, or direct git ref ops never reach BoardStore.checkpoint_counts, so the header paints a stale value until the TUI restarts. Root cause: the TS 'checkpoint-changed' IPC push was dropped in the Rust port (documented NO-OP in fspec-core/checkpoint.rs), FspecBackend has no push surface for checkpoint changes, and no App-level test covers the existing RefreshCheckpointCounts → BoardStore path. Full research doc attached. See attached research doc for the proposed fix (push broadcast channel + RPC-compliance gaps).",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-181/BUG-181-board-checkpoint-counter-stale-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-13T10:13:53.818Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-13T12:21:36.369Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-13T21:52:21.578Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-13T21:52:30.745Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-13T22:07:09.393Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the fspec TUI board",
+        "action": "see the checkpoint counter update immediately whenever a checkpoint is added or removed, from any code path",
+        "benefit": "the board header is a trustworthy live view of checkpoint state instead of a stale bootstrap snapshot"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The BoardStore.checkpoint_counts field must be updated for EVERY checkpoint mutation path: manual create (fspec checkpoint), auto-checkpoint on update-work-unit-status transitions, auto-checkpoint cleanup on →done, restore (TUI + CLI), and delete (TUI + CLI)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:05.132Z"
+        },
+        {
+          "id": 1,
+          "text": "The checkpoint-changed push must be transport-agnostic: FspecBackend gains checkpoint_counts_changed_rx() with a closed-receiver default so test doubles and the WebSocket transport compile unchanged (mirrors checkpoints_progress_rx, TUI-109)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:15.429Z"
+        },
+        {
+          "id": 2,
+          "text": "The push producer lives in the shared layer (fspec-core command layer / rpc service), not in the TUI, so BOTH front doors (LLM tool dispatcher and standalone CLI) emit the notification — two-front-doors invariant",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:15.682Z"
+        },
+        {
+          "id": 3,
+          "text": "The existing in-TUI RefreshCheckpointCounts follow-up (after restore/delete in the Checkpoints view) must keep working; the new push channel must reuse Action::CheckpointCountsLoaded and BoardStore::set_checkpoint_counts rather than adding a second writer path",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:25.962Z"
+        },
+        {
+          "id": 4,
+          "text": "The WebSocket transport degrades gracefully: when the checkpoint-changed channel is not forwarded (closed receiver), the App subscriber exits cleanly and the header falls back to bootstrap value + in-view refresh — no panic, no hang (documented, like TUI-109 checkpoints_progress_rx)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:26.192Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent tool call `fspec checkpoint AUTH-001 baseline` runs in-process while the TUI is open: the board header flips from `Checkpoints: None` to `Checkpoints: 1 Manual` without any TUI re-open or restart",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:34.932Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent tool call `fspec update-work-unit-status AUTH-001 testing` creates auto-checkpoint AUTH-001-auto-specifying on a dirty tree: the header flips from `Checkpoints: None` to `Checkpoints: 0 Manual, 1 Auto`",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:35.189Z"
+        },
+        {
+          "id": 2,
+          "text": "In the Checkpoints view the user deletes a manual checkpoint (`d` → `y`): the header flips from `Checkpoints: 1 Manual, 1 Auto` to `Checkpoints: 0 Manual, 1 Auto` (this path already works via RefreshCheckpointCounts — regression guard)",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:45.716Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs `fspec cleanup-checkpoints AUTH-001 --keep-last 1` in a second terminal while the TUI is open: the header counts drop to reflect only the surviving checkpoint",
+          "deleted": false,
+          "createdAt": "2026-09-13T10:14:45.981Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 8
+    },
+    "BUG-182": {
+      "id": "BUG-182",
+      "title": "Mux views don't work: frozen loading dialog, no loads, no git polling; add centralized git polling",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-13T23:08:25.822Z",
+      "updatedAt": "2026-09-14T02:56:31.585Z",
+      "description": "In mux mode: (1) the loading dialog spinner freezes because is_view_loading() only checks single-view modes (ChangedFiles/Checkpoints) and never the mux panes, (2) the ChangedFiles and Checkpoints mux panes never load data on mux entry, (3) nothing polls git periodically to refresh the changed-files list, the checkpoints list, and the chrome-bar git branch indicator (currently only fetched at bootstrap). Fix per user directive: one centralized git polling mechanism (DRY/SOLID — a GitStateWatcher that extends the BUG-181 CheckpointsWatcher pattern with a periodic timer and git-branch snapshot) feeding the changed-files view, checkpoints view, and chrome bar; keep the currently-selected item on refresh; mux-aware is_view_loading; initial loads on mux entry.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-13T23:12:08.392Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-14T01:01:29.293Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-14T02:34:13.911Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-14T02:35:33.664Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-14T02:56:31.585Z",
+          "reason": "All tests green: TUI 2803 passed / 0 failed, core+rpc 40 suites ok, clippy clean (only pre-existing warnings). Coverage 100% on git-state-watcher + git-state-watcher-core + live-checkpoint-counts features. CheckpointsWatcher removed (one watcher), GitStateWatcher = single source, mux lazy-pane loads + stable selection + mux-aware redraw gate live."
+        }
+      ],
+      "userStory": {
+        "role": "developer supervising agents in the fspec TUI mux mode",
+        "action": "see the Changed Files and Checkpoints mux panes load, stay live, and animate like their single-view counterparts, with the chrome bar's git branch always current",
+        "benefit": "mux mode is a trustworthy live view of the repository instead of frozen, un-loaded panes"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: A new codelet-core GitStateWatcher is the ONE centralized git polling mechanism (DRY/SOLID — it replaces CheckpointsWatcher as the checkpoint-count source so there is exactly one watcher). It keeps the BUG-181 debounced .git fs-watch AND adds a 10-second tokio timer that re-runs the git snapshot (branch + checkpoint counts + changed-files list + checkpoints list). A fresh snapshot is broadcast on a tokio broadcast channel ONLY when the snapshot differs from the last published one; a non-repo cwd degrades to empty state and watches the root for .git creation; watcher setup failure degrades to a static snapshot.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:12:55.054Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: The SharedFspecService exposes git_state_changed_rx() + git_state_snapshot() mirroring the BUG-181 checkpoint_counts_changed_rx()/checkpoint_counts_snapshot() pair; the embedded transport forwards them on FspecBackend::git_state_changed_rx() (default = closed receiver so the WebSocket transport + MockBackend compile unchanged and degrade to bootstrap values + the existing RefreshCheckpointCounts re-poll, documented like TUI-109).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:12:59.067Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: The App bootstrap spawns ONE 8th subscriber task on git_state_changed_rx (in addition to the existing 7; the BUG-181 checkpoint-counts push is folded into this stream so no separate checkpoint-changed subscriber remains). It folds each GitState frame onto the existing writer paths — BoardStore::set_checkpoint_counts (via CheckpointCountsLoaded), AgentViewStore::set_workspace (via WorkspaceInfoLoaded with the fresh git_branch) — so there is exactly one writer path per store field (no second writer, DRY).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:13:03.288Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: The GitState frame feeds the lazy views: when a frame arrives and the Changed Files view is visible (active single view OR a rendered mux pane), the App re-fetches the changed-files list through the existing Action::ChangedFilesLoaded path with a brief 'Refreshing changed files…' loading stage; same for the Checkpoints view (list → files → diff cascade, mirroring the open flow). The initial-load stage is never double-started: a refresh whose view is still in its initial load is dropped.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:22:19.130Z"
+        },
+        {
+          "id": 4,
+          "text": "R5: The run loop's redraw gate is mux-aware: Navigator::is_view_loading() returns true iff ANY loaded-then-loading lazy view is visible — the active single view (existing behavior) OR, in ViewMode::Mux, each rendered mux pane of kind ChangedFiles / Checkpoints that has a LoadTracker stage in flight. Without this the loading dialog's 80ms-cadence braille spinner freezes in mux mode because the 16ms tick stops drawing when nothing else demands a frame.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:26:06.075Z"
+        },
+        {
+          "id": 5,
+          "text": "R6: Refreshing a loaded list keeps the existing selection stable — the changed-files view re-selects the SAME file path (not index) and the checkpoints view re-selects the SAME (work_unit_id, name) after a refresh, so the user's context survives a git poll. If the selected item no longer exists (file deleted / checkpoint gone) the selection falls back to the first row and the diff/files re-load for it. Scroll offsets are preserved where the selection maps to a stable row.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:26:10.784Z"
+        },
+        {
+          "id": 6,
+          "text": "R7: Entering mux mode (any path: /mux on, /mux default, /mux <count>, /mux <kinds>, config-dialog commit) triggers an initial load for every rendered lazy pane that has not loaded yet — the ChangedFiles pane runs the existing open flow (reset view + spawn changed_files) and the Checkpoints pane runs its (reset view + spawn list_checkpoints + re-poll counts) WITHOUT flipping the whole view (R8 semantics: panes load in place). Already-loaded views are not reset (no gratuitous reload on /mux on/off cycling).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:16.216Z"
+        },
+        {
+          "id": 7,
+          "text": "R8: The poll interval is configurable on the watcher (default 10 seconds per the user directive; tests inject a short interval such as 200ms) so the periodic-refresh behavior is testable deterministically. The fs-watch debounce remains 100ms as in BUG-181.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:35:06.296Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "TUI runs in mux mode with a Files pane; the user's agent commits a new file in the repo; within ~10 seconds the Files pane shows the new file without the user re-opening the view (fs-watch event → re-fetch).",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:21.085Z"
+        },
+        {
+          "id": 1,
+          "text": "In the Files mux pane the user has a file selected while a 10-second poll lands a refresh: the same file remains selected (by path), the diff pane still shows its diff, and the scroll positions of the file list and diff panes are preserved.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:24.424Z"
+        },
+        {
+          "id": 2,
+          "text": "The user switches from the `main` branch to a feature branch via another terminal; the chrome bar of the agent view (bottom right) shows the new branch within one poll (≤ ~10 s) without restarting the TUI.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:28.294Z"
+        },
+        {
+          "id": 3,
+          "text": "Entering mux mode with a Files pane shows the animated loading dialog (braille spinner advancing at 80ms cadence) while the file list loads — exactly like the single-view F key flow — and the dialog dismisses to the real file list when the load flushes.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:32.321Z"
+        },
+        {
+          "id": 4,
+          "text": "In the Checkpoints mux pane the user has a checkpoint selected; a poll refresh lands while a checkpoint created by another terminal exists: the new checkpoint appears in the list, the user's previous checkpoint selection is kept (by work-unit + name), and its files/diff re-load.",
+          "deleted": false,
+          "createdAt": "2026-09-13T23:33:36.429Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 8
+    },
+    "BUG-183": {
+      "id": "BUG-183",
+      "title": "Mux: Esc on the Files/Checkpoints pane does nothing — it must close that pane (transient, like agent session close)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-14T06:22:23.804Z",
+      "updatedAt": "2026-09-14T08:55:36.820Z",
+      "description": "In mux mode, pressing Esc while the Changed Files or Checkpoints mux pane is focused is swallowed: forward_to_pane maps the view's Close outcome to a plain consumed() without any effect, so the pane can never be dismissed (only /mux can reconfigure it). Expected: Esc closes the pane — the pane kind is removed from the LIVE grid only (saved tui.mux layout untouched, so /mux on brings it back — same transience as the agent slot dropping on session close), remaining panes rescale proportionally, focus stays on a surviving pane, and if only the Board pane remains the grid stays in Mux showing the full-width Board pane. Esc must still be ignored while the pane is mid-initial-load (the TUI-107 rule the views already enforce), and the single-view Esc-close, the board-pane exit dialog, and the agent-pane exit cascade must be unchanged.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-14T06:26:16.813Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-14T06:31:25.052Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-14T08:39:23.452Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-14T08:54:36.873Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-14T08:55:36.820Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: Esc on the focused Changed Files or Checkpoints mux pane closes THAT PANE from the live rendered grid only: the pane kind is removed (last occurrence) from the live rendered pane list, the saved tui.mux config (persisted layout preference) is UNTOUCHED — transient, same rule as the agent slot dropping on session close, so /mux off then /mux on still restores the full layout. The mux stays in ViewMode::Mux, focus stays on a surviving pane (clamped to the new list), and the remaining panes rescale over the freed space via the existing rect recompute.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:27:06.869Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: Esc stays IGNORED on a Files/Checkpoints mux pane while the view is mid-initial-load (the TUI-107 rule the views already enforce in single-view mode — a reflex Esc must not close a pane that has no data yet); the view returns Ignored and the key falls through to the App-level shortcuts exactly as today. In-view dialogs (restore/delete confirm) keep their precedence: their Esc cancels the dialog, it does NOT close the pane.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:28:31.485Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: When the pane removal leaves no more panes (degenerate — all-agent grid, zero sessions, Esc on the transient Board pane), the grid exits ViewMode::Mux back to the single Board view (pre_mux_view fallback = Board, the same rule /mux off uses). The normal close keeps the grid: with at least one surviving pane the mux stays active, and with only the Board pane remaining the grid shows the full-width Board pane in Mux (user decision — do NOT auto-exit in that case).",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:28:49.523Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: single-view and the other mux panes are unchanged — Esc in the single ChangedFiles/Checkpoints view still closes to the Board (existing CloseChangedFilesView/CloseCheckpointsView flip), Esc on the focused Board mux pane still pushes the BoardExitConfirmationDialog (BUG-165), and Esc on a focused Agent pane still opens the agent exit-confirmation cascade (Detach/Close Session/Cancel). The new pane-close path fires ONLY in ViewMode::Mux with the Files or Checkpoints pane focused.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:29:07.424Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "userStory": {
+        "role": "developer supervising agents in the fspec TUI mux mode",
+        "action": "close a Files or Checkpoints mux pane with Esc",
+        "benefit": "the live grid shrinks exactly like closing an agent session, without losing the saved layout"
+      },
+      "examples": [
+        {
+          "id": 0,
+          "text": "Mux grid Board|Agent|Files|Checkpoints with the Files pane focused: press Esc → the Files pane is gone, the grid is Board|Agent|Checkpoints, the saved tui.mux still lists all four panes, focus clamps to a surviving pane, the Checkpoints pane now absorbs the Files pane's share, and the mux footer shows 'MUX 3 panes [Board|Agent|Checkpoints]'.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:28:56.495Z"
+        },
+        {
+          "id": 1,
+          "text": "Mux grid Board|Checkpoints with one agent session open (so the grid actually renders Board|Agent|Checkpoints) — the user closes the agent session (Close Session) and then focuses the Checkpoints pane and presses Esc → the grid is Board|Agent and the Checkpoints pane is gone; later /mux off then /mux on brings the Checkpoints pane back from the saved layout.",
+          "deleted": false,
+          "createdAt": "2026-09-14T06:29:00.335Z"
+        }
+      ],
+      "nextExampleId": 2
+    },
+    "BUG-184": {
+      "id": "BUG-184",
+      "title": "Mux Files/Checkpoints panes: 10s refresh loses scroll position and lacks loading dialog parity with single-view mode",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-14T20:55:12.835Z",
+      "updatedAt": "2026-09-15T01:11:59.375Z",
+      "description": "The GitStateWatcher (BUG-182) polls git state every 10s and pushes a GitState frame containing changed_files + checkpoints. The TUI re-fetches the visible lazy panes on every frame, even when the list is unchanged. Problems: (1) in mux mode the Files/Checkpoints panes show no loading dialog while the view is loading (single-view mode shows one); (2) on every 10s refresh the pane loses scroll position and can flicker. User decisions (Example Mapping): dialog scope = 'Initial only' — show the full loading dialog when a mux pane first loads, keep the 10s background refresh seamless (no dialog) but preserve scroll + selection; scroll scope = 'All panes' — preserve scroll in every sub-pane. Working-tree research (uncommitted at discovery): dispatch_git_state.rs (signature-based drop of no-op refreshes), load_state.rs (list_signature on LoadTracker), changed_files/mod.rs + checkpoints/mod.rs (signature recording + scroll preservation).",
+      "epic": "rust-frontend",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-14T20:57:26.259Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-14T21:08:23.817Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-15T00:52:35.295Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-15T00:52:52.400Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-15T01:11:59.375Z"
+        }
+      ],
+      "attachments": [
+        "spec/attachments/BUG-184/BUG-184-research.md"
+      ],
+      "userStory": {
+        "role": "TUI user watching live git state in mux mode",
+        "action": "see the Files/Checkpoints panes update every 10 seconds without jumping",
+        "benefit": "a stable view: no dialog flash, no lost scroll position, no flicker"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A git-state frame whose changed-files leg is byte-identical to the list a displayed ChangedFilesView shows (same sanitized paths + change types + staged flags, same order) must NOT trigger a re-fetch — no RPC, no dialog, no scroll/selection churn",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:57:42.996Z"
+        },
+        {
+          "id": 1,
+          "text": "A git-state frame whose checkpoints leg is byte-identical to the list a displayed CheckpointsView shows (same sanitized work_unit_id + name + auto flag, same order; the timestamp leg is EXCLUDED because the row rendering never shows it) must NOT trigger a re-fetch",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:57:51.776Z"
+        },
+        {
+          "id": 2,
+          "text": "When a change-bearing refresh lands on a loaded Files or Checkpoints list, the list scroll offset is PRESERVED as a raw offset and clamped to the fresh list length (max = list_len - visible_rows; a list shorter than the window falls back to the top).",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:57:52.050Z"
+        },
+        {
+          "id": 3,
+          "text": "A cascade re-load of the SAME key (checkpoints Files pane: same work_unit_id + name; Diff pane: same work_unit_id + name + path) preserves that pane's scroll/selection; only a key CHANGE resets it to the top.",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:04.106Z"
+        },
+        {
+          "id": 4,
+          "text": "After a refresh re-lookup, the selected row must lie inside the preserved scroll window; if the re-looked-up row falls above the window, the selection snaps to the first visible row; if it falls past the bottom, the selection snaps to the last visible row and the window scrolls to keep it visible (highlighted row and scroll window never diverge).",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:04.340Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Steady-state tick: a 10s GitState frame whose changed_files list equals the displayed list (same paths, change types, staged flags, order) → no re-fetch RPC, pane bytes unchanged, scroll + selection intact",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:53.041Z"
+        },
+        {
+          "id": 1,
+          "text": "Change-bearing refresh: two files above the scrolled window get committed (list starts at file02.txt) → the file04.txt selection survives by path, the scroll offset keeps its point (does not jump to the top)",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:58:53.996Z"
+        },
+        {
+          "id": 2,
+          "text": "List shrinks beneath the window: scrolled to the bottom of 30 files; a refresh lands only 4 files (all shorter than the window) → the window falls back to the top and the (path-stable) selection stays inside the window",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:09.598Z"
+        },
+        {
+          "id": 3,
+          "text": "Selected file committed: scrolled to the bottom, selected file29.txt; a refresh lands a list without it → the selection falls back to the first row and the window snaps to the top (highlighted row and scroll window stay together)",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:10.574Z"
+        },
+        {
+          "id": 4,
+          "text": "Checkpoints steady-state tick: a 10s GitState frame whose checkpoints list renders byte-identically to the displayed list (timestamps may differ — they are never rendered) → no re-fetch, checkpoint scroll + selection intact",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:21.704Z"
+        },
+        {
+          "id": 5,
+          "text": "Cascade same-key reload: a change-bearing checkpoint refresh re-fetches the (re-)selected checkpoint's files and diff → the Files pane keeps its scroll/selection and the Diff pane keeps its scroll (clamped to the new diff length); selecting a DIFFERENT checkpoint resets both panes to the top",
+          "deleted": false,
+          "createdAt": "2026-09-14T20:59:22.141Z"
+        }
+      ],
+      "nextExampleId": 6
+    },
+    "MUX-009": {
+      "id": "MUX-009",
+      "title": "Board 'M' key opens the Mux config dialog + top-of-screen Mux hint",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-15T09:22:03.426Z",
+      "updatedAt": "2026-09-16T01:24:22.544Z",
+      "description": "The /mux command shows the MuxConfigDialog from the AgentView. Bind the modifier-free 'M' key in the BoardView to open the SAME MuxConfigDialog (the MUX-004 dialog), so mux can be turned on/off from the Board view without an agent session. The binding must also work when the Board pane is focused inside the mux grid (the dialog overlays per MUX-001 R9). Additionally, the BoardView's top-of-screen keybinding hint chord (views/board/keybinding_shortcuts.rs: 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search') must list the new binding (append 'M Mux' to the chord) so it is discoverable. Ctrl+M must NOT open the dialog (modifier-free only, consistent with the existing a/c/f/d guards). The dialog stays idempotent (exactly one instance) per MUX-004 R2.",
+      "epic": "mux",
+      "children": [],
+      "userStory": {
+        "role": "developer working from the Board view",
+        "action": "open the mux configuration dialog with the 'M' key and see it advertised in the Board's top hint chord",
+        "benefit": "turn mux on/off and reconfigure the layout without switching to an agent session"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-15T09:22:43.379Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-15T09:43:43.705Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-15T09:59:42.555Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-15T23:40:19.795Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-16T01:24:22.544Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: the binding is modifier-free only — Ctrl+M (or any Ctrl-chorded m/M) must NOT open the dialog and falls through to the existing App-level handling, consistent with the existing 'a'/'c'/'f'/'d' guard pattern in BoardView::handle_event.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:12.608Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: pressing modifier-free 'm' or 'M' in the single Board view (ViewMode::Board) opens the MuxConfigDialog via the existing App::handle_open_mux_config_dialog path (MUX-004: idempotent, seeded from the live mux config). The key is always consumed (no fall-through).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:13.637Z"
+        },
+        {
+          "id": 2,
+          "text": "R4: the BoardView's top-of-screen keybinding hint chord (views/board/keybinding_shortcuts.rs, row 3 of the board header: 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search') appends the new binding, rendering as 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux'. The hint stays a single plain primary-fg span (no per-chord styling change).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:32.598Z"
+        },
+        {
+          "id": 3,
+          "text": "R3: when mux is active (ViewMode::Mux) and the focused pane is the Board pane, the same modifier-free 'm'/'M' opens the MuxConfigDialog (the dialog overlays the grid per MUX-001 R9; Board pane keyboard input routes through BoardView::handle_event via views/multiplex/keys.rs, so the single binding serves both surfaces).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:33.590Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In the single Board view (mux off), the user presses 'm'. The MuxConfigDialog opens (Priority::Foreground, overlaying the board) seeded from the live mux config — 'Enabled: Off', 'Orientation: Horizontal', 'Pane 1: Board', 'Pane 2: Agent' — exactly as /mux opens it from the AgentView. The board view is still visible underneath; mux is not yet active.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:57.350Z"
+        },
+        {
+          "id": 1,
+          "text": "In the single Board view, the user presses Ctrl+M. The MuxConfigDialog does NOT open — Ctrl-chorded m/M falls through the BoardView binding untouched (the modifier-free-only guard mirrors the existing a/c/f/d guards).",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:24:58.186Z"
+        },
+        {
+          "id": 2,
+          "text": "With mux active (Board | Agent grid) and the Board pane focused, the user presses 'M'. The MuxConfigDialog opens over the whole grid (the dialog overlays the mux per MUX-001 R9) with the live enabled layout — 'Enabled: On' and the current pane rows. Pressing 's' saves + closes and the grid keeps the committed layout; pressing Esc cancels and the live grid is untouched.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:27:10.205Z"
+        },
+        {
+          "id": 3,
+          "text": "In the single Board view, the board header's top chord row reads 'C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux' — the new 'M Mux' chord is appended after the existing chords, same plain foreground styling.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:27:11.275Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New `Action::OpenMuxConfigDialog` variant (components/mod.rs Action enum, near the MuxConfigApplied variants) emitted by BoardView::handle_event on modifier-free 'm'/'M' (guard: no CONTROL modifier, mirroring the a/c/f/d guards). App::dispatch adds an arm (app/dispatch_mux_config.rs) that calls the existing handle_open_mux_config_dialog() — idempotent, seeds from navigator.mux.config(). BoardView::handle_event gains the binding in the same match as 'f'/'c' (RPC-356/RPC-364 pattern). views/board/keybinding_shortcuts.rs appends ' ◆ M Mux' to the literal chord string. No new state; MuxConfig serde shape unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-15T09:27:37.652Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 1,
+      "attachments": [
+        "spec/attachments/MUX-009/ast-research-mux009-board-m-key.md"
+      ]
+    },
+    "TOOL-023": {
+      "id": "TOOL-023",
+      "title": "Tool-call arg errors include recovery guidance",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-16T02:18:47.610Z",
+      "updatedAt": "2026-09-16T04:43:58.601Z",
+      "description": "Tool-call arg errors include recovery guidance — ALL tools, not just Fspec. When any tool call fails with wrong or missing arguments, the error returned to the LLM must be a self-contained recovery surface: (a) name the tool, (b) state exactly what was missing or wrong, (c) list the tool's accepted parameters (full usage: required + optional, types, defaults, enums), and (d) show at least one complete canonical example call. Covers every tool the agent can call: direct rig tools (WebSearch, Read, Write, Edit, Bash, Ls, Grep, Glob, AstGrep, AstGrepRefactor, Bridge, DeepSearch, SessionSearch, GraphSearch, AgentManager, Schedule, Done, RequestUserInput, InjectSummary, UnifiedExec, Fspec) and all provider facades (Claude/Gemini/OpenAI/ZAI/Codex facades in codelet-tools, including WebSearch facade, file ops, bash, ls, search, bridge). Scope: (1) DONE — fspec dispatcher: unknown command gets 'Did you mean' + --help pointer; InvalidArgs gets JSON-object-string guidance + '<command> --help'. (2) DONE — Fspec provider facades: 'args'/'arguments' sent as JSON object detected pre-serde with corrected string example. (3) NEW — universal arg-error recovery for ALL tools: the generic arg-deserialization failure in the rig ToolDyn call path (currently opaque 'JSON error: missing field `action`') and every codelet-tools ToolError::Validation produced by facades/direct impls (e.g. 'Missing or empty required action_type field') MUST append the tool's full usage (rendered from its definition()/schema) plus a canonical example. Feature: spec/features/tool-call-arg-errors-include-recovery-guidance.feature",
+      "epic": "tooling",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-16T02:18:52.287Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-16T02:36:52.438Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-16T02:46:03.585Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-16T02:49:18.075Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-16T02:58:48.447Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-16T03:14:37.203Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-16T03:41:57.324Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-16T04:35:00.794Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-16T04:36:24.937Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-16T04:43:58.601Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "An unknown fspec command error MUST include a 'Did you mean: <name>' line when the fuzzy matcher (Levenshtein distance <= 3 on hyphen-stripped names, over the 162 canonical commands + foundation-status extension) finds a close match, and MUST NOT include one when no close match exists.",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:34:42.301Z"
+        },
+        {
+          "id": 1,
+          "text": "Every Fspec dispatcher InvalidArgs error (malformed inner args JSON or hand-written missing-arg reasons) MUST carry an appended usage-hint line: 'args must be a JSON object string' guidance plus a pointer to '<command> --help'.",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:34:48.237Z"
+        },
+        {
+          "id": 2,
+          "text": "The Fspec provider facades (Claude, OpenAI, Gemini, ZAI) MUST detect 'args'/'arguments' sent as a JSON object (or array) before serde deserialization and return a dedicated ToolError::Validation that names the tool, states the parameter must be a string containing JSON, and shows a corrected example — never the opaque 'Invalid arguments: invalid type: map, expected a string' serde passthrough.",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:34:52.642Z"
+        },
+        {
+          "id": 3,
+          "text": "Existing error substrings asserted by other work units MUST be preserved: 'Unknown fspec command: <name>' stays the first line of the unknown-command error, 'Invalid args for fspec command <cmd>' and 'failed to parse args' remain substrings of the dispatcher args error. New guidance is appended, not replacing.",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:34:58.256Z"
+        },
+        {
+          "id": 4,
+          "text": "Every ToolError::Validation/missing-argument error returned by a codelet-tools tool or facade MUST contain: (1) the tool name, (2) which parameter was missing or wrong, (3) the tool's accepted parameters (required fields with types, optional fields with defaults/enums), and (4) at least one complete canonical example call. Existing per-tool error substrings asserted by other work units MUST be preserved as substrings; guidance is appended, not replacing.",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:18:01.338Z"
+        },
+        {
+          "id": 5,
+          "text": "UNIVERSAL (ALL tools, not just Fspec): every argument-validation failure for ANY tool exposed to the agent — whether from the rig ToolDyn arg-deserialization path (direct tools: WebSearch, Read, Write, Edit, Bash, Ls, Grep, Glob, AstGrep, AstGrepRefactor, Bridge, DeepSearch, SessionSearch, GraphSearch, AgentManager, Schedule, Done, RequestUserInput, InjectSummary, UnifiedExec) or from any codelet-tools facade map_params (Claude/Gemini/OpenAI/ZAI/Codex WebSearch, file ops, bash, ls, search, bridge, fspec facades) — MUST produce an error that names the tool, names the missing/wrong parameter, renders the tool's accepted parameters (required + optional, types, defaults, enums, taken from the tool's definition()/schema), and includes at least one complete canonical example call. The opaque 'JSON error: missing field `X`' serde passthrough MUST NOT be the final LLM-visible message for a wrong-args failure: it must be wrapped/augmented with the tool name, the rendered parameter reference, and an example.",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:20:46.741Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "LLM sends command 'list-workunit' → error: 'Unknown fspec command: list-workunit' + line 'Did you mean: list-work-units' + 'Re-call with the suggested command name.' + --help pointer",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:35:15.723Z"
+        },
+        {
+          "id": 1,
+          "text": "LLM sends command 'zzzqqqxx' (no close match) → error keeps 'Unknown fspec command: zzzqqqxx' with NO 'Did you mean' line",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:35:18.255Z"
+        },
+        {
+          "id": 2,
+          "text": "LLM sends command 'list-work-units' with malformed inner args '{' → error keeps 'Invalid args for fspec command list-work-units: failed to parse args: ...' then adds 'args must be a JSON object string' + 'list-work-units --help' pointer",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:35:22.278Z"
+        },
+        {
+          "id": 3,
+          "text": "LLM calls Fspec with {\"command\":\"board\",\"args\":{\"status\":\"backlog\"}} (object) → error names the 'Fspec' tool, says the args parameter 'must be a string containing JSON, not a JSON object', shows corrected example with args as a JSON string",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:35:25.067Z"
+        },
+        {
+          "id": 4,
+          "text": "WebSearch called with {} (missing action_type) → error names 'WebSearch', says the required parameter 'action_type' is missing, lists accepted values (search/open_page/find_in_page/capture_screenshot), lists all optional params (query, url, pattern, output_path, full_page, headless, pause) with types/defaults, and shows a full example: {\"action_type\": \"search\", \"query\": \"rust async\"}",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:18:17.372Z"
+        },
+        {
+          "id": 5,
+          "text": "LLM calls Read with {} (no file_path) → error names the 'Read' tool, says 'file_path' is required (string, absolute path), lists optional params (offset, limit, pdf_mode), and shows a complete example call like {\"file_path\": \"/abs/path/to/file.rs\"} — instead of an opaque serde 'missing field file_path' with no usage",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:20:49.503Z"
+        },
+        {
+          "id": 6,
+          "text": "LLM calls WebSearch() with no parameters (the exact reported defect) → the LLM-visible error is NO LONGER just 'JSON error: missing field `action` at line 1 column 2'. It names the 'WebSearch' tool, says the required 'action' (oneOf: search/open_page/find_in_page/capture_screenshot, each with its own required sub-fields) is missing, lists every accepted parameter with its type, and shows a complete example call such as {\"action\": {\"type\": \"search\", \"query\": \"rust async\"}}",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:20:52.700Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "userStory": {
+        "role": "LLM agent (or operator reviewing the tool result)",
+        "action": "recover from a tool call that failed with wrong or missing arguments",
+        "benefit": "I can re-issue the corrected call immediately without re-consulting the tool definition or guessing"
+      },
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fuzzy matching lives in codelet-fspec-core canonical.rs as suggest_command + levenshtein_capped over the 162 canonical names + foundation-status extension. The dispatcher (dispatch.rs) builds the UnknownCommand recovery via unknown_command_with_recovery and appends the usage hint in DispatchResult::from_error for every InvalidArgs. The Fspec provider facades (tools/src/facade/fspec_facade.rs) detect the string-vs-object args gotcha before serde. No new crate dependency added; codelet-tools dev-dep on codelet-fspec-core is NOT needed because suggest_command is only tested inside fspec-core.",
+          "deleted": false,
+          "createdAt": "2026-09-16T02:36:15.853Z"
+        },
+        {
+          "id": 1,
+          "text": "Revised scope (2026-09-16): the previous implementation only fixed Fspec-specific surfaces. The generic tool-arg error surface (all other codelet-tools: web_search/file/bash/ls/search facades, param_extract helpers, direct tool impls) still returns bare errors like 'JSON error: missing field `action`' or 'Missing or empty required `action_type` field' with NO usage info. New requirement: arg-validation errors across ALL tools must be self-contained recovery surfaces: tool name + missing/wrong param + full accepted-parameter reference (required+optional, types, defaults, enums) + one canonical example call. Implementation strategy: centralize usage-text generation in codelet-tools (e.g. ToolError::with_usage or a facade helper) that renders each facade's definition() schema (which already lists all params with descriptions/enums) plus a per-tool example, so every facade's arg-error gains the full usage without per-facade duplication. Fspec dispatcher/facade work stays as-is.",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:18:23.230Z"
+        },
+        {
+          "id": 2,
+          "text": "Defect choke points confirmed live (2026-09-16): (1) DIRECT rig tools (WebSearchTool in tools/src/web_search.rs has required 'action' field, oneOf schema, 'required':['action']) — LLM sends {} and rig-core patched ToolDyn impl (patches/rig-core/src/tool/mod.rs:192) turns the serde from_str failure into ToolError::JsonError → opaque 'JSON error: missing field `action` at line 1 column 2'. Fix belongs in that error branch: ToolCallError wrapper whose message includes Self::NAME, the serde reason, a rendered parameter reference from Self::definition() (async, already in async block), and a canonical example. (2) FACADE tools (Read/Edit/Write/Bash/WebSearch-Claude/etc via FacadeToolWrapper in tools/src/facade/wrapper.rs) — map_params failures produce bare ToolError::Validation messages (e.g. param_extract::extract_required_string: \"Missing or empty required 'X' field\"). Fix: append the facade's definition() schema rendering + canonical example. (3) Fspec dispatcher + 4 Fspec facades — already done by this work unit, keep as-is.",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:19:09.260Z"
+        },
+        {
+          "id": 3,
+          "text": "Universal implementation strategy for the NEW scope: (1) DIRECT tools — the single choke point is the patched rig-core ToolDyn blanket impl (rust/patches/rig-core/src/tool/mod.rs, the `impl<T: Tool> ToolDyn for T` call method). On serde_json::from_str(args) failure it currently returns ToolError::JsonError(e). Change: build a recovery error that (a) names Self::NAME, (b) includes the serde reason, (c) renders the tool's parameter schema by awaiting Self::definition(String::new()) (definition() is already callable in this async block) and emitting a compact 'Accepted parameters:' block (required vs optional, types, enums), and (d) shows a canonical example. This one change fixes arg-error recovery for EVERY direct tool (WebSearch, Read, Write, Edit, Bash, Ls, Grep, Glob, AstGrep, AstGrepRefactor, Bridge, DeepSearch, SessionSearch, GraphSearch, AgentManager, Schedule, Done, RequestUserInput, InjectSummary, UnifiedExec) with no per-tool edits. (2) FACADE tools — ToolError::Validation raised in each facade map_params (codelet-tools/src/facade/*.rs + param_extract.rs helpers) carries the tool name but no usage. Add a shared helper (e.g. ToolError::with_schema_usage(tool, message, ToolDefinition)) that appends the definition()'s parameter list + a canonical example; call it at the facade error sites (or at the wrapper level in facade/wrapper.rs where map_params() results are consumed, so all facades get it uniformly). (3) Keep the existing Fspec-specific rules (did-you-mean, args-must-be-string) as-is; they are a superset for Fspec and must not regress.",
+          "deleted": false,
+          "createdAt": "2026-09-16T03:21:03.468Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/TOOL-023/ast-research-tool023-arg-error-surfaces.md",
+        "spec/attachments/TOOL-023/TOOL-023-tool-call-arg-error-surface-research.md"
+      ],
+      "estimate": 8,
+      "iterations": 1
+    },
+    "TOOL-024": {
+      "id": "TOOL-024",
+      "title": "Post-deserialization arg errors include recovery guidance (TOOL-023 follow-up)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-16T05:13:42.660Z",
+      "updatedAt": "2026-09-16T07:09:03.926Z",
+      "description": "TOOL-023 enriched the serde-deserialization failure path (rig ToolDyn blanket impl) and facade map_params Validation errors, but tools whose args deserialize successfully and then fail an internal empty/missing-value check still return bare errors with NO usage reference or example call. Observed live (2026-09-16): Bash {command: \"\"} -> 'command parameter is required'; Grep {pattern: \"\"} -> 'Error: pattern parameter is required'; AstGrep {pattern: \"\"} -> same; AstGrepRefactor {source_file: \"\"} -> 'Error: source_file parameter is required'; DeepSearch {query: \"\"} -> 'query is required and must not be empty' (also mislabeled ToolError::Execution); RequestUserInput {questions: []} -> 'questions array must not be empty' (no tool name); Schedule add without cron -> raw JSON {\"success\":false,\"error\":\"Cron expression is required\"} not even a ToolError. Every one of these MUST become a self-contained recovery surface per rule 5 of TOOL-023: tool name + missing/wrong parameter + accepted-parameter reference (required/optional, types, enums) + canonical example call. Existing per-tool error substrings MUST be preserved (other WUs assert them). Secondary scope: tool_usage.rs rendering artifacts — oneOf of non-object variants (AgentManager session_id string|array) renders as empty 'one of: * {} * {}' variants; anyOf properties (ConnectMCP action/transport) render as bare '(any)'; DoneTool reports tool name 'done' (DONE_TOOL_NAME) instead of 'Done' in errors.",
+      "epic": "tooling",
+      "children": [],
+      "userStory": {
+        "role": "LLM agent",
+        "action": "get a self-contained recovery surface from any argument-validation failure",
+        "benefit": "recover from a wrong-args call without re-consulting the tool definition"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-16T05:13:52.637Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-16T05:46:42.828Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-16T05:53:55.660Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-16T06:08:37.241Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-16T07:09:03.926Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Post-deserialization argument-validation failures for direct tools (args that serde-parsed successfully but fail an internal empty/missing-value check) MUST return an error containing: (1) the tool name, (2) the specific parameter that was empty or invalid, (3) the tool's accepted-parameter reference (required/optional, types, enums) rendered from its schema, (4) at least one complete canonical example call. Applies at minimum to: Bash (command), Grep (pattern), AstGrep (pattern, language), AstGrepRefactor (pattern, language, source_file), DeepSearch (query), RequestUserInput (questions).",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:13:55.327Z"
+        },
+        {
+          "id": 1,
+          "text": "The enrichment MUST cover every ToolError variant raised for wrong/missing arguments by direct tools — ToolError::Validation AND ToolError::Execution both count (DeepSearch's empty-query check currently uses ToolError::Execution). An implementation is acceptable ONLY if it guarantees the recovery block on all argument-validation error variants, e.g. by wrapping errors centrally where ToolDyn/ToolSet returns them, or by converting mislabeled variants to ToolError::Validation at the source.",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:13:58.542Z"
+        },
+        {
+          "id": 2,
+          "text": "Every agent-exposed tool's argument-validation failure MUST surface as a tool error in the standard recovery format (tool name + bad parameter + accepted-parameter reference + example call). The Schedule tool currently returns raw JSON {\"success\":false,\"error\":\"...\"} for add with a missing/empty cron and other handler errors — this MUST be converted to a proper tool error with the recovery block, preserving the existing error message as a substring (other work units may assert 'Cron expression is required').",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:02.653Z"
+        },
+        {
+          "id": 3,
+          "text": "Argument-validation errors MUST identify the tool by its registered rig NAME (Self::NAME / DONE_TOOL_NAME's display name 'Done'), not a lowercase internal alias. DoneTool currently reports tool: 'done' in its ToolError::Validation payloads; this MUST match the tool's registered name 'Done' (existing message substrings about 'summary' etc. stay intact).",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:09.620Z"
+        },
+        {
+          "id": 4,
+          "text": "The tool_usage parameter-reference renderer MUST render union schemas sanely: oneOf with non-object variants (e.g. AgentManager session_id string|array) must list each variant's type instead of empty '* {}' objects; anyOf properties (e.g. ConnectMCP action/transport) must describe the alternatives instead of bare '(any)' with no sub-values. Rendering must never emit empty-object placeholders for variant schemas that have no properties key.",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:14.077Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Bash called with command set to the empty string -> error keeps the substring 'command parameter is required', names the tool 'Bash' (not lowercase 'bash'), appends the accepted-parameter reference (command string required; cwd string|null optional) and a complete example call with a <command> placeholder",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:40.431Z"
+        },
+        {
+          "id": 1,
+          "text": "Grep or AstGrep called with pattern set to the empty string -> error keeps the substring 'pattern parameter is required', names the tool 'Grep'/'AstGrep', lists accepted parameters (pattern required, path/output_mode/glob/limit or language/limit optional with types) and a complete example call",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:42.723Z"
+        },
+        {
+          "id": 2,
+          "text": "AstGrepRefactor called with source_file set to the empty string -> error keeps the substring 'source_file parameter is required', names the tool 'AstGrepRefactor', lists accepted parameters (language, pattern, source_file required; replacement/batch/preview/transforms optional with types) and a complete example call",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:45.653Z"
+        },
+        {
+          "id": 3,
+          "text": "DeepSearch called with query set to the empty string -> error keeps the substring 'query is required and must not be empty', names the tool 'DeepSearch', lists accepted parameters (query required; scope/max_depth/max_recursion_depth optional with types/defaults) and a complete example call; the underlying error variant is argument validation, not an execution failure",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:48.595Z"
+        },
+        {
+          "id": 4,
+          "text": "RequestUserInput called with an empty questions array -> error keeps the substring 'questions array must not be empty', names the tool 'RequestUserInput', lists accepted parameters (questions array required, max 3; each question's id/header/question required, options optional) and a complete example call",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:14:52.678Z"
+        },
+        {
+          "id": 5,
+          "text": "Schedule add action with no cron expression -> the LLM-visible error is NO LONGER raw JSON {\"success\":false,\"error\":\"Cron expression is required\"}; it names the tool 'Schedule', says 'cron' is required for action add, lists all accepted parameters with types and conditionally-required notes (name, cron, timezone, job_type, role, prompt, command, overlap_policy with default skip), and shows a complete example add call",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:15:40.812Z"
+        },
+        {
+          "id": 6,
+          "text": "Done tool called with no arguments -> error reads 'Done tool: invalid arguments: missing field `summary`...' (registered name, not lowercase 'done tool'), lists accepted parameters (summary string required; evidence array; goal_assessment string) and an example call; the summary-required message substring stays intact",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:15:45.752Z"
+        },
+        {
+          "id": 7,
+          "text": "AgentManager called with action get_status and session_id missing -> parameter reference lists session_id as (string | array of string, required) with both allowed types, NOT empty '* {}' object placeholders",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:15:48.459Z"
+        },
+        {
+          "id": 8,
+          "text": "ConnectMCP called with an invalid action value -> parameter reference renders the anyOf union for 'action' and 'transport' with each alternative described (e.g. the action shape with its required type/url fields) instead of bare '(any)' with no sub-values",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:15:52.706Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "ToolError.tool is &'static str (tools/src/error.rs), so a per-call central enrichment at the blanket ToolDyn impl cannot append usage to Validation/Execution payloads without changing the error type (invasive — ToolError is used across all providers, napi, agent-loop, tests). Preferred direction: enrich at the SOURCE sites (the 6+ direct tools with empty-value checks + Schedule handler) using codelet_common::tool_usage::append_usage_to_message(self.name(), &schema, &msg) where the schema comes from the same definition() as TOOL-023 used. Secondary cleanup: DoneTool tool:'done' -> Self::NAME (done.rs:318/336/349); DeepSearch empty-query ToolError::Execution -> ToolError::Validation (deep_search/mod.rs:459); ScheduleTool must detect ScheduleResult::Error for argument-missing cases and map to enriched ToolError::Validation instead of serializing the whole result to JSON (schedule/mod.rs:167-173); RequestUserInput empty-questions path (request_user_input.rs:334-355). Grep's empty-pattern error reaches the LLM via ToolError::Execution(tool:'grep') from execute()'s ToolOutput::error (grep.rs:178-181, call() map at 462-474).",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:16:04.948Z"
+        },
+        {
+          "id": 1,
+          "text": "TOOL-024 implementation notes: (1) Enrich at source sites via a local arg_error_enriched(name, schema, msg) helper calling codelet_common::tool_usage::append_usage_to_message — ToolError.tool is &'static str so the blanket ToolDyn impl cannot rewrite per-call payloads. (2) Grep/AstGrep/AstGrepRefactor return ToolOutput::error from execute(); call() classifies via 'parameter is required' substring -> ToolError::Validation (enriched), otherwise ToolError::Execution (unchanged). (3) DeepSearch empty-query check: Execution -> Validation + enrich; handler-dispatch mapping (deep_search/mod.rs:480) stays Execution (deep_search/tests.rs:537 asserts it). (4) RequestUserInput call() classifies execute_hitl error strings by validation prefixes ('questions array'/'question[') -> Validation + enrich; handler/lock errors stay Execution. (5) Schedule call(): ScheduleResult::error -> is_arg_validation_error classification (required/invalid/unknown-action prefixes); 'No schedule handler registered' stays Execution; for add action the message is reworded to '<action> action: <msg>' so it states cron is required for add while keeping the substring. (6) DONE_TOOL_NAME changes 'done' -> 'Done' per feature; verified no runtime code keys off the literal tool-name string (early exit uses the acceptance registry; cont006 test message is synthetic). (7) tool_usage renderer: new variant_label/resolve_ref helpers; oneOf type label stays 'object' only when every variant is an object (WebSearch regression), otherwise variant labels joined (AgentManager session_id -> 'string | array of string'); anyOf/allOf alternatives resolved through $ref definitions (ConnectMCP action -> 'connect | disconnect | list', transport -> 'stdio | http | null'); oneOf bullets render bare-type variants as type labels instead of '{}'. (8) RequestUserInput registered name stays 'request_user_input' (rule 4: identify by registered rig NAME; facade + codex.rs assert that name).",
+          "deleted": false,
+          "createdAt": "2026-09-16T05:46:12.649Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/TOOL-024/tool024-post-deser-arg-error-research.md",
+        "spec/attachments/TOOL-024/ast-research-post-deser-arg-errors.md"
+      ],
+      "dependsOn": [
+        "TOOL-023"
+      ],
+      "estimate": 5
+    },
+    "BUG-185": {
+      "id": "BUG-185",
+      "title": "Failed tool-call tail only stripped on prompt-too-long — must strip on ALL terminal API errors",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-16T07:36:02.220Z",
+      "updatedAt": "2026-09-16T07:47:52.625Z",
+      "description": "BUG-170's strip_failed_tool_call_tail is gated on is_prompt_too_long_error only (stream_loop.rs terminal arm). User decision (2026-09-16): after all retries/recovery paths are exhausted, ANY terminal API error with a failed tool-call tail must strip the tail, invalidate stale cache tokens, and keep the session interactive instead of returning Err. Tool-execution failures (ToolResult with success=false / non-zero exit) are NOT stripped — they remain in context as the model's recovery signal. Supersedes BUG-170 rule [0]; reverses BUG-170 scenario 'Non-prompt-too-long terminal errors leave the stack untouched'. See spec/features/strip-failed-tool-call-tail-on-any-terminal-api-error.feature.",
+      "epic": "provider-resilience",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-16T07:36:04.893Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-16T07:45:41.808Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-16T07:45:46.806Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-16T07:47:12.848Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-16T07:47:52.625Z"
+        }
+      ],
+      "userStory": {
+        "role": "CLI agent session",
+        "action": "strip the failed tool-call tail from the context stack on ANY terminal API error",
+        "benefit": "no terminal error leaves a failed tool call in context to be replayed on the next message, and the session stays usable"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The strip runs for EVERY terminal API error (any error class that survives the existing recovery cascade: prompt-too-long, exhausted network retries, exhausted truncation retries, image-content, auth, provider errors) whenever the tail of session.messages is a failed tool pair (User(ToolResult) with matching preceding Assistant(ToolCall)) or a tool-call-only Assistant message. BUG-170 rule [0] is superseded: the is_prompt_too_long_error gate is removed from the terminal arm.",
+          "deleted": false,
+          "createdAt": "2026-09-16T07:36:20.688Z"
+        },
+        {
+          "id": 1,
+          "text": "Tool-execution failures are NOT stripped: when a tool call executes and returns an error (ToolResult with success=false, non-zero exit code, permission error), the ToolResult stays in context as the model's recovery signal and the turn continues as normal — the strip only ever runs from the terminal API-error arm of the stream loop, never from the ToolResult handler.",
+          "deleted": false,
+          "createdAt": "2026-09-16T07:36:23.976Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Context: network retry budget (NET-001) is exhausted mid tool-loop; the stack tail is Assistant(ToolCall id=abc) + User(ToolResult id=abc). Today the terminal arm returns Err. After BUG-185: the pair is stripped, cache tokens are invalidated, the error is emitted with the '[Removed the failed tool call from context]' annotation, the loop breaks, and the session stays idle/usable.",
+          "deleted": false,
+          "createdAt": "2026-09-16T07:36:56.313Z"
+        },
+        {
+          "id": 1,
+          "text": "Context: a tool call executes and returns a failure (e.g. Bash exits with code 1, Read hits a permission error). Nothing is stripped — the tool result stays in context so the model sees the failure and can retry with a different approach. The strip never triggers from tool execution, only from a terminal API error.",
+          "deleted": false,
+          "createdAt": "2026-09-16T07:37:00.697Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 3
     }
   }
 }

@@ -56,9 +56,7 @@ impl App {
                     });
                 }
                 Ok(None) => {
-                    let _ = action_tx.send(Action::ExecStdinDismissed {
-                        agent_session: id,
-                    });
+                    let _ = action_tx.send(Action::ExecStdinDismissed { agent_session: id });
                 }
                 Err(err) => {
                     tracing::debug!(
@@ -123,9 +121,7 @@ impl App {
                 Ok(()) => {
                     // Success — clear the slot (the exec session now
                     // has fresh output / the user answered).
-                    let _ = action_tx.send(Action::ExecStdinDismissed {
-                        agent_session: id,
-                    });
+                    let _ = action_tx.send(Action::ExecStdinDismissed { agent_session: id });
                 }
                 Err(err) => {
                     // Failure — KEEP the slot (re-probe will re-fire)

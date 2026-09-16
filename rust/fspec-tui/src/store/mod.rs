@@ -13,7 +13,9 @@ pub mod agent_view;
 pub mod board;
 mod board_viewport;
 pub mod mux_state;
+pub mod work_unit_sanitize; // TUI-111
 
 pub use agent_view::{AgentViewStore, IsolationState, NavTarget, SessionContext, TokenState};
 pub use board::{column_index, BoardStore, COLUMN_ORDER};
 pub use mux_state::MuxState;
+pub use work_unit_sanitize::sanitize_work_unit;

@@ -236,12 +236,14 @@ impl SlashCommandPopup {
             query_row: None,
         };
 
-        // TUI-103: derive the body-area + scrollbar rect from the
-        // shrink-to-content dialog rect (geometry lives in
-        // `slash_command_popup_mouse::scrollbar_geometry` so this file
-        // stays under the 300-LoC ceiling).
-        let (sb_rect, body_origin) =
-            super::slash_command_popup_mouse::scrollbar_geometry(&dialog, vr, self.matches.len(), area);
+        // TUI-103: body-area + scrollbar rect from the shrink-to-content
+        // dialog rect (geometry in slash_command_popup_mouse).
+        let (sb_rect, body_origin) = super::slash_command_popup_mouse::scrollbar_geometry(
+            &dialog,
+            vr,
+            self.matches.len(),
+            area,
+        );
 
         render_dialog(area, buf, &dialog);
 

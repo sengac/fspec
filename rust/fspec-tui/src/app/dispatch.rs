@@ -69,12 +69,21 @@ impl App {
             }
             Action::WorkUnitsLoaded(units) => {
                 self.board_store.replace_work_units(units.clone());
+                // BUG-180: project the fresh snapshot onto the per-session
+                // WorkUnitContext bindings (+ legacy fallback slots) so the
+                // SessionHeader chip tracks the LIVE status.
+                self.agent_view_store.sync_work_unit_contexts(units);
             }
             Action::CheckpointCountsLoaded(counts) => {
                 // RPC-015: bootstrap delivered fresh checkpoint counts;
                 // store them so the BoardView header repaints with the
                 // live `Checkpoints: N Manual, M Auto` text.
                 self.board_store.set_checkpoint_counts(*counts);
+            }
+            Action::GitStateChanged(state) => {
+                // BUG-182: the ONE centralized git poll frame — body in
+                // app/dispatch_git_state.rs (R3 single-writer paths + R4 re-fetch).
+                self.handle_git_state_changed(state);
             }
             Action::EnterWorkUnit(id) => self.handle_enter_work_unit(id),
             Action::OpenAgentView(target) => {

@@ -36,6 +36,24 @@ pub struct FacadeToolWrapper {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FacadeArgs(pub Value);
 
+/// TOOL-023: turns a facade's argument-validation error into a full
+/// recovery surface. The original `map_params` message is preserved
+/// verbatim (existing per-tool substring assertions keep passing), and the
+/// tool's accepted parameters (rendered from the facade's definition
+/// schema) plus a canonical example call are APPENDED. Errors other than
+/// argument validation (e.g. hook blocks) pass through unchanged.
+fn enrich_facade_arg_error(tool_name: String, schema: &Value, err: ToolError) -> ToolError {
+    match err {
+        ToolError::Validation { tool, message } => ToolError::Validation {
+            tool,
+            message: codelet_common::tool_usage::append_usage_to_message(
+                &tool_name, schema, &message,
+            ),
+        },
+        other => other,
+    }
+}
+
 impl FacadeToolWrapper {
     /// Create a new wrapper for the given facade.
     ///
@@ -85,7 +103,16 @@ impl Tool for FacadeToolWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Convert internal params to WebSearchRequest for the base tool
         let request = match internal_params {
@@ -228,7 +255,16 @@ impl Tool for HitlToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         let InternalHitlParams::Request { questions } = internal_params;
 
@@ -406,7 +442,16 @@ impl Tool for FileToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Execute the appropriate base tool based on the operation type
         match internal_params {
@@ -1062,7 +1107,16 @@ impl Tool for FspecToolFacadeWrapper {
         };
 
         // Map provider-specific args to internal params via the facade
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Check if fspec handler is configured for this session (TOOL-012: use self.session_id)
         if !has_fspec_handler_for_session(self.session_id) {
@@ -1178,7 +1232,16 @@ impl Tool for BashToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Execute the bash tool based on the operation type
         // TOOL-013: BashTool now handles effective_cwd lookup internally via session_id
@@ -1308,7 +1371,16 @@ impl Tool for SearchToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Execute the appropriate base tool based on the operation type
         match internal_params {
@@ -1516,7 +1588,16 @@ impl Tool for LsToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Execute the ls tool based on the operation type
         match internal_params {
@@ -1705,7 +1786,16 @@ impl Tool for BridgeToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Map provider-specific args to internal params via the facade
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Check if bridge handler is configured for this session (TOOL-012: use self.session_id)
         if !has_bridge_handler_for_session(self.session_id) {
@@ -1914,7 +2004,16 @@ impl Tool for ExecToolFacadeWrapper {
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
         // Use the facade to map provider-specific params to internal format
-        let internal_params = self.facade.map_params(args.0)?;
+        let internal_params = match self.facade.map_params(args.0) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(enrich_facade_arg_error(
+                    self.name(),
+                    &self.facade.definition().parameters,
+                    e,
+                ))
+            }
+        };
 
         // Convert internal params to JSON args for UnifiedExecTool
         let json_args = internal_exec_params_to_json(internal_params);

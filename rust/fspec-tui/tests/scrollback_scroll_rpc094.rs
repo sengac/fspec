@@ -645,9 +645,18 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     1274), TOOL-022 exec-stdin prompt actions (+35 → 1309). The
     //     assertion therefore tracks the real measured file (1309), not
     //     the stale itemized sum.
+    //   - 0.10.7 release (PROV-144/145/146 + TOOL-022 + BUG-168) added
+    //     38 lines (provider-profile option action variants + exec-stdin
+    //     prompt action variants) without re-itemizing — the assertion
+    //     tracks the measured file at the release commit (1347).
+    //   - BUG-182 added 10 lines (GitStateChanged / GitChangedFilesLoaded /
+    //     GitCheckpointsLoaded variants + compressed docs) — the assertion
+    //     tracks the measured file (1357).
+    //   - MUX-009 added 6 lines (OpenMuxConfigDialog variant + a 5-line doc
+    //     stanza) — the assertion tracks the measured file (1363).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1309,
-        "components/mod.rs has {n_components} lines — measured ceiling 1309 (802 baseline + itemized card deltas + documented reconciliation drift through TOOL-022)"
+        n_components <= 1363,
+        "components/mod.rs has {n_components} lines — measured ceiling 1363 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog)"
     );
 }

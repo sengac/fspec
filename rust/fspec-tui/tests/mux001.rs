@@ -115,8 +115,7 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let tmp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
 }
 
@@ -1107,6 +1106,13 @@ async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
 #[tokio::test]
 async fn slash_mux_off_returns_to_the_pre_mux_view() {
     // @step Given the TUI is showing the single Agent view
+    // The `/mux off` below triggers the R6 exit auto-save, which writes
+    // the process-global data directory — hold the DATA_DIR_GUARD so a
+    // concurrent persistence test (which re-roots that global at its own
+    // tempdir) can't see this config (or vice-versa).
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     drain_pending(&mut app).await;

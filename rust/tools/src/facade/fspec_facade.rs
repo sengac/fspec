@@ -2,6 +2,17 @@
 //!
 //! These facades adapt the FspecTool interface for provider-specific
 //! tool naming and parameter schemas.
+//!
+//! TOOL-023: every `map_params` implementation detects the two most
+//! common LLM arg mistakes BEFORE deserialization and emits a dedicated,
+//! tool-named [`ToolError::Validation`] with a corrected example:
+//! * `args`/`arguments` sent as a JSON object instead of a JSON string
+//!   (the #1 source of fspec tool failures — LLMs trained on
+//!   OpenAI/Anthropic function-calling naturally emit objects), and
+//! * `project_root` sent as a non-string.
+//!
+//! Unknown command names are passed through unchanged — the did-you-mean
+//! suggestion is produced by the fspec-core dispatcher.
 
 use super::traits::ToolDefinition;
 use crate::fspec::FspecArgs;
@@ -17,26 +28,51 @@ pub struct InternalFspecParams {
     pub project_root: String,
 }
 
-/// Provider-specific tool facade trait for fspec operations.
-///
-/// Each facade adapts the fspec tool's interface for a specific LLM provider,
-/// handling differences in tool naming, parameter schemas, and parameter formats.
-pub trait FspecToolFacade: Send + Sync {
-    /// Returns the provider this facade is for (e.g., "claude", "gemini", "openai")
-    fn provider(&self) -> &'static str;
-
-    /// Returns the tool name as the provider expects it
-    fn tool_name(&self) -> &'static str;
-
-    /// Returns the tool definition with provider-specific schema
-    fn definition(&self) -> ToolDefinition;
-
-    /// Maps provider-specific parameters to internal parameters
-    fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError>;
+/// TOOL-023: dedicated explanation for the string-vs-object `args` gotcha.
+fn args_object_error(tool_name: &str, args_field: &str, raw: &Value) -> ToolError {
+    let example = raw
+        .as_object()
+        .and_then(|m| m.get("status"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("backlog");
+    ToolError::Validation {
+        tool: "fspec",
+        message: format!(
+            "{tool_name} tool: the \"{args_field}\" parameter must be a string containing JSON, not a JSON object. \
+             A corrected example of your call: {{\"command\": \"board\", \"{args_field}\": \"{{\\\"status\\\": \\\"{example}\\\"}}\", \"project_root\": \".\"}}. \
+             Pass the same JSON content, but encoded as a string; use an empty string \"{{}}\" when the command takes no arguments."
+        ),
+    }
 }
 
-/// Type alias for a boxed FspecToolFacade
-pub type BoxedFspecToolFacade = std::sync::Arc<dyn FspecToolFacade>;
+/// TOOL-023: dedicated explanation for a non-string `project_root`.
+fn project_root_type_error(tool_name: &str) -> ToolError {
+    ToolError::Validation {
+        tool: "fspec",
+        message: format!(
+            "{tool_name} tool: the \"project_root\" parameter must be a string path (e.g. \".\" or the absolute project directory), not a number or object."
+        ),
+    }
+}
+
+/// TOOL-023: dedicated explanation for a missing `command`, with an
+/// example invocation and a pointer at the help command.
+fn command_missing_error(tool_name: &str, args_field: &str) -> ToolError {
+    ToolError::Validation {
+        tool: "fspec",
+        message: format!(
+            "{tool_name} tool: the \"command\" parameter is required. \
+             Example: {{\"command\": \"list-work-units\", \"{args_field}\": \"{{\\\"status\\\": \\\"backlog\\\"}}\", \"project_root\": \".\"}}. \
+             Run {{\"command\": \"help\"}} for the available command list, or append \" --help\" to a command name for its full argument reference."
+        ),
+    }
+}
+
+/// Provider-specific tool facade trait for fspec operations (TOOL-023: the
+/// canonical trait definition lives in [`super::traits`]; this re-export
+/// keeps the single source of truth so the provider facades, the wrapper,
+/// and the tests all operate on the same object).
+pub use super::traits::{BoxedFspecToolFacade, FspecToolFacade};
 
 /// Claude-specific facade for fspec command execution.
 ///
@@ -68,11 +104,30 @@ impl FspecToolFacade for ClaudeFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
-        let fspec_args: FspecArgs =
-            serde_json::from_value(input).map_err(|e| ToolError::Validation {
+        // TOOL-023: detect the string-vs-object `args` gotcha before serde
+        // sees it — the generic serde error for this case is opaque
+        // ("invalid type: map, expected a string at line 1 column N").
+        if let Some(args) = input.get("args") {
+            if args.is_object() || args.is_array() {
+                return Err(args_object_error("Fspec", "args", args));
+            }
+        }
+        if let Some(root) = input.get("project_root") {
+            if !root.is_string() && !root.is_null() {
+                return Err(project_root_type_error("Fspec"));
+            }
+        }
+        let fspec_args: FspecArgs = serde_json::from_value(input).map_err(|e| {
+            // TOOL-023: name the tool and show the expected shape.
+            ToolError::Validation {
                 tool: "fspec",
-                message: format!("Invalid arguments: {e}"),
-            })?;
+                message: format!(
+                    "Fspec tool: invalid arguments: {e}. \
+                     Expected {{\"command\": \"<command>\", \"args\": \"<json string>\", \"project_root\": \"<path>\"}}. \
+                     Use command \"help\" for the command list."
+                ),
+            }
+        })?;
 
         Ok(InternalFspecParams {
             command: fspec_args.command,
@@ -130,26 +185,35 @@ impl FspecToolFacade for GeminiFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
+        let tool = self.tool_name();
+        // TOOL-023: dedicated missing-command error with a usage example.
         let command = input
             .get("command")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolError::Validation {
-                tool: "fspec_command",
-                message: "Missing 'command' field".to_string(),
-            })?
+            .ok_or_else(|| command_missing_error(tool, "args"))?
             .to_string();
 
-        let args = input
-            .get("args")
-            .and_then(|v| v.as_str())
-            .unwrap_or("{}")
-            .to_string();
+        // TOOL-023: detect the string-vs-object `args` gotcha.
+        let args = match input.get("args") {
+            Some(raw) if raw.is_object() || raw.is_array() => {
+                return Err(args_object_error(tool, "args", raw));
+            }
+            _ => input
+                .get("args")
+                .and_then(|v| v.as_str())
+                .unwrap_or("{}")
+                .to_string(),
+        };
 
-        let project_root = input
-            .get("project_root")
-            .and_then(|v| v.as_str())
-            .unwrap_or(".")
-            .to_string();
+        // TOOL-023: detect non-string project_root (null is treated as absent).
+        let project_root = match input.get("project_root") {
+            Some(v) if !v.is_string() && !v.is_null() => return Err(project_root_type_error(tool)),
+            _ => input
+                .get("project_root")
+                .and_then(|v| v.as_str())
+                .unwrap_or(".")
+                .to_string(),
+        };
 
         Ok(InternalFspecParams {
             command,
@@ -188,11 +252,29 @@ impl FspecToolFacade for OpenAIFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
-        let fspec_args: FspecArgs =
-            serde_json::from_value(input).map_err(|e| ToolError::Validation {
+        // TOOL-023: detect the string-vs-object `args` gotcha before serde
+        // sees it (same failure mode as the Claude facade).
+        if let Some(args) = input.get("args") {
+            if args.is_object() || args.is_array() {
+                return Err(args_object_error("fspec", "args", args));
+            }
+        }
+        if let Some(root) = input.get("project_root") {
+            if !root.is_string() && !root.is_null() {
+                return Err(project_root_type_error("fspec"));
+            }
+        }
+        let fspec_args: FspecArgs = serde_json::from_value(input).map_err(|e| {
+            // TOOL-023: name the tool and show the expected shape.
+            ToolError::Validation {
                 tool: "fspec",
-                message: format!("Invalid arguments: {e}"),
-            })?;
+                message: format!(
+                    "fspec tool: invalid arguments: {e}. \
+                     Expected {{\"command\": \"<command>\", \"args\": \"<json string>\", \"project_root\": \"<path>\"}}. \
+                     Use command \"help\" for the command list."
+                ),
+            }
+        })?;
 
         Ok(InternalFspecParams {
             command: fspec_args.command,
@@ -248,26 +330,35 @@ impl FspecToolFacade for ZAIFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
+        let tool = self.tool_name();
+        // TOOL-023: dedicated missing-command error with a usage example.
         let command = input
             .get("command")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolError::Validation {
-                tool: "run_fspec",
-                message: "Missing 'command' field".to_string(),
-            })?
+            .ok_or_else(|| command_missing_error(tool, "arguments"))?
             .to_string();
 
-        let args = input
-            .get("arguments")
-            .and_then(|v| v.as_str())
-            .unwrap_or("{}")
-            .to_string();
+        // TOOL-023: detect the string-vs-object `arguments` gotcha.
+        let args = match input.get("arguments") {
+            Some(raw) if raw.is_object() || raw.is_array() => {
+                return Err(args_object_error(tool, "arguments", raw));
+            }
+            _ => input
+                .get("arguments")
+                .and_then(|v| v.as_str())
+                .unwrap_or("{}")
+                .to_string(),
+        };
 
-        let project_root = input
-            .get("root_dir")
-            .and_then(|v| v.as_str())
-            .unwrap_or(".")
-            .to_string();
+        // TOOL-023: detect non-string root_dir.
+        let project_root = match input.get("root_dir") {
+            Some(v) if !v.is_string() && !v.is_null() => return Err(project_root_type_error(tool)),
+            _ => input
+                .get("root_dir")
+                .and_then(|v| v.as_str())
+                .unwrap_or(".")
+                .to_string(),
+        };
 
         Ok(InternalFspecParams {
             command,

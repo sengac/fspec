@@ -201,9 +201,11 @@ async fn the_subscriber_recovers_from_a_lagged_broadcast_receiver() {
     app.bootstrap().await.expect("bootstrap");
     // RPC-385 adds a fifth subscriber task (session_created_rx) alongside the
     // existing four (work_units / chunks / logs / status_changes).
+    // TUI-109 adds a sixth (checkpoints_progress_rx); BUG-181 a seventh
+    // (checkpoint_counts_changed_rx).
     assert_eq!(
         app.subscriber_task_count(),
-        6,
+        7,
         "bootstrap must spawn the new session-created subscriber task"
     );
     // Overflow the session-created broadcast to force RecvError::Lagged.

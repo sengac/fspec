@@ -30,6 +30,12 @@ use std::io::{stdout, Stdout};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Once;
 
+pub mod sanitize;
+#[cfg(test)]
+pub mod sanitize_tests;
+#[cfg(test)]
+pub mod sanitize_tests_streaming;
+
 use anyhow::Result;
 use crossterm::event::{
     DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture,

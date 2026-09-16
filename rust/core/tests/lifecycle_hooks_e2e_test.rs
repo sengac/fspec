@@ -25,13 +25,18 @@ use codelet_core::lifecycle_hooks::{
 // ===== Helpers =====
 
 /// Path to the example hooks directory in the source tree.
+///
+/// BUG-182: the example hooks moved from `spec/hooks/examples/` to
+/// `examples/hooks/` (commit 8a24f799) and the config file was renamed
+/// `fspec-hooks.json` → `fspec-hooks.json.example`; the path here had
+/// drifted, breaking 18 e2e tests with NotFound.
 fn examples_dir() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
         .parent()
         .unwrap()
-        .join("spec/hooks/examples")
+        .join("examples/hooks")
         .leak()
 }
 
@@ -48,12 +53,13 @@ fn setup_workspace() -> TempDir {
 
     // Copy and fix-up the example hooks config (rewrite relative paths to absolute)
     let examples = examples_dir();
-    let config_src = fs::read_to_string(examples.join("fspec-hooks.json"))
-        .expect("read example fspec-hooks.json");
+    let config_src = fs::read_to_string(examples.join("fspec-hooks.json.example"))
+        .expect("read example fspec-hooks.json.example");
 
-    // Replace relative "spec/hooks/examples/" prefix with absolute path
+    // Replace relative "spec/hooks/" prefix with absolute path (the example
+    // config addresses the hooks as if installed to spec/hooks/).
     let abs_examples = examples.to_string_lossy();
-    let config_fixed = config_src.replace("spec/hooks/examples/", &format!("{abs_examples}/"));
+    let config_fixed = config_src.replace("spec/hooks/", &format!("{abs_examples}/"));
 
     fs::write(spec_dir.join("fspec-hooks.json"), config_fixed).expect("write fixed config");
 

@@ -147,7 +147,7 @@ pub fn write_file_with_mode(
     workdir: &Path,
     path: &str,
     content: &[u8],
-    executable: bool,
+    #[cfg_attr(not(unix), allow(unused_variables))] executable: bool,
 ) -> std::io::Result<()> {
     let full_path = workdir.join(path);
     if let Some(parent) = full_path.parent() {

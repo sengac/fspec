@@ -230,6 +230,16 @@ pub enum Action {
     /// the BoardStore's `checkpoint_counts` field is updated so the
     /// BoardView header paints the live counts on the next render.
     CheckpointCountsLoaded(codelet_rpc_types::CheckpointCounts),
+    /// BUG-182: fresh `GitState` frame — folded onto the EXISTING
+    /// single-writer paths + visible lazy-view re-fetch (R3/R4, body in
+    /// `app/dispatch_git_state.rs`).
+    GitStateChanged(codelet_rpc_types::GitState),
+    /// BUG-182: git-state changed-files REFRESH (unlike `ChangedFilesLoaded`,
+    /// which resets): re-apply keeping the selection by path (R6).
+    GitChangedFilesLoaded(Vec<codelet_rpc_types::ChangedFile>),
+    /// BUG-182: git-state checkpoint REFRESH (unlike `CheckpointsLoaded`,
+    /// which resets): re-apply keeping the selection by work-unit + name (R6).
+    GitCheckpointsLoaded(Vec<codelet_rpc_types::CheckpointInfo>),
     /// RPC-016: PageUp pressed while BoardView is focused. The payload
     /// is the most recent viewport_height observed by BoardView so
     /// App::dispatch can scroll the focused column by exactly that
@@ -1307,6 +1317,12 @@ pub enum Action {
     /// shared `fspec-config.json` `tui.mux` key ('s' keybinding). Emitted
     /// by `MuxConfigDialog` on 's'.
     MuxConfigAppliedAndSaved(crate::views::multiplex::MuxConfig),
+    /// MUX-009: the Board view's modifier-free 'm'/'M' keybinding opens
+    /// the same MuxConfigDialog `/mux` opens (MUX-004) — the Board pane
+    /// inside the mux grid reuses the binding (R3). Emitted by
+    /// `BoardView::handle_event`; App::dispatch routes it to
+    /// `handle_open_mux_config_dialog` (idempotent, one instance).
+    OpenMuxConfigDialog,
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

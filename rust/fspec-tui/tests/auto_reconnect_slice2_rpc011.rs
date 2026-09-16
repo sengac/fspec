@@ -202,9 +202,12 @@ async fn auto_reconnect_happy_path() {
     let mut app = App::new(app_backend);
     app.bootstrap().await.expect("mock App bootstrap");
     let full_stream_count = app.subscriber_task_count();
+    // BUG-181: 7 streams — the original 6 (work_units, chunks, logs,
+    // status_changes, session_created, checkpoints_progress) plus the
+    // checkpoint_counts_changed push.
     assert_eq!(
-        full_stream_count, 6,
-        "bootstrap must spawn all six subscriber tasks"
+        full_stream_count, 7,
+        "bootstrap must spawn all seven subscriber tasks"
     );
     // RPC-416: open a focused session and drop the connection so an inline
     // reconnecting line is showing in its scrollback (the presentation the

@@ -84,12 +84,43 @@ pub struct DispatchResult {
 
 impl DispatchResult {
     fn from_error(err: FspecCoreError) -> Self {
+        let mut error = err.to_string();
+        // TOOL-023: append a usage hint to every InvalidArgs error so the
+        // LLM knows the accepted args shape and where the full argument
+        // reference lives, without touching the 150+ per-command
+        // construction sites.
+        if let FspecCoreError::InvalidArgs { command, .. } = &err {
+            error.push_str(&format!(
+                "\nargs must be a JSON object string — e.g. args: \"{{\\\"workUnitId\\\": \\\"AUTH-001\\\"}}\". \
+                 Full argument reference: command \"{command} --help\"."
+            ));
+        }
         Self {
             success: false,
             data: String::new(),
-            error: Some(err.to_string()),
+            error: Some(error),
             system_reminder: None,
         }
+    }
+}
+
+/// TOOL-023: build an [`FspecCoreError::UnknownCommand`] with appended
+/// recovery guidance: a "Did you mean" suggestion when the fuzzy matcher
+/// finds a close canonical name, plus a `--help` pointer either way.
+pub(crate) fn unknown_command_with_recovery(command: &str) -> FspecCoreError {
+    let recovery = match crate::canonical::suggest_command(command) {
+        Some(s) => format!(
+            "\nDid you mean: {s}\n\
+             Re-call with the suggested command name. \
+             For a command's full argument reference, call it with \" --help\" appended (e.g. \"{s} --help\")."
+        ),
+        None => "\nRun command \"help\" for the command list, or append \" --help\" \
+                 to any command name for its full argument reference."
+            .to_string(),
+    };
+    FspecCoreError::UnknownCommand {
+        command: command.to_string(),
+        recovery,
     }
 }
 
@@ -125,9 +156,9 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
                     match run_ported("foundation-status", &req.args_json, &req.project_root) {
                         Some(r) => r,
                         None => {
-                            return DispatchResult::from_error(FspecCoreError::UnknownCommand {
-                                command: req.command.clone(),
-                            });
+                            return DispatchResult::from_error(unknown_command_with_recovery(
+                                &req.command,
+                            ));
                         }
                     };
                 return match result {
@@ -140,9 +171,7 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
                     Err(err) => DispatchResult::from_error(err),
                 };
             }
-            return DispatchResult::from_error(FspecCoreError::UnknownCommand {
-                command: req.command.clone(),
-            });
+            return DispatchResult::from_error(unknown_command_with_recovery(&req.command));
         }
     };
 
@@ -859,6 +888,7 @@ fn run_stub(name: &'static str, _args_json: &str) -> Result<String, FspecCoreErr
         // command exists, and every canonical entry has a stub.
         Err(FspecCoreError::UnknownCommand {
             command: name.to_string(),
+            recovery: String::new(),
         })
     })
 }

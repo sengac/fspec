@@ -92,8 +92,10 @@ async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host
     app.bootstrap().await.expect("bootstrap");
     // @step Then exactly four subscriber tasks are alive on the current tokio Handle
     //         (RPC-045: work_units_rx + chunks_rx + logs_rx + status_changes_rx;
-    //          RPC-385 added a fifth: session_created_rx)
-    assert_eq!(app.subscriber_task_count(), 6);
+    //          RPC-385 added a fifth: session_created_rx; TUI-109 added a
+    //          sixth: checkpoints_progress_rx; BUG-181 added a seventh:
+    //          checkpoint_counts_changed_rx)
+    assert_eq!(app.subscriber_task_count(), 7);
     // RPC-012 lazy-session: prime the chunks filter with a session id
     // so the chunks subscriber forwards.
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
@@ -256,8 +258,9 @@ async fn subscriber_tasks_honour_recverror_lagged_by_logging_at_debug_and_contin
     // @step Then the task does NOT panic
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     // RPC-045 added a 4th subscriber (status_changes_rx); RPC-385 added a
-    // 5th (session_created_rx) so the count is now 5.
-    assert_eq!(app.subscriber_task_count(), 6);
+    // 5th (session_created_rx); TUI-109 a 6th (checkpoints_progress_rx);
+    // BUG-181 a 7th (checkpoint_counts_changed_rx).
+    assert_eq!(app.subscriber_task_count(), 7);
     // @step And the task subsequently re-fetches a snapshot via `backend.list_work_units()` and emits a fresh `Action::WorkUnitsLoaded`
     mock.seed_work_units(vec![wu("FRESH-001", "done")]);
     let action = wait_for_action(&mut app, |a| matches!(a, Action::WorkUnitsLoaded(_)))

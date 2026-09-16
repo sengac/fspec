@@ -147,15 +147,17 @@ mod tests {
         let result = tool.call(args).await;
         assert!(result.is_err());
         let err = result.unwrap_err();
+        // TOOL-024: an empty/whitespace query is an argument-validation
+        // failure (ToolError::Validation), not an execution failure.
         match err {
-            ToolError::Execution { tool, message } => {
+            ToolError::Validation { tool, message } => {
                 assert_eq!(tool, "DeepSearch");
                 assert!(
                     message.contains("query is required"),
                     "error should mention query: {message}"
                 );
             }
-            _ => panic!("Expected Execution error, got: {err:?}"),
+            _ => panic!("Expected Validation error, got: {err:?}"),
         }
 
         clear_all_deep_search_handlers();

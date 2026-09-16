@@ -2112,19 +2112,22 @@ where
                         }
                     }
 
-                    // BUG-170: A terminal "prompt is too long" error with a failed
-                    // tool pair at the tail of the stack would otherwise be replayed
-                    // on every subsequent user message. Surgically strip the
-                    // offending pair, invalidate the stale cache-token state
-                    // (the prefix the tracker's cache fields reference no longer
-                    // exists), and keep the session interactive — like the EXT-016
+                    // BUG-170 / BUG-185: A terminal API error of ANY class (not
+                    // only "prompt is too long") with a failed tool pair at the
+                    // tail of the stack would otherwise be replayed on every
+                    // subsequent user message. Surgically strip the offending
+                    // pair, invalidate the stale cache-token state (the prefix
+                    // the tracker's cache fields reference no longer exists),
+                    // and keep the session interactive — like the EXT-016
                     // image-recovery path: surface the error, break, stay usable.
-                    // Any other terminal error keeps today's behavior exactly.
-                    if is_prompt_too_long && !is_interrupted.load(Acquire) {
-                        let stripped =
-                            super::recovery_unrecoverable::strip_failed_tool_call_tail(
-                                &mut session.messages,
-                            );
+                    // BUG-185 supersedes BUG-170 rule [0]: the strip is no
+                    // longer gated on is_prompt_too_long_error. When the tail
+                    // matches no tool shape (StrippedTail::None), fall through
+                    // to the existing terminal behavior (emit error + Err).
+                    if !is_interrupted.load(Acquire) {
+                        let stripped = super::recovery_unrecoverable::strip_failed_tool_call_tail(
+                            &mut session.messages,
+                        );
                         if matches!(
                             stripped,
                             super::recovery_unrecoverable::StrippedTail::ToolPair

@@ -158,7 +158,16 @@ impl FileSearchPopup {
         ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
     }
 
-    fn go_end(&mut self) {
+    /// Home key: jump to the first match (key routing in
+    /// `file_search_popup_keys`).
+    pub(crate) fn reset_to_top(&mut self) {
+        self.selected_index = 0;
+        self.scroll_offset = 0;
+    }
+
+    /// End key: jump to the last match (key routing in
+    /// `file_search_popup_keys`).
+    pub(crate) fn go_end(&mut self) {
         if self.matches.is_empty() {
             return;
         }
@@ -180,48 +189,7 @@ impl FileSearchPopup {
     }
 
     pub fn handle_key(&mut self, code: KeyCode, mods: KeyModifiers) -> FilePopupOutcome {
-        if mods.contains(KeyModifiers::SHIFT) || mods.contains(KeyModifiers::CONTROL) {
-            return FilePopupOutcome::Ignored;
-        }
-        match code {
-            KeyCode::Esc => FilePopupOutcome::Dismiss,
-            KeyCode::Up => {
-                self.move_by(-1);
-                FilePopupOutcome::Continued
-            }
-            KeyCode::Down => {
-                self.move_by(1);
-                FilePopupOutcome::Continued
-            }
-            KeyCode::PageUp => {
-                let step = -(self.visible_rows() as i32);
-                self.move_by(step);
-                FilePopupOutcome::Continued
-            }
-            KeyCode::PageDown => {
-                let step = self.visible_rows() as i32;
-                self.move_by(step);
-                FilePopupOutcome::Continued
-            }
-            KeyCode::Home => {
-                self.selected_index = 0;
-                self.scroll_offset = 0;
-                FilePopupOutcome::Continued
-            }
-            KeyCode::End => {
-                self.go_end();
-                FilePopupOutcome::Continued
-            }
-            KeyCode::Enter => match self.selected() {
-                Some(path) => FilePopupOutcome::SelectedEnter(path.to_string()),
-                None => FilePopupOutcome::Ignored,
-            },
-            KeyCode::Tab => match self.selected() {
-                Some(path) => FilePopupOutcome::SelectedTab(path.to_string()),
-                None => FilePopupOutcome::Ignored,
-            },
-            _ => FilePopupOutcome::Ignored,
-        }
+        super::file_search_popup_keys::route_key(self, code, mods)
     }
 
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
@@ -241,8 +209,12 @@ impl FileSearchPopup {
         // shrink-to-content dialog rect (geometry lives in
         // `file_search_popup_mouse::scrollbar_geometry` so this file
         // stays under the 300-LoC ceiling).
-        let (sb_rect, body_origin) =
-            super::file_search_popup_mouse::scrollbar_geometry(&dialog, vr, self.matches.len(), area);
+        let (sb_rect, body_origin) = super::file_search_popup_mouse::scrollbar_geometry(
+            &dialog,
+            vr,
+            self.matches.len(),
+            area,
+        );
 
         render_dialog(area, buf, &dialog);
 
@@ -267,10 +239,8 @@ mod tests {
 
     use super::*;
 
-    // Legacy + RPC-028 tests moved to tests/rpc028_popup_scroll.rs so
-    // this file stays under the 300-LoC source-shape budget. Only the
-    // snapshot test stays inline so the insta snapshot path remains
-    // co-located with the renderer.
+    // Legacy + RPC-028 tests moved to tests/rpc028_popup_scroll.rs (300-LoC
+    // budget); only the insta snapshot test stays co-located with the renderer.
 
     #[test]
     fn file_search_popup_rendering_is_byte_equal_across_runs_insta_snapshot() {
@@ -286,14 +256,13 @@ mod tests {
             })
             .expect("draw");
         let buf = terminal.backend().buffer().clone();
-        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
-        for y in 0..buf.area.height {
-            let mut row = String::with_capacity(buf.area.width as usize);
-            for x in 0..buf.area.width {
-                row.push_str(buf[(x, y)].symbol());
-            }
-            rows.push(row);
-        }
+        let rows = (0..buf.area.height)
+            .map(|y| {
+                (0..buf.area.width)
+                    .map(|x| buf[(x, y)].symbol().to_string())
+                    .collect()
+            })
+            .collect::<Vec<String>>();
         insta::assert_yaml_snapshot!("file_search_popup__centered_popup_80x24", rows);
     }
 }

@@ -32,6 +32,7 @@ use tokio::time::Instant;
 
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 use super::{Action, Callback, Component, EventResult, Priority};
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 /// Canonical id used by [`crate::compositor::Compositor::remove`].
 pub const STATUS_DIALOG_ID: &str = "status-dialog";
@@ -74,10 +75,12 @@ impl StatusDialog {
     /// Construct a fresh StatusDialog in [`StatusKind::Restoring`]
     /// state with empty progress fields and the supplied operation
     /// type verb (default "Restoring").
+    ///
+    /// **TUI-111**: the operation-type verb is sanitized at ingress.
     pub fn new(operation_type: impl Into<String>) -> Self {
         Self {
             id: STATUS_DIALOG_ID.to_string(),
-            operation_type: operation_type.into(),
+            operation_type: sanitize_for_terminal(&operation_type.into()),
             state: StatusKind::Restoring {
                 current: String::new(),
                 idx: 0,
@@ -108,9 +111,13 @@ impl StatusDialog {
     }
 
     /// Mutate the Restoring progress payload.
+    ///
+    /// **TUI-111**: `current` (the item being processed — e.g. a
+    /// checkpoint name / file path) is sanitized at ingress.
     pub fn set_restoring(&mut self, current: impl Into<String>, idx: usize, total: usize) {
+        let current = current.into();
         self.state = StatusKind::Restoring {
-            current: current.into(),
+            current: sanitize_for_terminal(&current),
             idx,
             total,
         };
@@ -127,11 +134,13 @@ impl StatusDialog {
     /// Transition into [`StatusKind::Error`] state with the supplied
     /// error message body. Aborts any in-flight complete-state
     /// auto-close task.
+    ///
+    /// **TUI-111**: the error message is sanitized at ingress.
     pub fn transition_to_error(&mut self, error_message: impl Into<String>) {
         self.abort_dismissal_task();
         self.complete_at = None;
         self.state = StatusKind::Error {
-            error_message: error_message.into(),
+            error_message: sanitize_for_terminal(&error_message.into()),
         };
     }
 

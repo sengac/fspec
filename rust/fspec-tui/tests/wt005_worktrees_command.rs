@@ -19,10 +19,10 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::views::agent::session_worktrees_dialog::{
     SessionWorktreesDialog, SessionWorktreesDialogOutcome, SESSION_WORKTREES_DIALOG_ID,
 };
+use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{SessionId, SessionWorktreeInfo};
 use crossterm::event::{KeyCode, KeyModifiers};
@@ -147,21 +147,14 @@ async fn slash_worktrees_lists_session_worktrees() {
     .await;
 
     // @step And the dialog lists one row per worktree with the session id and worktree path
-    let dialog =
-        SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
+    let dialog = SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
     let text = render_dialog(&dialog);
-    assert!(
-        text.contains("w-1"),
-        "row 1 session id missing:\n{text}"
-    );
+    assert!(text.contains("w-1"), "row 1 session id missing:\n{text}");
     assert!(
         text.contains("/tmp/repo/.fspec/worktrees/w-1"),
         "row 1 worktree path missing:\n{text}"
     );
-    assert!(
-        text.contains("w-2"),
-        "row 2 session id missing:\n{text}"
-    );
+    assert!(text.contains("w-2"), "row 2 session id missing:\n{text}");
 
     // @step And dirty worktrees are marked dirty
     let marker_count = text.matches("[dirty]").count();
@@ -212,8 +205,7 @@ async fn slash_worktrees_with_no_worktrees_shows_an_empty_state_row() {
 #[test]
 fn session_worktrees_dialog_enter_on_prune_emits_prune_leaked_worktrees() {
     // @step Given a SessionWorktreesDialog with Prune focused
-    let mut dialog =
-        SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
+    let mut dialog = SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
     assert_eq!(dialog.focused_button(), 0);
 
     // @step When the user presses Enter
@@ -330,10 +322,7 @@ async fn prune_failures_surface_an_error_notice() {
 
     // @step Then I see the notice "[error] /worktrees prune: boom"
     wait_until(
-        || {
-            session_scrollback_text(&app, &sid("s-1"))
-                .contains("[error] /worktrees prune: boom")
-        },
+        || session_scrollback_text(&app, &sid("s-1")).contains("[error] /worktrees prune: boom"),
         "error notice in scrollback",
     )
     .await;

@@ -5,7 +5,7 @@
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-    use crate::store::agent_view::sanitize::sanitize_for_terminal;
+    use crate::terminal::sanitize::sanitize_for_terminal;
 
     // Feature: spec/features/sanitize-bash-tool-output-before-tui-rendering-to-prevent-terminal-trashing.feature
 
@@ -13,7 +13,6 @@ mod tests {
     fn when_processed_for_tui(input: &str) -> String {
         sanitize_for_terminal(input)
     }
-
 
     /// @step Given a bash command outputs plain text without any escape sequences or control characters
     fn given_plain_text() -> String {

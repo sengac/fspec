@@ -18,7 +18,9 @@
 //! These tests use a real child process via `UnifiedExecTool` (run/poll),
 //! so they validate the full spawn -> reader-task -> poll path.
 
-use codelet_tools::unified_exec::{quiet_secs_since, UnifiedExecArgs, UnifiedExecResult, STILL_RUNNING_STEERING, UnifiedExecTool};
+use codelet_tools::unified_exec::{
+    quiet_secs_since, UnifiedExecArgs, UnifiedExecResult, UnifiedExecTool, STILL_RUNNING_STEERING,
+};
 use rig::tool::Tool;
 use serde_json::json;
 use uuid::Uuid;
@@ -109,7 +111,10 @@ async fn scenario_still_running_result_includes_steering_line() {
     );
 
     // @step And the steering line tells the LLM to send input via the write action if needed
-    assert!(output.contains("write action"), "steering line text: {output:?}");
+    assert!(
+        output.contains("write action"),
+        "steering line text: {output:?}"
+    );
 
     // @step And the steering line is present regardless of what the command printed
     // `sleep 30` printed NOTHING — the steering line is still present
@@ -192,11 +197,17 @@ async fn scenario_quiet_seconds_grows_as_process_stays_quiet() {
 
     // @step Then the result quiet_seconds is at least 3
     let quiet = poll.quiet_seconds.expect("poll must carry quiet_seconds");
-    assert!(quiet >= 3, "quiet_seconds should be >= 3, got {quiet}: {poll:?}");
+    assert!(
+        quiet >= 3,
+        "quiet_seconds should be >= 3, got {quiet}: {poll:?}"
+    );
 
     // @step And the result quiet_seconds is at most 8
     // (upper bound with slack for the clamped 5s poll window)
-    assert!(quiet <= 8, "quiet_seconds should be <= 8, got {quiet}: {poll:?}");
+    assert!(
+        quiet <= 8,
+        "quiet_seconds should be <= 8, got {quiet}: {poll:?}"
+    );
 
     close_session(&tool, session_id).await;
 }

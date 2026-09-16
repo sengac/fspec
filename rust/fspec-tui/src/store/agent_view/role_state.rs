@@ -14,6 +14,7 @@
 use codelet_rpc_types::SessionId;
 
 use super::AgentViewStore;
+use crate::terminal::sanitize::sanitize_for_terminal;
 
 impl AgentViewStore {
     /// Borrow the role overlay text for `session`, if any.
@@ -27,10 +28,14 @@ impl AgentViewStore {
     /// Set or clear the role overlay for `session`. Passing `None`
     /// removes the entry from the map so subsequent `role_for(...)`
     /// returns `None`.
+    ///
+    /// **TUI-111**: the role text is sanitized on ingress so the
+    /// RoleBanner always paints clean single-line text.
     pub fn set_role(&mut self, session: SessionId, role: Option<String>) {
         match role {
             Some(text) => {
-                self.role_by_session.insert(session, text);
+                self.role_by_session
+                    .insert(session, sanitize_for_terminal(&text));
             }
             None => {
                 self.role_by_session.remove(&session);

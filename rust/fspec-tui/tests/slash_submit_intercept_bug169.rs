@@ -26,7 +26,9 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{parse_slash_command, Action, App, FspecBackend, SlashCommandParse, ViewMode};
+use codelet_fspec_tui::{
+    parse_slash_command, Action, App, FspecBackend, SlashCommandParse, ViewMode,
+};
 use codelet_rpc_types::{SessionId, ThinkingLevel, WorkUnitContext};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
@@ -71,7 +73,10 @@ fn type_chars(app: &mut App, s: &str) {
     for ch in s.chars() {
         app.navigator_mut()
             .agent
-            .handle_event(&Event::Key(KeyEvent::new(KeyCode::Char(ch), KeyModifiers::NONE)));
+            .handle_event(&Event::Key(KeyEvent::new(
+                KeyCode::Char(ch),
+                KeyModifiers::NONE,
+            )));
     }
 }
 
@@ -102,10 +107,7 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
             );
             assert_eq!(mock.last_clear_history_session(), Some(sid("s-1")));
         }
-        "/quit" => assert!(
-            app.should_quit(),
-            "/quit must flip App.should_quit"
-        ),
+        "/quit" => assert!(app.should_quit(), "/quit must flip App.should_quit"),
         "/resume" => assert!(
             app.navigator().agent.resume_view.is_some(),
             "/resume must open the resume mode view"
@@ -149,7 +151,10 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
             if let Some(a) = app.try_recv_action() {
                 match a {
                     Action::OpenCreateSessionDialog { preselect } => {
-                        assert_eq!(preselect, Some(codelet_fspec_tui::CreateSessionOption::Isolated));
+                        assert_eq!(
+                            preselect,
+                            Some(codelet_fspec_tui::CreateSessionOption::Isolated)
+                        );
                         app.dispatch(a);
                     }
                     other => panic!("expected OpenCreateSessionDialog on bus, got {other:?}"),
@@ -171,10 +176,7 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
                 1,
                 "/detach must call backend.set_work_unit_context(s-1, None)"
             );
-            assert_eq!(
-                mock.last_set_work_unit_context(),
-                Some((sid("s-1"), None)),
-            );
+            assert_eq!(mock.last_set_work_unit_context(), Some((sid("s-1"), None)),);
             assert!(
                 app.agent_view_store()
                     .work_unit_context_for(&sid("s-1"))

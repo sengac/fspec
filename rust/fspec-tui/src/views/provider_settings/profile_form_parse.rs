@@ -103,9 +103,7 @@ pub(super) fn parse_loop_detection_max_repeats(raw: &str) -> Result<Option<u32>,
         text => text
             .parse::<u32>()
             .map(Some)
-            .map_err(|_| {
-                "Loop Repeat must be a whole number (10 = default)".to_string()
-            }),
+            .map_err(|_| "Loop Repeat must be a whole number (10 = default)".to_string()),
     }
 }
 
@@ -116,12 +114,9 @@ pub(super) fn parse_loop_detection_max_repeats(raw: &str) -> Result<Option<u32>,
 pub(super) fn parse_loop_detection_max_retries(raw: &str) -> Result<Option<u32>, String> {
     match raw.trim() {
         "" => Ok(None),
-        text => text
-            .parse::<u32>()
-            .map(Some)
-            .map_err(|_| {
-                "Loop Retries must be a whole number (0 = never retry, 10 = default)".to_string()
-            }),
+        text => text.parse::<u32>().map(Some).map_err(|_| {
+            "Loop Retries must be a whole number (0 = never retry, 10 = default)".to_string()
+        }),
     }
 }
 

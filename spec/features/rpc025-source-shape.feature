@@ -62,8 +62,8 @@ Feature: RPC-025 source-shape regressions for the history-store lift and per-ses
     Then the file is under 300 lines
     And the file declares a "history_state_by_session" field
     And the file declares a "cached_history_snapshot" field
-    And the file declares "pub fn history_state_for"
-    And the file declares "pub fn reset_history_state"
+    And store/agent_view/history_accessors.rs declares "pub fn history_state_for"
+    And store/agent_view/history_accessors.rs declares "pub fn reset_history_state"
     And the file declares "pub fn set_history_snapshot"
 
   Scenario: The NAPI persistence surface becomes a thin delegate layer

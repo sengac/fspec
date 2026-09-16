@@ -145,7 +145,9 @@ impl App {
             SlashCommandAction::Update => {
                 // UPD-002: bare palette pick checks + installs the latest
                 // release. Handler body lives in dispatch_slash_update.rs.
-                self.handle_update_subcommand(super::update_parser::UpdateSubcommand::CheckAndUpdate);
+                self.handle_update_subcommand(
+                    super::update_parser::UpdateSubcommand::CheckAndUpdate,
+                );
             }
             SlashCommandAction::Mux => {
                 // MUX-004: /mux (palette pick or bare /mux submit) opens
