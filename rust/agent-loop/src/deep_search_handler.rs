@@ -352,15 +352,24 @@ macro_rules! build_and_run {
     }};
 }
 
-fn provider_uses_streaming_execution(provider_name: &str) -> bool {
+/// True when the provider's sub-agent execution must stream internally
+/// (Codex/ZAI — see `collect_final_response_from_stream`). Public within
+/// the crate so the compactor sub-agent spawner
+/// (`generate_compaction_handler`) shares the same dispatch rule.
+pub(crate) fn provider_uses_streaming_execution(provider_name: &str) -> bool {
     provider_name == "codex" || provider_name == "zai"
 }
 
-async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
+/// Collect the final response from a streaming sub-agent run (Codex/ZAI
+/// stream internally — see `provider_uses_streaming_execution`).
+///
+/// Public within the crate so the compactor sub-agent spawner
+/// (`generate_compaction_handler`) shares the exact same streaming
+/// collection contract (DeepSearch clone — no duplicated retry logic).
+pub(crate) async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
 where
     S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
-    R: Clone + Unpin + rig::completion::GetTokenUsage,
-{
+    R: Clone + Unpin + rig::completion::GetTokenUsage, {
     use codelet_cli::interactive::{
         is_transient_network_error, network_retry_delay, MAX_NETWORK_RETRIES,
     };

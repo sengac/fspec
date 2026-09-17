@@ -30,6 +30,60 @@ pub fn is_prompt_too_long_error(error_str: &str) -> bool {
             && (error_lower.contains("token") || error_lower.contains("maximum")))
 }
 
+/// CMPCT-044: Check if an error indicates a provider context-overflow,
+/// walking the FULL anyhow error chain.
+///
+/// Strict superset of [`is_prompt_too_long_error`]: in addition to every
+/// substring the legacy classifier matches, it matches provider-variant
+/// wording the legacy list misses (OpenAI-compatible "input is too long",
+/// Bedrock/Vertex "exceeds the maximum" phrasings, bare "context length
+/// exceeded" tokens). The error chain is walked link by link (anyhow
+/// `.context()` wrapping, rig streaming layers) so the provider body is
+/// found even when it is buried a few sources deep.
+///
+/// PROV-010 exclusion preserved: if ANY link in the chain mentions
+/// `budget_tokens` (thinking-budget configuration failure), the error is
+/// NEVER classified as a context overflow.
+///
+/// This function is public for testing. Tests MUST import and test the
+/// real function, NOT a copy. See: rust/cli/tests/cmpct044_overflow_classifier_test.rs
+pub fn is_context_overflow_error(error: &anyhow::Error) -> bool {
+    let mut overflow = false;
+    for link in error.chain() {
+        let lower = link.to_string().to_lowercase();
+        // PROV-010: thinking-budget configuration errors must NEVER
+        // trigger compaction — even when an outer context layer mentions
+        // tokens.
+        if lower.contains("budget_tokens") {
+            return false;
+        }
+        if is_context_overflow_wording(&lower) {
+            overflow = true;
+        }
+    }
+    overflow
+}
+
+/// CMPCT-044: lowercase wording matcher for a single error-chain link.
+fn is_context_overflow_wording(lower: &str) -> bool {
+    // Legacy is_prompt_too_long_error substrings (strict superset contract)
+    lower.contains("prompt is too long")
+        || lower.contains("maximum context length")
+        || lower.contains("context_length_exceeded")
+        || lower.contains("too many tokens")
+        || lower.contains("exceeds the model")
+        || (lower.contains("invalid_request_error")
+            && (lower.contains("token") || lower.contains("maximum")))
+        // Provider-variant wording the legacy classifier misses
+        || lower.contains("input is too long")
+        || lower.contains("input is too long for")
+        || lower.contains("context length exceeded")
+        || (lower.contains("context length") && lower.contains("exceeds"))
+        || lower.contains("exceeds the maximum")
+        || lower.contains("exceeds the context")
+        || (lower.contains("exceed") && lower.contains("context window"))
+}
+
 /// EXT-016: Check if an error indicates image content was rejected by the API.
 ///
 /// Detects 400 errors related to image dimensions, image size, or image processing.

@@ -6,6 +6,7 @@
 
 pub mod compaction_dag; // DAG instructions, detection, extraction, force-injection (CMPCT-016)
 pub mod compaction_threshold; // CLI-020: Autocompact buffer for compaction threshold
+pub mod compactor_sub_agent; // CMPCT-044: clean compaction sub-agent entry point + handler registry
 pub mod context; // Context management - token tracking
 pub mod error_display; // Error message formatting for user display
 pub mod interactive;

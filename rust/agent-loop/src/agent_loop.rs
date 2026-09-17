@@ -743,6 +743,33 @@ pub async fn agent_loop(
                 std::path::PathBuf::from(&session.project),
             );
 
+            // CMPCT-044: Register the compactor sub-agent handler so the
+            // stream-loop overflow cascade can escalate to a clean
+            // ephemeral compactor (mirrors the DeepSearch registration —
+            // re-registered after /model / /provider changes).
+            crate::generate_compaction_handler::register_compactor_sub_agent_handler(
+                session.id,
+                &inner_session,
+                std::path::PathBuf::from(&session.project),
+                session.compaction_in_progress.clone(),
+            );
+
+            // CMPCT-045: Register the GenerateCompaction tool handler —
+            // on-demand compaction of a target session (default: the
+            // calling session). Captures the caller's BackgroundSession
+            // (status / progress / pending_dag_content for the
+            // calling-session pin) and the owning SessionManager (to
+            // reach other live sessions' inner). Mirrors the DeepSearch
+            // registration — re-registered after /model / /provider
+            // changes.
+            crate::generate_compaction_handler::register_generate_compaction_handler(
+                session.id,
+                &inner_session,
+                std::path::PathBuf::from(&session.project),
+                session.clone(),
+                session.owning_manager(),
+            );
+
             // AMGR-009: Register AgentManager handler for this session
             // The handler accesses SessionManager for spawn/list/get_status/close
             // AMGR-013: Use selected_model_string() which preserves the original
@@ -1505,6 +1532,8 @@ Use SessionSearch to recover context.
             codelet_tools::set_graph_search_handler(session.id, None); // KGRAPH-003: Cleanup
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
+            codelet_tools::set_generate_compaction_handler(session.id, None); // CMPCT-045: Cleanup
+            codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(session.id, None); // CMPCT-044: Cleanup
             codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
@@ -1525,19 +1554,41 @@ Use SessionSearch to recover context.
             idle_guard.armed = false;
 
             if let Err(e) = result {
-                // PROV-009-DEBUG: Log full error with chain at warn level
-                tracing::warn!(
-                    "[AGENT-LOOP] ERROR received - session={}, error={}, error_chain={:?}",
-                    session.id,
-                    e,
-                    e.chain().map(|c| c.to_string()).collect::<Vec<_>>()
-                );
-                tracing::error!("Agent stream error for session {}: {}", session.id, e);
-                session.handle_output(StreamChunk::error(e.to_string()));
-                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
-                // This prevents race condition where JS receives Done before status is Idle
-                session.set_status(SessionStatus::Idle);
-                session.handle_output(StreamChunk::done());
+                // CMPCT-044: a terminal context-overflow error routes to the
+                // SAME compactor recovery entry point the stream loop uses —
+                // the session is reduced to reminders + a DAG (the oversized
+                // payload is never replayed) and the turn ends Idle.
+                // Without a match the error follows the existing terminal
+                // handling below.
+                // Clone the Arc — the turn's `inner_session` guard still
+                // borrows `session` and the recovery round takes its own
+                // lock.
+                let overflow_recovered = crate::terminal_overflow_recovery::try_terminal_overflow_recovery(
+                    session.clone(),
+                    &e,
+                )
+                .await;
+                if overflow_recovered {
+                    // The compactor round already emitted the lifecycle
+                    // events (CompactionComplete with the recalculated
+                    // basis) and set the session Idle — end the turn with
+                    // Done and do NOT replay the oversized payload.
+                    session.handle_output(StreamChunk::done());
+                } else {
+                    // PROV-009-DEBUG: Log full error with chain at warn level
+                    tracing::warn!(
+                        "[AGENT-LOOP] ERROR received - session={}, error={}, error_chain={:?}",
+                        session.id,
+                        e,
+                        e.chain().map(|c| c.to_string()).collect::<Vec<_>>()
+                    );
+                    tracing::error!("Agent stream error for session {}: {}", session.id, e);
+                    session.handle_output(StreamChunk::error(e.to_string()));
+                    // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
+                    // This prevents race condition where JS receives Done before status is Idle
+                    session.set_status(SessionStatus::Idle);
+                    session.handle_output(StreamChunk::done());
+                }
             } else {
                 // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
                 // Setting it again here is idempotent and ensures consistency

@@ -65,3 +65,7 @@ serde_json = { workspace = true }
 serial_test.workspace = true
 # Stub LlmProvider used by the integration test; only compiled at test time.
 codelet-providers = { workspace = true, features = ["test-support"] }
+# CMPCT-045: the behavioral GenerateCompaction tests drive the real
+# compactor sub-agent spawner against an OpenAI-compatible wiremock LLM
+# endpoint (OPENAI_BASE_URL) — no network egress.
+wiremock = "0.6.5"

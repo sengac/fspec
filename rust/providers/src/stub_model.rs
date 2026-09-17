@@ -167,8 +167,13 @@ impl CompletionModel for StubModel {
         // end-of-stream bookkeeping and the agent-loop's per-turn
         // exit (which in turn emits the trailing `StreamChunk::Done`
         // via `BackgroundSession::handle_output`).
+        //
+        // CMPCT-045: honor the deterministic-response hook (text
+        // substitution) so a streaming sub-agent run can also be
+        // test-controlled.
+        let text = deterministic_response().unwrap_or_else(|| "hi back".to_string());
         let rig_stream: StreamingResult<StubCompletion> = Box::pin(stream! {
-            yield Ok(RawStreamingChoice::Message("hi back".to_string()));
+            yield Ok(RawStreamingChoice::Message(text));
             yield Ok(RawStreamingChoice::FinalResponse(StubCompletion::end_turn()));
         });
 
@@ -199,6 +204,39 @@ type LoopingStreamHook = std::sync::LazyLock<
 
 static LOOPING_STREAM_HOOK: LoopingStreamHook =
     std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
+
+/// CMPCT-045: test-only DETERMINISTIC completion-response hook.
+///
+/// When set, BOTH the non-streaming `completion()` and the streaming
+/// `stream()` paths return this fixed text (wrapped in the
+/// compactor-sub-agent's final-response shape) instead of the canned
+/// "hi back". Lets a behavioral test drive the real compactor sub-agent
+/// spawner through `CustomProvider::create_rig_agent` with a
+/// deterministic, parseable DAG output (success path) or unparseable
+/// text (fallback path) — the compactor sub-agent NEVER uses the agent
+/// loop's streaming driver.
+static DETERMINISTIC_RESPONSE: std::sync::LazyLock<std::sync::Mutex<Option<String>>> =
+    std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
+
+/// CMPCT-045: install a fixed completion response for the next (and all
+/// subsequent) stub completions. Test-only; best-effort (a poisoned lock
+/// is a no-op).
+pub fn set_deterministic_response(text: String) {
+    if let Ok(mut guard) = DETERMINISTIC_RESPONSE.lock() {
+        *guard = Some(text);
+    }
+}
+
+/// CMPCT-045: clear the fixed completion response (restores "hi back").
+pub fn clear_deterministic_response() {
+    if let Ok(mut guard) = DETERMINISTIC_RESPONSE.lock() {
+        *guard = None;
+    }
+}
+
+fn deterministic_response() -> Option<String> {
+    DETERMINISTIC_RESPONSE.lock().ok().and_then(|g| g.clone())
+}
 
 /// RIG-015: the most recent completion-request chat history (rendered as
 /// one string per message), recorded for test assertions.

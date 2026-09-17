@@ -238,8 +238,9 @@ fn build_rig_agent(
         bridge_tool_for_provider, claude_bridge_tool, claude_fspec_tool, fspec_tool_for_provider,
     };
     use codelet_tools::{
-        AgentManagerTool, AstGrepRefactorTool, ConnectMcpTool, DeepSearchTool, GraphSearchTool,
-        InjectSummaryTool, RequestUserInputTool, ScheduleTool, SessionSearchTool,
+        AgentManagerTool, AstGrepRefactorTool, ConnectMcpTool, DeepSearchTool,
+        GenerateCompactionTool, GraphSearchTool, InjectSummaryTool, RequestUserInputTool,
+        ScheduleTool, SessionSearchTool,
     };
 
     // Map ToolStyle → provider string used by the facade registrations.
@@ -268,6 +269,7 @@ fn build_rig_agent(
             .tool(GraphSearchTool::new(session_id))
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id))
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id))
             .tool(RequestUserInputTool::new(session_id))
             .tool(ScheduleTool::new(session_id))
@@ -292,6 +294,7 @@ fn build_rig_agent(
             .tool(GraphSearchTool::new(session_id))
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id))
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id))
             .tool(RequestUserInputTool::new(session_id))
             .tool(ScheduleTool::new(session_id))

@@ -1,0 +1,1479 @@
+{
+  "scenarios": [
+    {
+      "name": "Overflow classifier matches every error is_prompt_too_long_error matches",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "22-49",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier matches provider-variant wording the old classifier misses",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "51-71",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier matches Bedrock and Vertex context-limit wording",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "73-90",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier rejects thinking-budget configuration errors",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "92-104",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier rejects truncation and unrelated errors",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "106-127",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier sees through anyhow context wrapping",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "129-145",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unmatched overflow error triggers compaction instead of terminating the session",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
+          "lines": "89-115",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1879,
+                1880,
+                1881,
+                1882,
+                1883,
+                1884,
+                1885,
+                1886,
+                1887,
+                1888,
+                1889,
+                1890,
+                1891,
+                1892,
+                1893,
+                1894,
+                1895,
+                1896,
+                1897,
+                1898,
+                1899,
+                1900,
+                1901,
+                1902,
+                1903,
+                1904,
+                1905,
+                1906,
+                1907,
+                1908,
+                1909,
+                1910,
+                1911,
+                1912,
+                1913,
+                1914,
+                1915,
+                1916,
+                1917,
+                1918,
+                1919,
+                1920,
+                1921,
+                1922,
+                1923,
+                1924,
+                1925,
+                1926,
+                1927,
+                1928,
+                1929,
+                1930,
+                1931,
+                1932
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow error is classified before the transient-network retry arm",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
+          "lines": "31-66",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1879,
+                1880,
+                1881,
+                1882,
+                1883,
+                1884,
+                1885,
+                1886,
+                1887,
+                1888,
+                1889,
+                1890,
+                1891,
+                1892,
+                1893,
+                1894,
+                1895,
+                1896,
+                1897,
+                1898,
+                1899,
+                1900
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier defers to the typed PromptCancelled branch",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
+          "lines": "69-86",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1700,
+                1701,
+                1702,
+                1703,
+                1704,
+                1705,
+                1706,
+                1707,
+                1708,
+                1709,
+                1710,
+                1711,
+                1712,
+                1713,
+                1714,
+                1715,
+                1716,
+                1717,
+                1718,
+                1719,
+                1720
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow without compactable turns does not trigger compaction",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
+          "lines": "118-137",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1826,
+                1827,
+                1828,
+                1829,
+                1830,
+                1831,
+                1832,
+                1833
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/agent-loop/tests/cmpct044_terminal_overflow_test.rs",
+          "lines": "218-264",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compactor sub-agent runs in an ephemeral clean session",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "419-598",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compactor sub-agent has only the read-only tool surface",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+          "lines": "670-707",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compactor sub-agent surveys the parent via SessionSearch on the parent session id",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "419-598",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction instruction is FRESH when the parent has no DAG",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct044_terminal_overflow_test.rs",
+          "lines": "347-381",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_dag.rs",
+              "lines": [
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction instruction is INCREMENTAL when the parent already has a DAG",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct044_terminal_overflow_test.rs",
+          "lines": "383-420",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_dag.rs",
+              "lines": [
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful sub-agent DAG is pinned to the parent session",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "113-158",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pinning a sub-agent DAG keeps the persisted history intact",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "159-202",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent timeout pins a free fallback DAG",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "203-270",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unparseable sub-agent output pins a fallback DAG",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "271-317",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Partial dag-node blocks from a failed sub-agent are recovered",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "318-370",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "compaction_in_progress gates sub-agent reads and is cleared after the pin",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "371-422",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction lifecycle events are emitted for the sub-agent path",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "423-493",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Background session terminal overflow error compacts via the same entry point",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct044_terminal_overflow_test.rs",
+          "lines": "117-218",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handler registration lifecycle mirrors the DeepSearch pattern",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct044_terminal_overflow_test.rs",
+          "lines": "271-317",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                750,
+                751,
+                752,
+                753,
+                754,
+                755,
+                756,
+                757
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing compactor handler still guarantees a reduced session",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_compactor_pin_test.rs",
+          "lines": "494-547",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent escalation is bounded by the shared retry budget",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
+          "lines": "140-174",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 26,
+    "coveredScenarios": 26,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+      "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
+      "rust/agent-loop/tests/cmpct044_terminal_overflow_test.rs",
+      "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+      "rust/agent-loop/src/generate_compaction_handler.rs",
+      "rust/cli/tests/cmpct044_compactor_pin_test.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/error_classifiers.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/agent-loop/src/terminal_overflow_recovery.rs",
+      "rust/agent-loop/src/generate_compaction_handler.rs",
+      "rust/cli/src/compaction_dag.rs",
+      "rust/cli/src/compactor_sub_agent.rs",
+      "rust/agent-loop/src/agent_loop.rs"
+    ],
+    "totalLinesCovered": 2382
+  }
+}

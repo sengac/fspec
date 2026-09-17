@@ -430,9 +430,9 @@ impl OpenAIProvider {
         use codelet_tools::facade::{openai_bridge_tool, openai_fspec_tool};
         use codelet_tools::{
             AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
-            DeepSearchTool, EditTool, GlobTool, GraphSearchTool, GrepTool, InjectSummaryTool,
-            LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool,
-            WriteTool,
+            DeepSearchTool, EditTool, GenerateCompactionTool, GlobTool, GraphSearchTool, GrepTool,
+            InjectSummaryTool, LsTool, ReadTool, RequestUserInputTool, ScheduleTool,
+            SessionSearchTool, WebSearchTool, WriteTool,
         };
 
         // Build agent with all 11 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
@@ -446,26 +446,27 @@ impl OpenAIProvider {
                 .with_stream(self.streaming)
                 .into_agent_builder()
                 .max_tokens(self.max_output_tokens as u64)
-            .tool(ReadTool::new(session_id))
-            .tool(WriteTool::new(session_id))
-            .tool(EditTool::new(session_id))
-            .tool(BashTool::new(session_id))
-            .tool(GrepTool::new(session_id))
-            .tool(GlobTool::new(session_id))
-            .tool(LsTool::new(session_id))
-            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
-            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
-            .tool(openai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
-            .tool(openai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(WebSearchTool::new(session_id)) // WEB-001, TOOL-014: WebSearchTool with session_id
-            .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
-            .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
-            .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
-            .tool(InjectSummaryTool::new(session_id))
-            .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
-            .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
-            .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
-            .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
+                .tool(ReadTool::new(session_id))
+                .tool(WriteTool::new(session_id))
+                .tool(EditTool::new(session_id))
+                .tool(BashTool::new(session_id))
+                .tool(GrepTool::new(session_id))
+                .tool(GlobTool::new(session_id))
+                .tool(LsTool::new(session_id))
+                .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
+                .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
+                .tool(openai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
+                .tool(openai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
+                .tool(WebSearchTool::new(session_id)) // WEB-001, TOOL-014: WebSearchTool with session_id
+                .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
+                .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
+                .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
+                .tool(InjectSummaryTool::new(session_id))
+                .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+                .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
+                .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
+                .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
+                .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
 
         // CONT-002: done() is registered only while auto-continue is armed
         if codelet_tools::is_continue_armed(session_id) {

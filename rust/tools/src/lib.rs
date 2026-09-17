@@ -39,6 +39,7 @@ pub mod inject_summary;
 pub mod stage_permissions;
 
 pub mod footer_cwd;
+pub mod generate_compaction;
 pub mod glob;
 pub mod graph_search;
 pub mod grep;
@@ -157,6 +158,11 @@ pub use fspec_handler::{
 };
 pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};
 pub use glob::GlobTool;
+pub use generate_compaction::{
+    clear_all_generate_compaction_handlers, has_generate_compaction_handler,
+    set_generate_compaction_handler, GenerateCompactionArgs, GenerateCompactionHandler,
+    GenerateCompactionTool,
+};
 pub use graph_search::{
     clear_all_graph_search_handlers, execute_graph_search, has_graph_search_handler,
     set_graph_search_handler, GraphSearchAction, GraphSearchArgs, GraphSearchHandler,

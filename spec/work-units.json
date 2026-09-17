@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-16T07:47:52.625Z",
+    "lastUpdated": "2026-09-17T07:56:08.320Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -30,7 +30,7 @@
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
-    "CMPCT": 42,
+    "CMPCT": 45,
     "CODE": 9,
     "CODEX": 1,
     "CONFIG": 8,
@@ -250,7 +250,10 @@
       "TOOL-001",
       "TUI-085"
     ],
-    "testing": [],
+    "testing": [
+      "CMPCT-045",
+      "CMPCT-044"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
@@ -232204,6 +232207,336 @@
       ],
       "nextExampleId": 2,
       "estimate": 3
+    },
+    "CMPCT-044": {
+      "id": "CMPCT-044",
+      "title": "Clean compaction sub-agent triggered on API context-overflow errors",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2026-09-16T11:42:21.515Z",
+      "updatedAt": "2026-09-17T07:56:08.320Z",
+      "description": "The stream-loop error cascade only triggers compaction when the API error matches fixed English substrings (is_prompt_too_long_error) or a typed PromptCancelled. Provider context-overflow errors with different wording (or wrapped in error chains) fall through to the terminal error arm and kill the session. Add a DeepSearch-style ephemeral COMPACTOR sub-agent that (1) reads the over-full session via SessionSearch (clean context), (2) builds the FRESH/INCREMENTAL DAG, (3) clears the parent session and pins the DAG to it (the apply_pending_dag mutation), with a free force-inject fallback on sub-agent failure. Trigger from a new robust is_context_overflow_error classifier placed BEFORE the network-retry arm in both stream_loop.rs and the agent-loop terminal-error arm.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CMPCT-044/CMPCT-044-research-1-current-trigger-code.md",
+        "spec/attachments/CMPCT-044/CMPCT-044-research-2-compaction-subagent-design.md",
+        "spec/attachments/CMPCT-044/ast-research-compaction-subagent.md"
+      ],
+      "userStory": {
+        "role": "long-running agent session",
+        "action": "survive provider context-overflow API errors via a clean compaction sub-agent",
+        "benefit": "sessions compact and resume instead of dying when the error wording isn't caught by the existing string classifiers"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-16T11:44:31.360Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-16T13:17:01.980Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-17T07:56:04.586Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-17T07:56:08.320Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "A new is_context_overflow_error classifier must be a strict superset of is_prompt_too_long_error: it must match provider-variant wording (OpenAI 'maximum context length', OpenAI-compatible 'context length exceeded' / 'input is too long', Bedrock/Vertex variants) and must keep the PROV-010 exclusion — thinking-budget errors containing 'budget_tokens' must NEVER trigger compaction.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:44:41.351Z"
+        },
+        {
+          "id": 1,
+          "text": "In the stream-loop error cascade the overflow check must run BEFORE the transient-network check (NET-001), because some providers' context-overflow 400s abort the SSE stream and would otherwise be misclassified as network errors and retried against the same oversized payload.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:44:46.683Z"
+        },
+        {
+          "id": 2,
+          "text": "The compactor sub-agent runs in an EPHEMERAL session (Uuid::new_v4, DeepSearch pattern) with a clean context, inheriting the parent session's provider and model (BUG-102 pattern). Its only context source for the dying session is SessionSearch over the parent's session id — it must NOT read the parent's in-memory message list.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:44:55.892Z"
+        },
+        {
+          "id": 3,
+          "text": "The pin is handler-side, not a tool call (v1): after the sub-agent returns the DAG as its final response, the trigger site (production code, not the LLM) performs the apply_pending_dag mutation under the parent session lock — reset_session_to_reminders, push wrap_dag_content(dag), recalculate_token_tracker. The sub-agent's tool surface stays the 7 read-only DeepSearch base set (no inject_summary tool), so it cannot mis-target or loop.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:45:14.861Z"
+        },
+        {
+          "id": 4,
+          "text": "The compactor sub-agent is bounded by a wall-clock timeout (reusing deep_search_wall_clock_timeout, AMGR-016 pattern) and a fixed max tool-turn depth. On timeout, failure, or unparseable DAG output, the trigger falls back to a FREE force-inject fallback DAG (CMPCT-020 Level-3 pattern — extract_partial_dag_nodes then force_inject_fallback_dag) so the session is ALWAYS reduced, never left oversized.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:45:24.998Z"
+        },
+        {
+          "id": 5,
+          "text": "The compaction_in_progress flag must be set for the whole sub-agent run so SessionSearch Layer-0 trimming applies to the sub-agent's reads of the parent (keeping the sub-agent's own context small), and cleared after the pin completes — consistent with the in-view flow's use of the flag.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:45:36.272Z"
+        },
+        {
+          "id": 6,
+          "text": "The compactor sub-agent must use the INCREMENTAL compaction instruction when the parent session already contains a DAG (detected via detect_existing_dag BEFORE any clear), and the FRESH instruction otherwise — preserving D2 durable nodes across sub-agent compactions exactly like the in-view flow does.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:45:36.560Z"
+        },
+        {
+          "id": 7,
+          "text": "The sub-agent is the SECOND STAGE of overflow recovery: in-view compaction (Paths A/B/C/D) remains the primary in-place mechanism. The sub-agent fires when the API returns an overflow error the in-loop recovery cannot resolve — including the retry streams issued by in_loop_compaction_restart (they are governed by the same error cascade, so a second overflow routes to the sub-agent without new wiring).",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:45:45.661Z"
+        },
+        {
+          "id": 8,
+          "text": "All production wiring lives in the LIVE frontend only: codelet-cli (classifier, pin primitive, stream-loop trigger) + codelet-agent-loop (compactor sub-agent spawner, per-session handler registration mirroring register_deep_search_handler) + codelet-tools (handler registry + types). The dormant codelet-napi legacy twin gets NO changes; the legacy REPL no longer exists (deleted in d2ff9b16) and no new entry points are added to codelet-cli.",
+          "deleted": false,
+          "createdAt": "2026-09-16T12:55:11.927Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "OpenAI-compatible provider returns 400 'Input is too long: 201,000 tokens > 200,000 maximum' mid-stream. is_context_overflow_error matches (no existing substring matches). The trigger runs begin_compaction_recovery, spawns the compactor sub-agent (ephemeral session, parent's provider/model), the sub-agent surveys the parent via SessionSearch(session_id=<parent>), returns the DAG, the trigger clears the parent to reminders + pins the wrapped DAG, and re-issues the stream with the CMPCT-028 policy prompt. The turn continues on the reduced context.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:46:05.870Z"
+        },
+        {
+          "id": 1,
+          "text": "The compactor sub-agent hits its wall-clock timeout while surveying a very large session. The trigger extracts any partial <dag-node> blocks from the sub-agent's output, and if none exist creates a generic 'Auto-recovered: compaction timeout' D1 node; it pins that fallback DAG to the parent session (zero LLM cost) and resumes the stream. The session survives with reduced-but-coarse context instead of dying.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:46:18.335Z"
+        },
+        {
+          "id": 2,
+          "text": "The parent session already contains a DAG from a previous compaction. The sub-agent receives the INCREMENTAL instruction embedding the existing DAG and the last-compact end turn: it preserves D2 nodes, promotes D0→D1, and only searches turns since the last compaction (start_turn=<last_compacted_turn>) before returning the updated DAG. Durable architecture decisions survive sub-agent compactions unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:46:35.148Z"
+        },
+        {
+          "id": 3,
+          "text": "A provider's overflow 400 aborts the SSE stream mid-response and the error surfaces as a stream-level error ('stream closed before completion' wrapping a 400 body). Because the overflow check runs BEFORE the NET-001 transient-network arm, the session compacts via the sub-agent exactly once instead of being silently network-retried MAX_NETWORK_RETRIES times against the same oversized payload.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:46:35.389Z"
+        },
+        {
+          "id": 4,
+          "text": "A background (TUI/subordinate) session's turn dies with an unmatched overflow error. The agent-loop terminal-error arm routes it to the same compactor entry point: it reads the parent's persisted turns, compacts, and the session returns to Idle with reminders + DAG. The next user message starts a fresh stream on the reduced context — the oversized payload is never replayed.",
+          "deleted": false,
+          "createdAt": "2026-09-16T11:46:45.971Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Frontend topology (verified 2026-09-16): the legacy REPL was deleted (commit d2ff9b16) — codelet-cli (rust/cli) is a lib-only shared streaming engine, NOT a binary. The live agent-session frontend is the Rust TUI inside the fspec binary (rust/fspec, combined/daemon/client modes) via codelet-rpc, driven by codelet-agent-loop (FspecAgentHooks, fspec/src/common.rs:128). codelet-napi (rust/napi) is a DORMANT legacy twin with a frozen copy of the agent loop — nothing in the live dependency graph references it. CMPCT-044 wiring: classifier + pin primitive + stream-loop trigger in codelet-cli; compactor sub-agent spawner + per-session handler registration in codelet-agent-loop (mirroring register_deep_search_handler in bridges.rs). No codelet-napi changes. Handler-registry pattern (codelet-tools CompactorSubAgentHandler) keeps codelet-cli decoupled from the spawner and avoids changing run_agent_stream_with_images' canonical 9-arg signature (pinned by rpc084_streaming tests).",
+          "deleted": false,
+          "createdAt": "2026-09-16T12:55:01.865Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 13
+    },
+    "CMPCT-045": {
+      "id": "CMPCT-045",
+      "title": "GenerateCompaction tool — DeepSearch-clone tool that builds a compaction DAG for a session and pins it",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2026-09-16T23:52:21.405Z",
+      "updatedAt": "2026-09-17T00:51:18.307Z",
+      "description": "Clone the DeepSearch tool pattern into a new GenerateCompaction tool (codelet-tools registry + codelet-agent-loop spawner, mirroring DeepSearchTool/execute_deep_search/register_deep_search_handler). The tool takes an optional session id (default: the calling session), runs the existing DAG compaction algorithm in a clean ephemeral sub-agent (SessionSearch over the target session, FRESH/INCREMENTAL instruction), returns the DAG as the tool result, and pins it to the target session (handler-side pin: reset_session_to_reminders + wrapped DAG + recalculate tracker; free force-inject fallback on sub-agent failure). See attached design doc.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CMPCT-045/CMPCT-045-generate-compaction-design.md",
+        "spec/attachments/CMPCT-045/ast-research-generate-compaction.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-16T23:55:57.516Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-17T00:51:18.307Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent (or any session running in codelet)",
+        "action": "invoke the GenerateCompaction tool to build a hierarchical DAG summary of a target session's history in a clean ephemeral sub-agent and have the DAG pinned to that session by the handler side",
+        "benefit": "compaction becomes an explicit on-demand tool call available any time — including on a DIFFERENT session — instead of only the passive error-cascade recovery of CMPCT-044"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A provided `session_id` must parse as a UUID. On parse failure the tool returns `ToolError::Validation` with a usage hint (mirroring DeepSearch's empty-query validation, TOOL-024 recovery surface) — it does NOT attempt dispatch and does NOT fall back to the calling session.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:03:26.929Z"
+        },
+        {
+          "id": 1,
+          "text": "The tool takes an optional target session id (argument `session_id`). When omitted or `null`, the target is the CALLING session — the session whose tool registry entry invoked the tool (the `session_id` the tool was constructed with).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:03:27.192Z"
+        },
+        {
+          "id": 2,
+          "text": "The compactor sub-agent is ephemeral (DeepSearch pattern): a fresh Uuid::new_v4() never shared with the target or caller, no persisted session record, no worktree, no NAPI boundary. Its SessionSearch handler is registered for the ephemeral id before the run and removed by a drop guard after (guaranteed even on panic). The target session's compaction_in_progress flag is passed as the handler's compaction_trimming gate so Layer-0 trimming applies to the sub-agent's reads of the target (CMPCT-044 Rule [5]).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:01.394Z"
+        },
+        {
+          "id": 3,
+          "text": "Handler lookup is per CALLING session (the tool's construction session_id), mirroring DeepSearch. When no GenerateCompactionHandler is registered for the calling session, the tool returns ToolError::Execution with the 'handler not configured for session <uuid> — GenerateCompactionTool requires session context' message pattern. Nothing is spawned or pinned.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:01.666Z"
+        },
+        {
+          "id": 4,
+          "text": "FRESH vs INCREMENTAL selection: detect_existing_dag() scans the TARGET session's messages for the `<!-- type:compaction-dag -->` marker and must be captured BEFORE any clear (Some((content, max_turn_end)) ⇒ INCREMENTAL with the existing DAG embedded and `last_compacted_turn = max_turn_end + 1`; None ⇒ FRESH) — exactly mirroring execute_compaction's CMPCT-019 logic.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:07.528Z"
+        },
+        {
+          "id": 5,
+          "text": "The compactor sub-agent's context source for the target session is EXCLUSIVELY SessionSearch over the target UUID — every SessionSearch call the sub-agent makes must target the target session (the sub-agent's own session is its ephemeral one). It must NOT read the target's in-memory message list. The sub-agent's tool surface stays the 7 read-only DeepSearch base set (Read, Grep, AstGrep, Glob, Ls, Bash, SessionSearch) — no inject_summary, no Write/Edit (CMPCT-044 Rule [3]).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:07.771Z"
+        },
+        {
+          "id": 6,
+          "text": "The compactor sub-agent inherits the CALLING session's provider, model, context_window, and max_output_tokens via ProviderManager::with_provider_and_model (BUG-102 pattern), captured by the registered handler closure at registration time so `/model` / `/provider` changes are reflected (re-registration mirrors register_deep_search_handler).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:21.744Z"
+        },
+        {
+          "id": 7,
+          "text": "The compactor sub-agent is bounded by the shared AMGR-016 wall-clock timeout (deep_search_wall_clock_timeout, default 600s) and the fixed sub-agent tool-depth. On timeout, spawn/build failure, LLM error, or unparseable DAG output, the handler falls back to a FREE force-inject: extract any partial <dag-node> blocks from the sub-agent's final text; if none, emit the generic Level-3 `Auto-recovered: compaction timeout` D1 node; then pin that fallback DAG with zero further LLM cost (CMPCT-044 Rule [4], CMPCT-020 Level-3 shape).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:22.020Z"
+        },
+        {
+          "id": 8,
+          "text": "Handler-side pin (Option A / CMPCT-044 Rule [3]): when the sub-agent returns a DAG whose text contains at least one parseable <dag-node> block (validated with codelet_core::compaction::parse_dag_nodes), the handler performs the apply_pending_dag mutation on the target — reset_session_to_reminders → push wrap_dag_content(dag) as a User message → recalculate_token_tracker → reset_after_compaction on the token tracker. The DAG source is the sub-agent's final response, not pending_dag_content.",
+          "deleted": true,
+          "createdAt": "2026-09-17T00:08:31.368Z",
+          "deletedAt": "2026-09-17T00:25:07.402Z"
+        },
+        {
+          "id": 9,
+          "text": "The target's compaction_in_progress flag is set true for the whole sub-agent run (gating Layer-0 trimming on the sub-agent's SessionSearch reads of the target) and cleared false after the pin completes — consistent with the in-view flow (CMPCT-044 Rule [5]). The target's pre-compaction token basis is snapshotted before the sub-agent starts (CMPCT-038/CMPCT-041 basis rule).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:08:31.628Z"
+        },
+        {
+          "id": 10,
+          "text": "Target resolution and pinning strategy: the tool resolves target = session_id or the calling session id. If target == calling session, the tool executes inside the caller's turn (the caller's inner lock is held by the agent loop for the whole turn), so the handler CANNOT lock the target's inner itself (deadlock). Instead: the handler sets target.compaction_in_progress, stashes the (wrapped) DAG in the calling session's pending_dag_content, and returns the DAG text as the tool result immediately. The EXISTING end-of-turn apply_pending_dag_and_emit path then performs the pin + CompactionComplete emit + flag clear (agent_loop.rs cleanup block). If target != calling session, the handler locks the target's inner (safe — a different session), pins immediately, emits CompactionComplete on the target, and clears the target's flag before returning.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:17.202Z"
+        },
+        {
+          "id": 11,
+          "text": "A target session that is not a live in-memory session (unknown UUID, or not registered in the owning SessionManager) is rejected with ToolError::Execution 'target session <uuid> is not a live session' — the DAG is read-only and pinning requires a live session's in-memory message list; no partial pinning of persisted history happens.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:17.469Z"
+        },
+        {
+          "id": 12,
+          "text": "GenerateCompactionTool::new(session_id) is wired into every provider's create_rig_agent() tool chain (claude, openai, gemini, codex, zai, github-copilot, custom provider) exactly like DeepSearchTool — the agent can invoke it in any session. The ephemeral compactor sub-agent's 7-tool surface does NOT include GenerateCompaction (no recursion into compaction). The per-session handler is registered at session creation (agent_loop.rs registration site) and after /model / /provider changes, and removed in the end-of-turn cleanup block beside set_deep_search_handler(session.id, None).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:34.396Z"
+        },
+        {
+          "id": 13,
+          "text": "Lifecycle events are emitted on the TARGET session's output: before spawning the sub-agent the target gets SessionStateChange(Compacting) + a compaction progress update (\"Compaction sub-agent working\") + snapshot_pre_compaction_tokens; after the pin the target gets SessionStateChange(Running) followed by CompactionComplete with the recalculated post-pin token basis (CMPCT-038 measurement rule — compacted_tokens is the recalculated tracker total, not the DAG summary size; ratio via compression_ratio). The target's status flips to Compacting for the run and back after the pin. A compaction-failed user notification is emitted only if the fallback pin itself fails (the session must ALWAYS be reduced — never left oversized).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:34.650Z"
+        },
+        {
+          "id": 14,
+          "text": "On success (parseable DAG), the tool result string is the DAG text itself (so the caller sees exactly what was pinned). On fallback, the tool result string is the fallback DAG text with a structured note that it is a free force-inject fallback (sub-agent failed / timed out) and the reason. Both outcomes return Ok(String) — the tool never returns Err for a pinned-but-coarse session; Err is reserved for validation failures, missing handler, and unknown-target rejections.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:41.387Z"
+        },
+        {
+          "id": 15,
+          "text": "The sub-agent's task prompt is built by codelet_cli::compaction_dag::build_generate_compaction_prompt(target_uuid, mode): FRESH mode adapts COMPACTION_INSTRUCTION_FRESH (\"Your conversation history\" → \"Session <target-uuid>\") and INCREMENTAL mode adapts COMPACTION_INSTRUCTION_INCREMENTAL with the existing DAG embedded and last_compacted_turn filled; every SessionSearch reference in the prompt tells the sub-agent to pass session_id=<target-uuid> explicitly, and the final step changes from \"Call inject_summary(content)\" to \"Output the complete DAG (all <dag-node> blocks + the <dag-files> section) as your final response; do not call any other tool after.\" The prompt must NOT contain the string 'inject_summary' (the sub-agent has no such tool).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:41.647Z"
+        },
+        {
+          "id": 16,
+          "text": "Handler-side pin (Option A / CMPCT-044 Rule [3]): when the sub-agent returns a DAG whose text contains at least one parseable <dag-node> block (validated with codelet_core::compaction::parse_dag_nodes), the handler performs the apply_pending_dag mutation on the target — reset_session_to_reminders → push wrap_dag_content(dag) as a User message → recalculate_token_tracker → reset_after_compaction on the token tracker. The DAG source is the sub-agent's final response, not pending_dag_content.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:25:12.625Z"
+        }
+      ],
+      "nextRuleId": 17,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A supervisor session S calls GenerateCompaction { session_id: sub-id } on a live subordinate session S2 that is currently Idle. The sub-agent surveys S2 via SessionSearch, returns the DAG; the handler locks S2.inner, pins (reminders + wrapped DAG), emits CompactionComplete on S2 with the recalculated post-pin tokens, clears S2's flag, and returns the DAG text to S. S's own context is untouched; S2's next user message starts on the reduced context.",
+          "deleted": true,
+          "createdAt": "2026-09-17T00:12:47.439Z",
+          "deletedAt": "2026-09-17T00:12:55.214Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent in session A calls GenerateCompaction with no arguments mid-turn. The tool resolves target = A (the calling session). The handler registers an ephemeral sub-agent (fresh UUID B), sets A.compaction_in_progress=true, and B surveys A exclusively via SessionSearch(session_id=A) with Layer-0 trimming active. B returns a DAG with 4 dag-nodes + a dag-files section. The tool result is the DAG text. At end of turn, the existing apply_pending_dag path clears A to reminders + wraps+pushes the DAG, recalculates the tracker, emits CompactionComplete, and clears the flag. A's next turn starts on the reduced context.",
+          "deleted": true,
+          "createdAt": "2026-09-17T00:12:47.734Z",
+          "deletedAt": "2026-09-17T00:13:17.507Z"
+        },
+        {
+          "id": 2,
+          "text": "A supervisor session asks the agent to compact a subordinate's context. The agent calls GenerateCompaction with the subordinate's session UUID. The tool returns a DAG summary as its result, and the subordinate session's context is now reduced to system reminders plus that DAG — visible to the subordinate's next turn — while the supervisor's own context is untouched. The tool result string is the pinned DAG itself, so the supervisor can see exactly what the subordinate now carries.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:12:51.518Z"
+        },
+        {
+          "id": 3,
+          "text": "Mid-turn in session A (no arguments): the agent calls GenerateCompaction to shrink its own context. It gets back a DAG summary as the tool result. From that point on, session A's context is reduced to system reminders plus that DAG — the agent's next turn starts on the reduced context, and the CompactionComplete event reports the real post-compaction context size.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:13:22.012Z"
+        },
+        {
+          "id": 4,
+          "text": "The compactor sub-agent stalls past the 600s wall-clock timeout while surveying a very large session. GenerateCompaction still returns a result: a fallback DAG (the partial dag-node blocks recovered from the sub-agent's output, or a generic auto-recovered node if none were emitted), pinned to the target session with zero further LLM cost. The tool result carries a structured note that this is a fallback and why. The target session survives with reduced-but-coarse context instead of staying oversized.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:13:22.251Z"
+        },
+        {
+          "id": 5,
+          "text": "The agent calls GenerateCompaction with session_id \"not-a-uuid\". The tool fails fast with a validation error naming the offending parameter and showing the accepted shape (a UUID string or omitted) — nothing is spawned and no session is touched.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:13:27.263Z"
+        },
+        {
+          "id": 6,
+          "text": "Session A was compacted earlier this run (its context carries a compaction DAG ending at turn N). A later GenerateCompaction call on A returns an updated DAG: the durable D2 nodes survive unchanged, the arc D0 nodes are promoted to D1, and only turns after N were surveyed. The pinned result keeps the settled architecture decisions intact.",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:13:27.508Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New/changed code inventory: (1) rust/tools/src/generate_compaction/mod.rs — GenerateCompactionTool + GenerateCompactionArgs{session_id: Option<String>} + GenerateCompactionHandler registry (set/has/clear, mirroring deep_search/mod.rs), re-exported from tools lib.rs; (2) rust/agent-loop/src/generate_compaction_handler.rs — execute_generate_compaction spawner (clone of deep_search_handler.rs, compaction prompt instead of DeepSearch system prompt, 7 read-only tools, AMGR-016 wall-clock timeout, BUG-102 provider inheritance) + register_generate_compaction_handler in bridges.rs (captures facade_override/current_provider, model, context_window, max_output, project path, owning SessionManager); (3) call sites in agent-loop/src/agent_loop.rs: registration beside line ~740 (session creation) + cleanup beside set_deep_search_handler(session.id, None) at ~1507; (4) provider tool chains: .tool(GenerateCompactionTool::new(session_id)) beside DeepSearchTool in claude/openai/gemini/codex/zai/copilot/custom create_rig_agent(); (5) rust/cli/src/compaction_dag.rs: build_generate_compaction_prompt(target_uuid, existing_dag: Option<(String, usize)>); (6) pin primitive callable with a DAG string on the agent-loop side (reuse force_inject_fallback_dag shape: reset_session_to_reminders + push wrap_dag_content(dag) + recalculate_token_tracker + reset_after_compaction).",
+          "deleted": false,
+          "createdAt": "2026-09-17T00:13:34.794Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8
     }
   }
 }

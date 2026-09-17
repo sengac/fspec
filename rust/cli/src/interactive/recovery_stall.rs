@@ -25,6 +25,25 @@ pub const STALL_TIMEOUT_SECS: u64 = 600;
 /// Public for testing and configuration.
 pub const DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS: u64 = 600;
 
+/// AMGR-016 / CMPCT-045: process-level override of the sub-agent wall-clock
+/// timeout, consumed by `deep_search_wall_clock_timeout()`.
+///
+/// `None` (the default) keeps the 600s constant — production behavior is
+/// unchanged. Tests set it to a short value to exercise the compactor
+/// sub-agent timeout path (CMPCT-045) without waiting 600s. Best-effort
+/// (a poisoned lock keeps the default) — test-only seam.
+static WALL_CLOCK_TIMEOUT_OVERRIDE: std::sync::LazyLock<
+    std::sync::Mutex<Option<Duration>>,
+> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
+
+/// Test-only: override the sub-agent wall-clock timeout (e.g. a few
+/// milliseconds for the compactor timeout tests).
+pub fn set_deep_search_wall_clock_timeout_override(d: Option<Duration>) {
+    if let Ok(mut guard) = WALL_CLOCK_TIMEOUT_OVERRIDE.lock() {
+        *guard = d;
+    }
+}
+
 /// Canonical prefix for stall timeout error messages.
 /// Used by both the stream loop (to create the error) and the error classifier
 /// (to identify it). Keeping it as a constant prevents string drift.
@@ -63,8 +82,15 @@ pub fn stall_timeout_duration() -> Duration {
 }
 
 /// Get the DeepSearch wall-clock timeout duration.
+///
+/// Returns the test override (if set via
+/// `set_deep_search_wall_clock_timeout_override`) or the 600s default.
 pub fn deep_search_wall_clock_timeout() -> Duration {
-    Duration::from_secs(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS)
+    WALL_CLOCK_TIMEOUT_OVERRIDE
+        .lock()
+        .ok()
+        .and_then(|g| *g)
+        .unwrap_or(Duration::from_secs(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS))
 }
 
 #[cfg(test)]

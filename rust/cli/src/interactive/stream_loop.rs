@@ -81,9 +81,9 @@ fn process_turn_annotations(
 
 // Error classifiers moved to error_classifiers.rs
 use super::error_classifiers::{
-    classify_compaction_branch, extract_prompt_cancelled, is_image_content_error,
-    is_prompt_too_long_error, is_stall_timeout_error, is_transient_network_error,
-    is_truncated_tool_call_error, CompactionBranch,
+    classify_compaction_branch, extract_prompt_cancelled, is_context_overflow_error,
+    is_image_content_error, is_prompt_too_long_error, is_stall_timeout_error,
+    is_transient_network_error, is_truncated_tool_call_error, CompactionBranch,
 };
 
 // Image recovery moved to recovery_image.rs
@@ -639,6 +639,9 @@ where
     // Followed by `continue;` at each call site (Paths B, C, D).
     macro_rules! in_loop_compaction_restart {
         ($policy:expr) => {{
+            in_loop_compaction_restart!($policy, false);
+        }};
+        ($policy:expr, $compactor_sub_agent:expr) => {{
             compaction_retry_count += 1;
             if compaction_retry_count > MAX_COMPACTION_RETRIES {
                 let msg = super::recovery_compaction::build_compaction_budget_exhausted_message(
@@ -655,27 +658,44 @@ where
                 ));
             }
 
-            super::recovery_compaction::execute_compaction_and_capture_events(
-                session,
-                compaction_in_progress.clone(),
-                prompt,
-                threshold,
-                context_window,
-                &token_state,
-                output,
-            )
-            .await?;
+            if $compactor_sub_agent {
+                // CMPCT-044: the in-view compaction could not resolve the
+                // overflow — escalate to the compactor sub-agent. The
+                // escalation sits inside this macro so it shares the
+                // MAX_COMPACTION_RETRIES budget with the in-view rounds;
+                // the sub-agent round performs the pin (or the free
+                // fallback pin) and resets token_state in place.
+                crate::compactor_sub_agent::run_compactor_sub_agent_round(
+                    session,
+                    session_id,
+                    &token_state,
+                    &compaction_in_progress,
+                    output,
+                )
+                .await?;
+            } else {
+                super::recovery_compaction::execute_compaction_and_capture_events(
+                    session,
+                    compaction_in_progress.clone(),
+                    prompt,
+                    threshold,
+                    context_window,
+                    &token_state,
+                    output,
+                )
+                .await?;
 
-            // Reset outer token_state in-place so the new hook watches the
-            // same Arc. Cleared flag + fresh counters let the next error
-            // classifier pass correctly (classify_compaction_branch reads
-            // this same Arc).
-            if let Ok(mut state) = token_state.lock() {
-                state.compaction_needed = false;
-                state.input_tokens = session.token_tracker.input_tokens;
-                state.cache_read_input_tokens = 0;
-                state.cache_creation_input_tokens = 0;
-                state.output_tokens = 0;
+                // Reset outer token_state in-place so the new hook watches the
+                // same Arc. Cleared flag + fresh counters let the next error
+                // classifier pass correctly (classify_compaction_branch reads
+                // this same Arc).
+                if let Ok(mut state) = token_state.lock() {
+                    state.compaction_needed = false;
+                    state.input_tokens = session.token_tracker.input_tokens;
+                    state.cache_read_input_tokens = 0;
+                    state.cache_creation_input_tokens = 0;
+                    state.output_tokens = 0;
+                }
             }
             let new_hook = CompactionHook::new(Arc::clone(&token_state), threshold);
 
@@ -1853,6 +1873,61 @@ where
                             "[stream_loop] CMPCT-027: in-loop compaction restart (Path B)"
                         );
                         in_loop_compaction_restart!(policy);
+                        continue;
+                    }
+
+                    // CMPCT-044: robust context-overflow classifier — a strict
+                    // superset of `is_prompt_too_long_error` that walks the
+                    // full error chain, so provider-variant wording (OpenAI
+                    // "Input is too long", Bedrock/Vertex "exceeds the
+                    // maximum", wrapped anyhow layers) that the legacy
+                    // substring list misses still triggers recovery.
+                    //
+                    // Ordering contract: this check runs BEFORE the
+                    // `is_transient_network_error` arm below (Rule [2])
+                    // because some providers' overflow 400s abort the SSE
+                    // stream and would otherwise be misclassified as
+                    // network errors and retried against the same oversized
+                    // payload. It runs AFTER `classify_compaction_branch`
+                    // (the typed PromptCancelled downcast stays the
+                    // authoritative first signal) and is gated on
+                    // `has_compactable_turns` (PROV-010).
+                    let is_context_overflow = is_context_overflow_error(&e);
+
+                    if is_context_overflow && has_compactable_turns {
+                        info!(
+                            "Received context-overflow error ({error_str}), triggering \
+                             overflow recovery"
+                        );
+                        // CMPCT-044: unified compaction-recovery entry
+                        // (same preconditions as Path B): save partial
+                        // text, pop the trailing User prompt, set
+                        // compaction_needed, emit lifecycle events.
+                        debug!(
+                            "[stream_loop] CMPCT-044: invoking begin_compaction_recovery (overflow, pop_user_prompt=true)"
+                        );
+                        let policy = super::recovery_compaction::begin_compaction_recovery(
+                            session,
+                            &token_state,
+                            &streaming_display,
+                            &mut assistant_text,
+                            output,
+                            true,
+                        )?;
+
+                        // Round 1 (compaction_retry_count == 0): in-view
+                        // compaction first — it is the primary, cheaper
+                        // mechanism. Any LATER overflow round (the in-view
+                        // compaction could not resolve the overflow, or
+                        // the retry stream overflows again) escalates to
+                        // the compactor_sub_agent inside the same macro,
+                        // sharing the MAX_COMPACTION_RETRIES budget.
+                        debug!(
+                            policy = ?policy,
+                            compactor = compaction_retry_count > 0,
+                            "[stream_loop] CMPCT-027: in-loop compaction restart (overflow)"
+                        );
+                        in_loop_compaction_restart!(policy, compaction_retry_count > 0);
                         continue;
                     }
 

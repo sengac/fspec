@@ -229,8 +229,8 @@ impl ZAIProvider {
         };
         use codelet_tools::{
             AgentManagerTool, AstGrepRefactorTool, AstGrepTool, ConnectMcpTool, DeepSearchTool,
-            GraphSearchTool, InjectSummaryTool, RequestUserInputTool, ScheduleTool,
-            SessionSearchTool, WebSearchTool,
+            GenerateCompactionTool, GraphSearchTool, InjectSummaryTool, RequestUserInputTool,
+            ScheduleTool, SessionSearchTool, WebSearchTool,
         };
         use std::sync::Arc;
 
@@ -279,6 +279,7 @@ impl ZAIProvider {
             .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
             .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
             .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
