@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! Feature: spec/features/clean-compaction-sub-agent-triggered-on-api-context-overflow-errors.feature
+//! Feature: spec/features/compactor-sub-agent-escalation-in-stream-loop-error-cascade.feature
 //!
-//! CMPCT-044: the stream-loop error cascade must classify provider
+//! CMPCT-044 (cascade slice): the stream-loop error cascade must classify provider
 //! context-overflow errors with the NEW robust classifier BEFORE the
 //! transient-network arm (NET-001), defer to the typed PromptCancelled
 //! branch, gate on compactable turns, and feed the compactor sub-agent

@@ -401,11 +401,10 @@ mod cmpct044_prompt_tests {
     #[test]
     fn incremental_prompt_embeds_existing_dag_and_turn_offset() {
         let target = uuid::Uuid::new_v4();
-        let existing = format!(
-            "<system-reminder>\n<!-- type:compaction-dag -->\n\
+        let existing = "<system-reminder>\n<!-- type:compaction-dag -->\n\
              <dag-node depth=\"D2\" turns=\"0-45\" label=\"Architecture\">ok</dag-node>\n\
              </system-reminder>"
-        );
+            .to_string();
 
         // @step When the compactor sub-agent's task prompt is built
         let prompt = build_generate_compaction_prompt(target, Some((existing.clone(), 45)));

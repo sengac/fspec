@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! Feature: spec/features/clean-compaction-sub-agent-triggered-on-api-context-overflow-errors.feature
+//! Feature: spec/features/context-overflow-error-classifier.feature
 //!
-//! CMPCT-044: The stream-loop error cascade only triggers compaction when the
+//! CMPCT-044 (classifier slice): The stream-loop error cascade only triggers compaction when the
 //! API error matches the fixed `is_prompt_too_long_error` substring list (or a
 //! typed `PromptCancelled`). Provider context-overflow errors with different
 //! wording fall through to the terminal arm and kill the session.

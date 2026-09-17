@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-17T07:56:08.320Z",
+    "lastUpdated": "2026-09-17T08:29:48.410Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -251,11 +251,12 @@
       "TUI-085"
     ],
     "testing": [
-      "CMPCT-045",
-      "CMPCT-044"
+      "CMPCT-045"
     ],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "CMPCT-044"
+    ],
     "done": [
       "WATCH-024",
       "COV-007",
@@ -232212,9 +232213,9 @@
       "id": "CMPCT-044",
       "title": "Clean compaction sub-agent triggered on API context-overflow errors",
       "type": "story",
-      "status": "testing",
+      "status": "validating",
       "createdAt": "2026-09-16T11:42:21.515Z",
-      "updatedAt": "2026-09-17T07:56:08.320Z",
+      "updatedAt": "2026-09-17T08:29:48.410Z",
       "description": "The stream-loop error cascade only triggers compaction when the API error matches fixed English substrings (is_prompt_too_long_error) or a typed PromptCancelled. Provider context-overflow errors with different wording (or wrapped in error chains) fall through to the terminal error arm and kill the session. Add a DeepSearch-style ephemeral COMPACTOR sub-agent that (1) reads the over-full session via SessionSearch (clean context), (2) builds the FRESH/INCREMENTAL DAG, (3) clears the parent session and pins the DAG to it (the apply_pending_dag mutation), with a free force-inject fallback on sub-agent failure. Trigger from a new robust is_context_overflow_error classifier placed BEFORE the network-retry arm in both stream_loop.rs and the agent-loop terminal-error arm.",
       "children": [],
       "attachments": [
@@ -232243,6 +232244,22 @@
         {
           "state": "testing",
           "timestamp": "2026-09-17T07:56:08.320Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-17T08:29:17.632Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-17T08:29:21.010Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-17T08:29:25.745Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-17T08:29:48.410Z"
         }
       ],
       "rules": [

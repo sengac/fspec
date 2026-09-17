@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock)]
 //! Feature: spec/features/generate-compaction-tool.feature
 //!
 //! CMPCT-045: behavioral coverage for the GenerateCompaction tool's
@@ -200,7 +200,7 @@ async fn seed_existing_dag(session: &BackgroundSession, dag: &str, turns_before:
         });
     }
     inner.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&wrap_dag_content(dag))),
+        content: OneOrMany::one(UserContent::text(wrap_dag_content(dag))),
     });
     inner.token_tracker.input_tokens = 150_000;
 }
@@ -1210,7 +1210,7 @@ async fn invalid_session_id_returns_a_validation_error() {
     let result = tool.call(args).await;
 
     // @step Then the tool returns a ToolError::Validation naming the offending parameter
-    let result_str = result.as_ref().err().expect("must be an error").to_string();
+    let result_str = result.as_ref().expect_err("must be an error").to_string();
     let err = result.expect_err("an invalid UUID must be a validation error");
     match err {
         ToolError::Validation { tool: t, message } => {
@@ -1375,11 +1375,10 @@ fn fresh_compaction_prompt_names_the_target_and_forbids_inject_summary() {
 fn incremental_compaction_prompt_embeds_existing_dag_and_turn_offset() {
     // @step Given a target session whose context already contains a compaction DAG ending at turn N
     let target = Uuid::new_v4();
-    let existing = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n\
+    let existing = "<system-reminder>\n<!-- type:compaction-dag -->\n\
          <dag-node depth=\"D2\" turns=\"0-45\" label=\"Architecture\">ok</dag-node>\n\
          </system-reminder>"
-    );
+        .to_string();
 
     // @step When the compactor sub-agent's task prompt is built
     let prompt = codelet_cli::compaction_dag::build_generate_compaction_prompt(
@@ -1457,9 +1456,7 @@ fn compactor_sub_agent_has_only_the_read_only_tool_surface() {
 
     // @step And the sub-agent does NOT have the GenerateCompaction tool
     assert!(
-        !codelet_tools::SUB_AGENT_TOOL_NAMES
-            .iter()
-            .any(|t| *t == "GenerateCompaction"),
+        !codelet_tools::SUB_AGENT_TOOL_NAMES.contains(&"GenerateCompaction"),
         "the compactor sub-agent must NOT have GenerateCompaction (no recursion into compaction)"
     );
 

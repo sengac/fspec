@@ -1,5 +1,5 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! Feature: spec/features/clean-compaction-sub-agent-triggered-on-api-context-overflow-errors.feature
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock)]
+//! Feature: spec/features/terminal-overflow-recovery-for-background-sessions.feature
 //!
 //! CMPCT-044: the agent-loop TERMINAL-ERROR arm routes a context-overflow
 //! error that the in-loop cascade could not resolve through the SAME
@@ -311,6 +311,40 @@ fn compactor_handler_registration_lifecycle_mirrors_deep_search() {
         "the compactor sub-agent cleanup (char {cleanup_at}) must sit in the \
          end-of-turn cleanup block, beside the DeepSearch cleanup \
          (char {deep_search_cleanup_at})"
+    );
+}
+
+/// Scenario: Compactor sub-agent has only the read-only tool surface
+#[test]
+fn compactor_sub_agent_has_only_the_read_only_tool_surface() {
+    // @step Given a compactor sub-agent is constructed
+    // @step When its tool list is built
+    // @step Then the sub-agent has exactly the seven read-only tools: Read, Grep, AstGrep, Glob, Ls, Bash, and SessionSearch
+    assert_eq!(
+        codelet_tools::SUB_AGENT_TOOL_COUNT, 7,
+        "the compactor sub-agent must keep exactly the 7 read-only DeepSearch tools"
+    );
+    assert_eq!(
+        codelet_tools::SUB_AGENT_TOOL_NAMES,
+        ["Read", "Grep", "AstGrep", "Glob", "Ls", "Bash", "SessionSearch"],
+        "the compactor sub-agent's tool surface must be exactly the 7 \
+         read-only tools"
+    );
+
+    // @step And the sub-agent does NOT have the inject_summary tool
+    assert!(
+        !codelet_tools::SUB_AGENT_TOOL_NAMES
+            .iter()
+            .any(|t| t.to_lowercase().contains("inject_summary")),
+        "the compactor sub-agent must NOT have inject_summary (the pin is handler-side)"
+    );
+
+    // @step And the sub-agent does NOT have any Write or Edit tool
+    assert!(
+        !codelet_tools::SUB_AGENT_TOOL_NAMES
+            .iter()
+            .any(|t| *t == "Write" || *t == "Edit"),
+        "the compactor sub-agent must NOT have Write or Edit tools"
     );
 }
 

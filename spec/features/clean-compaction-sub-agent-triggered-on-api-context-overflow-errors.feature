@@ -39,155 +39,17 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
 
   # ============================================================================
   # Classifier: robust context-overflow detection
+  #
+  # The classifier's six scenarios (strict-superset matching,
+  # provider-variant wording, Bedrock/Vertex wording, the PROV-010
+  # thinking-budget exclusion, truncation/unrelated rejection, and
+  # anyhow chain walking) are specified in
+  # spec/features/context-overflow-error-classifier.feature
+  # (test file: rust/cli/tests/cmpct044_overflow_classifier_test.rs).
   # ============================================================================
-
-  @compaction
-  @context-management
-  @regression
-  Scenario: Overflow classifier matches every error is_prompt_too_long_error matches
-    Given a provider context-overflow error string that the existing is_prompt_too_long_error classifier matches
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns true
-    And the new classifier matches it for the same reason as the old one
-
-  @compaction
-  @context-management
-  Scenario: Overflow classifier matches provider-variant wording the old classifier misses
-    Given an OpenAI-compatible provider error "Input is too long: 201,000 tokens > 200,000 maximum"
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns true
-    And is_prompt_too_long_error returns false for that same string
-
-  @compaction
-  @context-management
-  Scenario: Overflow classifier matches Bedrock and Vertex context-limit wording
-    Given a provider error in the style "The input (approximately 200,500 tokens) exceeds the maximum number of input tokens (200,000)"
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns true
-
-  @compaction
-  @context-management
-  @regression
-  Scenario: Overflow classifier rejects thinking-budget configuration errors
-    Given an API error containing "budget_tokens" from a thinking-budget configuration failure
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns false
-
-  @compaction
-  @context-management
-  @regression
-  Scenario: Overflow classifier rejects truncation and unrelated errors
-    Given an API error that is NOT a context-overflow error (a truncation, rate-limit, or auth error)
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns false
-
-  @compaction
-  @context-management
-  Scenario: Overflow classifier sees through anyhow context wrapping
-    Given a context-overflow API error that is wrapped with anyhow context layers
-    When is_context_overflow_error is called with the wrapped error
-    Then is_context_overflow_error returns true based on the full error chain
 
   # ============================================================================
   # Trigger: error cascade ordering in the stream loop
-  # ============================================================================
-
-  @compaction
-  @context-management
-  @integration
-  Scenario: Unmatched overflow error triggers compaction instead of terminating the session
-    Given a streaming session with compactable turns whose context exceeds the provider limit
-    And the provider returns a 400 whose body matches no existing is_prompt_too_long_error substring
-    When the stream loop processes the error
-    Then is_context_overflow_error classifies it as a context overflow
-    And the compaction-recovery path runs for the session
-    And the session does NOT terminate with a terminal "Agent error"
-
-  @compaction
-  @context-management
-  @integration
-  @regression
-  Scenario: Overflow error is classified before the transient-network retry arm
-    Given a provider context-overflow 400 that aborts the SSE stream mid-response
-    And the error surface also matches a transient-network pattern such as "stream closed before completion"
-    When the stream loop classifies the error
-    Then the overflow branch is taken
-    And the error is NOT retried as a transient network error
-    And no "Reconnecting..." network-retry status is emitted for that error
-
-  @compaction
-  @context-management
-  @integration
-  Scenario: Overflow classifier defers to the typed PromptCancelled branch
-    Given a stream error that carries a typed PromptError::PromptCancelled in its chain
-    When the stream loop classifies the error
-    Then classify_compaction_branch routes it to the compaction-cancel recovery path first
-    And the context-overflow string classifier is not the deciding signal for that error
-
-  @compaction
-  @context-management
-  @integration
-  Scenario: Overflow without compactable turns does not trigger compaction
-    Given a streaming session with only system-reminder messages and no user/assistant turns
-    And the provider returns a context-overflow error
-    When the stream loop processes the error
-    Then no compaction is triggered because there are no compactable turns
-    And the error follows the existing terminal error handling
-
-  # ============================================================================
-  # Compactor sub-agent: spawner contract
-  # ============================================================================
-
-  @compaction
-  @context-management
-  @tools
-  @integration
-  Scenario: Compactor sub-agent runs in an ephemeral clean session
-    Given a parent session whose provider and model are configured
-    When the compactor sub-agent is spawned for the parent session
-    Then the sub-agent runs under a fresh ephemeral session id that is not the parent's id
-    And the sub-agent inherits the parent session's provider and model
-
-  @compaction
-  @context-management
-  @tools
-  Scenario: Compactor sub-agent has only the read-only tool surface
-    Given a compactor sub-agent is constructed
-    When its tool list is built
-    Then the sub-agent has exactly the seven read-only tools: Read, Grep, AstGrep, Glob, Ls, Bash, and SessionSearch
-    And the sub-agent does NOT have the inject_summary tool
-    And the sub-agent does NOT have any Write or Edit tool
-
-  @compaction
-  @context-management
-  @persistence
-  @integration
-  Scenario: Compactor sub-agent surveys the parent via SessionSearch on the parent session id
-    Given a parent session with persisted turns
-    When the compactor sub-agent is asked to build the compaction DAG
-    Then the sub-agent's SessionSearch calls target the parent session id, not the sub-agent's own ephemeral session
-    And the sub-agent never reads the parent's in-memory message list
-
-  @compaction
-  @context-management
-  Scenario: Compaction instruction is FRESH when the parent has no DAG
-    Given a parent session that contains no existing compaction DAG
-    When the compactor sub-agent's task prompt is built
-    Then the FRESH compaction instruction is used
-    And the task prompt names the parent session id for every SessionSearch call
-    And the task prompt instructs the sub-agent to output the complete DAG as its final response instead of calling inject_summary
-
-  @compaction
-  @context-management
-  @regression
-  Scenario: Compaction instruction is INCREMENTAL when the parent already has a DAG
-    Given a parent session whose context already contains a compaction DAG ending at turn N
-    When the compactor sub-agent's task prompt is built
-    Then the INCREMENTAL compaction instruction is used with the existing DAG embedded
-    And the task prompt tells the sub-agent to preserve D2 nodes, promote D0 to D1, and only survey turns from N+1 onward
-
-  # ============================================================================
-  # Pin: handler-side clear-and-pin of the parent session
   # ============================================================================
 
   @compaction
@@ -272,27 +134,6 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
   @compaction
   @context-management
   @session
-  @integration
-  Scenario: Background session terminal overflow error compacts via the same entry point
-    Given a background agent-loop session whose turn dies with a context-overflow error that no classifier matched
-    When the agent-loop terminal-error arm processes the error
-    Then the compactor recovery entry point runs for that session
-    And the session's context is cleared to reminders plus a DAG
-    And the session returns to Idle
-    And the next user message starts a fresh stream on the reduced context
-
-  @compaction
-  @context-management
-  @integration
-  Scenario: Handler registration lifecycle mirrors the DeepSearch pattern
-    Given a background session is created in the agent loop
-    When the session's handlers are registered
-    Then a compactor-sub-agent handler is registered for the session id capturing the provider, model, and project path
-    And the handler is removed for the session id during end-of-turn cleanup
-
-  @compaction
-  @context-management
-  @session
   @regression
   Scenario: Missing compactor handler still guarantees a reduced session
     Given a session for which no compactor-sub-agent handler is registered
@@ -301,13 +142,3 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
     Then a fallback DAG is force-injected into the session without any LLM call
     And the session's in-memory context is reduced to reminders plus the fallback DAG
     And the failure is surfaced with a structured compaction-failed lifecycle event
-
-  @compaction
-  @context-management
-  @regression
-  Scenario: Sub-agent escalation is bounded by the shared retry budget
-    Given the in-loop in-view compaction retry budget has been exhausted for a turn
-    And another context-overflow error occurs
-    When the error cascade processes it
-    Then the turn terminates with the structured compaction-budget-exhausted error
-    And the compactor sub-agent is not spawned for a turn past the retry budget

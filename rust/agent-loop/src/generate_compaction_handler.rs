@@ -693,9 +693,7 @@ mod tests {
             "the compactor sub-agent must NOT have inject_summary (the pin is handler-side)"
         );
         assert!(
-            !codelet_tools::SUB_AGENT_TOOL_NAMES
-                .iter()
-                .any(|t| *t == "GenerateCompaction"),
+            !codelet_tools::SUB_AGENT_TOOL_NAMES.contains(&"GenerateCompaction"),
             "the compactor sub-agent must NOT have GenerateCompaction (no recursion into compaction)"
         );
         assert!(

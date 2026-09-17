@@ -320,7 +320,7 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
          run_agent_stream_with_images call in the OpenAI arm"
     );
 
-    // @step And the call is positioned between line 950 and line 1080
+    // @step And the call is positioned between line 950 and line 1180
     //
     // RPC-327 follow-up: the fspec_handler closure earlier in this file
     // grew by ~25 lines (it now also emits FspecCommandRequest /
@@ -339,14 +339,19 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
     // PROV-143: the window was widened to 950..=1080 — the OpenAI arm
     // now wraps the rig agent with `.with_preserve_thinking(...)` (+3
     // lines), pushing the call to ~line 1053. The invariant is unchanged.
+    //
+    // CMPCT-044: the window was widened to 950..=1180 — the compactor
+    // sub-agent handler registration and terminal-overflow recovery
+    // wiring added ~70 lines to the earlier part of agent_loop.rs,
+    // pushing the call to ~line 1120. The invariant is unchanged.
     let abs_offset = src
         .find("codelet_cli::interactive::run_agent_stream_with_images")
         .expect("agent_loop.rs must contain at least one run_agent_stream_with_images call");
     let line = line_number_of(&src, abs_offset);
     assert!(
-        (950..=1080).contains(&line),
+        (950..=1180).contains(&line),
         "first run_agent_stream_with_images call (OpenAI inlined arm) must \
-         live between lines 950 and 1080; got line {line}"
+         live between lines 950 and 1180; got line {line}"
     );
 }
 
@@ -387,7 +392,7 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
          run_agent_stream_with_images call in the custom-provider arm"
     );
 
-    // @step And the call is positioned between line 1000 and line 1260
+    // @step And the call is positioned between line 1000 and line 1380
     //
     // RPC-069 widened the previous 950..=1020 window because adding
     // the feature-gated `"stub" =>` arm (~50 LOC) before the `_ =>`
@@ -418,10 +423,13 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
     // `session_id` arg into each earlier call site shifted this call
     // down by +2 lines. The invariant still locks the call to a bounded
     // vicinity within the custom-provider fall-through arm.
+    // CMPCT-044: window refreshed to 1000..=1380 — the compactor
+    // sub-agent handler registration and terminal-overflow recovery
+    // wiring shifted the call to ~line 1325. The invariant is unchanged.
     assert!(
-        (1000..=1260).contains(&line),
+        (1000..=1380).contains(&line),
         "custom-provider run_agent_stream_with_images call must live between \
-         lines 1000 and 1260; got line {line}"
+         lines 1000 and 1380; got line {line}"
     );
 }
 
