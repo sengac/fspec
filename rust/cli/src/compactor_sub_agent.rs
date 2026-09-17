@@ -37,7 +37,9 @@ use codelet_core::compaction::{parse_dag_nodes, wrap_dag_content};
 use codelet_core::TokenState;
 use uuid::Uuid;
 
-use crate::compaction_dag::{detect_existing_dag, force_inject_fallback_dag};
+use crate::compaction_dag::{
+    build_recovered_or_generic_dag, detect_existing_dag, force_inject_fallback_dag,
+};
 use crate::interactive::output::StreamOutput;
 use crate::interactive_helpers::{compression_ratio, recalculate_token_tracker};
 use crate::session::Session;
@@ -194,7 +196,7 @@ pub async fn run_compactor_sub_agent_round<O: StreamOutput>(
                     "[run_compactor_sub_agent_round] sub-agent output has no parseable \
                      <dag-node> blocks — falling back to the free force-inject DAG"
                 );
-                pin_fallback_dag(session, compaction_in_progress);
+                pin_fallback_dag(session, compaction_in_progress, &dag_text);
             } else {
                 pin_dag_to_session(session, &dag_text);
             }
@@ -204,7 +206,7 @@ pub async fn run_compactor_sub_agent_round<O: StreamOutput>(
                 reason = %reason,
                 "[run_compactor_sub_agent_round] sub-agent failed — force-injecting fallback DAG"
             );
-            pin_fallback_dag(session, compaction_in_progress);
+            pin_fallback_dag(session, compaction_in_progress, &reason);
         }
     }
 
@@ -234,16 +236,25 @@ pub async fn run_compactor_sub_agent_round<O: StreamOutput>(
     Ok(())
 }
 
-/// CMPCT-044 Level-3 convergence guarantee: pin a generic
-/// auto-recovered DAG with zero further LLM cost. Used when the
-/// compactor sub-agent times out, fails, or returns an unparseable DAG.
-fn pin_fallback_dag(session: &mut Session, compaction_in_progress: &Arc<AtomicBool>) {
-    let last_turn = session.messages.len().saturating_sub(1);
-    let fallback_dag = format!(
-        r#"<dag-node depth="D1" turns="0-{last_turn}" label="Auto-recovered: context overflow">
-Session was auto-compacted after a provider context-overflow error.
-Use SessionSearch to recover context.
-</dag-node>"#
+/// CMPCT-044 Level-3 convergence guarantee: pin a recovered/auto-recovered
+/// DAG with zero further LLM cost. Used when the compactor sub-agent times
+/// out, fails, or returns an unparseable DAG.
+///
+/// `failed_output` is the sub-agent's final text (Ok with no parseable
+/// nodes) or its failure reason (Err) — any complete `<dag-node>` blocks it
+/// carries are recovered first; otherwise the generic auto-recovered node
+/// is emitted (CMPCT-044 Rule [4] / CMPCT-020 Level-3 shape).
+fn pin_fallback_dag(
+    session: &mut Session,
+    compaction_in_progress: &Arc<AtomicBool>,
+    failed_output: &str,
+) {
+    let total_turns = (session.messages.len() as u32).max(1);
+    let fallback_dag = build_recovered_or_generic_dag(
+        failed_output,
+        "Auto-recovered: context overflow",
+        "Session was auto-compacted after a provider context-overflow error.",
+        total_turns,
     );
     force_inject_fallback_dag(session, compaction_in_progress, &fallback_dag);
 }

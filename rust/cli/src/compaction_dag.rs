@@ -235,6 +235,45 @@ pub fn extract_partial_dag_nodes_from_text(text: &str) -> Vec<String> {
         .collect()
 }
 
+/// Build the generic Level-3 `Auto-recovered` D1 dag-node (the CMPCT-020
+/// Level-3 shape). Shared by every convergence path so the label / body /
+/// turn-range formatting stays consistent and does not drift.
+///
+/// `total_turns` is the number of turns the recovered session covers; the
+/// node's `turns` range is `0-(total_turns - 1)`.
+pub fn build_generic_fallback_dag_node(label: &str, body: &str, total_turns: u32) -> String {
+    format!(
+        r#"<dag-node depth="D1" turns="0-{}" label="{label}">
+{body}
+Use SessionSearch to recover context.
+</dag-node>"#,
+        total_turns.saturating_sub(1)
+    )
+}
+
+/// Assemble the Level-3 fallback DAG for a failed / timed-out compactor
+/// sub-agent: recover any complete `<dag-node>` blocks from the sub-agent's
+/// (possibly partial) `failed_output`, else emit the generic auto-recovered
+/// D1 node.
+///
+/// This is the shared CMPCT-044 / CMPCT-045 convergence primitive — the
+/// 044 stream-loop round, the 045 handler, and (for the generic-node half)
+/// the agent-loop compaction watchdog all call into it so the
+/// partial-recovery + Level-3 shape cannot diverge across the three paths.
+pub fn build_recovered_or_generic_dag(
+    failed_output: &str,
+    generic_label: &str,
+    generic_body: &str,
+    total_turns: u32,
+) -> String {
+    let partial = extract_partial_dag_nodes_from_text(failed_output);
+    if !partial.is_empty() {
+        partial.join("\n\n")
+    } else {
+        build_generic_fallback_dag_node(generic_label, generic_body, total_turns)
+    }
+}
+
 // ============================================================================
 // Force-Inject Fallback
 // ============================================================================
@@ -381,6 +420,19 @@ mod cmpct044_prompt_tests {
         assert!(
             prompt.contains(&format!("SessionSearch(session_id: \"{target}\", search, ")),
             "SessionSearch search calls must target the target session id"
+        );
+
+        // The FRESH instruction's "Your conversation history" opener must be
+        // replaced with the explicit target session id (the string-replace
+        // adaptation must actually have fired, not just left the base text).
+        assert!(
+            prompt.contains(&format!("Session {target} has been preserved on disk")),
+            "the FRESH opener must be scoped to the target session id"
+        );
+        assert!(
+            !prompt.contains("Your conversation history has been preserved on disk"),
+            "the unscoped 'Your conversation history' opener must not survive \
+             the replacement (string-replace must have fired)"
         );
 
         // @step And the task prompt instructs the sub-agent to output the complete DAG as its final response
