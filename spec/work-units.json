@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-17T08:29:48.410Z",
+    "lastUpdated": "2026-09-17T08:51:08.644Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -250,12 +250,11 @@
       "TOOL-001",
       "TUI-085"
     ],
-    "testing": [
-      "CMPCT-045"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [
-      "CMPCT-044"
+      "CMPCT-044",
+      "CMPCT-045"
     ],
     "done": [
       "WATCH-024",
@@ -232367,9 +232366,9 @@
       "id": "CMPCT-045",
       "title": "GenerateCompaction tool — DeepSearch-clone tool that builds a compaction DAG for a session and pins it",
       "type": "story",
-      "status": "testing",
+      "status": "validating",
       "createdAt": "2026-09-16T23:52:21.405Z",
-      "updatedAt": "2026-09-17T00:51:18.307Z",
+      "updatedAt": "2026-09-17T08:51:08.644Z",
       "description": "Clone the DeepSearch tool pattern into a new GenerateCompaction tool (codelet-tools registry + codelet-agent-loop spawner, mirroring DeepSearchTool/execute_deep_search/register_deep_search_handler). The tool takes an optional session id (default: the calling session), runs the existing DAG compaction algorithm in a clean ephemeral sub-agent (SessionSearch over the target session, FRESH/INCREMENTAL instruction), returns the DAG as the tool result, and pins it to the target session (handler-side pin: reset_session_to_reminders + wrapped DAG + recalculate tracker; free force-inject fallback on sub-agent failure). See attached design doc.",
       "children": [],
       "attachments": [
@@ -232384,6 +232383,22 @@
         {
           "state": "testing",
           "timestamp": "2026-09-17T00:51:18.307Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-17T08:49:55.252Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-17T08:49:58.441Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-17T08:50:03.857Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-17T08:51:08.644Z"
         }
       ],
       "userStory": {

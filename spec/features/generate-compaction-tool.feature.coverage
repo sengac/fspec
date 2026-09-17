@@ -297,11 +297,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "657-735",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "657-735",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -359,11 +354,6 @@
     {
       "name": "Compactor sub-agent runs in an ephemeral clean session",
       "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "416-588",
-          "implMappings": []
-        },
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "416-588",
@@ -585,11 +575,6 @@
     {
       "name": "Compactor sub-agent surveys the target exclusively via SessionSearch on the target session id",
       "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "416-588",
-          "implMappings": []
-        },
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "416-588",
@@ -835,11 +820,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "416-588",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "416-588",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -955,11 +935,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "595-650",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "595-650",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -996,11 +971,6 @@
     {
       "name": "Other-session target is pinned immediately under the target's lock",
       "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "416-588",
-          "implMappings": []
-        },
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "416-588",
@@ -1070,11 +1040,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "742-802",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "742-802",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -1136,11 +1101,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "809-845",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "809-845",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -1178,11 +1138,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "852-895",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "852-895",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -1212,11 +1167,6 @@
     {
       "name": "compaction_in_progress gates sub-agent reads and is cleared after the pin",
       "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "982-1013",
-          "implMappings": []
-        },
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "982-1013",
@@ -1318,11 +1268,6 @@
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "1020-1078",
-          "implMappings": []
-        },
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "1020-1078",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -1380,11 +1325,6 @@
     {
       "name": "GenerateCompaction tool wired into provider agent builders",
       "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-          "lines": "365-405",
-          "implMappings": []
-        },
         {
           "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
           "lines": "365-405",
