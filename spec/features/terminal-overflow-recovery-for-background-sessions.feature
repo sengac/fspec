@@ -1,3 +1,4 @@
+@done
 @agent-core
 @context-management
 @compaction

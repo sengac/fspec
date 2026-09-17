@@ -1,3 +1,4 @@
+@done
 @agent-core
 @tools
 @context-management
