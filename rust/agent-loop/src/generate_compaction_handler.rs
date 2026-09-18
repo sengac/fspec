@@ -26,9 +26,6 @@
 //! `codelet_cli::compactor_sub_agent::pin_dag_to_session` — the
 //! sub-agent itself cannot mis-target or loop.
 
-use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 use codelet_core::RigAgent;
 use codelet_providers::custom::CustomProvider;
 use codelet_providers::custom_provider_registered;
@@ -38,10 +35,13 @@ use codelet_tools::{
     SessionSearchTool, SUB_AGENT_TOOL_COUNT,
 };
 use rig::client::CompletionClient;
+use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::deep_search_provider_config::request_config_for_provider;
 use crate::deep_search_handler::provider_uses_streaming_execution;
+use crate::deep_search_provider_config::request_config_for_provider;
 use crate::session_search_handler;
 
 /// Drop guard that ensures the ephemeral SessionSearch handler is always
@@ -107,13 +107,27 @@ pub async fn execute_compaction_subagent(
 
     // 3. Build the compactor prompt (FRESH or INCREMENTAL — the existing
     //    DAG must have been captured from the target BEFORE any clear).
-    let prompt =
-        codelet_cli::compaction_dag::build_generate_compaction_prompt(target_session_id, existing_dag);
+    let prompt = codelet_cli::compaction_dag::build_generate_compaction_prompt(
+        target_session_id,
+        existing_dag,
+    );
+    tracing::info!(
+        target_session_id = %target_session_id,
+        prompt_chars = prompt.chars().count(),
+        "[compaction-subagent] prompt built"
+    );
 
     // 4. AMGR-016: bound the entire sub-agent execution with the shared
     //    wall-clock timeout so a stalled sub-agent cannot block the parent
     //    forever.
     let wall_clock_timeout = codelet_cli::interactive::deep_search_wall_clock_timeout();
+    tracing::info!(
+        target_session_id = %target_session_id,
+        ephemeral_session_id = %ephemeral_session_id,
+        wall_clock_timeout_secs = wall_clock_timeout.as_secs(),
+        "[compaction-subagent] starting sub-agent (timeout armed)"
+    );
+    let subagent_started = std::time::Instant::now();
     match tokio::time::timeout(
         wall_clock_timeout,
         build_and_run_compactor_agent(
@@ -130,17 +144,17 @@ pub async fn execute_compaction_subagent(
     .await
     {
         Ok(result) => {
-            tracing::debug!(
-                "[compaction-subagent] EXIT target={target_session_id} result_is_ok={}",
+            tracing::info!(
+                "[compaction-subagent] EXIT target={target_session_id} result_is_ok={} elapsed_ms={}",
                 result.is_ok(),
+                subagent_started.elapsed().as_millis(),
             );
             result
         }
         Err(_elapsed) => {
-            let timeout_msg =
-                codelet_cli::interactive::build_deep_search_timeout_message(
-                    wall_clock_timeout.as_secs(),
-                );
+            let timeout_msg = codelet_cli::interactive::build_deep_search_timeout_message(
+                wall_clock_timeout.as_secs(),
+            );
             tracing::warn!(
                 "AMGR-016: compactor sub-agent timed out for target {target_session_id}: {timeout_msg}"
             );
@@ -182,11 +196,14 @@ async fn build_and_run_compactor_agent(
     // SessionSearch over the target UUID. The prompt hard-codes the target
     // id into every SessionSearch call (its own session is its ephemeral
     // one) — it never reads the target's in-memory message list.
-    let task = format!(
-        "Target session: {target_session_id}\n\n{prompt}"
-    );
+    let task = format!("Target session: {target_session_id}\n\n{prompt}");
 
     if custom_provider_registered(provider_name) {
+        tracing::info!(
+            provider = provider_name,
+            model = ?model_id,
+            "[compaction-subagent] dispatching via CustomProvider::create_rig_agent"
+        );
         // PROV-104: Rhai-scripted custom providers dispatch through
         // CustomProvider::create_rig_agent (same path as the parent
         // agent loop — DeepSearch clone contract).
@@ -216,6 +233,14 @@ async fn build_and_run_compactor_agent(
     }
 
     // BUG-102: inherit the calling session's provider/model envelope.
+    tracing::info!(
+        provider_name,
+        model = ?model_id,
+        context_window = ?context_window,
+        max_output_tokens = ?max_output_tokens,
+        task_chars = task.chars().count(),
+        "[compaction-subagent] building agent via ProviderManager (built-in path)"
+    );
     let manager = codelet_providers::ProviderManager::with_provider_and_model(
         provider_name,
         model_id,
@@ -283,6 +308,10 @@ async fn build_and_run_compactor_agent(
             build_and_run_compactor!(provider, request_config)
         }
         "openai" => {
+            tracing::info!(
+                provider_name,
+                "[compaction-subagent] built-in dispatch arm: openai"
+            );
             let provider = manager
                 .get_openai(ephemeral_session_id)
                 .map_err(|e| format!("Failed to get OpenAI provider: {e}"))?;
@@ -318,9 +347,25 @@ async fn build_and_run_compactor_agent(
                     .map_err(|e| format!("Failed to build Z.AI compactor config: {e}"))?;
             build_and_run_compactor!(provider, request_config)
         }
+        // CMPCT-046c: provider-arm parity with the DeepSearch clone — a
+        // session on github-copilot must reach the same distinct error
+        // (builder pending) instead of falling through to
+        // "Unsupported provider".
+        "github-copilot" | "copilot" => {
+            let provider = manager
+                .get_github_copilot()
+                .map_err(|e| format!("Failed to get GitHub Copilot provider: {e}"))?;
+            let _request_config =
+                request_config_for_provider(provider_name, provider.model(), prompt, false)
+                    .map_err(|e| format!("Failed to build GitHub Copilot compactor config: {e}"))?;
+            Err("github-copilot compactor sub-agent builder pending: \
+                 CopilotProvider::client accessor not yet implemented (mirrors DeepSearch's \
+                 PROV-057 Layer-2 status)"
+                .to_string())
+        }
         _ => Err(format!(
             "Unsupported provider for compactor sub-agent: {provider_name}. \
-                 Supported: claude, openai, gemini, codex, zai"
+                 Supported: claude, openai, gemini, codex, zai, github-copilot"
         )),
     }
 }
@@ -353,8 +398,8 @@ pub fn register_compactor_sub_agent_handler(
         .provider_manager()
         .raw_model_max_output_tokens();
 
-    let handler: codelet_cli::compactor_sub_agent::CompactorSubAgentHandler = Arc::new(
-        move |target_session_id, existing_dag| {
+    let handler: codelet_cli::compactor_sub_agent::CompactorSubAgentHandler =
+        Arc::new(move |target_session_id, existing_dag| {
             let path = project_path.clone();
             let provider = compactor_provider.clone();
             let model = compactor_model.clone();
@@ -372,8 +417,7 @@ pub fn register_compactor_sub_agent_handler(
                 )
                 .await
             })
-        },
-    );
+        });
 
     codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(session_id, Some(handler));
 }
@@ -420,7 +464,9 @@ pub fn register_generate_compaction_handler(
         .unwrap_or_else(|| inner_session.current_provider_name().to_string());
     let gc_model = inner_session.current_model_id().map(|s| s.to_string());
     let gc_context_window = inner_session.provider_manager().raw_model_context_window();
-    let gc_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
+    let gc_max_output = inner_session
+        .provider_manager()
+        .raw_model_max_output_tokens();
 
     let handler: codelet_tools::GenerateCompactionHandler =
         std::sync::Arc::new(move |target_session_id| {
@@ -466,6 +512,17 @@ async fn execute_generate_compaction(
     max_output_tokens: Option<usize>,
 ) -> Result<String, String> {
     let is_callee = target_session_id == caller_session_id;
+    let started = std::time::Instant::now();
+    tracing::info!(
+        caller_session_id = %caller_session_id,
+        target_session_id = %target_session_id,
+        is_callee,
+        provider = provider_name,
+        model = ?model_id,
+        context_window = ?context_window,
+        max_output_tokens = ?max_output_tokens,
+        "[generate-compaction] ENTER"
+    );
 
     // Resolve the target session.
     let target_bg = if is_callee {
@@ -475,38 +532,137 @@ async fn execute_generate_compaction(
             Some(manager) => manager
                 .get_session(&target_session_id.to_string())
                 .map_err(|_| {
+                    tracing::error!(
+                        caller_session_id = %caller_session_id,
+                        target_session_id = %target_session_id,
+                        "[generate-compaction] target session lookup FAILED — not a live session"
+                    );
                     format!(
                         "target session {target_session_id} is not a live session — \
                          GenerateCompaction pins a live session's in-memory context"
                     )
                 })?,
             None => {
+                tracing::error!(
+                    caller_session_id = %caller_session_id,
+                    target_session_id = %target_session_id,
+                    "[generate-compaction] no owning SessionManager registered — cannot resolve target"
+                );
                 return Err(format!(
                     "target session {target_session_id} is not a live session — \
                      GenerateCompaction pins a live session's in-memory context"
-                ))
+                ));
             }
         }
     };
+    tracing::info!(
+        target_session_id = %target_session_id,
+        "[generate-compaction] target session resolved ({})",
+        if is_callee { "self target via caller_session" } else { "cross-session via owning manager" }
+    );
 
     // Capture the target's existing DAG BEFORE any clear (CMPCT-019 /
     // CMPCT-045 Rule [5]): Some((content, max_turn_end)) ⇒ INCREMENTAL,
     // None ⇒ FRESH. The pre-compaction token basis (CMPCT-038) is the
-    // TARGET's tracker total under the same lock — the handler holds no
-    // shared token state, so the tracker is the honest pre-run basis.
-    let (existing_dag, original_tokens) = {
-        let inner = target_bg.inner.lock().await;
-        (
-            codelet_cli::compaction_dag::detect_existing_dag(&inner.messages),
-            u32::try_from(inner.token_tracker.input_tokens).unwrap_or(u32::MAX),
-        )
+    // TARGET's tracker total, with the CMPCT-046 content-estimate
+    // fallback when the provider never reported usage (tracker = 0).
+    //
+    // CMPCT-045 Rule [11] + CMPCT-046 deadlock guard: for a SELF-TARGET
+    // the caller's agent loop holds the caller's `inner` lock for the
+    // whole turn — across tool dispatch — so awaiting it here would
+    // self-deadlock (the lock can only be released AFTER this turn ends,
+    // and this tool call only completes when the turn's stream ends).
+    // The self path therefore uses a non-blocking try_lock: on success
+    // (edge case — invoked outside a turn) it captures the same signals
+    // as the cross-session path; on contention (the normal mid-turn
+    // case) it degrades to lock-free signals:
+    //   - CMPCT-041 cached basis (atomic — no lock)
+    //   - FRESH rebuild (the in-memory DAG state is unreadable without
+    //     the lock; the sub-agent's data source is the append-only
+    //     persisted history anyway, which the FRESH prompt surveys in
+    //     full)
+    //   - the Done-chunk completed-turn count (lock-free buffer count)
+    //
+    // Cross-session targets are a DIFFERENT session — awaiting their
+    // inner lock is safe (no self-deadlock) and yields the honest
+    // signals, so the lock_wait diagnostic stays there: a stuck target
+    // lock must show up in the logs.
+    let (existing_dag, original_tokens, total_turns) = if is_callee {
+        match target_bg.inner.try_lock() {
+            Ok(inner) => {
+                let basis = codelet_cli::interactive_helpers::pre_compaction_basis(
+                    inner.token_tracker.input_tokens,
+                    &inner.messages,
+                );
+                tracing::info!(
+                    target_session_id = %target_session_id,
+                    "[generate-compaction] SELF-TARGET capture via try_lock (lock was free — edge case outside a turn)"
+                );
+                (
+                    codelet_cli::compaction_dag::detect_existing_dag(&inner.messages),
+                    u32::try_from(basis).unwrap_or(u32::MAX),
+                    (inner.messages.len() as u32).max(1),
+                )
+            }
+            Err(_held) => {
+                let cached_basis = target_bg
+                    .cached_input_tokens
+                    .load(std::sync::atomic::Ordering::Acquire);
+                let turns = target_bg.completed_turn_count().max(1);
+                tracing::info!(
+                    target_session_id = %target_session_id,
+                    cached_basis_tokens = cached_basis,
+                    total_turns = turns,
+                    "[generate-compaction] SELF-TARGET lock-free capture — inner is held by the caller's turn (Rule [11]); using CMPCT-041 cached basis + FRESH rebuild + Done-chunk turn count"
+                );
+                (None, cached_basis, turns)
+            }
+        }
+    } else {
+        let lock_wait = tokio::time::Instant::now();
+        let (existing_dag, original_tokens, total_turns) = {
+            let inner = target_bg.inner.lock().await;
+            let basis = codelet_cli::interactive_helpers::pre_compaction_basis(
+                inner.token_tracker.input_tokens,
+                &inner.messages,
+            );
+            (
+                codelet_cli::compaction_dag::detect_existing_dag(&inner.messages),
+                u32::try_from(basis).unwrap_or(u32::MAX),
+                (inner.messages.len() as u32).max(1),
+            )
+        };
+        tracing::info!(
+            target_session_id = %target_session_id,
+            lock_wait_ms = lock_wait.elapsed().as_millis(),
+            total_turns,
+            original_tokens,
+            has_existing_dag = existing_dag.is_some(),
+            existing_dag_chars = existing_dag.as_ref().map(|(c, _)| c.chars().count()).unwrap_or(0),
+            "[generate-compaction] acquired target inner lock + captured existing DAG"
+        );
+        if lock_wait.elapsed().as_secs() >= 5 {
+            tracing::warn!(
+                target_session_id = %target_session_id,
+                lock_wait_ms = lock_wait.elapsed().as_millis(),
+                "[generate-compaction] SLOW inner-lock acquisition — the agent loop may be holding the lock"
+            );
+        }
+        (existing_dag, original_tokens, total_turns)
     };
 
     // Also mirror the basis into the shared pre-compaction store so the
     // end-of-turn path (calling-session targets) sees it.
+    // CMPCT-048: remember the pre-compaction status so the stash-failure
+    // path can restore it (the session must never be left stuck in
+    // Compacting with the flag already cleared).
+    let pre_compaction_status = target_bg.get_status();
     target_bg.store_pre_compaction_tokens(original_tokens);
     target_bg.set_status(codelet_rpc_types::SessionStatus::Compacting);
-    let total_turns = (target_bg.inner.lock().await.messages.len() as u32).max(1);
+    tracing::info!(
+        target_session_id = %target_session_id,
+        "[generate-compaction] status set to Compacting + pre-compaction tokens stored"
+    );
     target_bg.update_compaction_progress(
         "Compaction sub-agent working".to_string(),
         0,
@@ -518,6 +674,10 @@ async fn execute_generate_compaction(
     target_bg
         .compaction_in_progress
         .store(true, std::sync::atomic::Ordering::SeqCst);
+    tracing::info!(
+        target_session_id = %target_session_id,
+        "[generate-compaction] compaction_in_progress flag SET — launching sub-agent"
+    );
 
     let run_result = execute_compaction_subagent(
         project_path,
@@ -530,6 +690,14 @@ async fn execute_generate_compaction(
         max_output_tokens,
     )
     .await;
+
+    tracing::info!(
+        target_session_id = %target_session_id,
+        elapsed_ms = started.elapsed().as_millis(),
+        sub_agent_ok = run_result.is_ok(),
+        sub_agent_error = run_result.as_ref().err().map(|s| s.chars().take(200).collect::<String>()).unwrap_or_default(),
+        "[generate-compaction] sub-agent run COMPLETE"
+    );
 
     // Convergence guarantee (CMPCT-044 Rule [4]): on timeout / failure /
     // unparseable output, assemble a fallback DAG (partial nodes, else the
@@ -568,14 +736,31 @@ async fn execute_generate_compaction(
             .store(false, std::sync::atomic::Ordering::SeqCst);
         target_bg.set_compaction_progress(None);
         let wrapped = codelet_core::compaction::wrap_dag_content(&dag_text);
+        let wrapped_chars = wrapped.chars().count();
         if let Ok(mut guard) = target_bg.pending_dag_content.lock() {
             *guard = Some(wrapped);
         } else {
-            return Err("failed to acquire pending_dag_content lock for the calling session".to_string());
+            // CMPCT-048: the flag was already cleared above and the DAG is
+            // lost — restore the pre-compaction status so the end-of-turn
+            // path does not see a stale Compacting with no pending DAG
+            // and no flag. The session was never reduced; log it loudly.
+            target_bg.set_status(pre_compaction_status);
+            tracing::error!(
+                target_session_id = %target_session_id,
+                caller_session_id = %caller_session_id,
+                "[generate-compaction] failed to acquire pending_dag_content lock for the calling session — DAG lost, status restored to {pre_compaction_status:?}"
+            );
+            return Err(
+                "failed to acquire pending_dag_content lock for the calling session".to_string(),
+            );
         }
-        tracing::debug!(
+        tracing::info!(
+            target_session_id = %target_session_id,
+            dag_chars = dag_text.chars().count(),
+            wrapped_chars,
+            fallback = ?fallback_reason,
             "[generate-compaction] caller-session target — DAG stashed in \
-             pending_dag_content; end-of-turn path will pin it (fallback={fallback_reason:?})"
+             pending_dag_content; end-of-turn apply_pending_dag_and_emit will pin it"
         );
         return Ok(with_fallback_note(&dag_text, fallback_reason.as_deref()));
     }
@@ -596,18 +781,14 @@ async fn execute_generate_compaction(
     inner.token_tracker.reset_after_compaction();
     let post_pin_tokens = inner.token_tracker.input_tokens;
 
-    let ratio =
-        (codelet_cli::interactive_helpers::compression_ratio(
-            u64::from(original_tokens),
-            post_pin_tokens as u64,
-        )
-            * 100.0)
-            .max(0.0);
-    target_bg.handle_output(
-        codelet_rpc_types::StreamChunk::session_state_change(
-            codelet_rpc_types::SessionState::Running,
-        ),
-    );
+    let ratio = (codelet_cli::interactive_helpers::compression_ratio(
+        u64::from(original_tokens),
+        post_pin_tokens as u64,
+    ) * 100.0)
+        .max(0.0);
+    target_bg.handle_output(codelet_rpc_types::StreamChunk::session_state_change(
+        codelet_rpc_types::SessionState::Running,
+    ));
     target_bg.handle_output(codelet_rpc_types::StreamChunk::compaction_complete(
         codelet_rpc_types::CompactionResult {
             original_tokens,
@@ -624,9 +805,13 @@ async fn execute_generate_compaction(
     target_bg.set_compaction_progress(None);
     target_bg.set_status(codelet_rpc_types::SessionStatus::Running);
 
-    tracing::debug!(
-        "[generate-compaction] pinned DAG to target {target_session_id} — \
-         tokens={pre_pin_tokens}->{post_pin_tokens}, fallback={fallback_reason:?}"
+    tracing::info!(
+        target_session_id = %target_session_id,
+        pre_pin_tokens,
+        post_pin_tokens,
+        ratio_pct = ratio,
+        elapsed_ms = started.elapsed().as_millis(),
+        "[generate-compaction] pinned DAG to target (cross-session) — tokens={pre_pin_tokens}->{post_pin_tokens}, fallback={fallback_reason:?}"
     );
     Ok(with_fallback_note(&dag_text, fallback_reason.as_deref()))
 }
@@ -643,24 +828,21 @@ fn with_fallback_note(dag_text: &str, fallback_reason: Option<&str>) -> String {
     }
 }
 
-/// Assemble the fallback DAG for a failed/timed-out sub-agent: recover
-/// any complete `<dag-node>` blocks from its output, else emit the generic
-/// `Auto-recovered: compaction timeout` D1 node (CMPCT-020 Level-3 shape).
+/// CMPCT-047: the 045 fallback DAG is the SHARED Level-3 shape —
+/// `codelet_cli::compaction_dag::build_recovered_or_generic_dag` (partial
+/// `<dag-node>` blocks recovered from the sub-agent's output, else the
+/// generic auto-recovered D1 node). The 044 compactor round, the 045
+/// handler, and (for the generic-node half) the agent-loop compaction
+/// watchdog all build through the same primitives so the shape cannot
+/// drift. (The 045 label/body pair is the "compaction timeout" variant;
+/// the 044 round uses the "context overflow" variant.)
 fn build_fallback_dag(sub_agent_output: &str, total_turns: u32) -> String {
-    let partial = codelet_cli::compaction_dag::extract_partial_dag_nodes_from_text(
+    codelet_cli::compaction_dag::build_recovered_or_generic_dag(
         sub_agent_output,
-    );
-    if !partial.is_empty() {
-        partial.join("\n\n")
-    } else {
-        format!(
-            r#"<dag-node depth="D1" turns="0-{}" label="Auto-recovered: compaction timeout">
-Session was auto-compacted due to a compaction-sub-agent timeout.
-Use SessionSearch to recover context.
-</dag-node>"#,
-            total_turns.saturating_sub(1)
-        )
-    }
+        "Auto-recovered: compaction timeout",
+        "Session was auto-compacted due to a compaction-sub-agent timeout.",
+        total_turns,
+    )
 }
 
 #[cfg(test)]
@@ -682,7 +864,15 @@ mod tests {
         );
         assert_eq!(
             codelet_tools::SUB_AGENT_TOOL_NAMES,
-            ["Read", "Grep", "AstGrep", "Glob", "Ls", "Bash", "SessionSearch"],
+            [
+                "Read",
+                "Grep",
+                "AstGrep",
+                "Glob",
+                "Ls",
+                "Bash",
+                "SessionSearch"
+            ],
             "the compactor sub-agent's tool surface must be exactly the 7 \
              read-only tools"
         );

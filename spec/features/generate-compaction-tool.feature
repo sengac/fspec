@@ -1,3 +1,6 @@
+@CMPCT-046
+@CMPCT-047
+@CMPCT-048
 @done
 @agent-core
 @tools
@@ -29,6 +32,12 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
   #   14. Lifecycle events are emitted on the TARGET session's output: before spawning the sub-agent the target gets SessionStateChange(Compacting) + a compaction progress update ("Compaction sub-agent working") + snapshot_pre_compaction_tokens; after the pin the target gets SessionStateChange(Running) followed by CompactionComplete with the recalculated post-pin token basis (CMPCT-038 measurement rule — compacted_tokens is the recalculated tracker total, not the DAG summary size; ratio via compression_ratio). The target's status flips to Compacting for the run and back after the pin. A compaction-failed user notification is emitted only if the fallback pin itself fails (the session must ALWAYS be reduced — never left oversized).
   #   15. On success (parseable DAG), the tool result string is the DAG text itself (so the caller sees exactly what was pinned). On fallback, the tool result string is the fallback DAG text with a structured note that it is a free force-inject fallback (sub-agent failed / timed out) and the reason. Both outcomes return Ok(String) — the tool never returns Err for a pinned-but-coarse session; Err is reserved for validation failures, missing handler, and unknown-target rejections.
   #   16. The sub-agent's task prompt is built by codelet_cli::compaction_dag::build_generate_compaction_prompt(target_uuid, mode): FRESH mode adapts COMPACTION_INSTRUCTION_FRESH ("Your conversation history" → "Session <target-uuid>") and INCREMENTAL mode adapts COMPACTION_INSTRUCTION_INCREMENTAL with the existing DAG embedded and last_compacted_turn filled; every SessionSearch reference in the prompt tells the sub-agent to pass session_id=<target-uuid> explicitly, and the final step changes from "Call inject_summary(content)" to "Output the complete DAG (all <dag-node> blocks + the <dag-files> section) as your final response; do not call any other tool after." The prompt must NOT contain the string 'inject_summary' (the sub-agent has no such tool).
+  #   17. CMPCT-046 deadlock guard: for a SELF-TARGET (target == calling session) the handler must NEVER await the caller's inner lock — the caller's agent loop holds it for the whole turn across tool dispatch, so an await would self-deadlock. The capture block uses a non-blocking try_lock: on success it captures the same (existing DAG, tracker basis, message count) as the cross-session path; on contention (the mid-turn case) it degrades to the lock-free CMPCT-041 cached basis (cached_input_tokens), a FRESH rebuild (existing_dag = None), and the Done-chunk turn count — never blocking on a lock it cannot get back this turn.
+  #   18. CMPCT-046b honest zero-basis: when the provider does not report usage (e.g. OpenAI streaming without usage), token_tracker.input_tokens is 0 and the pre-compaction basis must fall back to a content estimate (sum of per-message count_tokens over the target's messages, computed under the target's lock for cross-session targets). A 0 original_tokens must never reach CompactionComplete when the target had compactable messages. The end-of-turn apply path applies the same estimate fallback when pre_compaction_tokens is 0 and a pending DAG exists.
+  #   19. CMPCT-048 status restore on stash failure: if the pending_dag_content lock fails on the self-target stash path, the handler must restore the calling session's status to Running (the end-of-turn apply will find no pending DAG) and log the failure at ERROR level — the session must never be left stuck in Compacting with the flag already cleared.
+  #   20. CMPCT-047 single-sourced fallback shape: the 045 handler's fallback builder must delegate to the shared codelet_cli::compaction_dag::build_recovered_or_generic_dag primitive (partial <dag-node> recovery from the sub-agent's text, else the generic D1 node) so the 044 sub-agent round and the 045 handler cannot drift. The agent-loop watchdog's generic node is built via build_generic_fallback_dag_node (its partial source is the in-view agent's messages, a different extraction than the sub-agent text).
+  #   21. CMPCT-049 log-level hygiene: routine per-event propagation lines (TUI push-channel store updates, TUI bootstrap status-recv, per-progress updates, the per-turn "Done: no pending compaction" and "turn END — checking for pending DAG" lines) are logged at DEBUG; lifecycle lines (set_status transitions, TUI display-mode flip, the rare "compaction/pending-DAG active" Done branch) stay at INFO so the thinking-vs-compacting trace remains visible at the default level.
+  #   22. CMPCT-046c provider-arm parity: the compactor sub-agent's built-in provider match supports the same arms as the DeepSearch clone (claude, openai, gemini, codex, zai, github-copilot/copilot — the copilot arm mirrors DeepSearch's pending-builder error), so a session on any registered built-in provider can run a compactor sub-agent instead of falling through to "Unsupported provider".
   #
   # EXAMPLES:
   #   1. A supervisor session asks the agent to compact a subordinate's context. The agent calls GenerateCompaction with the subordinate's session UUID. The tool returns a DAG summary as its result, and the subordinate session's context is now reduced to system reminders plus that DAG — visible to the subordinate's next turn — while the supervisor's own context is untouched. The tool result string is the pinned DAG itself, so the supervisor can see exactly what the subordinate now carries.
@@ -158,6 +167,18 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
   @context-management
   @session
   @integration
+  @regression
+  Scenario: Self-target capture never awaits the caller's inner lock
+    Given the agent calls GenerateCompaction with no arguments on its own session A mid-turn
+    And session A's inner lock is held by the calling agent loop for the whole turn
+    When the handler captures the existing DAG and the pre-compaction token basis
+    Then the capture does not await session A's inner lock
+    And the capture degrades to the lock-free cached token basis, a FRESH rebuild, and the completed-turn count
+    And the sub-agent still runs and the DAG is stashed for the end-of-turn pin
+
+  @context-management
+  @session
+  @integration
   Scenario: Other-session target is pinned immediately under the target's lock
     Given session S calls GenerateCompaction with a live subordinate session T's UUID
     And the sub-agent returns a parseable DAG
@@ -219,6 +240,45 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
     Then the target emitted a Compacting state change and a compaction progress update before the sub-agent was spawned
     And the target emitted a Running state change followed by CompactionComplete after the pin
     And the CompactionComplete event reflects the recalculated post-pin token basis, not just the DAG summary size
+
+  @context-management
+  @session
+  @regression
+  Scenario: A zero tracker basis falls back to a content estimate
+    Given a live target session whose token tracker reads 0 tokens because the provider did not report usage
+    And the target has compactable conversation messages
+    When GenerateCompaction completes and pins a DAG to the target
+    Then the pre-compaction token basis is a content estimate greater than 0
+    And the CompactionComplete event's original_tokens is never 0
+
+  @context-management
+  @session
+  @regression
+  Scenario: Stash-lock failure restores the calling session's status
+    Given the agent calls GenerateCompaction with no arguments on its own session A mid-turn
+    And the sub-agent returns a parseable DAG
+    When stashing the DAG into session A's pending_dag_content fails to acquire the lock
+    Then session A's status is restored to Running instead of staying Compacting
+    And the failure is logged at ERROR level naming the target session
+    And the compaction_in_progress flag is cleared
+
+  @context-management
+  @session
+  @regression
+  Scenario: The 045 fallback builder delegates to the shared compaction_dag primitive
+    Given the compactor sub-agent times out without emitting any dag-node block
+    When the handler assembles the fallback DAG
+    Then it is built by codelet_cli::compaction_dag::build_recovered_or_generic_dag with the label "Auto-recovered: compaction timeout" and the body "Session was auto-compacted due to a compaction-sub-agent timeout."
+    And the 045 handler does not format its own generic dag-node template inline
+
+  @agent-core
+  @providers
+  @source-shape
+  Scenario: Compactor sub-agent provider arms match the DeepSearch clone
+    Given the compactor sub-agent's built-in provider match exists
+    When it is compared with the DeepSearch sub-agent's provider match
+    Then it supports the same arms: claude, openai, gemini, codex, zai, and github-copilot/copilot
+    And the copilot arm returns the same distinct pending-builder error shape as DeepSearch instead of falling through to "Unsupported provider"
 
   # ============================================================================
   # Tool surface and registration lifecycle

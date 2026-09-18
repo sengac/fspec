@@ -1310,6 +1310,10 @@
           "description": "Clipboard integration (OSC 52 escape-sequence clipboard writes)"
         },
         {
+          "name": "@cmpct-049",
+          "description": "Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO)"
+        },
+        {
           "name": "@code-review",
           "description": "Code review and quality analysis features"
         },
@@ -2370,6 +2374,10 @@
           "description": "Work unit BUG-185 — the failed tool-call tail must be stripped on ANY terminal API error (supersedes BUG-170 rule [0] which gated the strip on prompt-too-long only)"
         },
         {
+          "name": "@bug-186",
+          "description": "Bug fix work unit BUG-186 — rpc002_session_persistence tests fail in a clean test env: model registry cache missing → create_session declines (PROV-101) → empty SessionId. Fix: seed the temp data dir with the shared prov101 model-cache fixture + dummy ANTHROPIC creds, and use a fixture model as the offline default."
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2384,6 +2392,14 @@
         {
           "name": "@cmpct-041",
           "description": "Work unit identifier tag for CMPCT-041 — turn-start seed cache double-count root fix and pre_compaction_tokens basis unification across auto/manual writers in both twins"
+        },
+        {
+          "name": "@cmpct-046",
+          "description": "Work unit CMPCT-046 — self-target deadlock fix (lock-free capture) + honest zero-basis content estimate + github-copilot provider-arm parity"
+        },
+        {
+          "name": "@cmpct-047",
+          "description": "Work unit CMPCT-047 — unify Level-3 fallback DAG shape across 044/045/agent-loop watchdog through the shared compaction_dag primitives"
         },
         {
           "name": "@cont-002",
@@ -3066,7 +3082,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-16T07:47:06.909Z",
+    "lastUpdated": "2026-09-18T04:51:33.346Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

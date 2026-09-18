@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::await_holding_lock
+)]
 //! Feature: spec/features/terminal-overflow-recovery-for-background-sessions.feature
 //!
 //! CMPCT-044: the agent-loop TERMINAL-ERROR arm routes a context-overflow
@@ -17,8 +22,8 @@ use std::sync::Arc;
 
 use codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler;
 use codelet_rpc_types::{SessionStatus, StreamChunk};
-use codelet_sessions::session_manager::SessionManager;
 use codelet_sessions::background_session::BackgroundSession;
+use codelet_sessions::session_manager::SessionManager;
 use rig::message::{Message, UserContent};
 use rig::OneOrMany;
 use serial_test::serial;
@@ -32,7 +37,12 @@ static GLOBAL_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// A hermetic SessionManager + one live session under a fresh data
 /// directory (the `cmpct045` fixture pattern — offline model cache).
-async fn fixture_session() -> (tempfile::TempDir, String, Arc<SessionManager>, Arc<BackgroundSession>) {
+async fn fixture_session() -> (
+    tempfile::TempDir,
+    String,
+    Arc<SessionManager>,
+    Arc<BackgroundSession>,
+) {
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
     std::env::set_var("GOOGLE_GENERATIVE_AI_API_KEY", "AIza-test-dummy-key");
 
@@ -59,7 +69,12 @@ async fn fixture_session() -> (tempfile::TempDir, String, Arc<SessionManager>, A
 
     let session_id = Uuid::new_v4();
     manager
-        .create_session_with_id(&session_id.to_string(), "openai/o3", &project, "cmpct044-terminal")
+        .create_session_with_id(
+            &session_id.to_string(),
+            "openai/o3",
+            &project,
+            "cmpct044-terminal",
+        )
         .await
         .expect("create session");
     let session = manager
@@ -73,27 +88,25 @@ async fn seed_turns(session: &BackgroundSession, n: usize) {
     let mut inner = session.inner.lock().await;
     for i in 0..n {
         inner.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(format!(
-                "user turn {i} do work"
-            ))),
+            content: OneOrMany::one(UserContent::text(format!("user turn {i} do work"))),
         });
         inner.messages.push(Message::Assistant {
             id: None,
-            content: OneOrMany::one(rig::message::AssistantContent::Text(
-                rig::message::Text {
-                    text: format!("assistant turn {i} did work"),
-                },
-            )),
+            content: OneOrMany::one(rig::message::AssistantContent::Text(rig::message::Text {
+                text: format!("assistant turn {i} did work"),
+            })),
         });
-        inner.turns.push(codelet_core::compaction::ConversationTurn {
-            user_message: format!("user turn {i}"),
-            tool_calls: vec![],
-            tool_results: vec![],
-            assistant_response: format!("assistant turn {i}"),
-            tokens: 500,
-            timestamp: std::time::SystemTime::now(),
-            previous_error: None,
-        });
+        inner
+            .turns
+            .push(codelet_core::compaction::ConversationTurn {
+                user_message: format!("user turn {i}"),
+                tool_calls: vec![],
+                tool_results: vec![],
+                assistant_response: format!("assistant turn {i}"),
+                tokens: 500,
+                timestamp: std::time::SystemTime::now(),
+                previous_error: None,
+            });
     }
     inner.token_tracker.input_tokens = 190_000;
 }
@@ -138,17 +151,15 @@ async fn background_terminal_overflow_compacts_via_the_same_entry_point() {
     // Provider-variant wording the legacy classifier misses: the 400
     // body matches NO `is_prompt_too_long_error` substring, only the
     // robust `is_context_overflow_error`.
-    let overflow_error = anyhow::anyhow!(
-        "API error: 400 Input is too long: 201,000 tokens > 200,000 maximum"
-    );
+    let overflow_error =
+        anyhow::anyhow!("API error: 400 Input is too long: 201,000 tokens > 200,000 maximum");
 
     // @step When the agent-loop terminal-error arm processes the error
-    let recovered =
-        codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
-            session.clone(),
-            &overflow_error,
-        )
-        .await;
+    let recovered = codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
+        session.clone(),
+        &overflow_error,
+    )
+    .await;
 
     // @step Then the compactor recovery entry point runs for that session
     assert!(
@@ -236,16 +247,14 @@ async fn terminal_overflow_without_compactable_turns_does_not_compact() {
     }
 
     // @step And the provider returns a context-overflow error
-    let overflow_error =
-        anyhow::anyhow!("Input is too long: 201,000 tokens > 200,000 maximum");
+    let overflow_error = anyhow::anyhow!("Input is too long: 201,000 tokens > 200,000 maximum");
 
     // @step When the stream loop processes the error
-    let recovered =
-        codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
-            session.clone(),
-            &overflow_error,
-        )
-        .await;
+    let recovered = codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
+        session.clone(),
+        &overflow_error,
+    )
+    .await;
 
     // @step Then no compaction is triggered because there are no compactable turns
     // No compaction ran — the gate (PROV-010) held.
@@ -321,12 +330,21 @@ fn compactor_sub_agent_has_only_the_read_only_tool_surface() {
     // @step When its tool list is built
     // @step Then the sub-agent has exactly the seven read-only tools: Read, Grep, AstGrep, Glob, Ls, Bash, and SessionSearch
     assert_eq!(
-        codelet_tools::SUB_AGENT_TOOL_COUNT, 7,
+        codelet_tools::SUB_AGENT_TOOL_COUNT,
+        7,
         "the compactor sub-agent must keep exactly the 7 read-only DeepSearch tools"
     );
     assert_eq!(
         codelet_tools::SUB_AGENT_TOOL_NAMES,
-        ["Read", "Grep", "AstGrep", "Glob", "Ls", "Bash", "SessionSearch"],
+        [
+            "Read",
+            "Grep",
+            "AstGrep",
+            "Glob",
+            "Ls",
+            "Bash",
+            "SessionSearch"
+        ],
         "the compactor sub-agent's tool surface must be exactly the 7 \
          read-only tools"
     );
@@ -358,12 +376,11 @@ async fn terminal_non_overflow_error_does_not_compact() {
     seed_turns(&session, 3).await;
 
     let auth_error = anyhow::anyhow!("401 Invalid API key provided: sk-abc123");
-    let recovered =
-        codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
-            session.clone(),
-            &auth_error,
-        )
-        .await;
+    let recovered = codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
+        session.clone(),
+        &auth_error,
+    )
+    .await;
 
     assert!(
         !recovered,
@@ -425,8 +442,10 @@ fn compaction_instruction_is_incremental_when_the_parent_has_a_dag() {
 </system-reminder>"#;
 
     // @step When the compactor sub-agent's task prompt is built
-    let prompt =
-        codelet_cli::compaction_dag::build_generate_compaction_prompt(parent, Some((existing_dag.to_string(), 45)));
+    let prompt = codelet_cli::compaction_dag::build_generate_compaction_prompt(
+        parent,
+        Some((existing_dag.to_string(), 45)),
+    );
 
     // @step Then the INCREMENTAL compaction instruction is used with the existing DAG embedded
     assert!(

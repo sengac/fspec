@@ -84,7 +84,9 @@ pub async fn try_terminal_overflow_recovery(
     // stream on the reduced context.
     session.set_status(SessionStatus::Idle);
     session.set_compaction_progress(None);
-    session.compaction_in_progress.store(false, Ordering::SeqCst);
+    session
+        .compaction_in_progress
+        .store(false, Ordering::SeqCst);
     true
 }
 

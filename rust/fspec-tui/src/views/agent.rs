@@ -131,6 +131,10 @@ pub struct AgentView {
     pub(crate) scrollback_wheel: WheelVelocity,
     pub(crate) spinner_started_at: Option<Instant>,
     pub(crate) last_is_compacting: bool,
+    /// COMPACTING-DIAG: last display mode logged by tick_animation
+    /// ("thinking" / "compacting" / "idle") — flip-detection for the
+    /// diagnostic log. `""` (Default) means "log on first frame".
+    pub(crate) last_compaction_diag_display: &'static str,
     pub(crate) input_transition_state: InputTransitionState,
     pub(crate) last_spinner_line: Option<String>,
     pub(crate) animation_clock_ms: u64,

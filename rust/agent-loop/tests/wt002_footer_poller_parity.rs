@@ -151,7 +151,12 @@ async fn scenario_fspec_binary_session_receives_footer_state_update_on_first_pol
     let project = repo.path().to_str().expect("repo path is utf8");
     let sid = Uuid::new_v4();
     manager
-        .create_session_with_id(&sid.to_string(), "anthropic/claude-opus-4-5", project, "wt002")
+        .create_session_with_id(
+            &sid.to_string(),
+            "anthropic/claude-opus-4-5",
+            project,
+            "wt002",
+        )
         .await
         .expect("session creation under FspecAgentHooks must succeed");
 
@@ -174,9 +179,16 @@ async fn scenario_fspec_binary_session_receives_footer_state_update_on_first_pol
             is_git_repo,
             branch,
         } => {
-            assert_eq!(cwd, project, "chunk must carry the session's working directory");
+            assert_eq!(
+                cwd, project,
+                "chunk must carry the session's working directory"
+            );
             assert!(is_git_repo, "the fresh repo must be reported as a git repo");
-            assert_eq!(branch.as_deref(), Some("main"), "chunk must carry the checked-out branch");
+            assert_eq!(
+                branch.as_deref(),
+                Some("main"),
+                "chunk must carry the checked-out branch"
+            );
         }
         other => panic!("expected FooterStateUpdate chunk, got {other:?}"),
     }
@@ -203,7 +215,12 @@ async fn scenario_session_in_git_repo_shows_branch_in_footer_without_any_bash_co
     let project = repo.path().to_str().expect("repo path is utf8");
     let sid = Uuid::new_v4();
     manager
-        .create_session_with_id(&sid.to_string(), "anthropic/claude-opus-4-5", project, "wt002")
+        .create_session_with_id(
+            &sid.to_string(),
+            "anthropic/claude-opus-4-5",
+            project,
+            "wt002",
+        )
         .await
         .expect("session creation under FspecAgentHooks must succeed");
 
@@ -224,7 +241,10 @@ async fn scenario_session_in_git_repo_shows_branch_in_footer_without_any_bash_co
             is_git_repo,
             branch,
         } => {
-            assert_eq!(cwd, project, "footer state must report the working directory");
+            assert_eq!(
+                cwd, project,
+                "footer state must report the working directory"
+            );
             assert!(is_git_repo && branch.as_deref() == Some("main"));
             // The poller must have SEEDED the footer-cwd registry at creation
             // time — that is the value the first emission carries without
@@ -250,7 +270,8 @@ async fn scenario_session_in_git_repo_shows_branch_in_footer_without_any_bash_co
 
 #[serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_isolated_worktree_session_reports_detached_git_state_not_a_blank_non_repo_state() {
+async fn scenario_isolated_worktree_session_reports_detached_git_state_not_a_blank_non_repo_state()
+{
     let _guard = ENV_GUARD.lock().await;
 
     // @step Given a session manager configured with the fspec binary's hook implementation (FspecAgentHooks)
@@ -333,7 +354,12 @@ async fn scenario_footer_follows_effective_cwd_when_bash_moves_the_session_to_an
     let sub_str = sub.to_str().expect("subdir path is utf8").to_string();
     let sid = Uuid::new_v4();
     manager
-        .create_session_with_id(&sid.to_string(), "anthropic/claude-opus-4-5", project, "wt002")
+        .create_session_with_id(
+            &sid.to_string(),
+            "anthropic/claude-opus-4-5",
+            project,
+            "wt002",
+        )
         .await
         .expect("session creation under FspecAgentHooks must succeed");
     let initial = next_footer_chunk(
@@ -345,7 +371,10 @@ async fn scenario_footer_follows_effective_cwd_when_bash_moves_the_session_to_an
     .await;
     match initial {
         StreamChunk::FooterStateUpdate { cwd, .. } => {
-            assert_eq!(cwd, project, "first tick must seed the CWD to the project root");
+            assert_eq!(
+                cwd, project,
+                "first tick must seed the CWD to the project root"
+            );
         }
         other => panic!("expected FooterStateUpdate chunk, got {other:?}"),
     }
@@ -367,7 +396,10 @@ async fn scenario_footer_follows_effective_cwd_when_bash_moves_the_session_to_an
     .await;
     match updated {
         StreamChunk::FooterStateUpdate { cwd, .. } => {
-            assert_eq!(cwd, sub_str, "the second emission must carry the subdirectory");
+            assert_eq!(
+                cwd, sub_str,
+                "the second emission must carry the subdirectory"
+            );
         }
         other => panic!("expected FooterStateUpdate chunk, got {other:?}"),
     }
@@ -383,10 +415,10 @@ fn scenario_napi_hook_path_delegates_to_the_same_shared_footer_poller_implementa
     // Pure source-shape check (file reads only) — no process-global state is
     // touched, so the behavioural ENV_GUARD is not needed here.
     let napi_src = Path::new(env!("CARGO_MANIFEST_DIR")).join("../napi/src");
-    let footer_poller_src =
-        std::fs::read_to_string(napi_src.join("footer_poller.rs")).expect("read napi footer_poller.rs");
-    let session_hooks_src =
-        std::fs::read_to_string(napi_src.join("session_hooks.rs")).expect("read napi session_hooks.rs");
+    let footer_poller_src = std::fs::read_to_string(napi_src.join("footer_poller.rs"))
+        .expect("read napi footer_poller.rs");
+    let session_hooks_src = std::fs::read_to_string(napi_src.join("session_hooks.rs"))
+        .expect("read napi session_hooks.rs");
 
     // @step Given the NAPI session hooks are installed on a session manager
     assert!(

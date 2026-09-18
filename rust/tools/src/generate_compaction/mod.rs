@@ -21,7 +21,6 @@
 //! DeepSearch clone contract: the handler is looked up per CALLING session
 //! (the tool's construction `session_id`), mirroring `execute_deep_search`.
 
-
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -64,9 +63,8 @@ pub struct GenerateCompactionArgs {
 ///
 /// NOTE: returns a Future (not a sync Result) — the sub-agent makes async LLM
 /// API calls (same contract as `DeepSearchHandler`).
-pub type GenerateCompactionHandler = Arc<
-    dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> + Send + Sync,
->;
+pub type GenerateCompactionHandler =
+    Arc<dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> + Send + Sync>;
 
 /// Per-session handler storage.
 static GENERATE_COMPACTION_HANDLERS: once_cell::sync::Lazy<
@@ -189,51 +187,87 @@ impl Tool for GenerateCompactionTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        tracing::info!(
+            caller_session_id = %self.session_id,
+            target_arg = ?args.session_id,
+            "[generate-compaction-tool] call ENTER args={:?}",
+            args
+        );
+        let started = std::time::Instant::now();
+
         // HOOK-013: Run pre_tool_use hooks before execution
         if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
             self.session_id,
             &self.name(),
             &serde_json::to_value(&args).unwrap_or_default(),
         ) {
+            tracing::warn!(
+                caller_session_id = %self.session_id,
+                "[generate-compaction-tool] call REJECTED by pre_tool_use hook: {reason}"
+            );
             return Err(ToolError::Blocked {
                 tool: Self::NAME,
                 message: reason,
             });
         }
+        tracing::debug!(caller_session_id = %self.session_id, "[generate-compaction-tool] pre_tool_use hook passed");
 
         // Validate session_id — an argument-validation failure, not an
         // execution failure (mirrors DeepSearch's empty-query validation).
         // On parse failure: fail fast with a usage hint; do NOT fall back to
         // the calling session (CMPCT-045 Rule [1]).
         let target = match args.session_id {
-            Some(raw) => {
-                match raw.trim().parse::<Uuid>() {
-                    Ok(uuid) => uuid,
-                    Err(_) => {
-                        let schema = self.definition(String::new()).await.parameters;
-                        return Err(ToolError::Validation {
-                            tool: Self::NAME,
-                            message: codelet_common::tool_usage::append_usage_to_message(
-                                Self::NAME,
-                                &schema,
-                                "session_id must be a UUID string (or omitted to compact the \
+            Some(raw) => match raw.trim().parse::<Uuid>() {
+                Ok(uuid) => uuid,
+                Err(_) => {
+                    let schema = self.definition(String::new()).await.parameters;
+                    return Err(ToolError::Validation {
+                        tool: Self::NAME,
+                        message: codelet_common::tool_usage::append_usage_to_message(
+                            Self::NAME,
+                            &schema,
+                            "session_id must be a UUID string (or omitted to compact the \
                                  calling session)",
-                            ),
-                        });
-                    }
+                        ),
+                    });
                 }
-            }
+            },
             None => self.session_id, // CMPCT-045 Rule [2]: omitted ⇒ calling session
         };
 
         // Dispatch to the registered handler (async — sub-agent makes LLM
         // API calls). The handler performs the pin handler-side and returns
         // the pinned DAG text (success or fallback).
-        execute_generate_compaction(self.session_id, target)
-            .await
-            .map_err(|e| ToolError::Execution {
-                tool: Self::NAME,
-                message: e,
-            })
+        tracing::info!(
+            caller_session_id = %self.session_id,
+            target_session_id = %target,
+            is_self_target = target == self.session_id,
+            "[generate-compaction-tool] dispatching to registered handler"
+        );
+        match execute_generate_compaction(self.session_id, target).await {
+            Ok(dag) => {
+                tracing::info!(
+                    caller_session_id = %self.session_id,
+                    target_session_id = %target,
+                    elapsed_ms = started.elapsed().as_millis(),
+                    dag_chars = dag.chars().count(),
+                    "[generate-compaction-tool] call EXIT ok"
+                );
+                Ok(dag)
+            }
+            Err(e) => {
+                tracing::error!(
+                    caller_session_id = %self.session_id,
+                    target_session_id = %target,
+                    elapsed_ms = started.elapsed().as_millis(),
+                    error = %e,
+                    "[generate-compaction-tool] call EXIT with error"
+                );
+                Err(ToolError::Execution {
+                    tool: Self::NAME,
+                    message: e,
+                })
+            }
+        }
     }
 }

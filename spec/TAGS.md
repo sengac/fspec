@@ -352,6 +352,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
 | `@clipboard` | Clipboard integration (OSC 52 escape-sequence clipboard writes) |
+| `@cmpct-049` | Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO) |
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
 | `@command` | CLI command implementation |
@@ -638,10 +639,13 @@ Tags tracking development status of features.
 | `@bug-178` | Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid) |
 | `@bug-179` | Bug fix work unit BUG-179 — mux keyboard-isolation gate swallows Event::Paste: bracketed paste and terminal file-drop-as-paste do nothing in the focused agent pane. Fix routes Event::Paste to the focused mux pane (forward_mux_event_to_focused_pane) and mirrors the post-Navigator sync_mux_focus_to_session in App::handle_paste |
 | `@bug-185` | Work unit BUG-185 — the failed tool-call tail must be stripped on ANY terminal API error (supersedes BUG-170 rule [0] which gated the strip on prompt-too-long only) |
+| `@bug-186` | Bug fix work unit BUG-186 — rpc002_session_persistence tests fail in a clean test env: model registry cache missing → create_session declines (PROV-101) → empty SessionId. Fix: seed the temp data dir with the shared prov101 model-cache fixture + dummy ANTHROPIC creds, and use a fixture model as the offline default. |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
 | `@cmpct-041` | Work unit identifier tag for CMPCT-041 — turn-start seed cache double-count root fix and pre_compaction_tokens basis unification across auto/manual writers in both twins |
+| `@cmpct-046` | Work unit CMPCT-046 — self-target deadlock fix (lock-free capture) + honest zero-basis content estimate + github-copilot provider-arm parity |
+| `@cmpct-047` | Work unit CMPCT-047 — unify Level-3 fallback DAG shape across 044/045/agent-loop watchdog through the shared compaction_dag primitives |
 | `@cont-002` | Work unit identifier tag for CONT-002 — auto-continue engine: done() tool and /continue toggle with nudge budget |
 | `@cont-005` | Work unit identifier tag for CONT-005 — done() immediate termination: ToolResult-arm early exit via DONE_ACCEPTANCE registry with shared FinishWithSummary teardown |
 | `@cont-006` | Work unit identifier tag for CONT-006 — /goal immediate termination: goal-mode early exit at the ToolResult arm with atomic goal teardown through the shared FinishWithSummary helper |
@@ -786,4 +790,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-16T07:47:06.909Z_
+_Last updated: 2026-09-18T04:51:33.346Z_

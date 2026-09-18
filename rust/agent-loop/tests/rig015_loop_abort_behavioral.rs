@@ -50,12 +50,8 @@ mod rig015 {
     /// so they never race on the global stores.
     fn shared_data_dir() -> &'static std::path::Path {
         static DIR: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
-        DIR.get_or_init(|| {
-            tempfile::tempdir()
-                .expect("shared data dir tempdir")
-                .keep()
-        })
-        .as_path()
+        DIR.get_or_init(|| tempfile::tempdir().expect("shared data dir tempdir").keep())
+            .as_path()
     }
 
     /// The looping phrase the synthetic model degenerates into.
@@ -64,10 +60,35 @@ mod rig015 {
     /// 30 words of normal (non-looping) prose before the loop onset.
     fn normal_words() -> Vec<String> {
         let words = [
-            "the", "architecture", "of", "the", "streaming", "loop", "detector", "relies", "on",
-            "word", "level", "tokenization", "with", "a", "bounded", "sliding", "window", "that",
-            "evaluates", "four", "distinct", "repetition", "signals", "in", "order", "of",
-            "specificity", "before", "escalating",
+            "the",
+            "architecture",
+            "of",
+            "the",
+            "streaming",
+            "loop",
+            "detector",
+            "relies",
+            "on",
+            "word",
+            "level",
+            "tokenization",
+            "with",
+            "a",
+            "bounded",
+            "sliding",
+            "window",
+            "that",
+            "evaluates",
+            "four",
+            "distinct",
+            "repetition",
+            "signals",
+            "in",
+            "order",
+            "of",
+            "specificity",
+            "before",
+            "escalating",
         ];
         words.iter().map(|w| w.to_string()).collect()
     }
@@ -151,9 +172,7 @@ mod rig015 {
         poll: &Arc<AtomicUsize>,
     ) -> usize {
         let _ = wait_until(
-            || {
-                poll.load(Ordering::Acquire) > 0 && session.is_interrupted.load(Ordering::Acquire)
-            },
+            || poll.load(Ordering::Acquire) > 0 && session.is_interrupted.load(Ordering::Acquire),
             Duration::from_secs(20),
         )
         .await;
@@ -223,17 +242,15 @@ mod rig015 {
         let session_id_str = session.id.to_string();
         let mut saw_done = false;
         let _ = wait_until(
-            || {
-                loop {
-                    match chunks_rx.try_recv() {
-                        Ok((sid, chunk)) => {
-                            if sid.value == session_id_str && matches!(chunk, StreamChunk::Done) {
-                                saw_done = true;
-                                return true;
-                            }
+            || loop {
+                match chunks_rx.try_recv() {
+                    Ok((sid, chunk)) => {
+                        if sid.value == session_id_str && matches!(chunk, StreamChunk::Done) {
+                            saw_done = true;
+                            return true;
                         }
-                        Err(_) => return saw_done,
                     }
+                    Err(_) => return saw_done,
                 }
             },
             Duration::from_secs(5),

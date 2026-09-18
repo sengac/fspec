@@ -23,12 +23,31 @@ impl AgentView {
             session_status,
             Some(SessionStatus::Running) | Some(SessionStatus::Compacting)
         );
+        let is_loading = matches!(session_status, Some(SessionStatus::Running));
+        // COMPACTING-DIAG: log the exact (status, display) decision that
+        // picks "Thinking..." vs "Compacting..." — only when it changes,
+        // so the log shows every flip of the indicator without per-frame spam.
+        let display_mode = if is_loading {
+            "thinking"
+        } else if is_busy {
+            "compacting"
+        } else {
+            "idle"
+        };
+        if self.last_compaction_diag_display != display_mode {
+            tracing::info!(
+                session_id = ?sid,
+                status = ?session_status,
+                display_mode,
+                "[compaction-status] TUI display decision: spinner shows {display_mode:?}"
+            );
+            self.last_compaction_diag_display = display_mode;
+        }
         if is_busy && self.spinner_started_at.is_none() {
             self.spinner_started_at = Some(Instant::now());
         } else if !is_busy {
             self.spinner_started_at = None;
         }
-        let is_loading = matches!(session_status, Some(SessionStatus::Running));
         self.animation_clock_ms = self.animation_clock_ms.saturating_add(16);
         let elapsed_ms = self
             .spinner_started_at

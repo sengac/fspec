@@ -29,6 +29,7 @@ pub mod dispatch_checkpoint_delete;
 pub mod dispatch_checkpoint_diff;
 pub mod dispatch_checkpoint_restore;
 pub mod dispatch_checkpoints;
+pub mod dispatch_compaction_complete; // CMPCT-049: CompactionComplete arm body (300-LoC ceiling)
 pub mod dispatch_compaction_hide;
 pub mod dispatch_create_session_dialog;
 pub mod dispatch_dialog_dismiss;

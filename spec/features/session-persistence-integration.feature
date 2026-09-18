@@ -1,3 +1,6 @@
+@session
+@session-management
+@BUG-186
 @RPC-422
 Feature: Session Persistence Integration
   """

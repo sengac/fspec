@@ -203,17 +203,56 @@ pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {
 /// Used by both `execute_compaction()` and the `inject_summary` handler
 /// after clearing and reconstructing the message list.
 pub fn recalculate_token_tracker(session: &mut Session) {
-    let total_tokens: u64 = session
-        .messages
-        .iter()
-        .map(|msg| {
-            let text = extract_message_text(msg);
-            count_tokens(&text) as u64
-        })
-        .sum();
+    let total_tokens = estimate_message_tokens(&session.messages);
 
     session.token_tracker.input_tokens = total_tokens;
     session.token_tracker.output_tokens = 0;
+}
+
+/// CMPCT-046: estimate the total context size (in tokens) of a message
+/// list from its content.
+///
+/// This is the pre-compaction basis fallback for providers that do not
+/// report usage (e.g. OpenAI streaming without `include_usage`), where
+/// `token_tracker.input_tokens` stays 0 across the whole session. It uses
+/// the SAME per-message `count_tokens` accounting as
+/// [`recalculate_token_tracker`] (which sets the tracker from this sum),
+/// so the estimated pre-compaction basis and the post-pin recalculated
+/// basis agree — the CMPCT-038 honest-ratio contract is preserved instead
+/// of reporting a 0% reduction for a real compaction.
+pub fn estimate_message_tokens(messages: &[Message]) -> u64 {
+    messages
+        .iter()
+        .map(|msg| count_tokens(&extract_message_text(msg)) as u64)
+        .sum()
+}
+
+/// CMPCT-046: the honest pre-compaction token basis.
+///
+/// Prefers the tracker's `input_tokens` when the provider reported usage
+/// (the normal case); when it is 0 — the provider did not report usage, so
+/// the tracker never saw a context total — falls back to the content
+/// estimate so a real compaction never reports `original_tokens = 0` (the
+/// live cross-session GenerateCompaction run exposed exactly this: 166
+/// messages compacted but `CompactionComplete` shipped `0 -> 4686`, a
+/// 0% ratio). A 0-basis with a non-empty message list is a diagnostic
+/// anomaly, so the fallback warns.
+pub fn pre_compaction_basis(tracker_input_tokens: u64, messages: &[Message]) -> u64 {
+    if tracker_input_tokens > 0 {
+        return tracker_input_tokens;
+    }
+    if messages.is_empty() {
+        return 0;
+    }
+    let estimated = estimate_message_tokens(messages);
+    if estimated > 0 {
+        warn!(
+            "pre_compaction_basis: tracker input_tokens is 0 (provider reported no usage); \
+             falling back to a content estimate of {estimated} tokens over {} messages",
+            messages.len()
+        );
+    }
+    estimated
 }
 
 /// Reset a session to only its system reminders, clearing all conversation.

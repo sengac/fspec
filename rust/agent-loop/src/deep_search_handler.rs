@@ -369,7 +369,8 @@ pub(crate) fn provider_uses_streaming_execution(provider_name: &str) -> bool {
 pub(crate) async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
 where
     S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
-    R: Clone + Unpin + rig::completion::GetTokenUsage, {
+    R: Clone + Unpin + rig::completion::GetTokenUsage,
+{
     use codelet_cli::interactive::{
         is_transient_network_error, network_retry_delay, MAX_NETWORK_RETRIES,
     };

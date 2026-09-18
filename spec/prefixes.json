@@ -434,6 +434,11 @@
       "prefix": "WT",
       "description": "Worktree session-isolation & merge lifecycle bugs (isolation code audit)",
       "createdAt": "2026-09-06T01:19:42.853Z"
+    },
+    "CLA": {
+      "prefix": "CLA",
+      "description": "Clippy / lint hygiene",
+      "createdAt": "2026-09-18T02:15:34.038Z"
     }
   }
 }

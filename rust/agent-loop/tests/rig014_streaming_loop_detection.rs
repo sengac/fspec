@@ -25,7 +25,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use codelet_agent_loop::stream_loop_detector::{
-    build_loop_abort_recovery_message, build_loop_abort_marker_note, LoopDetectorConfig,
+    build_loop_abort_marker_note, build_loop_abort_recovery_message, LoopDetectorConfig,
     LoopEscalationOutcome, LoopEscalationPolicy, LoopSignal, StreamLoopDetector,
 };
 
@@ -35,20 +35,46 @@ use codelet_agent_loop::stream_loop_detector::{
 // ===========================================================================
 
 const PROSE_WORDS: &[&str] = &[
-    "the", "model", "approach", "consider", "architecture", "function", "test",
-    "module", "stream", "token", "buffer", "window", "signal", "detect", "loop",
-    "phrase", "content", "provider", "delta", "chunk", "state", "history",
-    "pattern", "sequence", "repetition", "collapse", "diversity", "threshold",
-    "analysis", "implementation", "boundary", "condition", "variable", "output",
+    "the",
+    "model",
+    "approach",
+    "consider",
+    "architecture",
+    "function",
+    "test",
+    "module",
+    "stream",
+    "token",
+    "buffer",
+    "window",
+    "signal",
+    "detect",
+    "loop",
+    "phrase",
+    "content",
+    "provider",
+    "delta",
+    "chunk",
+    "state",
+    "history",
+    "pattern",
+    "sequence",
+    "repetition",
+    "collapse",
+    "diversity",
+    "threshold",
+    "analysis",
+    "implementation",
+    "boundary",
+    "condition",
+    "variable",
+    "output",
 ];
 
 struct Lcg(u64);
 impl Lcg {
     fn next(&mut self) -> u64 {
-        self.0 = self
-            .0
-            .wrapping_mul(6364136223)
-            .wrapping_add(1442695041);
+        self.0 = self.0.wrapping_mul(6364136223).wrapping_add(1442695041);
         self.0 >> 16
     }
 }
@@ -173,7 +199,11 @@ fn scenario_mild_oneoff_repetition_not_flagged() {
     let mut stream = normal_prose(40, 3);
 
     // @step And I feed the short phrase "please note carefully" exactly twice
-    let phrase = ["please".to_string(), "note".to_string(), "carefully".to_string()];
+    let phrase = [
+        "please".to_string(),
+        "note".to_string(),
+        "carefully".to_string(),
+    ];
     stream.extend(phrase.iter().cloned());
     stream.extend(phrase.iter().cloned());
 
@@ -277,9 +307,7 @@ fn scenario_legitimate_numbered_list_not_flagged() {
         stream.push(step.to_string());
         // 5 distinct content words per item (offset so items differ)
         for k in 0..5 {
-            stream.push(
-                PROSE_WORDS[(step * 5 + k) % PROSE_WORDS.len()].to_string(),
-            );
+            stream.push(PROSE_WORDS[(step * 5 + k) % PROSE_WORDS.len()].to_string());
         }
     }
 
@@ -473,10 +501,7 @@ fn scenario_second_distinct_signal_aborts() {
     assert!(matches!(first, LoopEscalationOutcome::Warn));
 
     // @step And the detector triggers with a diversity collapse signal after 10 seconds
-    let second = policy.on_trigger(
-        LoopSignal::LowDiversity { ratio: 0.1 },
-        10.0,
-    );
+    let second = policy.on_trigger(LoopSignal::LowDiversity { ratio: 0.1 }, 10.0);
 
     // @step Then the policy reports an abort
     assert!(
@@ -545,7 +570,9 @@ fn scenario_abort_truncates_and_marks() {
         "persisted content must end with the marker note"
     );
     assert!(
-        build_loop_abort_marker_note().to_lowercase().contains("repetitive"),
+        build_loop_abort_marker_note()
+            .to_lowercase()
+            .contains("repetitive"),
         "marker note must state the response was cut off due to repetitive output"
     );
 }
@@ -652,8 +679,7 @@ fn scenario_abort_cancels_provider_stream() {
     // @step And the turn completes without waiting for the remaining streamed tokens
     // @step And the next turn begins with the corrective note in context
     assert!(
-        bg.contains("build_loop_abort_recovery_message")
-            || bg.contains("loop_abort_recovery"),
+        bg.contains("build_loop_abort_recovery_message") || bg.contains("loop_abort_recovery"),
         "the next turn must begin with the loop-abort corrective note"
     );
 }

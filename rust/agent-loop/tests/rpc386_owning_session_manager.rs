@@ -42,12 +42,12 @@ use codelet_sessions::SessionManager;
 // `execute_agent_manager`/`execute_agent_manager_async` are only `pub` inside
 // the `agent_manager::handler` submodule (they are not re-exported at the crate
 // root the way `set_*`/`clear_*` are), so reach them via the full module path.
+use codelet_core::persistence::reset_stores_for_tests;
 use codelet_tools::agent_manager::handler::{execute_agent_manager, execute_agent_manager_async};
 use codelet_tools::{
     clear_all_agent_manager_handlers, set_agent_manager_async_handler, set_agent_manager_handler,
     AgentManagerAction, AgentManagerResult, AwaitOutcome, SessionIdParam,
 };
-use codelet_core::persistence::reset_stores_for_tests;
 use uuid::Uuid;
 
 /// Trimmed offline models.dev catalog (anthropic/openai/google), shared with
@@ -160,7 +160,12 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
     };
 
     // @step Then the subordinate appears in M.list_sessions()
-    let in_m = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let in_m = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -169,7 +174,12 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
     );
 
     // @step And the subordinate does not appear in SessionManager::instance().list_sessions()
-    let in_singleton = SessionManager::instance().list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let in_singleton = SessionManager::instance()
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -406,7 +416,12 @@ async fn spawner_can_list_get_status_and_close_on_owning_manager() -> Result<(),
         R::Closed { closed, .. } => assert!(closed, "close must succeed"),
         other => panic!("expected Closed, got: {other:?}"),
     }
-    let still_in_m = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let still_in_m = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -479,7 +494,12 @@ async fn napi_path_falls_back_to_singleton_when_no_owning_manager() -> Result<()
     };
 
     // @step Then the subordinate is created on SessionManager::instance()
-    let in_singleton = SessionManager::instance().list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let in_singleton = SessionManager::instance()
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(

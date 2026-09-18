@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::await_holding_lock
+)]
 //! Feature: spec/features/generate-compaction-tool.feature
 //!
 //! CMPCT-045: behavioral coverage for the GenerateCompaction tool's
@@ -16,14 +21,15 @@
 //! guard (env vars + data dir + tool-handler registries are
 //! process-global) mirroring the `serial_test` precedent.
 
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_core::compaction::{parse_dag_nodes, wrap_dag_content, ConversationTurn};
 use codelet_rpc_types::{SessionState, StreamChunk};
-use codelet_sessions::session_manager::SessionManager;
 use codelet_sessions::background_session::BackgroundSession;
+use codelet_sessions::session_manager::SessionManager;
 use codelet_tools::{
     clear_all_generate_compaction_handlers, has_generate_compaction_handler,
     set_generate_compaction_handler, GenerateCompactionArgs, GenerateCompactionHandler,
@@ -112,8 +118,7 @@ async fn fixture_sessions() -> (
         include_str!("fixtures/prov101_models.json"),
     )
     .expect("write models fixture");
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data dir");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data dir");
     codelet_core::persistence::reset_stores_for_tests();
 
     let manager = Arc::new(SessionManager::new());
@@ -165,17 +170,13 @@ async fn seed_turns(session: &BackgroundSession, n: usize) {
     let mut inner = session.inner.lock().await;
     for i in 0..n {
         inner.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(format!(
-                "user turn {i} do work"
-            ))),
+            content: OneOrMany::one(UserContent::text(format!("user turn {i} do work"))),
         });
         inner.messages.push(Message::Assistant {
             id: None,
-            content: OneOrMany::one(rig::message::AssistantContent::Text(
-                rig::message::Text {
-                    text: format!("assistant turn {i} did work"),
-                },
-            )),
+            content: OneOrMany::one(rig::message::AssistantContent::Text(rig::message::Text {
+                text: format!("assistant turn {i} did work"),
+            })),
         });
         inner.turns.push(ConversationTurn {
             user_message: format!("user turn {i}"),
@@ -279,10 +280,7 @@ async fn last_task_prompt(server: &MockServer) -> String {
             }
         })
         .unwrap_or_else(|| {
-            let paths: Vec<&str> = requests
-                .iter()
-                .map(|r| r.url.path())
-                .collect();
+            let paths: Vec<&str> = requests.iter().map(|r| r.url.path()).collect();
             panic!(
                 "no /v1/chat/completions request recorded (paths: {paths:?}) — \
                  the sub-agent's LLM call must have reached the mock"
@@ -395,9 +393,7 @@ fn generate_compaction_tool_wired_into_every_provider_tool_chain() {
         let gc_at = src
             .find("GenerateCompactionTool::new(session_id)")
             .unwrap_or_else(|| {
-                panic!(
-                    "CMPCT-045: {rel} must wire GenerateCompactionTool beside DeepSearchTool"
-                )
+                panic!("CMPCT-045: {rel} must wire GenerateCompactionTool beside DeepSearchTool")
             });
         assert!(
             gc_at > deep_at && (gc_at - deep_at) < 400,
@@ -504,7 +500,8 @@ async fn successful_dag_is_pinned_to_the_target_and_sub_agent_session_is_ephemer
         .map(|s| s.id.clone())
         .collect();
     assert_eq!(
-        ids.len(), 2,
+        ids.len(),
+        2,
         "the manager must hold exactly the two live sessions — no record for the \
          ephemeral sub-agent (ids: {ids:?})"
     );
@@ -560,7 +557,10 @@ async fn successful_dag_is_pinned_to_the_target_and_sub_agent_session_is_ephemer
     // @step Then the tool result string is the DAG text itself so the caller sees exactly what was pinned
     // @step And the tool returns Ok for both success and fallback outcomes, reserving Err for validation failures, missing handler, and unknown-target rejections
     // @step Given the compactor sub-agent returns a parseable DAG
-    assert_eq!(result, SUCCESS_DAG, "tool result must be the pinned DAG text");
+    assert_eq!(
+        result, SUCCESS_DAG,
+        "tool result must be the pinned DAG text"
+    );
 
     // @step And the target's compaction_in_progress flag is false again after the pin
     assert!(
@@ -714,8 +714,7 @@ async fn unknown_target_session_is_rejected_with_an_execution_error() {
     // @step And no sub-agent is spawned and no pinning occurs
     let caller_msgs = caller.inner.lock().await.messages.len();
     assert_eq!(
-        caller_msgs,
-        pre_call_msgs,
+        caller_msgs, pre_call_msgs,
         "no session may be modified on rejection (was {pre_call_msgs}, got {caller_msgs})"
     );
     assert!(
@@ -966,12 +965,13 @@ async fn existing_dag_is_captured_before_any_clear_and_drives_incremental_mode()
         pinned.contains("Work arc"),
         "the new DAG must replace the context"
     );
-    assert_eq!(result, SUCCESS_DAG, "the tool result must be the pinned DAG");
+    assert_eq!(
+        result, SUCCESS_DAG,
+        "the tool result must be the pinned DAG"
+    );
 
     let original = match last_compaction_event(&target) {
-        StreamChunk::CompactionComplete { compaction_result } => {
-            compaction_result.original_tokens
-        }
+        StreamChunk::CompactionComplete { compaction_result } => compaction_result.original_tokens,
         other => panic!("expected CompactionComplete, got {other:?}"),
     };
     assert_eq!(
@@ -1110,7 +1110,6 @@ fn sub_agent_dag_validation_uses_parse_dag_nodes() {
     );
 }
 
-
 // ============================================================================
 // Scenario: GenerateCompaction implements the rig tool trait
 // Scenario: Invalid session_id returns a validation error
@@ -1230,7 +1229,10 @@ async fn invalid_session_id_returns_a_validation_error() {
     );
 
     // @step And no sub-agent is spawned and no session is modified
-    assert!(!called.load(Ordering::SeqCst), "nothing may be dispatched on validation failure");
+    assert!(
+        !called.load(Ordering::SeqCst),
+        "nothing may be dispatched on validation failure"
+    );
     assert!(seen.lock().expect("seen targets lock").is_empty());
 
     clear_all_generate_compaction_handlers();
@@ -1256,7 +1258,10 @@ async fn omitted_session_id_targets_the_calling_session() {
     assert!(result.is_ok(), "call must succeed: {:?}", result.err());
     let targets = seen.lock().expect("seen targets lock");
     assert_eq!(targets.len(), 1, "the handler must be invoked exactly once");
-    assert_eq!(targets[0], caller, "the omitted target must resolve to the calling session");
+    assert_eq!(
+        targets[0], caller,
+        "the omitted target must resolve to the calling session"
+    );
     assert!(called.load(Ordering::SeqCst));
 
     clear_all_generate_compaction_handlers();
@@ -1308,9 +1313,7 @@ async fn tool_result_is_the_pinned_dag_text() {
     let tool = GenerateCompactionTool::new(caller);
 
     // @step When GenerateCompaction completes successfully
-    let result = tool
-        .call(GenerateCompactionArgs { session_id: None })
-        .await;
+    let result = tool.call(GenerateCompactionArgs { session_id: None }).await;
 
     // @step Then the tool result string is the DAG text itself so the caller sees exactly what was pinned
     assert_eq!(result.expect("success path returns Ok"), dag);
@@ -1320,7 +1323,6 @@ async fn tool_result_is_the_pinned_dag_text() {
     //  the fallback note is produced by the agent-loop handler side)
     clear_all_generate_compaction_handlers();
 }
-
 
 // ============================================================================
 // Scenario: Compaction prompt is FRESH when the target has no DAG
@@ -1338,8 +1340,7 @@ fn fresh_compaction_prompt_names_the_target_and_forbids_inject_summary() {
     let target = Uuid::new_v4();
 
     // @step When the compactor sub-agent's task prompt is built
-    let prompt =
-        codelet_cli::compaction_dag::build_generate_compaction_prompt(target, None);
+    let prompt = codelet_cli::compaction_dag::build_generate_compaction_prompt(target, None);
 
     // @step Then the FRESH compaction instruction is used
     assert!(
@@ -1437,12 +1438,21 @@ fn compactor_sub_agent_has_only_the_read_only_tool_surface() {
     // @step When its tool list is built
     // @step Then the sub-agent has exactly the seven read-only tools: Read, Grep, AstGrep, Glob, Ls, Bash, and SessionSearch
     assert_eq!(
-        codelet_tools::SUB_AGENT_TOOL_COUNT, 7,
+        codelet_tools::SUB_AGENT_TOOL_COUNT,
+        7,
         "the compactor sub-agent must keep exactly the 7 read-only DeepSearch tools"
     );
     assert_eq!(
         codelet_tools::SUB_AGENT_TOOL_NAMES,
-        ["Read", "Grep", "AstGrep", "Glob", "Ls", "Bash", "SessionSearch"],
+        [
+            "Read",
+            "Grep",
+            "AstGrep",
+            "Glob",
+            "Ls",
+            "Bash",
+            "SessionSearch"
+        ],
         "the compactor sub-agent's tool surface must be exactly the 7          read-only tools"
     );
 
@@ -1473,8 +1483,7 @@ fn compactor_sub_agent_has_only_the_read_only_tool_surface() {
 #[test]
 fn generate_compaction_handler_registration_lifecycle_mirrors_deep_search() {
     // @step Given a background session is created in the agent loop
-    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/agent_loop.rs");
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/agent_loop.rs");
     let src = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
 
@@ -1527,5 +1536,402 @@ fn generate_compaction_handler_registration_lifecycle_mirrors_deep_search() {
     assert!(
         cleanup_at > deep_search_cleanup_at && (cleanup_at - deep_search_cleanup_at) < 500,
         "CMPCT-045: the GenerateCompaction cleanup (char {cleanup_at}) must sit in          the end-of-turn cleanup block, beside the DeepSearch cleanup (char {deep_search_cleanup_at})"
+    );
+}
+
+// ============================================================================
+// Scenario: Self-target capture never awaits the caller's inner lock
+// (CMPCT-046 deadlock guard — the crucial regression: the OLD code
+// `target_bg.inner.lock().await` here deadlocks when the lock is held for
+// the whole turn, so this test would HANG on pre-fix code. The fix
+// degrades the capture to lock-free signals.)
+// ============================================================================
+
+#[tokio::test]
+async fn self_target_capture_never_awaits_the_callers_inner_lock() {
+    // @step Given the agent calls GenerateCompaction with no arguments on its own session A mid-turn
+    let _guard = GLOBAL_GUARD.lock().expect("test guard");
+    let (server, _data_dir, project, manager, caller, _target) =
+        mock_llm_and_fixture_serving(SUCCESS_DAG).await;
+    seed_turns(&caller, 4).await;
+    // Seed a pre-existing wrapped DAG into the caller's context so the
+    // capture would find it if it could read inner (the lock-free FRESH
+    // degradation must NOT see it).
+    seed_existing_dag(&caller, "Pre-seeded architecture DAG", 0).await;
+
+    let tool = register_and_build_tool(&caller, &project, &manager);
+
+    // @step And session A's inner lock is held by the calling agent loop for the whole turn
+    let _inner_held = caller
+        .inner
+        .try_lock()
+        .expect("test can hold the caller's inner lock (simulating the agent loop's turn lock)");
+
+    // @step When the handler captures the existing DAG and the pre-compaction token basis
+    // The tool call must COMPLETE — on pre-fix code it awaits the caller's
+    // inner lock forever (self-deadlock) and this test hangs.
+    let result = tokio::time::timeout(
+        Duration::from_secs(60),
+        tool.call(GenerateCompactionArgs { session_id: None }),
+    )
+    .await
+    .expect("self-target compaction must NOT self-deadlock (lock held for the whole turn)")
+    .expect("calling-session compaction must return Ok");
+    drop(_inner_held);
+
+    // @step Then the capture does not await session A's inner lock
+    // (proof: the call completed while the lock was held for the whole run —
+    // a deadlock would have timed out above)
+    assert_eq!(
+        result, SUCCESS_DAG,
+        "tool result must be the stashed DAG text"
+    );
+
+    // @step And the capture degrades to the lock-free cached token basis, a FRESH rebuild, and the completed-turn count
+    // FRESH rebuild: the sub-agent's task prompt must NOT embed the
+    // pre-seeded existing DAG (the lock-free capture could not read it).
+    let task = last_task_prompt(&server).await;
+    assert!(
+        !task.contains("Pre-seeded architecture DAG"),
+        "the lock-free self-target capture must degrade to FRESH — the \
+         pre-seeded existing DAG must NOT be embedded in the prompt, got: {task}"
+    );
+    assert!(
+        task.contains("Build a hierarchical summary DAG"),
+        "the FRESH compaction instruction must be selected (no readable DAG state), got: {task}"
+    );
+
+    // @step And the sub-agent still runs and the DAG is stashed for the end-of-turn pin
+    let pending = caller
+        .pending_dag_content
+        .lock()
+        .expect("pending_dag lock")
+        .clone()
+        .expect("the wrapped DAG must be stashed in pending_dag_content");
+    assert!(
+        pending.contains("<!-- type:compaction-dag -->"),
+        "the stashed DAG must be wrapped in the compaction-dag wrapper, got: {pending}"
+    );
+    assert!(pending.contains("Work arc"));
+
+    drop(_guard);
+    let _ = server;
+}
+
+// ============================================================================
+// Scenario: A zero tracker basis falls back to a content estimate
+// (CMPCT-046b honest zero-basis: the provider did not report usage, so the
+// tracker's input_tokens is 0 for the whole session — the pre-compaction
+// basis must be the per-message content estimate, never 0)
+// ============================================================================
+
+/// Seed `n` compactable conversation turns but leave the token tracker at 0
+/// (simulating a provider that never reported usage — e.g. OpenAI
+/// streaming without `include_usage`).
+async fn seed_turns_no_usage(session: &BackgroundSession, n: usize) {
+    let mut inner = session.inner.lock().await;
+    for i in 0..n {
+        inner.messages.push(Message::User {
+            content: OneOrMany::one(UserContent::text(format!("user turn {i} do work"))),
+        });
+        inner.messages.push(Message::Assistant {
+            id: None,
+            content: OneOrMany::one(rig::message::AssistantContent::Text(rig::message::Text {
+                text: format!("assistant turn {i} did work"),
+            })),
+        });
+        inner.turns.push(ConversationTurn {
+            user_message: format!("user turn {i}"),
+            tool_calls: vec![],
+            tool_results: vec![],
+            assistant_response: format!("assistant turn {i}"),
+            tokens: 500,
+            timestamp: std::time::SystemTime::now(),
+            previous_error: None,
+        });
+    }
+    // Tracker deliberately left at 0 — the provider reported no usage.
+    assert_eq!(
+        inner.token_tracker.input_tokens, 0,
+        "the fixture must leave the tracker at 0 (provider reported no usage)"
+    );
+}
+
+#[tokio::test]
+async fn a_zero_tracker_basis_falls_back_to_a_content_estimate() {
+    // @step Given a live target session whose token tracker reads 0 tokens because the provider did not report usage
+    let _guard = GLOBAL_GUARD.lock().expect("test guard");
+    let (server, _data_dir, project, manager, caller, target) =
+        mock_llm_and_fixture_serving(SUCCESS_DAG).await;
+    seed_turns_no_usage(&target, 10).await;
+    let tracker = target.inner.lock().await.token_tracker.input_tokens;
+    assert_eq!(tracker, 0, "precondition: the target's tracker must read 0");
+
+    let tool = register_and_build_tool(&caller, &project, &manager);
+
+    // @step And the target has compactable conversation messages
+    let msg_count = target.inner.lock().await.messages.len();
+    assert!(
+        msg_count >= 20,
+        "the target must hold compactable messages (got {msg_count})"
+    );
+
+    // @step When GenerateCompaction completes and pins a DAG to the target
+    tool.call(GenerateCompactionArgs {
+        session_id: Some(target.id.to_string()),
+    })
+    .await
+    .expect("zero-basis compaction must still pin — Ok");
+
+    // @step Then the pre-compaction token basis is a content estimate greater than 0
+    // The shared primitive behind the fallback (CMPCT-046b) must agree with
+    // the event: estimating from the pre-pin message list yields a > 0
+    // basis on the same count_tokens accounting.
+    {
+        let msgs = target.inner.lock().await.messages.clone();
+        let est = codelet_cli::interactive_helpers::estimate_message_tokens(&msgs);
+        assert!(
+            est > 0,
+            "the content estimate must be > 0 for compactable messages"
+        );
+        let basis = codelet_cli::interactive_helpers::pre_compaction_basis(0, &msgs);
+        assert_eq!(
+            basis, est,
+            "pre_compaction_basis(0, msgs) must be the content estimate"
+        );
+        let basis_tracker = codelet_cli::interactive_helpers::pre_compaction_basis(500, &msgs);
+        assert_eq!(
+            basis_tracker, 500,
+            "pre_compaction_basis must prefer the tracker when it reported usage"
+        );
+    }
+    let original = match last_compaction_event(&target) {
+        StreamChunk::CompactionComplete { compaction_result } => compaction_result.original_tokens,
+        other => panic!("expected CompactionComplete, got {other:?}"),
+    };
+    assert!(
+        original > 0,
+        "the pre-compaction basis must be the content estimate (> 0), not the dead 0 tracker value"
+    );
+
+    // @step And the CompactionComplete event's original_tokens is never 0
+    assert!(
+        original > 0,
+        "a 0 original_tokens must never reach CompactionComplete for a target with compactable messages"
+    );
+
+    drop(_guard);
+    let _ = server;
+}
+
+// ============================================================================
+// Scenario: Stash-lock failure restores the calling session's status
+// (CMPCT-048: the pending_dag_content lock is poisoned by a thread that
+// panicked while holding it — the handler must restore the pre-compaction
+// status instead of leaving the session stuck in Compacting with the flag
+// already cleared)
+// ============================================================================
+
+#[tokio::test]
+async fn stash_lock_failure_restores_the_calling_sessions_status() {
+    // @step Given the agent calls GenerateCompaction with no arguments on its own session A mid-turn
+    let _guard = GLOBAL_GUARD.lock().expect("test guard");
+    let (server, _data_dir, project, manager, caller, _target) =
+        mock_llm_and_fixture_serving(SUCCESS_DAG).await;
+    seed_turns(&caller, 4).await;
+
+    let tool = register_and_build_tool(&caller, &project, &manager);
+    // The pre-compaction status of a mid-turn session is Running.
+    caller.set_status(codelet_rpc_types::SessionStatus::Running);
+    let pre_status = caller.get_status();
+
+    // @step And the sub-agent returns a parseable DAG
+    // (the wiremock endpoint serves SUCCESS_DAG — the sub-agent succeeds)
+
+    // @step When stashing the DAG into session A's pending_dag_content fails to acquire the lock
+    // Poison the std Mutex: a thread locks it and panics while holding the
+    // guard → the mutex is permanently poisoned → every later .lock()
+    // returns Err (the same shape the handler's `if let Ok(mut guard) =`
+    // branch handles).
+    let poison_session = caller.clone();
+    // The JoinError IS the expected panic — do NOT .expect() it here:
+    // an expect-panic on this thread would poison the process-global
+    // GLOBAL_GUARD (held for the whole test) and cascade into every other
+    // test in the binary.
+    let _poison_result = std::thread::spawn(move || {
+        // Hold the lock (the guard stays alive until this thread panics and
+        // unwinds) → the mutex is permanently poisoned.
+        let _held = poison_session
+            .pending_dag_content
+            .lock()
+            .expect("poison thread: lock");
+        panic!("poison the pending_dag_content lock (CMPCT-048 test)");
+    })
+    .join();
+
+    let err = tool
+        .call(GenerateCompactionArgs { session_id: None })
+        .await
+        .expect_err("a poisoned stash lock must be an execution error");
+
+    // @step Then session A's status is restored to Running instead of staying Compacting
+    assert_eq!(
+        caller.get_status(),
+        pre_status,
+        "the status must be restored to its pre-compaction value ({pre_status:?}) — never left stuck in Compacting"
+    );
+    assert_ne!(
+        caller.get_status(),
+        codelet_rpc_types::SessionStatus::Compacting,
+        "the session must NOT be stuck in Compacting"
+    );
+
+    // @step And the failure is logged at ERROR level naming the target session
+    // Source-shape proof: the tracing macro immediately preceding the
+    // stash-failure marker must be `tracing::error!` (not debug/info/warn)
+    // and must name the target session.
+    let handler_src = std::fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/generate_compaction_handler.rs"),
+    )
+    .expect("read handler source");
+    let err_marker = handler_src
+        .find("[generate-compaction] failed to acquire pending_dag_content lock")
+        .expect("the stash-failure log marker must exist");
+    let err_window = &handler_src[err_marker.saturating_sub(400)..err_marker];
+    let last_macro = err_window
+        .rfind("tracing::error!(")
+        .map(|p| (p, "error"))
+        .or_else(|| err_window.rfind("tracing::warn!(").map(|p| (p, "warn")))
+        .or_else(|| err_window.rfind("tracing::info!(").map(|p| (p, "info")))
+        .or_else(|| err_window.rfind("tracing::debug!(").map(|p| (p, "debug")))
+        .expect("a tracing macro must precede the stash-failure log");
+    assert_eq!(
+        last_macro.1, "error",
+        "CMPCT-048: the stash-failure log must be logged at ERROR level (got {last_macro:?})"
+    );
+    assert!(
+        err_window.contains("target_session_id = %target_session_id"),
+        "CMPCT-048: the stash-failure log must name the target session"
+    );
+    match err {
+        ToolError::Execution { tool: t, message } => {
+            assert_eq!(t, "GenerateCompaction");
+            assert!(
+                message.contains("failed to acquire pending_dag_content lock"),
+                "the execution error must name the stash-lock failure, got: {message}"
+            );
+        }
+        other => panic!("expected ToolError::Execution, got {other:?}"),
+    }
+
+    // @step And the compaction_in_progress flag is cleared
+    assert!(
+        !caller.compaction_in_progress.load(Ordering::SeqCst),
+        "the compaction flag must be cleared on stash failure"
+    );
+    assert!(
+        caller.pending_dag_content.lock().is_err(),
+        "the poisoned lock must remain poisoned (the DAG is lost — nothing stashed)"
+    );
+
+    drop(_guard);
+    let _ = server;
+}
+
+// ============================================================================
+// Scenario: The 045 fallback builder delegates to the shared compaction_dag primitive
+// (CMPCT-047 source-shape: the handler must route through
+// build_recovered_or_generic_dag and must NOT format its own generic
+// dag-node template inline)
+// ============================================================================
+
+#[test]
+fn the_045_fallback_builder_delegates_to_the_shared_compaction_dag_primitive() {
+    // @step Given the compactor sub-agent times out without emitting any dag-node block
+    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let handler_src = std::fs::read_to_string(manifest.join("src/generate_compaction_handler.rs"))
+        .unwrap_or_else(|e| panic!("failed to read generate_compaction_handler.rs: {e}"));
+
+    // @step When the handler assembles the fallback DAG
+    // @step Then it is built by codelet_cli::compaction_dag::build_recovered_or_generic_dag with the label "Auto-recovered: compaction timeout" and the body "Session was auto-compacted due to a compaction-sub-agent timeout."
+    // Anchor at the build_fallback_dag fn itself and check the delegation +
+    // its label/body arguments live in the fn body (not a doc comment).
+    let fn_at = handler_src
+        .find("fn build_fallback_dag(")
+        .expect("CMPCT-047: the handler must keep its build_fallback_dag builder");
+    let body = &handler_src[fn_at..fn_at + 800];
+    let delegate_at = body
+        .find("codelet_cli::compaction_dag::build_recovered_or_generic_dag")
+        .expect("CMPCT-047: build_fallback_dag must delegate to the shared build_recovered_or_generic_dag");
+    let label_at = body
+        .find("\"Auto-recovered: compaction timeout\"")
+        .expect("CMPCT-047: the delegation must use the 045 label");
+    let body_at = body
+        .find("Session was auto-compacted due to a compaction-sub-agent timeout.")
+        .expect("CMPCT-047: the delegation must use the 045 body");
+    assert!(
+        label_at > delegate_at,
+        "CMPCT-047: the label must be an argument AFTER the shared delegation call"
+    );
+    assert!(
+        body_at > delegate_at,
+        "CMPCT-047: the body must be an argument AFTER the shared delegation call"
+    );
+
+    // @step And the 045 handler does not format its own generic dag-node template inline
+    assert!(
+        !handler_src.contains("r#\"<dag-node"),
+        "CMPCT-047: the 045 handler must NOT format its own <dag-node> template inline"
+    );
+}
+
+// ============================================================================
+// Scenario: Compactor sub-agent provider arms match the DeepSearch clone
+// (CMPCT-046c source-shape: the compactor's built-in provider match must
+// support the same arms as the DeepSearch sub-agent's match — including
+// the github-copilot/copilot pending-builder arm — instead of falling
+// through to "Unsupported provider")
+// ============================================================================
+
+#[test]
+fn compactor_sub_agent_provider_arms_match_the_deep_search_clone() {
+    // @step Given the compactor sub-agent's built-in provider match exists
+    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let compactor = std::fs::read_to_string(manifest.join("src/generate_compaction_handler.rs"))
+        .unwrap_or_else(|e| panic!("failed to read generate_compaction_handler.rs: {e}"));
+    let deep_search = std::fs::read_to_string(manifest.join("src/deep_search_handler.rs"))
+        .unwrap_or_else(|e| panic!("failed to read deep_search_handler.rs: {e}"));
+
+    // @step When it is compared with the DeepSearch sub-agent's provider match
+    let arms = [
+        "\"claude\" =>",
+        "\"openai\" =>",
+        "\"gemini\" =>",
+        "\"codex\" =>",
+        "\"zai\" =>",
+        "\"github-copilot\" | \"copilot\" =>",
+    ];
+    for arm in arms {
+        assert!(
+            deep_search.contains(arm),
+            "the DeepSearch match must have arm {arm} (reference shape)"
+        );
+        assert!(
+            compactor.contains(arm),
+            "CMPCT-046c: the compactor match must have arm {arm}"
+        );
+    }
+
+    // @step Then it supports the same arms: claude, openai, gemini, codex, zai, and github-copilot/copilot
+    // (the loop above asserts each arm in both matches)
+
+    // @step And the copilot arm returns the same distinct pending-builder error shape as DeepSearch instead of falling through to "Unsupported provider"
+    assert!(
+        compactor.contains("github-copilot compactor sub-agent builder pending"),
+        "CMPCT-046c: the copilot arm must return its own distinct pending-builder error"
+    );
+    assert!(
+        compactor.contains("Supported: claude, openai, gemini, codex, zai, github-copilot"),
+        "CMPCT-046c: the 'Unsupported provider' fallthrough must name github-copilot as supported"
     );
 }

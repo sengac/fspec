@@ -1481,24 +1481,357 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Self-target capture never awaits the caller's inner lock",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "1543-1619",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                590,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608,
+                609,
+                610,
+                611,
+                612,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629,
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A zero tracker basis falls back to a content estimate",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "1622-1725",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive_helpers.rs",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stash-lock failure restores the calling session's status",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "1728-1839",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675,
+                676,
+                677,
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730,
+                731,
+                732,
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754,
+                755,
+                756,
+                757,
+                758,
+                759,
+                760
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The 045 fallback builder delegates to the shared compaction_dag primitive",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "1842-1886",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compactor sub-agent provider arms match the DeepSearch clone",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
+          "lines": "1889-1937",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 21,
-    "coveredScenarios": 21,
+    "totalScenarios": 26,
+    "coveredScenarios": 26,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs",
-      "rust/agent-loop/src/generate_compaction_handler.rs",
-      "rust/cli/src/compaction_dag.rs"
+      "rust/agent-loop/tests/cmpct045_generate_compaction_behavioral.rs"
     ],
     "implFiles": [
       "rust/tools/src/generate_compaction/mod.rs",
       "rust/agent-loop/src/generate_compaction_handler.rs",
       "rust/cli/src/compaction_dag.rs",
       "rust/providers/src/claude.rs",
-      "rust/agent-loop/src/agent_loop.rs"
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/cli/src/interactive_helpers.rs"
     ],
-    "totalLinesCovered": 4020
+    "totalLinesCovered": 3224
   }
 }

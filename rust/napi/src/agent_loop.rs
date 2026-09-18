@@ -719,9 +719,11 @@ pub(crate) async fn agent_loop(
             // transitions into the chunk stream.
             let session_for_exec_stdin = session.clone();
             let exec_stdin_callback: codelet_tools::unified_exec::ExecStdinRequestCallback =
-                std::sync::Arc::new(move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
-                    session_for_exec_stdin.set_exec_stdin_request(request);
-                });
+                std::sync::Arc::new(
+                    move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
+                        session_for_exec_stdin.set_exec_stdin_request(request);
+                    },
+                );
             codelet_tools::unified_exec::set_exec_stdin_request_callback(
                 session.id,
                 Some(exec_stdin_callback),
@@ -1248,6 +1250,21 @@ pub(crate) async fn agent_loop(
             // recalculated by the apply, so compacted_tokens reflects the real
             // post-injection context (reminders + summary), not the summary alone.
             let pre_compaction_tokens = session.pre_compaction_tokens.load(Ordering::Acquire);
+            // CMPCT-046b (twin parity with agent-loop): honest zero-basis
+            // guard — estimate the pre-compaction basis from the PRE-APPLY
+            // message list when the provider reported no usage (tracker
+            // and cached basis both 0), before apply clears the messages.
+            let has_pending_dag = session
+                .pending_dag_content
+                .lock()
+                .map(|guard| guard.is_some())
+                .unwrap_or(false);
+            let pre_compaction_tokens = if pre_compaction_tokens == 0 && has_pending_dag {
+                codelet_cli::interactive_helpers::pre_compaction_basis(0, &inner_session.messages)
+                    as u32
+            } else {
+                pre_compaction_tokens
+            };
             if let Some(dag_nodes) = crate::inject_summary_handler::apply_pending_dag_and_emit(
                 &mut inner_session,
                 &session.pending_dag_content,
@@ -1426,10 +1443,7 @@ Use SessionSearch to recover context.
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
-            codelet_tools::unified_exec::set_exec_stdin_request_callback(
-                session.id,
-                None,
-            ); // TOOL-022 P2: Cleanup exec-stdin callback
+            codelet_tools::unified_exec::set_exec_stdin_request_callback(session.id, None); // TOOL-022 P2: Cleanup exec-stdin callback
             codelet_tools::set_bridge_handler(session.id, None);
             codelet_tools::remove_bridge_session_context(session.id);
 
@@ -1784,8 +1798,8 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             // the shared guarded helper and marks the wire chunk with
             // goalCleared so the TUI drops its 🎯 cache.
             StreamEvent::ContinueState(cs) => {
-                let goal_cleared = cs.reason
-                    == codelet_cli::interactive::ContinueStateReason::GoalSatisfied;
+                let goal_cleared =
+                    cs.reason == codelet_cli::interactive::ContinueStateReason::GoalSatisfied;
                 if goal_cleared {
                     self.session.clear_goal_state_if_unchanged_since_sync();
                 }

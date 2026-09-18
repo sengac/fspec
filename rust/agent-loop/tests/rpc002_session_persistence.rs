@@ -18,9 +18,7 @@ use std::sync::Arc;
 use codelet_agent_loop::persist::{
     persist_assistant_message_internal, persist_token_state, persist_user_message,
 };
-use codelet_core::persistence::{
-    load_session, reset_stores_for_tests, AssistantContent,
-};
+use codelet_core::persistence::{load_session, reset_stores_for_tests, AssistantContent};
 use codelet_core::SessionManagerHandle;
 use codelet_rpc_types::SessionId;
 use codelet_sessions::SessionManager;
@@ -33,11 +31,32 @@ static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(()
 
 fn setup_data_dir() -> TempDir {
     let tmp = tempfile::tempdir().expect("create temp data dir");
+    // BUG-186: seed the offline models.dev cache so
+    // resolve_provider_manager → ModelRegistry::new → ModelCache::get()
+    // stays fully offline in the fresh temp data dir (the cmpct041 /
+    // rpc386 fixture pattern) — without it the registry fetch fails, the
+    // create_session Err is swallowed into an empty SessionId, and the
+    // Uuid::parse_str("") below panics. Dummy creds keep
+    // ProviderCredentials::detect() passing offline too.
+    std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
+    let cache_dir = tmp.path().join("cache");
+    std::fs::create_dir_all(&cache_dir).expect("create cache dir");
+    std::fs::write(
+        cache_dir.join("models.json"),
+        include_str!("fixtures/prov101_models.json"),
+    )
+    .expect("write models fixture");
     codelet_common::set_data_directory(tmp.path().to_path_buf())
         .expect("set_data_directory must succeed");
     reset_stores_for_tests();
     tmp
 }
+
+// BUG-186: the fixture cache (fixtures/prov101_models.json) knows
+// claude-opus-4-5 under anthropic — the offline-acceptable default model
+// for the create_session(None) path (claude-sonnet-4 is not in the
+// fixture, so registry-backed resolution would still decline offline).
+const OFFLINE_DEFAULT_MODEL: &str = "anthropic/claude-opus-4-5";
 
 // ============================================================================
 // Scenario: Full round-trip — write messages, reset stores, resume, verify
@@ -51,7 +70,7 @@ async fn full_round_trip_persist_and_restore_messages() {
 
     // @step Given a SessionManager with a session that has persisted messages
     let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
     let handle: &dyn SessionManagerHandle = &*manager;
 
     // Create a session
@@ -82,17 +101,29 @@ async fn full_round_trip_persist_and_restore_messages() {
 
     // Verify manifest has 4 message references
     let manifest = load_session(session_uuid).expect("load manifest");
-    assert_eq!(manifest.messages.len(), 4, "manifest should have 4 message refs");
+    assert_eq!(
+        manifest.messages.len(),
+        4,
+        "manifest should have 4 message refs"
+    );
 
     // @step When I reset the stores (simulating process restart)
     reset_stores_for_tests();
 
     // @step And I resume the session
     let result = handle.resume_session(&sid);
-    assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
+    assert!(
+        result.is_ok(),
+        "resume_session should succeed: {:?}",
+        result
+    );
 
     // @step Then the session is in memory with restored messages
-    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = manager.list_sessions(
+        &std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    );
     assert!(
         sessions.iter().any(|s| s.id == sid.value),
         "session should be in memory after resume"
@@ -100,7 +131,11 @@ async fn full_round_trip_persist_and_restore_messages() {
 
     // @step And the manifest still has all 4 message references
     let manifest = load_session(session_uuid).expect("load manifest after resume");
-    assert_eq!(manifest.messages.len(), 4, "manifest should still have 4 message refs");
+    assert_eq!(
+        manifest.messages.len(),
+        4,
+        "manifest should still have 4 message refs"
+    );
 }
 
 // ============================================================================
@@ -115,7 +150,7 @@ async fn resume_restores_token_state() {
 
     // @step Given a SessionManager with a session that has token state
     let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
     let handle: &dyn SessionManagerHandle = &*manager;
 
     let sid = handle.create_session(None);
@@ -165,7 +200,7 @@ async fn resume_preserves_message_ordering() {
 
     // @step Given a session with multiple messages in specific order
     let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
     let handle: &dyn SessionManagerHandle = &*manager;
 
     let sid = handle.create_session(None);
@@ -196,7 +231,11 @@ async fn resume_preserves_message_ordering() {
 
     // Verify manifest has 5 message references
     let manifest = load_session(session_uuid).expect("load manifest");
-    assert_eq!(manifest.messages.len(), 5, "manifest should have 5 message refs");
+    assert_eq!(
+        manifest.messages.len(),
+        5,
+        "manifest should have 5 message refs"
+    );
 
     // @step When I reset the stores and resume
     reset_stores_for_tests();
@@ -205,7 +244,11 @@ async fn resume_preserves_message_ordering() {
 
     // @step Then the manifest still has all 5 message references in order
     let manifest = load_session(session_uuid).expect("load manifest after resume");
-    assert_eq!(manifest.messages.len(), 5, "manifest should still have 5 message refs");
+    assert_eq!(
+        manifest.messages.len(),
+        5,
+        "manifest should still have 5 message refs"
+    );
 }
 
 // ============================================================================
@@ -220,7 +263,7 @@ async fn resume_fails_for_non_existent_session() {
 
     // @step Given a SessionManager with no sessions
     let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
     let handle: &dyn SessionManagerHandle = &*manager;
 
     // @step When I try to resume a session that doesn't exist
@@ -228,7 +271,10 @@ async fn resume_fails_for_non_existent_session() {
     let result = handle.resume_session(&fake_sid);
 
     // @step Then it returns an error
-    assert!(result.is_err(), "resume_session should fail for non-existent session");
+    assert!(
+        result.is_err(),
+        "resume_session should fail for non-existent session"
+    );
 }
 
 // ============================================================================
@@ -243,7 +289,7 @@ async fn multiple_sessions_persist_independently() {
 
     // @step Given a SessionManager with two sessions
     let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
     let handle: &dyn SessionManagerHandle = &*manager;
 
     let sid1 = handle.create_session(None);
@@ -258,22 +304,48 @@ async fn multiple_sessions_persist_independently() {
     // Verify each manifest has its own messages
     let manifest1 = load_session(uuid1).expect("load manifest 1");
     let manifest2 = load_session(uuid2).expect("load manifest 2");
-    assert_eq!(manifest1.messages.len(), 1, "session 1 should have 1 message");
-    assert_eq!(manifest2.messages.len(), 1, "session 2 should have 1 message");
+    assert_eq!(
+        manifest1.messages.len(),
+        1,
+        "session 1 should have 1 message"
+    );
+    assert_eq!(
+        manifest2.messages.len(),
+        1,
+        "session 2 should have 1 message"
+    );
 
     // @step When I reset the stores and resume both sessions
     reset_stores_for_tests();
-    assert!(handle.resume_session(&sid1).is_ok(), "resume s1 should succeed");
-    assert!(handle.resume_session(&sid2).is_ok(), "resume s2 should succeed");
+    assert!(
+        handle.resume_session(&sid1).is_ok(),
+        "resume s1 should succeed"
+    );
+    assert!(
+        handle.resume_session(&sid2).is_ok(),
+        "resume s2 should succeed"
+    );
 
     // @step Then both sessions are restored independently
     let manifest1 = load_session(uuid1).expect("load manifest 1 after resume");
     let manifest2 = load_session(uuid2).expect("load manifest 2 after resume");
-    assert_eq!(manifest1.messages.len(), 1, "session 1 should still have 1 message");
-    assert_eq!(manifest2.messages.len(), 1, "session 2 should still have 1 message");
+    assert_eq!(
+        manifest1.messages.len(),
+        1,
+        "session 1 should still have 1 message"
+    );
+    assert_eq!(
+        manifest2.messages.len(),
+        1,
+        "session 2 should still have 1 message"
+    );
 
     // Verify sessions are independent (no cross-contamination)
-    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = manager.list_sessions(
+        &std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    );
     assert!(
         sessions.iter().any(|s| s.id == sid1.value),
         "session 1 should be in memory"
