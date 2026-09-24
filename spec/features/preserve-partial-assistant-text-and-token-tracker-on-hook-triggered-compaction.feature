@@ -43,7 +43,7 @@ Feature: Preserve partial assistant text and token tracker on hook-triggered com
     When the compaction hook cancels the current stream
     Then the session token tracker reflects the streaming display input tokens
     And the session token tracker reflects the streaming display output tokens
-    And cumulative billed output accumulation is deferred to a separate card as a pre-existing pattern
+    And cumulative billed output accumulation reflects the per-turn delta (TOKEN-001)
 
   Scenario: Empty partial text does not pollute the conversation
     Given a session whose last message is a user prompt

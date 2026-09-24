@@ -176,7 +176,7 @@ fn status_with_no_session_reports_no_active_session() {
 
 #[test]
 fn status_with_active_executing_session_emits_empty_body() {
-    // Scenario: Status with an active executing session reports phase strategy and progress
+    // Scenario: Status with an active executing session emits an empty rendered body
     //
     // PARITY: the TS `reverseCommand` wrapper (`reverse.ts:629-655`) only ever
     // prints `systemReminder` / `message` / `guidance` / `suggestions`. The
@@ -199,14 +199,14 @@ fn status_with_active_executing_session_emits_empty_body() {
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
 
-    // @step Then the returned data is empty (the CLI wrapper logs none of the structured status fields)
+    // @step Then the rendered output is empty because the CLI wrapper logs none of the structured status fields
     assert!(
         result.data.is_empty(),
         "expected empty status body for an active session; got:\n{}",
         result.data
     );
 
-    // @step Then the session file on disk is left untouched by a read-only status query
+    // @step Then the session file is left untouched by the read-only status query
     assert!(
         ws.session_file().exists(),
         "status must NOT delete the session"

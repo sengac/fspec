@@ -32,15 +32,13 @@ const MUX_CONFIG_DIALOG_ID: &str = "mux-config-dialog";
 
 /// Serialises tests that mutate the process-global data directory
 /// (within this test binary).
-static DATA_DIR_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 /// Root the process-global data directory at a fresh throwaway dir and
 /// keep it alive (the mux004/tui093 pattern). Returns the guard (held
 /// for the test's duration) + the TempDir.
-fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
-    let guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, TempDir) {
+    let guard = DATA_DIR_GUARD.lock().await;
     let tmp = TempDir::new().expect("tempdir");
     codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
@@ -194,7 +192,7 @@ async fn seed_session(app: &mut App, id: &str) {
 async fn m_opens_the_mux_config_dialog_from_the_focused_board_pane_in_mux_mode() {
     // 's' persists the committed layout to fspec-config.json — root the
     // data dir at a throwaway tempdir (mux004 pattern).
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     // @step Given I am in mux mode with the Board | Agent grid and the Board pane focused
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;

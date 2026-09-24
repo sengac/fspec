@@ -257,8 +257,7 @@ fn scenario_markdown_summary_section_order() {
         result.data
     );
 
-    // @step And immediately under '## Summary' the lines appear in this order:
-    // 'Total Scenarios', 'Covered', 'Uncovered', 'Test Files', 'Implementation Files', 'Test Lines', 'Implementation Lines', 'Total Lines'
+    // @step And immediately under '## Summary' the lines appear in this order: 'Total Scenarios', 'Covered', 'Uncovered', 'Test Files', 'Implementation Files', 'Test Lines', 'Implementation Lines', 'Total Lines'
     let summary_idx = result.data.find("## Summary").expect("Summary section");
     let after = &result.data[summary_idx..];
     let p_total = after.find("Total Scenarios").expect("Total Scenarios");

@@ -143,6 +143,7 @@ pub use wrapper::{
     set_get_work_unit_stage_callback,
     // TOOL-014: Path validation for worktree isolation
     validate_and_resolve_path,
+    validate_and_resolve_path_with_block_notification,
     validate_and_resolve_path_with_cwd,
     validate_and_resolve_path_with_isolation,
     BashToolFacadeWrapper,

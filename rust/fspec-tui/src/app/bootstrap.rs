@@ -212,6 +212,11 @@ impl App {
             loop {
                 match rx.recv().await {
                     Ok((id, status)) => {
+                        tracing::debug!(
+                            session_id = %id,
+                            status = ?status,
+                            "[compaction-status] TUI received status change"
+                        );
                         let _ = tx.send(Action::SessionStatusChanged(id, status));
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {

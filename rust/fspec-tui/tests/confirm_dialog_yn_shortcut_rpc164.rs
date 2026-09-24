@@ -289,10 +289,13 @@ fn provider_settings_y_emits_confirm_delete_provider_credentials() {
 
     // @step Then ProviderSettingsView::handle_key returns ProviderSettingsEvent::Emit(Action::ConfirmDeleteProviderCredentials("anthropic"))
     match out {
-        ProviderSettingsEvent::Emit(Action::ConfirmDeleteProviderCredentials(id)) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::ConfirmDeleteProviderCredentials(id) = *action else {
+                panic!("expected Emit(ConfirmDeleteProviderCredentials), got {action:?}");
+            };
             assert_eq!(id, "anthropic");
         }
-        _ => panic!("expected Emit(ConfirmDeleteProviderCredentials), got {out:?}"),
+        other => panic!("expected Emit(ConfirmDeleteProviderCredentials), got {other:?}"),
     }
     // @step And the delete_confirm dialog is cleared from view state
     assert!(view.delete_confirm.is_none());

@@ -2,6 +2,7 @@
 //! polling mechanism.
 //!
 //! Feature: spec/features/git-state-watcher.feature
+//! BUG-188 feature: spec/features/git-state-watcher-dedup-signature.feature
 //!
 //! Watcher-level scenarios:
 //!   - Manual checkpoint creation publishes a GitState frame with
@@ -221,5 +222,192 @@ async fn git_state_watcher_dedups_unchanged_snapshots_across_poll_ticks() {
         watcher.snapshot(),
         initial,
         "the stored snapshot must be untouched by no-change ticks"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// BUG-188 — feature: spec/features/git-state-watcher-dedup-signature.feature
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Count frames on `rx` for `window` (yielding to the runtime). Dedup
+/// means an unchanged poll tick must NEVER re-broadcast — the caller
+/// asserts the count is exactly zero in the silent window.
+async fn count_frames(
+    rx: &mut tokio::sync::broadcast::Receiver<GitState>,
+    window: Duration,
+) -> usize {
+    let mut frames = 0usize;
+    let deadline = tokio::time::Instant::now() + window;
+    while tokio::time::Instant::now() < deadline {
+        match rx.try_recv() {
+            Ok(_frame) => {
+                // BUG-188: any frame during the silent window is a
+                // dedup failure — the caller's `frames == 0` assert
+                // catches it. (The frame's raw timestamps legitimately
+                // differ from the initial snapshot, so we do NOT compare
+                // frames here — the count is the invariant.)
+                frames += 1;
+            }
+            Err(tokio::sync::broadcast::error::TryRecvError::Empty) => {
+                // Yield so the watcher's poll task can run (the dedup test
+                // is only meaningful if the timer actually fires).
+                tokio::time::sleep(Duration::from_millis(20)).await;
+            }
+            Err(tokio::sync::broadcast::error::TryRecvError::Lagged(n)) => {
+                frames += n as usize;
+            }
+            Err(tokio::sync::broadcast::error::TryRecvError::Closed) => break,
+        }
+    }
+    frames
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Steady-state silence in a clean repo (regression guard)
+// ─────────────────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn steady_state_silence_in_a_clean_repo() {
+    // @step Given a GitStateWatcher watching a temp git repo with no checkpoint refs and a 100ms poll interval
+    let tmp = setup_test_repo();
+    let repo = tmp.path();
+    let watcher = GitStateWatcher::with_interval(repo, Duration::from_millis(100));
+    let initial = watcher.snapshot();
+    assert!(
+        watcher.snapshot().checkpoints.is_empty(),
+        "clean fixture repo must carry no checkpoints"
+    );
+
+    // @step When six poll ticks elapse without any repository change
+    let mut rx = watcher.subscribe();
+    tokio::time::sleep(Duration::from_millis(600)).await;
+
+    // @step Then a subscriber that counts frames for 600ms observes exactly 0 frames after the initial broadcast
+    // The initial broadcast landed before `rx` existed — the receiver must
+    // observe ZERO frames during the silent window.
+    let frames = count_frames(&mut rx, Duration::from_millis(500)).await;
+    assert_eq!(frames, 0, "dedup: unchanged poll ticks must not re-broadcast");
+    assert_eq!(watcher.snapshot(), initial, "stored snapshot must be untouched");
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Steady-state silence in a checkpointed repo (BUG-188 regression)
+// ─────────────────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn steady_state_silence_in_a_checkpointed_repo() {
+    // @step Given a GitStateWatcher watching a temp git repo with one ghost-checkpoint ref AUTH-001/baseline and a 100ms poll interval
+    let tmp = setup_test_repo();
+    let repo = tmp.path();
+    make_checkpoint(repo, "AUTH-001", "baseline");
+    let watcher = GitStateWatcher::with_interval(repo, Duration::from_millis(100));
+    let initial = watcher.snapshot();
+    assert_eq!(
+        initial.checkpoint_counts,
+        codelet_rpc_types::CheckpointCounts { manual: 1, auto: 0 },
+        "the fixture checkpoint must be visible in the initial snapshot"
+    );
+
+    // @step When six poll ticks elapse without any repository change
+    let mut rx = watcher.subscribe();
+    tokio::time::sleep(Duration::from_millis(600)).await;
+
+    // @step Then a subscriber that counts frames for 600ms observes exactly 0 frames after the initial broadcast
+    // BUG-188: with a checkpoint ref present, the old full-`==` dedup never
+    // fired (checkpoints[].timestamp re-stamped SystemTime::now() per
+    // capture) — every tick re-broadcast. The stable signature excludes the
+    // timestamp leg, so the silent window must stay silent.
+    let frames = count_frames(&mut rx, Duration::from_millis(500)).await;
+    assert_eq!(
+        frames, 0,
+        "dedup must hold WITH checkpoint refs present (BUG-188 regression)"
+    );
+
+    // @step And the stored snapshot is untouched by no-change ticks
+    assert_eq!(
+        watcher.snapshot(),
+        initial,
+        "the stored snapshot must be untouched by no-change ticks"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: A new checkpoint ref produces a frame on the checkpointed repo
+// ─────────────────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn a_new_checkpoint_ref_produces_a_frame_on_the_checkpointed_repo() {
+    // @step Given a GitStateWatcher watching a temp git repo with one ghost-checkpoint ref AUTH-001/baseline and a 250ms poll interval
+    let tmp = setup_test_repo();
+    let repo = tmp.path();
+    make_checkpoint(repo, "AUTH-001", "baseline");
+    let watcher = GitStateWatcher::with_interval(repo, Duration::from_millis(250));
+    assert_eq!(
+        watcher.snapshot().checkpoint_counts,
+        codelet_rpc_types::CheckpointCounts { manual: 1, auto: 0 },
+    );
+
+    // @step When a second ghost-checkpoint ref AUTH-002/alpha is written into the repo
+    make_checkpoint(repo, "AUTH-002", "alpha");
+
+    // @step Then the watcher publishes a frame whose checkpoints list carries both refs and checkpoint_counts is { manual: 2, auto: 0 }
+    let state = wait_for_state(
+        &watcher,
+        |s| s.checkpoint_counts == codelet_rpc_types::CheckpointCounts { manual: 2, auto: 0 },
+        Duration::from_secs(5),
+    )
+    .await;
+    let names: Vec<(String, String)> = state
+        .checkpoints
+        .iter()
+        .map(|c| (c.work_unit_id.clone(), c.name.clone()))
+        .collect();
+    assert!(
+        names.iter().any(|(wu, n)| wu == "AUTH-001" && n == "baseline"),
+        "frame must carry the pre-existing checkpoint: {names:?}"
+    );
+    assert!(
+        names.iter().any(|(wu, n)| wu == "AUTH-002" && n == "alpha"),
+        "frame must carry the new checkpoint: {names:?}"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Two captures of an unchanged checkpointed repo produce equal
+// signatures but unequal raw states
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn two_captures_of_an_unchanged_checkpointed_repo_differ_raw_but_match_in_signature() {
+    // @step Given a temp git repo with one ghost-checkpoint ref
+    let tmp = setup_test_repo();
+    let repo = tmp.path();
+    make_checkpoint(repo, "AUTH-001", "baseline");
+
+    // @step When the GitState snapshot is captured twice in a row
+    // (Two captures of the SAME repo at ~millisecond spacing: the fallback
+    // "now" timestamp on every checkpoint row is guaranteed to differ.)
+    let a = codelet_core::git_state::capture(repo);
+    let b = codelet_core::git_state::capture(repo);
+
+    // @step Then the two raw GitState values are not ==-equal (checkpoints[].timestamp differs)
+    assert!(
+        !a.checkpoints.is_empty(),
+        "fixture repo must carry the checkpoint leg"
+    );
+    assert!(
+        a.checkpoints
+            .iter()
+            .zip(b.checkpoints.iter())
+            .any(|(x, y)| x.timestamp != y.timestamp),
+        "root cause: the fallback timestamp re-stamps SystemTime::now() per capture, so full-struct == never holds (old dedup was dead code)"
+    );
+    assert_ne!(a, b, "raw GitState values must NOT be ==-equal");
+
+    // @step And the two stable signatures ARE equal (timestamps excluded from the signature)
+    assert_eq!(
+        codelet_core::git_state::git_state_signature(&a),
+        codelet_core::git_state::git_state_signature(&b),
+        "the stable signature must exclude the volatile timestamp leg so unchanged captures dedup"
     );
 }

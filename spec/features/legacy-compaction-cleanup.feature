@@ -1,5 +1,5 @@
+@deprecated
 @compaction
-@wip
 @CMPCT-013
 Feature: Legacy Batch LLM Compaction Cleanup
   """

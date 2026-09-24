@@ -325,7 +325,7 @@ fn helper_emits_lifecycle_events_exactly_once_per_entry() {
         "compaction_started must be emitted exactly once per entry"
     );
 
-    // @step And exactly one compaction_progress event with phase 'Context limit reached' is recorded
+    // @step Then exactly one compaction_progress event with phase 'Context limit reached' is recorded
     let progress = output
         .find_first(|e| matches!(e, StreamEvent::CompactionProgress(_)))
         .expect("exactly one compaction_progress event expected");

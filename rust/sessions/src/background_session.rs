@@ -390,8 +390,7 @@ pub struct BackgroundSession {
     /// TOOL-022 P2: exec-stdin prompt request (deterministic quiet
     /// detector, tools crate). Pure overlay — NO status flip, NO
     /// response channel. TypeScript polls via session_get_exec_stdin_request.
-    exec_stdin_request:
-        RwLock<Option<codelet_tools::unified_exec::ExecStdinRequest>>,
+    exec_stdin_request: RwLock<Option<codelet_tools::unified_exec::ExecStdinRequest>>,
 
     /// TUI-054: Base thinking level for session (0=Off, 1=Low, 2=Medium, 3=High)
     /// This is the level set via /thinking command, persists for the session.
@@ -562,7 +561,7 @@ impl BackgroundSession {
             continue_enabled: AtomicBool::new(false), // CONT-002: auto-continue off by default
             continue_budget: AtomicU32::new(10),   // CONT-002: DEFAULT_CONTINUE_BUDGET
             goal_state: std::sync::Mutex::new(None), // CONT-003: no goal by default
-            goal_generation: AtomicU64::new(0),      // CONT-008: no chrome writes yet
+            goal_generation: AtomicU64::new(0),    // CONT-008: no chrome writes yet
             goal_synced_generation: AtomicU64::new(0), // CONT-008: in sync at creation
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
             work_unit_context: RwLock::new(None),  // TUI-059: No work unit context initially
@@ -664,10 +663,7 @@ impl BackgroundSession {
             .worktree_path
             .write()
             .expect("worktree_path lock poisoned") = None;
-        *self
-            .base_commit
-            .write()
-            .expect("base_commit lock poisoned") = None;
+        *self.base_commit.write().expect("base_commit lock poisoned") = None;
     }
 
     /// HOOK-013: Build a HookContext for lifecycle hook execution.
@@ -937,6 +933,12 @@ impl BackgroundSession {
         // NAPI-010: Notify TypeScript when status changes via SessionStateChange chunk
         // This is an internal state update - NOT added to conversation
         if old_status != status as u8 {
+            tracing::info!(
+                session_id = %self.id,
+                from = ?SessionStatus::from(old_status),
+                to = ?status,
+                "[compaction-status] set_status transition"
+            );
             // RPC-041: Emit typed (SessionId, SessionStatus) status change
             // on the manager-owned `status_changes_tx` broadcast. Future
             // Rust subscribers (fspec-tui) can listen here without
@@ -1531,6 +1533,11 @@ impl BackgroundSession {
 
     /// PERF-002: Set compaction progress information
     pub fn set_compaction_progress(&self, progress: Option<CompactionProgress>) {
+        tracing::debug!(
+            session_id = %self.id,
+            progress = ?progress,
+            "[compaction-status] set_compaction_progress"
+        );
         *self
             .compaction_progress
             .write()
@@ -1544,6 +1551,13 @@ impl BackgroundSession {
             current,
             total,
         };
+        tracing::debug!(
+            session_id = %self.id,
+            phase = %progress.phase,
+            current = progress.current,
+            total = progress.total,
+            "[compaction-status] update_compaction_progress"
+        );
         *self
             .compaction_progress
             .write()
@@ -1739,6 +1753,27 @@ impl BackgroundSession {
 
         // TUI-066: Emit chunk so React updates state as side effect
         self.handle_output(StreamChunk::session_state_change(SessionState::Cleared));
+    }
+
+    /// CMPCT-046: lock-free count of COMPLETED turns (Done chunks in the
+    /// output buffer — the same basis `get_info()` uses for its
+    /// `message_count`).
+    ///
+    /// Used by the GenerateCompaction handler's SELF-target capture
+    /// (CMPCT-045 Rule [11]): when the caller's agent loop holds the
+    /// session's `inner` lock for the whole turn, the handler cannot await
+    /// it, so it degrades its capture to lock-free signals. This count
+    /// (plus the cached token basis) is the lock-free turn-count signal.
+    pub fn completed_turn_count(&self) -> u32 {
+        self.output_buffer
+            .read()
+            .map(|buffer| {
+                buffer
+                    .iter()
+                    .filter(|c| matches!(c, StreamChunk::Done))
+                    .count()
+            })
+            .unwrap_or(0) as u32
     }
 
     /// Get session info for listing

@@ -271,7 +271,10 @@ fn assert_y_emits_disconnect_for(provider: &str, name: &str) {
     // @step Then the backend "<clear_method>" is called exactly once for provider "<provider>"
     // (view layer: `y` emits exactly one OAuthDisconnect keyed by this provider)
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthDisconnect { provider_id }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthDisconnect { provider_id } = *action else {
+                panic!("expected Emit(OAuthDisconnect) for {provider}, got {action:?}");
+            };
             assert_eq!(provider_id, provider);
         }
         other => panic!("expected Emit(OAuthDisconnect) for {provider}, got {other:?}"),

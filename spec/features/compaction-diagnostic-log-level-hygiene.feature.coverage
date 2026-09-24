@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "name": "Routine propagation lines are logged at DEBUG",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/cmpct049_log_level_hygiene.rs",
+          "lines": "61-148",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lifecycle decision lines stay at INFO",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/cmpct049_log_level_hygiene.rs",
+          "lines": "155-225",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/animation.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/cmpct049_log_level_hygiene.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/views/agent/animation.rs"
+    ],
+    "totalLinesCovered": 188
+  }
+}

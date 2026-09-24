@@ -72,7 +72,7 @@ fn handle_summary_key(
                 },
             };
             view.status = "Refreshing models…".to_string();
-            ProviderSettingsEvent::Emit(Action::RefreshProviderModels(provider_id))
+            ProviderSettingsEvent::Emit(Box::new(Action::RefreshProviderModels(provider_id)))
         }
         KeyCode::Enter => {
             // Enter on api_key row opens the inline edit form. OAuth
@@ -125,10 +125,10 @@ fn handle_edit_key(
             let api_key = draft.clone();
             view.mode = ProviderSettingsMode::List;
             view.status.clear();
-            ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
+            ProviderSettingsEvent::Emit(Box::new(Action::SaveProviderCredentials {
                 provider_id,
                 api_key,
-            })
+            }))
         }
         KeyCode::Backspace | KeyCode::Delete => {
             // RPC-163 — TS parity: Ink's useInput exposes key.backspace and

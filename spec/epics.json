@@ -527,7 +527,8 @@
         "CMPCT-039",
         "CMPCT-040",
         "CMPCT-041",
-        "CMPCT-042"
+        "CMPCT-042",
+        "CMPCT-050"
       ]
     },
     "scheduling": {
@@ -1428,6 +1429,43 @@
         "WT-010",
         "WT-011",
         "WT-012"
+      ]
+    },
+    "performance": {
+      "id": "performance",
+      "title": "PERF",
+      "createdAt": "2026-09-19T05:58:39.552Z",
+      "description": "Performance, CPU burn, and TUI responsiveness regressions",
+      "workUnits": [
+        "BUG-187",
+        "BUG-188",
+        "BUG-189",
+        "BUG-190",
+        "BUG-191",
+        "BUG-192"
+      ]
+    },
+    "coverage-audit": {
+      "id": "coverage-audit",
+      "title": "Coverage audit",
+      "createdAt": "2026-09-22T00:44:00.594Z",
+      "description": "Audit and remediation of spec/features/*.feature.coverage mappings (structural + laya semantic)",
+      "workUnits": [
+        "AUDIT-001",
+        "AUDIT-002",
+        "COV-056"
+      ]
+    },
+    "rlcd-integration": {
+      "id": "rlcd-integration",
+      "title": "RLCD Integration",
+      "createdAt": "2026-09-24T00:39:44.357Z",
+      "description": "Integrate the RLCD decision engine (current backend: laya-rs) into fspec as: (1) a service supervisor that connects to a configured RLCD server or auto-spawns it locally with port scanning, (2) a first-class Decision() rig tool, (3) a gate for fspec workflow commands, (4) a semantic security layer over the blocklist for Bash/Read/Write/Edit. Naming is backend-agnostic: 'rlcd' everywhere, 'laya' only as the current backend binary name. Backend rename laya->rlcd is expected upstream; blast radius is confined to service.rs/client.rs by design.",
+      "workUnits": [
+        "RLCD-001",
+        "RLCD-002",
+        "RLCD-003",
+        "RLCD-004"
       ]
     }
   }

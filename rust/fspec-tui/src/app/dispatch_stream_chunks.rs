@@ -26,7 +26,7 @@
 //!    is out of scope for this slice (deferred to a later card per
 //!    the RPC-045 attachment).
 
-use codelet_rpc_types::{CompactionResult, WorkspaceInfo};
+use codelet_rpc_types::WorkspaceInfo;
 use codelet_rpc_types::{FspecRequest, SessionId, SessionState, SessionStatus, StreamChunk};
 
 use crate::components::Action;
@@ -50,8 +50,19 @@ impl App {
     ) {
         match chunk {
             StreamChunk::SessionStateChange { state } => {
+                let new_status = session_status_from_state(*state);
+                let old = self
+                    .agent_view_store
+                    .session_status_for(session_id)
+                    .copied();
                 self.agent_view_store
-                    .set_session_status(session_id.clone(), session_status_from_state(*state));
+                    .set_session_status(session_id.clone(), new_status);
+                tracing::debug!(
+                    session_id = %session_id,
+                    old = ?old,
+                    new = ?new_status,
+                    "[compaction-status] TUI store updated (SessionStateChange chunk)"
+                );
                 // RPC-053: fire the pause / HITL chunk-driven trigger or
                 // clear any mounted dialog on resume.
                 match state {
@@ -123,50 +134,13 @@ impl App {
                     .apply_supervisor_pending_injection(session_id);
             }
             StreamChunk::CompactionComplete { compaction_result } => {
-                // RPC-047: clear the per-session compaction-progress
-                // entry and dispatch a session-scoped notice so the
-                // `[compaction] ...` line lands in the originating
-                // session's scrollback regardless of focus. Fires for
-                // both /compact and auto-compaction. RPC-421: this is
-                // the SINGLE source of the compaction success notice —
-                // the slash handler's Ok branch is silent because the
-                // RPC result is an acknowledgement measured before DAG
-                // injection; this chunk carries the honest
-                // post-injection numbers (CMPCT-038 apply-site), so
-                // exactly one notice lands per compaction.
-                self.agent_view_store.clear_compaction_progress(session_id);
-
-                // RPC-100: persist the reduction percentage on the
-                // per-session slot so SessionHeader renders the
-                // `[X%: COMPACTED Y%]` badge suffix. RPC-420: the wire
-                // `compression_ratio` is already the PERCENT of tokens
-                // removed [0,100] (every producer ships
-                // `compression_ratio(orig, compacted) * 100.0`), so it is
-                // rounded and displayed directly — same convention as
-                // `format_compaction_notice` below,
-                // keeping the notice line and the badge in sync.
-                // CMPCT-040: clamp at this single writer (`.max(0.0)`) so a
-                // negative wire value from a stale/unclamped backend can
-                // never reach the store — the header renders the stored
-                // value verbatim and must never sign-flip growth into a
-                // fake positive reduction.
-                let reduction = compaction_result.compression_ratio.round().max(0.0) as i32;
-                self.agent_view_store
-                    .set_compaction_reduction(session_id.clone(), reduction);
-
-                // RPC-417: arm the 10-second per-session auto-hide timer
-                // (TS TUI-044 parity). Bump the seq first so a stale fire
-                // from an earlier compaction becomes a no-op, then arm
-                // (runtime-guarded → no-op under a synchronous #[test]).
-                let seq = self
-                    .agent_view_store
-                    .bump_compaction_reduction_seq(session_id.clone());
-                self.arm_compaction_hide(session_id.clone(), seq);
-
-                let text = format_compaction_notice(compaction_result);
-                let _ = self
-                    .action_tx
-                    .send(Action::EmitSessionNotice(session_id.clone(), text));
+                // CMPCT-049: the arm body (clear progress, persist the
+                // reduction badge, arm the auto-hide timer, emit the
+                // single user-facing notice — RPC-421 / RPC-417 /
+                // RPC-100) is factored into
+                // `dispatch_compaction_complete.rs` so this file stays
+                // under the 300-LoC ceiling.
+                self.apply_compaction_complete(session_id, compaction_result);
             }
             StreamChunk::ContinueStateUpdate { continue_state } => {
                 // CONT-007: fold the live counter snapshot into the chrome
@@ -229,7 +203,18 @@ impl App {
         session_id: SessionId,
         status: SessionStatus,
     ) {
-        self.agent_view_store.set_session_status(session_id, status);
+        let old = self
+            .agent_view_store
+            .session_status_for(&session_id)
+            .copied();
+        self.agent_view_store
+            .set_session_status(session_id.clone(), status);
+        tracing::debug!(
+            session_id = %session_id,
+            old = ?old,
+            new = ?status,
+            "[compaction-status] TUI store updated (push channel)"
+        );
     }
 
     /// Spawn a fire-and-forget tokio task that executes `request`
@@ -269,31 +254,4 @@ impl App {
         });
         self.pending_tasks.push(handle);
     }
-}
-
-/// RPC-047: format a `CompactionResult` into the user-facing scrollback
-/// notice line.
-///
-/// RPC-421: its SOLE caller is the `StreamChunk::CompactionComplete`
-/// handler in `dispatch_stream_chunks.rs` — the `/compact` Ok branch no
-/// longer emits a notice from the RPC result (whose numbers are measured
-/// before DAG injection). Exactly one `[compaction] ...` line lands per
-/// compaction, carrying the honest post-injection numbers.
-///
-/// Example output:
-/// ```text
-/// [compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)
-/// ```
-///
-/// RPC-420: `compression_ratio` is already the PERCENT of tokens removed
-/// [0,100]; render it directly — never `(1.0 - ratio) * 100.0`.
-pub(crate) fn format_compaction_notice(result: &CompactionResult) -> String {
-    let reduction_pct = result.compression_ratio;
-    format!(
-        "[compaction] {reduction:.1}% reduction ({orig} \u{2192} {compacted} tokens, {turns} turns summarised)",
-        reduction = reduction_pct,
-        orig = result.original_tokens,
-        compacted = result.compacted_tokens,
-        turns = result.turns_summarized,
-    )
 }

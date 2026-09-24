@@ -55,3 +55,9 @@ tracing.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 uuid.workspace = true
+
+# BUG-189: pin a file's on-disk mtime in tests so the stat-first
+# short-circuit (mtime+size match vs index stat) can be exercised
+# positively — a stat-restored modified file must be treated as
+# unchanged (git parity).
+filetime = "0.2"

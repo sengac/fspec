@@ -15,8 +15,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use tracing_subscriber::prelude::*;
 use serial_test::serial;
+use tracing_subscriber::prelude::*;
 use uuid::Uuid;
 
 use codelet_sessions::SessionManager;
@@ -63,11 +63,7 @@ fn fresh_git_repo() -> tempfile::TempDir {
 /// fixture pre-seeded, with HOME redirected to a temp dir so the
 /// `~/.fspec/git-sessions` manifest writes from
 /// `create_isolated_session_with_id` / `destroy_session` stay hermetic.
-fn manager_with_seeded_cache() -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    Arc<SessionManager>,
-) {
+fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<SessionManager>) {
     set_dummy_credentials();
     let data_dir = tempfile::tempdir().expect("tempdir for data dir");
     let home_dir = tempfile::tempdir().expect("tempdir for HOME");
@@ -78,8 +74,7 @@ fn manager_with_seeded_cache() -> (
     // the data directory at the fresh temp dir, so SessionStore re-initialises
     // against THIS test's dir (it caches `sessions_dir` at first use).
     codelet_core::persistence::reset_stores_for_tests();
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
     let manager = Arc::new(SessionManager::new());
     (data_dir, home_dir, manager)
@@ -88,7 +83,10 @@ fn manager_with_seeded_cache() -> (
 /// Read the `~/.fspec/git-sessions/<id>.json` manifest written by
 /// `codelet_git::create_session_manifest`.
 fn read_git_manifest(home: &Path, id: &str) -> Option<codelet_git::SessionManifest> {
-    let path = home.join(".fspec").join("git-sessions").join(format!("{id}.json"));
+    let path = home
+        .join(".fspec")
+        .join("git-sessions")
+        .join(format!("{id}.json"));
     let content = std::fs::read_to_string(&path).ok()?;
     serde_json::from_str(&content).ok()
 }
@@ -127,7 +125,8 @@ async fn wait_until_fs<F: Fn() -> bool>(predicate: F, label: &str) {
 
 #[serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn closing_an_isolated_session_marks_its_git_session_manifest_terminated_and_keeps_the_worktree_recoverable() {
+async fn closing_an_isolated_session_marks_its_git_session_manifest_terminated_and_keeps_the_worktree_recoverable(
+) {
     // @step Given a git repository with one committed file
     let repo = fresh_git_repo();
 
@@ -183,7 +182,8 @@ async fn closing_an_isolated_session_marks_its_git_session_manifest_terminated_a
 
 #[serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn closing_an_isolated_session_whose_worktree_was_already_merged_is_a_silent_no_op_for_termination() {
+async fn closing_an_isolated_session_whose_worktree_was_already_merged_is_a_silent_no_op_for_termination(
+) {
     // @step Given a git repository with one committed file
     let repo = fresh_git_repo();
 
@@ -202,14 +202,12 @@ async fn closing_an_isolated_session_whose_worktree_was_already_merged_is_a_sile
 
     // Make the worktree dirty so the merge has something to apply.
     let wt = Path::new(&info.worktree_path);
-    std::fs::write(wt.join("hello.txt"), "hello (session edit)\n")
-        .expect("write session edit");
+    std::fs::write(wt.join("hello.txt"), "hello (session edit)\n").expect("write session edit");
     run_git(wt, &["add", "."]);
     run_git(wt, &["commit", "-m", "session change"]);
 
     // @step And the session worktree was merged and its git-session manifest deleted
-    codelet_git::merge_session(repo.path(), &id)
-        .expect("merge_session must succeed");
+    codelet_git::merge_session(repo.path(), &id).expect("merge_session must succeed");
     assert!(
         !git_manifest_path(home_dir.path(), &id).exists(),
         "merge_session must delete the git-session manifest"
@@ -313,13 +311,17 @@ async fn a_terminate_failure_does_not_fail_the_close() {
         .with_target(true)
         .with_level(true);
     let subscriber = tracing_subscriber::registry().with(layer);
-    let close_result = tracing::subscriber::with_default(subscriber, || manager.destroy_session(&id));
-    assert!(close_result.is_ok(), "the close must succeed: {:?}", close_result.err());
+    let close_result =
+        tracing::subscriber::with_default(subscriber, || manager.destroy_session(&id));
+    assert!(
+        close_result.is_ok(),
+        "the close must succeed: {:?}",
+        close_result.err()
+    );
 
     let logs = String::from_utf8_lossy(&LOG_BUFFER.lock().expect("log buffer")).to_string();
-    let warn_logged = logs.contains("WARN")
-        && logs.contains("terminate")
-        && logs.contains("codelet_sessions");
+    let warn_logged =
+        logs.contains("WARN") && logs.contains("terminate") && logs.contains("codelet_sessions");
     assert!(
         warn_logged,
         "a WARN-level log naming the terminate failure must be emitted; got:\n{logs}"
@@ -357,5 +359,3 @@ impl<'a> tracing_subscriber::fmt::MakeWriter<'a> for LogCapture {
         LogWriter(LOG_BUFFER.lock().expect("log buffer"))
     }
 }
-
-

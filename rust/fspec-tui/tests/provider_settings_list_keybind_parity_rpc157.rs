@@ -231,7 +231,7 @@ fn lowercase_r_is_silently_ignored_in_list_mode() {
     let out = view.handle_key(key(KeyCode::Char('r')));
     // @step Then no Action::RefreshProviderModels is emitted
     if let ProviderSettingsEvent::Emit(action) = &out {
-        if matches!(action, Action::RefreshProviderModels(_)) {
+        if matches!(&**action, Action::RefreshProviderModels(_)) {
             panic!("'r' in list mode must not emit RefreshProviderModels");
         }
         panic!("'r' in list mode must not emit any Action, got {action:?}");
@@ -258,7 +258,7 @@ fn uppercase_r_is_silently_ignored_in_list_mode() {
     let out = view.handle_key(key(KeyCode::Char('R')));
     // @step Then no Action::RefreshProviderModels is emitted
     if let ProviderSettingsEvent::Emit(action) = &out {
-        if matches!(action, Action::RefreshProviderModels(_)) {
+        if matches!(&**action, Action::RefreshProviderModels(_)) {
             panic!("'R' in list mode must not emit RefreshProviderModels");
         }
         panic!("'R' in list mode must not emit any Action, got {action:?}");

@@ -48,8 +48,9 @@ pub enum ChangedFilesEvent {
     /// View consumed the event and wants the App to dismiss it.
     Close,
     /// View consumed the event and wants the App to emit this action
-    /// (e.g. a diff reload for the newly-selected file).
-    Emit(crate::components::Action),
+    /// (e.g. a diff reload for the newly-selected file). Boxed — see
+    /// `BlocklistEvent::Emit` for the `large_enum_variant` rationale.
+    Emit(Box<crate::components::Action>),
 }
 
 /// Dual-pane changed-files view state.
@@ -410,7 +411,9 @@ impl ChangedFilesView {
             self.files.len(),
         );
         match self.selected_path() {
-            Some(path) => ChangedFilesEvent::Emit(crate::components::Action::LoadFileDiff(path)),
+            Some(path) => {
+                ChangedFilesEvent::Emit(Box::new(crate::components::Action::LoadFileDiff(path)))
+            }
             None => ChangedFilesEvent::Consumed,
         }
     }

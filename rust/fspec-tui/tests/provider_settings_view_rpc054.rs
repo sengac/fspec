@@ -174,7 +174,9 @@ fn t_inside_detail_summary_is_silently_ignored_rpc154() {
     assert!(
         !matches!(
             out,
-            ProviderSettingsEvent::Emit(Action::TestProviderConnection(_))
+            ProviderSettingsEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::TestProviderConnection(_))
+
         ),
         "RPC-154: `t` must NOT emit Action::TestProviderConnection — that was the Rust-only deviation; got {out:?}"
     );
@@ -203,7 +205,10 @@ fn r_inside_detail_summary_emits_refresh_provider_models() {
     let out = view.handle_key(key(KeyCode::Char('r')));
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::RefreshProviderModels("openai"))
     match out {
-        ProviderSettingsEvent::Emit(Action::RefreshProviderModels(id)) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::RefreshProviderModels(id) = *action else {
+                panic!("expected RefreshProviderModels action, got {action:?}");
+            };
             assert_eq!(id, "openai");
         }
         _ => panic!("expected RefreshProviderModels action, got {out:?}"),
@@ -321,14 +326,18 @@ fn enter_on_edit_api_key_with_draft_emits_save() {
     let out = view.handle_key(key(KeyCode::Enter));
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "anthropic", api_key: "sk-test-1" })
     match out {
-        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
-            provider_id,
-            api_key,
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::SaveProviderCredentials {
+                provider_id,
+                api_key,
+            } = *action
+            else {
+                panic!("expected SaveProviderCredentials, got {action:?}");
+            };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(api_key, "sk-test-1");
         }
-        _ => panic!("expected SaveProviderCredentials, got {out:?}"),
+        other => panic!("expected SaveProviderCredentials, got {other:?}"),
     }
 }
 
@@ -389,10 +398,13 @@ fn enter_on_confirm_dialog_primary_emits_confirm_delete() {
     let out = view.handle_key(key(KeyCode::Enter));
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::ConfirmDeleteProviderCredentials("anthropic"))
     match out {
-        ProviderSettingsEvent::Emit(Action::ConfirmDeleteProviderCredentials(id)) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::ConfirmDeleteProviderCredentials(id) = *action else {
+                panic!("expected ConfirmDeleteProviderCredentials, got {action:?}");
+            };
             assert_eq!(id, "anthropic");
         }
-        _ => panic!("expected ConfirmDeleteProviderCredentials, got {out:?}"),
+        other => panic!("expected ConfirmDeleteProviderCredentials, got {other:?}"),
     }
     // @step And delete_confirm is None
     assert!(view.delete_confirm.is_none());

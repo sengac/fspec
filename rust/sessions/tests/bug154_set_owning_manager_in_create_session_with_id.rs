@@ -25,7 +25,10 @@ fn read(path: &Path) -> String {
 }
 
 fn session_manager_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("session_manager.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("session_manager.rs")
 }
 
 /// Find the body of a function in source code

@@ -109,7 +109,7 @@ impl CheckpointsView {
         if let Some(dialog) = self.delete_dialog.as_mut() {
             dialog.phase = DeletePhase::Deleting;
         }
-        CheckpointsEvent::Emit(Action::DeleteCheckpoint { work_unit_id, name })
+        CheckpointsEvent::Emit(Box::new(Action::DeleteCheckpoint { work_unit_id, name }))
     }
 
     /// Confirm delete-all only when the typed phrase matches exactly;
@@ -126,7 +126,7 @@ impl CheckpointsView {
         if let Some(dialog) = self.delete_dialog.as_mut() {
             dialog.phase = DeletePhase::Deleting;
         }
-        CheckpointsEvent::Emit(Action::DeleteAllCheckpoints)
+        CheckpointsEvent::Emit(Box::new(Action::DeleteAllCheckpoints))
     }
 
     /// Fold a `DeleteCheckpointResult` into the view: on error show the

@@ -7,9 +7,9 @@
 //! to ensure the session cannot edit files outside its isolated environment.
 
 use super::bash_binary_guard::{detect_bash_binary_output, format_file_tool_guard_message};
-use super::blocklist::check_file_path;
+use super::blocklist::check_file_path_semantic;
 use super::error::ToolError;
-use super::facade::validate_and_resolve_path;
+use super::facade::validate_and_resolve_path_with_block_notification;
 use super::validation::{require_absolute_path, require_file_exists, write_file_contents};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -80,11 +80,22 @@ impl rig::tool::Tool for EditTool {
         }
 
         // Validate and resolve path (handles worktree isolation for isolated sessions)
-        let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "edit")?;
+        // BLOCK-006: emit a block notification when isolation rejects the path.
+        let resolved_path =
+            validate_and_resolve_path_with_block_notification(
+                self.session_id,
+                &args.file_path,
+                &format!("editing {}", args.file_path),
+                "edit",
+            )?;
         let file_path_str = resolved_path.to_string_lossy().to_string();
 
-        // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&file_path_str, self.session_id) {
+        // Check file path against blocklist before any I/O (regex + RLCD-004
+        // semantic stage when the engine is reachable)
+        if let Err(blocked) =
+            check_file_path_semantic(&file_path_str, self.session_id, "Edit", "edit")
+                .await
+        {
             return Err(ToolError::Blocked {
                 tool: "edit",
                 message: blocked.to_string(),

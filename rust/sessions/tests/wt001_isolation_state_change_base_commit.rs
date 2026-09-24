@@ -80,11 +80,7 @@ fn head_sha(cwd: &Path) -> String {
 /// fixture pre-seeded, with HOME redirected to a temp dir so the
 /// `~/.fspec/git-sessions` manifest writes from
 /// `create_isolated_session_with_id` stay hermetic.
-fn manager_with_seeded_cache() -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    Arc<SessionManager>,
-) {
+fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<SessionManager>) {
     set_dummy_credentials();
     let data_dir = tempfile::tempdir().expect("tempdir for data dir");
     let home_dir = tempfile::tempdir().expect("tempdir for HOME");
@@ -95,8 +91,7 @@ fn manager_with_seeded_cache() -> (
     // persistence singletons BEFORE pointing the data directory at this
     // test's fresh temp dir so session-manifest writes stay hermetic.
     codelet_core::persistence::reset_stores_for_tests();
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
     let manager = Arc::new(SessionManager::new());
     (data_dir, home_dir, manager)
@@ -152,18 +147,14 @@ async fn isolated_session_creation_chunk_carries_the_worktree_base_commit() {
         .expect("isolated session creation must succeed");
 
     // @step Then the IsolationStateChange chunk received on the chunks broadcast has is_isolated true, the worktree path, and a base_commit equal to the repository's HEAD at fork time
-    let chunk = next_isolation_chunk(&mut chunks_rx, &SessionId::new(id.clone()))
-        .await;
+    let chunk = next_isolation_chunk(&mut chunks_rx, &SessionId::new(id.clone())).await;
     match chunk {
         StreamChunk::IsolationStateChange {
             is_isolated,
             worktree_path,
             base_commit,
         } => {
-            assert!(
-                is_isolated,
-                "chunk must report the session as isolated"
-            );
+            assert!(is_isolated, "chunk must report the session as isolated");
             assert_eq!(
                 worktree_path.as_deref(),
                 Some(info.worktree_path.as_str()),
@@ -200,8 +191,7 @@ async fn non_isolated_session_creation_still_emits_a_base_commit_free_isolation_
         .expect("non-isolated session creation must succeed");
 
     // @step Then the IsolationStateChange chunk received on the chunks broadcast has is_isolated false, no worktree path, and base_commit None
-    let chunk = next_isolation_chunk(&mut chunks_rx, &SessionId::new(id.clone()))
-        .await;
+    let chunk = next_isolation_chunk(&mut chunks_rx, &SessionId::new(id.clone())).await;
     match chunk {
         StreamChunk::IsolationStateChange {
             is_isolated,

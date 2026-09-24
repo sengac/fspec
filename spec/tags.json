@@ -298,6 +298,14 @@
           "description": "Bug fix work unit BUG-174 — closing the last agent in an all-agent mux layout leaves a blank 0-pane screen (footer only, keys dead). Fix: a transient full-width Board pane stands in for an empty rendered pane list so the grid never collapses to nothing and Esc/Shift+Right stay alive"
         },
         {
+          "name": "@bug-188",
+          "description": "BUG-188 — GitStateWatcher dedup never fires: checkpoints[].timestamp is re-stamped SystemTime::now() per capture so full-struct == never holds in any repo with checkpoint refs; every 10s poll tick re-broadcasts an 'unchanged' frame. Fix: the broadcast decision compares a STABLE SIGNATURE (branch + checkpoint_counts + changed_files + checkpoint work_unit/name/auto, timestamps excluded) instead of full GitState equality. Mirrors the TUI's BUG-184 signatures so both layers agree on 'unchanged'."
+        },
+        {
+          "name": "@bug-189",
+          "description": "BUG-189 — Git capture is O(repo size): single-pass, shared-handle, stat-first GitState capture (codelet-git)"
+        },
+        {
           "name": "@bug-reporting",
           "description": "Bug reporting and issue submission features"
         },
@@ -792,6 +800,10 @@
         {
           "name": "@reverse-acdd",
           "description": "Features related to reverse ACDD for documenting existing codebases"
+        },
+        {
+          "name": "@rlcd",
+          "description": "RLCD decision-engine integration (service supervisor, Decision tool, workflow gate, blocklist security layer)"
         },
         {
           "name": "@role",
@@ -1308,6 +1320,10 @@
         {
           "name": "@clipboard",
           "description": "Clipboard integration (OSC 52 escape-sequence clipboard writes)"
+        },
+        {
+          "name": "@cmpct-049",
+          "description": "Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO)"
         },
         {
           "name": "@code-review",
@@ -1914,6 +1930,10 @@
           "description": "Rig framework integration"
         },
         {
+          "name": "@rlcd-004",
+          "description": "Work unit RLCD-004 — RLCD semantic security layer over blocklist (Bash/Read/Write/Edit/ApplyPatch)"
+        },
+        {
           "name": "@rpc-086",
           "description": "RPC-086: Agent loop token tracking parity (update_tokens + TokenUpdate + ContextFillUpdate)"
         },
@@ -2370,8 +2390,24 @@
           "description": "Work unit BUG-185 — the failed tool-call tail must be stripped on ANY terminal API error (supersedes BUG-170 rule [0] which gated the strip on prompt-too-long only)"
         },
         {
+          "name": "@bug-186",
+          "description": "Bug fix work unit BUG-186 — rpc002_session_persistence tests fail in a clean test env: model registry cache missing → create_session declines (PROV-101) → empty SessionId. Fix: seed the temp data dir with the shared prov101 model-cache fixture + dummy ANTHROPIC creds, and use a fixture model as the offline default."
+        },
+        {
+          "name": "@bug-190",
+          "description": "Bug fix work unit BUG-190 — 60fps busy-state TUI repaint re-wraps + re-grapheme-scans every scrollback row every frame: memoize the reflected scrollback row per (chunk content, width) so steady-state frames blit cached rows"
+        },
+        {
+          "name": "@bug-192",
+          "description": "Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
+        },
+        {
+          "name": "@cmpct-020",
+          "description": "Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape)"
         },
         {
           "name": "@cmpct-039",
@@ -2384,6 +2420,26 @@
         {
           "name": "@cmpct-041",
           "description": "Work unit identifier tag for CMPCT-041 — turn-start seed cache double-count root fix and pre_compaction_tokens basis unification across auto/manual writers in both twins"
+        },
+        {
+          "name": "@cmpct-044",
+          "description": "Work unit CMPCT-044 — clean compaction sub-agent triggered on API context-overflow errors (ephemeral compactor, free fallback DAG, CompactionFailed-before-CompactionComplete lifecycle contract, read-only 7-tool surface)"
+        },
+        {
+          "name": "@cmpct-045",
+          "description": "Work unit CMPCT-045 — GenerateCompaction tool: DeepSearch-clone tool that builds a compaction DAG for a session and pins it (self-target capture, Level-3 fallback DAG, stash-lock status restore)"
+        },
+        {
+          "name": "@cmpct-046",
+          "description": "Work unit CMPCT-046 — self-target deadlock fix (lock-free capture) + honest zero-basis content estimate + github-copilot provider-arm parity"
+        },
+        {
+          "name": "@cmpct-047",
+          "description": "Work unit CMPCT-047 — unify Level-3 fallback DAG shape across 044/045/agent-loop watchdog through the shared compaction_dag primitives"
+        },
+        {
+          "name": "@cmpct-048",
+          "description": "Work unit CMPCT-048 — stash-lock failure must not leave the calling session stuck in Compacting: status restoration on the 045 tool's capture path"
         },
         {
           "name": "@cont-002",
@@ -2480,6 +2536,18 @@
         {
           "name": "@rig-015",
           "description": "Work unit identifier for RIG-015 — behavioral loop-abort test (stream stops + corrective re-prompt)"
+        },
+        {
+          "name": "@rlcd-001",
+          "description": "Work unit RLCD-001 — RLCD service supervisor: config, health polling, local auto-spawn with port scanning"
+        },
+        {
+          "name": "@rlcd-002",
+          "description": "Work unit RLCD-002 — Decision() first-class rig tool for typed RLCD decisions (choice/score/noul)"
+        },
+        {
+          "name": "@rlcd-003",
+          "description": "RLCD-003: RLCD semantic gate for fspec workflow commands (agent-mode)"
         },
         {
           "name": "@rpc-006",
@@ -3066,7 +3134,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-16T07:47:06.909Z",
+    "lastUpdated": "2026-09-24T04:42:16.797Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

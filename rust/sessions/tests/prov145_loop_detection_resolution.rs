@@ -178,9 +178,8 @@ fn write_profile_config(
         .ok()
         .and_then(|s| serde_json::from_str(&s).ok())
         .unwrap_or(serde_json::json!({}));
-    root["providers"]["openai"]["profiles"][profile_name] = profile_object(
-        enabled, window, max_repeats, max_retries,
-    );
+    root["providers"]["openai"]["profiles"][profile_name] =
+        profile_object(enabled, window, max_repeats, max_retries);
     std::fs::write(
         &path,
         serde_json::to_string_pretty(&root).expect("serialize"),

@@ -121,7 +121,7 @@ impl ModelSelectorView {
         };
         self.custom_model_mode = CustomModelMode::Browse;
         self.form = CustomModelForm::default();
-        ModelSelectorEvent::Emit(action)
+        ModelSelectorEvent::Emit(Box::new(action))
     }
 
     /// Route a key through the delete-confirm overlay: y/Enter confirm,
@@ -153,7 +153,7 @@ impl ModelSelectorView {
             };
             self.custom_model_mode = CustomModelMode::Browse;
             return match action {
-                Some(a) => ModelSelectorEvent::Emit(a),
+                Some(a) => ModelSelectorEvent::Emit(Box::new(a)),
                 None => ModelSelectorEvent::Consumed,
             };
         }

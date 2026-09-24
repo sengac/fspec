@@ -173,6 +173,31 @@ pub fn calculate_stats(scenarios: &[CoverageScenario]) -> CoverageStats {
     }
 }
 
+/// Names of the scenarios in `feature_content` (Gherkin source text) that
+/// carry `@deprecated` — either on the scenario's own tag run or on the
+/// feature-level tag run (which deprecates every scenario in the file).
+///
+/// Used by the COV-056 coverage-exemption gate and the show-coverage DEPRECATED
+/// marker. Returns `None` when the file does not parse (callers keep their
+/// pre-deprecation behavior on parse failure, mirroring the
+/// stale-scenario-check parity rule in `update-work-unit-status`).
+pub fn deprecated_scenario_names(feature_content: &str) -> Option<std::collections::HashSet<String>> {
+    use crate::io::gherkin::parse_feature_lenient;
+    use std::collections::HashSet;
+
+    let feature = parse_feature_lenient(feature_content).ok()?;
+    let feature_deprecated = feature.tags.iter().any(|t| t.trim_start_matches('@').eq_ignore_ascii_case("deprecated"));
+    let names = feature
+        .scenarios
+        .iter()
+        .filter(|s| {
+            feature_deprecated || s.tags.iter().any(|t| t.trim_start_matches('@').eq_ignore_ascii_case("deprecated"))
+        })
+        .map(|s| s.name.clone())
+        .collect::<HashSet<String>>();
+    Some(names)
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -284,5 +309,33 @@ mod tests {
             c.extra.get("customField").and_then(|v| v.as_str()),
             Some("keepme")
         );
+    }
+
+    #[test]
+    fn deprecated_names_scenario_level() {
+        let feature = "@WU-001\nFeature: X\n\n  Scenario: Live\n    Given a\n    When b\n    Then c\n\n  @deprecated\n  Scenario: Stale\n    Given a\n    When b\n    Then c\n";
+        let names = deprecated_scenario_names(feature).expect("parses");
+        assert!(names.contains("Stale"));
+        assert!(!names.contains("Live"));
+    }
+
+    #[test]
+    fn deprecated_names_feature_level_deprecates_all() {
+        let feature = "@WU-001\n@deprecated\nFeature: X\n\n  Scenario: A\n    Given a\n    When b\n    Then c\n\n  Scenario: B\n    Given a\n    When b\n    Then c\n";
+        let names = deprecated_scenario_names(feature).expect("parses");
+        assert!(names.contains("A"));
+        assert!(names.contains("B"));
+    }
+
+    #[test]
+    fn deprecated_names_none_when_untagged() {
+        let feature = "@WU-001\nFeature: X\n\n  Scenario: A\n    Given a\n    When b\n    Then c\n";
+        let names = deprecated_scenario_names(feature).expect("parses");
+        assert!(names.is_empty());
+    }
+
+    #[test]
+    fn deprecated_names_none_on_parse_failure() {
+        assert!(deprecated_scenario_names("not gherkin at all").is_none());
     }
 }

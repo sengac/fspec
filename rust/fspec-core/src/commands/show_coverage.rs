@@ -210,9 +210,17 @@ fn show_single_feature(
 
     let warnings = collect_warnings(&coverage, project_root);
 
+    // COV-056: read @deprecated scenario names from the sibling .feature file
+    // (parse failure → empty set, no markers rendered).
+    let feature_path = features_dir.join(file_name.as_str());
+    let deprecated: std::collections::HashSet<String> = std::fs::read_to_string(&feature_path)
+        .ok()
+        .and_then(|content| crate::types::coverage::deprecated_scenario_names(&content))
+        .unwrap_or_default();
+
     match format {
-        OutputFormat::Json => Ok(render_single_json(&coverage, &file_name, &warnings)),
-        OutputFormat::Markdown => Ok(render_single_markdown(&coverage, &file_name, &warnings)),
+        OutputFormat::Json => Ok(render_single_json(&coverage, &file_name, &warnings, &deprecated)),
+        OutputFormat::Markdown => Ok(render_single_markdown(&coverage, &file_name, &warnings, &deprecated)),
     }
 }
 
@@ -277,7 +285,12 @@ fn calculate_line_counts(coverage: &CoverageFile) -> LineCounts {
 }
 
 #[allow(clippy::expect_used)] // stats invariant: caller synthesizes before render
-fn render_single_markdown(coverage: &CoverageFile, file_name: &str, warnings: &[String]) -> String {
+fn render_single_markdown(
+    coverage: &CoverageFile,
+    file_name: &str,
+    warnings: &[String],
+    deprecated: &std::collections::HashSet<String>,
+) -> String {
     let mut lines: Vec<String> = Vec::new();
 
     let stats = coverage
@@ -327,12 +340,23 @@ fn render_single_markdown(coverage: &CoverageFile, file_name: &str, warnings: &[
 
     for scenario in &coverage.scenarios {
         let status = coverage_status(scenario);
-        lines.push(format!(
-            "### {} {} ({})",
-            status.symbol(),
-            scenario.name,
-            status.label()
-        ));
+        // COV-056: additive DEPRECATED marker (byte-identical output when the
+        // scenario is not deprecated — see the untagged byte-parity scenario).
+        if deprecated.contains(&scenario.name) {
+            lines.push(format!(
+                "### {} {} ({}) [DEPRECATED]",
+                status.symbol(),
+                scenario.name,
+                status.label()
+            ));
+        } else {
+            lines.push(format!(
+                "### {} {} ({})",
+                status.symbol(),
+                scenario.name,
+                status.label()
+            ));
+        }
 
         if scenario.test_mappings.is_empty() {
             lines.push("- No test mappings".to_string());
@@ -400,17 +424,29 @@ struct EnrichedScenario<'a> {
     test_mappings: &'a [crate::types::coverage::TestMapping],
     #[serde(rename = "coverageStatus")]
     coverage_status: &'static str,
+    // COV-056: emitted only when true so untagged features stay byte-identical.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    deprecated: Option<bool>,
 }
 
 #[allow(clippy::expect_used)] // stats invariant: caller synthesizes before render
-fn render_single_json(coverage: &CoverageFile, file_name: &str, warnings: &[String]) -> String {
+fn render_single_json(
+    coverage: &CoverageFile,
+    file_name: &str,
+    warnings: &[String],
+    deprecated: &std::collections::HashSet<String>,
+) -> String {
     let enriched_scenarios: Vec<EnrichedScenario> = coverage
         .scenarios
         .iter()
-        .map(|s| EnrichedScenario {
-            name: &s.name,
-            test_mappings: &s.test_mappings,
-            coverage_status: coverage_status(s).json_str(),
+        .map(|s| {
+            let is_dep = deprecated.contains(&s.name);
+            EnrichedScenario {
+                name: &s.name,
+                test_mappings: &s.test_mappings,
+                coverage_status: coverage_status(s).json_str(),
+                deprecated: is_dep.then_some(true),
+            }
         })
         .collect();
 

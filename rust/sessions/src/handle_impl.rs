@@ -444,6 +444,25 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 // with the AUTO CompactionStarted writers).
                 session.store_pre_compaction_tokens(original_tokens as u32);
 
+                // CMPCT-050: close any persisted orphan tool_call BEFORE
+                // execute_compaction's defensive guard runs. A prior failed
+                // compaction (or a mid-tool-call interrupt) can leave a
+                // dangling Assistant(ToolCall) in the session file; without
+                // this preflight the manual /compact would return
+                // "Compaction failed: execute_compaction refuses to proceed"
+                // and wedge the session. No-op when the history is clean.
+                let injected =
+                    codelet_cli::interactive_helpers::inject_synthetic_tool_results_for_orphans(
+                        &mut inner.messages,
+                    );
+                if injected > 0 {
+                    tracing::warn!(
+                        injected,
+                        "[compact_session] CMPCT-050: closed {} persisted orphan tool_call(s) before compaction",
+                        injected
+                    );
+                }
+
                 // `None` = manual/agent-initiated compaction (no resume prompt).
                 if let Err(e) =
                     execute_compaction(&mut inner, session.compaction_in_progress.clone(), None)

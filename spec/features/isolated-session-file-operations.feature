@@ -77,7 +77,7 @@ Feature: Isolated Session File Operations - BLOCKING Access to Original Project 
     Given a git repository at "/project" with file "/project/src/main.ts" containing "main project content"
     And an isolated session with worktree at "/project/.fspec/worktrees/<session-id>"
     And the worktree contains directory "src/"
-    When the Read tool is invoked with file_path "../../src/main.ts"
+    When the Read tool is invoked with file_path "../../../src/main.ts"
     Then the tool should return an error containing "blocked from original project"
     And the file should NOT be read
 

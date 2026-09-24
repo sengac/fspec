@@ -173,7 +173,11 @@ fn enter_before_nav_is_noop_on_model_row() {
 
     // @step Then the key is consumed and no model-selected action is emitted
     assert!(
-        !matches!(out, ModelSelectorEvent::Emit(Action::ModelSelected(..))),
+        !matches!(
+            out,
+            ModelSelectorEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::ModelSelected(..))
+        ),
         "Enter with no active selection must NOT emit ModelSelected, got {out:?}"
     );
     assert!(
@@ -221,7 +225,12 @@ fn matched_current_model_seeds_cursor_and_enter_selects() {
 
     // @step Then a model-selected action is emitted for "claude-sonnet"
     match out {
-        ModelSelectorEvent::Emit(Action::ModelSelected(Some(sid), pkey, mid)) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::ModelSelected(Some(sid), pkey, mid) = *action else {
+                panic!(
+                    "expected Emit(ModelSelected(Some(..), .., \"claude-sonnet\")), got {action:?}"
+                );
+            };
             assert_eq!(sid.value, "s-1");
             assert_eq!(pkey, "anthropic");
             assert_eq!(mid, "claude-sonnet");

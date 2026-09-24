@@ -280,7 +280,10 @@ fn space_emits_toggle_action_for_focused_rule() {
     // Verified via the emitted Action — the App's dispatch_blocklist
     // handler is the side that mutates AgentViewStore.
     match out {
-        BlocklistEvent::Emit(Action::ToggleBlocklistRule(id)) => {
+        BlocklistEvent::Emit(action) => {
+            let Action::ToggleBlocklistRule(id) = *action else {
+                panic!("expected ToggleBlocklistRule action; got {action:?}");
+            };
             assert_eq!(id, "git-checkout-block");
         }
         _ => panic!("expected ToggleBlocklistRule action; got {out:?}"),
@@ -293,7 +296,7 @@ fn space_emits_toggle_action_for_focused_rule() {
     // toggles (insert ↔ remove) so the second press removes the id.
     assert!(matches!(
         out,
-        BlocklistEvent::Emit(Action::ToggleBlocklistRule(_))
+        BlocklistEvent::Emit(ref a) if matches!(a.as_ref(), Action::ToggleBlocklistRule(_))
     ));
 }
 
@@ -312,7 +315,10 @@ fn enter_emits_toggle_action_for_focused_rule() {
 
     // @step Then the focused session's blocklist_disabled set contains "cat-block"
     match out {
-        BlocklistEvent::Emit(Action::ToggleBlocklistRule(id)) => {
+        BlocklistEvent::Emit(action) => {
+            let Action::ToggleBlocklistRule(id) = *action else {
+                panic!("expected ToggleBlocklistRule action; got {action:?}");
+            };
             assert_eq!(id, "cat-block");
         }
         _ => panic!("expected ToggleBlocklistRule action; got {out:?}"),

@@ -18,7 +18,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use codelet_fspec_tui::views::multiplex::MuxPaneKind;
 use codelet_fspec_tui::views::ViewMode;
@@ -33,15 +33,13 @@ use common::MockBackend;
 
 /// Serialises tests that mutate the process-global data directory (the
 /// mux-exit R6 auto-save writes the shared `fspec-config.json`).
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 /// Root the process-global data directory at a fresh throwaway dir and
 /// keep it alive (the established mux004 pattern). Returns the guard
 /// (held for the test's duration) + the TempDir.
-fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
-    let guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, TempDir) {
+    let guard = DATA_DIR_GUARD.lock().await;
     let tmp = TempDir::new().expect("tempdir");
     codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
@@ -171,7 +169,7 @@ fn focus_pane(app: &mut App, kind: MuxPaneKind) {
 async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_layout() {
     // The /mux off tail below triggers the mux-exit R6 auto-save (a
     // real write) — root the data dir for isolation.
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     // @step Given mux mode is active with Board, Agent, Files and Checkpoints panes
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(
@@ -274,7 +272,7 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
 #[tokio::test]
 #[serial]
 async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_saved_layout() {
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     // @step Given mux mode is active with Board, Agent and Checkpoints panes and one agent session is open
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(
@@ -424,7 +422,7 @@ async fn esc_on_a_files_pane_mid_initial_load_does_not_close_the_pane() {
 async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() {
     // The exit triggers the mux-exit R6 auto-save (a real write) — root
     // the data dir for isolation.
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     // @step Given mux mode is active with Agent and Checkpoints panes and no agent sessions are open
     let (mut app, _mock) = fresh_app();
     enter_mux_with_no_sessions(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Checkpoints]).await;
@@ -472,7 +470,7 @@ async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() {
 #[serial]
 async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via_the_saved_layout()
 {
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     // @step Given the mux grid shows Board, Agent and Checkpoints with one agent session open
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(

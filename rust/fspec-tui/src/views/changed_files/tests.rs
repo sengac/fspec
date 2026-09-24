@@ -154,8 +154,11 @@ fn moving_selection_down_reloads_diff_for_new_file() {
 
     // @step And the view requests a diff reload for b.txt
     match outcome {
-        ChangedFilesEvent::Emit(Action::LoadFileDiff(path)) => assert_eq!(path, "b.txt"),
-        other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        ChangedFilesEvent::Emit(boxed) => match *boxed {
+            Action::LoadFileDiff(path) => assert_eq!(path, "b.txt"),
+            other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        },
+        other => panic!("expected Emit(LoadFileDiff(b.txt)), got {other:?}"),
     }
 }
 
@@ -309,8 +312,11 @@ fn mouse_wheel_over_file_list_reloads_diff_for_new_file() {
 
     // @step And the view requests a diff reload for b.txt
     match outcome {
-        ChangedFilesEvent::Emit(Action::LoadFileDiff(path)) => assert_eq!(path, "b.txt"),
-        other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        ChangedFilesEvent::Emit(boxed) => match *boxed {
+            Action::LoadFileDiff(path) => assert_eq!(path, "b.txt"),
+            other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        },
+        other => panic!("expected Emit(LoadFileDiff(b.txt)), got {other:?}"),
     }
 }
 
@@ -431,8 +437,11 @@ fn files_focused_down_moves_selection_and_reloads_diff() {
 
     // @step And the view requests a diff reload for b.txt
     match outcome {
-        ChangedFilesEvent::Emit(Action::LoadFileDiff(path)) => assert_eq!(path, "b.txt"),
-        other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        ChangedFilesEvent::Emit(boxed) => match *boxed {
+            Action::LoadFileDiff(path) => assert_eq!(path, "b.txt"),
+            other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        },
+        other => panic!("expected Emit(LoadFileDiff(b.txt)), got {other:?}"),
     }
 }
 
@@ -470,8 +479,11 @@ fn clicking_an_unselected_file_row_selects_it_and_reloads_its_diff() {
 
     // @step And the view requests a diff reload for b.txt
     match outcome {
-        ChangedFilesEvent::Emit(Action::LoadFileDiff(path)) => assert_eq!(path, "b.txt"),
-        other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        ChangedFilesEvent::Emit(boxed) => match *boxed {
+            Action::LoadFileDiff(path) => assert_eq!(path, "b.txt"),
+            other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        },
+        other => panic!("expected Emit(LoadFileDiff(b.txt)), got {other:?}"),
     }
 
     // @step And the focused pane is the file list pane
@@ -516,8 +528,11 @@ fn clicking_the_top_visible_row_selects_the_file_at_the_scroll_offset() {
     // @step And the view requests a diff reload for the file at index 3
     let expected = format!("file{scroll}.txt");
     match outcome {
-        ChangedFilesEvent::Emit(Action::LoadFileDiff(path)) => assert_eq!(path, expected),
-        other => panic!("expected LoadFileDiff({expected}), got {other:?}"),
+        ChangedFilesEvent::Emit(boxed) => match *boxed {
+            Action::LoadFileDiff(path) => assert_eq!(path, expected),
+            other => panic!("expected LoadFileDiff({expected}), got {other:?}"),
+        },
+        other => panic!("expected Emit(LoadFileDiff), got {other:?}"),
     }
 }
 
@@ -1121,8 +1136,11 @@ fn arrowing_while_a_diff_is_in_flight_is_swallowed_so_the_selection_stays_put() 
     // @step When the user presses Down
     let outcome = view.handle_event(&key(KeyCode::Down));
     match outcome {
-        ChangedFilesEvent::Emit(Action::LoadFileDiff(path)) => assert_eq!(path, "b.txt"),
-        other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        ChangedFilesEvent::Emit(boxed) => match *boxed {
+            Action::LoadFileDiff(path) => assert_eq!(path, "b.txt"),
+            other => panic!("expected LoadFileDiff(b.txt), got {other:?}"),
+        },
+        other => panic!("expected Emit(LoadFileDiff(b.txt)), got {other:?}"),
     }
     // The dispatcher folds the emit by beginning the diff stage.
     view.load.begin_stage(

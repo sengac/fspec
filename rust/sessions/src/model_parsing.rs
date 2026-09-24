@@ -261,7 +261,9 @@ mod tests {
         );
 
         // @step And create_session_from_manifest calls parse_model_string
-        let call_count = sm_content.matches("crate::model_parsing::parse_model_string").count();
+        let call_count = sm_content
+            .matches("crate::model_parsing::parse_model_string")
+            .count();
         assert!(
             call_count >= 3,
             "session_manager.rs must call parse_model_string at least 3 times (found {call_count})"

@@ -69,11 +69,7 @@ fn fresh_git_repo() -> tempfile::TempDir {
 /// Build a manager rooted in a fresh data dir with the offline models.dev
 /// fixture pre-seeded, with HOME redirected to a temp dir so the
 /// `~/.fspec/git-sessions` manifest writes stay hermetic.
-fn manager_with_seeded_cache() -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    Arc<SessionManager>,
-) {
+fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<SessionManager>) {
     set_dummy_credentials();
     let data_dir = tempfile::tempdir().expect("tempdir for data dir");
     let home_dir = tempfile::tempdir().expect("tempdir for HOME");
@@ -84,8 +80,7 @@ fn manager_with_seeded_cache() -> (
     // persistence singletons BEFORE pointing the data directory at this
     // test's fresh temp dir so session-manifest writes stay hermetic.
     codelet_core::persistence::reset_stores_for_tests();
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
     let manager = Arc::new(SessionManager::new());
     (data_dir, home_dir, manager)
@@ -212,7 +207,10 @@ async fn scenario_detach_session_worktree_clears_isolation_and_marks_worktree_pr
             ..
         } => {
             assert!(!is_isolated, "detach must emit is_isolated=false");
-            assert!(worktree_path.is_none(), "detach must emit worktree_path=None");
+            assert!(
+                worktree_path.is_none(),
+                "detach must emit worktree_path=None"
+            );
         }
         other => panic!("expected IsolationStateChange chunk, got {other:?}"),
     }
@@ -238,7 +236,12 @@ async fn scenario_detach_session_worktree_errors_for_non_isolated_sessions() {
     let (_data_dir, _home_dir, manager) = manager_with_seeded_cache();
     let id = Uuid::new_v4().to_string();
     manager
-        .create_session_with_id(&id, "anthropic/claude-opus-4-5", repo.path().to_str().unwrap(), "plain")
+        .create_session_with_id(
+            &id,
+            "anthropic/claude-opus-4-5",
+            repo.path().to_str().unwrap(),
+            "plain",
+        )
         .await
         .expect("plain session creation must succeed");
 

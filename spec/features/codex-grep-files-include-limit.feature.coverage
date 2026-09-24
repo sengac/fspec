@@ -34,14 +34,19 @@
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425
               ]
             }
           ]
@@ -58,14 +63,19 @@
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425
               ]
             }
           ]
@@ -391,6 +401,6 @@
       "rust/tools/src/facade/zai.rs",
       "rust/tools/src/facade/search.rs"
     ],
-    "totalLinesCovered": 488
+    "totalLinesCovered": 498
   }
 }

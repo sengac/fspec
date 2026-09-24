@@ -62,10 +62,12 @@ impl CheckpointsView {
         );
         self.clear_files();
         match self.selected_checkpoint_info() {
-            Some(c) => CheckpointsEvent::Emit(crate::components::Action::LoadCheckpointFiles {
-                work_unit_id: c.work_unit_id.clone(),
-                name: c.name.clone(),
-            }),
+            Some(c) => {
+                CheckpointsEvent::Emit(Box::new(crate::components::Action::LoadCheckpointFiles {
+                    work_unit_id: c.work_unit_id.clone(),
+                    name: c.name.clone(),
+                }))
+            }
             None => CheckpointsEvent::Consumed,
         }
     }
@@ -91,13 +93,13 @@ impl CheckpointsView {
             self.files.len(),
         );
         match (self.selected_checkpoint_info(), self.selected_file_path()) {
-            (Some(c), Some(path)) => {
-                CheckpointsEvent::Emit(crate::components::Action::LoadCheckpointFileDiff {
+            (Some(c), Some(path)) => CheckpointsEvent::Emit(Box::new(
+                crate::components::Action::LoadCheckpointFileDiff {
                     work_unit_id: c.work_unit_id.clone(),
                     name: c.name.clone(),
                     path,
-                })
-            }
+                },
+            )),
             _ => CheckpointsEvent::Consumed,
         }
     }

@@ -121,18 +121,21 @@ pub async fn agent_loop(
         // RIG-014: `is_retry_input` distinguishes synthetic retry inputs (compaction
         // watchdog / loop-abort auto-continue) from real user input so the
         // loop-abort retry counter is only reset on genuine user turns.
-        let (input_to_process, is_retry_input): (Option<InputWithImages>, bool) =
-            if let Some(retry_text) = compaction_retry_input.take() {
-                tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
-                (
-                    Some(InputWithImages {
-                        text: retry_text,
-                        thinking_config: None,
-                        images: None,
-                    }),
-                    true,
-                )
-            } else {
+        let (input_to_process, is_retry_input): (Option<InputWithImages>, bool) = if let Some(
+            retry_text,
+        ) =
+            compaction_retry_input.take()
+        {
+            tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
+            (
+                Some(InputWithImages {
+                    text: retry_text,
+                    thinking_config: None,
+                    images: None,
+                }),
+                true,
+            )
+        } else {
             // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
             // Lock the supervisor_input_rx to use in select
             let mut supervisor_rx = session.incoming_message_rx.lock().await;
@@ -338,6 +341,11 @@ pub async fn agent_loop(
             // Set status to running
             session.set_status(SessionStatus::Running);
             session.reset_interrupt();
+            tracing::debug!(
+                session_id = %session.id,
+                input_chars = input.chars().count(),
+                "[compaction-status] turn START — status → Running (thinking mode)"
+            );
 
             // Get provider name and model ID early (needed for thinking config)
             // Lock briefly, then release before the heavy processing
@@ -524,10 +532,9 @@ pub async fn agent_loop(
             // RIG-014 defaults via `LoopDetectionWiring::default()`).
             let session_for_output = session.clone();
             let loop_wiring = {
-                let resolved =
-                    codelet_sessions::model_resolution::resolve_profile_loop_detection(
-                        inner_session.provider_manager(),
-                    );
+                let resolved = codelet_sessions::model_resolution::resolve_profile_loop_detection(
+                    inner_session.provider_manager(),
+                );
                 crate::background_output::LoopDetectionWiring {
                     enabled: resolved.enabled.unwrap_or(true),
                     window: resolved.window.unwrap_or(160),
@@ -556,9 +563,7 @@ pub async fn agent_loop(
                     session.id
                 );
                 inner_session.messages.push(rig::message::Message::User {
-                    content: rig::OneOrMany::one(rig::message::UserContent::text(
-                        loop_abort_note,
-                    )),
+                    content: rig::OneOrMany::one(rig::message::UserContent::text(loop_abort_note)),
                 });
             }
 
@@ -709,9 +714,11 @@ pub async fn agent_loop(
             // transitions into the chunk stream.
             let session_for_exec_stdin = session.clone();
             let exec_stdin_callback: codelet_tools::unified_exec::ExecStdinRequestCallback =
-                std::sync::Arc::new(move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
-                    session_for_exec_stdin.set_exec_stdin_request(request);
-                });
+                std::sync::Arc::new(
+                    move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
+                        session_for_exec_stdin.set_exec_stdin_request(request);
+                    },
+                );
             codelet_tools::unified_exec::set_exec_stdin_request_callback(
                 session.id,
                 Some(exec_stdin_callback),
@@ -741,6 +748,33 @@ pub async fn agent_loop(
                 session.id,
                 &inner_session,
                 std::path::PathBuf::from(&session.project),
+            );
+
+            // CMPCT-044: Register the compactor sub-agent handler so the
+            // stream-loop overflow cascade can escalate to a clean
+            // ephemeral compactor (mirrors the DeepSearch registration —
+            // re-registered after /model / /provider changes).
+            crate::generate_compaction_handler::register_compactor_sub_agent_handler(
+                session.id,
+                &inner_session,
+                std::path::PathBuf::from(&session.project),
+                session.compaction_in_progress.clone(),
+            );
+
+            // CMPCT-045: Register the GenerateCompaction tool handler —
+            // on-demand compaction of a target session (default: the
+            // calling session). Captures the caller's BackgroundSession
+            // (status / progress / pending_dag_content for the
+            // calling-session pin) and the owning SessionManager (to
+            // reach other live sessions' inner). Mirrors the DeepSearch
+            // registration — re-registered after /model / /provider
+            // changes.
+            crate::generate_compaction_handler::register_generate_compaction_handler(
+                session.id,
+                &inner_session,
+                std::path::PathBuf::from(&session.project),
+                session.clone(),
+                session.owning_manager(),
             );
 
             // AMGR-009: Register AgentManager handler for this session
@@ -1087,9 +1121,7 @@ pub async fn agent_loop(
                                 agent.tool_server_handle.clone(),
                             );
                             let agent = codelet_core::RigAgent::with_default_depth(agent)
-                                .with_preserve_thinking(
-                                    inner_session.preserve_thinking_enabled,
-                                );
+                                .with_preserve_thinking(inner_session.preserve_thinking_enabled);
                             codelet_cli::interactive::run_agent_stream_with_images(
                                 agent,
                                 input,
@@ -1272,6 +1304,7 @@ pub async fn agent_loop(
                         session.id,
                         role_preamble.as_deref(),
                         thinking_config_value.clone(),
+                        false,
                     );
                     match agent_result {
                         Ok(handle) => {
@@ -1330,6 +1363,32 @@ pub async fn agent_loop(
             // recalculated by the apply, so compacted_tokens reflects the real
             // post-injection context (reminders + summary), not the summary alone.
             let pre_compaction_tokens = session.pre_compaction_tokens.load(Ordering::Acquire);
+            let has_pending_dag_before = session
+                .pending_dag_content
+                .lock()
+                .map(|guard| guard.is_some())
+                .unwrap_or(false);
+            let compaction_flag_before = session.compaction_in_progress.load(Ordering::Acquire);
+            tracing::debug!(
+                session_id = %session.id,
+                has_pending_dag_before,
+                compaction_flag_before,
+                pre_compaction_tokens,
+                "[compaction-status] turn END — checking for pending DAG to pin"
+            );
+            // CMPCT-046b: honest zero-basis guard. Providers that do not
+            // report usage (e.g. OpenAI streaming) leave the tracker at 0
+            // for the whole turn, so the pre-compaction snapshot (cached
+            // or tracker basis) is 0 and CompactionComplete would ship
+            // `0 -> post`. Estimate from the PRE-APPLY message list — the
+            // same count_tokens basis the post-pin recalculation uses —
+            // before apply_pending_dag_and_emit clears the messages.
+            let pre_compaction_tokens = if pre_compaction_tokens == 0 && has_pending_dag_before {
+                codelet_cli::interactive_helpers::pre_compaction_basis(0, &inner_session.messages)
+                    as u32
+            } else {
+                pre_compaction_tokens
+            };
             if let Some(dag_nodes) = crate::inject_summary_handler::apply_pending_dag_and_emit(
                 &mut inner_session,
                 &session.pending_dag_content,
@@ -1443,6 +1502,12 @@ pub async fn agent_loop(
                         &inner_session.messages,
                     );
 
+                    // CMPCT-047: single-sourced Level-3 shape — the generic
+                    // auto-recovered node is built by the shared
+                    // compaction_dag helper (the 044 round, 045 handler,
+                    // and this watchdog all use the same node template so
+                    // the shape cannot drift).
+                    let last_turn = inner_session.messages.len().saturating_sub(1);
                     let fallback_dag = if !partial_nodes.is_empty() {
                         tracing::info!(
                             "[AGENT-LOOP] Found {} partial dag-node blocks, assembling",
@@ -1450,17 +1515,14 @@ pub async fn agent_loop(
                         );
                         partial_nodes.join("\n\n")
                     } else {
-                        let last_turn = inner_session.messages.len().saturating_sub(1);
                         tracing::info!(
                             "[AGENT-LOOP] No partial dag-nodes found, creating minimal fallback (turns 0-{})",
                             last_turn
                         );
-                        format!(
-                            r#"<dag-node depth="D1" turns="0-{}" label="Auto-recovered: compaction timeout">
-Session was auto-compacted due to convergence timeout.
-Use SessionSearch to recover context.
-</dag-node>"#,
-                            last_turn
+                        codelet_cli::compaction_dag::build_generic_fallback_dag_node(
+                            "Auto-recovered: compaction timeout",
+                            "Session was auto-compacted due to convergence timeout.",
+                            inner_session.messages.len() as u32,
                         )
                     };
 
@@ -1491,11 +1553,21 @@ Use SessionSearch to recover context.
                 let was_compacting = session.compaction_in_progress.swap(false, Ordering::SeqCst);
 
                 if was_compacting {
+                    tracing::debug!(
+                        session_id = %session.id,
+                        current_status = ?session.get_status(),
+                        "[compaction-status] turn END — compaction flag was set → clearing + forcing Idle"
+                    );
                     session.set_compaction_progress(None);
                     if session.get_status() != SessionStatus::Idle {
                         session.set_status(SessionStatus::Idle);
                     }
                 }
+            } else {
+                tracing::debug!(
+                    session_id = %session.id,
+                    "[compaction-status] turn END — watchdog retry pending; keeping compaction flag"
+                );
             }
 
             set_pause_handler(session.id, None);
@@ -1505,14 +1577,13 @@ Use SessionSearch to recover context.
             codelet_tools::set_graph_search_handler(session.id, None); // KGRAPH-003: Cleanup
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
+            codelet_tools::set_generate_compaction_handler(session.id, None); // CMPCT-045: Cleanup
+            codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(session.id, None); // CMPCT-044: Cleanup
             codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
-            codelet_tools::unified_exec::set_exec_stdin_request_callback(
-                session.id,
-                None,
-            ); // TOOL-022 P2: Cleanup exec-stdin callback
+            codelet_tools::unified_exec::set_exec_stdin_request_callback(session.id, None); // TOOL-022 P2: Cleanup exec-stdin callback
             codelet_tools::set_bridge_handler(session.id, None);
             codelet_tools::remove_bridge_session_context(session.id);
 
@@ -1525,19 +1596,42 @@ Use SessionSearch to recover context.
             idle_guard.armed = false;
 
             if let Err(e) = result {
-                // PROV-009-DEBUG: Log full error with chain at warn level
-                tracing::warn!(
-                    "[AGENT-LOOP] ERROR received - session={}, error={}, error_chain={:?}",
-                    session.id,
-                    e,
-                    e.chain().map(|c| c.to_string()).collect::<Vec<_>>()
-                );
-                tracing::error!("Agent stream error for session {}: {}", session.id, e);
-                session.handle_output(StreamChunk::error(e.to_string()));
-                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
-                // This prevents race condition where JS receives Done before status is Idle
-                session.set_status(SessionStatus::Idle);
-                session.handle_output(StreamChunk::done());
+                // CMPCT-044: a terminal context-overflow error routes to the
+                // SAME compactor recovery entry point the stream loop uses —
+                // the session is reduced to reminders + a DAG (the oversized
+                // payload is never replayed) and the turn ends Idle.
+                // Without a match the error follows the existing terminal
+                // handling below.
+                // Clone the Arc — the turn's `inner_session` guard still
+                // borrows `session` and the recovery round takes its own
+                // lock.
+                let overflow_recovered =
+                    crate::terminal_overflow_recovery::try_terminal_overflow_recovery(
+                        session.clone(),
+                        &e,
+                    )
+                    .await;
+                if overflow_recovered {
+                    // The compactor round already emitted the lifecycle
+                    // events (CompactionComplete with the recalculated
+                    // basis) and set the session Idle — end the turn with
+                    // Done and do NOT replay the oversized payload.
+                    session.handle_output(StreamChunk::done());
+                } else {
+                    // PROV-009-DEBUG: Log full error with chain at warn level
+                    tracing::warn!(
+                        "[AGENT-LOOP] ERROR received - session={}, error={}, error_chain={:?}",
+                        session.id,
+                        e,
+                        e.chain().map(|c| c.to_string()).collect::<Vec<_>>()
+                    );
+                    tracing::error!("Agent stream error for session {}: {}", session.id, e);
+                    session.handle_output(StreamChunk::error(e.to_string()));
+                    // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
+                    // This prevents race condition where JS receives Done before status is Idle
+                    session.set_status(SessionStatus::Idle);
+                    session.handle_output(StreamChunk::done());
+                }
             } else {
                 // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
                 // Setting it again here is idempotent and ensures consistency

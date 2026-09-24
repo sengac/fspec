@@ -10,7 +10,7 @@ mod hunk;
 mod parser;
 
 use super::bash_binary_guard::{detect_bash_binary_output, format_file_tool_guard_message};
-use super::blocklist::check_file_path;
+use super::blocklist::check_file_path_semantic;
 use super::error::ToolError;
 use super::facade::validate_and_resolve_path;
 use super::validation::{
@@ -31,12 +31,17 @@ use uuid::Uuid;
 ///
 /// Extracts the common 3-step pattern shared by all PatchOp arms:
 /// 1. `validate_and_resolve_path` (session isolation)
-/// 2. `check_file_path` (blocklist)
+/// 2. `check_file_path_semantic` (blocklist + RLCD-004 semantic stage)
 /// 3. `require_absolute_path`
-fn validate_patch_path(session_id: Uuid, path: &str) -> Result<std::path::PathBuf, ToolError> {
+async fn validate_patch_path(
+    session_id: Uuid,
+    path: &str,
+) -> Result<std::path::PathBuf, ToolError> {
     let resolved = validate_and_resolve_path(session_id, path, "apply_patch")?;
     let p = resolved.to_string_lossy().to_string();
-    if let Err(blocked) = check_file_path(&p, session_id) {
+    if let Err(blocked) =
+        check_file_path_semantic(&p, session_id, "ApplyPatch", "patch").await
+    {
         return Err(ToolError::Blocked {
             tool: "apply_patch",
             message: blocked.to_string(),
@@ -124,7 +129,7 @@ impl rig::tool::Tool for ApplyPatchTool {
         for op in &ops {
             match op {
                 PatchOp::Add { path, lines } => {
-                    let abs = validate_patch_path(self.session_id, path)?;
+                    let abs = validate_patch_path(self.session_id, path).await?;
                     let p = abs.to_string_lossy().to_string();
                     create_parent_dirs(&abs)
                         .await
@@ -143,7 +148,7 @@ impl rig::tool::Tool for ApplyPatchTool {
                 }
 
                 PatchOp::Update { path, hunks } => {
-                    let abs = validate_patch_path(self.session_id, path)?;
+                    let abs = validate_patch_path(self.session_id, path).await?;
                     let p = abs.to_string_lossy().to_string();
                     let resolved =
                         require_file_exists(&abs, &p)
@@ -186,7 +191,7 @@ impl rig::tool::Tool for ApplyPatchTool {
                 }
 
                 PatchOp::Delete { path } => {
-                    let abs = validate_patch_path(self.session_id, path)?;
+                    let abs = validate_patch_path(self.session_id, path).await?;
                     let p = abs.to_string_lossy().to_string();
                     let resolved =
                         require_file_exists(&abs, &p)

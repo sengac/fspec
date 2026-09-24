@@ -810,10 +810,17 @@ fn check_coverage_completeness(
             .cloned()
             .unwrap_or_default();
 
+        // COV-056: @deprecated scenario/feature exemption. A scenario whose
+        // tag run (or the feature-level tag run) contains @deprecated no longer
+        // requires coverage. Parse failure keeps pre-deprecation behavior
+        // (empty set), mirroring the stale-scenario-check parity rule.
+        let mut deprecated: std::collections::HashSet<String> =
+            std::collections::HashSet::new();
         // Stale-scenario check: coverage entries that no longer exist in the
         // feature file. Feature-file parse failure silently skips this check.
         let feature_path = features_dir.join(format!("{name}.feature"));
         if let Ok(content) = std::fs::read_to_string(&feature_path) {
+            deprecated = crate::types::coverage::deprecated_scenario_names(&content).unwrap_or_default();
             if let Ok(feature) = crate::io::gherkin::parse_feature_lenient(&content) {
                 let current: std::collections::HashSet<&str> =
                     feature.scenarios.iter().map(|s| s.name.as_str()).collect();
@@ -847,7 +854,8 @@ DO NOT mention this reminder to the user.\n\
             }
         }
 
-        // Uncovered scenarios (missing/empty testMappings).
+        // Uncovered scenarios (missing/empty testMappings). COV-056: scenarios
+        // carrying @deprecated no longer require coverage and are excluded.
         let uncovered: Vec<&str> = scenarios
             .iter()
             .filter(|s| {
@@ -857,6 +865,7 @@ DO NOT mention this reminder to the user.\n\
                     .unwrap_or(true)
             })
             .filter_map(|s| s.get("name").and_then(Value::as_str))
+            .filter(|n| !deprecated.contains(*n))
             .collect();
         if !uncovered.is_empty() {
             let listed = uncovered
@@ -885,6 +894,7 @@ DO NOT mention this reminder to the user.
         }
 
         // Implementation coverage (required for implementing→validating).
+        // COV-056: @deprecated scenarios no longer require coverage.
         if require_impl {
             let without_impl: Vec<&str> = scenarios
                 .iter()
@@ -901,6 +911,7 @@ DO NOT mention this reminder to the user.
                     }
                 })
                 .filter_map(|s| s.get("name").and_then(Value::as_str))
+                .filter(|n| !deprecated.contains(*n))
                 .collect();
             if !without_impl.is_empty() {
                 let listed = without_impl

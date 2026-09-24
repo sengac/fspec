@@ -9,11 +9,38 @@
           "implMappings": [
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -32,11 +59,38 @@
           "implMappings": [
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -55,11 +109,15 @@
           "implMappings": [
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
+              "lines": [
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ]
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -78,11 +136,15 @@
           "implMappings": [
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
+              "lines": [
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ]
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -104,10 +166,6 @@
               "lines": "19-55,191-227,229-272"
             },
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
-            },
-            {
               "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
@@ -125,10 +183,6 @@
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227,229-272"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -192,11 +246,22 @@
           "implMappings": [
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -218,10 +283,6 @@
               "lines": "19-55,191-227"
             },
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
-            },
-            {
               "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
@@ -241,10 +302,6 @@
               "lines": "19-55,191-227"
             },
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
-            },
-            {
               "file": "rust/napi/src/thinking_config.rs",
               "lines": "47-77,109-135"
             }
@@ -262,10 +319,6 @@
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5047-5105"
             },
             {
               "file": "rust/napi/src/thinking_config.rs",
@@ -291,6 +344,15 @@
   "stats": {
     "totalScenarios": 16,
     "coveredScenarios": 13,
-    "coveragePercent": 81
+    "coveragePercent": 81,
+    "testFiles": [
+      "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/facade/thinking_config.rs",
+      "rust/napi/src/thinking_config.rs",
+      "rust/providers/src/claude.rs"
+    ],
+    "totalLinesCovered": 703
   }
 }

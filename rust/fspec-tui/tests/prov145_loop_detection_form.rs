@@ -212,10 +212,19 @@ fn loop_window_value_saves_and_round_trips_through_the_form() {
     // @step Then the built profile definition carries loopDetectionWindow 320
     use codelet_fspec_tui::views::ProviderSettingsEvent;
     let def = match &event {
-        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile {
-            definition,
-            ..
-        }) => definition.clone(),
+        ProviderSettingsEvent::Emit(action)
+            if matches!(
+                action.as_ref(),
+                codelet_fspec_tui::components::Action::SaveProfile { .. }
+            ) =>
+        {
+            let codelet_fspec_tui::components::Action::SaveProfile { definition, .. } =
+                action.as_ref()
+            else {
+                unreachable!("guard matched SaveProfile");
+            };
+            definition.clone()
+        }
         other => panic!("a valid form must emit SaveProfile, got {other:?}"),
     };
     assert_eq!(
@@ -282,13 +291,14 @@ fn non_numeric_loop_window_input_rejects_the_save() {
 
     // @step Then the save is rejected with a hint naming the Loop Window field
     use codelet_fspec_tui::views::ProviderSettingsEvent;
-    match &event {
-        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile {
-            ..
-        }) => {
-            panic!("an invalid Loop Window value must NOT emit a SaveProfile action")
+    if let ProviderSettingsEvent::Emit(ref action) = &event {
+        if !matches!(
+            action.as_ref(),
+            codelet_fspec_tui::components::Action::SaveProfile { .. }
+        ) {
+        } else {
+            panic!("an invalid Loop Window value must NOT emit a SaveProfile action");
         }
-        _ => {}
     }
     assert!(
         !view.status.is_empty() && view.status.contains("Loop Window"),
@@ -316,13 +326,14 @@ fn non_numeric_loop_repeat_input_rejects_the_save() {
 
     // @step Then the save is rejected with a hint naming the Loop Repeat field
     use codelet_fspec_tui::views::ProviderSettingsEvent;
-    match &event {
-        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile {
-            ..
-        }) => {
-            panic!("an invalid Loop Repeat value must NOT emit a SaveProfile action")
+    if let ProviderSettingsEvent::Emit(ref action) = &event {
+        if !matches!(
+            action.as_ref(),
+            codelet_fspec_tui::components::Action::SaveProfile { .. }
+        ) {
+        } else {
+            panic!("an invalid Loop Repeat value must NOT emit a SaveProfile action");
         }
-        _ => {}
     }
     assert!(
         !view.status.is_empty() && view.status.contains("Loop Repeat"),
@@ -350,13 +361,14 @@ fn non_numeric_loop_retries_input_rejects_the_save() {
 
     // @step Then the save is rejected with a hint naming the Loop Retries field
     use codelet_fspec_tui::views::ProviderSettingsEvent;
-    match &event {
-        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile {
-            ..
-        }) => {
-            panic!("an invalid Loop Retries value must NOT emit a SaveProfile action")
+    if let ProviderSettingsEvent::Emit(ref action) = &event {
+        if !matches!(
+            action.as_ref(),
+            codelet_fspec_tui::components::Action::SaveProfile { .. }
+        ) {
+        } else {
+            panic!("an invalid Loop Retries value must NOT emit a SaveProfile action");
         }
-        _ => {}
     }
     assert!(
         !view.status.is_empty() && view.status.contains("Loop Retries"),

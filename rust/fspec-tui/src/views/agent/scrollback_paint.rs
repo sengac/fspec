@@ -11,8 +11,8 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
-use ratatui::widgets::{Paragraph, Widget};
 
+use super::reflow_cache::{RowKey, RowReflowCache};
 use super::scrollback::ScrollState;
 use super::RenderedChunk;
 
@@ -20,7 +20,7 @@ use super::RenderedChunk;
 ///
 /// Precondition: `total_rows > vh > 0` (the caller checks overflow).
 /// The divisions below assume `total_rows >= vh + 1 >= 2`.
-pub(super) fn paint_scrollbar(
+pub(crate) fn paint_scrollbar(
     area: Rect,
     buf: &mut Buffer,
     vh: usize,
@@ -55,14 +55,24 @@ pub(super) fn paint_scrollbar(
 /// RPC-094: paint the windowed slice of chunk rows into `area`, skipping the
 /// first `skip_rows` visual rows and stopping at the area's bottom edge.
 /// Returns the number of distinct chunks that contributed at least one
-/// painted row. Extracted from `ScrollbackList::render_count_visited` to keep
-/// `scrollback.rs` under the 300-LoC source-shape ceiling.
-pub(super) fn paint_chunk_rows(
+/// painted row.
+///
+/// **BUG-190**: each VISIBLE row paints through the per-(chunk content,
+/// width) `RowReflowCache` — a hit blits the cached reflected cells (no
+/// re-wrap, no grapheme scan, no width measurement); a miss reflects the
+/// row once through the same ratatui `Paragraph` path the old uncached
+/// painter used, then caches the result. Rows scrolled OUT of view are
+/// neither painted nor reflected (they enter the cache when they first
+/// become visible), keeping the per-frame work O(visible rows) and the
+/// cache bounded to the observed working set. The cached path is
+/// byte-identical to the uncached one (R2).
+pub(crate) fn paint_chunk_rows(
     area: Rect,
     buf: &mut Buffer,
     chunks: &[RenderedChunk],
     content_width: u16,
     skip_rows: usize,
+    cache: &mut RowReflowCache,
 ) -> usize {
     let mut row_idx: usize = 0;
     let mut y = area.y;
@@ -73,21 +83,19 @@ pub(super) fn paint_chunk_rows(
             break;
         }
         let mut chunk_visited = false;
-        for line in &chunk.lines {
+        let key = RowKey::new(chunk, content_width);
+        for (row, line) in chunk.lines.iter().enumerate() {
             if row_idx < skip_rows {
+                // Scrolled out of view: do NOT paint and do NOT reflect —
+                // the row enters the cache only when it first becomes
+                // visible (BUG-190: per-frame work stays O(visible)).
                 row_idx += 1;
                 continue;
             }
             if y >= y_end {
                 break;
             }
-            let row = Rect {
-                x: area.x,
-                y,
-                width: content_width,
-                height: 1,
-            };
-            Paragraph::new(line.clone()).render(row, buf);
+            cache.paint_row(key, line, area.x, y, row, buf);
             y = y.saturating_add(1);
             row_idx += 1;
             if !chunk_visited {

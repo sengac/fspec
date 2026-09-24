@@ -56,7 +56,7 @@ impl SessionContext {
                 source.color = color;
             }
         }
-        self.scrollback.rewrap_at(idx);
+        self.rewrap_and_trim_at(idx);
     }
 
     /// RPC-416: remove the chunk with stable `seq` from scrollback,

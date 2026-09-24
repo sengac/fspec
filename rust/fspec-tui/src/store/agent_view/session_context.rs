@@ -22,7 +22,9 @@ use std::collections::HashMap;
 use super::chunk_wrap::{wrap_source, DEFAULT_WRAP_WIDTH};
 use super::pending_tool_diff::PendingToolDiff;
 use crate::terminal::sanitize::sanitize_for_terminal;
-use crate::views::agent::{ChunkKind, ChunkSource, RenderedChunk, ScrollbackList};
+use crate::views::agent::{
+    ChunkKind, ChunkSource, RenderedChunk, ScrollbackList, TrimResult, MAX_SCROLLBACK_VISUAL_ROWS,
+};
 
 #[derive(Debug)]
 pub struct SessionContext {
@@ -113,8 +115,88 @@ impl SessionContext {
         self.push_source(source);
     }
 
+    /// **BUG-192**: trim the scrollback to [`MAX_SCROLLBACK_VISUAL_ROWS`]
+    /// and shift the in-flight slot indices to match.
+    ///
+    /// `inserted_at`: when a chunk was just INSERTED at `idx`, slots at or
+    /// beyond `idx` also move right by 1 (the insert itself); a `push`
+    /// (append at the tail) passes `None`. `trim_shift` is the net chunk
+    /// shift from the trim itself (`-removed + marker`); 0 when no trim
+    /// fired.
+    ///
+    /// Invariants that keep this safe:
+    /// - the trim removes a PREFIX of chunks strictly below the protected
+    ///   floor (the in-flight slots' minimum), so no slot ever points at a
+    ///   removed chunk;
+    /// - a slot at index 0 (in-flight chunk IS the oldest) defers the trim
+    ///   (the marker would occupy its index); the insert shift still
+    ///   applies and the trim self-heals on the next mutation.
+    fn shift_in_flight_slots(&mut self, inserted_at: Option<usize>, trim_shift: isize) {
+        for slot in [&mut self.in_flight_assistant, &mut self.in_flight_thinking] {
+            if let Some(i) = slot {
+                let mut new = *i as isize + trim_shift;
+                if let Some(inserted_at) = inserted_at {
+                    if *i >= inserted_at {
+                        new += 1;
+                    }
+                }
+                *slot = Some(new.max(0) as usize);
+            }
+        }
+    }
+
+    /// **BUG-192**: run the widget trim (protecting the in-flight slots) and
+    /// shift the slot indices by the net chunk-count change so they keep
+    /// pointing at the SAME chunks.
+    ///
+    /// Called after every chunk-producing `push_source` /
+    /// `insert_source_at` and after every in-place in-flight growth
+    /// ([`Self::rewrap_and_trim_at`]) — the only two ways the total
+    /// visual-row count grows.
+    ///
+    /// `inserted_at` carries the insert-index shift for `insert_source_at`
+    /// call sites (see [`Self::shift_in_flight_slots`]). Returns the
+    /// [`crate::views::agent::TrimResult`] of the widget trim — `Default`
+    /// when the trim was deferred (in-flight chunk at index 0) or did not
+    /// fire.
+    pub(crate) fn trim_scrollback_to_cap(&mut self, inserted_at: Option<usize>) -> TrimResult {
+        let floor = self
+            .in_flight_assistant
+            .iter()
+            .chain(self.in_flight_thinking.iter())
+            .copied()
+            .min();
+        if floor == Some(0) {
+            // In-flight chunk at index 0 — the trim would remove the
+            // marker's slot; defer (the insert shift still applies below).
+            self.shift_in_flight_slots(inserted_at, 0);
+            return TrimResult::default();
+        }
+        let res = self
+            .scrollback
+            .trim_to_cap(MAX_SCROLLBACK_VISUAL_ROWS, floor.unwrap_or(0));
+        let trim_shift = res.marker_inserted as isize - res.removed_chunks as isize;
+        self.shift_in_flight_slots(inserted_at, trim_shift);
+        res
+    }
+
+    /// **BUG-192**: re-wrap a single (growing) chunk and then trim to the
+    /// cap, shifting the in-flight slots. All store-side in-place growth
+    /// (streaming deltas, tool-card progress, settle re-wraps) funnels
+    /// through here so the cap holds even between chunk pushes.
+    pub(crate) fn rewrap_and_trim_at(&mut self, idx: usize) {
+        self.scrollback.rewrap_at(idx);
+        self.trim_scrollback_to_cap(None);
+    }
+
     /// Lower-level push that allocates the seq cursor and performs
     /// the initial wrap. **RPC-091** pub(crate).
+    ///
+    /// **BUG-192**: trims after the push (see
+    /// [`Self::trim_scrollback_to_cap`]); existing in-flight slots are
+    /// shifted by the trim's net change (the pushed chunk is always the
+    /// tail and is never removed by the trim, so callers that adopt it as
+    /// a new in-flight slot read `chunk_count() - 1` afterwards).
     pub(crate) fn push_source(&mut self, source: ChunkSource) {
         let seq = self.scrollback_next_seq;
         self.scrollback_next_seq = self.scrollback_next_seq.saturating_add(1);
@@ -124,6 +206,7 @@ impl SessionContext {
             lines,
             source: Some(source),
         });
+        self.trim_scrollback_to_cap(None);
     }
 
     /// Insert a chunk at `idx`, shifting subsequent chunks right.
@@ -132,7 +215,13 @@ impl SessionContext {
     /// `chunk_processor::append_thinking` to splice a new thinking
     /// chunk BEFORE an in-flight assistant chunk (TS parity with
     /// `appendThinking` splice-before-streaming-assistant rule).
-    pub(crate) fn insert_source_at(&mut self, idx: usize, source: ChunkSource) {
+    ///
+    /// Returns the allocated `seq`.
+    ///
+    /// **BUG-192**: trims after the insert and shifts the in-flight slots
+    /// by BOTH the insert (+1 for slots at or beyond `idx`) and the trim's
+    /// net change, so pre-existing slots keep pointing at the same chunks.
+    pub(crate) fn insert_source_at(&mut self, idx: usize, source: ChunkSource) -> u64 {
         let seq = self.scrollback_next_seq;
         self.scrollback_next_seq = self.scrollback_next_seq.saturating_add(1);
         let lines = wrap_source(&source, DEFAULT_WRAP_WIDTH);
@@ -144,6 +233,8 @@ impl SessionContext {
                 source: Some(source),
             },
         );
+        self.trim_scrollback_to_cap(Some(idx));
+        seq
     }
 }
 

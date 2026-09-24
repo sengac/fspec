@@ -47,7 +47,7 @@ impl Navigator {
                 }
                 ProviderSettingsEvent::Emit(action) => {
                     if let Some(tx) = self.action_tx.as_ref() {
-                        let _ = tx.send(action);
+                        let _ = tx.send(*action);
                     }
                     EventResult::consumed()
                 }
@@ -73,7 +73,7 @@ impl Navigator {
             }
             ProviderSettingsEvent::Emit(action) => {
                 if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
+                    let _ = tx.send(*action);
                 }
                 EventResult::consumed()
             }
@@ -120,7 +120,7 @@ impl Navigator {
                     "[MODEL-SELECT] navigator relaying Emit onto action bus"
                 );
                 if let Some(tx) = self.action_tx.as_ref() {
-                    let send_res = tx.send(action);
+                    let send_res = tx.send(*action);
                     tracing::info!(
                         target: "model_select",
                         ok = send_res.is_ok(),
@@ -168,7 +168,7 @@ impl Navigator {
             }
             BlocklistEvent::Emit(action) => {
                 if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
+                    let _ = tx.send(*action);
                 }
                 EventResult::consumed()
             }
@@ -190,7 +190,7 @@ impl Navigator {
             }
             ChangedFilesEvent::Emit(action) => {
                 if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
+                    let _ = tx.send(*action);
                 }
                 EventResult::consumed()
             }
@@ -212,7 +212,7 @@ impl Navigator {
             }
             CheckpointsEvent::Emit(action) => {
                 if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
+                    let _ = tx.send(*action);
                 }
                 EventResult::consumed()
             }

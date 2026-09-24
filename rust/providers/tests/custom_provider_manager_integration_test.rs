@@ -608,6 +608,7 @@ fn format_system_prompt(config, preamble, fspec_guidance) { preamble }
         session_id,
         None,
         None,
+        false, // parent agent: full custom-provider tool surface
     );
 
     // @step Then CustomProvider::create_rig_agent is invoked and wires RhaiToolFacadeAdapter instances from the script's define_tools output

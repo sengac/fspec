@@ -9,9 +9,9 @@
 //! For isolated sessions, file paths are validated and resolved to the worktree
 //! to ensure the session cannot access files outside its isolated environment.
 
-use super::blocklist::check_file_path;
+use super::blocklist::check_file_path_semantic;
 use super::error::ToolError;
-use super::facade::validate_and_resolve_path;
+use super::facade::validate_and_resolve_path_with_block_notification;
 use super::file_type::{detect_file_type, ExemptFileType, FileType};
 use super::limits::OutputLimits;
 use super::model_capabilities;
@@ -284,11 +284,18 @@ impl rig::tool::Tool for ReadTool {
         }
 
         // Validate and resolve path (handles worktree isolation for isolated sessions)
-        let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "read")?;
+        // BLOCK-006: emit a block notification when isolation rejects the path.
+        let resolved_path =
+            validate_and_resolve_path_with_block_notification(self.session_id, &args.file_path,
+                &format!("reading {}", args.file_path), "read")?;
         let file_path_str = resolved_path.to_string_lossy().to_string();
 
-        // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&file_path_str, self.session_id) {
+        // Check file path against blocklist before any I/O (regex + RLCD-004
+        // semantic stage when the engine is reachable)
+        if let Err(blocked) =
+            check_file_path_semantic(&file_path_str, self.session_id, "Read", "read")
+                .await
+        {
             return Err(ToolError::Blocked {
                 tool: "read",
                 message: blocked.to_string(),

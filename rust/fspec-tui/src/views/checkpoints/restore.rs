@@ -101,7 +101,7 @@ impl CheckpointsView {
         if let Some(dialog) = self.restore_dialog.as_mut() {
             dialog.phase = DialogPhase::Restoring;
         }
-        CheckpointsEvent::Emit(action)
+        CheckpointsEvent::Emit(Box::new(action))
     }
 
     /// Fold a `RestoreCheckpointResult` into the dialog: drive it to

@@ -16,7 +16,6 @@
 // shared fspec-config.json.
 
 use std::sync::Arc;
-use std::sync::Mutex;
 
 use crossterm::event::{Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use proptest::proptest;
@@ -38,15 +37,13 @@ use common::MockBackend;
 
 /// Serialises tests that mutate the process-global data directory
 /// (within this test binary).
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 /// BUG-167: root the process-global data directory at a fresh throwaway
 /// dir (the established tui093 pattern). Returns the guard (held for the
 /// test's duration) + the TempDir.
-fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
-    let guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, TempDir) {
+    let guard = DATA_DIR_GUARD.lock().await;
     let tmp = TempDir::new().expect("tempdir");
     codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
@@ -588,7 +585,7 @@ async fn mux_4_on_an_equal_two_pane_split_divides_the_width_equally_across_four_
 async fn mux_save_persists_every_split_entry_and_a_fresh_bootstrap_restores_them() {
     // BUG-167: no manual persist-dirs wiring — root the process-global
     // data directory the way the production entry points do.
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     // @step Given mux mode is active with three panes whose dividers were dragged to a non-equal scale
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();

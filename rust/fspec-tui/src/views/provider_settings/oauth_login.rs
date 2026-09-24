@@ -38,11 +38,11 @@ pub(super) fn start_oauth_login(
             provider_id: provider_id.clone(),
         };
     }
-    ProviderSettingsEvent::Emit(Action::OAuthLoginStart {
+    ProviderSettingsEvent::Emit(Box::new(Action::OAuthLoginStart {
         provider_id,
         method,
         generation,
-    })
+    }))
 }
 
 /// Route a key through one of the five OAuth login modes.
@@ -131,23 +131,23 @@ fn handle_code_entry_key(
             if code_input.is_empty() {
                 ProviderSettingsEvent::Consumed
             } else {
-                ProviderSettingsEvent::Emit(Action::OAuthLoginHeadlessSubmit {
+                ProviderSettingsEvent::Emit(Box::new(Action::OAuthLoginHeadlessSubmit {
                     provider_id: provider_id.clone(),
                     code: code_input.clone(),
                     pkce_verifier: pkce_verifier.clone(),
                     generation: view.oauth_generation,
-                })
+                }))
             }
         }
         KeyCode::Char('c') if code_input.is_empty() => {
-            ProviderSettingsEvent::Emit(Action::OAuthCopyUrl {
+            ProviderSettingsEvent::Emit(Box::new(Action::OAuthCopyUrl {
                 url: authorize_url.clone(),
-            })
+            }))
         }
         KeyCode::Char('o') if code_input.is_empty() => {
-            ProviderSettingsEvent::Emit(Action::OAuthOpenUrl {
+            ProviderSettingsEvent::Emit(Box::new(Action::OAuthOpenUrl {
                 url: authorize_url.clone(),
-            })
+            }))
         }
         KeyCode::Char(ch) => {
             code_input.push(ch);

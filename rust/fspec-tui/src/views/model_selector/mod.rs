@@ -49,7 +49,9 @@ use crate::components::Action;
 pub enum ModelSelectorEvent {
     Consumed,
     Ignored,
-    Emit(Action),
+    /// Boxed — see `BlocklistEvent::Emit` for the `large_enum_variant`
+    /// rationale.
+    Emit(Box<Action>),
     Close,
     /// RPC-345: Tab keybind — pure UI navigation, no Action payload.
     /// The Navigator translates it to `Action::OpenProviderSettingsView`

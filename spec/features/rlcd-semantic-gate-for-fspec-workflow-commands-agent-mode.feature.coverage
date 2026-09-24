@@ -1,0 +1,611 @@
+{
+  "scenarios": [
+    {
+      "name": "A confident proceed answer executes the command normally",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "217-261",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A hold answer rejects the command before execution",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "271-305",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate_map.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An ask_user answer with a Deny response rejects the command",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "314-358",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An ask_user answer with AllowOnce executes once and prompts again",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "363-416",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An ask_user answer with AllowSession suppresses later prompts",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "424-476",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreachable engine fails open and executes the command",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "487-514",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A command not in the gate list passes through without RLCD involvement",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "525-551",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A command added to the gate list via config is also gated",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "558-590",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/config.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The gate state includes the work unit's title and epic when available",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "601-662",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing work-units.json degrades to a raw command state without failing",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "669-713",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A disabled RLCD config bypasses the gate entirely",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "724-756",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A low-confidence proceed answer asks the user instead of proceeding",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "767-797",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate_map.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A hold probability at or above holdThreshold rejects the command",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "804-825",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate_map.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Configured thresholds change the gate's decision",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "832-866",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate_map.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/rlcd003_workflow_gate.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/rlcd/gate.rs",
+      "rust/tools/src/rlcd/gate_map.rs",
+      "rust/tools/src/rlcd/config.rs"
+    ],
+    "totalLinesCovered": 917
+  }
+}

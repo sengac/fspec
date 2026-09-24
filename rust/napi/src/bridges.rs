@@ -194,14 +194,10 @@ pub(crate) fn init_block_notification_callbacks() {
     set_block_notification_callback(emit_block_notification_to_tui);
 
     // Register the work unit stage callback (WT-004: shared impl)
-    set_get_work_unit_stage_callback(
-        codelet_sessions::session_tool_callbacks::work_unit_stage,
-    );
+    set_get_work_unit_stage_callback(codelet_sessions::session_tool_callbacks::work_unit_stage);
 
     // GIT-020: Register the effective_cwd callback (WT-004: shared impl)
-    set_get_effective_cwd_callback(
-        codelet_sessions::session_tool_callbacks::isolation_context,
-    );
+    set_get_effective_cwd_callback(codelet_sessions::session_tool_callbacks::isolation_context);
 }
 
 /// BRIDGE-SESSION: Register session list and model info providers with the bridge relay.
@@ -274,12 +270,12 @@ pub(crate) fn init_bridge_session_and_terminal_creators() {
                 let project_path = std::env::current_dir()
                     .map(|p| p.to_string_lossy().to_string())
                     .unwrap_or_default();
-                sm.list_sessions(&project_path).into_iter().find_map(|info| {
-                    match (info.provider_id, info.model_id) {
+                sm.list_sessions(&project_path)
+                    .into_iter()
+                    .find_map(|info| match (info.provider_id, info.model_id) {
                         (Some(p), Some(m)) => Some(format!("{p}/{m}")),
                         _ => None,
-                    }
-                })
+                    })
             })
             .ok_or_else(|| "No default model available for session creation".to_string())?;
 
@@ -324,7 +320,11 @@ pub(crate) fn emit_block_notification_to_tui(
     action: String,
     reason: String,
 ) {
-    codelet_sessions::session_tool_callbacks::emit_block_notification(session_id_str, action, reason);
+    codelet_sessions::session_tool_callbacks::emit_block_notification(
+        session_id_str,
+        action,
+        reason,
+    );
 }
 
 // ============================================================================

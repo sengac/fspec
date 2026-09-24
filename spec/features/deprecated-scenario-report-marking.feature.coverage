@@ -1,0 +1,115 @@
+{
+  "scenarios": [
+    {
+      "name": "Deprecated marker appears in the show-coverage markdown report",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_display.rs",
+          "lines": "54-93",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
+              "lines": [
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deprecated marker appears in the show-coverage JSON report",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_display.rs",
+          "lines": "95-131",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
+              "lines": [
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Untagged feature files render byte-identical output",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_display.rs",
+          "lines": "134-165",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_coverage.rs",
+              "lines": [
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/cov056_deprecated_display.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/show_coverage.rs"
+    ],
+    "totalLinesCovered": 160
+  }
+}

@@ -1,0 +1,573 @@
+{
+  "scenarios": [
+    {
+      "name": "A scrollback below the cap is never trimmed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "92-120",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pushing past the cap trims the oldest chunks",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "122-165",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The trim marker accumulates the total number of trimmed rows",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "167-221",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                204,
+                205,
+                206,
+                207,
+                208,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sticky streaming shows no visible change after a trim",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "223-274",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scrolled-up viewport stays pinned to the same content",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "276-314",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scroll offset inside the removed region clamps to the marker",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "316-345",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The trim never removes an in-flight streaming chunk",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "347-409",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "558-645",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SELECT-mode selection on a trimmed turn is cleared",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "411-441",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The trim marker has stable geometry on resize",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "443-473",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reset clears the chunks, the marker and the trimmed counter",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "475-501",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trimming one session never affects another open session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "647-701",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every push keeps the total at or under the cap",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
+          "lines": "503-548",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
+      "rust/fspec-tui/src/store/agent_view/session_context.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_select.rs",
+      "rust/fspec-tui/src/views/agent/scrollback.rs"
+    ],
+    "totalLinesCovered": 941
+  }
+}

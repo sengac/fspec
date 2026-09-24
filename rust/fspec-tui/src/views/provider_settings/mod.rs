@@ -58,7 +58,9 @@ pub const DELETE_PROVIDER_CREDS_DIALOG_ID: &str = "delete-provider-creds";
 pub enum ProviderSettingsEvent {
     Consumed,
     Ignored,
-    Emit(Action),
+    /// Boxed — see `BlocklistEvent::Emit` for the `large_enum_variant`
+    /// rationale.
+    Emit(Box<Action>),
     Close,
     /// RPC-160: list-mode Tab keybind — Navigator translates it to the
     /// model-settings transition (pure UI navigation, no Action payload).

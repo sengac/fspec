@@ -244,7 +244,10 @@ async fn rejected_done_records_no_acceptance_and_never_exits_early() {
         .await;
 
     // @step Then the done call is rejected as a tool error
-    assert!(result.is_err(), "Tier 1 failure must reject the done() call");
+    assert!(
+        result.is_err(),
+        "Tier 1 failure must reject the done() call"
+    );
 
     // @step And the early-exit decision finds no acceptance and the loop continues
     let decision =
@@ -353,13 +356,21 @@ fn final_response_fallback_runs_the_identical_shared_teardown() {
     let mut plain_session = fresh_session();
     plain_session.continue_nudges_used = 2;
     let plain_output = RecordingOutput::new();
-    apply_finish_with_summary(&mut plain_session, session_id, "Refactor complete", &plain_output);
+    apply_finish_with_summary(
+        &mut plain_session,
+        session_id,
+        "Refactor complete",
+        &plain_output,
+    );
     assert_eq!(
         plain_output.statuses(),
         vec!["✓ done: Refactor complete".to_string()],
         "non-goal teardown must surface the summary as the closing line"
     );
-    assert_eq!(plain_session.continue_nudges_used, 0, "nudge counter must reset");
+    assert_eq!(
+        plain_session.continue_nudges_used, 0,
+        "nudge counter must reset"
+    );
 }
 
 // ============================================================================

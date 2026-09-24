@@ -219,6 +219,61 @@ pub fn extract_partial_dag_nodes(messages: &[Message]) -> Vec<String> {
     nodes
 }
 
+/// Extract partial `<dag-node>` blocks from a plain text string (the
+/// string variant of [`extract_partial_dag_nodes`]).
+///
+/// Used by the CMPCT-044/045 compactor sub-agent fallback: the sub-agent's
+/// final response (or its timeout reason) may carry complete `<dag-node>`
+/// blocks that are worth recovering even though the run itself failed.
+///
+/// Returns the complete `<dag-node>...</dag-node>` block strings, in
+/// order of appearance.
+pub fn extract_partial_dag_nodes_from_text(text: &str) -> Vec<String> {
+    DAG_NODE_BLOCK_RE
+        .find_iter(text)
+        .map(|m| m.as_str().to_string())
+        .collect()
+}
+
+/// Build the generic Level-3 `Auto-recovered` D1 dag-node (the CMPCT-020
+/// Level-3 shape). Shared by every convergence path so the label / body /
+/// turn-range formatting stays consistent and does not drift.
+///
+/// `total_turns` is the number of turns the recovered session covers; the
+/// node's `turns` range is `0-(total_turns - 1)`.
+pub fn build_generic_fallback_dag_node(label: &str, body: &str, total_turns: u32) -> String {
+    format!(
+        r#"<dag-node depth="D1" turns="0-{}" label="{label}">
+{body}
+Use SessionSearch to recover context.
+</dag-node>"#,
+        total_turns.saturating_sub(1)
+    )
+}
+
+/// Assemble the Level-3 fallback DAG for a failed / timed-out compactor
+/// sub-agent: recover any complete `<dag-node>` blocks from the sub-agent's
+/// (possibly partial) `failed_output`, else emit the generic auto-recovered
+/// D1 node.
+///
+/// This is the shared CMPCT-044 / CMPCT-045 convergence primitive — the
+/// 044 stream-loop round, the 045 handler, and (for the generic-node half)
+/// the agent-loop compaction watchdog all call into it so the
+/// partial-recovery + Level-3 shape cannot diverge across the three paths.
+pub fn build_recovered_or_generic_dag(
+    failed_output: &str,
+    generic_label: &str,
+    generic_body: &str,
+    total_turns: u32,
+) -> String {
+    let partial = extract_partial_dag_nodes_from_text(failed_output);
+    if !partial.is_empty() {
+        partial.join("\n\n")
+    } else {
+        build_generic_fallback_dag_node(generic_label, generic_body, total_turns)
+    }
+}
+
 // ============================================================================
 // Force-Inject Fallback
 // ============================================================================
@@ -258,4 +313,190 @@ pub fn force_inject_fallback_dag(
         session.messages.len(),
         session.token_tracker.input_tokens
     );
+}
+
+// ============================================================================
+// CMPCT-044: Compactor sub-agent prompt builder
+// ============================================================================
+
+/// Build the compactor sub-agent's task prompt.
+///
+/// Adapts [`COMPACTION_INSTRUCTION_FRESH`] / [`COMPACTION_INSTRUCTION_INCREMENTAL`]
+/// for the EPHEMERAL compactor sub-agent (DeepSearch-style):
+///
+/// - "Your conversation history" → "Session `<target-uuid>`" — every
+///   SessionSearch call must pass `session_id: <target-uuid>` explicitly,
+///   because the sub-agent's own session is its ephemeral one.
+/// - Final step: instead of "Call inject_summary(content)" → "Output the
+///   complete DAG as your final response; do not call any other tool
+///   after." The sub-agent has NO `inject_summary` tool (the pin is
+///   handler-side — CMPCT-044 Rule [3]).
+///
+/// `existing_dag`: `Some((dag_content, max_turn_end))` selects the
+/// INCREMENTAL variant with the existing DAG embedded and
+/// `last_compacted_turn = max_turn_end + 1`; `None` selects FRESH. The
+/// existing DAG must be captured via [`detect_existing_dag`] BEFORE any
+/// clear (CMPCT-019 / CMPCT-045 Rule [5] logic mirrored).
+pub fn build_generate_compaction_prompt(
+    target_session: uuid::Uuid,
+    existing_dag: Option<(String, usize)>,
+) -> String {
+    let target = target_session.to_string();
+
+    let base = match existing_dag {
+        Some((dag_content, max_turn_end)) => {
+            let last_compacted_turn = max_turn_end.saturating_add(1);
+            COMPACTION_INSTRUCTION_INCREMENTAL
+                .replace("{existing_dag_content}", &dag_content)
+                .replace("{last_compacted_turn}", &last_compacted_turn.to_string())
+        }
+        None => COMPACTION_INSTRUCTION_FRESH.to_string(),
+    };
+
+    // "Your conversation history" → the explicit target session id.
+    let scoped = base.replace(
+        "Your conversation history has been preserved on disk",
+        &format!("Session {target} has been preserved on disk"),
+    );
+
+    // Every SessionSearch call must target the target session explicitly —
+    // the sub-agent's own session is its ephemeral one.
+    let target_qualified = scoped
+        .replace(
+            "SessionSearch(show, ",
+            &format!("SessionSearch(session_id: \"{target}\", show, "),
+        )
+        .replace(
+            "SessionSearch(search, ",
+            &format!("SessionSearch(session_id: \"{target}\", search, "),
+        );
+
+    // Final step: output the DAG as the final response instead of calling
+    // inject_summary (the sub-agent has no such tool). The FRESH and
+    // INCREMENTAL instructions differ only in "updated" here — replace
+    // both variants.
+    let output_instruction = format!(
+        "Output the complete DAG (all <dag-node> blocks + the \
+<dag-files> section) as your FINAL RESPONSE. Do not call any other tool \
+after outputting it — the engine pins the DAG to session {target} on your \
+behalf."
+    );
+    target_qualified
+        .replace(
+            "Call inject_summary(content) with your complete updated DAG to pin it and \
+continue working.",
+            &output_instruction,
+        )
+        .replace(
+            "Call inject_summary(content) with your complete DAG to pin it and \
+continue working.",
+            &output_instruction,
+        )
+}
+
+#[cfg(test)]
+mod cmpct044_prompt_tests {
+    use super::*;
+
+    // Scenario: Compaction prompt is FRESH when the target has no DAG
+    // @step Given a target session that contains no existing compaction DAG
+    #[test]
+    fn fresh_prompt_names_the_target_session() {
+        let target = uuid::Uuid::new_v4();
+        // @step When the compactor sub-agent's task prompt is built
+        let prompt = build_generate_compaction_prompt(target, None);
+
+        // @step Then the FRESH compaction instruction is used
+        assert!(
+            prompt.contains("Build a hierarchical summary DAG of your session"),
+            "FRESH instruction must be selected when no DAG exists"
+        );
+
+        // @step And the task prompt names the target session id for every SessionSearch call
+        assert!(
+            prompt.contains(&format!("SessionSearch(session_id: \"{target}\", show, ")),
+            "SessionSearch show calls must target the target session id"
+        );
+        assert!(
+            prompt.contains(&format!("SessionSearch(session_id: \"{target}\", search, ")),
+            "SessionSearch search calls must target the target session id"
+        );
+
+        // The FRESH instruction's "Your conversation history" opener must be
+        // replaced with the explicit target session id (the string-replace
+        // adaptation must actually have fired, not just left the base text).
+        assert!(
+            prompt.contains(&format!("Session {target} has been preserved on disk")),
+            "the FRESH opener must be scoped to the target session id"
+        );
+        assert!(
+            !prompt.contains("Your conversation history has been preserved on disk"),
+            "the unscoped 'Your conversation history' opener must not survive \
+             the replacement (string-replace must have fired)"
+        );
+
+        // @step And the task prompt instructs the sub-agent to output the complete DAG as its final response
+        assert!(
+            prompt.contains("Output the complete DAG"),
+            "the prompt must instruct the sub-agent to output the DAG as its final response"
+        );
+
+        // @step And the task prompt does not mention inject_summary
+        assert!(
+            !prompt.contains("inject_summary"),
+            "the compactor prompt must NOT mention inject_summary (the sub-agent has no such tool)"
+        );
+    }
+
+    // Scenario: Compaction prompt is INCREMENTAL when the target already has a DAG
+    // @step Given a target session whose context already contains a compaction DAG ending at turn N
+    #[test]
+    fn incremental_prompt_embeds_existing_dag_and_turn_offset() {
+        let target = uuid::Uuid::new_v4();
+        let existing = "<system-reminder>\n<!-- type:compaction-dag -->\n\
+             <dag-node depth=\"D2\" turns=\"0-45\" label=\"Architecture\">ok</dag-node>\n\
+             </system-reminder>"
+            .to_string();
+
+        // @step When the compactor sub-agent's task prompt is built
+        let prompt = build_generate_compaction_prompt(target, Some((existing.clone(), 45)));
+
+        // @step Then the INCREMENTAL compaction instruction is used with the existing DAG embedded
+        assert!(
+            prompt.contains("do NOT rebuild from scratch"),
+            "INCREMENTAL instruction must be selected when a DAG exists"
+        );
+        assert!(
+            prompt.contains(&existing),
+            "the existing DAG must be embedded in the prompt"
+        );
+
+        // @step And the task prompt tells the sub-agent to preserve D2 nodes, promote D0 to D1, and only survey turns from N+1 onward
+        assert!(
+            prompt.contains("PRESERVE all existing D2"),
+            "the prompt must instruct preserving D2 nodes"
+        );
+        assert!(
+            prompt.contains("PROMOTE existing D0 (Detailed) nodes to D1"),
+            "the prompt must instruct promoting D0 to D1"
+        );
+        assert!(
+            prompt.contains("start_turn: 46"),
+            "the prompt must survey from turn 46 (max_turn_end 45 + 1)"
+        );
+
+        // @step And the existing DAG is captured from the target BEFORE any clear of its messages
+        // The builder receives the captured existing_dag (the pre-clear
+        // capture from detect_existing_dag) and embeds it — proof the
+        // capture happened BEFORE any clear of the target's messages.
+        assert!(
+            prompt.contains(&existing),
+            "the captured existing DAG must be embedded in the prompt"
+        );
+
+        assert!(
+            !prompt.contains("inject_summary"),
+            "the INCREMENTAL compactor prompt must NOT mention inject_summary"
+        );
+    }
 }

@@ -2,7 +2,7 @@
 //!
 //! Provides blocklist loading from config files and command checking.
 
-use super::config::BlocklistConfig;
+use super::config::{BlocklistAction, BlocklistConfig};
 use super::matcher::{BlocklistMatcher, CheckResult};
 use super::template::install_default_system_blocklist;
 use std::collections::HashSet;
@@ -129,23 +129,40 @@ fn get_project_root() -> Option<PathBuf> {
     guard.clone()
 }
 
+/// The stored project root (for consumers that must classify regex outcomes
+/// the same way the middleware does — RLCD-004's file-operation stage).
+#[must_use]
+pub fn middleware_project_root() -> Option<PathBuf> {
+    get_project_root()
+}
+
 /// Check a bash command against the blocklist.
 /// Returns Ok(()) if the command is allowed, Err(BlockedError) if blocked.
 /// Reloads config on every check to pick up changes without restart.
+///
+/// RLCD-004: the regex pass runs FIRST; the RLCD semantic stage then
+/// extends it — never an explicit Allow rule (deterministic intent),
+/// `all` mode stages no-rule-matched ops, `prompt-only` stages ops the
+/// user just allowed from a regex prompt. Every stage failure fails open
+/// (the regex layer + its prompt UX are unaffected).
 pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
 
     let project_root = get_project_root();
     let config = load_blocklist_config(project_root.as_deref());
 
-    if config.rules.is_empty() {
-        return Ok(());
-    }
+    // The RLCD-004 stage mode (loaded once; the stage re-loads its full
+    // config for thresholds — cheap and keeps the layers decoupled).
+    let rlcd_mode = crate::rlcd::config::load_rlcd_config().security.check_mode;
 
-    let matcher = BlocklistMatcher::new(config);
-    let result = matcher.check_command(command);
+    let result = if config.rules.is_empty() {
+        CheckResult::allowed()
+    } else {
+        BlocklistMatcher::new(config).check_command(command)
+    };
 
-    // Hard block - immediately reject
+    // Hard block - immediately reject (never consults RLCD — regex Block
+    // is the hard-fact layer).
     if result.blocked {
         return Err(BlockedError {
             reason: result
@@ -162,7 +179,9 @@ pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), B
 
         // Check session allowances first
         if is_session_allowed(&pattern) {
-            return Ok(());
+            // The user already allowed this rule for the session: the
+            // RLCD stage may still apply (checkMode-driven).
+            return bash_rlcd_stage(session_id, command, &rlcd_mode, true);
         }
 
         // Pause for user decision
@@ -179,21 +198,72 @@ pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), B
         );
 
         match response {
-            PauseResponse::AllowOnce => Ok(()),
+            PauseResponse::AllowOnce | PauseResponse::Resumed => {
+                bash_rlcd_stage(session_id, command, &rlcd_mode, true)
+            }
             PauseResponse::AllowSession => {
                 allow_for_session(&pattern);
-                Ok(())
+                bash_rlcd_stage(session_id, command, &rlcd_mode, true)
             }
             PauseResponse::Denied | PauseResponse::Interrupted => Err(BlockedError {
                 reason: "User denied access".to_string(),
                 guidance: result.guidance,
                 rule_id: pattern,
             }),
+            // Any other response (Approved, Resumed): the user let it through.
             _ => Ok(()),
         }
-    } else {
+    } else if result.matched_action == Some(BlocklistAction::Allow) {
+        // Explicit regex Allow rule: deterministic intent — never staged.
         Ok(())
+    } else {
+        // No rule matched (regex-allowed): the stage may apply.
+        bash_rlcd_stage(session_id, command, &rlcd_mode, false)
     }
+}
+
+/// The RLCD-004 stage for a Bash command (sync entry — bridges via
+/// block_in_place + Handle::block_on; fails open when no multi-thread
+/// runtime). `prompt_allowed` marks ops the user just allowed from a
+/// regex prompt (the `prompt-only` checkMode gate).
+fn bash_rlcd_stage(
+    session_id: uuid::Uuid,
+    command: &str,
+    rlcd_mode: &str,
+    prompt_allowed: bool,
+) -> Result<(), BlockedError> {
+    let stage = match rlcd_mode {
+        "all" => true,
+        "prompt-only" => prompt_allowed,
+        _ => false, // unknown checkMode: stage disabled
+    };
+    if !stage {
+        return Ok(());
+    }
+    let config = crate::rlcd::config::load_rlcd_config();
+    let thresholds =
+        crate::rlcd::security_config::SecurityThresholds::bash(&config.security);
+    let user = crate::rlcd::security::context_user();
+    let cwd = crate::facade::get_effective_cwd(session_id)
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_else(|| ".".to_string());
+    // Context-LEADING state (calibrated 2026-09-24): the agent-harness
+    // sentence first, the machine-readable marker after.
+    let ctx = format!(
+        "An AI coding agent is about to run this shell command automatically \
+         on the user's development machine (user: {user}, working directory: {cwd}), \
+         with the user's permissions and no human watching. "
+    );
+    let state = format!("{ctx}tool=Bash; command={command}; cwd={cwd}");
+    crate::rlcd::security::run_rlcd_security_check_sync(
+        session_id,
+        &state,
+        "Would running this command destroy data irreversibly, damage the system or user \
+         accounts, or compromise security (e.g. steal secrets, open an attack path)? \
+         Answer true only for genuinely harmful commands.",
+        "Bash",
+        &thresholds,
+    )
 }
 
 /// Check a file path against the blocklist.

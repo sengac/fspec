@@ -92,6 +92,8 @@ Tags that categorize features by functional area.
 | `@bootstrap` | Bootstrap documentation and initialization workflows |
 | `@bridge` | Bridge tool features for external platform integration |
 | `@bug-174` | Bug fix work unit BUG-174 — closing the last agent in an all-agent mux layout leaves a blank 0-pane screen (footer only, keys dead). Fix: a transient full-width Board pane stands in for an empty rendered pane list so the grid never collapses to nothing and Esc/Shift+Right stay alive |
+| `@bug-188` | BUG-188 — GitStateWatcher dedup never fires: checkpoints[].timestamp is re-stamped SystemTime::now() per capture so full-struct == never holds in any repo with checkpoint refs; every 10s poll tick re-broadcasts an 'unchanged' frame. Fix: the broadcast decision compares a STABLE SIGNATURE (branch + checkpoint_counts + changed_files + checkpoint work_unit/name/auto, timestamps excluded) instead of full GitState equality. Mirrors the TUI's BUG-184 signatures so both layers agree on 'unchanged'. |
+| `@bug-189` | BUG-189 — Git capture is O(repo size): single-pass, shared-handle, stat-first GitState capture (codelet-git) |
 | `@bug-reporting` | Bug reporting and issue submission features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
@@ -216,6 +218,7 @@ Tags that categorize features by functional area.
 | `@research-integration` | Research tool integration and plugin system features |
 | `@research-tools` | Research tool system features and integrations |
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |
+| `@rlcd` | RLCD decision-engine integration (service supervisor, Decision tool, workflow gate, blocklist security layer) |
 | `@role` | Session role / system-prompt overlay (BUG-120, WATCH-004) — applies to features that read or write a session's role text. |
 | `@safety` | Safety and security features preventing accidental operations |
 | `@scaffolding` | Project Setup & Templates |
@@ -352,6 +355,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
 | `@clipboard` | Clipboard integration (OSC 52 escape-sequence clipboard writes) |
+| `@cmpct-049` | Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO) |
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
 | `@command` | CLI command implementation |
@@ -503,6 +507,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@rig` | Rig framework integration |
+| `@rlcd-004` | Work unit RLCD-004 — RLCD semantic security layer over blocklist (Bash/Read/Write/Edit/ApplyPatch) |
 | `@rpc-086` | RPC-086: Agent loop token tracking parity (update_tokens + TokenUpdate + ContextFillUpdate) |
 | `@rpc-087` | Regression-shape coverage of RPC-087 error classification + recovery wiring |
 | `@rpc-088` | RPC-088: Agent loop interrupt cascade parity (is_interrupted + interrupt_notify + Esc handler + StreamChunk::Interrupted) |
@@ -638,10 +643,19 @@ Tags tracking development status of features.
 | `@bug-178` | Bug fix work unit BUG-178 — SessionHeader [ISOLATED] badge never paints: chrome_paint::paint_header_and_role hardcodes is_isolated: false instead of reading AgentViewStore::isolation_state_for(sid) |
 | `@bug-179` | Bug fix work unit BUG-179 — mux keyboard-isolation gate swallows Event::Paste: bracketed paste and terminal file-drop-as-paste do nothing in the focused agent pane. Fix routes Event::Paste to the focused mux pane (forward_mux_event_to_focused_pane) and mirrors the post-Navigator sync_mux_focus_to_session in App::handle_paste |
 | `@bug-185` | Work unit BUG-185 — the failed tool-call tail must be stripped on ANY terminal API error (supersedes BUG-170 rule [0] which gated the strip on prompt-too-long only) |
+| `@bug-186` | Bug fix work unit BUG-186 — rpc002_session_persistence tests fail in a clean test env: model registry cache missing → create_session declines (PROV-101) → empty SessionId. Fix: seed the temp data dir with the shared prov101 model-cache fixture + dummy ANTHROPIC creds, and use a fixture model as the offline default. |
+| `@bug-190` | Bug fix work unit BUG-190 — 60fps busy-state TUI repaint re-wraps + re-grapheme-scans every scrollback row every frame: memoize the reflected scrollback row per (chunk content, width) so steady-state frames blit cached rows |
+| `@bug-192` | Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
+| `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
 | `@cmpct-040` | Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins |
 | `@cmpct-041` | Work unit identifier tag for CMPCT-041 — turn-start seed cache double-count root fix and pre_compaction_tokens basis unification across auto/manual writers in both twins |
+| `@cmpct-044` | Work unit CMPCT-044 — clean compaction sub-agent triggered on API context-overflow errors (ephemeral compactor, free fallback DAG, CompactionFailed-before-CompactionComplete lifecycle contract, read-only 7-tool surface) |
+| `@cmpct-045` | Work unit CMPCT-045 — GenerateCompaction tool: DeepSearch-clone tool that builds a compaction DAG for a session and pins it (self-target capture, Level-3 fallback DAG, stash-lock status restore) |
+| `@cmpct-046` | Work unit CMPCT-046 — self-target deadlock fix (lock-free capture) + honest zero-basis content estimate + github-copilot provider-arm parity |
+| `@cmpct-047` | Work unit CMPCT-047 — unify Level-3 fallback DAG shape across 044/045/agent-loop watchdog through the shared compaction_dag primitives |
+| `@cmpct-048` | Work unit CMPCT-048 — stash-lock failure must not leave the calling session stuck in Compacting: status restoration on the 045 tool's capture path |
 | `@cont-002` | Work unit identifier tag for CONT-002 — auto-continue engine: done() tool and /continue toggle with nudge budget |
 | `@cont-005` | Work unit identifier tag for CONT-005 — done() immediate termination: ToolResult-arm early exit via DONE_ACCEPTANCE registry with shared FinishWithSummary teardown |
 | `@cont-006` | Work unit identifier tag for CONT-006 — /goal immediate termination: goal-mode early exit at the ToolResult arm with atomic goal teardown through the shared FinishWithSummary helper |
@@ -666,6 +680,9 @@ Tags tracking development status of features.
 | `@refactoring` | Code that needs refactoring |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
 | `@rig-015` | Work unit identifier for RIG-015 — behavioral loop-abort test (stream stops + corrective re-prompt) |
+| `@rlcd-001` | Work unit RLCD-001 — RLCD service supervisor: config, health polling, local auto-spawn with port scanning |
+| `@rlcd-002` | Work unit RLCD-002 — Decision() first-class rig tool for typed RLCD decisions (choice/score/noul) |
+| `@rlcd-003` | RLCD-003: RLCD semantic gate for fspec workflow commands (agent-mode) |
 | `@rpc-006` | Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate) |
 | `@rpc-010` | Work unit identifier tag for RPC-010: fspec binary with combined/daemon/client subcommands replacing codelet-rpc-server for production |
 | `@rpc-022` | Work unit identifier tag for RPC-022 — modal dialogs (ModelSelector, ThinkingLevel, RoleBanner) |
@@ -786,4 +803,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-16T07:47:06.909Z_
+_Last updated: 2026-09-24T04:42:16.797Z_

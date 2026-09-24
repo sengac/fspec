@@ -1,3 +1,7 @@
+@done
+@agent-core
+@context-management
+@CMPCT-047
 @CMPCT-020
 Feature: Compaction Convergence Watchdog
   """
@@ -81,3 +85,10 @@ Feature: Compaction Convergence Watchdog
     Given session messages with no dag-node blocks
     When extract_partial_dag_nodes is called
     Then it should return an empty collection
+
+  Scenario: Level-3 fallback shape is built from the shared compaction_dag helpers
+    Given the agent-loop watchdog reaches Level-3 (two failed attempts, no inject_summary)
+    When it assembles the fallback DAG
+    Then the partial-node recovery joins extract_partial_dag_nodes output verbatim
+    And the generic auto-recovered node is built by build_generic_fallback_dag_node with the label "Auto-recovered: compaction timeout" and the body "Session was auto-compacted due to convergence timeout."
+    And the watchdog does not format its own dag-node template inline

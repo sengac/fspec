@@ -53,9 +53,7 @@ static CHUNK_SENDER: StdMutex<Option<tokio::sync::broadcast::Sender<(SessionId, 
 
 /// Register the manager-owned `chunks_tx` broadcast that footer pollers
 /// emit on. Replaces any previous registration.
-pub fn register_chunk_sender(
-    sender: tokio::sync::broadcast::Sender<(SessionId, StreamChunk)>,
-) {
+pub fn register_chunk_sender(sender: tokio::sync::broadcast::Sender<(SessionId, StreamChunk)>) {
     *CHUNK_SENDER
         .lock()
         .expect("footer poller chunk sender lock poisoned") = Some(sender);
@@ -74,7 +72,11 @@ pub(crate) fn emission_target() -> tokio::sync::broadcast::Sender<(SessionId, St
         .lock()
         .expect("footer poller chunk sender lock poisoned")
         .clone()
-        .unwrap_or_else(|| crate::session_manager::SessionManager::instance().chunks_tx().clone())
+        .unwrap_or_else(|| {
+            crate::session_manager::SessionManager::instance()
+                .chunks_tx()
+                .clone()
+        })
 }
 
 /// Spawn a background task that polls git status for a session every 5 seconds.
@@ -193,8 +195,7 @@ pub fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Optio
                         is_git,
                         branch,
                     );
-                    let _ = sender
-                        .send((SessionId::from(sid.clone()), chunk));
+                    let _ = sender.send((SessionId::from(sid.clone()), chunk));
                 }
             }
 

@@ -216,7 +216,10 @@ fn enter_on_oauth_login_starts_login_flow_not_silent_noop() {
     // @step Then the login flow starts for provider_id "anthropic"
     // @step And the row no longer opens the OAuthNotice placeholder
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthLoginStart { provider_id, .. }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthLoginStart { provider_id, .. } = *action else {
+                panic!("expected Emit(OAuthLoginStart) for anthropic, got {action:?}");
+            };
             assert_eq!(provider_id, "anthropic");
         }
         other => panic!("expected Emit(OAuthLoginStart) for anthropic, got {other:?}"),
@@ -337,10 +340,14 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
     // @step And accepting it emits ConfirmDeleteProfile for openai profile "fast"
     let out = view.handle_key(key(KeyCode::Enter));
     match out {
-        ProviderSettingsEvent::Emit(Action::ConfirmDeleteProfile {
-            provider_id,
-            profile_name,
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::ConfirmDeleteProfile {
+                provider_id,
+                profile_name,
+            } = *action
+            else {
+                panic!("expected Emit(ConfirmDeleteProfile{{openai,fast}}), got {action:?}");
+            };
             assert_eq!(provider_id, "openai");
             assert_eq!(profile_name, "fast");
         }

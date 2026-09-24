@@ -62,7 +62,9 @@ pub enum CheckpointsEvent {
     Consumed,
     Ignored,
     Close,
-    Emit(crate::components::Action),
+    /// Boxed — see `BlocklistEvent::Emit` for the `large_enum_variant`
+    /// rationale.
+    Emit(Box<crate::components::Action>),
 }
 
 /// Three-pane checkpoints browser state.

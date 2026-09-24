@@ -33,11 +33,15 @@ fn delete_confirm_yes_emits_delete() {
     let out = v.handle_key(key(KeyCode::Char('y')));
     // @step Then the custom model is deleted
     match out {
-        ModelSelectorEvent::Emit(Action::DeleteCustomModel {
-            provider_id,
-            profile_name,
-            model_id,
-        }) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::DeleteCustomModel {
+                provider_id,
+                profile_name,
+                model_id,
+            } = *action
+            else {
+                panic!("expected Emit(DeleteCustomModel), got {action:?}");
+            };
             assert_eq!(provider_id, "openai");
             assert_eq!(profile_name, "my-profile");
             assert_eq!(model_id, "mycustom");
@@ -113,11 +117,15 @@ fn edit_saves_in_place_under_same_id() {
 
     // @step Then the custom model is saved in place under its original id with the updated display name
     match out {
-        ModelSelectorEvent::Emit(Action::EditCustomModel {
-            original_model_id,
-            definition,
-            ..
-        }) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::EditCustomModel {
+                original_model_id,
+                definition,
+                ..
+            } = *action
+            else {
+                panic!("expected Emit(EditCustomModel), got {action:?}");
+            };
             assert_eq!(original_model_id, "mycustom");
             assert_eq!(definition.id, "mycustom");
             assert_eq!(definition.display_name, None);
@@ -217,7 +225,11 @@ fn no_current_model_means_no_active_selection_and_enter_is_noop() {
     // @step And pressing Enter emits no model-selected action
     let out = v.handle_key(key(KeyCode::Enter));
     assert!(
-        !matches!(out, ModelSelectorEvent::Emit(Action::ModelSelected(..))),
+        !matches!(
+            out,
+            ModelSelectorEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::ModelSelected(..))
+        ),
         "Enter must not silently select a model when nothing is highlighted, got {out:?}"
     );
 }

@@ -156,11 +156,15 @@ fn add_flow_emits_add_custom_model() {
 
     // @step Then a custom model is saved with the typed id, the selected facade and reasoning enabled
     match out {
-        ModelSelectorEvent::Emit(Action::AddCustomModel {
-            provider_id,
-            profile_name,
-            definition,
-        }) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::AddCustomModel {
+                provider_id,
+                profile_name,
+                definition,
+            } = *action
+            else {
+                panic!("expected Emit(AddCustomModel), got {action:?}");
+            };
             assert_eq!(provider_id, "openai");
             assert_eq!(profile_name, "my-profile");
             assert_eq!(definition.id, "my-model");
@@ -213,7 +217,10 @@ fn compaction_percentage_saved() {
 
     // @step Then the saved custom model carries a percentage compaction threshold of 80
     match out {
-        ModelSelectorEvent::Emit(Action::AddCustomModel { definition, .. }) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::AddCustomModel { definition, .. } = *action else {
+                panic!("expected Emit(AddCustomModel), got {action:?}");
+            };
             assert_eq!(
                 definition.compaction_threshold_type.as_deref(),
                 Some("percentage")
@@ -246,7 +253,10 @@ fn compaction_tokens_saved() {
 
     // @step Then the saved custom model carries a tokens compaction threshold of 200000
     match out {
-        ModelSelectorEvent::Emit(Action::AddCustomModel { definition, .. }) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::AddCustomModel { definition, .. } = *action else {
+                panic!("expected Emit(AddCustomModel), got {action:?}");
+            };
             assert_eq!(
                 definition.compaction_threshold_type.as_deref(),
                 Some("tokens")

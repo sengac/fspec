@@ -71,10 +71,7 @@ pub fn strip_failed_tool_call_tail(messages: &mut Vec<Message>) -> StrippedTail 
                     .iter()
                     .filter_map(|i| {
                         if let UserContent::ToolResult(tr) = i {
-                            Some(tool_call_correlation_key(
-                                &tr.id,
-                                tr.call_id.as_deref(),
-                            ))
+                            Some(tool_call_correlation_key(&tr.id, tr.call_id.as_deref()))
                         } else {
                             None
                         }

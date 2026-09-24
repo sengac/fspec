@@ -21,7 +21,6 @@ use std::sync::Arc;
 
 use serde_json::json;
 use serial_test::serial;
-use std::sync::Mutex;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::multiplex::{MuxConfig, MuxOrientation, MuxPaneKind};
@@ -33,7 +32,7 @@ mod common;
 use common::MockBackend;
 
 /// Serialises tests that mutate the process-global data directory.
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 fn key(code: KeyCode, mods: KeyModifiers) -> crossterm::event::Event {
     crossterm::event::Event::Key(KeyEvent::new(code, mods))
@@ -65,10 +64,8 @@ fn submit(app: &mut App, text: &str) {
 /// Root the process-global data directory at a fresh throwaway dir (the
 /// established tui093 pattern). Returns the guard (held for the test's
 /// duration) + the TempDir.
-fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
-    let guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
+    let guard = DATA_DIR_GUARD.lock().await;
     let tmp = tempfile::tempdir().expect("tempdir");
     codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
@@ -109,7 +106,7 @@ fn seed_sibling_config(data_dir: &std::path::Path) {
 #[serial]
 async fn slash_mux_save_persists_with_no_manual_persist_dirs_wiring() {
     // @step Given an App constructed with a backend and no explicit persist-dirs setup
-    let (_tmp_guard, _tmp) = root_data_dir();
+    let (_tmp_guard, _tmp) = root_data_dir().await;
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     // @step And the process-global data directory is rooted at a throwaway directory
@@ -142,7 +139,7 @@ async fn slash_mux_save_persists_with_no_manual_persist_dirs_wiring() {
 #[serial]
 async fn dialog_s_commits_and_persists_tui_mux_to_the_shared_config() {
     // @step Given an App constructed with a backend and no explicit persist-dirs setup
-    let (_tmp_guard, _tmp) = root_data_dir();
+    let (_tmp_guard, _tmp) = root_data_dir().await;
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     // @step And the process-global data directory is rooted at a throwaway directory
@@ -189,7 +186,7 @@ async fn dialog_s_commits_and_persists_tui_mux_to_the_shared_config() {
 #[serial]
 async fn exiting_mux_mode_auto_saves_the_post_exit_config_to_tui_mux() {
     // @step Given an App constructed with a backend and no explicit persist-dirs setup
-    let (_tmp_guard, _tmp) = root_data_dir();
+    let (_tmp_guard, _tmp) = root_data_dir().await;
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     // @step And the process-global data directory is rooted at a throwaway directory

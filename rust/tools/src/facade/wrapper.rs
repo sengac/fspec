@@ -498,14 +498,19 @@ impl Tool for FileToolFacadeWrapper {
                 }
             }
             InternalFileParams::Write { file_path, content } => {
-                // TOOL-014: Validate and resolve path for worktree isolation
+                // TOOL-014: Validate and resolve path for worktree isolation.
+                // BLOCK-006: emit the block notification here because the base
+                // WriteTool only re-validates the already-resolved (valid)
+                // path, so its gateway check never rejects in this flow.
                 let resolved_path =
-                    match validate_and_resolve_path(self.session_id, &file_path, "write") {
+                    match validate_and_resolve_path_with_block_notification(
+                        self.session_id,
+                        &file_path,
+                        &format!("writing {file_path}"),
+                        "write",
+                    ) {
                         Ok(path) => path.to_string_lossy().to_string(),
                         Err(e) => {
-                            // Emit notification for blocked path
-                            let action = format!("writing {file_path}");
-                            emit_block_notification(self.session_id, &action, &e.to_string());
                             return Ok(FileOperationResult {
                                 success: false,
                                 content: None,
@@ -552,14 +557,19 @@ impl Tool for FileToolFacadeWrapper {
                 old_string,
                 new_string,
             } => {
-                // TOOL-014: Validate and resolve path for worktree isolation
+                // TOOL-014: Validate and resolve path for worktree isolation.
+                // BLOCK-006: emit the block notification here because the base
+                // EditTool only re-validates the already-resolved (valid)
+                // path, so its gateway check never rejects in this flow.
                 let resolved_path =
-                    match validate_and_resolve_path(self.session_id, &file_path, "edit") {
+                    match validate_and_resolve_path_with_block_notification(
+                        self.session_id,
+                        &file_path,
+                        &format!("editing {file_path}"),
+                        "edit",
+                    ) {
                         Ok(path) => path.to_string_lossy().to_string(),
                         Err(e) => {
-                            // Emit notification for blocked path
-                            let action = format!("editing {file_path}");
-                            emit_block_notification(self.session_id, &action, &e.to_string());
                             return Ok(FileOperationResult {
                                 success: false,
                                 content: None,
@@ -786,6 +796,33 @@ pub fn validate_and_resolve_path(
     let normalized = crate::unicode_path::normalize_unicode_whitespace(path);
     let isolation_ctx = get_isolation_context(session_id);
     validate_and_resolve_path_with_isolation(&normalized, isolation_ctx.as_ref(), tool_name)
+}
+
+/// Validate and resolve a path, emitting a BLOCK-006 block notification on a
+/// failed check.
+///
+/// BLOCK-006: the base tools (Read/Write/Edit/Ls/Grep/Glob/AstGrep/
+/// AstGrepRefactor) call this so a blocked action surfaces a
+/// `UserNotification` chunk on the session's chunk stream — the same
+/// emission the `FileToolFacadeWrapper` performs for its own arms. Without
+/// this, isolated sessions driving the base tools directly (the fspec
+/// binary's front door) get the validation error but the TUI never shows
+/// why the action was blocked.
+///
+/// `action_description` is the user-facing verb phrase ("reading /x/y").
+pub fn validate_and_resolve_path_with_block_notification(
+    session_id: Uuid,
+    path: &str,
+    action_description: &str,
+    tool_name: &'static str,
+) -> Result<PathBuf, ToolError> {
+    match validate_and_resolve_path(session_id, path, tool_name) {
+        Ok(p) => Ok(p),
+        Err(e) => {
+            emit_block_notification(session_id, action_description, &e.to_string());
+            Err(e)
+        }
+    }
 }
 
 /// Internal path validation with explicit isolation context.
@@ -1126,6 +1163,25 @@ impl Tool for FspecToolFacadeWrapper {
                     "Fspec handler not configured for session {}. FspecTool requires session context with TypeScript integration.",
                     self.session_id
                 ),
+            });
+        }
+
+        // RLCD-003: semantic gate for configured workflow commands (agent-mode
+        // boundary). Fail-open by contract — an unreachable engine executes
+        // with a warn log; only a Hold/Deny verdict rejects (never touches the
+        // fspec state itself). CLI invocations never reach this path.
+        if let crate::rlcd::gate::GateVerdict::Rejected { reason } =
+            crate::rlcd::gate::run_rlcd_gate(
+                self.session_id,
+                &internal_params.command,
+                &internal_params.args,
+                &internal_params.project_root,
+            )
+            .await
+        {
+            return Err(ToolError::Execution {
+                tool: "fspec",
+                message: reason,
             });
         }
 

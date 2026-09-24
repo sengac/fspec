@@ -31,7 +31,9 @@ use crate::types::{
 // debug-capture helpers (used by `session_compact`, `toggle_debug`,
 // `session_toggle_debug`, `session_update_debug_metadata`).
 use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
-use codelet_cli::interactive_helpers::execute_compaction;
+use codelet_cli::interactive_helpers::{
+    execute_compaction, inject_synthetic_tool_results_for_orphans,
+};
 use codelet_common::debug_capture::{handle_debug_command_with_dir, SessionMetadata};
 // RPC-039 / RPC-043: PauseState shape flows over the NAPI boundary as
 // `NapiPauseState`; the JS callbacks dispatch via the `PauseKind` /
@@ -3154,6 +3156,21 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
                 None,
             );
         }
+    }
+
+    // CMPCT-050: close any persisted orphan tool_call BEFORE
+    // execute_compaction's defensive guard runs. A prior failed compaction
+    // (or a mid-tool-call interrupt) can leave a dangling Assistant(ToolCall)
+    // in the session; without this preflight the manual /compact would return
+    // "Compaction failed: execute_compaction refuses to proceed" and wedge
+    // the session. No-op when the history is already clean.
+    let injected = inject_synthetic_tool_results_for_orphans(&mut inner.messages);
+    if injected > 0 {
+        tracing::warn!(
+            injected,
+            "[session_compact] CMPCT-050: closed {} persisted orphan tool_call(s) before compaction",
+            injected
+        );
     }
 
     match execute_compaction(&mut inner, session.compaction_in_progress.clone(), None).await {

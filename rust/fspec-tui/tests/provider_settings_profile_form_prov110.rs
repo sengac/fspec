@@ -40,17 +40,24 @@ fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
 }
 
 fn save_action(ev: ProviderSettingsEvent) -> Option<(String, String, ProfileDefinition)> {
-    if let ProviderSettingsEvent::Emit(Action::SaveProfile {
-        provider_id,
-        profile_name,
-        definition,
+    let action = match ev {
+        ProviderSettingsEvent::Emit(action) => action,
+        _ => return None,
+    };
+    let Action::SaveProfile {
+        ref provider_id,
+        ref profile_name,
+        ref definition,
         ..
-    }) = ev
-    {
-        Some((provider_id, profile_name, definition))
-    } else {
-        None
-    }
+    } = *action
+    else {
+        return None;
+    };
+    Some((
+        provider_id.clone(),
+        profile_name.clone(),
+        definition.clone(),
+    ))
 }
 
 /// Build a view sitting in CreateProfile mode with the given form.

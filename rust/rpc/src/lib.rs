@@ -43,7 +43,7 @@ use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,
 };
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use tarpc::context::Context;
 use tokio::sync::broadcast;
 use tokio::sync::Mutex as AsyncMutex;
@@ -753,6 +753,12 @@ pub struct SharedFspecService {
     /// `GitState::default()` and `git_state_changed_rx()` returns a
     /// closed receiver.
     git_state_watcher: Option<GitStateWatcher>,
+    /// BUG-187: per-process counter of GitState captures that ran (on the
+    /// blocking pool). `with_cwd` wires `GitStateWatcher::with_captures`
+    /// with a closure that bumps this counter from inside the capture
+    /// (a blocking-pool task in production), so tests can assert
+    /// captures actually ran off the async pool.
+    git_state_captures: Arc<AtomicU64>,
 }
 
 impl SharedFspecService {
@@ -776,6 +782,7 @@ impl SharedFspecService {
             cwd: None,
             checkpoints_progress_tx,
             git_state_watcher: None,
+            git_state_captures: Arc::new(AtomicU64::new(0)),
         }
     }
 
@@ -802,6 +809,7 @@ impl SharedFspecService {
             cwd: None,
             checkpoints_progress_tx,
             git_state_watcher: None,
+            git_state_captures: Arc::new(AtomicU64::new(0)),
         }
     }
 
@@ -824,7 +832,18 @@ impl SharedFspecService {
         // git update-ref) because every path lands under `.git`, and the
         // 10-second periodic poll catches working-tree changes that emit
         // no `.git` event.
-        self.git_state_watcher = Some(GitStateWatcher::new(&cwd));
+        //
+        // BUG-187: the capture hook bumps the per-service counter from
+        // inside the blocking-pool capture, so tests (and future
+        // observability) can count how often a capture actually ran.
+        let captures = Arc::clone(&self.git_state_captures);
+        self.git_state_watcher = Some(GitStateWatcher::with_captures(
+            &cwd,
+            Duration::from_secs(10),
+            move || {
+                captures.fetch_add(1, Ordering::SeqCst);
+            },
+        ));
         self.cwd = Some(cwd);
         self
     }
@@ -873,6 +892,13 @@ impl SharedFspecService {
     /// Read the list_work_units invocation counter.
     pub fn list_work_units_calls(&self) -> u64 {
         self.list_work_units_calls.load(Ordering::SeqCst)
+    }
+
+    /// BUG-187: how many GitState captures have run (on the blocking
+    /// pool) since this service was constructed. Bumped by the capture
+    /// hook wired in [`Self::with_cwd`].
+    pub fn git_state_captures(&self) -> u64 {
+        self.git_state_captures.load(Ordering::SeqCst)
     }
 
     /// Subscribe to live work-units updates from the underlying watcher.

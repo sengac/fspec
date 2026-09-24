@@ -14,9 +14,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
 
+use codelet_sessions::SessionManager;
 use serial_test::serial;
 use uuid::Uuid;
-use codelet_sessions::SessionManager;
 
 /// Trimmed offline models.dev catalog (anthropic/openai/google) — shared
 /// with the WT-001 / WT-005 / RPC-385 precedent so registry validation
@@ -59,11 +59,7 @@ fn fresh_git_repo() -> tempfile::TempDir {
 /// Build a manager rooted in a fresh data dir with the offline models.dev
 /// fixture pre-seeded, with HOME redirected to a temp dir so the
 /// `~/.fspec/git-sessions` manifest writes stay hermetic.
-fn manager_with_seeded_cache() -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    Arc<SessionManager>,
-) {
+fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<SessionManager>) {
     set_dummy_credentials();
     let data_dir = tempfile::tempdir().expect("tempdir for data dir");
     let home_dir = tempfile::tempdir().expect("tempdir for HOME");
@@ -74,8 +70,7 @@ fn manager_with_seeded_cache() -> (
     // the data directory at the fresh temp dir, so SessionStore re-initialises
     // against THIS test's dir (it caches `sessions_dir` at first use).
     codelet_core::persistence::reset_stores_for_tests();
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
     let manager = Arc::new(SessionManager::new());
     (data_dir, home_dir, manager)
@@ -84,7 +79,10 @@ fn manager_with_seeded_cache() -> (
 /// Read the `~/.fspec/git-sessions/<id>.json` manifest written by
 /// `codelet_git::create_session_manifest`.
 fn read_git_manifest(home: &Path, id: &str) -> Option<codelet_git::SessionManifest> {
-    let path = home.join(".fspec").join("git-sessions").join(format!("{id}.json"));
+    let path = home
+        .join(".fspec")
+        .join("git-sessions")
+        .join(format!("{id}.json"));
     let content = std::fs::read_to_string(&path).ok()?;
     serde_json::from_str(&content).ok()
 }
@@ -125,8 +123,8 @@ async fn resuming_a_formerly_isolated_session_restores_worktree_isolation() {
         .expect("isolated session creation must succeed");
     let worktree_path = info.worktree_path.clone();
     let base_commit = info.base_commit.clone();
-    let git_manifest = read_git_manifest(home_dir.path(), &id)
-        .expect("git-session manifest must exist");
+    let git_manifest =
+        read_git_manifest(home_dir.path(), &id).expect("git-session manifest must exist");
     assert_eq!(
         git_manifest.worktree_path.as_deref(),
         Some(Path::new(&worktree_path)),
@@ -143,10 +141,9 @@ async fn resuming_a_formerly_isolated_session_restores_worktree_isolation() {
         .expect("git manifest must exist after isolated creation");
     manifest.terminated = false;
     codelet_git::write_manifest(&manifest).expect("write manifest");
-    let persistence_manifest = codelet_core::persistence::load_session(
-        Uuid::parse_str(&id).expect("valid uuid"),
-    )
-    .expect("persistence manifest must exist after isolated creation (WT-005)");
+    let persistence_manifest =
+        codelet_core::persistence::load_session(Uuid::parse_str(&id).expect("valid uuid"))
+            .expect("persistence manifest must exist after isolated creation (WT-005)");
     // Subscribe to the manager's chunk broadcast BEFORE the resume so the
     // IsolationStateChange emitted during re-isolation is observable.
     let mut chunks_rx = manager.chunks_tx().subscribe();
@@ -215,8 +212,8 @@ async fn resuming_a_formerly_isolated_session_restores_worktree_isolation() {
     );
     // The git manifest must survive the resume un-terminated (the session
     // is isolated again — nothing to prune).
-    let manifest_after = read_git_manifest(home_dir.path(), &id)
-        .expect("git manifest must survive resume");
+    let manifest_after =
+        read_git_manifest(home_dir.path(), &id).expect("git manifest must survive resume");
     assert!(
         !manifest_after.terminated,
         "resuming an isolated session must not terminate the git manifest"
@@ -260,10 +257,9 @@ async fn resuming_an_isolated_session_whose_worktree_was_deleted_falls_back_to_n
         !Path::new(&info.worktree_path).exists(),
         "precondition: worktree dir is gone"
     );
-    let persistence_manifest = codelet_core::persistence::load_session(
-        Uuid::parse_str(&id).expect("valid uuid"),
-    )
-    .expect("persistence manifest must exist");
+    let persistence_manifest =
+        codelet_core::persistence::load_session(Uuid::parse_str(&id).expect("valid uuid"))
+            .expect("persistence manifest must exist");
 
     // @step When the manager resumes the session via create_session_from_manifest
     manager
@@ -318,10 +314,9 @@ async fn resuming_a_never_isolated_session_keeps_the_non_isolated_resume_behavio
     manager
         .destroy_session(&id)
         .expect("destroy_session must succeed");
-    let persistence_manifest = codelet_core::persistence::load_session(
-        Uuid::parse_str(&id).expect("valid uuid"),
-    )
-    .expect("persistence manifest must exist");
+    let persistence_manifest =
+        codelet_core::persistence::load_session(Uuid::parse_str(&id).expect("valid uuid"))
+            .expect("persistence manifest must exist");
 
     // @step When the manager resumes the session via create_session_from_manifest
     manager

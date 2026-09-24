@@ -39,6 +39,7 @@ pub mod inject_summary;
 pub mod stage_permissions;
 
 pub mod footer_cwd;
+pub mod generate_compaction;
 pub mod glob;
 pub mod graph_search;
 pub mod grep;
@@ -54,6 +55,7 @@ pub mod profile;
 pub mod read;
 pub mod read_image_budget; // PROV-144: per-session Read-tool image-budget enforcement
 pub mod request_user_input;
+pub mod rlcd;
 pub mod schedule;
 pub mod search_engine;
 pub mod serde_coerce;
@@ -157,6 +159,11 @@ pub use fspec_handler::{
 };
 pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};
 pub use glob::GlobTool;
+pub use generate_compaction::{
+    clear_all_generate_compaction_handlers, has_generate_compaction_handler,
+    set_generate_compaction_handler, GenerateCompactionArgs, GenerateCompactionHandler,
+    GenerateCompactionTool,
+};
 pub use graph_search::{
     clear_all_graph_search_handlers, execute_graph_search, has_graph_search_handler,
     set_graph_search_handler, GraphSearchAction, GraphSearchArgs, GraphSearchHandler,
@@ -187,6 +194,7 @@ pub use request_user_input::{
     HitlHandler, HitlOption, HitlQuestion, HitlRequest, HitlResponse, RequestUserInputArgs,
     RequestUserInputTool,
 };
+pub use rlcd::decision::DecisionTool;
 pub use schedule::types::ScheduleRequest;
 pub use schedule::{
     clear_all_schedule_handlers, has_schedule_handler, set_schedule_handler, ScheduleArgs,

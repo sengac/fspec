@@ -7,9 +7,14 @@
 //! - **D** — path is indexed but missing from the working directory.
 //! - **M** — otherwise (a modification).
 //! - **R** — best-effort; defaults to **M** when not cheaply detectable.
+//!
+//! BUG-189 R2: the in-HEAD verdict is computed ONCE — inside the single-pass
+//! staged detection in `crate::status` — and reused here. This module never
+//! issues its own tree lookups: the double-pass pack re-decode is gone.
 
 use crate::error::{GitError, Result};
 use crate::open_repo;
+use crate::status::{staged_files_with_repo, unstaged_files_with_repo, StagedFileVerdict};
 use std::path::Path;
 
 /// Single-letter change type for a working-tree / index file.
@@ -46,6 +51,31 @@ pub struct ChangedFileStatus {
     pub change_type: ChangeType,
 }
 
+/// Derive the staged A/M/D letters from the single-pass verdicts (BUG-189
+/// R2: the in-HEAD verdict is REUSED from the staged-detection pass — no
+/// second tree lookup is ever issued for a staged path).
+fn staged_change_types(verdicts: Vec<StagedFileVerdict>, workdir: &Path) -> Vec<ChangedFileStatus> {
+    let mut out = Vec::with_capacity(verdicts.len());
+    for verdict in verdicts {
+        let exists = workdir.join(&verdict.path).exists();
+        // A staged deletion (null index OID on a path that exists in HEAD)
+        // is Deleted regardless of the workdir state — git reports `D` for
+        // `git add --remove <file>` even while the file is still on disk.
+        let change_type = if verdict.deleted_from_index || !exists {
+            ChangeType::Deleted
+        } else if !verdict.in_head {
+            ChangeType::Added
+        } else {
+            ChangeType::Modified
+        };
+        out.push(ChangedFileStatus {
+            path: verdict.path,
+            change_type,
+        });
+    }
+    out
+}
+
 /// Get staged files (index differs from HEAD) each with a derived change type.
 ///
 /// A staged path absent from the HEAD tree is **Added**; a staged path missing
@@ -53,35 +83,22 @@ pub struct ChangedFileStatus {
 pub fn get_staged_files_with_change_type(dir: impl AsRef<Path>) -> Result<Vec<ChangedFileStatus>> {
     let dir = dir.as_ref();
     let repo = open_repo(dir)?;
+    get_staged_files_with_change_type_with_repo(&repo)
+}
+
+/// BUG-189 R1: staged change-type derivation against an ALREADY OPEN
+/// repository handle — the public dir-based fn is a thin wrapper (open +
+/// delegate) for other callers.
+pub fn get_staged_files_with_change_type_with_repo(
+    repo: &gix::Repository,
+) -> Result<Vec<ChangedFileStatus>> {
     let workdir = repo
         .workdir()
-        .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?
-        .to_path_buf();
+        .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
-    let staged = crate::status::get_staged_files(dir)?;
-
-    let mut head_tree = match repo.head_commit() {
-        Ok(commit) => Some(commit.tree().map_err(|e| GitError::Head(e.to_string()))?),
-        Err(_) => None,
-    };
-
-    let mut out = Vec::with_capacity(staged.len());
-    for path in staged {
-        let in_head = match &mut head_tree {
-            Some(tree) => matches!(tree.lookup_entry_by_path(&path), Ok(Some(_))),
-            None => false,
-        };
-        let exists = workdir.join(&path).exists();
-        let change_type = if !exists {
-            ChangeType::Deleted
-        } else if !in_head {
-            ChangeType::Added
-        } else {
-            ChangeType::Modified
-        };
-        out.push(ChangedFileStatus { path, change_type });
-    }
-    Ok(out)
+    // Single pass: staged detection + in-HEAD verdict in one loop.
+    let verdicts = staged_files_with_repo(repo)?;
+    Ok(staged_change_types(verdicts, workdir))
 }
 
 /// Get unstaged files (working-dir differs from index) each with a change type.
@@ -94,14 +111,23 @@ pub fn get_unstaged_files_with_change_type(
 ) -> Result<Vec<ChangedFileStatus>> {
     let dir = dir.as_ref();
     let repo = open_repo(dir)?;
+    get_unstaged_files_with_change_type_with_repo(&repo)
+}
+
+/// BUG-189 R1: unstaged change-type derivation against an ALREADY OPEN
+/// repository handle (thin wrapper delegate target for the public fn).
+pub fn get_unstaged_files_with_change_type_with_repo(
+    repo: &gix::Repository,
+) -> Result<Vec<ChangedFileStatus>> {
     let workdir = repo
         .workdir()
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?
         .to_path_buf();
 
-    // get_unstaged_files only reports paths that still exist in the workdir
-    // (Modified). Re-scan the index for tracked paths that vanished (Deleted).
-    let mut out: Vec<ChangedFileStatus> = crate::status::get_unstaged_files(dir)?
+    // Stat-first: only paths whose index stat no longer matches (or whose
+    // content hash then verifies as different) are reported (Modified).
+    // Re-scan the index for tracked paths that vanished (Deleted).
+    let mut out: Vec<ChangedFileStatus> = unstaged_files_with_repo(repo)?
         .into_iter()
         .map(|path| ChangedFileStatus {
             path,

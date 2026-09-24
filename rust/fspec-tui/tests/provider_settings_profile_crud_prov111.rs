@@ -221,10 +221,14 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
 
     // @step Then a ConfirmDeleteProfile action is emitted for provider "openai" and profile "home"
     match out {
-        ProviderSettingsEvent::Emit(Action::ConfirmDeleteProfile {
-            provider_id,
-            profile_name,
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::ConfirmDeleteProfile {
+                provider_id,
+                profile_name,
+            } = *action
+            else {
+                panic!("expected Emit(ConfirmDeleteProfile{{openai,home}}), got {action:?}");
+            };
             assert_eq!(provider_id, "openai");
             assert_eq!(profile_name, "home");
         }

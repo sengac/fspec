@@ -107,6 +107,15 @@ impl CustomProvider {
     /// It is forwarded into the agent's `additional_params` so the
     /// rig-driven `CompletionRequest` carries it through to the Rhai
     /// `build_request` call (PROV-090).
+    ///
+    /// `sub_agent` gates the tool surface (CMPCT-044/045): when `true`
+    /// the agent is an EPHEMERAL compactor sub-agent and gets EXACTLY
+    /// the seven read-only tools (Read, Grep, AstGrep, Glob, Ls, Bash,
+    /// SessionSearch) — no GenerateCompaction (no recursion into
+    /// compaction), no InjectSummary/DeepSearch/AgentManager, no
+    /// write tools, no Rhai-defined tools, no Fspec/Bridge facades.
+    /// When `false` (every parent-agent call site) the full surface
+    /// is attached, as before.
     pub fn create_rig_agent(
         project_root: &std::path::Path,
         name: &str,
@@ -114,6 +123,7 @@ impl CustomProvider {
         session_id: uuid::Uuid,
         preamble: Option<&str>,
         thinking_config: Option<serde_json::Value>,
+        sub_agent: bool,
     ) -> Result<CustomRigAgent, CustomProviderError> {
         let configs = discover_provider_configs()?;
         let cfg = configs
@@ -167,6 +177,7 @@ impl CustomProvider {
             &system_prompt_facade,
             tool_adapters,
             &config_arc,
+            sub_agent,
         );
 
         Ok(CustomRigAgent {
@@ -183,6 +194,7 @@ impl CustomProvider {
 /// [`RhaiToolWrapper`] as a static tool, and merge `thinking_config` into
 /// the agent's `additional_params` so it round-trips through every rig
 /// `CompletionRequest`.
+#[allow(clippy::too_many_arguments)] // caller-arity mirrors the native provider builders (create_rig_agent twins)
 fn build_rig_agent(
     backend: Arc<RhaiCustomProvider>,
     session_id: uuid::Uuid,
@@ -191,6 +203,7 @@ fn build_rig_agent(
     system_prompt_facade: &Arc<RhaiSystemPromptFacade>,
     tool_adapters: Vec<RhaiToolFacadeAdapter>,
     config: &Arc<ProviderConfig>,
+    sub_agent: bool,
 ) -> Agent<RhaiCustomProviderModel> {
     let model = RhaiCustomProviderModel::new(backend);
     let mut agent_builder = AgentBuilder::new(model);
@@ -238,8 +251,9 @@ fn build_rig_agent(
         bridge_tool_for_provider, claude_bridge_tool, claude_fspec_tool, fspec_tool_for_provider,
     };
     use codelet_tools::{
-        AgentManagerTool, AstGrepRefactorTool, ConnectMcpTool, DeepSearchTool, GraphSearchTool,
-        InjectSummaryTool, RequestUserInputTool, ScheduleTool, SessionSearchTool,
+        AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
+        DecisionTool, DeepSearchTool, GenerateCompactionTool, GlobTool, GraphSearchTool, GrepTool,
+        InjectSummaryTool, LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool,
     };
 
     // Map ToolStyle → provider string used by the facade registrations.
@@ -251,6 +265,27 @@ fn build_rig_agent(
         super::config::ToolStyle::Gemini => "gemini",
         super::config::ToolStyle::Codex => "codex",
     };
+
+    // CMPCT-044/045: the EPHEMERAL compactor sub-agent must stay on the
+    // seven read-only tools (CMPCT-044 Rule [3]) — no GenerateCompaction
+    // (no recursion into compaction), no InjectSummary/DeepSearch/
+    // AgentManager, no write tools, no Rhai-defined tools, no Fspec/
+    // Bridge facades. Only the compactor spawner's custom-provider
+    // dispatch (generate_compaction_handler::execute_compaction_subagent)
+    // passes `sub_agent: true`; every parent-agent call site passes
+    // `false` and keeps the full surface, as before.
+    if sub_agent {
+        let simple = agent_builder
+            .tool(ReadTool::new(session_id))
+            .tool(GrepTool::new(session_id))
+            .tool(AstGrepTool::new(session_id))
+            .tool(GlobTool::new(session_id))
+            .tool(LsTool::new(session_id))
+            .tool(BashTool::new(session_id))
+            .tool(SessionSearchTool::new(session_id));
+        return simple.build();
+    }
+
     let fspec_tool = fspec_tool_for_provider(facade_provider, session_id)
         .unwrap_or_else(|| claude_fspec_tool(session_id));
     let bridge_tool = bridge_tool_for_provider(facade_provider, session_id)
@@ -268,6 +303,8 @@ fn build_rig_agent(
             .tool(GraphSearchTool::new(session_id))
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id))
+            .tool(DecisionTool::new(session_id)) // RLCD-002: Decision tool
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id))
             .tool(RequestUserInputTool::new(session_id))
             .tool(ScheduleTool::new(session_id))
@@ -292,6 +329,8 @@ fn build_rig_agent(
             .tool(GraphSearchTool::new(session_id))
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id))
+            .tool(DecisionTool::new(session_id)) // RLCD-002: Decision tool
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id))
             .tool(RequestUserInputTool::new(session_id))
             .tool(ScheduleTool::new(session_id))

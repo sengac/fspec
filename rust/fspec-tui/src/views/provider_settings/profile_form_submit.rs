@@ -54,12 +54,12 @@ pub(super) fn handle_form_key(
                 // `profile_name` is None → `old_profile_name` is None.
                 let new_name = form.name.trim().to_string();
                 view.mode = ProviderSettingsMode::List;
-                ProviderSettingsEvent::Emit(Action::SaveProfile {
+                ProviderSettingsEvent::Emit(Box::new(Action::SaveProfile {
                     provider_id,
                     profile_name: new_name,
                     old_profile_name: profile_name,
                     definition,
-                })
+                }))
             }
             Ok(None) => {
                 restore_mode(view, provider_id, form, profile_name);

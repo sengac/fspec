@@ -93,7 +93,12 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
 /// The CopyToClipboard payload of an `Emit`, or None for any other event.
 fn copied_text(ev: &ProviderSettingsEvent) -> Option<String> {
     match ev {
-        ProviderSettingsEvent::Emit(Action::CopyToClipboard(text)) => Some(text.clone()),
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::CopyToClipboard(text) = &**action else {
+                return None;
+            };
+            Some(text.clone())
+        }
         _ => None,
     }
 }

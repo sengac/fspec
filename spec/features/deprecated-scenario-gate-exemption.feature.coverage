@@ -1,0 +1,208 @@
+{
+  "scenarios": [
+    {
+      "name": "Done-gate exempts a scenario-level @deprecated scenario without test mapping",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_gate.rs",
+          "lines": "101-142",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/types/coverage.rs",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done-gate still blocks on an uncovered live scenario",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_gate.rs",
+          "lines": "143-175",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validating gate exempts a @deprecated scenario without implementation mapping",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_gate.rs",
+          "lines": "176-208",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Feature-level @deprecated deprecates every scenario in the feature",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cov056_deprecated_gate.rs",
+          "lines": "209-246",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/types/coverage.rs",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/cov056_deprecated_gate.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/types/coverage.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status.rs"
+    ],
+    "totalLinesCovered": 268
+  }
+}

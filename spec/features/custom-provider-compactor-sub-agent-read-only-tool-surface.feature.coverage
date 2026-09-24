@@ -1,0 +1,42 @@
+{
+  "scenarios": [
+    {
+      "name": "Custom-provider compactor sub-agent stays on the read-only tool surface",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_subagent_surface_test.rs",
+          "lines": "32-127",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/custom_provider.rs",
+              "lines": [
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct044_subagent_surface_test.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/custom/custom_provider.rs"
+    ],
+    "totalLinesCovered": 106
+  }
+}

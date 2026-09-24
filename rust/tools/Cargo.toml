@@ -99,6 +99,9 @@ tokio-test.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serial_test.workspace = true
 lopdf.workspace = true
+# RLCD-001: test-only tracing subscriber (registry + fmt::Layer capture)
+# for log-transition assertions in the rlcd001_service_supervisor suite.
+tracing-subscriber = { workspace = true }
 
 [lints]
 workspace = true

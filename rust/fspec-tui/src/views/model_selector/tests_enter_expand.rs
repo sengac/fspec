@@ -102,7 +102,10 @@ fn enter_on_model_row_emits_selection() {
 
     // @step Then a model selection is emitted for the current session, provider and model
     match out {
-        ModelSelectorEvent::Emit(Action::ModelSelected(Some(sid), pkey, mid)) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::ModelSelected(Some(sid), pkey, mid) = *action else {
+                panic!("expected Emit(ModelSelected(Some(..))), got {action:?}");
+            };
             assert_eq!(sid.value, "s-1");
             assert!(!pkey.is_empty());
             assert!(!mid.is_empty());
@@ -140,7 +143,11 @@ fn enter_on_model_row_with_no_session_still_emits_selection() {
 
     // @step Then a model selection is still emitted (no session guard, matching TS)
     assert!(
-        matches!(out, ModelSelectorEvent::Emit(Action::ModelSelected(..))),
+        matches!(
+            out,
+            ModelSelectorEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::ModelSelected(..))
+        ),
         "expected Emit(ModelSelected) even with no session, got {out:?}"
     );
 }

@@ -37,7 +37,7 @@ pub(super) fn handle_disconnect_oauth_key(
         KeyCode::Char('y') | KeyCode::Char('Y') => {
             view.mode = ProviderSettingsMode::List;
             view.status.clear();
-            ProviderSettingsEvent::Emit(Action::OAuthDisconnect { provider_id })
+            ProviderSettingsEvent::Emit(Box::new(Action::OAuthDisconnect { provider_id }))
         }
         KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
             view.mode = ProviderSettingsMode::List;

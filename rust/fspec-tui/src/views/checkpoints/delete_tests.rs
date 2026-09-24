@@ -80,7 +80,10 @@ fn confirming_a_single_delete_emits_the_delete_checkpoint_action() {
 
     // @step Then the view emits Action::DeleteCheckpoint for the selected checkpoint
     match outcome {
-        CheckpointsEvent::Emit(Action::DeleteCheckpoint { work_unit_id, name }) => {
+        CheckpointsEvent::Emit(action) => {
+            let Action::DeleteCheckpoint { work_unit_id, name } = *action else {
+                panic!("expected DeleteCheckpoint, got {action:?}");
+            };
             assert_eq!(work_unit_id, "AUTH-001");
             assert_eq!(name, "baseline");
         }
@@ -248,7 +251,8 @@ fn confirming_the_typed_delete_all_dispatches_delete_all_checkpoints() {
     assert!(
         matches!(
             outcome,
-            CheckpointsEvent::Emit(Action::DeleteAllCheckpoints)
+            CheckpointsEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::DeleteAllCheckpoints)
         ),
         "expected DeleteAllCheckpoints, got {outcome:?}"
     );

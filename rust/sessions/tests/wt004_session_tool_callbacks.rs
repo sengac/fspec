@@ -183,7 +183,8 @@ async fn create_plain(manager: &Arc<SessionManager>, project: &str) -> String {
 
 #[serial_test::serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_isolated_session_under_the_fspec_binary_exposes_its_isolation_context_to_the_tool_layer() {
+async fn scenario_isolated_session_under_the_fspec_binary_exposes_its_isolation_context_to_the_tool_layer(
+) {
     let _guard = ENV_GUARD.lock().await;
 
     // @step Given a fresh git repository with one committed file
@@ -199,10 +200,13 @@ async fn scenario_isolated_session_under_the_fspec_binary_exposes_its_isolation_
     // @step Then the tool layer resolves an isolation context for that session with the worktree path of the created worktree
     let ctx = get_isolation_context(Uuid::parse_str(&session_id).expect("session id is a uuid"))
         .expect("WT-004: the tool layer must resolve an isolation context for an isolated session under the fspec binary");
-    let worktree = repo.path().join(".fspec").join("worktrees").join(&session_id);
+    let worktree = repo
+        .path()
+        .join(".fspec")
+        .join("worktrees")
+        .join(&session_id);
     assert_eq!(
-        ctx.worktree_path,
-        worktree,
+        ctx.worktree_path, worktree,
         "worktree_path must be the created worktree"
     );
 
@@ -261,7 +265,8 @@ async fn scenario_isolation_lookup_through_the_registered_manager_ignores_the_gl
 
 #[serial_test::serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_write_tool_of_an_isolated_session_blocks_absolute_paths_into_the_original_project() {
+async fn scenario_write_tool_of_an_isolated_session_blocks_absolute_paths_into_the_original_project(
+) {
     let _guard = ENV_GUARD.lock().await;
 
     // @step Given a non-singleton session manager registered as the tool-callbacks manager
@@ -321,12 +326,15 @@ async fn scenario_write_tool_of_an_isolated_session_resolves_relative_paths_into
     // @step When a file operation for that session validates a relative path
     let ctx = get_isolation_context(Uuid::parse_str(&session_id).expect("session id is a uuid"))
         .expect("isolation context must be resolved");
-    let resolved =
-        validate_and_resolve_path_with_isolation("src/feature.rs", Some(&ctx), "write")
-            .expect("a relative path inside the worktree must be allowed");
+    let resolved = validate_and_resolve_path_with_isolation("src/feature.rs", Some(&ctx), "write")
+        .expect("a relative path inside the worktree must be allowed");
 
     // @step Then the resolved path lands inside the session's worktree directory
-    let worktree = repo.path().join(".fspec").join("worktrees").join(&session_id);
+    let worktree = repo
+        .path()
+        .join(".fspec")
+        .join("worktrees")
+        .join(&session_id);
     assert!(
         resolved.starts_with(&worktree),
         "relative path must resolve inside the worktree, got {resolved:?} (worktree {worktree:?})"
@@ -366,8 +374,7 @@ async fn scenario_non_isolated_session_keeps_unrestricted_path_access() {
         validate_and_resolve_path_with_isolation(path.to_str().expect("utf8"), None, "read")
             .expect("no isolation => allow-all paths");
     assert_eq!(
-        resolved,
-        path,
+        resolved, path,
         "without an isolation context the path must pass through unchanged"
     );
 }
@@ -402,7 +409,8 @@ async fn scenario_unknown_session_ids_degrade_to_no_isolation() {
 
 #[serial_test::serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_work_unit_stage_lookup_under_the_fspec_binary_reads_the_sessions_work_unit_context() {
+async fn scenario_work_unit_stage_lookup_under_the_fspec_binary_reads_the_sessions_work_unit_context(
+) {
     let _guard = ENV_GUARD.lock().await;
 
     // @step Given a non-singleton session manager registered as the tool-callbacks manager
@@ -462,7 +470,8 @@ async fn scenario_work_unit_stage_lookup_returns_none_for_sessions_without_a_wor
 
 #[serial_test::serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_a_blocked_tool_action_emits_a_warning_notification_on_the_managers_chunk_stream() {
+async fn scenario_a_blocked_tool_action_emits_a_warning_notification_on_the_managers_chunk_stream()
+{
     let _guard = ENV_GUARD.lock().await;
 
     // @step Given a non-singleton session manager registered as the tool-callbacks manager with its chunk sender registered
@@ -499,8 +508,7 @@ async fn scenario_a_blocked_tool_action_emits_a_warning_notification_on_the_mana
             );
             // @step And its message is "AI was blocked from {action} - {reason}"
             assert_eq!(
-                message,
-                "AI was blocked from writing /project/src/lib.rs - path outside worktree",
+                message, "AI was blocked from writing /project/src/lib.rs - path outside worktree",
                 "message format must stay stable (TUI renders it verbatim)"
             );
         }
@@ -515,7 +523,8 @@ async fn scenario_a_blocked_tool_action_emits_a_warning_notification_on_the_mana
 
 #[serial_test::serial]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_the_napi_isolation_lookup_falls_back_to_the_singleton_manager_when_no_manager_is_registered() {
+async fn scenario_the_napi_isolation_lookup_falls_back_to_the_singleton_manager_when_no_manager_is_registered(
+) {
     let _guard = ENV_GUARD.lock().await;
 
     // @step Given no tool-callbacks manager has been registered (fresh NAPI process)
@@ -545,7 +554,10 @@ async fn scenario_the_napi_isolation_lookup_falls_back_to_the_singleton_manager_
 
     // @step Then the singleton manager's session is found and the context matches its worktree path and project root
     let worktree = repo.path().join(".fspec").join("worktrees").join(&id);
-    assert_eq!(ctx.worktree_path, worktree, "worktree_path must match the singleton session's worktree");
+    assert_eq!(
+        ctx.worktree_path, worktree,
+        "worktree_path must match the singleton session's worktree"
+    );
     assert_eq!(
         ctx.blocked_project_path,
         repo.path().to_path_buf(),
@@ -589,7 +601,9 @@ fn scenario_shared_callbacks_are_plain_function_pointers() {
 
 /// codelet workspace root (the sessions crate lives at `rust/sessions`).
 fn rust_root() -> &'static Path {
-    Path::new(env!("CARGO_MANIFEST_DIR")).parent().expect("sessions lives under rust/")
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("sessions lives under rust/")
 }
 
 /// Strip `//`-style line comments so substring scans only see code.
@@ -633,9 +647,8 @@ fn build_service_body(common_src: &str) -> &str {
 #[test]
 fn scenario_build_service_registers_the_tool_callbacks_manager_and_all_three_tool_callbacks() {
     // @step Given the fspec binary crate source after this fix
-    let common_src =
-        std::fs::read_to_string(rust_root().join("fspec/src/common.rs"))
-            .expect("fspec/src/common.rs must be readable");
+    let common_src = std::fs::read_to_string(rust_root().join("fspec/src/common.rs"))
+        .expect("fspec/src/common.rs must be readable");
     let stripped = strip_line_comments(&common_src);
 
     // @step When build_service is inspected
@@ -696,9 +709,8 @@ fn scenario_build_service_registers_the_tool_callbacks_manager_and_all_three_too
 #[test]
 fn scenario_the_napi_front_door_registers_the_shared_codelet_sessions_callback_functions() {
     // @step Given the codelet-napi crate source after this fix
-    let bridges_src =
-        std::fs::read_to_string(rust_root().join("napi/src/bridges.rs"))
-            .expect("napi/src/bridges.rs must be readable");
+    let bridges_src = std::fs::read_to_string(rust_root().join("napi/src/bridges.rs"))
+        .expect("napi/src/bridges.rs must be readable");
     let stripped = strip_line_comments(&bridges_src);
 
     // @step When init_block_notification_callbacks is inspected
@@ -731,7 +743,10 @@ fn scenario_the_napi_front_door_registers_the_shared_codelet_sessions_callback_f
     // emitter keeps its RPC-043-pinned name (`emit_block_notification_to_tui`)
     // but is now a thin shim delegating to the shared function — no local
     // chunk-building / chunks_tx-sending logic remains in bridges.rs.
-    for duplicate in ["fn get_session_work_unit_stage", "fn get_session_effective_cwd"] {
+    for duplicate in [
+        "fn get_session_work_unit_stage",
+        "fn get_session_effective_cwd",
+    ] {
         assert!(
             !stripped.contains(duplicate),
             "the local napi-side implementation `{duplicate}` must be removed — the shared codelet-sessions module is the single source of truth (WT-004)"
@@ -741,9 +756,16 @@ fn scenario_the_napi_front_door_registers_the_shared_codelet_sessions_callback_f
         stripped.contains("fn emit_block_notification_to_tui"),
         "emit_block_notification_to_tui keeps its name (RPC-043 shape test pins it)"
     );
+    // Whitespace-tolerant: the shim call may be formatted across lines (rustfmt
+    // wraps it once the line exceeds the limit), so collapse ALL whitespace on
+    // both the haystack and the needle before comparing.
+    let collapsed = stripped
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join("");
     assert!(
-        stripped.contains(
-            "codelet_sessions::session_tool_callbacks::emit_block_notification(session_id_str, action, reason)"
+        collapsed.contains(
+            "codelet_sessions::session_tool_callbacks::emit_block_notification(session_id_str,action,reason,)"
         ),
         "emit_block_notification_to_tui must be a thin shim delegating to the shared emitter (WT-004)"
     );

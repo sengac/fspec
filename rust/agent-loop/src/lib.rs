@@ -42,6 +42,7 @@ pub mod deep_search_handler;
 pub mod deep_search_provider_config;
 pub mod dispatch;
 pub mod error;
+pub mod generate_compaction_handler; // CMPCT-044: clean compaction sub-agent spawner
 pub mod graph_search_handler;
 pub mod hooks;
 pub mod inject_summary_handler;
@@ -50,6 +51,7 @@ pub mod schedule_handler;
 pub mod session_search_handler;
 pub mod stream_chunk_json;
 pub mod stream_loop_detector;
+pub mod terminal_overflow_recovery; // CMPCT-044: terminal-error-arm overflow recovery
 pub mod thinking_config;
 pub mod thinking_level_detection;
 

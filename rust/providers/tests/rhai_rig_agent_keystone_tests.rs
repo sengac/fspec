@@ -236,6 +236,7 @@ async fn create_rig_agent_returns_real_rig_agent_over_rhai_custom_provider_model
         session_id,
         None,
         None,
+        false, // parent agent: full custom-provider tool surface
     )
     .expect("create_rig_agent succeeds");
 
@@ -576,6 +577,7 @@ fn transform_preamble(config, preamble, fspec_guidance) { "PREFIX\n" + preamble 
         Uuid::new_v4(),
         Some("user role text"),
         None,
+        false, // parent agent: full custom-provider tool surface
     )
     .expect("create_rig_agent");
 
@@ -613,6 +615,7 @@ async fn agent_loop_dispatch_for_custom_provider_routes_through_custom_provider_
         session_id,
         Some("role-text"),
         None,
+        false, // parent agent: full custom-provider tool surface
     )
     .expect("create_rig_agent");
 

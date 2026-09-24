@@ -56,7 +56,11 @@ pub enum BlocklistEvent {
     /// View did not consume the key.
     Ignored,
     /// View consumed the key and wants the App to emit this action.
-    Emit(Action),
+    ///
+    /// The `Action` payload is boxed: `Action` is a 216+ byte enum, and the
+    /// other variants carry no data — boxing keeps the event enum itself
+    /// small (clippy `large_enum_variant`).
+    Emit(Box<Action>),
     /// View consumed the key and wants the App to dismiss it.
     Close,
 }
@@ -265,7 +269,7 @@ impl BlocklistView {
         let Some(rule) = self.focused_rule() else {
             return BlocklistEvent::Consumed;
         };
-        BlocklistEvent::Emit(Action::ToggleBlocklistRule(rule.id.clone()))
+        BlocklistEvent::Emit(Box::new(Action::ToggleBlocklistRule(rule.id.clone())))
     }
 }
 

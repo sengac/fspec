@@ -19,6 +19,10 @@ pub struct CheckResult {
     pub guidance: Option<String>,
     /// ID of the matching rule (if any)
     pub matched_rule_id: Option<String>,
+    /// The matched rule's action (None when no rule matched) — RLCD-004
+    /// needs to tell an explicit Allow rule (deterministic intent, never
+    /// staged) apart from a Prompt-rule allowance (staged in prompt-only).
+    pub matched_action: Option<BlocklistAction>,
 }
 
 impl CheckResult {
@@ -30,6 +34,7 @@ impl CheckResult {
             reason: None,
             guidance: None,
             matched_rule_id: None,
+            matched_action: None,
         }
     }
 
@@ -41,6 +46,7 @@ impl CheckResult {
             reason: Some(rule.reason.clone()),
             guidance: rule.guidance.clone(),
             matched_rule_id: Some(rule.id.clone()),
+            matched_action: Some(BlocklistAction::Block),
         }
     }
 }
@@ -92,7 +98,10 @@ impl BlocklistMatcher {
                     BlocklistAction::Allow => {
                         // Allow action means this specific pattern is explicitly allowed
                         // (used for project overrides)
-                        return CheckResult::allowed();
+                        let mut result = CheckResult::allowed();
+                        result.matched_rule_id = Some(compiled.rule.id.clone());
+                        result.matched_action = Some(BlocklistAction::Allow);
+                        return result;
                     }
                     BlocklistAction::Prompt => {
                         // Prompt action will be handled by BLOCK-005
@@ -103,6 +112,7 @@ impl BlocklistMatcher {
                             reason: Some(compiled.rule.reason.clone()),
                             guidance: compiled.rule.guidance.clone(),
                             matched_rule_id: Some(compiled.rule.id.clone()),
+                            matched_action: Some(BlocklistAction::Prompt),
                         };
                     }
                 }

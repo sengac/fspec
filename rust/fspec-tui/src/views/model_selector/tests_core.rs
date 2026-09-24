@@ -44,7 +44,10 @@ fn enter_with_session_emits_model_selected() {
 
     // @step Then a model selection is emitted for the current session, provider and model
     match out {
-        ModelSelectorEvent::Emit(Action::ModelSelected(Some(sid), pkey, mid)) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::ModelSelected(Some(sid), pkey, mid) = *action else {
+                panic!("expected Emit(ModelSelected(Some(..))), got {action:?}");
+            };
             assert_eq!(sid.value, "s-1");
             assert!(!pkey.is_empty());
             assert!(!mid.is_empty());
@@ -81,7 +84,10 @@ fn enter_without_session_still_emits_selection() {
 
     // @step Then a model selection is emitted with no session id
     match out {
-        ModelSelectorEvent::Emit(Action::ModelSelected(None, pkey, mid)) => {
+        ModelSelectorEvent::Emit(action) => {
+            let Action::ModelSelected(None, pkey, mid) = *action else {
+                panic!("expected Emit(ModelSelected(None, ..)), got {action:?}");
+            };
             assert!(!pkey.is_empty());
             assert!(!mid.is_empty());
         }
@@ -136,7 +142,8 @@ fn r_key_emits_refresh_and_sets_refreshing() {
     // @step Then the provider's models are refreshed
     assert!(matches!(
         out,
-        ModelSelectorEvent::Emit(Action::RefreshModelSelector)
+        ModelSelectorEvent::Emit(a)
+            if matches!(a.as_ref(), Action::RefreshModelSelector)
     ));
     // @step And the title shows "(refreshing...)" while the refresh is in flight
     assert!(v.is_refreshing());

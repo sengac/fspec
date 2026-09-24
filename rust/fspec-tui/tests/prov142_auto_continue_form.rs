@@ -207,9 +207,12 @@ fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() {
     use codelet_fspec_tui::views::ProviderSettingsEvent;
     let rejected = match &event {
         // No SaveProfile action may be emitted for an invalid value.
-        ProviderSettingsEvent::Emit(codelet_fspec_tui::components::Action::SaveProfile {
-            ..
-        }) => {
+        ProviderSettingsEvent::Emit(ref a)
+            if matches!(
+                a.as_ref(),
+                codelet_fspec_tui::components::Action::SaveProfile { .. }
+            ) =>
+        {
             panic!("an invalid Auto-Continue value must NOT emit a SaveProfile action")
         }
         _ => true,

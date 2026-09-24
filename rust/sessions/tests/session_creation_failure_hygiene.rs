@@ -64,11 +64,7 @@ fn persisted_manifest_count(data_dir: &std::path::Path) -> usize {
         .map(|entries| {
             entries
                 .filter_map(Result::ok)
-                .filter(|e| {
-                    e.path()
-                        .extension()
-                        .is_some_and(|ext| ext == "json")
-                })
+                .filter(|e| e.path().extension().is_some_and(|ext| ext == "json"))
                 .count()
         })
         .unwrap_or(0)

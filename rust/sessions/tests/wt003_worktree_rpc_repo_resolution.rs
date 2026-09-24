@@ -91,11 +91,7 @@ fn fresh_git_repo() -> tempfile::TempDir {
 /// fixture pre-seeded, with HOME redirected to a temp dir so the
 /// `~/.fspec/git-sessions` manifest writes from
 /// `create_isolated_session_with_id` stay hermetic.
-fn manager_with_seeded_cache() -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    Arc<SessionManager>,
-) {
+fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<SessionManager>) {
     set_dummy_credentials();
     let data_dir = tempfile::tempdir().expect("tempdir for data dir");
     let home_dir = tempfile::tempdir().expect("tempdir for HOME");
@@ -106,8 +102,7 @@ fn manager_with_seeded_cache() -> (
     // persistence singletons BEFORE pointing the data directory at this
     // test's fresh temp dir so session-manifest writes stay hermetic.
     codelet_core::persistence::reset_stores_for_tests();
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
     let manager = Arc::new(SessionManager::new());
     (data_dir, home_dir, manager)
@@ -167,7 +162,10 @@ async fn run_merge_subdir_cwd() {
 
     // @step And the modified file's new content is present in X's main working tree
     let merged = std::fs::read_to_string(repo.path().join("hello.txt")).expect("read merged file");
-    assert_eq!(merged, "changed by session\n", "merge must land in project X");
+    assert_eq!(
+        merged, "changed by session\n",
+        "merge must land in project X"
+    );
 }
 
 // =============================================================================
@@ -257,8 +255,8 @@ async fn run_inspect_foreign_cwd() {
 // =============================================================================
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn scenario_list_session_worktrees_returns_the_union_of_worktrees_across_all_session_projects()
-{
+async fn scenario_list_session_worktrees_returns_the_union_of_worktrees_across_all_session_projects(
+) {
     let _guard = ENV_GUARD.lock().await;
     run_list_union().await;
 }
@@ -280,7 +278,10 @@ async fn run_list_union() {
     let worktrees = handle.list_session_worktrees();
 
     // @step Then the result contains one entry for each session worktree in both project X and project Y
-    let ids: Vec<String> = worktrees.iter().map(|w| w.session_id.value.clone()).collect();
+    let ids: Vec<String> = worktrees
+        .iter()
+        .map(|w| w.session_id.value.clone())
+        .collect();
     assert!(
         ids.iter().any(|id| id == &sid_x),
         "worktree of project X ({sid_x}) must be listed, got {ids:?}"
@@ -312,18 +313,32 @@ async fn run_prune_orphan() {
     codelet_git::create_session_manifest(
         &orphan_id,
         repo_x.path(),
-        Some(repo_x.path().join(".fspec").join("worktrees").join(&orphan_id)),
+        Some(
+            repo_x
+                .path()
+                .join(".fspec")
+                .join("worktrees")
+                .join(&orphan_id),
+        ),
         None,
     )
     .expect("orphan manifest creation must succeed");
     codelet_git::terminate_session(&orphan_id).expect("terminate must succeed");
-    let orphan_worktree = repo_x.path().join(".fspec").join("worktrees").join(&orphan_id);
+    let orphan_worktree = repo_x
+        .path()
+        .join(".fspec")
+        .join("worktrees")
+        .join(&orphan_id);
     assert!(orphan_worktree.exists(), "orphan worktree must exist");
 
     // @step And an active in-memory session lives in project Y with its own worktree
     let repo_y = fresh_git_repo();
     let active_id = create_isolated_session(&manager, repo_y.path()).await;
-    let active_worktree = repo_y.path().join(".fspec").join("worktrees").join(&active_id);
+    let active_worktree = repo_y
+        .path()
+        .join(".fspec")
+        .join("worktrees")
+        .join(&active_id);
     assert!(active_worktree.exists(), "active worktree must exist");
 
     // @step And the process cwd is a directory that is not the root of either repository
@@ -378,7 +393,8 @@ async fn run_merge_manifest_fallback() {
     )
     .expect("manifest creation must succeed");
     let worktree = repo.path().join(".fspec").join("worktrees").join(&sid);
-    std::fs::write(worktree.join("hello.txt"), "merged via manifest\n").expect("modify in worktree");
+    std::fs::write(worktree.join("hello.txt"), "merged via manifest\n")
+        .expect("modify in worktree");
 
     // @step And no in-memory session exists for that worktree's session id
     // (A fresh manager that never created the session — simulating the post-restart state.)
@@ -403,5 +419,8 @@ async fn run_merge_manifest_fallback() {
 
     // @step And the worktree's changes are applied to X's main working tree
     let merged = std::fs::read_to_string(repo.path().join("hello.txt")).expect("read merged file");
-    assert_eq!(merged, "merged via manifest\n", "merge must land in project X");
+    assert_eq!(
+        merged, "merged via manifest\n",
+        "merge must land in project X"
+    );
 }

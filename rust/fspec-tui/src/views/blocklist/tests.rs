@@ -399,7 +399,10 @@ fn space_toggles_the_focused_rule() {
     let event = view.handle_key(KeyEvent::new(KeyCode::Char(' '), KeyModifiers::NONE));
     // @step Then a toggle action is emitted for the focused rule's id
     match event {
-        BlocklistEvent::Emit(Action::ToggleBlocklistRule(id)) => {
+        BlocklistEvent::Emit(action) => {
+            let Action::ToggleBlocklistRule(id) = *action else {
+                panic!("expected Emit(ToggleBlocklistRule), got {action:?}");
+            };
             assert_eq!(id, "rule003");
         }
         other => panic!("expected Emit(ToggleBlocklistRule), got {other:?}"),

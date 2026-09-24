@@ -76,5 +76,5 @@ fn handle_copy(view: &ProviderSettingsView) -> ProviderSettingsEvent {
         // is_copyable_mode gates callers, so no other mode reaches here.
         _ => String::new(),
     };
-    ProviderSettingsEvent::Emit(Action::CopyToClipboard(text))
+    ProviderSettingsEvent::Emit(Box::new(Action::CopyToClipboard(text)))
 }

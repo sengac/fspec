@@ -75,12 +75,7 @@ impl SessionManagerHooks for FspecAgentHooks {
 
     fn ensure_scheduler_running_for_loop(&self, _project: String, _rt: tokio::runtime::Handle) {}
 
-    fn spawn_footer_poller(
-        &self,
-        session_id: String,
-        cwd: String,
-        worktree_path: Option<String>,
-    ) {
+    fn spawn_footer_poller(&self, session_id: String, cwd: String, worktree_path: Option<String>) {
         // WT-002: run the NAPI-free shared poller (codelet-sessions) so the
         // fspec binary emits FooterStateUpdate chunks — the emission target
         // is the manager's chunks_tx registered by build_service (falling

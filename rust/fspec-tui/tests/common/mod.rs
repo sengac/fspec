@@ -195,6 +195,10 @@ use codelet_rpc_types::{
 };
 use tokio::sync::broadcast;
 
+/// BUG-184: scripted checkpoint-file-diff payload — `(work_unit_id,
+/// checkpoint_name, file_path, diff_text)`.
+type ScriptedCheckpointFileDiff = (String, String, String, Option<String>);
+
 /// In-memory FspecBackend impl with seedable data + per-channel
 /// broadcast::Sender handles tests use to push synthetic events. Used
 /// by the App-level integration tests where a real WS server / real
@@ -265,7 +269,7 @@ pub struct MockBackend {
     scripted_changed_files: Mutex<Vec<codelet_rpc_types::ChangedFile>>,
     scripted_checkpoints: Mutex<Vec<codelet_rpc_types::CheckpointInfo>>,
     scripted_checkpoint_files: Mutex<Option<(String, String, Vec<codelet_rpc_types::ChangedFile>)>>,
-    scripted_checkpoint_file_diffs: Mutex<Option<(String, String, String, Option<String>)>>,
+    scripted_checkpoint_file_diffs: Mutex<Option<ScriptedCheckpointFileDiff>>,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,

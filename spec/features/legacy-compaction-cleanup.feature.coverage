@@ -272,14 +272,7 @@
         {
           "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "220-233",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                16
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -289,63 +282,7 @@
         {
           "file": "rust/core/tests/legacy_compaction_cleanup_test.rs",
           "lines": "320-333",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/types.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -599,10 +536,8 @@
       "rust/core/src/compaction/mod.rs",
       "rust/cli/src/interactive_helpers.rs",
       "rust/cli/src/session/mod.rs",
-      "rust/napi/src/session_manager.rs",
-      "rust/napi/src/persistence/types.rs",
       "rust/core/src/compaction/__tests__/structural_annotation.test.rs"
     ],
-    "totalLinesCovered": 636
+    "totalLinesCovered": 585
   }
 }

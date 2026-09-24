@@ -121,7 +121,10 @@ fn confirming_a_single_file_restore_emits_the_restore_action() {
 
     // @step Then the view emits Action::RestoreCheckpointFile for a.txt
     match outcome {
-        CheckpointsEvent::Emit(Action::RestoreCheckpointFile { path, .. }) => {
+        CheckpointsEvent::Emit(action) => {
+            let Action::RestoreCheckpointFile { path, .. } = *action else {
+                panic!("expected RestoreCheckpointFile, got {action:?}");
+            };
             assert_eq!(path, "a.txt");
         }
         other => panic!("expected RestoreCheckpointFile, got {other:?}"),

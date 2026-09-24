@@ -12,7 +12,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use codelet_fspec_tui::components::board_exit_confirmation_dialog::BOARD_EXIT_CONFIRMATION_DIALOG_ID;
 use codelet_fspec_tui::components::exit_confirmation_dialog::EXIT_CONFIRMATION_DIALOG_ID;
@@ -79,12 +79,10 @@ fn simulate_leaked_persisted_flag(app: &mut App) {
 /// Root the process-global data directory at a fresh throwaway dir
 /// (established tui093 / BUG-166 / BUG-167 pattern) so a test can seed
 /// the user-scope `fspec-config.json` the way a real `~/.fspec` does.
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
-fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
-    let guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
+    let guard = DATA_DIR_GUARD.lock().await;
     let tmp = tempfile::tempdir().expect("tempdir");
     codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
@@ -100,7 +98,7 @@ fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
 #[serial]
 async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layout_for_mux_on() {
     // @step Given a fresh TUI bootstrap with a saved tui.mux config of Board and Agent at 50/50 with enabled true
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     let user_config = _data.path().join("fspec-config.json");
     std::fs::write(
         &user_config,

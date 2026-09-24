@@ -269,6 +269,7 @@ fn map_error(status, body) { #{ type: "api", message: "" } }
         Uuid::new_v4(),
         None,
         Some(thinking),
+        false, // parent agent: full custom-provider tool surface
     )
     .expect("create_rig_agent returns Ok");
 

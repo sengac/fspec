@@ -21,7 +21,7 @@ pub fn append_assistant_text(ctx: &mut SessionContext, text: &str) {
                 source.text.push_str(text);
             }
         }
-        ctx.scrollback.rewrap_at(idx);
+        ctx.rewrap_and_trim_at(idx);
         return;
     }
     let source = ChunkSource {
@@ -31,9 +31,11 @@ pub fn append_assistant_text(ctx: &mut SessionContext, text: &str) {
         is_streaming: true,
         full_text: None,
     };
-    let new_idx = ctx.scrollback.chunk_count();
+    // BUG-192: `push_source` may trim (and insert the marker), so the
+    // index must be read AFTER the push — the pre-push count is no longer
+    // the new chunk's index once a trim fires.
     ctx.push_source(source);
-    ctx.in_flight_assistant = Some(new_idx);
+    ctx.in_flight_assistant = Some(ctx.scrollback.chunk_count() - 1);
 }
 
 /// Mirrors `processStreamingChunk` Thinking branch
@@ -62,7 +64,7 @@ pub fn append_thinking(ctx: &mut SessionContext, delta: &str) {
                 source.text.push_str(delta);
             }
         }
-        ctx.scrollback.rewrap_at(idx);
+        ctx.rewrap_and_trim_at(idx);
         return;
     }
 
@@ -75,13 +77,20 @@ pub fn append_thinking(ctx: &mut SessionContext, delta: &str) {
     };
 
     if let Some(assist_idx) = ctx.in_flight_assistant {
+        // **BUG-192**: `insert_source_at` trims after the splice and shifts
+        // the in-flight slots (insert +1, trim net shift) — so
+        // `in_flight_assistant` ALREADY points at the (moved) assistant
+        // chunk. The spliced thinking chunk sits exactly one index below
+        // it; derive from the shifted slot instead of the pre-trim
+        // `assist_idx`.
         ctx.insert_source_at(assist_idx, source);
-        ctx.in_flight_thinking = Some(assist_idx);
-        ctx.in_flight_assistant = Some(assist_idx + 1);
+        ctx.in_flight_thinking = ctx.in_flight_assistant.map(|a| a.saturating_sub(1));
     } else {
-        let new_idx = ctx.scrollback.chunk_count();
+        // BUG-192: read the index AFTER the push (a trim may have removed
+        // older chunks and inserted the marker, shifting everything). The
+        // new chunk is always the tail (trim never removes the last chunk).
         ctx.push_source(source);
-        ctx.in_flight_thinking = Some(new_idx);
+        ctx.in_flight_thinking = Some(ctx.scrollback.chunk_count() - 1);
     }
 }
 
@@ -99,7 +108,7 @@ pub fn finalize_in_flight_thinking(ctx: &mut SessionContext) {
                 source.is_streaming = false;
             }
         }
-        ctx.scrollback.rewrap_at(idx);
+        ctx.rewrap_and_trim_at(idx);
     }
 }
 
@@ -160,7 +169,7 @@ pub fn flush_in_flight_drop_empty(ctx: &mut SessionContext) {
                 source.text = format_markdown_tables(&source.text);
                 source.is_streaming = false;
             }
-            ctx.scrollback.rewrap_at(idx);
+            ctx.rewrap_and_trim_at(idx);
         }
     }
 }

@@ -9,7 +9,6 @@
 
 use std::fs;
 use std::sync::Arc;
-use std::sync::Mutex;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::agent::slash_commands::{filter_commands, SlashCommandAction};
@@ -36,15 +35,13 @@ const MUX_CONFIG_DIALOG_ID: &str = "mux-config-dialog";
 
 /// Serialises tests that mutate the process-global data directory
 /// (within this test binary).
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 /// Root the process-global data directory at a fresh throwaway dir and
 /// keep it alive (the established tui093 pattern). Returns the guard
 /// (held for the test's duration) + the TempDir.
-fn root_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
-    let guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, TempDir) {
+    let guard = DATA_DIR_GUARD.lock().await;
     let tmp = TempDir::new().expect("tempdir");
     codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
     (guard, tmp)
@@ -221,7 +218,7 @@ async fn mux_off_exits_mux_mode_without_opening_the_dialog() {
     // shared fspec-config.json). Root this test's own data dir (holding the
     // guard) so the auto-save is isolated and it cannot race a concurrent
     // dir-rooted persistence test within this process.
-    let (_data_guard, _data) = root_data_dir();
+    let (_data_guard, _data) = root_data_dir().await;
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     submit(&mut app, "/mux on");
@@ -529,7 +526,7 @@ async fn pane_count_stays_within_the_2_to_4_bounds() {
 #[serial]
 async fn enter_applies_the_draft_layout_and_closes_the_dialog() {
     // @step Given the MuxConfigDialog is open with the default two panes while mux is off
-    let (_data_guard, data) = root_data_dir();
+    let (_data_guard, data) = root_data_dir().await;
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     open_mux_config_dialog(&mut app).await;
@@ -574,7 +571,7 @@ async fn enter_applies_the_draft_layout_and_closes_the_dialog() {
 #[serial]
 async fn s_applies_the_draft_and_persists_it_to_the_shared_config() {
     // @step Given the MuxConfigDialog is open with the default two panes while mux is off
-    let (_data_guard, data) = root_data_dir();
+    let (_data_guard, data) = root_data_dir().await;
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app, "s-1").await;
     open_mux_config_dialog(&mut app).await;

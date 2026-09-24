@@ -24,11 +24,17 @@ fn read(path: &Path) -> String {
 }
 
 fn session_manager_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("session_manager.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("session_manager.rs")
 }
 
 fn helper_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("session_creation_helper.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("session_creation_helper.rs")
 }
 
 /// Feature: spec/features/extract-shared-session-creation.feature
@@ -200,7 +206,9 @@ fn both_call_sites_use_shared_helper() {
 
     // @step And create_background_session_inner is called from create_session_from_manifest
     // Count how many times the helper is called in session_manager.rs
-    let helper_calls = sm_content.matches("create_background_session_inner").count();
+    let helper_calls = sm_content
+        .matches("create_background_session_inner")
+        .count();
     // At least 2 call sites (create_session_with_id + create_session_from_manifest)
     assert!(
         helper_calls >= 2,

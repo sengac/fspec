@@ -71,11 +71,9 @@ static ENV_AND_DATA_DIR_GUARD: AsyncMutex<()> = AsyncMutex::const_new(());
 ///   (no custom provider configs, no credentials dir)
 ///
 /// Returns the temp dirs (kept alive for the test lifetime).
-fn isolate_credentials(user_dir_config: &str) -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    tempfile::TempDir,
-) {
+fn isolate_credentials(
+    user_dir_config: &str,
+) -> (tempfile::TempDir, tempfile::TempDir, tempfile::TempDir) {
     for var in [
         "ANTHROPIC_API_KEY",
         "CLAUDE_CODE_OAUTH_TOKEN",
@@ -104,7 +102,9 @@ fn isolate_credentials(user_dir_config: &str) -> (
 /// Build a manager rooted in a fresh data dir whose model cache is pre-seeded
 /// from the offline fixture. Returns the temp dirs (kept alive for the test)
 /// and the manager.
-fn manager_with_seeded_cache(user_dir_config: &str) -> Result<(Vec<tempfile::TempDir>, Arc<SessionManager>), String> {
+fn manager_with_seeded_cache(
+    user_dir_config: &str,
+) -> Result<(Vec<tempfile::TempDir>, Arc<SessionManager>), String> {
     let (codex_home, fspec_home, user_dir) = isolate_credentials(user_dir_config);
     let data_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
     let cache_dir = data_dir.path().join("cache");
@@ -118,18 +118,15 @@ fn manager_with_seeded_cache(user_dir_config: &str) -> Result<(Vec<tempfile::Tem
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     let manager = Arc::new(SessionManager::new());
-    Ok((
-        vec![codex_home, fspec_home, user_dir, data_dir],
-        manager,
-    ))
+    Ok((vec![codex_home, fspec_home, user_dir, data_dir], manager))
 }
 
 // =============================================================================
 // Scenario: Profile model session creation succeeds without global credentials
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn profile_model_session_creation_succeeds_without_global_credentials()
--> Result<(), String> {
+async fn profile_model_session_creation_succeeds_without_global_credentials() -> Result<(), String>
+{
     let _guard = ENV_AND_DATA_DIR_GUARD.lock().await;
 
     // @step Given a SessionManager with no provider credentials in the environment
@@ -170,8 +167,8 @@ async fn profile_model_session_creation_succeeds_without_global_credentials()
 // Scenario: Cloud registry model still fails without credentials for its provider
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn cloud_registry_model_still_fails_without_credentials_for_its_provider()
--> Result<(), String> {
+async fn cloud_registry_model_still_fails_without_credentials_for_its_provider(
+) -> Result<(), String> {
     let _guard = ENV_AND_DATA_DIR_GUARD.lock().await;
 
     // @step Given a SessionManager with no provider credentials in the environment
@@ -204,8 +201,7 @@ async fn cloud_registry_model_still_fails_without_credentials_for_its_provider()
 // Scenario: Codex model session creation succeeds without global credentials
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn codex_model_session_creation_succeeds_without_global_credentials()
--> Result<(), String> {
+async fn codex_model_session_creation_succeeds_without_global_credentials() -> Result<(), String> {
     let _guard = ENV_AND_DATA_DIR_GUARD.lock().await;
 
     // @step Given a SessionManager with no provider credentials in the environment

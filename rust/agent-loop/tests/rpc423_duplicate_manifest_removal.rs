@@ -40,7 +40,9 @@ fn setup_data_dir() -> TempDir {
 // ============================================================================
 
 fn read_hooks_src() -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src").join("hooks.rs");
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .join("hooks.rs");
     std::fs::read_to_string(&path).unwrap_or_else(|e| {
         panic!(
             "must be able to read rust/agent-loop/src/hooks.rs at {}: {e}",
@@ -173,7 +175,8 @@ fn manifest_save_load_preserves_full_provider_string() {
     // @step When I create a manifest with provider "anthropic/claude-sonnet-4" and save it
     let project = PathBuf::from("/test/project/rpc423-save");
     let full_provider = "anthropic/claude-sonnet-4";
-    let mut manifest = SessionManifest::with_provider("test-session", project.clone(), full_provider);
+    let mut manifest =
+        SessionManifest::with_provider("test-session", project.clone(), full_provider);
     manifest.id = Uuid::new_v4();
     save_session(&manifest).expect("save_session must succeed");
 
@@ -205,7 +208,8 @@ fn session_resume_restores_correct_model() {
     let _guard = setup_data_dir();
     let project = PathBuf::from("/test/project/rpc423-resume");
     let full_provider = "anthropic/claude-sonnet-4";
-    let mut manifest = SessionManifest::with_provider("resume-session", project.clone(), full_provider);
+    let mut manifest =
+        SessionManifest::with_provider("resume-session", project.clone(), full_provider);
     manifest.id = Uuid::new_v4();
     save_session(&manifest).expect("save_session must succeed");
     let session_id = manifest.id;
@@ -220,7 +224,10 @@ fn session_resume_restores_correct_model() {
     let parts: Vec<&str> = loaded.provider.splitn(2, '/').collect();
     assert_eq!(parts.len(), 2, "provider string must contain '/' separator");
     assert_eq!(parts[0], "anthropic", "provider_id must be 'anthropic'");
-    assert_eq!(parts[1], "claude-sonnet-4", "model_id must be 'claude-sonnet-4'");
+    assert_eq!(
+        parts[1], "claude-sonnet-4",
+        "model_id must be 'claude-sonnet-4'"
+    );
 }
 
 // ============================================================================
@@ -283,7 +290,8 @@ fn hooks_doc_comment_mentions_session_manager_manifest() {
     // @step Then the doc comment must mention that manifest creation is handled by SessionManager
     // (After RPC-423, the module doc should be updated to reflect this)
     assert!(
-        src.contains("SessionManager") || !src.contains("RPC-072 FIX: Create the persistence manifest"),
+        src.contains("SessionManager")
+            || !src.contains("RPC-072 FIX: Create the persistence manifest"),
         "hooks.rs doc must NOT contain the old RPC-072 manifest creation comment — \
          manifest creation is now handled by SessionManager::create_session_with_id"
     );

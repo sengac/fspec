@@ -22,9 +22,9 @@ use std::fs;
 use std::sync::{Arc, Mutex};
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
+use codelet_providers::models::{ModelRegistry, ModelsDevResponse};
 use codelet_sessions::cloud_models::cloud_model_entries;
 use codelet_sessions::SessionManager;
-use codelet_providers::models::{ModelRegistry, ModelsDevResponse};
 
 /// models.dev catalog fixture: the openai provider carries cloud models
 /// (`o3`, `gpt-4o`, `gpt-5.4`, `gpt-5.2-codex`, `gpt-5-mini`) that must
@@ -62,13 +62,8 @@ fn seed_models_cache() -> tempfile::TempDir {
     let data_dir = tempfile::tempdir().expect("create temp data dir");
     let cache_dir = data_dir.path().join("cache");
     fs::create_dir_all(&cache_dir).expect("create cache dir");
-    fs::write(
-        cache_dir.join("models.json"),
-        MODELS_FIXTURE,
-    )
-    .expect("write models cache");
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models cache");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     data_dir
 }
 
@@ -120,9 +115,7 @@ fn seed_empty_homes() -> (tempfile::TempDir, tempfile::TempDir) {
 }
 
 /// Whether a standalone (non-profile) `openai` cloud section is present.
-fn has_standalone_openai_section(
-    providers: &[codelet_rpc_types::ProviderInfo],
-) -> bool {
+fn has_standalone_openai_section(providers: &[codelet_rpc_types::ProviderInfo]) -> bool {
     providers
         .iter()
         .any(|p| p.key == "openai" && p.profile_name.is_none())
@@ -184,12 +177,13 @@ async fn scenario_profile_bridged_key_does_not_populate_openai_cloud_section() {
             )
         });
     assert!(
+        sglang.models.iter().any(|m| m.id == "qwen3.8-27b"),
+        "PROV-146: the sglang profile must still list its custom model; got {:?}",
         sglang
             .models
             .iter()
-            .any(|m| m.id == "qwen3.8-27b"),
-        "PROV-146: the sglang profile must still list its custom model; got {:?}",
-        sglang.models.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(),
+            .map(|m| m.id.as_str())
+            .collect::<Vec<_>>(),
     );
 
     // @step And no model with id "o3" appears in any non-Codex section
@@ -300,9 +294,8 @@ async fn scenario_codex_section_still_lists_allowlisted_models_when_openai_key_s
     // @step When list_providers() assembles the provider list
     let providers = handle.list_providers();
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
-    let codex_models = section_model_ids(&providers, "codex").unwrap_or_else(|| {
-        panic!("PROV-146: the 'codex' section must be present; keys: {keys:?}")
-    });
+    let codex_models = section_model_ids(&providers, "codex")
+        .unwrap_or_else(|| panic!("PROV-146: the 'codex' section must be present; keys: {keys:?}"));
 
     // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4"
     assert!(

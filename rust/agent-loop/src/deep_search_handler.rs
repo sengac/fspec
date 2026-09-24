@@ -352,11 +352,21 @@ macro_rules! build_and_run {
     }};
 }
 
-fn provider_uses_streaming_execution(provider_name: &str) -> bool {
+/// True when the provider's sub-agent execution must stream internally
+/// (Codex/ZAI — see `collect_final_response_from_stream`). Public within
+/// the crate so the compactor sub-agent spawner
+/// (`generate_compaction_handler`) shares the same dispatch rule.
+pub(crate) fn provider_uses_streaming_execution(provider_name: &str) -> bool {
     provider_name == "codex" || provider_name == "zai"
 }
 
-async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
+/// Collect the final response from a streaming sub-agent run (Codex/ZAI
+/// stream internally — see `provider_uses_streaming_execution`).
+///
+/// Public within the crate so the compactor sub-agent spawner
+/// (`generate_compaction_handler`) shares the exact same streaming
+/// collection contract (DeepSearch clone — no duplicated retry logic).
+pub(crate) async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
 where
     S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
     R: Clone + Unpin + rig::completion::GetTokenUsage,
@@ -495,7 +505,8 @@ async fn build_and_run_agent(
             model_alias,
             session_id,
             Some(system_prompt),
-            None, // thinking_config is handled by the parent agent; sub-agent runs vanilla
+            None,  // thinking_config is handled by the parent agent; sub-agent runs vanilla
+            false, // sub_agent: full parent-style surface (PROV-104 superset decision)
         )
         .map_err(|e| {
             tracing::warn!(

@@ -28,8 +28,9 @@ pub use matcher::{BlocklistMatcher, CheckResult};
 pub use middleware::{
     allow_for_session, check_bash_command, check_command_raw, check_file_path,
     clear_session_allowances, init_blocklist, is_session_allowed, load_blocklist_config,
-    project_config_path, reload_blocklist, system_config_path, BlockedError,
+    middleware_project_root, project_config_path, reload_blocklist, system_config_path, BlockedError,
 };
+pub use crate::rlcd::security::check_file_path_semantic;
 pub use template::{
     default_blocklist_config, install_default_system_blocklist, DEFAULT_BLOCKLIST_TEMPLATE,
 };

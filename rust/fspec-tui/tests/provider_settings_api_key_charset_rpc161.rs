@@ -377,7 +377,8 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
     assert!(
         !matches!(
             out_accept,
-            ProviderSettingsEvent::Emit(Action::SaveProviderCredentials { .. })
+            ProviderSettingsEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::SaveProviderCredentials { .. })
         ),
         "char-keystrokes must NOT emit SaveProviderCredentials"
     );

@@ -344,8 +344,8 @@ impl CodexProvider {
         };
         use codelet_tools::{
             AgentManagerTool, ApplyPatchTool, AstGrepRefactorTool, AstGrepTool, ConnectMcpTool,
-            DeepSearchTool, GraphSearchTool, InjectSummaryTool, ScheduleTool, SessionSearchTool,
-            WebSearchTool,
+            DecisionTool, DeepSearchTool, GenerateCompactionTool, GraphSearchTool,
+            InjectSummaryTool, ScheduleTool, SessionSearchTool, WebSearchTool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -421,6 +421,8 @@ impl CodexProvider {
             .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(DecisionTool::new(session_id)) // RLCD-002: Decision tool
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
             .tool(request_user_input) // BUG-116: Codex-native HITL facade
             .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool

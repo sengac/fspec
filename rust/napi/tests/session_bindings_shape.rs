@@ -956,10 +956,7 @@ fn scenario_codelet_napi_builds_with_noop_feature() {
 fn scenario_index_dts_is_byte_identical_to_pre_rpc043_baseline() {
     // @step Given the file rust/napi/index.d.ts exists on disk
     let dts_path = workspace_root().join("napi").join("index.d.ts");
-    assert!(
-        dts_path.exists(),
-        "BUG-153: index.d.ts must exist on disk"
-    );
+    assert!(dts_path.exists(), "BUG-153: index.d.ts must exist on disk");
 
     // @step When I read the file content directly
     let dts = read(&dts_path);

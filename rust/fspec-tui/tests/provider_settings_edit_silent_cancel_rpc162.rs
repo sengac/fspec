@@ -171,10 +171,14 @@ fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_li
 
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "anthropic", api_key: "sk-abc" })
     match evt {
-        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
-            provider_id,
-            api_key,
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::SaveProviderCredentials {
+                provider_id,
+                api_key,
+            } = *action
+            else {
+                panic!("expected Emit(SaveProviderCredentials), got {action:?}");
+            };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(api_key, "sk-abc");
         }
@@ -340,10 +344,14 @@ fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verba
 
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "openai", api_key: "sk-test-1" })
     match evt {
-        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
-            provider_id,
-            api_key,
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::SaveProviderCredentials {
+                provider_id,
+                api_key,
+            } = *action
+            else {
+                panic!("expected Emit(SaveProviderCredentials), got {action:?}");
+            };
             assert_eq!(provider_id, "openai");
             assert_eq!(api_key, "sk-test-1");
         }

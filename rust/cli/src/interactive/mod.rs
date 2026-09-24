@@ -22,9 +22,9 @@ mod stream_handlers;
 pub mod stream_loop;
 
 pub use error_classifiers::{
-    classify_compaction_branch, is_image_content_error, is_prompt_too_long_error,
-    is_stall_timeout_error, is_transient_network_error, is_truncated_tool_call_error,
-    CompactionBranch, CompactionDisagreement,
+    classify_compaction_branch, is_context_overflow_error, is_image_content_error,
+    is_prompt_too_long_error, is_stall_timeout_error, is_transient_network_error,
+    is_truncated_tool_call_error, CompactionBranch, CompactionDisagreement,
 };
 pub use multimodal::{build_user_content_with_images, BridgeImage};
 pub use output::{
@@ -40,8 +40,8 @@ pub use recovery_image::sanitize_image_content;
 pub use recovery_network::{network_retry_delay, MAX_NETWORK_RETRIES};
 pub use recovery_stall::{
     build_deep_search_timeout_message, build_stall_timeout_message, deep_search_wall_clock_timeout,
-    stall_timeout_duration, DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, STALL_TIMEOUT_ERROR_PREFIX,
-    STALL_TIMEOUT_SECS,
+    set_deep_search_wall_clock_timeout_override, stall_timeout_duration,
+    DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, STALL_TIMEOUT_ERROR_PREFIX, STALL_TIMEOUT_SECS,
 };
 pub use recovery_thinking::{
     build_thinking_budget_exhausted_message, build_thinking_exhaustion_recovery_message,

@@ -166,7 +166,8 @@ fn pressing_lowercase_t_in_detail_summary_is_silently_ignored() {
     assert!(
         !matches!(
             out,
-            ProviderSettingsEvent::Emit(Action::TestProviderConnection(_))
+            ProviderSettingsEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::TestProviderConnection(_))
         ),
         "RPC-154: `t` must NOT emit Action::TestProviderConnection — this is the exact deviation RPC-154 closes; got {out:?}"
     );
@@ -225,7 +226,8 @@ fn pressing_uppercase_t_in_detail_summary_preserves_existing_last_status() {
     assert!(
         !matches!(
             out,
-            ProviderSettingsEvent::Emit(Action::TestProviderConnection(_))
+            ProviderSettingsEvent::Emit(ref a)
+                if matches!(a.as_ref(), Action::TestProviderConnection(_))
         ),
         "RPC-154: uppercase `T` must NOT emit a second Action::TestProviderConnection while a previous test is already in flight; got {out:?}"
     );

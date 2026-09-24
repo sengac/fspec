@@ -64,9 +64,9 @@ impl CopilotProvider {
         };
         use codelet_tools::{
             AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
-            DeepSearchTool, EditTool, GlobTool, GraphSearchTool, GrepTool, InjectSummaryTool,
-            LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool,
-            WriteTool,
+            DecisionTool, DeepSearchTool, EditTool, GenerateCompactionTool, GlobTool,
+            GraphSearchTool, GrepTool, InjectSummaryTool, LsTool, ReadTool,
+            RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
@@ -100,6 +100,8 @@ impl CopilotProvider {
             .tool(GraphSearchTool::new(session_id))
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id))
+            .tool(DecisionTool::new(session_id)) // RLCD-002: Decision tool
+            .tool(GenerateCompactionTool::new(session_id)) // CMPCT-045: GenerateCompaction tool
             .tool(AgentManagerTool::new(session_id))
             .tool(RequestUserInputTool::new(session_id))
             .tool(ScheduleTool::new(session_id));

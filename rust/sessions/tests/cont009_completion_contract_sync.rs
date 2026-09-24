@@ -40,7 +40,11 @@ static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 /// validates against the registry without a network call. Calls
 /// `reset_stores_for_tests()` before `set_data_directory()` (RPC-423 precedent).
 /// Noop hooks ensure no agent loop is spawned for the session.
-async fn fresh_session() -> (tempfile::TempDir, Arc<SessionManager>, Arc<BackgroundSession>) {
+async fn fresh_session() -> (
+    tempfile::TempDir,
+    Arc<SessionManager>,
+    Arc<BackgroundSession>,
+) {
     // @step Given the fresh_session() helper in cont009_completion_contract_sync.rs
     // @step When the helper creates a temp data directory
     let data_dir = tempfile::tempdir().expect("tempdir");

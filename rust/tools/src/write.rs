@@ -6,9 +6,9 @@
 //! For isolated sessions, file paths are validated and resolved to the worktree
 //! to ensure the session cannot write files outside its isolated environment.
 
-use super::blocklist::check_file_path;
+use super::blocklist::check_file_path_semantic;
 use super::error::ToolError;
-use super::facade::validate_and_resolve_path;
+use super::facade::validate_and_resolve_path_with_block_notification;
 use super::validation::{create_parent_dirs, require_absolute_path, write_file_contents};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -77,11 +77,22 @@ impl rig::tool::Tool for WriteTool {
         }
 
         // Validate and resolve path (handles worktree isolation for isolated sessions)
-        let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "write")?;
+        // BLOCK-006: emit a block notification when isolation rejects the path.
+        let resolved_path =
+            validate_and_resolve_path_with_block_notification(
+                self.session_id,
+                &args.file_path,
+                &format!("writing {}", args.file_path),
+                "write",
+            )?;
         let file_path_str = resolved_path.to_string_lossy().to_string();
 
-        // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&file_path_str, self.session_id) {
+        // Check file path against blocklist before any I/O (regex + RLCD-004
+        // semantic stage when the engine is reachable)
+        if let Err(blocked) =
+            check_file_path_semantic(&file_path_str, self.session_id, "Write", "write")
+                .await
+        {
             return Err(ToolError::Blocked {
                 tool: "write",
                 message: blocked.to_string(),

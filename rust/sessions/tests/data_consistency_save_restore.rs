@@ -5,14 +5,14 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::path::PathBuf;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
+use codelet_common::set_data_directory;
 use codelet_core::persistence::{
     append_message_with_metadata, create_session_with_provider, get_session_message_envelopes,
     reset_stores_for_tests,
 };
-use codelet_common::set_data_directory;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
@@ -52,24 +52,16 @@ async fn data_consistency_simple_text_message() {
 
     let mut session = manifest;
     let original_content = "Hello, this is a test message with multiple words.";
-    append_message_with_metadata(
-        &mut session,
-        "user",
-        original_content,
-        HashMap::new(),
-    )
-    .expect("append message");
+    append_message_with_metadata(&mut session, "user", original_content, HashMap::new())
+        .expect("append message");
 
     // @step When I load the stored message from disk
-    let stored_messages = codelet_core::persistence::get_session_messages(&session)
-        .expect("get session messages");
+    let stored_messages =
+        codelet_core::persistence::get_session_messages(&session).expect("get session messages");
     assert_eq!(stored_messages.len(), 1, "should have 1 stored message");
 
     let stored_msg = &stored_messages[0];
-    println!(
-        "[SAVE] StoredMessage content: '{}'",
-        stored_msg.content
-    );
+    println!("[SAVE] StoredMessage content: '{}'", stored_msg.content);
 
     // @step Then the stored content should match the original
     assert_eq!(
@@ -78,8 +70,7 @@ async fn data_consistency_simple_text_message() {
     );
 
     // @step When I get the envelope for restore
-    let envelopes = get_session_message_envelopes(session.id)
-        .expect("get envelopes");
+    let envelopes = get_session_message_envelopes(session.id).expect("get envelopes");
     assert_eq!(envelopes.len(), 1, "should have 1 envelope");
 
     let envelope: serde_json::Value = serde_json::from_str(&envelopes[0]).expect("parse envelope");
@@ -158,24 +149,16 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
         serde_json::from_str(&envelope_json.to_string()).expect("parse envelope as map");
 
     let mut session = manifest;
-    append_message_with_metadata(
-        &mut session,
-        "assistant",
-        &flattened_content,
-        metadata_map,
-    )
-    .expect("append message");
+    append_message_with_metadata(&mut session, "assistant", &flattened_content, metadata_map)
+        .expect("append message");
 
     // @step When I inspect the stored message
-    let stored_messages = codelet_core::persistence::get_session_messages(&session)
-        .expect("get session messages");
+    let stored_messages =
+        codelet_core::persistence::get_session_messages(&session).expect("get session messages");
     assert_eq!(stored_messages.len(), 1, "should have 1 stored message");
 
     let stored_msg = &stored_messages[0];
-    println!(
-        "[SAVE] StoredMessage.content = '{}'",
-        stored_msg.content
-    );
+    println!("[SAVE] StoredMessage.content = '{}'", stored_msg.content);
     println!(
         "[SAVE] StoredMessage.metadata keys: {:?}",
         stored_msg.metadata.keys().collect::<Vec<_>>()
@@ -188,8 +171,7 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
     );
 
     // @step When I get the envelope for restore
-    let envelopes = get_session_message_envelopes(session.id)
-        .expect("get envelopes");
+    let envelopes = get_session_message_envelopes(session.id).expect("get envelopes");
     assert_eq!(envelopes.len(), 1, "should have 1 envelope");
 
     let envelope: serde_json::Value = serde_json::from_str(&envelopes[0]).expect("parse envelope");
@@ -206,10 +188,7 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
         .expect("message.content");
     let content_array = msg_content.as_array().expect("content is array");
 
-    println!(
-        "[RESTORE] Content block count: {}",
-        content_array.len()
-    );
+    println!("[RESTORE] Content block count: {}", content_array.len());
     for (i, block) in content_array.iter().enumerate() {
         println!(
             "[RESTORE] Block {}: {}",
@@ -220,7 +199,11 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
 
     // FIXED: The envelope now uses the original structured content from metadata,
     // NOT the flattened string. So we get the original multiple blocks back.
-    assert_eq!(content_array.len(), 2, "should have 2 text blocks (original structure preserved)");
+    assert_eq!(
+        content_array.len(),
+        2,
+        "should have 2 text blocks (original structure preserved)"
+    );
     let restored_text_0 = content_array[0]
         .get("text")
         .and_then(|t| t.as_str())
@@ -231,8 +214,14 @@ async fn data_consistency_assistant_message_with_envelope_metadata() {
         .expect("text field");
 
     // The restored text blocks match the original structured content
-    assert_eq!(restored_text_0, "First paragraph of the response.", "first block should match");
-    assert_eq!(restored_text_1, "Second paragraph with more detail.", "second block should match");
+    assert_eq!(
+        restored_text_0, "First paragraph of the response.",
+        "first block should match"
+    );
+    assert_eq!(
+        restored_text_1, "Second paragraph with more detail.",
+        "second block should match"
+    );
 }
 
 // ============================================================================
@@ -247,12 +236,9 @@ async fn data_consistency_multiline_content_in_envelope() {
     let _data_dir = set_temp_data_dir(make_temp_data_dir());
     let project_path = std::env::current_dir().expect("current dir");
 
-    let manifest = create_session_with_provider(
-        "Multiline Test",
-        &project_path,
-        "anthropic/claude-sonnet-4",
-    )
-    .expect("create session");
+    let manifest =
+        create_session_with_provider("Multiline Test", &project_path, "anthropic/claude-sonnet-4")
+            .expect("create session");
 
     // Save a message with embedded newlines (simulating flattened assistant content)
     let content_with_newlines = "Line one\nLine two\nLine three\n\nParagraph two\n  Indented line";
@@ -266,8 +252,7 @@ async fn data_consistency_multiline_content_in_envelope() {
     .expect("append message");
 
     // @step When I get the envelope for restore
-    let envelopes = get_session_message_envelopes(session.id)
-        .expect("get envelopes");
+    let envelopes = get_session_message_envelopes(session.id).expect("get envelopes");
 
     let envelope: serde_json::Value = serde_json::from_str(&envelopes[0]).expect("parse envelope");
     println!(
@@ -316,13 +301,8 @@ async fn data_consistency_raw_jsonl_inspection() {
     // Save a message with complex content
     let content = "Hello world\nThis is a second line\n\nAnd a third paragraph";
     let mut session = manifest;
-    append_message_with_metadata(
-        &mut session,
-        "assistant",
-        content,
-        HashMap::new(),
-    )
-    .expect("append message");
+    append_message_with_metadata(&mut session, "assistant", content, HashMap::new())
+        .expect("append message");
 
     // @step When I read the raw JSONL file
     let jsonl_path = data_dir.join("messages/messages.jsonl");
@@ -398,17 +378,11 @@ async fn data_consistency_full_round_trip_with_metadata() {
         serde_json::from_str(&envelope_json.to_string()).expect("parse envelope as map");
 
     let mut session = manifest;
-    append_message_with_metadata(
-        &mut session,
-        "assistant",
-        &flattened,
-        metadata_map,
-    )
-    .expect("append message");
+    append_message_with_metadata(&mut session, "assistant", &flattened, metadata_map)
+        .expect("append message");
 
     // @step When I restore via get_session_message_envelopes
-    let envelopes = get_session_message_envelopes(session.id)
-        .expect("get envelopes");
+    let envelopes = get_session_message_envelopes(session.id).expect("get envelopes");
 
     let envelope: serde_json::Value = serde_json::from_str(&envelopes[0]).expect("parse envelope");
 
@@ -435,7 +409,11 @@ async fn data_consistency_full_round_trip_with_metadata() {
 
     // FIXED: The restored envelope now uses the original structured content from metadata,
     // preserving the original block structure instead of flattening.
-    assert_eq!(content_array.len(), 3, "restored has 3 blocks (original structure preserved)");
+    assert_eq!(
+        content_array.len(),
+        3,
+        "restored has 3 blocks (original structure preserved)"
+    );
     let restored_text_0 = content_array[0]
         .get("text")
         .and_then(|t| t.as_str())
@@ -450,7 +428,16 @@ async fn data_consistency_full_round_trip_with_metadata() {
         .expect("text field");
 
     // The content blocks are preserved with original structure
-    assert_eq!(restored_text_0, "This is the first text block from the assistant.", "first block matches");
-    assert_eq!(restored_text_1, "This is the second text block.", "second block matches");
-    assert_eq!(restored_text_2, "And a third block with [Thinking: truncated...] in it.", "third block matches");
+    assert_eq!(
+        restored_text_0, "This is the first text block from the assistant.",
+        "first block matches"
+    );
+    assert_eq!(
+        restored_text_1, "This is the second text block.",
+        "second block matches"
+    );
+    assert_eq!(
+        restored_text_2, "And a third block with [Thinking: truncated...] in it.",
+        "third block matches"
+    );
 }

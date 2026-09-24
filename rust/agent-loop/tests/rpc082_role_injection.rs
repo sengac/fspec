@@ -511,13 +511,15 @@ fn every_provider_create_rig_agent_signature_accepts_option_str_preamble() {
     //       session_id: uuid::Uuid,
     //       preamble: Option<&str>,
     //       thinking_config: Option<serde_json::Value>,
+    //       sub_agent: bool, // CMPCT-044/045: gates the 7-tool sub-agent surface
     //   ) -> Result<CustomRigAgent, CustomProviderError>
     let _custom = |project_root: &std::path::Path,
                    name: &str,
                    model_alias: &str,
                    session_id: uuid::Uuid,
                    preamble: Option<&str>,
-                   thinking: Option<serde_json::Value>| {
+                   thinking: Option<serde_json::Value>,
+                   sub_agent: bool| {
         CustomProvider::create_rig_agent(
             project_root,
             name,
@@ -525,6 +527,7 @@ fn every_provider_create_rig_agent_signature_accepts_option_str_preamble() {
             session_id,
             preamble,
             thinking,
+            sub_agent,
         )
     };
 

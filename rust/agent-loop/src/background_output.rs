@@ -318,9 +318,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 let loop_abort = self.feed_loop_detectors("text", text);
                 if !loop_abort {
                     // REFAC-007: Accumulate text for later persistence
-                    self.add_assistant_content(AssistantContent::Text {
-                        text: text.clone(),
-                    });
+                    self.add_assistant_content(AssistantContent::Text { text: text.clone() });
                 }
                 StreamChunk::text(text.clone())
             }
@@ -481,7 +479,12 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 // REFAC-007 Rule [31]: Persist token state on Done chunk
                 // TOKEN-003: carry the session-cumulative reasoning value
                 let (input_tokens, output_tokens, reasoning_tokens) = self.session.get_tokens();
-                if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens, reasoning_tokens.unwrap_or(0)) {
+                if let Err(e) = persist_token_state(
+                    &self.session.id,
+                    input_tokens,
+                    output_tokens,
+                    reasoning_tokens.unwrap_or(0),
+                ) {
                     tracing::error!("REFAC-007: Failed to persist token state: {}", e);
                 }
 
@@ -494,6 +497,28 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 ) {
                     // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk.
                     self.session.set_status(SessionStatus::Idle);
+                    tracing::debug!(
+                        session_id = %self.session.id,
+                        "[compaction-status] Done: no pending compaction → status set to Idle"
+                    );
+                } else {
+                    let compaction_active = self
+                        .session
+                        .compaction_in_progress
+                        .load(std::sync::atomic::Ordering::Acquire);
+                    let has_pending_dag = self
+                        .session
+                        .pending_dag_content
+                        .lock()
+                        .map(|g| g.is_some())
+                        .unwrap_or(false);
+                    tracing::info!(
+                        session_id = %self.session.id,
+                        compaction_in_progress = compaction_active,
+                        has_pending_dag,
+                        current_status = ?self.session.get_status(),
+                        "[compaction-status] Done: compaction/pending-DAG active → NOT setting Idle"
+                    );
                 }
                 StreamChunk::done()
             }
@@ -553,8 +578,8 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             // the shared guarded helper and marks the wire chunk with
             // goalCleared so the TUI drops its 🎯 cache.
             StreamEvent::ContinueState(cs) => {
-                let goal_cleared = cs.reason
-                    == codelet_cli::interactive::ContinueStateReason::GoalSatisfied;
+                let goal_cleared =
+                    cs.reason == codelet_cli::interactive::ContinueStateReason::GoalSatisfied;
                 if goal_cleared {
                     self.session.clear_goal_state_if_unchanged_since_sync();
                 }

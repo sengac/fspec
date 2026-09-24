@@ -253,9 +253,19 @@ fn stream_loop_guards_retry_with_max_network_retries() {
     // @step When I read the file as a string
     // (already read above)
 
-    // @step Then the body contains the substring "use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}"
+    // @step Then the body imports both MAX_NETWORK_RETRIES and network_retry_delay from super::recovery_network
+    let recovery_network_use = body
+        .find("use super::recovery_network::")
+        .expect("recovery_network import must exist");
+    let import_end = recovery_network_use
+        + body[recovery_network_use..]
+            .find('}')
+            .expect("recovery_network import must be closed");
+    let import = &body[recovery_network_use..import_end + 1];
     assert!(
-        body.contains("use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}")
+        import.contains("MAX_NETWORK_RETRIES") && import.contains("network_retry_delay"),
+        "stream_loop.rs must import MAX_NETWORK_RETRIES and network_retry_delay \
+         from super::recovery_network; got: {import}"
     );
 
     // @step And the body contains the substring "network_retry_count <= MAX_NETWORK_RETRIES"

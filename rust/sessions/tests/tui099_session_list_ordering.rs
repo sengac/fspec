@@ -51,15 +51,11 @@ fn make_session(id: &str, ts: Option<i64>) -> SessionInfo {
 /// Helper: apply the expected sorting algorithm to a Vec<SessionInfo>.
 /// This mirrors the sorting logic that list_sessions() should implement.
 fn sort_sessions(sessions: &mut [SessionInfo]) {
-    sessions.sort_by(|a, b| {
-        match (a.updated_at_ms, b.updated_at_ms) {
-            (Some(ts_a), Some(ts_b)) => {
-                ts_b.cmp(&ts_a).then_with(|| a.id.cmp(&b.id))
-            }
-            (Some(_), None) => std::cmp::Ordering::Less,
-            (None, Some(_)) => std::cmp::Ordering::Greater,
-            (None, None) => a.id.cmp(&b.id),
-        }
+    sessions.sort_by(|a, b| match (a.updated_at_ms, b.updated_at_ms) {
+        (Some(ts_a), Some(ts_b)) => ts_b.cmp(&ts_a).then_with(|| a.id.cmp(&b.id)),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => a.id.cmp(&b.id),
     });
 }
 
@@ -79,28 +75,47 @@ async fn sessions_ordered_by_most_recently_updated_first() {
 
     // Create sessions
     let sid_a = handle.create_session(None);
-    let _info_a = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let _info_a = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .iter()
         .find(|s| s.id == sid_a.value)
         .cloned()
         .expect("session A should exist");
 
     let sid_b = handle.create_session(None);
-    let _info_b = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let _info_b = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .iter()
         .find(|s| s.id == sid_b.value)
         .cloned()
         .expect("session B should exist");
 
     let sid_c = handle.create_session(None);
-    let _info_c = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+    let _info_c = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        )
         .iter()
         .find(|s| s.id == sid_c.value)
         .cloned()
         .expect("session C should exist");
 
     // @step When I open the /resume view
-    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = manager.list_sessions(
+        &std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    );
 
     // @step Then the sessions are displayed in descending order by updated_at_ms
     assert!(
@@ -188,7 +203,11 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
     let handle: &dyn SessionManagerHandle = &*manager;
     let _sid1 = handle.create_session(None);
     let _sid2 = handle.create_session(None);
-    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = manager.list_sessions(
+        &std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    );
 
     // Verify the overall list is sorted
     for i in 1..sessions.len() {
@@ -214,9 +233,7 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
                 // OK — timestamped before non-timestamped
             }
             (None, Some(_)) => {
-                panic!(
-                    "non-timestamped session should not come before timestamped session"
-                );
+                panic!("non-timestamped session should not come before timestamped session");
             }
             (None, None) => {
                 assert!(
@@ -239,10 +256,8 @@ async fn sessions_without_timestamp_appear_at_end() {
     // @step Given I have sessions with and without updated_at_ms timestamps
     let session_with_ts_latest = make_session("aaaa1111-1111-1111-1111-111111111111", Some(1000));
     let session_with_ts_earlier = make_session("bbbb1111-1111-1111-1111-111111111111", Some(500));
-    let session_without_ts_first =
-        make_session("cccc1111-1111-1111-1111-111111111111", None);
-    let session_without_ts_second =
-        make_session("dddd1111-1111-1111-1111-111111111111", None);
+    let session_without_ts_first = make_session("cccc1111-1111-1111-1111-111111111111", None);
+    let session_without_ts_second = make_session("dddd1111-1111-1111-1111-111111111111", None);
 
     // @step When I open the /resume view
     let mut unsorted = vec![
@@ -279,7 +294,11 @@ async fn sessions_without_timestamp_appear_at_end() {
     manager.set_default_model("anthropic/claude-sonnet-4");
     let handle: &dyn SessionManagerHandle = &*manager;
     let _sid = handle.create_session(None);
-    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = manager.list_sessions(
+        &std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default(),
+    );
 
     // Verify all sessions from list_sessions() are properly sorted
     for i in 1..sessions.len() {
@@ -303,9 +322,7 @@ async fn sessions_without_timestamp_appear_at_end() {
                 // OK — timestamped before non-timestamped
             }
             (None, Some(_)) => {
-                panic!(
-                    "non-timestamped session should not come before timestamped session"
-                );
+                panic!("non-timestamped session should not come before timestamped session");
             }
             (None, None) => {
                 assert!(

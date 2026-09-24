@@ -1,0 +1,258 @@
+{
+  "scenarios": [
+    {
+      "name": "Steady-state silence in a clean repo (regression guard)",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/git_state_watcher.rs",
+          "lines": "270-291",
+          "implMappings": [
+            {
+              "file": "rust/core/src/git_state.rs",
+              "lines": [
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Steady-state silence in a checkpointed repo (BUG-188 regression)",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/git_state_watcher.rs",
+          "lines": "298-332",
+          "implMappings": [
+            {
+              "file": "rust/core/src/git_state.rs",
+              "lines": [
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new checkpoint ref produces a frame on the checkpointed repo",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/git_state_watcher.rs",
+          "lines": "339-373",
+          "implMappings": [
+            {
+              "file": "rust/core/src/git_state.rs",
+              "lines": [
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Two captures of an unchanged checkpointed repo produce equal signatures but unequal raw states",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/git_state_watcher.rs",
+          "lines": "381-413",
+          "implMappings": [
+            {
+              "file": "rust/core/src/git_state.rs",
+              "lines": [
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/core/tests/git_state_watcher.rs",
+          "lines": "381-413",
+          "implMappings": [
+            {
+              "file": "rust/core/src/git_state.rs",
+              "lines": [
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/git_state_watcher.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/git_state.rs"
+    ],
+    "totalLinesCovered": 325
+  }
+}

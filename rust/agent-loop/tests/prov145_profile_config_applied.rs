@@ -38,7 +38,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use codelet_agent_loop::background_output::LoopDetectionWiring;
-use codelet_agent_loop::{BackgroundOutput, stream_loop_detector::StreamLoopDetector};
+use codelet_agent_loop::{stream_loop_detector::StreamLoopDetector, BackgroundOutput};
 use codelet_cli::interactive::StreamOutput;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::background_session::BackgroundSession;
@@ -104,8 +104,16 @@ async fn fresh_background_session() -> (
 
 /// The 10 normal (distinct) words of the loop stream's prefix.
 const NORMAL_WORDS: [&str; 10] = [
-    "the", "architecture", "of", "the", "streaming", "loop",
-    "detector", "relies", "on", "word",
+    "the",
+    "architecture",
+    "of",
+    "the",
+    "streaming",
+    "loop",
+    "detector",
+    "relies",
+    "on",
+    "word",
 ];
 
 /// The looping phrase (3 words).
@@ -127,9 +135,7 @@ fn loop_stream_words() -> Vec<String> {
 /// given BackgroundOutput.
 fn feed_loop_stream(output: &BackgroundOutput, words: &[String]) {
     for word in words {
-        output.emit(codelet_cli::interactive::StreamEvent::Text(
-            word.clone(),
-        ));
+        output.emit(codelet_cli::interactive::StreamEvent::Text(word.clone()));
     }
 }
 
@@ -269,7 +275,8 @@ async fn a_stored_lower_repeat_threshold_aborts_earlier() {
         .map(|(i, _)| i)
         .expect("the tight detector must fire on the stream");
     assert_eq!(
-        fire_index, 24, // 0-based: word 25
+        fire_index,
+        24, // 0-based: word 25
         "a threshold of 5 must fire at the 5th repeat (word index 24), not later"
     );
 
@@ -364,6 +371,5 @@ fn read_source(rel: &str) -> String {
         .and_then(|p| p.parent())
         .map(|p| p.join(rel))
         .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }

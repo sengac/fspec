@@ -37,17 +37,24 @@ fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
 }
 
 fn save_action(ev: ProviderSettingsEvent) -> Option<(String, String, Option<String>)> {
-    if let ProviderSettingsEvent::Emit(Action::SaveProfile {
-        provider_id,
-        profile_name,
-        old_profile_name,
+    let action = match ev {
+        ProviderSettingsEvent::Emit(action) => action,
+        _ => return None,
+    };
+    let Action::SaveProfile {
+        ref provider_id,
+        ref profile_name,
+        ref old_profile_name,
         ..
-    }) = ev
-    {
-        Some((provider_id, profile_name, old_profile_name))
-    } else {
-        None
-    }
+    } = *action
+    else {
+        return None;
+    };
+    Some((
+        provider_id.clone(),
+        profile_name.clone(),
+        old_profile_name.clone(),
+    ))
 }
 
 fn stored_def() -> ProfileDefinition {

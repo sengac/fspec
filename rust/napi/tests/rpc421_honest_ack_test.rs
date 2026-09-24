@@ -168,4 +168,3 @@ async fn test_napi_session_compact_returns_acknowledgement_shape() {
         result.compression_ratio
     );
 }
-

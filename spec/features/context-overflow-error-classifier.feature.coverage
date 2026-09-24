@@ -1,0 +1,270 @@
+{
+  "scenarios": [
+    {
+      "name": "Overflow classifier matches every error is_prompt_too_long_error matches",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "22-49",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier matches provider-variant wording the old classifier misses",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "51-71",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier matches Bedrock and Vertex context-limit wording",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "73-90",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier rejects thinking-budget configuration errors",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "92-104",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier rejects truncation and unrelated errors",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "106-127",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow classifier sees through anyhow context wrapping",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct044_overflow_classifier_test.rs",
+          "lines": "129-145",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct044_overflow_classifier_test.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/error_classifiers.rs"
+    ],
+    "totalLinesCovered": 0
+  }
+}

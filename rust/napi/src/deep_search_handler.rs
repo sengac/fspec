@@ -493,7 +493,8 @@ async fn build_and_run_agent(
             model_alias,
             session_id,
             Some(system_prompt),
-            None, // thinking_config is handled by the parent agent; sub-agent runs vanilla
+            None,  // thinking_config is handled by the parent agent; sub-agent runs vanilla
+            false, // sub_agent: full parent-style surface (PROV-104 superset decision)
         )
         .map_err(|e| {
             tracing::warn!(

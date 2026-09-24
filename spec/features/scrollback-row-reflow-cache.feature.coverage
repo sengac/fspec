@@ -1,0 +1,436 @@
+{
+  "scenarios": [
+    {
+      "name": "Steady-state frames re-wrap zero unchanged rows and blit from cache",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "123-164",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+              "lines": [
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cached frames paint byte-identical cells to a fresh render",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "170-234",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Newly appended tail lines reflow on first appearance then hit cache",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "241-304",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_paint.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A viewport width change reflows every visible row exactly once",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "312-351",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streaming in-flight chunks reflow only the in-flight chunk per delta",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "359-415",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+              "lines": [
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Externally mutated chunk content is detected and re-reflected once",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "424-473",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+              "lines": [
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reset clears the row reflow cache",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "481-515",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The reflow cache is bounded even for very long sessions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "523-565",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrollbar and selection overlays keep painting every frame",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "627-675",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_render.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A gutter toggle counts as a width change and reflows every row once",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs",
+          "lines": "574-619",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_render.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/scrollback_row_reflow_cache_bug190.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/agent/reflow_cache.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_paint.rs",
+      "rust/fspec-tui/src/views/agent/scrollback.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_render.rs"
+    ],
+    "totalLinesCovered": 748
+  }
+}

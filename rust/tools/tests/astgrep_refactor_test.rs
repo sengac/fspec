@@ -74,7 +74,7 @@ const Footer = () => {
 /// Scenario: Error when pattern matches multiple nodes
 #[tokio::test]
 async fn test_error_when_pattern_matches_multiple_nodes() {
-    // @step Given a Rust file containing 3 functions matching pattern "fn $NAME($$$ARGS) { $$$BODY }"
+    // @step Given a Rust file containing 3 functions matching pattern "fn $NAME($_)"
     let temp_dir = TempDir::new().unwrap();
     let source_file = temp_dir.path().join("lib.rs");
     fs::write(

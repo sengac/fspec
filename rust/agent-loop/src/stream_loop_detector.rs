@@ -205,7 +205,10 @@ impl StreamLoopDetector {
 
         // 2. Diversity collapse.
         if window.len() >= self.cfg.diversity_min_window {
-            let unique = window.iter().collect::<std::collections::HashSet<_>>().len();
+            let unique = window
+                .iter()
+                .collect::<std::collections::HashSet<_>>()
+                .len();
             let ratio = unique as f64 / window.len() as f64;
             if ratio < self.cfg.min_unique_ratio {
                 return Some(LoopSignal::LowDiversity { ratio });
@@ -330,7 +333,10 @@ pub fn build_loop_abort_marker_note() -> String {
 ///
 /// `onset_excerpt` is an optional short excerpt of the looping text for
 /// context.
-pub fn build_loop_abort_recovery_message(signal: &LoopSignal, onset_excerpt: Option<&str>) -> String {
+pub fn build_loop_abort_recovery_message(
+    signal: &LoopSignal,
+    onset_excerpt: Option<&str>,
+) -> String {
     let mut msg = format!(
         "Your previous response was cut off because it fell into a repetitive output loop \
          (detected signal: {}). \
@@ -391,7 +397,10 @@ mod tests {
         for i in 0..29 {
             assert!(mixed.feed("Yes").is_none(), "word {i} must not fire yet");
         }
-        assert!(mixed.feed("yes").is_some(), "30th mixed-case word must fire");
+        assert!(
+            mixed.feed("yes").is_some(),
+            "30th mixed-case word must fire"
+        );
 
         let mut lower = StreamLoopDetector::new();
         for i in 0..29 {

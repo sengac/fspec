@@ -45,7 +45,7 @@ impl ModelSelectorView {
             }
             KeyCode::Char('r') | KeyCode::Char('R') => {
                 self.is_refreshing = true;
-                ModelSelectorEvent::Emit(Action::RefreshModelSelector)
+                ModelSelectorEvent::Emit(Box::new(Action::RefreshModelSelector))
             }
             // RPC-345: Tab leaves the selector for Provider Settings,
             // completing the bidirectional Tab toggle. Filter mode is
@@ -172,11 +172,11 @@ impl ModelSelectorView {
                     model_id = %model_id,
                     "[MODEL-SELECT] Enter -> EMIT Action::ModelSelected"
                 );
-                ModelSelectorEvent::Emit(Action::ModelSelected(
+                ModelSelectorEvent::Emit(Box::new(Action::ModelSelected(
                     self.session_id.clone(),
                     provider_key,
                     model_id,
-                ))
+                )))
             }
             _ => ModelSelectorEvent::Consumed,
         }

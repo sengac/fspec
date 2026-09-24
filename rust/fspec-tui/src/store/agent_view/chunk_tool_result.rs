@@ -114,7 +114,7 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                 }
             }
         }
-        ctx.scrollback.rewrap_at(idx);
+        ctx.rewrap_and_trim_at(idx);
     }
     let placeholder = ChunkSource {
         text: String::new(),
@@ -123,9 +123,12 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
         is_streaming: true,
         full_text: None,
     };
-    let new_idx = ctx.scrollback.chunk_count();
+    // BUG-192: read the index AFTER the push — a trim may have removed
+    // older chunks and inserted the marker, so the pre-push count is no
+    // longer the placeholder's index. The placeholder is always the tail
+    // (trim never removes the last chunk).
     ctx.push_source(placeholder);
-    ctx.in_flight_assistant = Some(new_idx);
+    ctx.in_flight_assistant = Some(ctx.scrollback.chunk_count() - 1);
 }
 
 /// Folds ToolProgress under the matching ToolCall card.
@@ -157,6 +160,6 @@ pub fn handle_tool_progress(ctx: &mut SessionContext, info: &ToolProgressInfo) {
                 source.is_streaming = true;
             }
         }
-        ctx.scrollback.rewrap_at(idx);
+        ctx.rewrap_and_trim_at(idx);
     }
 }

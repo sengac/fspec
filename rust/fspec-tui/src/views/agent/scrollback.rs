@@ -1,15 +1,18 @@
 //! ScrollbackList — windowed scrollback widget for AgentView (RPC-019/
 //! 078/094). Viewport-slice paint; `offset` in VISUAL ROWS. SELECT-mode
-//! lives in `scrollback_select`, live text-selection (COPY-006) in `copy`.
+//! lives in `scrollback_select`, live text-selection (COPY-006) in `copy`,
+//! the render pass (BUG-190: row reflow cache) in `scrollback_render`, the
+//! visual-row cap + oldest-content trim (BUG-192) in `scrollback_trim`.
 //!
 //! Features: rpc019-scrollback, agentview-scrollback-wrap,
-//! rpc094-agentview-scrollback-scroll.
+//! rpc094-agentview-scrollback-scroll, scrollback-row-reflow-cache,
+//! agentview-scrollback-unbounded-growth-cap-total-visual-rows.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
-use super::scrollback_paint::paint_scrollbar;
+use super::reflow_cache::RowReflowCounter;
 use super::RenderedChunk;
 use crate::store::agent_view::chunk_wrap::wrap_source;
 
@@ -33,7 +36,9 @@ impl Default for ScrollState {
     }
 }
 
-/// Windowed scrollback panel. Per-frame work is O(viewport_height).
+/// Windowed scrollback panel. Per-frame work is O(viewport_height) and —
+/// since BUG-190 — O(unchanged-rows) re-wrap: steady-state frames blit
+/// cached reflected rows from the `RowReflowCache`.
 #[derive(Debug, Default)]
 pub struct ScrollbackList {
     /// `pub(super)`: `scrollback_tail` derives total-row math.
@@ -55,6 +60,13 @@ pub struct ScrollbackList {
     selection: Option<crate::mouse::selection::Selection>,
     /// COPY-006: content width (viewport minus gutter) cached at last render — shared clamp.
     content_width: u16,
+    /// BUG-190: per-(chunk content, width) reflected-row cache so the
+    /// 60fps busy-state repaint blits cached rows instead of re-wrapping
+    /// + re-grapheme-scanning every visible row every frame.
+    reflow_cache: super::reflow_cache::RowReflowCache,
+    /// BUG-192: trimmed rows accumulated across trims (shown in the
+    /// marker line). Reset to 0 by `reset`.
+    trimmed_rows_total: usize,
 }
 
 impl ScrollbackList {
@@ -143,6 +155,12 @@ impl ScrollbackList {
         self.scroll_state
     }
 
+    /// BUG-190: read-only reflow-cache counters (reflow misses vs cache
+    /// blits) for tests + profiling.
+    pub fn reflow_cache(&self) -> RowReflowCounter {
+        self.reflow_cache.counters()
+    }
+
     /// Update cached viewport height. Idempotent.
     pub fn set_viewport_height(&mut self, h: u16) {
         if self.viewport_height != h {
@@ -208,57 +226,24 @@ impl ScrollbackList {
         self.viewport_height = 0;
         self.viewport_width = 0;
         self.clear_selection(); // RPC-381.
+        self.reflow_cache.reset(); // BUG-190: drop cached reflected rows.
+        self.trimmed_rows_total = 0; // BUG-192: clear the trim counter + marker.
     }
 
-    /// Render the visible window into `area`; returns chunks visited. RPC-078
-    /// fills from the TOP; RPC-094 reserves a 2-col gutter + scrollbar on overflow.
+    /// BUG-192: total visual rows across every chunk (the value the
+    /// `MAX_SCROLLBACK_VISUAL_ROWS` cap bounds).
+    pub fn total_rows(&self) -> usize {
+        self.total_visual_rows()
+    }
+
+    /// Render the visible window into `area`; returns chunks visited.
+    /// RPC-078 fills from the TOP; RPC-094 reserves a 2-col gutter +
+    /// scrollbar on overflow. **BUG-190**: chunk rows paint through the
+    /// `RowReflowCache` (cached blit when the row's content + width are
+    /// unchanged, one-time reflect otherwise) — impl in
+    /// `scrollback_render.rs`.
     pub fn render_count_visited(&mut self, area: Rect, buf: &mut Buffer) -> usize {
-        // Pass 1: wrap at full width to detect overflow.
-        self.set_viewport_width(area.width);
-        self.set_viewport_height(area.height);
-        self.last_rect = Some(area);
-        if area.width == 0 || area.height == 0 || self.chunks.is_empty() {
-            return 0;
-        }
-        let vh = area.height as usize;
-        // Pass 2: on overflow with width >= 4, reserve a 2-col gutter, rewrap.
-        let reserve_gutter = self.total_visual_rows() > vh && area.width >= 4;
-        let content_width = if reserve_gutter {
-            area.width - 2
-        } else {
-            area.width
-        };
-        if reserve_gutter {
-            self.set_viewport_width(content_width);
-        }
-        // COPY-006: cache the gutter-free width so highlight + copy clamp alike.
-        self.content_width = content_width;
-        let total_rows = self.total_visual_rows();
-        let skip_rows = if self.scroll_state.stick_to_bottom {
-            total_rows.saturating_sub(vh)
-        } else {
-            self.scroll_state.offset
-        };
-        let visited = super::scrollback_paint::paint_chunk_rows(
-            area,
-            buf,
-            &self.chunks,
-            content_width,
-            skip_rows,
-        );
-        // RPC-381: in Item mode, frame the selected turn with ▼/▲ bars.
-        self.paint_selection_overlay(area, buf, content_width, skip_rows);
-        // COPY-005: overlay the live text-selection region (REVERSED).
-        super::scrollback_paint::paint_selection_highlight(
-            area,
-            buf,
-            &self.selection_highlight_spans,
-            content_width,
-        );
-        if reserve_gutter && total_rows > vh {
-            paint_scrollbar(area, buf, vh, total_rows, self.scroll_state);
-        }
-        visited
+        render::render_count_visited(self, area, buf)
     }
 
     /// RPC-094: most-recent layout rect, set inside `render_count_visited`.
@@ -282,6 +267,8 @@ impl Widget for &mut ScrollbackList {
 
 #[path = "scrollback_copy.rs"]
 mod copy;
+#[path = "scrollback_render.rs"]
+mod render;
 #[path = "scrollback_tail.rs"]
 mod scrollback_tail;
 #[path = "scrollback_select.rs"]
@@ -289,3 +276,7 @@ mod select;
 #[cfg(test)]
 #[path = "scrollback_tests.rs"]
 mod tests;
+#[path = "scrollback_trim.rs"]
+pub mod trim;
+
+pub use trim::{TrimResult, MAX_SCROLLBACK_VISUAL_ROWS};

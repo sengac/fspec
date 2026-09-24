@@ -391,7 +391,10 @@ fn clicking_a_checkpoint_name_row_selects_it_and_loads_its_files() {
 
     // @step And the view emits Action::LoadCheckpointFiles for the second checkpoint
     match outcome {
-        CheckpointsEvent::Emit(Action::LoadCheckpointFiles { work_unit_id, name }) => {
+        CheckpointsEvent::Emit(action) => {
+            let Action::LoadCheckpointFiles { work_unit_id, name } = *action else {
+                panic!("expected LoadCheckpointFiles(AUTH-002/second), got {action:?}");
+            };
             assert_eq!(work_unit_id, "AUTH-002");
             assert_eq!(name, "second");
         }
@@ -421,7 +424,10 @@ fn clicking_a_file_row_selects_it_and_loads_its_diff() {
 
     // @step And the view emits Action::LoadCheckpointFileDiff for b.txt
     match outcome {
-        CheckpointsEvent::Emit(Action::LoadCheckpointFileDiff { path, .. }) => {
+        CheckpointsEvent::Emit(action) => {
+            let Action::LoadCheckpointFileDiff { path, .. } = *action else {
+                panic!("expected LoadCheckpointFileDiff(b.txt), got {action:?}");
+            };
             assert_eq!(path, "b.txt");
         }
         other => panic!("expected LoadCheckpointFileDiff(b.txt), got {other:?}"),

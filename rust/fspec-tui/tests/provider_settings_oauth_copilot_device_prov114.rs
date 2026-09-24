@@ -196,9 +196,13 @@ fn copilot_login_enters_deployment_select_and_github_dot_com_starts_device() {
     // @step Then the backend copilot device-start is called with no enterprise host
     // (the view emits the device-start action with `enterprise_host: None`)
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthCopilotDeviceStart {
-            enterprise_host, ..
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthCopilotDeviceStart {
+                enterprise_host, ..
+            } = *action
+            else {
+                panic!("expected Emit(OAuthCopilotDeviceStart), got {action:?}");
+            };
             assert_eq!(
                 enterprise_host, None,
                 "GitHub.com must start device flow with no enterprise host"
@@ -251,9 +255,13 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
     // @step Then the host is normalized to "company.ghe.com"
     // @step And the backend copilot device-start is called with enterprise host "company.ghe.com"
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthCopilotDeviceStart {
-            enterprise_host, ..
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthCopilotDeviceStart {
+                enterprise_host, ..
+            } = *action
+            else {
+                panic!("expected Emit(OAuthCopilotDeviceStart), got {action:?}");
+            };
             assert_eq!(
                 enterprise_host,
                 Some("company.ghe.com".to_string()),
@@ -617,7 +625,8 @@ async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
         .provider_settings
         .handle_key(key(KeyCode::Enter));
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthCopilotDeviceStart { .. }) => {}
+        ProviderSettingsEvent::Emit(ref a)
+            if matches!(a.as_ref(), Action::OAuthCopilotDeviceStart { .. }) => {}
         other => panic!("expected retry Emit(OAuthCopilotDeviceStart), got {other:?}"),
     }
 

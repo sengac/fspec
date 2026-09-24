@@ -33,17 +33,17 @@ impl ProviderSettingsView {
             ConfirmDialogOutcome::Primary => {
                 if let Some((provider_id, profile_name)) = self.pending_profile_delete.take() {
                     self.delete_confirm = None;
-                    return ProviderSettingsEvent::Emit(Action::ConfirmDeleteProfile {
+                    return ProviderSettingsEvent::Emit(Box::new(Action::ConfirmDeleteProfile {
                         provider_id,
                         profile_name,
-                    });
+                    }));
                 }
                 let pid = self.delete_target_provider_id();
                 self.delete_confirm = None;
                 match pid {
-                    Some(id) => {
-                        ProviderSettingsEvent::Emit(Action::ConfirmDeleteProviderCredentials(id))
-                    }
+                    Some(id) => ProviderSettingsEvent::Emit(Box::new(
+                        Action::ConfirmDeleteProviderCredentials(id),
+                    )),
                     None => ProviderSettingsEvent::Consumed,
                 }
             }

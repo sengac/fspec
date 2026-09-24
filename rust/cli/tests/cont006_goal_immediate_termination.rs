@@ -375,7 +375,10 @@ async fn tier_1_rejected_done_records_a_rejection_and_never_exits_early() {
         .await;
 
     // @step Then the done call is rejected as a tool error and the rejection count becomes 1
-    assert!(result.is_err(), "Tier 1 failure must reject the done() call");
+    assert!(
+        result.is_err(),
+        "Tier 1 failure must reject the done() call"
+    );
     assert_eq!(
         codelet_tools::done_rejection_count(session_id),
         1,
@@ -574,11 +577,9 @@ fn stream_loop_wiring_pins_goal_mode_early_exit_and_single_teardown_invariants()
         !helper_source.contains("remove_system_reminders_of_type"),
         "done_early_exit.rs must not remove the CompletionContract reminder inline"
     );
-    let session_source = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/session/mod.rs"
-    ))
-    .expect("session/mod.rs must exist");
+    let session_source =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/session/mod.rs"))
+            .expect("session/mod.rs must exist");
     let clear_goal = session_source
         .find("pub fn clear_goal")
         .expect("Session::clear_goal must exist");
@@ -611,10 +612,7 @@ async fn verify_command_exceeding_the_timeout_rejects_done_without_early_exit() 
     );
     // CONT-003 test hook (done.rs): shrink the Tier-2 verify timeout so the
     // sleeping command reliably exceeds it without slowing the suite.
-    codelet_tools::set_verify_timeout_for_tests(
-        session_id,
-        std::time::Duration::from_millis(200),
-    );
+    codelet_tools::set_verify_timeout_for_tests(session_id, std::time::Duration::from_millis(200));
 
     // @step When the model calls done with evidence and a goal assessment
     let tool = DoneTool::new(session_id);

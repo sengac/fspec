@@ -54,11 +54,9 @@ static ENV_AND_DATA_DIR_GUARD: AsyncMutex<()> = AsyncMutex::const_new(());
 /// Isolate EVERY credential source and point `FSPEC_USER_DIR` at a temp dir
 /// containing ONLY the given config. Returns the temp dirs (kept alive for
 /// the test lifetime).
-fn isolate_credentials(user_dir_config: &str) -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    tempfile::TempDir,
-) {
+fn isolate_credentials(
+    user_dir_config: &str,
+) -> (tempfile::TempDir, tempfile::TempDir, tempfile::TempDir) {
     for var in [
         "ANTHROPIC_API_KEY",
         "CLAUDE_CODE_OAUTH_TOKEN",
@@ -87,7 +85,9 @@ fn isolate_credentials(user_dir_config: &str) -> (
 /// Build a manager rooted in a fresh data dir whose model cache is pre-seeded
 /// from the offline fixture. Returns the temp dirs (kept alive for the test)
 /// and the manager.
-fn manager_with_seeded_cache(user_dir_config: &str) -> Result<(Vec<tempfile::TempDir>, Arc<SessionManager>), String> {
+fn manager_with_seeded_cache(
+    user_dir_config: &str,
+) -> Result<(Vec<tempfile::TempDir>, Arc<SessionManager>), String> {
     let (codex_home, fspec_home, user_dir) = isolate_credentials(user_dir_config);
     let data_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
     let cache_dir = data_dir.path().join("cache");
@@ -99,10 +99,7 @@ fn manager_with_seeded_cache(user_dir_config: &str) -> Result<(Vec<tempfile::Tem
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     let manager = Arc::new(SessionManager::new());
-    Ok((
-        vec![codex_home, fspec_home, user_dir, data_dir],
-        manager,
-    ))
+    Ok((vec![codex_home, fspec_home, user_dir, data_dir], manager))
 }
 
 // =============================================================================
@@ -110,8 +107,8 @@ fn manager_with_seeded_cache(user_dir_config: &str) -> Result<(Vec<tempfile::Tem
 //            auto-continue on and budget 300
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_against_profile_with_auto_continue_300_starts_on_with_budget_300()
--> Result<(), String> {
+async fn session_against_profile_with_auto_continue_300_starts_on_with_budget_300(
+) -> Result<(), String> {
     let _guard = ENV_AND_DATA_DIR_GUARD.lock().await;
 
     // @step Given a stored profile whose autoContinue value is 300

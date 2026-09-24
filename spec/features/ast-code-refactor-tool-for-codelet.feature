@@ -63,7 +63,7 @@ Feature: AST Code Refactor Tool for Codelet
 
   @error-handling
   Scenario: Error when pattern matches multiple nodes
-    Given a Rust file containing 3 functions matching pattern "fn $NAME($_)"
+    Given a Rust file containing 3 functions matching pattern "fn $NAME($$$ARGS) { $$$BODY }"
     When the agent calls astgrep_refactor with this pattern
     Then the tool should return an error
     And the error message should list all 3 match locations

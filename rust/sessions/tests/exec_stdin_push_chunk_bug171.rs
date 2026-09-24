@@ -109,16 +109,23 @@ async fn scenario_detector_fire_while_session_stays_running_pushes_an_exec_stdin
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
-    assert!(session.get_hitl_request().is_none(), "no HITL prompt may pre-exist");
+    assert!(
+        session.get_hitl_request().is_none(),
+        "no HITL prompt may pre-exist"
+    );
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let mut chunks_rx = manager.chunks_tx().subscribe();
@@ -153,9 +160,12 @@ async fn scenario_detector_fire_while_session_stays_running_pushes_an_exec_stdin
         "the push chunk must not flip the status"
     );
     assert!(
-        !chunks
-            .iter()
-            .any(|c| matches!(c, StreamChunk::SessionStateChange { state: SessionState::Paused })),
+        !chunks.iter().any(|c| matches!(
+            c,
+            StreamChunk::SessionStateChange {
+                state: SessionState::Paused
+            }
+        )),
         "no Paused state change chunk may accompany the exec-stdin request chunk"
     );
 
@@ -230,15 +240,19 @@ async fn scenario_detector_clear_on_output_resumption_pushes_an_exec_stdin_clear
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     // Prints once at t≈0, then goes quiet (detector fires at ~4s), then
@@ -259,13 +273,12 @@ async fn scenario_detector_clear_on_output_resumption_pushes_an_exec_stdin_clear
 
     // @step Then the detector emits a clear to the agent-session callback within one detector tick
     // (worst case: output at t≈10, detector tick + clear + reaper margin)
-    let chunks =
-        wait_for_chunks(&mut chunks_rx, Duration::from_secs(10), &|chunks| {
-            chunks
-                .iter()
-                .any(|c| matches!(c, StreamChunk::ExecStdinRequestCleared))
-        })
-        .await;
+    let chunks = wait_for_chunks(&mut chunks_rx, Duration::from_secs(10), &|chunks| {
+        chunks
+            .iter()
+            .any(|c| matches!(c, StreamChunk::ExecStdinRequestCleared))
+    })
+    .await;
     assert!(
         chunks
             .iter()
@@ -300,19 +313,22 @@ async fn scenario_detector_clear_on_child_exit_emits_a_clear_and_the_stored_requ
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
-    let (tool, exec_live) =
-        run_still_running(agent, "sh -c 'printf out\\n; sleep 10'").await;
+    let (tool, exec_live) = run_still_running(agent, "sh -c 'printf out\\n; sleep 10'").await;
     wait_for_stored_request(&session).await;
     assert!(
         session.get_exec_stdin_request().is_some(),
@@ -325,13 +341,12 @@ async fn scenario_detector_clear_on_child_exit_emits_a_clear_and_the_stored_requ
     // (the child exits at t≈10 on its own; the reaper drops the store entry)
 
     // @step Then the detector emits a clear to the agent-session callback within one detector tick
-    let chunks =
-        wait_for_chunks(&mut chunks_rx, Duration::from_secs(10), &|chunks| {
-            chunks
-                .iter()
-                .any(|c| matches!(c, StreamChunk::ExecStdinRequestCleared))
-        })
-        .await;
+    let chunks = wait_for_chunks(&mut chunks_rx, Duration::from_secs(10), &|chunks| {
+        chunks
+            .iter()
+            .any(|c| matches!(c, StreamChunk::ExecStdinRequestCleared))
+    })
+    .await;
     assert!(
         chunks
             .iter()
@@ -366,19 +381,22 @@ async fn scenario_detector_clear_on_session_removal_from_the_store() {
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
-    let (tool, exec_live) =
-        run_still_running(agent, "sh -c 'printf out\\n; sleep 45'").await;
+    let (tool, exec_live) = run_still_running(agent, "sh -c 'printf out\\n; sleep 45'").await;
     wait_for_stored_request(&session).await;
     assert!(
         session.get_exec_stdin_request().is_some(),
@@ -393,13 +411,12 @@ async fn scenario_detector_clear_on_session_removal_from_the_store() {
     close_exec(&tool, &exec_live).await;
 
     // @step Then the detector emits a clear to the agent-session callback within one detector tick
-    let chunks =
-        wait_for_chunks(&mut chunks_rx, Duration::from_secs(6), &|chunks| {
-            chunks
-                .iter()
-                .any(|c| matches!(c, StreamChunk::ExecStdinRequestCleared))
-        })
-        .await;
+    let chunks = wait_for_chunks(&mut chunks_rx, Duration::from_secs(6), &|chunks| {
+        chunks
+            .iter()
+            .any(|c| matches!(c, StreamChunk::ExecStdinRequestCleared))
+    })
+    .await;
     assert!(
         chunks
             .iter()
@@ -427,15 +444,19 @@ async fn scenario_a_non_exit_detector_clear_resets_the_per_exec_session_re_fire_
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     // Subscribe BEFORE the command starts so the FIRST fire's request
@@ -443,8 +464,11 @@ async fn scenario_a_non_exit_detector_clear_resets_the_per_exec_session_re_fire_
     let mut chunks_rx = manager.chunks_tx().subscribe();
 
     // out@0 → quiet (fire ≈4s) → mid@9 → quiet again → re-fire ≈13s.
-    let (tool, exec_live) =
-        run_still_running(agent, "sh -c 'printf out\\n; sleep 9; printf mid\\n; sleep 20'").await;
+    let (tool, exec_live) = run_still_running(
+        agent,
+        "sh -c 'printf out\\n; sleep 9; printf mid\\n; sleep 20'",
+    )
+    .await;
     wait_for_stored_request(&session).await;
     assert!(
         session.get_exec_stdin_request().is_some(),
@@ -460,17 +484,13 @@ async fn scenario_a_non_exit_detector_clear_resets_the_per_exec_session_re_fire_
     //  30s window from the first fire would suppress the re-fire until
     //  ~t=34, well past this test's window; with the reset the re-fire
     //  lands ≈4-5s after mid@9)
-    let chunks = wait_for_chunks(
-        &mut chunks_rx,
-        Duration::from_secs(15),
-        &|chunks| {
-            chunks
-                .iter()
-                .filter(|c| matches!(c, StreamChunk::ExecStdinRequest { .. }))
-                .count()
-                >= 2
-        },
-    )
+    let chunks = wait_for_chunks(&mut chunks_rx, Duration::from_secs(15), &|chunks| {
+        chunks
+            .iter()
+            .filter(|c| matches!(c, StreamChunk::ExecStdinRequest { .. }))
+            .count()
+            >= 2
+    })
     .await;
 
     // @step And a second exec-stdin request StreamChunk with a newer fire timestamp is pushed on the session chunk stream
@@ -512,15 +532,19 @@ async fn scenario_a_continuous_quiet_period_still_obeyes_the_30_second_cooldown(
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 40'").await;
@@ -546,22 +570,19 @@ async fn scenario_a_continuous_quiet_period_still_obeyes_the_30_second_cooldown(
     // (the first ExecStdinRequest observed AFTER the first fire IS the
     //  re-fire; its fire timestamp must sit at/after the first fire +
     //  30s, landing on the first 2s tick past the cooldown)
-    let chunks =
-        wait_for_chunks(&mut chunks_rx, Duration::from_secs(36), &|chunks| {
-            chunks
-                .iter()
-                .any(|c| matches!(c, StreamChunk::ExecStdinRequest { .. }))
-        })
-        .await;
+    let chunks = wait_for_chunks(&mut chunks_rx, Duration::from_secs(36), &|chunks| {
+        chunks
+            .iter()
+            .any(|c| matches!(c, StreamChunk::ExecStdinRequest { .. }))
+    })
+    .await;
     let second_ts = chunks
         .iter()
         .find_map(|c| match c {
             StreamChunk::ExecStdinRequest { request } => Some(request.ts_ms),
             _ => None,
         })
-        .expect(
-            "the detector must re-fire once the 30s cooldown elapses; chunks: {chunks:?}",
-        );
+        .expect("the detector must re-fire once the 30s cooldown elapses; chunks: {chunks:?}");
     let delta_ms = second_ts.saturating_sub(first_ts);
     assert!(
         delta_ms >= 29_000,
@@ -585,21 +606,24 @@ async fn scenario_a_detector_that_never_fired_emits_no_clear() {
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     // Exits at t≈2 — before the 3s quiet threshold, so the detector
     // never fires for this session.
-    let (tool, exec_live) =
-        run_still_running(agent, "sh -c 'echo fast; sleep 2'").await;
+    let (tool, exec_live) = run_still_running(agent, "sh -c 'echo fast; sleep 2'").await;
 
     let mut chunks_rx = manager.chunks_tx().subscribe();
 
@@ -645,15 +669,19 @@ async fn scenario_clearing_the_exec_stdin_slot_pushes_an_exec_stdin_cleared_chun
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;
@@ -690,15 +718,19 @@ async fn scenario_exec_session_child_exit_clears_the_stored_request_without_a_st
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;
@@ -766,15 +798,19 @@ async fn scenario_successful_write_exec_stdin_pushes_a_cleared_chunk() {
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session must exist");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session must exist");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;
@@ -816,4 +852,3 @@ async fn scenario_successful_write_exec_stdin_pushes_a_cleared_chunk() {
     close_exec(&tool, &exec_live).await;
     codelet_tools::unified_exec::set_exec_stdin_request_callback(agent, None);
 }
-

@@ -126,9 +126,11 @@ async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_qu
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(std::sync::Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(std::sync::Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;
@@ -265,15 +267,19 @@ async fn scenario_exec_stdin_overlay_does_not_flip_agent_session_status() {
     let manager = Arc::new(SessionManager::new());
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
-    let session = manager.get_session(&agent.to_string()).expect("session exists");
+    let session = manager
+        .get_session(&agent.to_string())
+        .expect("session exists");
     session.set_status(SessionStatus::Running);
 
     let session_for_cb = Arc::clone(&session);
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
         agent,
-        Some(std::sync::Arc::new(move |request: Option<InternalExecStdinRequest>| {
-            session_for_cb.set_exec_stdin_request(request);
-        })),
+        Some(std::sync::Arc::new(
+            move |request: Option<InternalExecStdinRequest>| {
+                session_for_cb.set_exec_stdin_request(request);
+            },
+        )),
     );
 
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;

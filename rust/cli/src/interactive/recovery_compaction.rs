@@ -52,7 +52,9 @@ use uuid::Uuid;
 
 use super::output::StreamOutput;
 use super::stream_handlers::handle_final_response;
-use crate::interactive_helpers::{compression_ratio, execute_compaction};
+use crate::interactive_helpers::{
+    compression_ratio, execute_compaction, inject_synthetic_tool_results_for_orphans,
+};
 use crate::session::Session;
 
 /// CMPCT-027: Maximum number of cascaded compaction attempts per user turn.
@@ -211,10 +213,13 @@ pub fn flush_partial_state_before_compaction(
 /// 1. Partial `assistant_text` is saved via `handle_final_response` and the
 ///    buffer is cleared.
 /// 2. The token tracker is updated from the current `StreamingTokenDisplay`.
-/// 3. If `pop_user_prompt` is true, the last message is popped iff it is a
-///    `Message::User` (defensive match). For Paths B and C the user prompt
-///    is at the tail of `session.messages` but has not been consumed by the
-///    API; for Path D the user message is mid-flight and must remain.
+/// 3. If `pop_user_prompt` is true, the last message is popped iff it is an
+///    unconsumed plain text prompt (`Message::User` with NO
+///    `UserContent::ToolResult` items — CMPCT-050). A trailing
+///    `User(ToolResult)` is mid-turn conversation state and is preserved.
+///    For Paths B and C the user prompt is at the tail of
+///    `session.messages` but has not been consumed by the API; for Path D
+///    the user message is mid-flight and must remain.
 /// 4. `token_state.compaction_needed` is set to `true`. If it was already
 ///    `true` on entry (disagreement between the cancel path and the flag
 ///    bookkeeping), a structured `warn!` is emitted. The flag remains `true`
@@ -222,7 +227,12 @@ pub fn flush_partial_state_before_compaction(
 /// 5. The global tool progress callback is cleared via
 ///    `set_tool_progress_callback(Uuid::nil(), None)` so a stale per-turn
 ///    callback cannot survive into the in-loop compaction restart (CMPCT-027).
-/// 6. `output.emit_compaction_started()` and
+/// 6. CMPCT-050: any orphan `Assistant(ToolCall)` (a call whose
+///    `User(ToolResult)` was lost or never arrived) is closed with a
+///    synthetic `cancelled_by_context_limit` result AFTER steps 1-2, so the
+///    post-mutation message list is guaranteed tool-pair-clean for
+///    `execute_compaction`'s defensive orphan guard on every entry path.
+/// 7. `output.emit_compaction_started()` and
 ///    `output.emit_compaction_progress("Context limit reached", 0,
 ///    total_turns.max(1))` are emitted exactly once, where `total_turns` is
 ///    `session.messages.len() / 2` (computed AFTER any pop so the discarded
@@ -253,16 +263,20 @@ pub fn flush_partial_state_before_compaction(
 /// - The trailing user prompt is popped BEFORE the partial assistant text
 ///   is appended. If we reversed this, the appended Assistant would sit at
 ///   the tail and the User (now second-to-last) would never be popped.
+/// - The CMPCT-050 orphan safety net runs AFTER the pop + flush so the
+///   post-mutation state is the one guaranteed tool-pair-clean.
 /// - Lifecycle events are emitted LAST so `total_turns` reflects the
 ///   post-pop + post-append length.
 ///
-/// 1. Conditional user-pop (must run before flush)
+/// 1. Conditional user-pop (must run before flush; restricted to unconsumed
+///    text prompts — never a `User(ToolResult)`, per CMPCT-050)
 /// 2. `flush_partial_state_before_compaction` (save text, flush tracker)
 ///    — captures whether partial text was appended for the returned policy
 /// 3. Set `compaction_needed` (with warn-on-disagreement)
 /// 4. Clear tool progress callback
-/// 5. Emit lifecycle events
-/// 6. Return the selected [`CompactionRecoveryPolicy`] (with a debug log)
+/// 5. CMPCT-050: `inject_synthetic_tool_results_for_orphans` (safety net)
+/// 6. Emit lifecycle events
+/// 7. Return the selected [`CompactionRecoveryPolicy`] (with a debug log)
 pub fn begin_compaction_recovery<O: StreamOutput>(
     session: &mut Session,
     token_state: &Arc<Mutex<TokenState>>,
@@ -276,16 +290,32 @@ pub fn begin_compaction_recovery<O: StreamOutput>(
     // false because the continuation prompt is mid-flight. This MUST happen
     // before flushing partial text, otherwise the appended Assistant ends up
     // at the tail and the pop becomes a no-op.
+    //
+    // CMPCT-050: the pop is RESTRICTED to plain text prompts. A trailing
+    // `User(ToolResult)` is mid-turn conversation state (the tool result that
+    // just streamed back and whose usage update tripped the CompactionHook),
+    // NOT an unconsumed prompt — popping it orphans its matching
+    // Assistant(ToolCall) and makes `execute_compaction`'s orphan guard
+    // refuse. Before this fix `matches!(last, Message::User { .. })` removed
+    // any trailing User message, which is exactly how a tool result at the
+    // tail got deleted after the CMPCT-029 cleanup had already run.
     if pop_user_prompt {
         if let Some(last) = session.messages.last() {
-            if matches!(last, rig::message::Message::User { .. }) {
+            let is_unconsumed_text_prompt = matches!(
+                last,
+                rig::message::Message::User { content }
+                    if !content
+                        .iter()
+                        .any(|c| matches!(c, rig::message::UserContent::ToolResult(_)))
+            );
+            if is_unconsumed_text_prompt {
                 session.messages.pop();
                 debug!(
                     "[begin_compaction_recovery] Popped trailing User message (pop_user_prompt=true)"
                 );
             } else {
                 debug!(
-                    "[begin_compaction_recovery] pop_user_prompt=true but tail is not a User message; leaving messages unchanged"
+                    "[begin_compaction_recovery] pop_user_prompt=true but tail is not an unconsumed text prompt (ToolResult or non-User message); leaving messages unchanged (CMPCT-050)"
                 );
             }
         }
@@ -327,7 +357,26 @@ pub fn begin_compaction_recovery<O: StreamOutput>(
     // handler cannot survive into the compaction retry stream.
     set_tool_progress_callback(Uuid::nil(), None);
 
-    // Step 5: emit lifecycle events exactly once.
+    // Step 5 (CMPCT-050): orphan safety net — close any tool_call that lost
+    // its tool_result during this turn's cancel. This MUST run AFTER the
+    // pop and the partial-text flush (steps 1-2) so the POST-mutation state
+    // is the one guaranteed tool-pair-clean. It also protects entry paths
+    // that carry persisted orphans (B prompt-too-long, D Gemini
+    // continuation, CMPCT-032 clean-exit, CMPCT-044 overflow) — every
+    // compaction-recovery path funnels through this helper, and none of
+    // them performs the Path-C-specific reconcile/drain, so this is the
+    // single choke point that guarantees `execute_compaction`'s defensive
+    // orphan guard sees a clean list. Idempotent and a no-op when the
+    // session is already clean (the common case after Path C's own
+    // reconcile + drain has run).
+    let injected = inject_synthetic_tool_results_for_orphans(&mut session.messages);
+    if injected > 0 {
+        debug!(
+            "[begin_compaction_recovery] CMPCT-050: closed {injected} orphan tool_call(s) after pop/flush (safety net)"
+        );
+    }
+
+    // Step 6: emit lifecycle events exactly once.
     output.emit_compaction_started();
     // `total_turns` is computed AFTER any pop so the discarded prompt is
     // not counted. saturating division by 2 gives the approximate
@@ -335,7 +384,7 @@ pub fn begin_compaction_recovery<O: StreamOutput>(
     let total_turns = (session.messages.len() as u32) / 2;
     output.emit_compaction_progress("Context limit reached", 0, total_turns.max(1));
 
-    // Step 6: CMPCT-028 — select the retry-prompt policy based on whether
+    // Step 7: CMPCT-028 — select the retry-prompt policy based on whether
     // partial assistant text was preserved. `EmbedInInstruction` is the
     // pre-CMPCT-024 behavior (retry prompt is the literal `"Continue"`);
     // `ResumeFromPartial` is the new branch that references the preserved

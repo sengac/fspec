@@ -200,11 +200,15 @@ fn anthropic_browser_login_shows_waiting_then_success_then_list() {
     }
     // Enter on a login row emits the start action carrying the generation.
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthLoginStart {
-            provider_id,
-            method,
-            ..
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthLoginStart {
+                provider_id,
+                method,
+                ..
+            } = *action
+            else {
+                panic!("expected Emit(OAuthLoginStart), got {action:?}");
+            };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(method, OAuthMethod::Browser);
         }
@@ -372,10 +376,14 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
     // code-entry mode, which we apply directly here for the view contract.
     assert!(matches!(
         event,
-        ProviderSettingsEvent::Emit(Action::OAuthLoginStart {
-            method: OAuthMethod::Headless,
-            ..
-        })
+        ProviderSettingsEvent::Emit(ref a)
+            if matches!(
+                a.as_ref(),
+                Action::OAuthLoginStart {
+                    method: OAuthMethod::Headless,
+                    ..
+                }
+            )
     ));
     view.mode = ProviderSettingsMode::OAuthHeadlessCodeEntry {
         provider_id: "anthropic".to_string(),
@@ -405,7 +413,10 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
 
     // @step Then the authorize URL is opened in the browser
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthOpenUrl { url }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthOpenUrl { url } = *action else {
+                panic!("expected Emit(OAuthOpenUrl), got {action:?}");
+            };
             assert_eq!(url, "https://claude.ai/oauth/authorize?x=1");
         }
         other => panic!("expected Emit(OAuthOpenUrl), got {other:?}"),
@@ -427,12 +438,16 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
 
     // @step Then the backend headless-complete is called with "abc#xyz" and the pkce verifier
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthLoginHeadlessSubmit {
-            provider_id,
-            code,
-            pkce_verifier,
-            ..
-        }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthLoginHeadlessSubmit {
+                provider_id,
+                code,
+                pkce_verifier,
+                ..
+            } = *action
+            else {
+                panic!("expected Emit(OAuthLoginHeadlessSubmit), got {action:?}");
+            };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(code, "abc#xyz");
             assert_eq!(pkce_verifier, "verifier-123");
@@ -475,7 +490,10 @@ fn headless_code_entry_c_copies_only_while_empty() {
 
     // @step Then the authorize URL is copied to the clipboard
     match event {
-        ProviderSettingsEvent::Emit(Action::OAuthCopyUrl { url }) => {
+        ProviderSettingsEvent::Emit(action) => {
+            let Action::OAuthCopyUrl { url } = *action else {
+                panic!("expected Emit(OAuthCopyUrl), got {action:?}");
+            };
             assert_eq!(url, "https://claude.ai/auth?z=9");
         }
         other => panic!("expected Emit(OAuthCopyUrl), got {other:?}"),
@@ -733,17 +751,19 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
         .handle_key(key(KeyCode::Enter));
     // Retry re-emits the browser login start for codex.
     let retry_action = match event {
-        ProviderSettingsEvent::Emit(action @ Action::OAuthLoginStart { .. }) => {
+        ProviderSettingsEvent::Emit(ref action)
+            if matches!(action.as_ref(), Action::OAuthLoginStart { .. }) =>
+        {
             if let Action::OAuthLoginStart {
                 ref provider_id,
                 method,
                 ..
-            } = action
+            } = **action
             {
                 assert_eq!(provider_id, "codex");
                 assert_eq!(method, OAuthMethod::Browser);
             }
-            action
+            (**action).clone()
         }
         other => panic!("expected retry Emit(OAuthLoginStart), got {other:?}"),
     };

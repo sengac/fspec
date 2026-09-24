@@ -92,7 +92,7 @@ pub fn forward_to_pane(
             }
             crate::views::ChangedFilesEvent::Emit(action) => {
                 if let Some(tx) = action_tx {
-                    let _ = tx.send(action);
+                    let _ = tx.send(*action);
                 }
                 crate::components::EventResult::consumed()
             }
@@ -108,7 +108,7 @@ pub fn forward_to_pane(
             }
             crate::views::CheckpointsEvent::Emit(action) => {
                 if let Some(tx) = action_tx {
-                    let _ = tx.send(action);
+                    let _ = tx.send(*action);
                 }
                 crate::components::EventResult::consumed()
             }

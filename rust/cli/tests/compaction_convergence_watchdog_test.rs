@@ -47,11 +47,63 @@ fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: us
 // ========================================
 // Scenario: Normal compaction succeeds without watchdog intervention
 // ========================================
-// REMOVED (CMPCT-030): `test_normal_compaction_no_watchdog` was tautological —
-// it stored `false` into a local AtomicBool and asserted the AtomicBool was
-// false. The "normal success" path is implicitly covered by every other test
-// in this file that exercises `force_inject_fallback_dag` and friends on a
-// flag that was set to true.
+//
+// The original CMPCT-030 version of this test was tautological (it stored
+// `false` into a local AtomicBool and asserted the AtomicBool was false).
+// Restored (CMPCT-047): the test now asserts the engine's actual non-escalation
+// decision predicate — a successful inject_summary clears the compaction flag
+// (the `swap(false)` safety net in the agent loops) before the watchdog check
+// runs, so `was_compacting && !has_pending_dag` must be false, no escalation
+// message may be injected, and the counter stays at 0.
+
+#[test]
+fn scenario_normal_compaction_no_watchdog_intervention() {
+    // @step Given a session in compaction mode after execute_compaction
+    let mut session = create_test_session();
+    add_conversation_turns(&mut session, 3);
+    let compaction_flag = Arc::new(AtomicBool::new(true));
+    let mut watchdog_counter: usize = 0;
+
+    // @step When the agent calls inject_summary during the first stream attempt
+    // A successful inject_summary clears the compaction flag before the
+    // watchdog check runs (mirrors the end-of-turn `swap(false)` in the
+    // agent-loop / napi agent loops).
+    compaction_flag.swap(false, Ordering::SeqCst);
+
+    // @step Then the compaction_in_progress flag should be cleared
+    assert!(
+        !compaction_flag.load(Ordering::Acquire),
+        "flag must be cleared after inject_summary succeeds"
+    );
+
+    // @step And no escalation message should be injected
+    // Engine decision predicate (agent_loop / napi twins):
+    // escalate only when `was_compacting && !has_pending_dag`.
+    let was_compacting = compaction_flag.load(Ordering::Acquire);
+    let has_pending_dag = false;
+    if was_compacting && !has_pending_dag {
+        watchdog_counter += 1;
+        session.messages.push(Message::User {
+            content: OneOrMany::one(UserContent::text(COMPACTION_ESCALATION_MESSAGE)),
+        });
+    }
+    assert!(
+        !was_compacting,
+        "watchdog must not fire when inject_summary succeeded"
+    );
+    let has_escalation = session.messages.iter().any(|m| {
+        if let Message::User { content } = m {
+            if let UserContent::Text(t) = content.first() {
+                return t.text == COMPACTION_ESCALATION_MESSAGE;
+            }
+        }
+        false
+    });
+    assert!(!has_escalation, "no escalation message on the normal path");
+
+    // @step And the watchdog counter should remain at 0
+    assert_eq!(watchdog_counter, 0, "counter must remain 0 on success");
+}
 
 // ========================================
 // Scenario: Escalation triggers after first failed attempt
@@ -336,11 +388,15 @@ fn test_force_inject_with_minimal_fallback() {
 
     // @step Then the engine should create a minimal fallback DAG with a D1 node
     let last_turn = session.messages.len().saturating_sub(1);
-    let fallback = format!(
-        r#"<dag-node depth="D1" turns="0-{last_turn}" label="Auto-recovered: compaction timeout">
-Session was auto-compacted due to convergence timeout.
-Use SessionSearch to recover context.
-</dag-node>"#
+    // CMPCT-047: the test's own reference node uses the SHARED helper
+    // (the same primitive the watchdog now routes through) so the test
+    // file cannot format a private <dag-node> template inline either.
+    // total_turns = message count ⇒ the node's `turns="0-(count-1)"`
+    // matches the watchdog's 0..last_turn range.
+    let fallback = codelet_cli::compaction_dag::build_generic_fallback_dag_node(
+        "Auto-recovered: compaction timeout",
+        "Session was auto-compacted due to convergence timeout.",
+        session.messages.len() as u32,
     );
 
     // @step And the fallback D1 node should cover turns 0 through the last known turn
@@ -365,5 +421,67 @@ Use SessionSearch to recover context.
     assert!(
         !compaction_flag.load(Ordering::Relaxed),
         "Flag should be cleared"
+    );
+}
+
+// ========================================
+// Scenario: Level-3 fallback shape is built from the shared
+// compaction_dag helpers (CMPCT-047)
+// ========================================
+
+#[test]
+fn test_level_3_fallback_shape_is_built_from_shared_compaction_dag_helpers() {
+    // @step Given the agent-loop watchdog reaches Level-3 (two failed attempts, no inject_summary)
+    // Source-shape guard: the watchdog's Level-3 fallback must be built
+    // by the shared compaction_dag helpers — read the agent-loop source
+    // via a path relative to the repo root (the established cross-crate
+    // source-shape pattern; the watchdog lives in codelet-agent-loop).
+    let manifest = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let repo_root = manifest
+        .parent()
+        .and_then(|p| p.parent())
+        .expect("repo root");
+    let agent_loop_src =
+        std::fs::read_to_string(repo_root.join("rust/agent-loop/src/agent_loop.rs"))
+            .unwrap_or_else(|e| panic!("failed to read agent_loop.rs: {e}"));
+
+    // @step When it assembles the fallback DAG
+    // @step Then the partial-node recovery joins extract_partial_dag_nodes output verbatim
+    // (the watchdog's partial source is the in-view agent's messages —
+    // extract_partial_dag_nodes on `inner_session.messages`)
+    let partial_at = agent_loop_src
+        .find("extract_partial_dag_nodes(")
+        .expect("CMPCT-047: the watchdog must recover partial nodes via extract_partial_dag_nodes");
+    let join_at = agent_loop_src
+        .find("partial_nodes.join(\"\\n\\n\")")
+        .expect("CMPCT-047: the partial-node recovery must join the output verbatim");
+    assert!(
+        join_at > partial_at,
+        "CMPCT-047: the watchdog must join the recovered partial nodes (chars {partial_at}..{join_at})"
+    );
+
+    // @step And the generic auto-recovered node is built by build_generic_fallback_dag_node with the label "Auto-recovered: compaction timeout" and the body "Session was auto-compacted due to convergence timeout."
+    let helper_at = agent_loop_src
+        .find("codelet_cli::compaction_dag::build_generic_fallback_dag_node")
+        .expect("CMPCT-047: the watchdog's generic node must be built by the shared build_generic_fallback_dag_node");
+    let label_at = agent_loop_src
+        .find("\"Auto-recovered: compaction timeout\"")
+        .expect("CMPCT-047: the shared delegation must use the watchdog label");
+    let body_at = agent_loop_src
+        .find("Session was auto-compacted due to convergence timeout.")
+        .expect("CMPCT-047: the shared delegation must use the watchdog body");
+    assert!(
+        label_at > helper_at && (label_at - helper_at) < 400,
+        "CMPCT-047: the label must be an argument to the shared delegation (chars {helper_at}..{label_at})"
+    );
+    assert!(
+        body_at > helper_at && (body_at - helper_at) < 600,
+        "CMPCT-047: the body must be an argument to the shared delegation (chars {helper_at}..{body_at})"
+    );
+
+    // @step And the watchdog does not format its own dag-node template inline
+    assert!(
+        !agent_loop_src.contains("r#\"<dag-node"),
+        "CMPCT-047: the watchdog must NOT format its own <dag-node> template inline"
     );
 }

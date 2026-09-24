@@ -30,9 +30,7 @@ use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use codelet_common::fspec_config::{
-    load_config_with_dirs, write_config_with_dirs, ConfigScope,
-};
+use codelet_common::fspec_config::{load_config_with_dirs, write_config_with_dirs, ConfigScope};
 
 /// Nested config keys holding the persisted mux config: `tui.mux`.
 const TUI_KEY: &str = "tui";
@@ -63,7 +61,9 @@ pub fn save_mux_config_with_dirs(
     let root_map = root
         .as_object_mut()
         .ok_or_else(|| "config root is not a JSON object".to_string())?;
-    let tui = root_map.entry(TUI_KEY).or_insert_with(|| Value::Object(Map::new()));
+    let tui = root_map
+        .entry(TUI_KEY)
+        .or_insert_with(|| Value::Object(Map::new()));
     if !tui.is_object() {
         *tui = Value::Object(Map::new());
     }

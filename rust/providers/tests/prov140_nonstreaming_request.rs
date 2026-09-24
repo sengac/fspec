@@ -229,7 +229,10 @@ async fn nonstreaming_text_reply_adapts_into_text_then_final_items() {
         .build();
 
     // @step When the non-streaming path adapts the response into stream items
-    let mut stream = agent.stream_prompt("capital of France?").multi_turn(2).await;
+    let mut stream = agent
+        .stream_prompt("capital of France?")
+        .multi_turn(2)
+        .await;
     let mut text_seen = false;
     let mut final_seen = false;
     while let Some(item) = stream.next().await {

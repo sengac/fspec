@@ -173,10 +173,10 @@ fn begin_device_polling(
         user_code: String::new(),
         verification_url: String::new(),
     };
-    ProviderSettingsEvent::Emit(Action::OAuthCopilotDeviceStart {
+    ProviderSettingsEvent::Emit(Box::new(Action::OAuthCopilotDeviceStart {
         enterprise_host,
         generation,
-    })
+    }))
 }
 
 /// PROV-114: retry the github-copilot device login from the error screen

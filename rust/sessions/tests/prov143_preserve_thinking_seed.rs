@@ -56,11 +56,9 @@ static ENV_AND_DATA_DIR_GUARD: AsyncMutex<()> = AsyncMutex::const_new(());
 /// Isolate EVERY credential source and point `FSPEC_USER_DIR` at a temp dir
 /// containing ONLY the given config. Returns the temp dirs (kept alive for
 /// the test lifetime).
-fn isolate_credentials(user_dir_config: &str) -> (
-    tempfile::TempDir,
-    tempfile::TempDir,
-    tempfile::TempDir,
-) {
+fn isolate_credentials(
+    user_dir_config: &str,
+) -> (tempfile::TempDir, tempfile::TempDir, tempfile::TempDir) {
     for var in [
         "ANTHROPIC_API_KEY",
         "CLAUDE_CODE_OAUTH_TOKEN",
@@ -103,10 +101,7 @@ fn manager_with_seeded_cache(
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     let manager = Arc::new(SessionManager::new());
-    Ok((
-        vec![codex_home, fspec_home, user_dir, data_dir],
-        manager,
-    ))
+    Ok((vec![codex_home, fspec_home, user_dir, data_dir], manager))
 }
 
 /// Create a session against `openai:spark/o3` and read back the seeded
@@ -121,10 +116,7 @@ fn seeded_flag(manager: &Arc<SessionManager>) -> bool {
     );
     let session = manager.get_session(&sid.value).expect("session must exist");
     let flag = {
-        let guard = session
-            .inner
-            .try_lock()
-            .expect("idle session lock");
+        let guard = session.inner.try_lock().expect("idle session lock");
         guard.preserve_thinking_enabled
     };
     flag

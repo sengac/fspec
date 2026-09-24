@@ -51,6 +51,7 @@ pub mod pane_render;
 mod pause_keys;
 pub mod pause_prompt;
 pub mod popups;
+pub mod reflow_cache;
 pub mod rendered_chunk;
 pub mod resume_session_view;
 pub mod resume_session_view_mouse;
@@ -80,10 +81,12 @@ pub use merge_confirm_dialog::{
 };
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
 pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
+pub use reflow_cache::RowReflowCounter;
 pub use rendered_chunk::{ChunkKind, ChunkSource, RenderedChunk};
 pub use resume_session_view::{ResumeSessionView, ResumeSessionViewOutcome};
 pub use role_banner::RoleBanner;
 pub use scrollback::{ScrollState, ScrollbackList, SelectionMode, TurnDir};
+pub use scrollback::{TrimResult, MAX_SCROLLBACK_VISUAL_ROWS};
 pub use search_history_view::{SearchHistoryView, SearchHistoryViewOutcome};
 pub use slash_command_popup::{PopupOutcome, SlashCommandPopup};
 pub use slash_commands::{SlashCommand, SlashCommandAction, SLASH_COMMANDS};
@@ -131,6 +134,10 @@ pub struct AgentView {
     pub(crate) scrollback_wheel: WheelVelocity,
     pub(crate) spinner_started_at: Option<Instant>,
     pub(crate) last_is_compacting: bool,
+    /// COMPACTING-DIAG: last display mode logged by tick_animation
+    /// ("thinking" / "compacting" / "idle") — flip-detection for the
+    /// diagnostic log. `""` (Default) means "log on first frame".
+    pub(crate) last_compaction_diag_display: &'static str,
     pub(crate) input_transition_state: InputTransitionState,
     pub(crate) last_spinner_line: Option<String>,
     pub(crate) animation_clock_ms: u64,

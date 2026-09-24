@@ -434,6 +434,21 @@
       "prefix": "WT",
       "description": "Worktree session-isolation & merge lifecycle bugs (isolation code audit)",
       "createdAt": "2026-09-06T01:19:42.853Z"
+    },
+    "CLA": {
+      "prefix": "CLA",
+      "description": "Clippy / lint hygiene",
+      "createdAt": "2026-09-18T02:15:34.038Z"
+    },
+    "AUDIT": {
+      "prefix": "AUDIT",
+      "description": "Coverage-mapping audit process and remediation of audit findings (structural + laya semantic)",
+      "createdAt": "2026-09-22T00:43:40.013Z"
+    },
+    "RLCD": {
+      "prefix": "RLCD",
+      "description": "RLCD decision-engine integration (laya-rs backend; model-agnostic naming — RLCD is the conceptual core, 'laya' is the current backend name)",
+      "createdAt": "2026-09-24T00:39:41.029Z"
     }
   }
 }

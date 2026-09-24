@@ -12,6 +12,7 @@
 //! let branch = get_current_branch("/path/to/repo")?;
 //! ```
 
+mod capture;
 mod change_type;
 mod checkout;
 mod diff;

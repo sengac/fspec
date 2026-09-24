@@ -188,8 +188,9 @@ impl ScrollbackList {
 
     /// RPC-381: after a `push` / `insert`, re-resolve the selected index
     /// from the remembered `seq` so the selection stays on the SAME
-    /// turn. When the seq no longer exists (the turn was removed) the
-    /// selection is cleared.
+    /// turn. When the seq no longer exists (the turn was removed, e.g.
+    /// trimmed by the BUG-192 cap) the selection is cleared ENTIRELY —
+    /// both the index and the remembered seq drop out.
     pub(super) fn resolve_selection_from_seq(&mut self) {
         if self.selection_mode != SelectionMode::Item {
             return;
@@ -197,7 +198,13 @@ impl ScrollbackList {
         let Some(seq) = self.selected_seq else {
             return;
         };
-        self.selected = self.chunks.iter().position(|c| c.seq == seq);
+        match self.chunks.iter().position(|c| c.seq == seq) {
+            Some(idx) => self.selected = Some(idx),
+            None => {
+                self.selected = None;
+                self.selected_seq = None;
+            }
+        }
     }
 
     /// RPC-381: adjust `scroll_state.offset` so the selected chunk's row

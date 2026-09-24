@@ -497,14 +497,18 @@ fn custom_provider_fallthrough_passes_thinking_config_value() {
     // @step And the final three positional arguments are session.id, role_preamble.as_deref(), and thinking_config_value.clone()
     let args = parse_positional_args(arm, qualified_call);
     assert!(
-        args.len() >= 3,
-        "CustomProvider::create_rig_agent must have ≥3 positional args; got {}. args: {args:?}",
+        args.len() >= 4,
+        "CustomProvider::create_rig_agent must have ≥4 positional args; got {}. args: {args:?}",
         args.len()
     );
-    let last_three = &args[args.len() - 3..];
-    assert_eq!(last_three[0], "session.id");
-    assert_eq!(last_three[1], "role_preamble.as_deref()");
-    assert_eq!(last_three[2], "thinking_config_value.clone()");
+    let last_four = &args[args.len() - 4..];
+    assert_eq!(last_four[0], "session.id");
+    assert_eq!(last_four[1], "role_preamble.as_deref()");
+    assert_eq!(last_four[2], "thinking_config_value.clone()");
+    // CMPCT-044/045: the sub_agent gate — the parent agent loop keeps the
+    // full custom-provider surface (the compactor spawner is the only
+    // call site that passes `true`).
+    assert_eq!(last_four[3], "false");
 }
 
 // ===========================================================================
@@ -589,7 +593,8 @@ fn custom_provider_create_rig_agent_signature_compiles() {
                        model_alias: &str,
                        session_id: uuid::Uuid,
                        preamble: Option<&str>,
-                       thinking: Option<serde_json::Value>| {
+                       thinking: Option<serde_json::Value>,
+                       sub_agent: bool| {
         CustomProvider::create_rig_agent(
             project_root,
             name,
@@ -597,6 +602,7 @@ fn custom_provider_create_rig_agent_signature_compiles() {
             session_id,
             preamble,
             thinking,
+            sub_agent,
         )
     };
 

@@ -15,6 +15,7 @@
 //!   - Cascade same-key reload: a re-fetch of the (re-)selected
 //!     checkpoint's files + diff by the same key keeps the dependent
 //!     panes' scroll/selection; a key change resets them.
+//!
 //! Uses the MockBackend's scripted lazy-view payloads (BUG-184) so a
 //! LOADED pane can be driven end-to-end at the App level.
 
