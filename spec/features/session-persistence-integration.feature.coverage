@@ -427,11 +427,63 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Session persistence tests survive a clean offline environment",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "622-641",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329
+              ]
+            },
+            {
+              "file": "rust/providers/src/models/cache.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            },
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                740,
+                741,
+                742,
+                743,
+                744,
+                745
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "rust/sessions/tests/rpc422_session_persistence.rs"
@@ -439,8 +491,10 @@
     "implFiles": [
       "rust/sessions/src/session_manager.rs",
       "rust/sessions/src/handle_impl.rs",
-      "rust/core/src/persistence/manifest.rs"
+      "rust/core/src/persistence/manifest.rs",
+      "rust/sessions/src/model_resolution.rs",
+      "rust/providers/src/models/cache.rs"
     ],
-    "totalLinesCovered": 585
+    "totalLinesCovered": 631
   }
 }

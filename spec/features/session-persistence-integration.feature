@@ -1,3 +1,4 @@
+@done
 @session
 @session-management
 @BUG-186
@@ -5,6 +6,8 @@
 Feature: Session Persistence Integration
   """
   Mirrors TypeScript sessionService.ts two-step pattern: persistenceCreateSessionWithProvider() creates manifest, then sessionManagerCreateWithId() creates BackgroundSession. Rust code must follow the same order in SessionManager::create_session_with_id()
+
+  BUG-186: the rpc002 (agent-loop) and rpc422 (sessions) persistence test suites seed the fresh temp data dir with an offline models.dev cache fixture (rust/sessions/tests/fixtures/rpc422_models.json for rpc422, rust/agent-loop/tests/fixtures/prov101_models.json for rpc002) plus dummy provider credentials, so resolve_provider_manager → ModelRegistry::new → ModelCache::get() stays fully offline and create_session no longer declines with an empty SessionId. rpc422 keeps its own fixture (claude-sonnet-4 + claude-opus-4-5 + o3 + gemini-2.5-pro) because its acceptance criteria pin model "anthropic/claude-sonnet-4", which the shared prov101 fixture does not contain and which would flip PROV-130's first-model ordering assertion in shared consumers.
   """
 
   Background: User Story
@@ -54,3 +57,8 @@ Feature: Session Persistence Integration
     Given a SessionManager instance with a corrupted data directory
     When I call create_session_with_id
     Then the error should propagate and the BackgroundSession should not be created
+
+  Scenario: Session persistence tests survive a clean offline environment
+    Given a fresh temp data directory without provider credentials or a models.dev cache
+    When I run the rpc002 and rpc422 session-persistence test suites in that environment
+    Then session creation resolves the default model from the seeded offline cache and succeeds

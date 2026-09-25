@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-24T21:05:25.318Z",
+    "lastUpdated": "2026-09-25T23:22:15.459Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -254,9 +254,7 @@
       "TOOL-001",
       "TUI-085"
     ],
-    "testing": [
-      "BUG-186"
-    ],
+    "testing": [],
     "implementing": [
       "AUDIT-002"
     ],
@@ -1736,7 +1734,8 @@
       "RLCD-001",
       "RLCD-002",
       "RLCD-003",
-      "RLCD-004"
+      "RLCD-004",
+      "BUG-186"
     ],
     "blocked": [
       "QUERY-001",
@@ -232909,9 +232908,9 @@
       "id": "BUG-186",
       "title": "rpc002_session_persistence tests fail: model registry cache missing in test env → create_session declines (PROV-101) → empty SessionId",
       "type": "bug",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2026-09-18T02:15:24.326Z",
-      "updatedAt": "2026-09-18T13:57:36.304Z",
+      "updatedAt": "2026-09-25T23:22:46.984Z",
       "description": "4 tests in rust/agent-loop/tests/rpc002_session_persistence.rs fail on clean HEAD: handle.create_session(None) returns an empty SessionId because resolve_provider_manager → ModelRegistry::new → ModelCache::get() has no cache at the fresh temp data dir and the offline models.dev fetch fails. The Err is swallowed into an empty string (unwrap_or_else(|e| \"\")), and the test's Uuid::parse_str(\"\") panics. Fix: seed the test's temp data dir with the shared prov101 model-cache fixture (like cmpct041/rpc386) + set OPENAI/GOOGLE dummy creds, or make the test use a model the resolver accepts offline.",
       "children": [],
       "stateHistory": [
@@ -232922,9 +232921,22 @@
         {
           "state": "testing",
           "timestamp": "2026-09-18T03:41:06.569Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-25T10:32:14.854Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-25T12:58:22.760Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-25T23:22:15.459Z"
         }
       ],
-      "estimate": 2
+      "estimate": 2,
+      "iterations": 1
     },
     "BUG-187": {
       "id": "BUG-187",
