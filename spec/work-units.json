@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-25T23:22:15.459Z",
+    "lastUpdated": "2026-09-26T06:51:33.661Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,14 +26,14 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 192,
+    "BUG": 193,
     "CACHE": 1,
     "CLEAN": 7,
     "CLI": 15,
     "CMPCT": 50,
     "CODE": 9,
     "CODEX": 1,
-    "CONFIG": 8,
+    "CONFIG": 9,
     "CONT": 9,
     "COPY": 11,
     "COV": 56,
@@ -1735,7 +1735,9 @@
       "RLCD-002",
       "RLCD-003",
       "RLCD-004",
-      "BUG-186"
+      "BUG-186",
+      "BUG-193",
+      "CONFIG-009"
     ],
     "blocked": [
       "QUERY-001",
@@ -234515,6 +234517,158 @@
         }
       ],
       "nextExampleId": 7,
+      "estimate": 5
+    },
+    "BUG-193": {
+      "id": "BUG-193",
+      "title": "TUI user-scope config writers mirror project-scope keys (tools, agent) into ~/.fspec/fspec-config.json",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-26T01:56:51.998Z",
+      "updatedAt": "2026-09-26T05:17:14.907Z",
+      "description": "The TUI persistence writers (mux config, default thinking level, lastUsedModel) perform a read-merge-write on the DEEP-MERGED (project-over-user) view, then write that merged value WHOLESALE back to USER scope. Any project-scope key present in <cwd>/spec/fspec-config.json (notably 'tools' and 'agent') gets mirrored into ~/.fspec/fspec-config.json on every TUI save. The user config then accumulates stale project-scoped state from every project the user has opened. Root cause analysis, affected write paths, and proposed fix are in the attached research document (config-scope-contamination-research.md).",
+      "epic": "config-scoping",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-193/config-scope-contamination-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-26T02:06:58.278Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-26T02:44:54.604Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-26T02:59:38.682Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-26T03:27:03.525Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-26T05:17:14.907Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "User-scope config writes (mux save, default-thinking-level save) must read the RAW user file before writing back to user scope — never the deep-merged project-over-user view",
+          "deleted": false,
+          "createdAt": "2026-09-26T02:08:20.035Z"
+        },
+        {
+          "id": 1,
+          "text": "A user-scope save must never introduce keys that belong only to project scope (tools, agent) into ~/.fspec/fspec-config.json",
+          "deleted": false,
+          "createdAt": "2026-09-26T02:08:27.523Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A TUI session opened in a Java project (spec/fspec-config.json holds agent='claude' + tools.test) saves the mux layout; afterwards ~/.fspec/fspec-config.json contains the new tui.mux value and still contains providers/rlcd, but does NOT contain 'tools' or 'agent'",
+          "deleted": false,
+          "createdAt": "2026-09-26T02:08:41.082Z"
+        },
+        {
+          "id": 1,
+          "text": "Repro: open the fspec TUI in a repo whose spec/fspec-config.json has tools+agent, exit a mux session (auto-save fires). Before the fix the global ~/.fspec/fspec-config.json grows the repo's 'tools' and 'agent' keys. After the fix it does not.",
+          "deleted": false,
+          "createdAt": "2026-09-26T02:08:49.756Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "userStory": {
+        "role": "fspec TUI user",
+        "action": "save my TUI preferences (mux layout, thinking level) without my per-project settings leaking into my global config",
+        "benefit": "my ~/.fspec/fspec-config.json stays clean of project-specific state across all my repos"
+      },
+      "estimate": 3
+    },
+    "CONFIG-009": {
+      "id": "CONFIG-009",
+      "title": "Codify config-scope key ownership (user vs project) as a spec-level rule",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2026-09-26T01:57:10.757Z",
+      "updatedAt": "2026-09-26T06:51:33.661Z",
+      "description": "Document and enforce WHICH top-level keys belong in the user-scope ~/.fspec/fspec-config.json (providers, tui.lastUsedModel, tui.mux, tui.defaultThinkingLevel, rlcd, research) vs which are project-scope only (tools, agent). Today the boundary is implicit in code comments only; the CONFIG-008 deep-merge feature (shared-config-merge.feature) deliberately allows any key in either scope for TS interop. Consider a validation surface (e.g. fspec check / validate warning) that flags project-scope keys found in the user config, and a docs update to spec/FOUNDATION.md. See attached research (config-scope-ownership-research.md) for the full key inventory with code citations.",
+      "epic": "config-scoping",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CONFIG-009/config-scope-ownership-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-26T05:31:45.505Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-26T06:04:19.684Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-26T06:47:16.794Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-26T06:51:33.661Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec user",
+        "action": "codify which config-scope keys belong where, with a validation surface that detects contamination",
+        "benefit": "project-scope keys leaking into ~/.fspec/fspec-config.json are detectable instead of silently inert"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Config-scope ownership rule: user-scope (~/.fspec/fspec-config.json) holds user-owned state (providers, tui.*, rlcd, optionally research credentials); project-scope (spec/fspec-config.json) holds repo-owned state (tools, agent, optionally research credentials). A key whose only writer targets one scope must never appear in the other scope's file.",
+          "deleted": false,
+          "createdAt": "2026-09-26T05:33:10.952Z"
+        },
+        {
+          "id": 1,
+          "text": "validate-config flags ONLY project-only keys (tools, agent) found in the USER-scope file as warnings with remediation text (tools → use fspec configure-tools per-project; agent → set per-project by fspec init). research is NOT flagged (legitimate user-scope fallback). User-scope-only keys in the project file are out of scope (user-scope validation only).",
+          "deleted": false,
+          "createdAt": "2026-09-26T05:33:22.849Z"
+        },
+        {
+          "id": 2,
+          "text": "validate-config is a Rust-only extension command (DISC-003 pattern, like foundation-status): two front doors (LLM dispatcher + clap subcommand) converge on a single run() in codelet-fspec-core, read-only (never writes config), resolves the user dir via FSPEC_USER_DIR override then HOME, and warnings do NOT make the run fail (exit 0; the envelope carries the warnings).",
+          "deleted": false,
+          "createdAt": "2026-09-26T05:33:33.288Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User config contains tools + agent alongside providers/tui/rlcd → validate-config reports both as project-scope-only warnings with per-key remediation text; envelope is still valid (warnings, not errors).",
+          "deleted": false,
+          "createdAt": "2026-09-26T05:33:43.270Z"
+        },
+        {
+          "id": 1,
+          "text": "User config with only providers + tui + rlcd (+ research) → validate-config reports no project-scope warnings (clean).",
+          "deleted": false,
+          "createdAt": "2026-09-26T05:33:52.167Z"
+        },
+        {
+          "id": 2,
+          "text": "No user config file at all → validate-config is clean (nothing to validate), no warnings.",
+          "deleted": false,
+          "createdAt": "2026-09-26T05:34:00.992Z"
+        }
+      ],
+      "nextExampleId": 3,
       "estimate": 5
     }
   }

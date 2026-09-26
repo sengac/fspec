@@ -41,6 +41,7 @@ A unified CLI and TUI system that connects business conversations (Example Mappi
 - **Query & Analytics**: Query work units, bottlenecks, estimation accuracy, orphaned work, dependency statistics, and generate comprehensive summary reports
 - **Reverse ACDD**: Import existing codebases into fspec by generating feature files, scenarios, and skeleton tests from existing code implementations
 - **Foundation Discovery**: AI-guided field-by-field project foundation bootstrapping that defines project context, personas, capabilities, and problem space
+- **Config Scope Validation**: Codified config-scope key ownership rule (user scope holds providers/tui.*/rlcd/research; project scope holds tools/agent/research) plus fspec validate-config, which flags project-scope keys (tools, agent) leaking into ~/.fspec/fspec-config.json as non-fatal warnings with remediation text (CONFIG-009/BUG-193)
 
 ---
 

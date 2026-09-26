@@ -83,10 +83,12 @@ fn scenario_merging_a_session_with_tracked_changes_commits_them_to_main() {
     // @step Given a temp git repo with one committed file, and an isolated session that has committed a modification to that file in its worktree
     let repo = fresh_git_repo();
     let session_id = Uuid::new_v4().to_string();
-    codelet_git::create_worktree(repo.path(), &session_id)
-        .expect("create worktree");
+    codelet_git::create_worktree(repo.path(), &session_id).expect("create worktree");
     let head_before = resolve_head(repo.path());
-    let worktree = repo.path().join(codelet_git::FSPEC_WORKTREES_DIR).join(&session_id);
+    let worktree = repo
+        .path()
+        .join(codelet_git::FSPEC_WORKTREES_DIR)
+        .join(&session_id);
     std::fs::write(worktree.join("hello.txt"), "hello (merged)\n").expect("write session edit");
 
     // @step When the session is merged with the default FastForward strategy
@@ -146,10 +148,12 @@ fn scenario_requesting_an_unsupported_merge_strategy_is_rejected_before_anything
     // @step Given a temp git repo with one committed file, and an isolated session with a committed change in its worktree
     let repo = fresh_git_repo();
     let session_id = Uuid::new_v4().to_string();
-    codelet_git::create_worktree(repo.path(), &session_id)
-        .expect("create worktree");
+    codelet_git::create_worktree(repo.path(), &session_id).expect("create worktree");
     let head_before = resolve_head(repo.path());
-    let worktree = repo.path().join(codelet_git::FSPEC_WORKTREES_DIR).join(&session_id);
+    let worktree = repo
+        .path()
+        .join(codelet_git::FSPEC_WORKTREES_DIR)
+        .join(&session_id);
     std::fs::write(worktree.join("hello.txt"), "hello (squashed)\n").expect("write session edit");
 
     // @step When the session is merged requesting the Squash strategy
@@ -161,10 +165,8 @@ fn scenario_requesting_an_unsupported_merge_strategy_is_rejected_before_anything
 
     // @step Then the merge returns an explicit unsupported-strategy error and nothing is committed, copied, or merged (the main repo HEAD is unchanged and the session worktree is intact)
     match result {
-        Err(codelet_git::GitError::UnsupportedMergeStrategy { .. }) => {}
-        other => panic!(
-            "expected UnsupportedMergeStrategy, got {other:?}"
-        ),
+        Err(codelet_git::GitError::UnsupportedMergeStrategy) => {}
+        other => panic!("expected UnsupportedMergeStrategy, got {other:?}"),
     }
     assert_eq!(
         resolve_head(repo.path()),
@@ -205,12 +207,15 @@ fn scenario_merging_a_session_with_only_ignored_changes_creates_no_commit() {
         ],
     );
     let session_id = Uuid::new_v4().to_string();
-    codelet_git::create_worktree(repo.path(), &session_id)
-        .expect("create worktree");
+    codelet_git::create_worktree(repo.path(), &session_id).expect("create worktree");
     let head_before = resolve_head(repo.path());
-    let worktree = repo.path().join(codelet_git::FSPEC_WORKTREES_DIR).join(&session_id);
+    let worktree = repo
+        .path()
+        .join(codelet_git::FSPEC_WORKTREES_DIR)
+        .join(&session_id);
     std::fs::create_dir_all(worktree.join("target")).expect("mkdir target in worktree");
-    std::fs::write(worktree.join("target").join("out.bin"), b"build output").expect("write artifact");
+    std::fs::write(worktree.join("target").join("out.bin"), b"build output")
+        .expect("write artifact");
 
     // @step When the session is merged with the default FastForward strategy
     let result = codelet_git::merge_session_with_strategy(
@@ -249,9 +254,11 @@ fn scenario_the_merge_commit_uses_the_repo_configured_identity() {
     run_git(repo.path(), &["config", "user.name", "Repo Owner"]);
     run_git(repo.path(), &["config", "user.email", "owner@example.com"]);
     let session_id = Uuid::new_v4().to_string();
-    codelet_git::create_worktree(repo.path(), &session_id)
-        .expect("create worktree");
-    let worktree = repo.path().join(codelet_git::FSPEC_WORKTREES_DIR).join(&session_id);
+    codelet_git::create_worktree(repo.path(), &session_id).expect("create worktree");
+    let worktree = repo
+        .path()
+        .join(codelet_git::FSPEC_WORKTREES_DIR)
+        .join(&session_id);
     std::fs::write(worktree.join("hello.txt"), "hello (owned)\n").expect("write session edit");
 
     // @step When the session is merged with the default FastForward strategy

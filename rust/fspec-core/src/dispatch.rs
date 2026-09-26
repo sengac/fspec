@@ -149,18 +149,22 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
     let canonical = match lookup(&req.command) {
         Some(c) => c,
         None => {
-            // DISC-003: Rust-only extension commands are not in the 162
-            // canonical list; route them here before surfacing UnknownCommand.
-            if req.command == "foundation-status" {
-                let result =
-                    match run_ported("foundation-status", &req.args_json, &req.project_root) {
-                        Some(r) => r,
-                        None => {
-                            return DispatchResult::from_error(unknown_command_with_recovery(
-                                &req.command,
-                            ));
-                        }
-                    };
+            // DISC-003/CONFIG-009: Rust-only extension commands are not in
+            // the 162 canonical list; route them here before surfacing
+            // UnknownCommand.
+            if req.command == "foundation-status" || req.command == "validate-config" {
+                let extension_name: &'static str = match req.command.as_str() {
+                    "validate-config" => "validate-config",
+                    _ => "foundation-status",
+                };
+                let result = match run_ported(extension_name, &req.args_json, &req.project_root) {
+                    Some(r) => r,
+                    None => {
+                        return DispatchResult::from_error(unknown_command_with_recovery(
+                            &req.command,
+                        ));
+                    }
+                };
                 return match result {
                     Ok(data) => DispatchResult {
                         success: true,
@@ -616,6 +620,8 @@ fn run_ported(
             "review" => commands::review::run(args_json, project_root).await,
             // DISC-003 — foundation-status (Rust-only extension)
             "foundation-status" => commands::foundation_status::run(args_json, project_root).await,
+            // CONFIG-009 — validate-config (Rust-only extension)
+            "validate-config" => commands::validate_config::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }

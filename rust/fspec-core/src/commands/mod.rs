@@ -162,6 +162,7 @@ pub mod update_work_unit;
 pub mod update_work_unit_estimate;
 pub mod update_work_unit_status;
 pub mod validate;
+pub mod validate_config; // CONFIG-009 — Rust-only extension (not canonical)
 pub mod validate_foundation_schema;
 pub mod validate_hooks;
 pub mod validate_spec_alignment;

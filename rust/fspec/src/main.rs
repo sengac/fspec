@@ -169,6 +169,7 @@ mod search_implementation;
 mod search_scenarios;
 mod unlink_coverage;
 mod validate;
+mod validate_config; // CONFIG-009 — Rust-only extension command
 mod validate_foundation_schema;
 mod validate_hooks;
 mod validate_tags;
@@ -2314,6 +2315,13 @@ enum Mode {
         #[arg(long)]
         json: bool,
     },
+    /// CONFIG-009: validate the user-scope config for leaked project-scope
+    /// keys (tools, agent). Warnings are non-fatal (exit 0).
+    #[command(
+        name = "validate-config",
+        about = "Validate the user-scope config for leaked project-scope keys (tools, agent)"
+    )]
+    ValidateConfig {},
     /// RPC-234: generate a context-only Gherkin scaffold from an Example Map.
     #[command(
         name = "generate-scenarios",
@@ -3837,6 +3845,9 @@ async fn main() -> std::process::ExitCode {
         Some(Mode::FoundationStatus { json }) => {
             forward!(foundation_status::run, foundation_status::CliArgs { json })
         }
+        Some(Mode::ValidateConfig {}) => {
+            forward!(validate_config::run, validate_config::CliArgs {})
+        }
         Some(Mode::GenerateScenarios {
             work_unit_id,
             feature,
@@ -4257,6 +4268,7 @@ fn intercept_ts_help() -> Option<u8> {
         "show-event-storm" => format_command_help(&configs::show_event_storm::CONFIG),
         "show-foundation" => format_command_help(&configs::show_foundation::CONFIG),
         "foundation-status" => format_command_help(&configs::foundation_status::CONFIG),
+        "validate-config" => format_command_help(&configs::validate_config::CONFIG),
         "show-foundation-event-storm" => {
             format_command_help(&configs::show_foundation_event_storm::CONFIG)
         }
