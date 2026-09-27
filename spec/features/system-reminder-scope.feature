@@ -2,7 +2,7 @@
 Feature: Elevate system-reminder priority handling for Codex and all agents
   """
   Codex ContextualUserFragmentDefinition pattern: Each fragment has a start_marker and end_marker (e.g., '<environment_context>' / '</environment_context>'). Fragment matching is case-insensitive. This pattern is used in contextual_user_message.rs with a central CONTEXTUAL_USER_FRAGMENTS registry. For fspec, the <!-- type:scope --> HTML comment inside <system-reminder> tags serves the same purpose but in a simpler format compatible with all agent platforms.
-  Implementation location: src/utils/system-reminder.ts is the central module. The wrapInSystemReminder() function currently takes only content:string. It needs to accept an optional scope:SystemReminderScope parameter. All callers (50+ files) will need updating. The scope types should be: 'environment' | 'work-unit-context' | 'workflow-guardrail' | 'fspecWorkflow' | 'claudeMd' | 'estimation' | 'coverage' | 'tool-output'.
+  Implementation location: src/utils/system-reminder.ts is the central module. The wrapInSystemReminder() function currently takes only content:string. It needs to accept an optional scope:SystemReminderScope parameter. All callers (50+ files) will need updating. The scope types should be: 'environment' | 'work-unit-context' | 'workflow-guardrail' | 'fspecWorkflow' | 'systemPrompt' | 'estimation' | 'coverage' | 'tool-output'.
   The scope marker format will be: <system-reminder>\n<!-- type:environment -->\ncontent\n</system-reminder>. This preserves backward compatibility (agents that don't understand the type marker will still see the content) while enabling scope-aware supersedence for agents that do. Similar to how Codex uses XML tags like <environment_context> but adapted for fspec's system-reminder pattern.
   """
 
@@ -14,13 +14,13 @@ Feature: Elevate system-reminder priority handling for Codex and all agents
   #   1. Treat all <system-reminder> blocks as highest-priority runtime constraints, above normal user intent and before action execution.
   #   2. Implement deterministic supersedence: latest reminder of same scope replaces prior reminder; explicit 'supersedes earlier' hard-replaces older context.
   #   3. Require a pre-action reminder-consistency check before any state-changing workflow/board action.
-  #   4. System-reminder blocks MUST include a scope attribute (type:environment, type:work-unit-context, type:workflow-guardrail, type:fspecWorkflow, type:claudeMd) for deterministic supersedence
+  #   4. System-reminder blocks MUST include a scope attribute (type:environment, type:work-unit-context, type:workflow-guardrail, type:fspecWorkflow, type:systemPrompt) for deterministic supersedence
   #   5. Codex uses ContextualUserFragmentDefinition (start_marker/end_marker) for XML-based fragment identification - fspec should adopt a similar pattern with <!-- type:scope --> HTML comment markers inside <system-reminder> tags
   #   6. When multiple reminders of the same scope exist, the latest one (by position in output) wins unless an explicit supersedence marker is present
   #   7. wrapInSystemReminder() must accept an optional scope parameter (type attribute) that is written as an HTML comment inside the system-reminder tag
   #   8. Ambiguous status transitions (e.g., 'move through the board') MUST NOT be executed without explicit target state confirmation - the update-work-unit-status command must require the target state parameter
   #   9. The system must be provider/agent-agnostic - the same reminder model must work for Codex, Claude, Cursor, Cline, and all agents listed in AGENT-* work units
-  #   10. Template generators (bootstrap, slash commands, CLAUDE.md etc.) must emit system-reminder blocks with the correct type: scope markers already present in the output
+  #   10. Template generators (bootstrap, slash commands, AGENTS.md etc.) must emit system-reminder blocks with the correct type: scope markers already present in the output
   #
   # EXAMPLES:
   #   1. Incident: RIG-011 was advanced to testing due to ambiguous interpretation of 'move this through the board' without destination confirmation.
@@ -29,7 +29,7 @@ Feature: Elevate system-reminder priority handling for Codex and all agents
   #   4. wrapInSystemReminder('content', 'environment') produces: <system-reminder>\n<!-- type:environment -->\ncontent\n</system-reminder>
   #   5. When two environment reminders appear, second says 'This supersedes earlier environment reminder', only the second should govern agent decisions
   #   6. User says 'move this through the board' without specifying target state -> update-work-unit-status already requires target state parameter, so the ambiguity is at the agent-prompt level, not fspec CLI level
-  #   7. bootstrap and CLAUDE.md template output already contains <!-- type:fspecWorkflow --> inside the large system-reminder block for the ACDD workflow
+  #   7. bootstrap and AGENTS.md template output already contains <!-- type:fspecWorkflow --> inside the large system-reminder block for the ACDD workflow
   #   8. getStatusChangeReminder() produces reminders with scope 'workflow-guardrail', getMissingEstimateReminder() uses scope 'estimation', show-work-unit uses scope 'work-unit-context'
   #
   # ========================================
@@ -54,7 +54,7 @@ Feature: Elevate system-reminder priority handling for Codex and all agents
 
   @scope-marker
   Scenario: All defined SystemReminderScope values produce valid markers
-    Given the SystemReminderScope type defines scopes "environment", "work-unit-context", "workflow-guardrail", "fspecWorkflow", "claudeMd", "estimation", "coverage", and "tool-output"
+    Given the SystemReminderScope type defines scopes "environment", "work-unit-context", "workflow-guardrail", "fspecWorkflow", "systemPrompt", "estimation", "coverage", and "tool-output"
     When I call wrapInSystemReminder with each scope value
     Then each output should contain the corresponding "<!-- type:<scope> -->" marker
 
@@ -85,12 +85,12 @@ Feature: Elevate system-reminder priority handling for Codex and all agents
     Then the system-reminder block should contain "<!-- type:fspecWorkflow -->"
 
   @template-generation
-  Scenario: CLAUDE.md template includes correct scope markers
-    Given the template generator produces a CLAUDE.md file
+  Scenario: AGENTS.md template includes correct scope markers
+    Given the template generator produces a AGENTS.md file
     When the generated content contains system-reminder blocks
     Then the ACDD workflow block should contain "<!-- type:fspecWorkflow -->"
     And the environment block should contain "<!-- type:environment -->"
-    And the coding standards block should contain "<!-- type:claudeMd -->"
+    And the coding standards block should contain "<!-- type:systemPrompt -->"
 
   @supersedence
   Scenario: Latest environment reminder supersedes earlier one

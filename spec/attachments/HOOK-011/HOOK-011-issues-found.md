@@ -395,10 +395,10 @@ if (!isBlocking && result.stderr) {
 - No discovery mechanism for the feature
 - Users might never know virtual hooks exist
 - No help command explaining virtual hooks
-- Not documented in CLAUDE.md workflow
+- Not documented in AGENTS.md workflow
 
 **Fix Required**:
-- Add section to spec/CLAUDE.md about virtual hooks
+- Add section to spec/AGENTS.md about virtual hooks
 - Add system-reminder at specifying → testing transition
 - Create `fspec help virtual-hooks` command
 - Add examples to help output
@@ -432,7 +432,7 @@ if (!isBlocking && result.stderr) {
 - [ ] Add work unit status validation for hook events
 - [ ] Improve non-blocking hook failure visibility with summary
 - [ ] Add integration tests with real tools (eslint, prettier, npm)
-- [ ] Document virtual hooks in CLAUDE.md and help system
+- [ ] Document virtual hooks in AGENTS.md and help system
 - [ ] Review and validate test behavior changes (empty stderr handling)
 
 ---

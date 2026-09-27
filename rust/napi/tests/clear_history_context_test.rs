@@ -4,7 +4,7 @@
 //! Tests for AGENT-003: Clear context command for session reset
 //!
 //! These tests verify that clear_history() properly resets the session
-//! while preserving system context (CLAUDE.md, environment info).
+//! while preserving system context (AGENTS.md, environment info).
 
 use codelet_cli::session::Session;
 use rig::message::{Message, UserContent};
@@ -101,7 +101,7 @@ fn test_clear_history_resets_conversation_state() {
 
 /// Test that clear_history reinjects context reminders
 ///
-/// This is the CRITICAL test - verifies that CLAUDE.md and environment info
+/// This is the CRITICAL test - verifies that AGENTS.md and environment info
 /// are restored after clearing, so the AI doesn't lose project context.
 ///
 /// Scenario: Context reminders preserved after clear
@@ -109,7 +109,7 @@ fn test_clear_history_resets_conversation_state() {
 /// @step Given I have a session with context reminders injected
 /// @step When I clear the history
 /// @step Then context reminders should be reinjected
-/// @step And the AI should still have access to CLAUDE.md context
+/// @step And the AI should still have access to AGENTS.md context
 #[test]
 fn test_clear_history_reinjects_context_reminders() {
     // Skip test if no provider configured
@@ -139,7 +139,7 @@ fn test_clear_history_reinjects_context_reminders() {
     session.inject_context_reminders();
 
     // @step Then context reminders should be reinjected
-    // @step And the AI should still have access to CLAUDE.md context
+    // @step And the AI should still have access to AGENTS.md context
     let final_reminder_count = count_system_reminder_messages(&session);
     assert_eq!(
         final_reminder_count, initial_reminder_count,

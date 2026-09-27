@@ -7,10 +7,10 @@ Feature: spec/AGENT.md files contain stub instead of comprehensive workflow
   """
   Architecture notes:
   - Create src/utils/projectManagementTemplate.ts following same pattern as slashCommandTemplate.ts
-  - Break spec/CLAUDE.md (2069 lines) into section files in src/utils/projectManagementSections/ directory
+  - Break spec/AGENTS.md (2069 lines) into section files in src/utils/projectManagementSections/ directory
   - Update generateAgentDoc() in src/utils/templateGenerator.ts to use getProjectManagementTemplate()
   - generateSlashCommandContent() is ALREADY CORRECT - uses getSlashCommandTemplate() for .claude/commands/fspec.md
-  - After fix: spec/CLAUDE.md ~2069 lines (Project Management), .claude/commands/fspec.md remains ~1019 lines (ACDD workflow)
+  - After fix: spec/AGENTS.md ~2069 lines (Project Management), .claude/commands/fspec.md remains ~1019 lines (ACDD workflow)
   """
 
   # ========================================
@@ -25,10 +25,10 @@ Feature: spec/AGENT.md files contain stub instead of comprehensive workflow
   #   5. Slash command generation (generateSlashCommandContent) should NOT be changed - it's already correct
   #
   # EXAMPLES:
-  #   1. Current spec/CLAUDE.md has 17 lines with circular reference: 'For using fspec commands and ACDD workflow: See spec/CLAUDE.md'
-  #   2. Expected spec/CLAUDE.md should have ~2069 lines titled "Project Management and Specification Guidelines for fspec"
-  #   3. Restored spec/CLAUDE.md (from GitHub) has 2069 lines - this content should be templated
-  #   4. Slash command .claude/commands/fspec.md has 1019 lines ACDD workflow - DIFFERENT from spec/CLAUDE.md, should NOT change
+  #   1. Current spec/AGENTS.md has 17 lines with circular reference: 'For using fspec commands and ACDD workflow: See spec/AGENTS.md'
+  #   2. Expected spec/AGENTS.md should have ~2069 lines titled "Project Management and Specification Guidelines for fspec"
+  #   3. Restored spec/AGENTS.md (from GitHub) has 2069 lines - this content should be templated
+  #   4. Slash command .claude/commands/fspec.md has 1019 lines ACDD workflow - DIFFERENT from spec/AGENTS.md, should NOT change
   #   5. projectManagementTemplate.ts follows pattern: getIntroSection(), getProjectManagementSection(), etc.
   #
   # ========================================
@@ -40,13 +40,13 @@ Feature: spec/AGENT.md files contain stub instead of comprehensive workflow
   Scenario: spec/AGENT.md contains comprehensive Project Management Guidelines
     Given generateAgentDoc() is modified to use getProjectManagementTemplate() as base
     When fspec init --agent=claude is run
-    Then spec/CLAUDE.md should contain approximately 2069 lines
-    And spec/CLAUDE.md should be titled "Project Management and Specification Guidelines for fspec"
-    And spec/CLAUDE.md should include work unit management documentation
-    And spec/CLAUDE.md should include Reverse ACDD documentation
-    And spec/CLAUDE.md should include coverage tracking system documentation
-    And spec/CLAUDE.md should include lifecycle hooks documentation
-    And spec/CLAUDE.md should include git checkpoints documentation
+    Then spec/AGENTS.md should contain approximately 2069 lines
+    And spec/AGENTS.md should be titled "Project Management and Specification Guidelines for fspec"
+    And spec/AGENTS.md should include work unit management documentation
+    And spec/AGENTS.md should include Reverse ACDD documentation
+    And spec/AGENTS.md should include coverage tracking system documentation
+    And spec/AGENTS.md should include lifecycle hooks documentation
+    And spec/AGENTS.md should include git checkpoints documentation
 
   Scenario: Agent-specific transformations are applied to Project Management template
     Given generateAgentDoc() uses getProjectManagementTemplate() as base content
@@ -63,10 +63,10 @@ Feature: spec/AGENT.md files contain stub instead of comprehensive workflow
     And CURSOR.md should point to spec/CURSOR.md for full documentation
     And spec/CURSOR.md should contain approximately 2069 lines with Project Management Guidelines
 
-  Scenario: Fix eliminates circular reference in spec/CLAUDE.md
-    Given the current spec/CLAUDE.md has 17 lines with circular reference
+  Scenario: Fix eliminates circular reference in spec/AGENTS.md
+    Given the current spec/AGENTS.md has 17 lines with circular reference
     When generateAgentDoc() is fixed to use getProjectManagementTemplate()
     And fspec init --agent=claude is run
-    Then spec/CLAUDE.md should not contain the text "See spec/CLAUDE.md"
-    And spec/CLAUDE.md should contain comprehensive standalone Project Management Guidelines
-    And spec/CLAUDE.md should have approximately 2069 lines
+    Then spec/AGENTS.md should not contain the text "See spec/AGENTS.md"
+    And spec/AGENTS.md should contain comprehensive standalone Project Management Guidelines
+    And spec/AGENTS.md should have approximately 2069 lines

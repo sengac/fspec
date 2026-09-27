@@ -1,7 +1,7 @@
 {
   "scenarios": [
     {
-      "name": "CLAUDE.md documents discover-foundation workflow",
+      "name": "AGENTS.md documents discover-foundation workflow",
       "testMappings": [
         {
           "file": "src/commands/__tests__/documentation-validation.test.ts",

@@ -344,7 +344,7 @@
       ]
     },
     {
-      "name": "Replace placeholders in generated spec/CLAUDE.md with configured commands",
+      "name": "Replace placeholders in generated spec/AGENTS.md with configured commands",
       "testMappings": [
         {
           "file": "src/commands/__tests__/placeholder-replacement.test.ts",

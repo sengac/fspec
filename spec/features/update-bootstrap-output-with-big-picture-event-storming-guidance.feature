@@ -10,7 +10,7 @@ Feature: Update bootstrap output with Big Picture Event Storming guidance
   Architecture notes:
   - Modifies src/commands/bootstrap.ts to emit system-reminder when Event Storm needed
   - Detection logic: Check foundation.json exists, eventStorm empty, find FOUND-XXX work units
-  - System-reminder emitted AFTER CLAUDE.md content, BEFORE final "fspec mode" message
+  - System-reminder emitted AFTER AGENTS.md content, BEFORE final "fspec mode" message
   - Uses existing wrapInSystemReminder utility for consistent formatting
   - Reuses existing file reading utilities (readFile, existsSync, JSON.parse)
   """
@@ -23,8 +23,8 @@ Feature: Update bootstrap output with Big Picture Event Storming guidance
   #   1. System-reminder emitted ONLY when foundation.json exists
   #   2. System-reminder emitted ONLY when eventStorm field is empty or missing
   #   3. System-reminder references work unit ID if FOUND-XXX Event Storm work unit exists and not done
-  #   4. System-reminder appears AFTER CLAUDE.md content, BEFORE final message
-  #   5. System-reminder provides commands, CLAUDE.md reference, and explains why Event Storm matters
+  #   4. System-reminder appears AFTER AGENTS.md content, BEFORE final message
+  #   5. System-reminder provides commands, AGENTS.md reference, and explains why Event Storm matters
   #
   # EXAMPLES:
   #   1. AI runs 'fspec bootstrap', foundation.json exists with empty eventStorm, FOUND-XXX work unit exists in backlog, system-reminder emitted with work unit ID and next steps
@@ -46,9 +46,9 @@ Feature: Update bootstrap output with Big Picture Event Storming guidance
     And the reminder should reference the work unit ID
     And the reminder should provide next steps to work on the work unit
     And the reminder should list foundation Event Storm commands
-    And the reminder should reference CLAUDE.md documentation
+    And the reminder should reference AGENTS.md documentation
     And the reminder should explain why Event Storm matters
-    And the reminder should appear after CLAUDE.md content
+    And the reminder should appear after AGENTS.md content
 
   Scenario: Reminder emitted when eventStorm empty and no work unit
     Given foundation.json exists with empty eventStorm field
@@ -57,17 +57,17 @@ Feature: Update bootstrap output with Big Picture Event Storming guidance
     Then a system-reminder should be emitted
     And the reminder should suggest creating a work unit OR running commands directly
     And the reminder should list foundation Event Storm commands
-    And the reminder should reference CLAUDE.md documentation
+    And the reminder should reference AGENTS.md documentation
     And the reminder should explain why Event Storm matters
 
   Scenario: No reminder when eventStorm already populated
     Given foundation.json exists with populated eventStorm field
     When I run "fspec bootstrap"
     Then NO system-reminder should be emitted about Event Storm
-    And bootstrap output should show normal CLAUDE.md content
+    And bootstrap output should show normal AGENTS.md content
 
   Scenario: No reminder when foundation.json does not exist
     Given foundation.json does NOT exist
     When I run "fspec bootstrap"
     Then NO system-reminder should be emitted about Event Storm
-    And bootstrap output should show normal CLAUDE.md content
+    And bootstrap output should show normal AGENTS.md content

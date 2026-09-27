@@ -434,7 +434,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
 - `fspec report-bug-to-github` - Report a bug to GitHub with AI assistance
 ```
 
-2. **spec/CLAUDE.md** - Add to command list:
+2. **spec/AGENTS.md** - Add to command list:
 
 ````markdown
 ## Reporting Issues

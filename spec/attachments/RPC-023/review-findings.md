@@ -45,7 +45,7 @@ None.
 
 ### 1. Three test files referenced the wrong feature in their `//!` header
 
-The project standard (per CLAUDE.md / agent guidelines): _"Test file header must reference the feature file."_
+The project standard (per AGENTS.md / agent guidelines): _"Test file header must reference the feature file."_
 
 Three of the four RPC-023 test files all incorrectly referenced
 `spec/features/boardview-mouse-handling.feature` even though they cover

@@ -23,7 +23,7 @@ Feature: TUI /clear should update React state as side effect of Rust state chang
   # EXAMPLES:
   #   1. User types /clear in TUI → sessionClearHistory() called → Rust clears state → emits SessionStateChange{Cleared} chunk → handleStreamChunk receives it → resets conversation/tokens/fill% → user sees empty chat
   #   2. Telegram /clear → Bridge control message → Rust clear_history() → emits SessionStateChange{Cleared} → same chunk type as TUI (unified code path)
-  #   3. After /clear via TUI, system reminders (CLAUDE.md, environment) are preserved because Rust reinjects them via inject_context_reminders()
+  #   3. After /clear via TUI, system reminders (AGENTS.md, environment) are preserved because Rust reinjects them via inject_context_reminders()
   #   4. If sessionClearHistory() throws error, no SessionStateChange{Cleared} chunk emitted, React state unchanged - atomic: either all state updates or none
   #
   # ========================================
@@ -55,12 +55,12 @@ Feature: TUI /clear should update React state as side effect of Rust state chang
     And the chunk type should be identical to TUI /clear flow
 
   Scenario: System reminders preserved after clear
-    Given I have an active TUI session with CLAUDE.md loaded
+    Given I have an active TUI session with AGENTS.md loaded
     And environment info shows project directory and date
     When I type "/clear" and press Enter
     And Rust clears the conversation history
     Then Rust should call inject_context_reminders() after clearing
-    And the AI should still know the project context from CLAUDE.md
+    And the AI should still know the project context from AGENTS.md
     And the AI should still know the current date
 
   Scenario: Clear failure does not corrupt React state

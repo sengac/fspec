@@ -38,11 +38,11 @@ pub struct EnvironmentInfo {
 **`inject_context_reminders()` method (lines 248-262):**
 ```rust
 pub fn inject_context_reminders(&mut self) {
-    use context_gathering::{discover_claude_md, gather_environment_info};
+    use context_gathering::{discover_agents_md, gather_environment_info};
 
-    // Inject CLAUDE.md/AGENTS.md content if found
-    if let Some(content) = discover_claude_md(None) {
-        self.add_system_reminder(SystemReminderType::ClaudeMd, &content);
+    // Inject AGENTS.md content if found
+    if let Some(content) = discover_agents_md(None) {
+        self.add_system_reminder(SystemReminderType::SystemPrompt, &content);
     }
 
     // Inject environment information
@@ -194,7 +194,7 @@ pub fn inject_context_reminders_with_isolation(
     &mut self,
     isolation: Option<&IsolationContext>
 ) {
-    // ... discover CLAUDE.md ...
+    // ... discover AGENTS.md ...
     
     let env_info = gather_environment_info_with_isolation(isolation);
     self.add_system_reminder(

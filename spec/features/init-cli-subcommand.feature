@@ -44,7 +44,7 @@ Feature: init CLI subcommand on the standalone fspec Rust binary
   #   7. `fspec init --help` output MUST be byte-for-byte identical to rust/fspec/tests/fixtures/help/init.txt captured from `node dist/index.js init --help` piped to a non-TTY
   #
   # EXAMPLES:
-  #   1. `fspec init --agent claude` in an empty dir → exit 0, stdout '✓ Installed fspec for claude', lists 'spec/CLAUDE.md' and '.claude/commands/fspec.md', then 'Next steps:' and 'Run /fspec in Claude Code to activate'; spec/CLAUDE.md and spec/fspec-config.json exist afterwards
+  #   1. `fspec init --agent claude` in an empty dir → exit 0, stdout '✓ Installed fspec for claude', lists 'spec/AGENTS.md' and '.claude/commands/fspec.md', then 'Next steps:' and 'Run /fspec in Claude Code to activate'; spec/AGENTS.md and spec/fspec-config.json exist afterwards
   #   2. `fspec init --agent claude --agent cursor` → exit 0, stdout '✓ Installed fspec for claude, cursor' and four '  - <path>' lines
   #   3. `fspec init` (no --agent) → exit 1, stderr contains 'Interactive mode requires a TTY. Use --agent flag instead:'
   #   4. `fspec init --agent bogus` → exit 1, stderr contains '✗ Init failed: Unknown agent: bogus.'
@@ -68,10 +68,10 @@ Feature: init CLI subcommand on the standalone fspec Rust binary
     When I run `./rust/target/release/fspec init --agent claude` from that directory
     Then the command exits 0
     Then stdout contains the substring '✓ Installed fspec for claude'
-    Then stdout contains the substring 'spec/CLAUDE.md'
+    Then stdout contains the substring 'spec/AGENTS.md'
     Then stdout contains the substring 'Next steps:'
     Then stdout contains the substring 'Run /fspec in Claude Code to activate'
-    Then spec/CLAUDE.md exists in the directory
+    Then spec/AGENTS.md exists in the directory
     Then spec/fspec-config.json exists in the directory
 
   Scenario: CLI installs multiple agents from repeated --agent flags
@@ -79,7 +79,7 @@ Feature: init CLI subcommand on the standalone fspec Rust binary
     When I run `./rust/target/release/fspec init --agent claude --agent cursor` from that directory
     Then the command exits 0
     Then stdout contains the substring '✓ Installed fspec for claude, cursor'
-    Then spec/CLAUDE.md exists in the directory
+    Then spec/AGENTS.md exists in the directory
     Then spec/CURSOR.md exists in the directory
 
   Scenario: CLI without --agent fails because the shell is non-TTY
@@ -97,7 +97,7 @@ Feature: init CLI subcommand on the standalone fspec Rust binary
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given an empty project root directory
     When I dispatch init through fspec_core::dispatch::dispatch_command with agent list ['claude'] against that project root
-    Then the dispatcher result reports filesInstalled including 'spec/CLAUDE.md'
+    Then the dispatcher result reports filesInstalled including 'spec/AGENTS.md'
     Then the CLI bridge module rust/fspec/src/init.rs contains NO inline scaffolding, registry or template logic — its only computation is JSON arg marshalling and stdout printing
 
   Scenario: init --help is byte-for-byte identical to the TS reference output

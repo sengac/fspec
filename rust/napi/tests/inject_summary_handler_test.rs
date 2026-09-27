@@ -77,7 +77,7 @@ fn create_session_with_messages(
 
     let reminder_types = [
         SystemReminderType::Environment,
-        SystemReminderType::ClaudeMd,
+        SystemReminderType::SystemPrompt,
         SystemReminderType::FspecWorkflow,
         SystemReminderType::GitStatus,
         SystemReminderType::TokenStatus,

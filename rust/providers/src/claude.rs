@@ -481,7 +481,7 @@ impl ClaudeProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble. For API key mode, this should
-    ///   contain CLAUDE.md content and other context. For OAuth mode, this is the
+    ///   contain AGENTS.md content and other context. For OAuth mode, this is the
     ///   ADDITIONAL content (facade adds the required Claude Code prefix).
     /// * `thinking_config` - Optional thinking configuration JSON (TOOL-010). When provided,
     ///   enables extended thinking with the specified budget. Format: `{"thinking": {"type": "enabled", "budget_tokens": N}}`

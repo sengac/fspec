@@ -600,7 +600,7 @@ fn found_task_description() -> String {
         "- Provides foundation for architectural documentation",
         "- Supports EXMAP-004 tag discovery workflow",
         "",
-        "See spec/CLAUDE.md \"Foundation Event Storm\" section for detailed guidance.",
+        "See spec/AGENTS.md \"Foundation Event Storm\" section for detailed guidance.",
     ];
     lines.join("\n")
 }

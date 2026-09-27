@@ -21,7 +21,7 @@ fspec init --agent=cursor --agent=claude   # multiple agents
 
 For each selected agent, `init` writes two things:
 
-1. **An agent documentation file** under `spec/` — e.g. `spec/CLAUDE.md` for Claude Code, `spec/AGENTS.md` for Codex. This is the full fspec workflow guide (work unit management, ACDD phases, Gherkin conventions, CLI command reference) tailored to that agent.
+1. **An agent documentation file** under `spec/` — e.g. `spec/AGENTS.md` for Claude Code, `spec/AGENTS.md` for Codex. This is the full fspec workflow guide (work unit management, ACDD phases, Gherkin conventions, CLI command reference) tailored to that agent.
 2. **A slash command** that bootstraps the agent's context:
    - Claude Code → `.claude/commands/fspec.md`
    - Codex / Codex CLI → `~/.codex/prompts/fspec.md` (installed once, per user)
@@ -43,7 +43,7 @@ cd /path/to/your/project
 fspec init --agent=claude
 ```
 
-This installs `spec/CLAUDE.md` and `.claude/commands/fspec.md`. Then, inside Claude Code:
+This installs `spec/AGENTS.md` and `.claude/commands/fspec.md`. Then, inside Claude Code:
 
 ```
 /fspec

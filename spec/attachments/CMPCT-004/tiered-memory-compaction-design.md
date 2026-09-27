@@ -69,7 +69,7 @@ The current codebase already has pattern-matching heuristics that silently miscl
 │                                                                   │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │ SYSTEM REMINDERS (stable prefix)                         │  │
-│  │ - CLAUDE.md / environment info / fspec guidance           │  │
+│  │ - AGENTS.md / environment info / fspec guidance           │  │
 │  │ - Never compacted, always first                           │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                                                                   │

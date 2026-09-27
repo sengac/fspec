@@ -11,10 +11,10 @@ None.
 
 ## 🟡 Warnings (Should Fix)
 1. **Test file exceeds 300-line guideline.** `src/__tests__/rpc-068-boundary-audit.test.ts` is 366 lines.
-   CLAUDE.md mandates: *"Keep files under 300 lines — refactor when approaching this limit."*
+   AGENTS.md mandates: *"Keep files under 300 lines — refactor when approaching this limit."*
    Worse, the helper file `src/__tests__/helpers/rpc-068-audit-helpers.ts` opens with a comment
    claiming the helpers were extracted *"so the main test file stays under the 300-line guideline
-   in CLAUDE.md"* — which is no longer true. Either trim the test or extract more code into the
+   in AGENTS.md"* — which is no longer true. Either trim the test or extract more code into the
    helper module.
 
 ## 🟢 Observations (Nice to Have)
@@ -127,7 +127,7 @@ None.
     explanations; every `// @step` comment is preserved verbatim.
   - Helper file grew from 86 → 169 lines (still well under 300).
   - The leading comment in the helper file (`"Kept in a separate module so the
-    main test file stays under the 300-line guideline in CLAUDE.md"`) is now
+    main test file stays under the 300-line guideline in AGENTS.md"`) is now
     accurate again.
 - 🟢 **Documented test-count discrepancy (27 vs 16 Ink failures)** → Not fixed.
   - The numbers live in already-committed acceptance criteria and in the audit

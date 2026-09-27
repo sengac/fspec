@@ -245,7 +245,7 @@ Next steps:
      - fspec remove-command-from-foundation <context> <command>
      - fspec show-foundation-event-storm
 
-See spec/CLAUDE.md \"Foundation Event Storm\" section for detailed guidance.
+See spec/AGENTS.md \"Foundation Event Storm\" section for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture
@@ -280,7 +280,7 @@ Option 2: Conduct Event Storm directly
   fspec remove-command-from-foundation <context> <command>
   fspec show-foundation-event-storm
 
-See spec/CLAUDE.md \"Foundation Event Storm\" section for detailed guidance.
+See spec/AGENTS.md \"Foundation Event Storm\" section for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture

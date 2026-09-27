@@ -403,7 +403,7 @@ Different verbs for different agents:
 - Add JSDoc to all functions
 - Create module README
 - Write migration guide for developers
-- Update CLAUDE.md with lessons learned
+- Update AGENTS.md with lessons learned
 
 ---
 

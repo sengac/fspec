@@ -62,7 +62,7 @@ Feature: Port init command to Rust
   #   1. The Rust dispatcher route for `init` MUST replace the NotYetPorted stub and return a real result through the same `poll_sync_future` path the other ported commands use; the signature becomes `run(args_json, project_root)` (the current stub is the 1-arg `run(args_json)` form and the dispatch route must be updated by the supervisor)
   #   2. Args parse as `{ agent: string[] }` (camelCase, default empty Vec). An EMPTY agent list means interactive selection, which is impossible headless: the command MUST error with the TS TTY-guard text 'Interactive mode requires a TTY. Use --agent flag instead:' followed by the two `fspec init --agent=...` example lines (parity with src/commands/init.ts:310-316)
   #   3. Every requested agent id MUST be validated against the inlined AGENT_REGISTRY (20 agents, registry order). An unknown id MUST error 'Unknown agent: <id>.' followed by a blank line, 'Valid agent IDs:' and one '  - <id>: <description>' line per AVAILABLE agent (parity with installAgents at src/commands/init.ts:100-110)
-  #   4. For each valid agent the command installs exactly two files: the full documentation at spec/<docTemplate> (e.g. spec/CLAUDE.md, spec/AGENTS.md for codex) and one slash-command file; both parent directories are created recursively (parity with installAgentFiles / installFullDoc / installSlashCommand)
+  #   4. For each valid agent the command installs exactly two files: the full documentation at spec/<docTemplate> (e.g. spec/AGENTS.md for codex) and one slash-command file; both parent directories are created recursively (parity with installAgentFiles / installFullDoc / installSlashCommand)
   #   5. The doc file content is generateAgentDoc(agent): the project-management template with {{AGENT_NAME}}/{{DOC_TEMPLATE}}/{{SLASH_COMMAND_PATH}}/{{AGENT_ID}} replaced, <system-reminder> blocks stripped to visible '**IMPORTANT:**' / '**⚠️ IMPORTANT:**' instructions for agents without supportsSystemReminders, and meta-cognitive phrases (ultrathink, deeply consider, take a moment to reflect) removed for agents without supportsMetaCognition (parity with templateGenerator.ts)
   #   6. The slash-command filename is 'fspec.toml' when slashCommandFormat=='toml' (gemini, qwen) else 'fspec.md'; the TOML content is the inline literal from init.ts:265-279 and the markdown content is getHeaderSection() (parity with generateSlashCommandContent at src/commands/init.ts:262-288)
   #   7. The slash-command directory is normally <project_root>/<slashCommandPath>; for the codex and codex-cli agents it is <home>/.codex/prompts (os.homedir) and the reported install path for those agents is '~/.codex/prompts/fspec.md' (parity with src/commands/init.ts:238-256); the core reads HOME from an injectable source (env HOME) — never a hard-coded path — and tests override HOME to a tempdir (SUPERVISOR DECISION: confirmed)
@@ -74,14 +74,14 @@ Feature: Port init command to Rust
   #   13. All writes use BLOCKING std::fs (create_dir_all + write); the command performs NO network calls and spawns NO child processes
   #
   # EXAMPLES:
-  #   1. Dispatch init with `{"agent":["claude"]}` against an empty project root → spec/CLAUDE.md and .claude/commands/fspec.md are created, spec/fspec-config.json contains {"agent":"claude"}, and the result has success=true, cancelled=false, filesInstalled=['spec/CLAUDE.md','.claude/commands/fspec.md']
+  #   1. Dispatch init with `{"agent":["claude"]}` against an empty project root → spec/AGENTS.md and .claude/commands/fspec.md are created, spec/fspec-config.json contains {"agent":"claude"}, and the result has success=true, cancelled=false, filesInstalled=['spec/AGENTS.md','.claude/commands/fspec.md']
   #   2. Dispatch init with `{"agent":["gemini"]}` → the slash-command file is .gemini/commands/fspec.toml (TOML format) whose content starts with '[command]' and the doc file is spec/GEMINI.md with all <system-reminder> blocks rewritten to '**IMPORTANT:**' visible instructions (gemini does not support system reminders)
   #   3. Dispatch init with `{"agent":["cursor"]}` → spec/CURSOR.md is created and its system-reminder blocks render as '**⚠️ IMPORTANT:**' (cursor is an IDE/extension category agent)
-  #   4. Dispatch init with `{"agent":["claude","cursor"]}` → both spec/CLAUDE.md and spec/CURSOR.md plus both slash-command files exist, filesInstalled lists all four, and spec/fspec-config.json records only {"agent":"claude"}
+  #   4. Dispatch init with `{"agent":["claude","cursor"]}` → both spec/AGENTS.md and spec/CURSOR.md plus both slash-command files exist, filesInstalled lists all four, and spec/fspec-config.json records only {"agent":"claude"}
   #   5. Dispatch init with `{"agent":["bogus"]}` → success=false with an error message beginning 'Unknown agent: bogus.' and listing the valid agent ids
   #   6. Dispatch init with `{"agent":[]}` (empty) → success=false with the error 'Interactive mode requires a TTY. Use --agent flag instead:' (headless selection is unsupported)
   #   7. Dispatch init with `{"agent":["claude"]}` against a project root that already has spec/fspec-config.json containing {"agent":"cursor","foo":"bar"} → install proceeds (switch auto-confirmed), spec/fspec-config.json becomes {"foo":"bar","agent":"claude"} (existing keys preserved, agent overwritten)
-  #   8. Dispatch init with `{"agent":["claude"]}` then the doc file spec/CLAUDE.md contains the literal {{...}} placeholders NOWHERE — {{AGENT_NAME}} has been replaced with 'Claude Code', {{DOC_TEMPLATE}} with 'CLAUDE.md', {{SLASH_COMMAND_PATH}} with '.claude/commands/'
+  #   8. Dispatch init with `{"agent":["claude"]}` then the doc file spec/AGENTS.md contains the literal {{...}} placeholders NOWHERE — {{AGENT_NAME}} has been replaced with 'Claude Code', {{DOC_TEMPLATE}} with 'AGENTS.md', {{SLASH_COMMAND_PATH}} with '.claude/commands/'
   #
   # QUESTIONS (ANSWERED by supervisor):
   #   1. @supervisor: Adopt the 2-arg `run(args_json, project_root)` signature? A: YES — adopt 2-arg; the supervisor updates the dispatch.rs route + run_ported/Mode registration (shared files, supervisor-owned).
@@ -103,10 +103,10 @@ Feature: Port init command to Rust
     Given an empty project root directory
     When I dispatch the init command against that project root with agent list ['claude']
     Then the dispatcher returns success=true and cancelled=false
-    Then spec/CLAUDE.md exists in the project root
+    Then spec/AGENTS.md exists in the project root
     Then .claude/commands/fspec.md exists in the project root
     Then spec/fspec-config.json contains the agent field 'claude'
-    Then the filesInstalled array contains 'spec/CLAUDE.md' and '.claude/commands/fspec.md'
+    Then the filesInstalled array contains 'spec/AGENTS.md' and '.claude/commands/fspec.md'
 
   Scenario: Installs a TOML-format agent slash command file
     Given an empty project root directory
@@ -125,14 +125,14 @@ Feature: Port init command to Rust
   Scenario: Replaces all template placeholders with agent-specific values
     Given an empty project root directory
     When I dispatch init against that project root with agent list ['claude']
-    Then the doc file spec/CLAUDE.md does NOT contain the substring '{{AGENT_NAME}}'
-    Then the doc file spec/CLAUDE.md does NOT contain the substring '{{DOC_TEMPLATE}}'
-    Then the doc file spec/CLAUDE.md does NOT contain the substring '{{SLASH_COMMAND_PATH}}'
+    Then the doc file spec/AGENTS.md does NOT contain the substring '{{AGENT_NAME}}'
+    Then the doc file spec/AGENTS.md does NOT contain the substring '{{DOC_TEMPLATE}}'
+    Then the doc file spec/AGENTS.md does NOT contain the substring '{{SLASH_COMMAND_PATH}}'
 
   Scenario: Installs multiple agents in order and records only the first in config
     Given an empty project root directory
     When I dispatch init against that project root with agent list ['claude', 'cursor']
-    Then spec/CLAUDE.md and spec/CURSOR.md both exist in the project root
+    Then spec/AGENTS.md and spec/CURSOR.md both exist in the project root
     Then the filesInstalled array contains all four installed paths
     Then spec/fspec-config.json contains the agent field 'claude'
 

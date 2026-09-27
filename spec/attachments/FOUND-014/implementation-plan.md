@@ -1,12 +1,12 @@
-# FOUND-014: Update CLAUDE.md with Big Picture Event Storming Workflow Documentation
+# FOUND-014: Update AGENTS.md with Big Picture Event Storming Workflow Documentation
 
 ## Overview
 
-Add comprehensive documentation to spec/CLAUDE.md explaining the Big Picture Event Storming workflow that should be conducted after foundation discovery.
+Add comprehensive documentation to spec/AGENTS.md explaining the Big Picture Event Storming workflow that should be conducted after foundation discovery.
 
 ## Problem
 
-Current spec/CLAUDE.md documentation:
+Current spec/AGENTS.md documentation:
 - ✅ Explains foundation discovery (discover-foundation workflow)
 - ✅ Explains work unit-level Event Storming (for individual stories)
 - ❌ Does NOT explain foundation-level Event Storming workflow
@@ -16,7 +16,7 @@ Current spec/CLAUDE.md documentation:
 
 ## Solution
 
-Add a new section to CLAUDE.md that documents:
+Add a new section to AGENTS.md that documents:
 1. What Big Picture Event Storming is (vs work unit-level)
 2. When to conduct it (after foundation discovery)
 3. Why it matters (tag ontology, domain architecture)
@@ -26,7 +26,7 @@ Add a new section to CLAUDE.md that documents:
 ## Implementation Details
 
 ### File to Modify
-**`spec/CLAUDE.md`**
+**`spec/AGENTS.md`**
 
 ### Location in Document
 Insert new section after "Step 1.5: Bootstrap Foundation" and before "Step 1.5: Event Storm - Domain Discovery"
@@ -218,7 +218,7 @@ Once complete, move to work unit-level Event Storming (Step 1.6) when creating i
 
 ## Acceptance Criteria
 
-1. ✅ New section added to CLAUDE.md after foundation discovery
+1. ✅ New section added to AGENTS.md after foundation discovery
 2. ✅ Section explains Big Picture vs work unit Event Storming differences
 3. ✅ Section shows all foundation Event Storm commands with examples
 4. ✅ Section includes workflow steps (when to do it, how to do it)
@@ -239,7 +239,7 @@ None - this is documentation only and should be completed FIRST before FOUND-013
 - Read through new section with fresh eyes
 - Verify commands are correct and match implementation
 - Verify examples are clear and actionable
-- Verify integration with existing CLAUDE.md structure
+- Verify integration with existing AGENTS.md structure
 
 ### AI Agent Testing
 - Bootstrap fspec in a test project

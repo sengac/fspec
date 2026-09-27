@@ -19,7 +19,7 @@ The five facade modules under review are individually clean, well-documented, we
    - `Grep "impl LlmProvider for CopilotProvider"` → **No matches found.**
    - All five sibling providers have it: `claude.rs:676`, `codex/mod.rs:474`, `gemini.rs:291`, `openai.rs:471`, `zai.rs:320`.
    - `CopilotProvider` (`provider.rs:94`) is a stateless marker `pub struct CopilotProvider;` with three associated functions only — no `complete`, no `complete_with_tools`, no `name`.
-   - **Impact**: a TUI user who selects `/github-copilot` cannot send a chat message — there is no end-to-end code path. The "feature works end-to-end" requirement from CLAUDE.md is not met.
+   - **Impact**: a TUI user who selects `/github-copilot` cannot send a chat message — there is no end-to-end code path. The "feature works end-to-end" requirement from AGENTS.md is not met.
 
 3. **`ProviderManager::get_copilot()` factory method is missing from `manager.rs`.**
    - `Grep "get_copilot|get_github_copilot"` in `manager.rs` → **No matches found.**

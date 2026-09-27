@@ -14,8 +14,8 @@ Research into 18 AI coding agents reveals **two distinct patterns** for loading 
 2. **Manual Loading Pattern**: Agents that require slash commands (`.agent/commands/`) to be manually triggered
 
 **Key Finding**: Most agents support a **two-tier system**:
-- **Root stub file** (`AGENTS.md` or `CLAUDE.md`, `CURSOR.md`, etc.) - Short pointer file that agents auto-load
-- **Full instructions** (e.g., `spec/CLAUDE.md`) - Comprehensive workflow documentation
+- **Root stub file** (`AGENTS.md` or `AGENTS.md`, `CURSOR.md`, etc.) - Short pointer file that agents auto-load
+- **Full instructions** (e.g., `spec/AGENTS.md`) - Comprehensive workflow documentation
 
 **Recommendation for fspec**: Install **BOTH** to maximize compatibility across all 18 agents.
 
@@ -29,7 +29,7 @@ These agents automatically load root-level instruction files on startup:
 
 | Agent | Auto-Loads | File Pattern | Notes |
 |-------|-----------|--------------|-------|
-| **Claude Code** | ✅ Yes | `CLAUDE.md` at root | Reads on every session start |
+| **Claude Code** | ✅ Yes | `AGENTS.md` at root | Reads on every session start |
 | **Cursor** | ✅ Yes | `CURSOR.md` or `AGENTS.md` | IDE scans root for instructions |
 | **Cline** | ✅ Yes | `CLINE.md` or `AGENTS.md` | VS Code extension auto-loads |
 | **Windsurf** | ✅ Yes | `AGENTS.md` at root | IDE-based, scans project files |
@@ -69,7 +69,7 @@ These agents do NOT auto-load root files - slash commands are mandatory:
 Many agents support a special `@/` syntax for referencing files from the project root:
 
 ```markdown
-Always open `@/spec/CLAUDE.md` when working on this project.
+Always open `@/spec/AGENTS.md` when working on this project.
 ```
 
 This syntax is understood by:
@@ -95,12 +95,12 @@ To allow `fspec init` and future `fspec update` commands to refresh agent instru
 ```
 
 **How it works**:
-1. User creates `CLAUDE.md` with custom content
+1. User creates `AGENTS.md` with custom content
 2. `fspec init --agent=claude` inserts managed block between markers
 3. User adds more custom content above/below the block
 4. `fspec update` (future command) refreshes only the managed block, preserves custom content
 
-**Example root stub** (`AGENTS.md` or `CLAUDE.md`):
+**Example root stub** (`AGENTS.md` or `AGENTS.md`):
 
 ```markdown
 # My Project - Custom Instructions
@@ -114,7 +114,7 @@ This project uses **fspec** for Acceptance Criteria Driven Development (ACDD).
 
 **Quick Start**:
 1. Run `/fspec` slash command to load full workflow
-2. Or read `@/spec/CLAUDE.md` for complete documentation
+2. Or read `@/spec/AGENTS.md` for complete documentation
 
 **Learn more**: https://github.com/sengac/fspec
 <!-- FSPEC:END -->
@@ -134,7 +134,7 @@ Based on research findings, `fspec init` should install **BOTH**:
 
 **Files to create**:
 - **Option A**: `AGENTS.md` (universal, works with all AGENTS.md-compatible tools)
-- **Option B**: `{AGENT_NAME}.md` (agent-specific, e.g., `CLAUDE.md`, `CURSOR.md`)
+- **Option B**: `{AGENT_NAME}.md` (agent-specific, e.g., `AGENTS.md`, `CURSOR.md`)
 
 **Content pattern**:
 ```markdown
@@ -205,7 +205,7 @@ Then read the comprehensive guide at `@/spec/{AGENT_NAME}.md` for full ACDD work
 
 | Agent | Root Stub | Full Doc | Slash Command | Format |
 |-------|-----------|----------|---------------|--------|
-| Claude Code | `CLAUDE.md` | `spec/CLAUDE.md` | `.claude/commands/fspec.md` | Markdown |
+| Claude Code | `AGENTS.md` | `spec/AGENTS.md` | `.claude/commands/fspec.md` | Markdown |
 | Cursor | `CURSOR.md` or `AGENTS.md` | `spec/CURSOR.md` | `.cursor/commands/fspec.md` | Markdown |
 | Cline | `CLINE.md` or `AGENTS.md` | `spec/CLINE.md` | `.cline/commands/fspec.md` | Markdown |
 | Aider | `AGENTS.md` | `spec/AIDER.md` | N/A (CLI-only) | Markdown |
@@ -235,7 +235,7 @@ Then read the comprehensive guide at `@/spec/{AGENT_NAME}.md` for full ACDD work
 
 **Transformation**:
 ```markdown
-<!-- Input (CLAUDE.md) -->
+<!-- Input (AGENTS.md) -->
 <system-reminder>
 Remember to always run tests before committing.
 </system-reminder>
@@ -252,7 +252,7 @@ Remember to always run tests before committing.
 
 **Transformation**:
 ```markdown
-<!-- Input (CLAUDE.md) -->
+<!-- Input (AGENTS.md) -->
 Before proceeding, ultrathink your next steps and deeply consider the implications.
 
 <!-- Output (AIDER.md, GEMINI.md - CLI-only agents) -->
@@ -320,7 +320,7 @@ async function installForAgent(cwd: string, agentId: string): Promise<void> {
 
 ```typescript
 async function installRootStub(cwd: string, agent: AgentConfig): Promise<void> {
-  const stubPath = join(cwd, agent.rootStubFile); // e.g., 'CLAUDE.md' or 'AGENTS.md'
+  const stubPath = join(cwd, agent.rootStubFile); // e.g., 'AGENTS.md' or 'AGENTS.md'
   const stubContent = generateStubContent(agent);
 
   // Use managed blocks to allow future updates
@@ -367,7 +367,7 @@ When multiple agents are detected, prioritize in this order:
 If user selects multiple agents (e.g., `--agent=claude --agent=cursor`):
 
 1. **Root stub**: Create `AGENTS.md` (universal, all agents can read it)
-2. **Full docs**: Create both `spec/CLAUDE.md` and `spec/CURSOR.md`
+2. **Full docs**: Create both `spec/AGENTS.md` and `spec/CURSOR.md`
 3. **Slash commands**: Install to `.claude/commands/fspec.md` AND `.cursor/commands/fspec.md`
 
 ### Update Command (Future)

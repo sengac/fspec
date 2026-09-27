@@ -12,10 +12,10 @@ Feature: generate-scenarios missing architecture docstring
   # USER STORY:
   #   As a developer using generate-scenarios
   #   I want to have feature files with architecture docstrings
-  #   So that all feature files meet CLAUDE.md requirements and have consistent structure
+  #   So that all feature files meet AGENTS.md requirements and have consistent structure
   #
   # BUSINESS RULES:
-  #   1. All feature files MUST have architecture docstrings (CLAUDE.md requirement)
+  #   1. All feature files MUST have architecture docstrings (AGENTS.md requirement)
   #   2. generate-scenarios output MUST match create-feature template structure
   #   3. Docstring MUST come before example mapping comments
   #   4. Docstring MUST include TODO placeholders for architecture notes
@@ -29,7 +29,7 @@ Feature: generate-scenarios missing architecture docstring
   Background: User Story
     As a developer using generate-scenarios
     I want to have feature files with architecture docstrings
-    So that all feature files meet CLAUDE.md requirements and have consistent structure
+    So that all feature files meet AGENTS.md requirements and have consistent structure
 
   Scenario: Generated feature file includes architecture docstring
     Given I have a work unit with example mapping data

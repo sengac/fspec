@@ -37,7 +37,7 @@ Feature: Work Unit Management
 
   References:
   - Project Management Design: project-management.md
-  - ACDD Workflow: spec/CLAUDE.md
+  - ACDD Workflow: spec/AGENTS.md
   - Work Unit Linking: Tags in feature files (scan-based, not stored)
   """
 

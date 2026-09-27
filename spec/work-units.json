@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-26T06:51:33.661Z",
+    "lastUpdated": "2026-09-27T03:57:21.718Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -28,7 +28,7 @@
     "BROWSE": 2,
     "BUG": 193,
     "CACHE": 1,
-    "CLEAN": 7,
+    "CLEAN": 8,
     "CLI": 15,
     "CMPCT": 50,
     "CODE": 9,
@@ -1737,7 +1737,8 @@
       "RLCD-004",
       "BUG-186",
       "BUG-193",
-      "CONFIG-009"
+      "CONFIG-009",
+      "CLEAN-008"
     ],
     "blocked": [
       "QUERY-001",
@@ -2468,7 +2469,7 @@
           "createdAt": "2026-02-15T23:32:16.433Z",
           "deleted": false,
           "id": 0,
-          "text": "After clearing session, inject_context_reminders() must be called to restore CLAUDE.md and environment system reminders"
+          "text": "After clearing session, inject_context_reminders() must be called to restore AGENTS.md and environment system reminders"
         },
         {
           "createdAt": "2026-02-15T23:32:18.193Z",
@@ -2495,7 +2496,7 @@
           "createdAt": "2026-02-15T23:32:09.382Z",
           "deleted": false,
           "id": 1,
-          "text": "After /clear, AI still has access to CLAUDE.md project context and environment info (platform, working directory)"
+          "text": "After /clear, AI still has access to AGENTS.md project context and environment info (platform, working directory)"
         },
         {
           "createdAt": "2026-02-15T23:32:10.612Z",
@@ -2527,7 +2528,7 @@
           "createdAt": "2026-02-15T23:32:01.548Z",
           "deleted": false,
           "id": 1,
-          "text": "After clearing, system reminders (CLAUDE.md, environment info) must be re-injected so the AI retains project context"
+          "text": "After clearing, system reminders (AGENTS.md, environment info) must be re-injected so the AI retains project context"
         },
         {
           "createdAt": "2026-02-15T23:32:02.748Z",
@@ -14423,7 +14424,7 @@
     "BUG-011": {
       "children": [],
       "createdAt": "2025-10-16T01:33:15.000Z",
-      "description": "The generate-scenarios command creates feature files without architecture docstrings, violating CLAUDE.md requirements. Older files created with create-feature have docstrings, but newer files created with generate-scenarios are missing them.",
+      "description": "The generate-scenarios command creates feature files without architecture docstrings, violating AGENTS.md requirements. Older files created with create-feature have docstrings, but newer files created with generate-scenarios are missing them.",
       "estimate": 2,
       "examples": [
         {
@@ -14455,7 +14456,7 @@
           "createdAt": "2025-10-15T22:51:07.833Z",
           "deleted": false,
           "id": 0,
-          "text": "All feature files MUST have architecture docstrings (CLAUDE.md requirement)"
+          "text": "All feature files MUST have architecture docstrings (AGENTS.md requirement)"
         },
         {
           "createdAt": "2025-10-15T22:51:07.833Z",
@@ -14504,7 +14505,7 @@
       "updatedAt": "2026-06-06T00:48:59.000Z",
       "userStory": {
         "action": "have feature files with architecture docstrings",
-        "benefit": "all feature files meet CLAUDE.md requirements and have consistent structure",
+        "benefit": "all feature files meet AGENTS.md requirements and have consistent structure",
         "role": "developer using generate-scenarios"
       }
     },
@@ -14802,7 +14803,7 @@
           "createdAt": "2025-10-17T07:18:39.226Z",
           "deleted": false,
           "id": 1,
-          "text": "Impact: Breaks field-by-field discovery feedback loop documented in CLAUDE.md 'Foundation Document Discovery' section. AI cannot complete foundation without manual file editing."
+          "text": "Impact: Breaks field-by-field discovery feedback loop documented in AGENTS.md 'Foundation Document Discovery' section. AI cannot complete foundation without manual file editing."
         },
         {
           "createdAt": "2025-10-17T07:18:39.226Z",
@@ -16230,7 +16231,7 @@
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 1,
-          "text": "Break spec/CLAUDE.md (2069 lines) into section files in src/utils/projectManagementSections/ directory"
+          "text": "Break spec/AGENTS.md (2069 lines) into section files in src/utils/projectManagementSections/ directory"
         },
         {
           "createdAt": "2025-10-21T21:09:20.138Z",
@@ -16248,7 +16249,7 @@
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 4,
-          "text": "After fix, spec/CLAUDE.md should have ~2069 lines (Project Management Guidelines), .claude/commands/fspec.md should remain ~1019 lines (ACDD workflow)"
+          "text": "After fix, spec/AGENTS.md should have ~2069 lines (Project Management Guidelines), .claude/commands/fspec.md should remain ~1019 lines (ACDD workflow)"
         }
       ],
       "attachments": [
@@ -16256,32 +16257,32 @@
       ],
       "children": [],
       "createdAt": "2025-10-22T01:15:21.000Z",
-      "description": "The spec/AGENT.md files (spec/CLAUDE.md, spec/CURSOR.md, etc.) currently contain only a 17-line stub that creates circular references. According to INIT-004 Rule 16, these files should contain the full ACDD workflow documentation (same 1019-line content as slash commands) with agent-specific transformations applied. Current implementation in templateGenerator.ts uses BASE_AGENT_TEMPLATE (17 lines) instead of getSlashCommandTemplate() content (1019 lines).",
+      "description": "The spec/AGENT.md files (spec/AGENTS.md, spec/CURSOR.md, etc.) currently contain only a 17-line stub that creates circular references. According to INIT-004 Rule 16, these files should contain the full ACDD workflow documentation (same 1019-line content as slash commands) with agent-specific transformations applied. Current implementation in templateGenerator.ts uses BASE_AGENT_TEMPLATE (17 lines) instead of getSlashCommandTemplate() content (1019 lines).",
       "estimate": 2,
       "examples": [
         {
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 0,
-          "text": "Current spec/CLAUDE.md has 17 lines with circular reference: 'For using fspec commands and ACDD workflow: See spec/CLAUDE.md'"
+          "text": "Current spec/AGENTS.md has 17 lines with circular reference: 'For using fspec commands and ACDD workflow: See spec/AGENTS.md'"
         },
         {
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 1,
-          "text": "Expected spec/CLAUDE.md should have ~2069 lines with full Project Management Guidelines including work unit management, ACDD workflow, coverage tracking, hooks, checkpoints"
+          "text": "Expected spec/AGENTS.md should have ~2069 lines with full Project Management Guidelines including work unit management, ACDD workflow, coverage tracking, hooks, checkpoints"
         },
         {
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 2,
-          "text": "Restored spec/CLAUDE.md (from GitHub) has 2069 lines titled 'Project Management and Specification Guidelines for fspec' - this content should be templated"
+          "text": "Restored spec/AGENTS.md (from GitHub) has 2069 lines titled 'Project Management and Specification Guidelines for fspec' - this content should be templated"
         },
         {
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 3,
-          "text": "Slash command file .claude/commands/fspec.md has 1019 lines of ACDD workflow - this is DIFFERENT from spec/CLAUDE.md and should NOT be changed"
+          "text": "Slash command file .claude/commands/fspec.md has 1019 lines of ACDD workflow - this is DIFFERENT from spec/AGENTS.md and should NOT be changed"
         },
         {
           "createdAt": "2025-10-21T21:09:20.138Z",
@@ -16297,12 +16298,12 @@
       "nextRuleId": 6,
       "questions": [
         {
-          "answer": "spec/CLAUDE.md should contain 'Project Management and Specification Guidelines' (2069 lines), NOT the ACDD workflow from slash command (1019 lines). My original implementation was WRONG - I copied the slash command template instead of using the Project Management Guidelines template.",
+          "answer": "spec/AGENTS.md should contain 'Project Management and Specification Guidelines' (2069 lines), NOT the ACDD workflow from slash command (1019 lines). My original implementation was WRONG - I copied the slash command template instead of using the Project Management Guidelines template.",
           "createdAt": "2025-10-21T21:09:20.138Z",
           "deleted": false,
           "id": 0,
           "selected": true,
-          "text": "@human: Should spec/CLAUDE.md contain the 'Project Management Guidelines' (current 139 lines) or the 'ACDD workflow from slash command' (1019 lines)? What is the actual bug we're fixing?"
+          "text": "@human: Should spec/AGENTS.md contain the 'Project Management Guidelines' (current 139 lines) or the 'ACDD workflow from slash command' (1019 lines)? What is the actual bug we're fixing?"
         }
       ],
       "rules": [
@@ -30465,7 +30466,7 @@
           "createdAt": "2025-10-21T05:53:29.407Z",
           "deleted": false,
           "id": 0,
-          "text": "ESLint configuration MUST align with TypeScript strict mode and existing CLAUDE.md coding standards"
+          "text": "ESLint configuration MUST align with TypeScript strict mode and existing AGENTS.md coding standards"
         },
         {
           "createdAt": "2025-10-21T05:53:29.407Z",
@@ -31909,7 +31910,7 @@
           "createdAt": "2025-10-21T13:51:58.078Z",
           "deleted": false,
           "id": 10,
-          "text": "In spec/CLAUDE.md examples, replace all 'fspec create-work-unit' occurrences with context-appropriate create-story/bug/task"
+          "text": "In spec/AGENTS.md examples, replace all 'fspec create-work-unit' occurrences with context-appropriate create-story/bug/task"
         },
         {
           "createdAt": "2025-10-21T13:51:58.078Z",
@@ -32058,7 +32059,7 @@
           "createdAt": "2025-10-21T13:51:58.078Z",
           "deleted": false,
           "id": 13,
-          "text": "spec/CLAUDE.md (auto-generated) must be regenerated to reflect new commands in all workflow examples"
+          "text": "spec/AGENTS.md (auto-generated) must be regenerated to reflect new commands in all workflow examples"
         },
         {
           "createdAt": "2025-10-21T13:51:58.078Z",
@@ -32583,7 +32584,7 @@
           "createdAt": "2025-10-24T13:23:11.621Z",
           "deleted": false,
           "id": 5,
-          "text": "Review detects anti-pattern where code violates CLAUDE.md coding standards (using 'any' type instead of proper types), suggests specific fix"
+          "text": "Review detects anti-pattern where code violates AGENTS.md coding standards (using 'any' type instead of proper types), suggests specific fix"
         }
       ],
       "id": "CLI-011",
@@ -32601,12 +32602,12 @@
           "text": "@human: Should the review compare against similar completed stories to identify inconsistencies or patterns?"
         },
         {
-          "answer": "Yes, review must validate consistency with CLAUDE.md coding standards (no 'any' types, ES modules, proper imports, etc.) and FOUNDATION.md project requirements (alignment with project goals, personas, capabilities)",
+          "answer": "Yes, review must validate consistency with AGENTS.md coding standards (no 'any' types, ES modules, proper imports, etc.) and FOUNDATION.md project requirements (alignment with project goals, personas, capabilities)",
           "createdAt": "2025-10-24T13:23:11.621Z",
           "deleted": false,
           "id": 1,
           "selected": true,
-          "text": "@human: Should it validate consistency with CLAUDE.md coding standards and FOUNDATION.md project requirements?"
+          "text": "@human: Should it validate consistency with AGENTS.md coding standards and FOUNDATION.md project requirements?"
         },
         {
           "answer": "Yes, review must check if ACDD workflow was followed properly: verify temporal ordering (feature files created during specifying, tests before implementation), check for Example Mapping data (rules, examples, answered questions), validate state history timestamps align with file modification times",
@@ -32686,7 +32687,7 @@
           "createdAt": "2025-10-24T13:23:11.621Z",
           "deleted": false,
           "id": 8,
-          "text": "Yes, review must validate consistency with CLAUDE.md coding standards (no 'any' types, ES modules, proper imports, etc.) and FOUNDATION.md project requirements (alignment with project goals, personas, capabilities)"
+          "text": "Yes, review must validate consistency with AGENTS.md coding standards (no 'any' types, ES modules, proper imports, etc.) and FOUNDATION.md project requirements (alignment with project goals, personas, capabilities)"
         },
         {
           "createdAt": "2025-10-24T13:23:11.621Z",
@@ -34662,7 +34663,7 @@
       "dependsOn": [
         "CMPCT-011"
       ],
-      "description": "Modify the existing `CompactionHook` threshold trigger to use the in-view DAG construction flow instead of the batch LLM pipeline. This is the Layer 2 safety net — it fires when context hits 85-90% capacity and the agent hasn't proactively managed its context.\n\n## Research Foundation\n\nACON (Kang et al., KAIST/Microsoft, arXiv:2510.00615, Oct 2025) demonstrates that compression guidelines optimized via failure analysis yield 26-54% peak token reduction while maintaining task performance. The emergency threshold acts as the failure-analysis trigger — when the agent doesn't compress proactively, the threshold forces it.\n\nFocus (Verma, arXiv:2601.07190, Jan 2026) describes a \"sawtooth\" context pattern where context grows during exploration and collapses during consolidation. The emergency threshold prevents the sawtooth from hitting the ceiling by forcing a consolidation when the agent fails to initiate one.\n\n## What To Build\n\n### Current Flow (to be replaced)\n\nIn `rust/core/src/compaction_hook.rs`, the `CompactionHook` detects when context usage exceeds the threshold. The post-stream-loop logic in `stream_loop.rs` checks `compaction_needed` and calls `execute_compaction()` which runs the batch LLM pipeline.\n\n### New Flow\n\nWhen the threshold is exceeded:\n1. Auto-trigger `/clear` (same as manual, preserves persistence)\n2. Set `compaction_in_progress` flag to `true`\n3. Inject the compaction system instruction (same instruction as CMPCT-011)\n4. The last user message is re-appended after the instruction so the agent knows what to resume\n5. Agent builds DAG via SessionSearch, calls `inject_summary`, then continues\n\n### Minimum Preserved Context\n\nAfter emergency compaction, context contains at minimum:\n- System reminders (CLAUDE.md, environment, fspec workflow)\n- Injected DAG summary\n- Last user message (so the agent knows what to do next)\n\nNever drops below this floor.\n\n### Proactive /compact Command\n\nAlso wire up a `/compact` slash command that the agent can call proactively when it notices context pressure. This triggers the same in-view flow but without the emergency urgency — the agent initiates it on its own terms.\n\n## Codebase Integration Points\n\n- `rust/core/src/compaction_hook.rs` — Threshold detection logic (keep as-is, it's orthogonal)\n- `rust/cli/src/interactive/stream_loop.rs` — Post-turn compaction trigger (modify to use new flow)\n- `rust/napi/src/session_manager.rs` — `session_compact()` NAPI binding (modify to use new flow)\n\n## Files To Modify\n\n- `rust/cli/src/interactive/stream_loop.rs` — Modify threshold-triggered compaction to use in-view flow\n- `rust/napi/src/session_manager.rs` — Modify `session_compact()` to use in-view flow\n\n## Acceptance Criteria\n\n- When context exceeds 85-90% threshold, in-view DAG construction is triggered (not batch LLM)\n- Last user message is preserved through emergency compaction\n- Post-compaction context contains: system reminders + DAG + last user message\n- /compact slash command triggers same flow proactively\n- CompactionHook threshold detection logic is unchanged\n- No separate LLM calls during emergency compaction\n- Agent can resume working after emergency compaction without losing current task",
+      "description": "Modify the existing `CompactionHook` threshold trigger to use the in-view DAG construction flow instead of the batch LLM pipeline. This is the Layer 2 safety net — it fires when context hits 85-90% capacity and the agent hasn't proactively managed its context.\n\n## Research Foundation\n\nACON (Kang et al., KAIST/Microsoft, arXiv:2510.00615, Oct 2025) demonstrates that compression guidelines optimized via failure analysis yield 26-54% peak token reduction while maintaining task performance. The emergency threshold acts as the failure-analysis trigger — when the agent doesn't compress proactively, the threshold forces it.\n\nFocus (Verma, arXiv:2601.07190, Jan 2026) describes a \"sawtooth\" context pattern where context grows during exploration and collapses during consolidation. The emergency threshold prevents the sawtooth from hitting the ceiling by forcing a consolidation when the agent fails to initiate one.\n\n## What To Build\n\n### Current Flow (to be replaced)\n\nIn `rust/core/src/compaction_hook.rs`, the `CompactionHook` detects when context usage exceeds the threshold. The post-stream-loop logic in `stream_loop.rs` checks `compaction_needed` and calls `execute_compaction()` which runs the batch LLM pipeline.\n\n### New Flow\n\nWhen the threshold is exceeded:\n1. Auto-trigger `/clear` (same as manual, preserves persistence)\n2. Set `compaction_in_progress` flag to `true`\n3. Inject the compaction system instruction (same instruction as CMPCT-011)\n4. The last user message is re-appended after the instruction so the agent knows what to resume\n5. Agent builds DAG via SessionSearch, calls `inject_summary`, then continues\n\n### Minimum Preserved Context\n\nAfter emergency compaction, context contains at minimum:\n- System reminders (AGENTS.md, environment, fspec workflow)\n- Injected DAG summary\n- Last user message (so the agent knows what to do next)\n\nNever drops below this floor.\n\n### Proactive /compact Command\n\nAlso wire up a `/compact` slash command that the agent can call proactively when it notices context pressure. This triggers the same in-view flow but without the emergency urgency — the agent initiates it on its own terms.\n\n## Codebase Integration Points\n\n- `rust/core/src/compaction_hook.rs` — Threshold detection logic (keep as-is, it's orthogonal)\n- `rust/cli/src/interactive/stream_loop.rs` — Post-turn compaction trigger (modify to use new flow)\n- `rust/napi/src/session_manager.rs` — `session_compact()` NAPI binding (modify to use new flow)\n\n## Files To Modify\n\n- `rust/cli/src/interactive/stream_loop.rs` — Modify threshold-triggered compaction to use in-view flow\n- `rust/napi/src/session_manager.rs` — Modify `session_compact()` to use in-view flow\n\n## Acceptance Criteria\n\n- When context exceeds 85-90% threshold, in-view DAG construction is triggered (not batch LLM)\n- Last user message is preserved through emergency compaction\n- Post-compaction context contains: system reminders + DAG + last user message\n- /compact slash command triggers same flow proactively\n- CompactionHook threshold detection logic is unchanged\n- No separate LLM calls during emergency compaction\n- Agent can resume working after emergency compaction without losing current task",
       "epic": "hierarchical-compaction",
       "estimate": 8,
       "examples": [
@@ -40690,19 +40691,19 @@
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 7,
-          "text": "AI reads slash command section with '<test-command>' placeholder, fspec generates spec/CLAUDE.md, replaces <test-command> with 'npm test' from fspec-config.json"
+          "text": "AI reads slash command section with '<test-command>' placeholder, fspec generates spec/AGENTS.md, replaces <test-command> with 'npm test' from fspec-config.json"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 8,
-          "text": "Python project with 'pytest' configured, <test-command> in documentation becomes 'pytest' in generated spec/CLAUDE.md"
+          "text": "Python project with 'pytest' configured, <test-command> in documentation becomes 'pytest' in generated spec/AGENTS.md"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 9,
-          "text": "Rust project with 'cargo test' configured, quality commands ['cargo clippy', 'cargo fmt --check'], <quality-check-commands> becomes 'cargo clippy && cargo fmt --check' in spec/CLAUDE.md"
+          "text": "Rust project with 'cargo test' configured, quality commands ['cargo clippy', 'cargo fmt --check'], <quality-check-commands> becomes 'cargo clippy && cargo fmt --check' in spec/AGENTS.md"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
@@ -40781,7 +40782,7 @@
           "deleted": false,
           "id": 5,
           "selected": true,
-          "text": "@human: I found hardcoded 'npm test' and 'npm run' commands still in help files, slash command sections, project management sections, CLAUDE.md, and spec/CLAUDE.md. Should these ALL be replaced with dynamic placeholders like <test-command> that get filled in by system-reminders from fspec configure-tools?"
+          "text": "@human: I found hardcoded 'npm test' and 'npm run' commands still in help files, slash command sections, project management sections, AGENTS.md, and spec/AGENTS.md. Should these ALL be replaced with dynamic placeholders like <test-command> that get filled in by system-reminders from fspec configure-tools?"
         }
       ],
       "rules": [
@@ -40837,7 +40838,7 @@
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 8,
-          "text": "ALL documentation MUST be updated: src/help.ts, src/commands/*-help.ts, spec/CLAUDE.md, docs/, README.md for every aspect of tool configuration"
+          "text": "ALL documentation MUST be updated: src/help.ts, src/commands/*-help.ts, spec/AGENTS.md, docs/, README.md for every aspect of tool configuration"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
@@ -40861,19 +40862,19 @@
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 12,
-          "text": "Placeholders like <test-command> and <quality-check-commands> in documentation MUST be dynamically replaced with actual configured commands when spec/CLAUDE.md is generated"
+          "text": "Placeholders like <test-command> and <quality-check-commands> in documentation MUST be dynamically replaced with actual configured commands when spec/AGENTS.md is generated"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 13,
-          "text": "When spec/fspec-config.json has tools.test.command configured, all <test-command> placeholders in generated spec/CLAUDE.md should be replaced with the actual command"
+          "text": "When spec/fspec-config.json has tools.test.command configured, all <test-command> placeholders in generated spec/AGENTS.md should be replaced with the actual command"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
           "deleted": false,
           "id": 14,
-          "text": "When spec/fspec-config.json has tools.qualityCheck.commands configured, all <quality-check-commands> placeholders in generated spec/CLAUDE.md should be replaced with the chained command (joined with &&)"
+          "text": "When spec/fspec-config.json has tools.qualityCheck.commands configured, all <quality-check-commands> placeholders in generated spec/AGENTS.md should be replaced with the chained command (joined with &&)"
         },
         {
           "createdAt": "2025-10-26T02:51:30.219Z",
@@ -41052,7 +41053,7 @@
           "createdAt": "2025-10-26T16:13:38.381Z",
           "deleted": false,
           "id": 7,
-          "text": "AI runs 'fspec configure-tools --test-command npm test', command saves config AND regenerates spec/CLAUDE.md and .claude/commands/fspec.md with latest templates, ensuring AI has up-to-date documentation"
+          "text": "AI runs 'fspec configure-tools --test-command npm test', command saves config AND regenerates spec/AGENTS.md and .claude/commands/fspec.md with latest templates, ensuring AI has up-to-date documentation"
         },
         {
           "createdAt": "2025-10-26T16:13:38.381Z",
@@ -41123,7 +41124,7 @@
           "createdAt": "2025-10-26T16:13:38.381Z",
           "deleted": false,
           "id": 7,
-          "text": "configure-tools MUST regenerate agent templates (spec/CLAUDE.md, .claude/commands/fspec.md, etc.) after updating config to ensure templates reflect latest version"
+          "text": "configure-tools MUST regenerate agent templates (spec/AGENTS.md, .claude/commands/fspec.md, etc.) after updating config to ensure templates reflect latest version"
         },
         {
           "createdAt": "2025-10-26T16:13:38.381Z",
@@ -52428,7 +52429,7 @@
           "createdAt": "2025-10-19T12:10:39.283Z",
           "deleted": false,
           "id": 0,
-          "text": "Files to check: src/commands/show-work-unit.ts (system-reminder logic), src/commands/update-work-unit-status.ts (state transition reminders), CLAUDE.md (workflow documentation), .claude/commands/fspec.md (slash command docs)"
+          "text": "Files to check: src/commands/show-work-unit.ts (system-reminder logic), src/commands/update-work-unit-status.ts (state transition reminders), AGENTS.md (workflow documentation), .claude/commands/fspec.md (slash command docs)"
         },
         {
           "createdAt": "2025-10-19T12:10:39.283Z",
@@ -52480,7 +52481,7 @@
       "nextRuleId": 5,
       "questions": [
         {
-          "answer": "Yes - update help documentation for update-work-unit-estimate command, add workflow examples to README.md and spec/CLAUDE.md showing correct timing, and potentially add validation to prevent estimating work units not yet in specifying state",
+          "answer": "Yes - update help documentation for update-work-unit-estimate command, add workflow examples to README.md and spec/AGENTS.md showing correct timing, and potentially add validation to prevent estimating work units not yet in specifying state",
           "createdAt": "2025-10-19T12:10:39.283Z",
           "deleted": false,
           "id": 0,
@@ -52568,7 +52569,7 @@
           "createdAt": "2025-10-19T22:25:10.476Z",
           "deleted": false,
           "id": 1,
-          "text": "Update spec/CLAUDE.md section 'Reverse ACDD for Existing Codebases': Replace 'via /rspec command' with 'via fspec reverse command'"
+          "text": "Update spec/AGENTS.md section 'Reverse ACDD for Existing Codebases': Replace 'via /rspec command' with 'via fspec reverse command'"
         },
         {
           "createdAt": "2025-10-19T22:25:10.476Z",
@@ -52671,7 +52672,7 @@
       "architectureNotes": [],
       "children": [],
       "createdAt": "2025-11-17T09:29:00.000Z",
-      "description": "The bootstrap command outputs confusing step numbers (1, 1.5, 1.5a, 1.6, 2, 2.5, 3, 3 duplicate, 5 no 4, 7 no 6, 6.5, 2 duplicate). Need to renumber to clear sequential steps: 1, 2, 3, 4, etc. Affects: bootstrap command help output, spec/CLAUDE.md, spec/AGENTS.md (if exists), and any source templates that generate these docs.",
+      "description": "The bootstrap command outputs confusing step numbers (1, 1.5, 1.5a, 1.6, 2, 2.5, 3, 3 duplicate, 5 no 4, 7 no 6, 6.5, 2 duplicate). Need to renumber to clear sequential steps: 1, 2, 3, 4, etc. Affects: bootstrap command help output, spec/AGENTS.md (if exists), and any source templates that generate these docs.",
       "examples": [],
       "id": "DOCS-003",
       "nextExampleId": 0,
@@ -59668,7 +59669,7 @@
           "createdAt": "2025-10-16T23:19:37.238Z",
           "deleted": false,
           "id": 2,
-          "text": "System-reminder content: 'Code analysis detected 3 personas [list]. Review and confirm during questionnaire. Focus on WHY/WHAT, not HOW. See CLAUDE.md for boundary guidance.'"
+          "text": "System-reminder content: 'Code analysis detected 3 personas [list]. Review and confirm during questionnaire. Focus on WHY/WHAT, not HOW. See AGENTS.md for boundary guidance.'"
         }
       ],
       "children": [],
@@ -59838,7 +59839,7 @@
           "createdAt": "2025-10-16T23:19:38.001Z",
           "deleted": false,
           "id": 3,
-          "text": "HOW content like 'technicalRequirements.coreTechnologies' moves to CLAUDE.md"
+          "text": "HOW content like 'technicalRequirements.coreTechnologies' moves to AGENTS.md"
         }
       ],
       "id": "FOUND-005",
@@ -59857,7 +59858,7 @@
           "createdAt": "2025-10-16T23:19:38.001Z",
           "deleted": false,
           "id": 1,
-          "text": "WHY/WHAT content stays in foundation.json, HOW content moves to CLAUDE.md or other docs"
+          "text": "WHY/WHAT content stays in foundation.json, HOW content moves to AGENTS.md or other docs"
         },
         {
           "createdAt": "2025-10-16T23:19:38.001Z",
@@ -59910,7 +59911,7 @@
       "dependsOn": [
         "FOUND-004"
       ],
-      "description": "Update CLAUDE.md, help system, and create discovery guide with examples",
+      "description": "Update AGENTS.md, help system, and create discovery guide with examples",
       "epic": "foundation-document-redesign",
       "estimate": 3,
       "examples": [
@@ -59918,7 +59919,7 @@
           "createdAt": "2025-10-16T23:19:38.837Z",
           "deleted": false,
           "id": 0,
-          "text": "CLAUDE.md shows: 'Run discover-foundation to analyze codebase and generate foundation.json'"
+          "text": "AGENTS.md shows: 'Run discover-foundation to analyze codebase and generate foundation.json'"
         },
         {
           "createdAt": "2025-10-16T23:19:38.837Z",
@@ -59943,7 +59944,7 @@
           "createdAt": "2025-10-16T23:19:38.837Z",
           "deleted": false,
           "id": 0,
-          "text": "CLAUDE.md must document discover-foundation workflow with examples"
+          "text": "AGENTS.md must document discover-foundation workflow with examples"
         },
         {
           "createdAt": "2025-10-16T23:19:38.837Z",
@@ -60419,7 +60420,7 @@
           "createdAt": "2025-11-17T02:50:49.146Z",
           "deleted": false,
           "id": 0,
-          "text": "Modifies src/commands/discover-foundation.ts to auto-create work unit after successful finalization. Uses existing getNextWorkUnitId() utility for FOUND prefix ID generation. Work unit includes description with foundation Event Storm commands and CLAUDE.md reference. Implementation adds logic after foundation.json write (line ~300-350). No new commands needed - reuses existing Event Storming infrastructure (SOLID/DRY principles)."
+          "text": "Modifies src/commands/discover-foundation.ts to auto-create work unit after successful finalization. Uses existing getNextWorkUnitId() utility for FOUND prefix ID generation. Work unit includes description with foundation Event Storm commands and AGENTS.md reference. Implementation adds logic after foundation.json write (line ~300-350). No new commands needed - reuses existing Event Storming infrastructure (SOLID/DRY principles)."
         }
       ],
       "attachments": [
@@ -60487,7 +60488,7 @@
           "createdAt": "2025-11-17T02:49:58.586Z",
           "deleted": false,
           "id": 3,
-          "text": "Work unit description includes Event Storming commands and CLAUDE.md reference"
+          "text": "Work unit description includes Event Storming commands and AGENTS.md reference"
         },
         {
           "createdAt": "2025-11-17T02:50:00.130Z",
@@ -60535,7 +60536,7 @@
           "createdAt": "2025-11-17T02:34:50.566Z",
           "deleted": false,
           "id": 0,
-          "text": "This feature requires editing spec/CLAUDE.md only - no code changes. Will insert new Step 1.5a section after existing Step 1.5 (Bootstrap Foundation). Existing Step 1.5 (Event Storm) will be renumbered to Step 1.6. Section will include: (1) explanation of Big Picture vs work unit Event Storming, (2) comparison table with 6 dimensions, (3) workflow steps with examples, (4) foundation Event Storm commands documentation, (5) EXMAP-004 integration guidance. Manual testing will verify markdown format, section placement, and command accuracy against implementation."
+          "text": "This feature requires editing spec/AGENTS.md only - no code changes. Will insert new Step 1.5a section after existing Step 1.5 (Bootstrap Foundation). Existing Step 1.5 (Event Storm) will be renumbered to Step 1.6. Section will include: (1) explanation of Big Picture vs work unit Event Storming, (2) comparison table with 6 dimensions, (3) workflow steps with examples, (4) foundation Event Storm commands documentation, (5) EXMAP-004 integration guidance. Manual testing will verify markdown format, section placement, and command accuracy against implementation."
         }
       ],
       "attachments": [
@@ -60544,20 +60545,20 @@
       ],
       "children": [],
       "createdAt": "2025-11-17T05:27:37.000Z",
-      "description": "Add section to spec/CLAUDE.md explaining that after foundation discovery, AI should conduct Big Picture Event Storming to capture bounded contexts, aggregates, and domain events. Include workflow steps, commands to use, and explain this populates foundation.json eventStorm field which is used for tag ontology generation and domain architecture visualization.",
+      "description": "Add section to spec/AGENTS.md explaining that after foundation discovery, AI should conduct Big Picture Event Storming to capture bounded contexts, aggregates, and domain events. Include workflow steps, commands to use, and explain this populates foundation.json eventStorm field which is used for tag ontology generation and domain architecture visualization.",
       "estimate": 2,
       "examples": [
         {
           "createdAt": "2025-11-17T02:32:44.469Z",
           "deleted": false,
           "id": 0,
-          "text": "AI agent completes discover-foundation --finalize, sees work unit FOUND-XXX in backlog, reads CLAUDE.md Step 1.5a, understands to conduct Big Picture Event Storm using foundation commands"
+          "text": "AI agent completes discover-foundation --finalize, sees work unit FOUND-XXX in backlog, reads AGENTS.md Step 1.5a, understands to conduct Big Picture Event Storm using foundation commands"
         },
         {
           "createdAt": "2025-11-17T02:32:51.265Z",
           "deleted": false,
           "id": 1,
-          "text": "Developer reads CLAUDE.md and sees clear table showing foundation Event Storm uses add-foundation-bounded-context while work unit Event Storm uses add-bounded-context with work unit ID"
+          "text": "Developer reads AGENTS.md and sees clear table showing foundation Event Storm uses add-foundation-bounded-context while work unit Event Storm uses add-bounded-context with work unit ID"
         },
         {
           "createdAt": "2025-11-17T02:32:57.004Z",
@@ -60569,7 +60570,7 @@
           "createdAt": "2025-11-17T02:33:02.686Z",
           "deleted": false,
           "id": 3,
-          "text": "AI agent completes Big Picture Event Storm, reads CLAUDE.md integration section, runs derive-tags-from-foundation command to generate component tags from bounded contexts (EXMAP-004)"
+          "text": "AI agent completes Big Picture Event Storm, reads AGENTS.md integration section, runs derive-tags-from-foundation command to generate component tags from bounded contexts (EXMAP-004)"
         }
       ],
       "id": "FOUND-014",
@@ -60583,7 +60584,7 @@
           "createdAt": "2025-11-17T02:32:08.540Z",
           "deleted": false,
           "id": 0,
-          "text": "New section must be added to CLAUDE.md after Step 1.5 (Bootstrap Foundation) and before Step 1.6 (Event Storm - Work Unit Level)"
+          "text": "New section must be added to AGENTS.md after Step 1.5 (Bootstrap Foundation) and before Step 1.6 (Event Storm - Work Unit Level)"
         },
         {
           "createdAt": "2025-11-17T02:32:13.877Z",
@@ -60639,7 +60640,7 @@
         }
       ],
       "status": "done",
-      "title": "Update CLAUDE.md with Big Picture Event Storming workflow documentation",
+      "title": "Update AGENTS.md with Big Picture Event Storming workflow documentation",
       "type": "story",
       "updated": "2025-11-17T02:48:20.193Z",
       "updatedAt": "2026-06-06T00:48:59.000Z",
@@ -60655,7 +60656,7 @@
           "createdAt": "2025-11-17T03:06:02.413Z",
           "deleted": false,
           "id": 0,
-          "text": "Modifies src/commands/bootstrap.ts to emit system-reminder when Event Storm needed. Detection logic: Check foundation.json exists, eventStorm empty, find FOUND-XXX work units. System-reminder emitted AFTER CLAUDE.md content, BEFORE final fspec mode message. Uses existing wrapInSystemReminder utility for consistent formatting. Reuses existing file reading utilities (readFile, existsSync, JSON.parse)."
+          "text": "Modifies src/commands/bootstrap.ts to emit system-reminder when Event Storm needed. Detection logic: Check foundation.json exists, eventStorm empty, find FOUND-XXX work units. System-reminder emitted AFTER AGENTS.md content, BEFORE final fspec mode message. Uses existing wrapInSystemReminder utility for consistent formatting. Reuses existing file reading utilities (readFile, existsSync, JSON.parse)."
         }
       ],
       "attachments": [
@@ -60724,13 +60725,13 @@
           "createdAt": "2025-11-17T03:02:59.195Z",
           "deleted": false,
           "id": 3,
-          "text": "System-reminder appears AFTER CLAUDE.md content, BEFORE final message"
+          "text": "System-reminder appears AFTER AGENTS.md content, BEFORE final message"
         },
         {
           "createdAt": "2025-11-17T03:02:59.742Z",
           "deleted": false,
           "id": 4,
-          "text": "System-reminder provides commands, CLAUDE.md reference, and explains why Event Storm matters"
+          "text": "System-reminder provides commands, AGENTS.md reference, and explains why Event Storm matters"
         }
       ],
       "stateHistory": [
@@ -60769,7 +60770,7 @@
     "FOUND-016": {
       "architectureNotes": [],
       "createdAt": "2025-11-17T07:04:44.000Z",
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/AGENTS.md \"Big Picture Event Storming\" section for detailed guidance.",
       "examples": [],
       "id": "FOUND-016",
       "nextExampleId": 0,
@@ -61118,7 +61119,7 @@
         "FOUND-033"
       ],
       "createdAt": "2025-11-17T09:29:00.000Z",
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/AGENTS.md \"Big Picture Event Storming\" section for detailed guidance.",
       "examples": [],
       "id": "FOUND-022",
       "nextExampleId": 0,
@@ -67932,7 +67933,7 @@
     "HELP-004": {
       "children": [],
       "createdAt": "2025-10-27T05:51:26.000Z",
-      "description": "Add missing help documentation for fspec bootstrap and fspec configure-tools commands. This includes: creating help functions in src/help.ts and src/commands/*-help.ts, updating README.md with command documentation, updating template autogenerators that generate spec/CLAUDE.md and bootstrap output, and updating relevant documentation in the docs directory to ensure consistency across all documentation sources.",
+      "description": "Add missing help documentation for fspec bootstrap and fspec configure-tools commands. This includes: creating help functions in src/help.ts and src/commands/*-help.ts, updating README.md with command documentation, updating template autogenerators that generate spec/AGENTS.md and bootstrap output, and updating relevant documentation in the docs directory to ensure consistency across all documentation sources.",
       "estimate": 5,
       "examples": [
         {
@@ -71933,44 +71934,44 @@
       ],
       "children": [],
       "createdAt": "2025-10-12T10:15:09.000Z",
-      "description": "When fspec init creates a new spec/ directory, it should copy the spec/CLAUDE.md file (bundled with the package) to the target project. This ensures new projects have the complete specification guidelines and workflow documentation from the start. The file is bundled from spec/CLAUDE.md to dist/spec/CLAUDE.md during build - no separate templates/ directory needed.",
+      "description": "When fspec init creates a new spec/ directory, it should copy the spec/AGENTS.md file (bundled with the package) to the target project. This ensures new projects have the complete specification guidelines and workflow documentation from the start. The file is bundled from spec/AGENTS.md to dist/spec/AGENTS.md during build - no separate templates/ directory needed.",
       "estimate": 2,
       "examples": [
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 0,
-          "text": "User runs 'fspec init' in empty directory, creates spec/ directory with CLAUDE.md and .claude/commands/fspec.md"
+          "text": "User runs 'fspec init' in empty directory, creates spec/ directory with AGENTS.md and .claude/commands/fspec.md"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 1,
-          "text": "User runs 'fspec init' in directory with existing spec/CLAUDE.md, overwrites with latest template"
+          "text": "User runs 'fspec init' in directory with existing spec/AGENTS.md, overwrites with latest template"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 2,
-          "text": "CLAUDE.md template is copied from fspec package's templates/CLAUDE.md to project's spec/CLAUDE.md"
+          "text": "AGENTS.md template is copied from fspec package's templates/AGENTS.md to project's spec/AGENTS.md"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 3,
-          "text": "fspec init copies templates/CLAUDE.md to spec/CLAUDE.md preserving all content exactly"
+          "text": "fspec init copies templates/AGENTS.md to spec/AGENTS.md preserving all content exactly"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 4,
-          "text": "/fspec slash command shows 'Copied spec/CLAUDE.md specification guidelines' in output"
+          "text": "/fspec slash command shows 'Copied spec/AGENTS.md specification guidelines' in output"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 5,
-          "text": "Running 'fspec init' twice overwrites spec/CLAUDE.md with latest template (no prompt, no backup)"
+          "text": "Running 'fspec init' twice overwrites spec/AGENTS.md with latest template (no prompt, no backup)"
         }
       ],
       "id": "INIT-003",
@@ -71985,7 +71986,7 @@
           "deleted": false,
           "id": 0,
           "selected": true,
-          "text": "@human: Should 'fspec init' also check if the CLAUDE.md template in the package is newer than the one in the project and offer to update it?"
+          "text": "@human: Should 'fspec init' also check if the AGENTS.md template in the package is newer than the one in the project and offer to update it?"
         },
         {
           "answer": "Templates directory is bundled with package build - if missing, it's a build error (should never happen in production)",
@@ -72001,10 +72002,10 @@
           "deleted": false,
           "id": 2,
           "selected": true,
-          "text": "@human: Should there be any output message confirming CLAUDE.md was copied/updated?"
+          "text": "@human: Should there be any output message confirming AGENTS.md was copied/updated?"
         },
         {
-          "answer": "Enhance existing 'fspec init' command to copy CLAUDE.md template",
+          "answer": "Enhance existing 'fspec init' command to copy AGENTS.md template",
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 3,
@@ -72017,25 +72018,25 @@
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 0,
-          "text": "CLAUDE.md template must be bundled with fspec package in a templates/ directory"
+          "text": "AGENTS.md template must be bundled with fspec package in a templates/ directory"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 1,
-          "text": "CLAUDE.md file must be identical across all projects (no customization)"
+          "text": "AGENTS.md file must be identical across all projects (no customization)"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 2,
-          "text": "If spec/CLAUDE.md already exists, overwrite it with the latest template"
+          "text": "If spec/AGENTS.md already exists, overwrite it with the latest template"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 3,
-          "text": "fspec init command must set up complete spec directory structure with CLAUDE.md and /fspec slash command"
+          "text": "fspec init command must set up complete spec directory structure with AGENTS.md and /fspec slash command"
         },
         {
           "createdAt": "2025-10-12T07:58:21.443Z",
@@ -72053,7 +72054,7 @@
           "createdAt": "2025-10-12T07:58:21.443Z",
           "deleted": false,
           "id": 6,
-          "text": "Enhance existing 'fspec init' command to copy CLAUDE.md template"
+          "text": "Enhance existing 'fspec init' command to copy AGENTS.md template"
         }
       ],
       "stateHistory": [
@@ -72079,7 +72080,7 @@
         }
       ],
       "status": "done",
-      "title": "Copy CLAUDE.md template to new spec directory",
+      "title": "Copy AGENTS.md template to new spec directory",
       "type": "story",
       "updatedAt": "2026-06-06T00:48:59.000Z"
     },
@@ -72146,7 +72147,7 @@
         "id: string, name: string, description: string, slashCommandPath: string, slashCommandFormat: 'markdown' | 'toml', supportsSystemReminders: boolean, supportsMetaCognition: boolean, docTemplate: string, rootStubFile: string, detectionPaths: string[], available: boolean, category: 'ide' | 'cli' | 'extension'",
         "Transform 'ultrathink' → removed (CLI agents) or kept (IDE agents). System-reminder: '<system-reminder>' → '**⚠️ IMPORTANT:**' (IDE with emoji) or '**IMPORTANT:**' (CLI). Also transform: 'deeply consider', 'take a moment to reflect' → removed for CLI agents. Use regex replacement: /<system-reminder>([\\s\\S]*?)<\\/system-reminder>/g. Placeholders: {{AGENT_NAME}}, {{SLASH_COMMAND_PATH}} via string.replace().",
         "Bundle base template files using viteStaticCopy plugin. Structure: dist/spec/templates/base/AGENT.md (ONE base template with placeholders). Runtime: templateGenerator.ts reads from dist/spec/templates/base/, transforms based on agent config, outputs to spec/AGENT.md. Dev mode: reads from spec/templates/base/. Template resolver tries production path first, falls back to dev.",
-        "AgentConfig fields confirmed: id (string), name (string), description (string), slashCommandPath (string), slashCommandFormat ('markdown' | 'toml'), supportsSystemReminders (boolean), supportsMetaCognition (boolean), docTemplate (string, e.g. 'CLAUDE.md'), rootStubFile (string, e.g. 'CLAUDE.md' or 'AGENTS.md'), detectionPaths (string[], e.g. ['.claude/', '.claude/commands/']), available (boolean), category ('ide' | 'cli' | 'extension'). Optional: popularity (number) for sorting."
+        "AgentConfig fields confirmed: id (string), name (string), description (string), slashCommandPath (string), slashCommandFormat ('markdown' | 'toml'), supportsSystemReminders (boolean), supportsMetaCognition (boolean), docTemplate (string, e.g. 'AGENTS.md'), rootStubFile (string, e.g. 'AGENTS.md' or 'AGENTS.md'), detectionPaths (string[], e.g. ['.claude/', '.claude/commands/']), available (boolean), category ('ide' | 'cli' | 'extension'). Optional: popularity (number) for sorting."
       ],
       "attachments": [
         "spec/attachments/INIT-004/ai-coding-agents-october-2025.md",
@@ -72194,7 +72195,7 @@
           "createdAt": "2025-10-21T05:58:37.972Z",
           "deleted": false,
           "id": 5,
-          "text": "CLAUDE.md contains 'ultrathink your next steps' but AIDER.md (CLI-based) removes meta-cognitive prompts entirely"
+          "text": "AGENTS.md contains 'ultrathink your next steps' but AIDER.md (CLI-based) removes meta-cognitive prompts entirely"
         }
       ],
       "id": "INIT-004",
@@ -72244,7 +72245,7 @@
           "text": "@human: Should slash command templates be generated on-the-fly from shared logic or pre-built and bundled?"
         },
         {
-          "answer": "fspec init is idempotent and supports agent switching. Running 'fspec init --agent=cursor' after 'fspec init --agent=claude' should remove Claude-specific files (CLAUDE.md, spec/CLAUDE.md, .claude/commands/) and install Cursor-specific files (CURSOR.md or AGENTS.md, spec/CURSOR.md, .cursor/commands/). All files are auto-generated, safe to replace.",
+          "answer": "fspec init is idempotent and supports agent switching. Running 'fspec init --agent=cursor' after 'fspec init --agent=claude' should remove Claude-specific files (AGENTS.md, spec/AGENTS.md, .claude/commands/) and install Cursor-specific files (CURSOR.md or AGENTS.md, spec/CURSOR.md, .cursor/commands/). All files are auto-generated, safe to replace.",
           "createdAt": "2025-10-21T05:58:37.972Z",
           "deleted": false,
           "id": 5,
@@ -72364,7 +72365,7 @@
           "text": "@human: Vite bundling: Should we bundle base template files (spec/templates/base/AGENT.md) in dist/, or bundle transformation logic as compiled code? What's the dist/ structure after build?"
         },
         {
-          "answer": "AgentConfig fields confirmed: id (string), name (string), description (string), slashCommandPath (string), slashCommandFormat ('markdown' | 'toml'), supportsSystemReminders (boolean), supportsMetaCognition (boolean), docTemplate (string, e.g. 'CLAUDE.md'), rootStubFile (string, e.g. 'CLAUDE.md' or 'AGENTS.md'), detectionPaths (string[], e.g. ['.claude/', '.claude/commands/']), available (boolean), category ('ide' | 'cli' | 'extension'). Optional: popularity (number) for sorting.",
+          "answer": "AgentConfig fields confirmed: id (string), name (string), description (string), slashCommandPath (string), slashCommandFormat ('markdown' | 'toml'), supportsSystemReminders (boolean), supportsMetaCognition (boolean), docTemplate (string, e.g. 'AGENTS.md'), rootStubFile (string, e.g. 'AGENTS.md' or 'AGENTS.md'), detectionPaths (string[], e.g. ['.claude/', '.claude/commands/']), available (boolean), category ('ide' | 'cli' | 'extension'). Optional: popularity (number) for sorting.",
           "createdAt": "2025-10-21T05:58:37.972Z",
           "deleted": false,
           "id": 20,
@@ -72385,7 +72386,7 @@
           "createdAt": "2025-10-21T05:58:37.972Z",
           "deleted": false,
           "id": 0,
-          "text": "Each AI agent must have its own documentation template (e.g., CLAUDE.md, AIDER.md, CURSOR.md)"
+          "text": "Each AI agent must have its own documentation template (e.g., AGENTS.md, AIDER.md, CURSOR.md)"
         },
         {
           "createdAt": "2025-10-21T05:58:37.972Z",
@@ -72481,7 +72482,7 @@
           "createdAt": "2025-10-21T05:58:37.972Z",
           "deleted": false,
           "id": 16,
-          "text": "fspec init is idempotent and supports agent switching. Running 'fspec init --agent=cursor' after 'fspec init --agent=claude' should remove Claude-specific files (CLAUDE.md, spec/CLAUDE.md, .claude/commands/) and install Cursor-specific files (CURSOR.md or AGENTS.md, spec/CURSOR.md, .cursor/commands/). All files are auto-generated, safe to replace."
+          "text": "fspec init is idempotent and supports agent switching. Running 'fspec init --agent=cursor' after 'fspec init --agent=claude' should remove Claude-specific files (AGENTS.md, spec/AGENTS.md, .claude/commands/) and install Cursor-specific files (CURSOR.md or AGENTS.md, spec/CURSOR.md, .cursor/commands/). All files are auto-generated, safe to replace."
         },
         {
           "createdAt": "2025-10-21T05:58:37.972Z",
@@ -73105,7 +73106,7 @@
           "createdAt": "2025-10-22T09:49:27.541Z",
           "deleted": false,
           "id": 1,
-          "text": "User runs 'fspec remove-init-files', interactive prompt asks 'Keep spec/fspec-config.json?', user selects 'Yes', only agent files removed (spec/CLAUDE.md, .claude/commands/fspec.md), config preserved"
+          "text": "User runs 'fspec remove-init-files', interactive prompt asks 'Keep spec/fspec-config.json?', user selects 'Yes', only agent files removed (spec/AGENTS.md, .claude/commands/fspec.md), config preserved"
         },
         {
           "createdAt": "2025-10-22T09:49:27.541Z",
@@ -73414,12 +73415,12 @@
           "text": "@human: Where should the version number be stored in fspec.md? At the very top as a comment, or in a specific section?"
         },
         {
-          "answer": "Both files need tracking: .claude/commands/fspec.md (or equivalent for other agents) AND spec/CLAUDE.md. Both are updated when version mismatch detected.",
+          "answer": "Both files need tracking: .claude/commands/fspec.md (or equivalent for other agents) AND spec/AGENTS.md. Both are updated when version mismatch detected.",
           "createdAt": "2025-10-26T11:23:10.274Z",
           "deleted": false,
           "id": 2,
           "selected": true,
-          "text": "@human: Which files need version tracking and auto-replacement? Just .claude/commands/fspec.md, or also spec/CLAUDE.md, or both?"
+          "text": "@human: Which files need version tracking and auto-replacement? Just .claude/commands/fspec.md, or also spec/AGENTS.md, or both?"
         },
         {
           "answer": "Show agent-specific restart instructions. Use agent detection from spec/fspec-config.json and generate appropriate message using similar logic to getActivationMessage(). Claude Code: 'Exit and start new conversation', Cursor: 'Restart Cursor', etc.",
@@ -73913,38 +73914,38 @@
     "INIT-013": {
       "children": [],
       "createdAt": "2025-10-28T13:24:25.000Z",
-      "description": "Template files contain 3 hardcoded references to 'CLAUDE.md' instead of using {{DOC_TEMPLATE}} placeholder, causing all 18 agents to see incorrect references to CLAUDE.md in their generated documentation",
+      "description": "Template files contain 3 hardcoded references to 'AGENTS.md' instead of using {{DOC_TEMPLATE}} placeholder, causing all 18 agents to see incorrect references to AGENTS.md in their generated documentation",
       "estimate": 2,
       "examples": [
         {
           "createdAt": "2025-10-28T11:14:32.062Z",
           "deleted": false,
           "id": 0,
-          "text": "File: src/utils/slashCommandSections/bootstrapFoundation.ts:62 contains 'spec/CLAUDE.md' → should be 'spec/{{DOC_TEMPLATE}}'"
+          "text": "File: src/utils/slashCommandSections/bootstrapFoundation.ts:62 contains 'spec/AGENTS.md' → should be 'spec/{{DOC_TEMPLATE}}'"
         },
         {
           "createdAt": "2025-10-28T11:14:32.062Z",
           "deleted": false,
           "id": 1,
-          "text": "File: src/utils/projectManagementSections/fileStructure.ts:10 contains '├── CLAUDE.md' → should be '├── {{DOC_TEMPLATE}}'"
+          "text": "File: src/utils/projectManagementSections/fileStructure.ts:10 contains '├── AGENTS.md' → should be '├── {{DOC_TEMPLATE}}'"
         },
         {
           "createdAt": "2025-10-28T11:14:32.062Z",
           "deleted": false,
           "id": 2,
-          "text": "File: src/utils/projectManagementSections/enforcement.ts:9 contains 'CLAUDE.md' → should be '{{DOC_TEMPLATE}}'"
+          "text": "File: src/utils/projectManagementSections/enforcement.ts:9 contains 'AGENTS.md' → should be '{{DOC_TEMPLATE}}'"
         },
         {
           "createdAt": "2025-10-28T11:14:32.062Z",
           "deleted": false,
           "id": 3,
-          "text": "When Cursor user runs 'fspec init --agent=cursor', generated spec/CURSOR.md should reference 'spec/CURSOR.md' not 'spec/CLAUDE.md'"
+          "text": "When Cursor user runs 'fspec init --agent=cursor', generated spec/CURSOR.md should reference 'spec/CURSOR.md' not 'spec/AGENTS.md'"
         },
         {
           "createdAt": "2025-10-28T11:14:32.062Z",
           "deleted": false,
           "id": 4,
-          "text": "When Aider user runs 'fspec init --agent=aider', generated spec/AIDER.md should reference 'spec/AIDER.md' not 'spec/CLAUDE.md'"
+          "text": "When Aider user runs 'fspec init --agent=aider', generated spec/AIDER.md should reference 'spec/AIDER.md' not 'spec/AGENTS.md'"
         }
       ],
       "id": "INIT-013",
@@ -73957,7 +73958,7 @@
           "createdAt": "2025-10-28T11:14:32.062Z",
           "deleted": false,
           "id": 0,
-          "text": "All template files must use {{DOC_TEMPLATE}} placeholder instead of hardcoded 'CLAUDE.md'"
+          "text": "All template files must use {{DOC_TEMPLATE}} placeholder instead of hardcoded 'AGENTS.md'"
         },
         {
           "createdAt": "2025-10-28T11:14:32.062Z",
@@ -73995,13 +73996,13 @@
         }
       ],
       "status": "done",
-      "title": "Replace hardcoded CLAUDE.md references with agent-agnostic placeholders",
+      "title": "Replace hardcoded AGENTS.md references with agent-agnostic placeholders",
       "type": "story",
       "updated": "2025-10-28T11:23:28.182Z",
       "updatedAt": "2026-06-06T00:48:59.000Z",
       "userStory": {
         "action": "see correct references to my agent's documentation file in generated templates",
-        "benefit": "I'm not confused by incorrect references to CLAUDE.md when using Cursor, Aider, or other agents",
+        "benefit": "I'm not confused by incorrect references to AGENTS.md when using Cursor, Aider, or other agents",
         "role": "developer using any of the 18 supported AI agents"
       }
     },
@@ -74260,7 +74261,7 @@
       "architectureNotes": [],
       "children": [],
       "createdAt": "2026-03-12T07:18:33.000Z",
-      "description": "When running the fspec agent, spec/CLAUDE.md and spec/AGENTS.md must never be read into the agent's context. These files contain instructions for using fspec as a CLI tool, which conflicts with the way fspec is invoked as a tool (via the Fspec tool) inside the agent. Only these two files should be excluded — all other spec/ files remain readable. The fix should be applied wherever the agent bootstrap or context initialization reads files from the spec/ directory (e.g. bootstrap command output, AGENTS.md/CLAUDE.md template generation, or any file-enumeration logic that surfaces spec/ files to the agent).",
+      "description": "When running the fspec agent, spec/AGENTS.md and spec/AGENTS.md must never be read into the agent's context. These files contain instructions for using fspec as a CLI tool, which conflicts with the way fspec is invoked as a tool (via the Fspec tool) inside the agent. Only these two files should be excluded — all other spec/ files remain readable. The fix should be applied wherever the agent bootstrap or context initialization reads files from the spec/ directory (e.g. bootstrap command output, AGENTS.md template generation, or any file-enumeration logic that surfaces spec/ files to the agent).",
       "examples": [],
       "id": "INIT-017",
       "nextExampleId": 0,
@@ -74288,7 +74289,7 @@
         }
       ],
       "status": "done",
-      "title": "Exclude spec/CLAUDE.md and spec/AGENTS.md from fspec agent context",
+      "title": "Exclude spec/AGENTS.md and spec/AGENTS.md from fspec agent context",
       "type": "task",
       "updated": "2026-03-12T05:13:21.982Z",
       "updatedAt": "2026-06-06T00:48:59.000Z"
@@ -90284,13 +90285,13 @@
           "text": "@human: Should context compaction be handled automatically by the native module (like current codelet) or should the TUI control when compaction happens?"
         },
         {
-          "answer": "Keep current codelet system - native module auto-injects context reminders (CLAUDE.md discovery, environment info)",
+          "answer": "Keep current codelet system - native module auto-injects context reminders (AGENTS.md discovery, environment info)",
           "answered": true,
           "createdAt": "2025-12-18T03:31:57.116Z",
           "deleted": false,
           "id": 1,
           "selected": true,
-          "text": "@human: Should the native module auto-inject context reminders (CLAUDE.md discovery, environment info) or should fspec's TUI provide those?"
+          "text": "@human: Should the native module auto-inject context reminders (AGENTS.md discovery, environment info) or should fspec's TUI provide those?"
         },
         {
           "answer": "All platforms fspec currently supports: darwin-arm64, darwin-x64, linux-arm64, linux-x64, win32-arm64, win32-x64",
@@ -90358,7 +90359,7 @@
           "createdAt": "2025-12-18T03:35:57.501Z",
           "deleted": false,
           "id": 7,
-          "text": "The native module must auto-inject context reminders (CLAUDE.md discovery, environment info) matching current codelet behavior"
+          "text": "The native module must auto-inject context reminders (AGENTS.md discovery, environment info) matching current codelet behavior"
         },
         {
           "createdAt": "2025-12-18T03:35:59.611Z",
@@ -114021,7 +114022,7 @@
     "REFAC-002": {
       "children": [],
       "createdAt": "2025-10-24T04:51:03.000Z",
-      "description": "The rootStubFile property in AgentConfig interface and all agent definitions is dead code. It was used by installRootStub() function which was removed in commit 9286b71 to fix the CLAUDE.md deletion bug. Property is defined but never used anywhere in the codebase.",
+      "description": "The rootStubFile property in AgentConfig interface and all agent definitions is dead code. It was used by installRootStub() function which was removed in commit 9286b71 to fix the AGENTS.md deletion bug. Property is defined but never used anywhere in the codebase.",
       "id": "REFAC-002",
       "nextExampleId": 0,
       "nextNoteId": 0,
@@ -117381,7 +117382,7 @@
           "createdAt": "2025-11-15T08:45:51.283Z",
           "deleted": false,
           "id": 2,
-          "text": "Architecture alignment must verify: proposed approach matches existing code patterns, decisions align with FOUNDATION.md/CLAUDE.md/AGENTS.md principles, architectural notes reference actual discovered code structures, and explicit justification required when diverging from established patterns"
+          "text": "Architecture alignment must verify: proposed approach matches existing code patterns, decisions align with FOUNDATION.md/AGENTS.md principles, architectural notes reference actual discovered code structures, and explicit justification required when diverging from established patterns"
         },
         {
           "createdAt": "2025-11-15T08:48:08.973Z",
@@ -118862,7 +118863,7 @@
       "architectureNotes": [],
       "children": [],
       "createdAt": "2025-11-10T07:05:54.000Z",
-      "description": "Update system-reminders, bootstrap content, and spec/CLAUDE.md to guide agents on using fspec research during specifying phase. Add ULTRATHINK-powered research compilation that creates markdown files with mermaid diagrams and auto-attaches to work units.",
+      "description": "Update system-reminders, bootstrap content, and spec/AGENTS.md to guide agents on using fspec research during specifying phase. Add ULTRATHINK-powered research compilation that creates markdown files with mermaid diagrams and auto-attaches to work units.",
       "estimate": 13,
       "examples": [
         {
@@ -118881,7 +118882,7 @@
           "createdAt": "2025-11-08T05:48:09.866Z",
           "deleted": false,
           "id": 2,
-          "text": "spec/CLAUDE.md contains: 'During specifying, use fspec research --tool=ast --query=\"pattern\" to analyze code'"
+          "text": "spec/AGENTS.md contains: 'During specifying, use fspec research --tool=ast --query=\"pattern\" to analyze code'"
         },
         {
           "createdAt": "2025-11-08T05:48:11.964Z",
@@ -118919,7 +118920,7 @@
           "createdAt": "2025-11-08T05:47:47.152Z",
           "deleted": false,
           "id": 2,
-          "text": "spec/CLAUDE.md must document research workflow with concrete examples"
+          "text": "spec/AGENTS.md must document research workflow with concrete examples"
         },
         {
           "createdAt": "2025-11-08T05:47:48.678Z",
@@ -121067,7 +121068,7 @@
           "createdAt": "2025-10-19T20:57:37.321Z",
           "deleted": false,
           "id": 5,
-          "text": "Integration point 2: spec/CLAUDE.md section 'Reverse ACDD for Existing Codebases' must be updated with new workflow"
+          "text": "Integration point 2: spec/AGENTS.md section 'Reverse ACDD for Existing Codebases' must be updated with new workflow"
         },
         {
           "createdAt": "2025-10-19T20:57:37.321Z",
@@ -121249,7 +121250,7 @@
           "createdAt": "2025-10-19T20:57:37.321Z",
           "deleted": false,
           "id": 6,
-          "text": "Must update spec/CLAUDE.md section on Reverse ACDD with new workflow"
+          "text": "Must update spec/AGENTS.md section on Reverse ACDD with new workflow"
         },
         {
           "createdAt": "2025-10-19T20:57:37.321Z",
@@ -121359,7 +121360,7 @@
     "REV-002": {
       "children": [],
       "createdAt": "2025-10-25T03:34:42.000Z",
-      "description": "Make review command use shared agent detection code (getAgentConfig) for agent-agnostic ultrathink support. Update all documentation (src/help.ts, command help files, CLAUDE.md autogenerator templates, README.md, docs/). Remove obsolete .claude/commands/review.md file.",
+      "description": "Make review command use shared agent detection code (getAgentConfig) for agent-agnostic ultrathink support. Update all documentation (src/help.ts, command help files, AGENTS.md autogenerator templates, README.md, docs/). Remove obsolete .claude/commands/review.md file.",
       "estimate": 3,
       "examples": [
         {
@@ -161817,7 +161818,7 @@
           "createdAt": "2026-06-17T11:32:08.071Z",
           "deleted": false,
           "id": 0,
-          "text": "KNOWN PARITY GAP: init_doc_template.md is a 56-line behaviour-faithful STAND-IN, NOT the verbatim ~2069-line TS projectManagementTemplate. The Rust transforms (system-reminder strip, meta-cognitive removal, {{PLACEHOLDER}}+<test-command> substitution) are correct and tests assert transform BEHAVIOUR, but the runtime spec/CLAUDE.md / spec/AGENTS.md output is NOT byte-faithful to the TS init output. Byte-parity of the embedded template is deferred to a follow-up task."
+          "text": "KNOWN PARITY GAP: init_doc_template.md is a 56-line behaviour-faithful STAND-IN, NOT the verbatim ~2069-line TS projectManagementTemplate. The Rust transforms (system-reminder strip, meta-cognitive removal, {{PLACEHOLDER}}+<test-command> substitution) are correct and tests assert transform BEHAVIOUR, but the runtime spec/AGENTS.md / spec/AGENTS.md output is NOT byte-faithful to the TS init output. Byte-parity of the embedded template is deferred to a follow-up task."
         }
       ],
       "assumptions": [
@@ -161835,7 +161836,7 @@
           "createdAt": "2026-06-17T11:32:53.830Z",
           "deleted": false,
           "id": 0,
-          "text": "Dispatch init {agent:['claude']} → spec/CLAUDE.md + .claude/commands/fspec.md created, config {agent:'claude'}, success=true cancelled=false"
+          "text": "Dispatch init {agent:['claude']} → spec/AGENTS.md + .claude/commands/fspec.md created, config {agent:'claude'}, success=true cancelled=false"
         },
         {
           "createdAt": "2026-06-17T11:32:54.326Z",
@@ -170576,7 +170577,7 @@
           "createdAt": "2026-06-16T08:00:00.897Z",
           "deleted": false,
           "id": 0,
-          "text": "spec/fspec-config.json has agent='claude' -> removes spec/CLAUDE.md, .claude/commands/fspec.md, and spec/fspec-config.json"
+          "text": "spec/fspec-config.json has agent='claude' -> removes spec/AGENTS.md, .claude/commands/fspec.md, and spec/fspec-config.json"
         },
         {
           "createdAt": "2026-06-16T08:00:01.864Z",
@@ -170588,7 +170589,7 @@
           "createdAt": "2026-06-16T08:00:03.031Z",
           "deleted": false,
           "id": 2,
-          "text": "keepConfig=true with claude installed -> removes spec/CLAUDE.md and .claude/commands/fspec.md but NOT spec/fspec-config.json"
+          "text": "keepConfig=true with claude installed -> removes spec/AGENTS.md and .claude/commands/fspec.md but NOT spec/fspec-config.json"
         },
         {
           "createdAt": "2026-06-16T08:00:03.762Z",
@@ -170600,7 +170601,7 @@
           "createdAt": "2026-06-16T08:00:04.868Z",
           "deleted": false,
           "id": 4,
-          "text": "claude detected but spec/CLAUDE.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)"
+          "text": "claude detected but spec/AGENTS.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)"
         }
       ],
       "id": "RPC-276",
@@ -170637,7 +170638,7 @@
           "createdAt": "2026-06-16T07:59:48.535Z",
           "deleted": false,
           "id": 2,
-          "text": "Remove agent files: spec/<docTemplate> (e.g. spec/CLAUDE.md) and <slashCommandPath><fspec.md|fspec.toml> (filename depends on slashCommandFormat); both use force removal so missing files are silently skipped (idempotent)"
+          "text": "Remove agent files: spec/<docTemplate> (e.g. spec/AGENTS.md) and <slashCommandPath><fspec.md|fspec.toml> (filename depends on slashCommandFormat); both use force removal so missing files are silently skipped (idempotent)"
         },
         {
           "createdAt": "2026-06-16T07:59:54.109Z",
@@ -198918,7 +198919,7 @@
     },
     "TEST-004": {
       "assumptions": [
-        "Follow the ACDD process - no special testing patterns beyond what's defined in CLAUDE.md"
+        "Follow the ACDD process - no special testing patterns beyond what's defined in AGENTS.md"
       ],
       "children": [],
       "createdAt": "2025-10-16T03:57:43.000Z",
@@ -198961,7 +198962,7 @@
           "text": "@human: Should I examine the implementation files (e.g., generate-scenarios.ts, show-work-unit.ts) to infer what the tests should validate for scenarios that have existing code?"
         },
         {
-          "answer": "Follow the ACDD process - no special testing patterns beyond what's defined in CLAUDE.md",
+          "answer": "Follow the ACDD process - no special testing patterns beyond what's defined in AGENTS.md",
           "createdAt": "2025-10-16T01:54:24.619Z",
           "deleted": false,
           "id": 2,
@@ -213574,7 +213575,7 @@
           "createdAt": "2026-02-16T02:19:05.162Z",
           "deleted": false,
           "id": 1,
-          "text": "After /clear, AI still knows it's working on fspec project (from CLAUDE.md) and the current date (from environment)"
+          "text": "After /clear, AI still knows it's working on fspec project (from AGENTS.md) and the current date (from environment)"
         },
         {
           "createdAt": "2026-02-16T02:19:06.211Z",
@@ -213610,7 +213611,7 @@
           "createdAt": "2026-02-16T02:18:50.236Z",
           "deleted": false,
           "id": 1,
-          "text": "System reminders (CLAUDE.md, environment info) must be preserved - these are project context, not conversation history"
+          "text": "System reminders (AGENTS.md, environment info) must be preserved - these are project context, not conversation history"
         }
       ],
       "stateHistory": [
@@ -213702,7 +213703,7 @@
           "createdAt": "2026-02-16T02:47:07.477Z",
           "deleted": false,
           "id": 0,
-          "text": "After /clear via TUI, system reminders (CLAUDE.md, environment) are preserved because Rust reinjects them via inject_context_reminders()"
+          "text": "After /clear via TUI, system reminders (AGENTS.md, environment) are preserved because Rust reinjects them via inject_context_reminders()"
         },
         {
           "createdAt": "2026-02-16T02:55:59.545Z",
@@ -229610,7 +229611,7 @@
       "rules": [
         {
           "id": 0,
-          "text": "The footer poller logic lives in a single NAPI-free location (codelet-agent-loop) and is called by BOTH hook impls — FspecAgentHooks (binary) and the NAPI session hooks — so the two front doors cannot drift (CLAUDE.md two-front-doors rule)",
+          "text": "The footer poller logic lives in a single NAPI-free location (codelet-agent-loop) and is called by BOTH hook impls — FspecAgentHooks (binary) and the NAPI session hooks — so the two front doors cannot drift (AGENTS.md two-front-doors rule)",
           "deleted": false,
           "createdAt": "2026-09-06T08:16:18.493Z"
         },
@@ -234670,6 +234671,70 @@
       ],
       "nextExampleId": 3,
       "estimate": 5
+    },
+    "CLEAN-008": {
+      "id": "CLEAN-008",
+      "title": "Replace all AGENTS.md references with AGENTS.md; rename SystemReminderType::SystemPrompt to SystemPrompt",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2026-09-26T22:47:00.744Z",
+      "updatedAt": "2026-09-27T03:57:21.718Z",
+      "description": "Claude Code now uses AGENTS.md. Remove every 'systemPrompt'/'SystemPrompt'/'AGENTS.md' reference from the codebase and point it at AGENTS.md. Specifically: rename SystemReminderType::SystemPrompt -> SystemPrompt (string 'systemPrompt' -> 'systemPrompt'), rename discover_agents_md -> discover_agents_md, change claude agent doc_template AGENTS.md -> AGENTS.md in init/remove-init-files + tests + help + fixtures, and rewrite historical references in spec/ and docs/. Keep the Claude PROVIDER/agent id ('claude', 'Claude Code') intact.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-27T00:43:47.487Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-27T03:39:38.082Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-27T03:45:47.153Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-27T03:57:21.718Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "context_gathering discovers only AGENTS.md now (AGENTS.md removed from the search list); discover_agents_md is renamed to discover_agents_md and CONTEXT_FILES becomes [\"AGENTS.md\"].",
+          "deleted": false,
+          "createdAt": "2026-09-27T00:59:50.671Z"
+        },
+        {
+          "id": 1,
+          "text": "The claude agent's doc_template changes from 'AGENTS.md' to 'AGENTS.md' in both init and remove-init-files registries, so fspec init --agent claude now installs spec/AGENTS.md (same as codex).",
+          "deleted": false,
+          "createdAt": "2026-09-27T00:59:51.052Z"
+        },
+        {
+          "id": 2,
+          "text": "SystemReminderType::SystemPrompt is renamed to SystemPrompt; its as_str()/parse string changes from 'systemPrompt' to 'systemPrompt'.",
+          "deleted": false,
+          "createdAt": "2026-09-27T00:59:51.405Z"
+        },
+        {
+          "id": 3,
+          "text": "The Claude provider/agent id ('claude'), 'Claude Code', and all Anthropic/Claude OAuth/model references are NOT renamed — only the AGENTS.md *documentation file* references and the systemPrompt system-reminder token are changed.",
+          "deleted": false,
+          "createdAt": "2026-09-27T00:59:51.733Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Affected areas: (1) rust/cli/src/session/system_reminders.rs - enum variant SystemPrompt -> SystemPrompt, token 'systemPrompt' -> 'systemPrompt'; (2) rust/cli/src/session/context_gathering.rs - discover_agents_md -> discover_agents_md, CONTEXT_FILES drops AGENTS.md, unit tests; (3) rust/cli/src/session/mod.rs - call site + doc comments; (4) rust/fspec-core/src/commands/init.rs + remove_init_files.rs - claude doc_template AGENTS.md -> AGENTS.md, tests; (5) rust/fspec-core/tests/{init,remove_init_files}.rs + fixtures/init_docs/claude.md + help fixtures; (6) rust/fspec/tests/cli_{init,remove_init_files}.rs + help fixtures; (7) rust/tests/context_gathering_test.rs (rewrite: no more AGENTS.md priority scenario); (8) rust/napi tests (system_reminder_restoration, tui_clear, telegram_clear, clear_history, inject_summary_handler, session_manager_context_injection); (9) rust/sessions/src/background_session.rs comments; (10) rust/napi/{src/session_bindings.rs,index.d.ts} comments; (11) rust/fspec-core bootstrap/discover_foundation/review/update_work_unit_status reminders text spec/AGENTS.md -> spec/AGENTS.md; (12) rust/providers/src/claude.rs doc comment; (13) rust/.gitignore + .gitignore drop redundant AGENTS.md entries; (14) docs/EXTERNAL.md + docs/research/TUI-111 doc; (15) spec/features/*, spec/attachments/*, spec/docs/* historical text renames (including 2 feature filenames update-agents-md-* -> update-agents-md-* via fspec update-scenario? no - file rename + git mv; coverage files follow).",
+          "deleted": false,
+          "createdAt": "2026-09-27T01:00:18.378Z"
+        }
+      ],
+      "nextNoteId": 1
     }
   }
 }

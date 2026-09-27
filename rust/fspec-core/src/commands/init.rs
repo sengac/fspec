@@ -96,7 +96,7 @@ const AGENT_REGISTRY: &[Agent] = &[
         slash_command_path: ".claude/commands/",
         slash_command_format: Markdown,
         supports_system_reminders: true,
-        doc_template: "CLAUDE.md",
+        doc_template: "AGENTS.md",
         category: Cli,
         detection_paths: &[".claude/", ".claude/commands/"],
         available: true,

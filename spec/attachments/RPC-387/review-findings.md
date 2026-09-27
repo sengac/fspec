@@ -21,7 +21,7 @@ None.
    `codelet/fspec-tui/tests/chunk_rendering_parity_rpc078.rs:3` declares
    `Feature: spec/features/agentview-scrollback-no-duplicate-userinput-and-wrap.feature`
    (RPC-078's feature). The four RPC-387 tests were appended to this RPC-078
-   file. Per the CLAUDE.md test-header convention, the file-level header should
+   file. Per the AGENTS.md test-header convention, the file-level header should
    reference the feature it validates. The RPC-387 tests carry per-block comments
    citing `supervisor-message-rendering.feature`, so linkage is recoverable, but
    the top-of-file header is misleading. **Resolution:** relocate the four

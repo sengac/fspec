@@ -74,7 +74,7 @@ Rule [5] mandates that the stub override `clear_history`, `compact_session`, `pa
 
 Rule [6] specifies cross-transport parity tests live in `codelet/rpc-embedded/tests/` and `codelet/rpc-server/tests/`. The actual file is at `codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs`. This is the only crate that can import BOTH `EmbeddedFspecBackend` AND `WebSocketFspecBackend`, since neither rpc-embedded nor rpc-server depends on fspec-tui. The deviation is structurally necessary. Not fixing.
 
-### O2. File sizes exceed the 300-line CLAUDE.md guideline
+### O2. File sizes exceed the 300-line AGENTS.md guideline
 
 Several core files are well over 300 lines (session_manager_handle.rs 1046, rpc/src/lib.rs 1292, websocket.rs 970, embedded.rs 523, test 1115). These are contract-surface files where splitting would hurt locality. Pre-existing condition; not in scope for this card to refactor.
 

@@ -8,7 +8,7 @@ Feature: Update Documentation and Help
   """
   Architecture notes:
   - This is a documentation-only work unit (no code implementation)
-  - Updates CLAUDE.md with discover-foundation workflow section
+  - Updates AGENTS.md with discover-foundation workflow section
   - Creates help config for discover-foundation command
   - Adds discovery guide documentation explaining code analysis patterns
   - Validates documentation quality through test scenarios
@@ -19,13 +19,13 @@ Feature: Update Documentation and Help
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. CLAUDE.md must document discover-foundation workflow with examples
+  #   1. AGENTS.md must document discover-foundation workflow with examples
   #   2. Help system must have comprehensive --help output for discover-foundation command
   #   3. Discovery guide must explain code analysis patterns (CLI tool, web app, library)
   #   4. Documentation must show integration with Example Mapping workflow
   #
   # EXAMPLES:
-  #   1. CLAUDE.md shows: 'Run discover-foundation to analyze codebase and generate foundation.json'
+  #   1. AGENTS.md shows: 'Run discover-foundation to analyze codebase and generate foundation.json'
   #   2. Help output includes WHEN TO USE, WORKFLOW, and EXAMPLES sections
   #   3. Discovery guide explains CLI tool pattern: bin field in package.json, commander usage
   #
@@ -35,8 +35,8 @@ Feature: Update Documentation and Help
     I want to have comprehensive documentation and help for discovery commands
     So that I can effectively use discover-foundation, questionnaire, and code analysis features
 
-  Scenario: CLAUDE.md documents discover-foundation workflow
-    Given I open CLAUDE.md file
+  Scenario: AGENTS.md documents discover-foundation workflow
+    Given I open AGENTS.md file
     When I search for "discover-foundation" section
     Then I should find workflow documentation with command examples
     And documentation should show how to run discover-foundation command

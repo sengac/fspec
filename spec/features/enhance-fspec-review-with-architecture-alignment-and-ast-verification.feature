@@ -6,7 +6,7 @@
 @REMIND-014
 Feature: Enhance fspec review with architecture alignment and AST verification
   """
-  Critical implementation: Must check work unit attachments for AST research results. Must validate architectural notes reference actual code (not assumptions). Must align proposed approach with FOUNDATION.md/CLAUDE.md/AGENTS.md principles. Must detect if AI is reinventing existing utilities/functions. Must follow existing ast-data-gatherer.ts pattern (data presentation, not judgment).
+  Critical implementation: Must check work unit attachments for AST research results. Must validate architectural notes reference actual code (not assumptions). Must align proposed approach with FOUNDATION.md/AGENTS.md principles. Must detect if AI is reinventing existing utilities/functions. Must follow existing ast-data-gatherer.ts pattern (data presentation, not judgment).
   """
 
   # ========================================
@@ -16,7 +16,7 @@ Feature: Enhance fspec review with architecture alignment and AST verification
   # BUSINESS RULES:
   #   1. Architectural review must be automatic and mandatory before transitioning from specifying to testing
   #   2. AST analysis must verify: all referenced files were analyzed, all mentioned functions/classes exist, all dependencies/imports are documented, and refactoring candidates were researched via AST
-  #   3. Architecture alignment must verify: proposed approach matches existing code patterns, decisions align with FOUNDATION.md/CLAUDE.md/AGENTS.md principles, architectural notes reference actual discovered code structures, and explicit justification required when diverging from established patterns
+  #   3. Architecture alignment must verify: proposed approach matches existing code patterns, decisions align with FOUNDATION.md/AGENTS.md principles, architectural notes reference actual discovered code structures, and explicit justification required when diverging from established patterns
   #   4. DRY/SOLID validation must verify: AI performed AST research during specifying phase (check attachments), architectural notes reference actual discovered code (not assumptions), AI is not proposing to reinvent existing utilities/functions, and proposed solutions follow SOLID principles based on architectural notes
   #   5. Review enforcement must be hard block implemented inside update-work-unit-status command (not as hook), automatically run review when transitioning specifying to testing, throw error and prevent state change if critical issues or ACDD compliance failed, output full review report with specific issues and guidance
   #   6. CRITICAL: fspec MUST NOT perform semantic code analysis - NO code quality judgments, NO similarity detection, NO anti-pattern detection in fspec itself. fspec ONLY provides structural data via AST (counts, names, locations). The AI agent makes ALL analysis decisions based on data provided.

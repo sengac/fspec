@@ -76,7 +76,7 @@
 ### 🟢 Observations (No Action — Out of Scope)
 
 1. `codelet/sessions/src/background_session.rs` is **1194 lines**, far
-   exceeding the 300-line guideline in `CLAUDE.md`. This file is a verbatim
+   exceeding the 300-line guideline in `AGENTS.md`. This file is a verbatim
    move (rule [9] forbids behavioural changes) and the architecture notes
    defer refactoring explicitly to RPC-040 (move SessionManager) and RPC-042
    (implement SessionManagerHandle). Out of scope for this card.

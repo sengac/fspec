@@ -40,7 +40,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Active Context (session.messages sent to LLM)               │
-│   ├─ System reminders (CLAUDE.md, env, fspec workflow)       │
+│   ├─ System reminders (AGENTS.md, env, fspec workflow)       │
 │   ├─ Compaction DAG (free-text markdown in system-reminder)  │
 │   │   └─ [SessionSearch: turns X-Y] text breadcrumbs         │
 │   └─ Fresh conversation (post-compaction turns)              │

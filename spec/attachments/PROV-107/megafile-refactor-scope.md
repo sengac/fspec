@@ -7,7 +7,7 @@ NOT introduced by the epic.
 
 ## Problem (verified by `wc -l`, 2026-06-21)
 
-The project standard is **300 LoC per file** (CLAUDE.md "Keep files under 300
+The project standard is **300 LoC per file** (AGENTS.md "Keep files under 300
 lines"). Current offenders in the touched area:
 
 | File | LoC | Over budget |

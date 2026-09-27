@@ -41,7 +41,7 @@ For one compaction in the embedded (DAG / hierarchical-compaction) flow, the TUI
   ```
 
 But the **real** post-compaction context contains more than the summary: the system reminders
-(large in fspec — workflow reminder, CLAUDE.md, environment, etc.) are re-injected, plus whatever
+(large in fspec — workflow reminder, AGENTS.md, environment, etc.) are re-injected, plus whatever
 else `inject_summary` leaves in `session.messages`. The honest "compacted" size is the recalculated
 token tracker AFTER the message list is rebuilt (`recalculate_token_tracker`,
 `codelet/cli/src/interactive_helpers.rs:194-205`, sets `token_tracker.input_tokens` to the sum over

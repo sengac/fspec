@@ -1,7 +1,7 @@
 @AGENT-022
 Feature: Clear context command for session reset
   """
-  After clearing session, inject_context_reminders() must be called to restore CLAUDE.md and environment system reminders
+  After clearing session, inject_context_reminders() must be called to restore AGENTS.md and environment system reminders
   Fix location: rust/napi/src/session_manager.rs line 4508-4516, the 'clear' action handler
   """
 
@@ -11,13 +11,13 @@ Feature: Clear context command for session reset
   #
   # BUSINESS RULES:
   #   1. /clear from Telegram must reset the actual session context (messages, turns, tokens), not just the output buffer
-  #   2. After clearing, system reminders (CLAUDE.md, environment info) must be re-injected so the AI retains project context
+  #   2. After clearing, system reminders (AGENTS.md, environment info) must be re-injected so the AI retains project context
   #   3. Provider selection, debug mode state, and command history must be preserved across /clear
   #   4. /clear should execute immediately without confirmation prompt
   #
   # EXAMPLES:
   #   1. Remote user sends /clear from Telegram, AI context window is cleared, next message AI doesn't remember previous conversation
-  #   2. After /clear, AI still has access to CLAUDE.md project context and environment info (platform, working directory)
+  #   2. After /clear, AI still has access to AGENTS.md project context and environment info (platform, working directory)
   #   3. After /clear, token counters show 0↓ 0↑ (input and output tokens reset)
   #   4. Current implementation clears only output buffer but not session.messages, session.turns, or token_tracker
   #
@@ -43,9 +43,9 @@ Feature: Clear context command for session reset
   @session
   Scenario: System reminders preserved after clear
     Given I have an active conversation with the AI via Telegram bridge
-    And the AI has access to project context (CLAUDE.md, environment info)
+    And the AI has access to project context (AGENTS.md, environment info)
     When I send "/clear" via Telegram
-    Then the AI should still have access to CLAUDE.md project context
+    Then the AI should still have access to AGENTS.md project context
     And the AI should still know the platform and working directory
     And the conversation history should be cleared
 

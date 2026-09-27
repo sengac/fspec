@@ -1721,7 +1721,7 @@ impl BackgroundSession {
     /// TUI-065: Clear session history and reinject context reminders
     ///
     /// This method clears the session's messages, turns, and token tracker,
-    /// then reinjects the context reminders (CLAUDE.md, environment info) so
+    /// then reinjects the context reminders (AGENTS.md, environment info) so
     /// the AI retains project context after clearing.
     ///
     /// DRY: This is the single source of truth for clear functionality.
@@ -1742,7 +1742,7 @@ impl BackgroundSession {
         inner.token_tracker = codelet_core::compaction::TokenTracker::default();
 
         // CRITICAL: Reinject context reminders so AI retains project context
-        // Without this, the AI loses CLAUDE.md and environment info
+        // Without this, the AI loses AGENTS.md and environment info
         // GIT-034: Include isolation context so AI knows about worktree
         let isolation = self.build_isolation_context();
         inner.inject_context_reminders_with_isolation(isolation.as_ref());

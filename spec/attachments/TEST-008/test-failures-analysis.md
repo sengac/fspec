@@ -86,7 +86,7 @@ Error: At least one of --query or --file is required
 
 ### Failing Tests:
 1. ❌ should include RESEARCH section in bootstrap output
-2. ❌ should create CLAUDE.md with research documentation when using claude agent
+2. ❌ should create AGENTS.md with research documentation when using claude agent
 
 ### Analysis:
 **Scenario Validity:** ❓ NEEDS INVESTIGATION
@@ -95,7 +95,7 @@ Error: At least one of --query or --file is required
 
 **Possible Causes:**
 - Bootstrap command implementation changed
-- CLAUDE.md generation logic modified
+- AGENTS.md generation logic modified
 - Test expectations don't match current behavior
 
 **Action Required:**

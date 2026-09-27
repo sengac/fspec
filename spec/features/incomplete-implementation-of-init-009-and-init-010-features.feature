@@ -54,7 +54,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     When I run 'fspec remove-init-files' without flags
     And the interactive prompt asks 'Keep spec/fspec-config.json?'
     And I select 'Yes'
-    Then spec/CLAUDE.md should be removed
+    Then spec/AGENTS.md should be removed
     And .claude/commands/fspec.md should be removed
     And spec/fspec-config.json should still exist
     And the output should show detailed list of removed files
@@ -65,7 +65,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     When I run 'fspec remove-init-files' without flags
     And the interactive prompt asks 'Keep spec/fspec-config.json?'
     And I select 'No'
-    Then spec/CLAUDE.md should be removed
+    Then spec/AGENTS.md should be removed
     And .claude/commands/fspec.md should be removed
     And spec/fspec-config.json should be removed
     And the output should show detailed list of removed files
@@ -76,7 +76,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     When I run 'fspec init --agent=cursor'
     And the prompt asks 'Switch from Claude to Cursor?'
     And I select 'Switch to Cursor'
-    Then spec/CLAUDE.md should be removed
+    Then spec/AGENTS.md should be removed
     And .claude/commands/fspec.md should be removed
     And spec/CURSOR.md should be created
     And .cursor/commands/fspec.md should be created
@@ -89,7 +89,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     When I run 'fspec init --agent=cursor'
     And the prompt asks 'Switch from Claude to Cursor?'
     And I select 'Cancel'
-    Then spec/CLAUDE.md should remain unchanged
+    Then spec/AGENTS.md should remain unchanged
     And .claude/commands/fspec.md should remain unchanged
     And spec/CURSOR.md should not be created
     And spec/fspec-config.json should still contain agent 'claude'
@@ -100,7 +100,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     And spec/fspec-config.json contains agent 'claude'
     When I run 'fspec init --agent=claude'
     Then no switch prompt should appear
-    And spec/CLAUDE.md should be reinstalled
+    And spec/AGENTS.md should be reinstalled
     And .claude/commands/fspec.md should be reinstalled
     And spec/fspec-config.json should still contain agent 'claude'
     And the command should exit successfully
@@ -110,7 +110,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     And spec/fspec-config.json exists
     When I run 'fspec remove-init-files --no-keep-config'
     Then no interactive prompt should appear
-    And spec/CLAUDE.md should be removed
+    And spec/AGENTS.md should be removed
     And .claude/commands/fspec.md should be removed
     And spec/fspec-config.json should be removed
     And the output should show detailed list of removed files
@@ -120,7 +120,7 @@ Feature: Incomplete implementation of INIT-009 and INIT-010 features
     And spec/fspec-config.json exists
     When I run 'fspec remove-init-files --keep-config'
     Then no interactive prompt should appear
-    And spec/CLAUDE.md should be removed
+    And spec/AGENTS.md should be removed
     And .claude/commands/fspec.md should be removed
     And spec/fspec-config.json should still exist
     And the output should show detailed list of removed files

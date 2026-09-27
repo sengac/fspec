@@ -1,15 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "Replace hardcoded CLAUDE.md in bootstrapFoundation.ts with placeholder",
+      "name": "Replace hardcoded AGENTS.md in bootstrapFoundation.ts with placeholder",
       "testMappings": []
     },
     {
-      "name": "Replace hardcoded CLAUDE.md in fileStructure.ts with placeholder",
+      "name": "Replace hardcoded AGENTS.md in fileStructure.ts with placeholder",
       "testMappings": []
     },
     {
-      "name": "Replace hardcoded CLAUDE.md in enforcement.ts with placeholder",
+      "name": "Replace hardcoded AGENTS.md in enforcement.ts with placeholder",
       "testMappings": []
     },
     {

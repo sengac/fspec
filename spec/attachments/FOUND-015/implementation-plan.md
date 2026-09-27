@@ -7,7 +7,7 @@ Enhance `fspec bootstrap` command output to include guidance about Big Picture E
 ## Problem
 
 Current `fspec bootstrap` output:
-- ✅ Outputs complete workflow documentation from CLAUDE.md
+- ✅ Outputs complete workflow documentation from AGENTS.md
 - ✅ Includes foundation discovery guidance
 - ✅ Includes work unit-level Event Storming guidance
 - ❌ Does NOT emphasize Big Picture Event Storming workflow
@@ -29,7 +29,7 @@ The reminder prompts AI to conduct Big Picture Event Storming or pick up the aut
 **`src/commands/bootstrap.ts`**
 
 ### Location in Code
-After outputting CLAUDE.md content, before final "You are now operating in fspec mode" message.
+After outputting AGENTS.md content, before final "You are now operating in fspec mode" message.
 
 ### Detection Logic
 
@@ -102,7 +102,7 @@ Next steps:
      - fspec add-domain-event-to-foundation <context> <event>
      - fspec show-foundation-event-storm
 
-See spec/CLAUDE.md "Step 1.5a: Big Picture Event Storming" for detailed guidance.
+See spec/AGENTS.md "Step 1.5a: Big Picture Event Storming" for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture
@@ -129,7 +129,7 @@ Option 2: Conduct Event Storm directly
   fspec add-domain-event-to-foundation <context> <event>
   fspec show-foundation-event-storm
 
-See spec/CLAUDE.md "Step 1.5a: Big Picture Event Storming" for detailed guidance.
+See spec/AGENTS.md "Step 1.5a: Big Picture Event Storming" for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture
@@ -145,7 +145,7 @@ Why this matters:
 **Before** (when foundation exists but no Event Storm):
 ```
 # fspec Command - Kanban-Based Project Management
-[... full CLAUDE.md content ...]
+[... full AGENTS.md content ...]
 
 You are now operating in fspec mode.
 ```
@@ -153,7 +153,7 @@ You are now operating in fspec mode.
 **After** (when foundation exists but no Event Storm):
 ```
 # fspec Command - Kanban-Based Project Management
-[... full CLAUDE.md content ...]
+[... full AGENTS.md content ...]
 
 <system-reminder>
 BIG PICTURE EVENT STORMING NEEDED
@@ -171,7 +171,7 @@ Next steps:
      - fspec add-domain-event-to-foundation <context> <event>
      - fspec show-foundation-event-storm
 
-See spec/CLAUDE.md "Step 1.5a: Big Picture Event Storming" for detailed guidance.
+See spec/AGENTS.md "Step 1.5a: Big Picture Event Storming" for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture
@@ -190,17 +190,17 @@ You are now operating in fspec mode.
 2. ✅ System-reminder emitted when eventStorm field is empty
 3. ✅ System-reminder references work unit ID if one exists
 4. ✅ System-reminder provides clear next steps
-5. ✅ System-reminder references CLAUDE.md documentation
+5. ✅ System-reminder references AGENTS.md documentation
 6. ✅ System-reminder explains why Big Picture Event Storm matters
 7. ✅ System-reminder does NOT appear when:
    - foundation.json does not exist
    - eventStorm field is already populated
    - Event Storm work unit is marked "done"
-8. ✅ Reminder appears AFTER CLAUDE.md content, BEFORE "fspec mode" message
+8. ✅ Reminder appears AFTER AGENTS.md content, BEFORE "fspec mode" message
 
 ## Dependencies
 
-- **FOUND-014**: CLAUDE.md must be updated first (referenced in reminder)
+- **FOUND-014**: AGENTS.md must be updated first (referenced in reminder)
 - **FOUND-013**: Work unit auto-creation (reminder references work unit ID)
 
 ## Testing
@@ -243,7 +243,7 @@ You are now operating in fspec mode.
 ## Related Work Units
 
 - **FOUND-013**: Auto-create Event Storm work unit (provides work unit ID)
-- **FOUND-014**: CLAUDE.md documentation (referenced in reminder)
+- **FOUND-014**: AGENTS.md documentation (referenced in reminder)
 - **EXMAP-004**: Tag ontology generation (benefit of Event Storm)
 
 ## Notes

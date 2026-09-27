@@ -61,7 +61,7 @@ Successful implementations use a **central agent registry** pattern that maps ag
 interface AgentConfig {
   name: string;              // Display name (e.g., "Claude Code")
   id: string;                // Unique ID (e.g., "claude")
-  docTemplate: string;       // Documentation template filename (e.g., "CLAUDE.md")
+  docTemplate: string;       // Documentation template filename (e.g., "AGENTS.md")
   slashCommandPath: string;  // Directory for slash commands (e.g., ".claude/commands/")
   format: 'markdown' | 'toml'; // Command file format
   supportsSystemReminders: boolean;  // Whether agent supports <system-reminder> tags
@@ -181,7 +181,7 @@ Centralize command bodies in a **Template Manager** to avoid duplication:
 
 ```typescript
 class TemplateManager {
-  // Generate command body from CLAUDE.md or agent-specific templates
+  // Generate command body from AGENTS.md or agent-specific templates
   static getCommandBody(commandId: string, agentId: string): string {
     // Strip system-reminder tags for non-Claude agents
     const rawBody = this.loadTemplate(commandId);
@@ -411,7 +411,7 @@ CRITICAL: Use Example Mapping before writing scenarios.
 ### Option 3: Agent-Specific Templates
 
 Maintain separate template variations:
-- `templates/claude/CLAUDE.md` - With system-reminders
+- `templates/claude/AGENTS.md` - With system-reminders
 - `templates/cursor/CURSOR.md` - With bold/italic emphasis
 - `templates/cline/CLINE.md` - With comment-based guidance
 
@@ -442,7 +442,7 @@ project/
 │       ├── fspec-validate.md
 │       └── ...
 ├── spec/
-│   ├── CLAUDE.md          # Agent-specific docs
+│   ├── AGENTS.md          # Agent-specific docs
 │   ├── CURSOR.md
 │   ├── CLINE.md
 │   ├── WINDSURF.md
@@ -457,7 +457,7 @@ fspec/
 ├── templates/
 │   ├── agents/
 │   │   ├── claude/
-│   │   │   ├── CLAUDE.md
+│   │   │   ├── AGENTS.md
 │   │   │   └── commands/
 │   │   │       ├── validate.md
 │   │   │       └── format.md

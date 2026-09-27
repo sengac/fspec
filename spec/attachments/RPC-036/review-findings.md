@@ -118,7 +118,7 @@ So `cargo build -p codelet-napi` (no feature flag) is what the scenario should h
 
 ### 🟢 Observation 1 — `codelet/rpc-types/src/lib.rs` is now 1257 lines (pre-existing growth, accelerated by the required inline test block)
 
-The CLAUDE.md 300-line guideline is a TypeScript-oriented file-size hint. `codelet/rpc-types/src/lib.rs` was already 1041 lines before this review (the StreamChunk discriminated union alone takes ~110 lines, and it pre-dates this card). Adding the required `#[cfg(test)] mod tests` block per Rule [6] pushed the file to 1257 lines. Splitting `lib.rs` is out of scope for RPC-036 and would conflict with the card's "single source of truth" framing. **No action taken.**
+The AGENTS.md 300-line guideline is a TypeScript-oriented file-size hint. `codelet/rpc-types/src/lib.rs` was already 1041 lines before this review (the StreamChunk discriminated union alone takes ~110 lines, and it pre-dates this card). Adding the required `#[cfg(test)] mod tests` block per Rule [6] pushed the file to 1257 lines. Splitting `lib.rs` is out of scope for RPC-036 and would conflict with the card's "single source of truth" framing. **No action taken.**
 
 ---
 

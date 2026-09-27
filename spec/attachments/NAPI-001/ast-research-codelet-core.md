@@ -7,7 +7,7 @@ Key functions to wrap:
 - `current_provider_name(&self)` - Returns current provider name
 - `switch_provider(&mut self, provider_name: &str)` - Switches provider, clears context
 - `provider_manager(&self)` - Returns reference to ProviderManager
-- `inject_context_reminders(&mut self)` - Injects CLAUDE.md and environment info
+- `inject_context_reminders(&mut self)` - Injects AGENTS.md and environment info
 - `compact_messages<F, Fut>(&mut self, llm_prompt: F)` - Compacts context
 
 Key fields:

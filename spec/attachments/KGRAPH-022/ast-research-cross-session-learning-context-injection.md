@@ -99,7 +99,7 @@ pub fn set_work_unit_context(&self, id: Option<String>, title: Option<String>, s
 
 **File**: `codelet/cli/src/session/system_reminders.rs`
 
-SystemReminderType enum includes FspecWorkflow, Environment, ClaudeMd, etc.
+SystemReminderType enum includes FspecWorkflow, Environment, SystemPrompt, etc.
 
 ## New Files to Create
 

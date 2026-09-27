@@ -48,7 +48,7 @@ graph LR
     subgraph "Documentation Size"
         A1[Bootstrap: 30KB]
         A2[AGENTS.md: 20KB]
-        A3[CLAUDE.md: 40KB]
+        A3[AGENTS.md: 40KB]
     end
 
     subgraph "Agent Limits"

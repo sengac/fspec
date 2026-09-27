@@ -324,7 +324,7 @@ fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {
 `codelet/sessions/src/background_session.rs:1140-1173`
 ```rust
 /// This method clears the session's messages, turns, and token tracker,
-/// then reinjects the context reminders (CLAUDE.md, environment info) so
+/// then reinjects the context reminders (AGENTS.md, environment info) so
 /// the AI retains project context after clearing.
 ///
 /// DRY: This is the single source of truth for clear functionality.

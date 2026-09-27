@@ -24,7 +24,7 @@ Feature: Tool detection check functions not integrated into workflow
   #   5. sync-version MUST fail (exit 1) when tool configuration is missing to prevent AI from continuing workflow without proper setup
   #   6. sync-version MUST fail (exit 1) when version is incorrect to prevent AI from continuing with wrong version
   #   7. sync-version MUST emit system-reminder about configure-tools when tool configuration is completely missing (file does not exist)
-  #   8. configure-tools MUST regenerate agent templates (spec/CLAUDE.md, .claude/commands/fspec.md, etc.) after updating config to ensure templates reflect latest version
+  #   8. configure-tools MUST regenerate agent templates (spec/AGENTS.md, .claude/commands/fspec.md, etc.) after updating config to ensure templates reflect latest version
   #   9. configure-tools MUST regenerate templates silently (no output to user about template regeneration) to avoid cluttering the output with implementation details
   #
   # EXAMPLES:
@@ -35,7 +35,7 @@ Feature: Tool detection check functions not integrated into workflow
   #   5. AI runs 'fspec --sync-version 0.6.0' with no tool config, sees system-reminder, command exits with code 1, AI cannot continue until tools are configured
   #   6. AI runs 'fspec --sync-version 0.5.0' when actual version is 0.6.0, sees version mismatch error, command exits with code 1, AI cannot continue until correct version used
   #   7. AI runs 'fspec --sync-version 0.6.0' when spec/fspec-config.json does not exist, sees system-reminder to run configure-tools, command exits with code 1, AI runs configure-tools then re-runs sync-version
-  #   8. AI runs 'fspec configure-tools --test-command npm test', command saves config AND regenerates spec/CLAUDE.md and .claude/commands/fspec.md with latest templates, ensuring AI has up-to-date documentation
+  #   8. AI runs 'fspec configure-tools --test-command npm test', command saves config AND regenerates spec/AGENTS.md and .claude/commands/fspec.md with latest templates, ensuring AI has up-to-date documentation
   #   9. AI runs 'fspec configure-tools --test-command npm test', sees only '✓ Tool configuration saved to spec/fspec-config.json' output, templates regenerated silently in background without additional messages
   #
   # QUESTIONS (ANSWERED):
@@ -113,11 +113,11 @@ Feature: Tool detection check functions not integrated into workflow
 
   Scenario: configure-tools regenerates agent templates after updating config
     Given spec/fspec-config.json exists with agent = 'claude'
-    And spec/CLAUDE.md exists (old template)
+    And spec/AGENTS.md exists (old template)
     And .claude/commands/fspec.md exists (old template)
     When AI runs 'fspec configure-tools --test-command "npm test"'
     Then config should be updated with tools.test.command = "npm test"
-    And spec/CLAUDE.md should be regenerated with latest template
+    And spec/AGENTS.md should be regenerated with latest template
     And .claude/commands/fspec.md should be regenerated with latest template
     And templates should reflect current fspec version
 
@@ -127,6 +127,6 @@ Feature: Tool detection check functions not integrated into workflow
     Then console output should contain: '✓ Tool configuration saved to spec/fspec-config.json'
     And console output should NOT contain: 'Regenerating templates'
     And console output should NOT contain: '✓ Templates updated'
-    And console output should NOT mention spec/CLAUDE.md
+    And console output should NOT mention spec/AGENTS.md
     And console output should NOT mention .claude/commands/fspec.md
     But templates should be regenerated in the background

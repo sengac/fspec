@@ -57,8 +57,8 @@ The conversational tool detection feature (CONFIG-002) is **fully implemented an
    - **Impact:** AI never receives system-reminders during workflow transitions
    - **Expected Behavior:** When work unit moves to `validating`, check functions should run
 
-2. **Placeholders Still in spec/CLAUDE.md**
-   - File: `spec/CLAUDE.md`
+2. **Placeholders Still in spec/AGENTS.md**
+   - File: `spec/AGENTS.md`
    - Lines with `<test-command>`: 525, 532, 1126, 1235, 1589, 1619, 1658, 1665, 1724, 1734, 2011, 2022
    - Lines with `<quality-check-commands>`: 1126, 1236, 1589, 1619, 1658, 1665, 1724, 1734
    - **Problem:** Placeholders not replaced with actual commands
@@ -135,7 +135,7 @@ The conversational tool detection feature (CONFIG-002) is **fully implemented an
 
 2. Nothing happens (no checks performed)
 
-3. AI reads spec/CLAUDE.md documentation
+3. AI reads spec/AGENTS.md documentation
    → Sees placeholder: <test-command>
 
 4. AI guesses what to run based on project context
@@ -185,7 +185,7 @@ if (newStatus === 'validating') {
 
 ## Placeholder Replacement Status
 
-### File: spec/CLAUDE.md
+### File: spec/AGENTS.md
 
 **Current Placeholders Found:**
 
@@ -205,13 +205,13 @@ if (newStatus === 'validating') {
 
 - ✅ Logic exists
 - ❓ Called during `fspec init`?
-- ❓ Updates spec/CLAUDE.md on the fly?
-- ❌ Current spec/CLAUDE.md still has placeholders (evidence it's not working)
+- ❓ Updates spec/AGENTS.md on the fly?
+- ❌ Current spec/AGENTS.md still has placeholders (evidence it's not working)
 
 **Verification Needed:**
 
 1. Does `fspec init` call `replaceToolPlaceholders()`?
-2. Should it update spec/CLAUDE.md after `fspec configure-tools`?
+2. Should it update spec/AGENTS.md after `fspec configure-tools`?
 3. Or should placeholders remain for projects without tools configured?
 
 ---
@@ -229,8 +229,8 @@ Based on CONFIG-002 scenarios (especially scenario 1, 3, 5, 6):
    - ✅ Formatted with `formatAgentOutput()` for agent compatibility
 
 2. **Placeholder Replacement**
-   - ✅ spec/CLAUDE.md has `<test-command>` replaced if config exists
-   - ✅ spec/CLAUDE.md has `<quality-check-commands>` replaced if config exists
+   - ✅ spec/AGENTS.md has `<test-command>` replaced if config exists
+   - ✅ spec/AGENTS.md has `<quality-check-commands>` replaced if config exists
    - ✅ Placeholders remain if config missing (prompt AI to configure)
 
 3. **Test Coverage**
@@ -240,7 +240,7 @@ Based on CONFIG-002 scenarios (especially scenario 1, 3, 5, 6):
    - ✅ Update feature file coverage mappings
 
 4. **Documentation**
-   - ✅ Update spec/CLAUDE.md section explaining tool detection
+   - ✅ Update spec/AGENTS.md section explaining tool detection
    - ✅ Verify help files use correct placeholders
    - ✅ Update CONFIG-002 implementation status
 
@@ -318,7 +318,7 @@ rm -f spec/fspec-config.json
 - [ ] If not, add call to replacement logic
 - [ ] Test placeholder replacement with config present
 - [ ] Test placeholder retention with config missing
-- [ ] Update spec/CLAUDE.md if needed
+- [ ] Update spec/AGENTS.md if needed
 - [ ] Add test verifying dynamic replacement
 
 ### Phase 3: Update Coverage
@@ -330,7 +330,7 @@ rm -f spec/fspec-config.json
 
 ### Phase 4: Documentation
 
-- [ ] Update spec/CLAUDE.md with tool detection explanation
+- [ ] Update spec/AGENTS.md with tool detection explanation
 - [ ] Add note about `fspec configure-tools` in workflow docs
 - [ ] Update help files if needed
 - [ ] Mark CONFIG-003 as done
@@ -354,7 +354,7 @@ rm -f spec/fspec-config.json
 ### Documentation:
 
 - `spec/features/conversational-test-and-quality-check-tool-detection.feature`
-- `spec/CLAUDE.md` (placeholder replacement target)
+- `spec/AGENTS.md` (placeholder replacement target)
 
 ### Coverage:
 
@@ -369,7 +369,7 @@ rm -f spec/fspec-config.json
    - Also during `implementing` or `testing` states?
    - During `fspec --sync-version`?
 
-2. **Should placeholders be replaced in spec/CLAUDE.md?**
+2. **Should placeholders be replaced in spec/AGENTS.md?**
    - Yes, if config exists (shows actual commands)
    - No, keep placeholders (prompts AI to configure)
    - Which approach is better?

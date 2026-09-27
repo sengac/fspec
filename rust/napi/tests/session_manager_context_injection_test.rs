@@ -4,7 +4,7 @@
 //! Tests for Context Injection in Background Sessions
 //!
 //! These tests verify that background sessions created via SessionManager
-//! have context reminders (CLAUDE.md discovery, environment info) properly
+//! have context reminders (AGENTS.md discovery, environment info) properly
 //! injected, matching the behavior of the original BackgroundSession.
 //!
 //! Bug found: NAPI-009 introduced SessionManager but forgot to call
@@ -95,7 +95,7 @@ async fn test_session_from_provider_manager_with_context_injection() {
     );
 
     // Should have at least 1 system reminder (environment info)
-    // May have 2 if CLAUDE.md is found in the project
+    // May have 2 if AGENTS.md is found in the project
     let reminder_count = count_system_reminder_messages(&session);
     assert!(
         reminder_count >= 1,

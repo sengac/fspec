@@ -36,7 +36,7 @@ None.
 ## 🟢 Observations (Nice to Have)
 
 1. `codelet/sessions/src/session_manager.rs` is 986 lines, exceeding the
-   project's 300-line guideline in `CLAUDE.md`. This is the
+   project's 300-line guideline in `AGENTS.md`. This is the
    explicit out-of-scope concern for this card — the file is a verbatim
    lift of `codelet/napi/src/session_manager.rs:2135-3013` (878 lines)
    plus the new `SessionManagerHooks` trait, `NoopSessionManagerHooks`,

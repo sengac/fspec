@@ -16,17 +16,17 @@ Feature: Port remove-init-files command to Rust
   # BUSINESS RULES:
   #   1. Detect the installed agent: read spec/fspec-config.json and use its .agent field if present and parseable; otherwise scan each agent's detectionPaths and pick the first agent whose any detection path exists in cwd
   #   2. If no agent is detected, error 'No fspec agent installation detected. Nothing to remove.'; if the detected agent id is unknown, error 'Unknown agent: <id>'
-  #   3. Remove agent files: spec/<docTemplate> (e.g. spec/CLAUDE.md) and <slashCommandPath><fspec.md|fspec.toml> (filename depends on slashCommandFormat); both use force removal so missing files are silently skipped (idempotent)
+  #   3. Remove agent files: spec/<docTemplate> (e.g. spec/AGENTS.md) and <slashCommandPath><fspec.md|fspec.toml> (filename depends on slashCommandFormat); both use force removal so missing files are silently skipped (idempotent)
   #   4. The interactive Ink ConfirmPrompt (used when keepConfig is undefined in TS) is not reproducible in headless Rust; the Rust port treats an unspecified keepConfig as false (remove config), matching the destructive --no-keep-config default — see supervisor question
   #   5. Success output: '✓ Successfully removed fspec init files' then each removed file as '  - <path>', exit 0; error: stderr '✗ Failed to remove init files: <msg>', exit 1
   #   6. The command must NOT remove spec/features/, spec/work-units.json, or other project files — only agent docs, slash command files, and (optionally) fspec-config.json
   #
   # EXAMPLES:
-  #   1. spec/fspec-config.json has agent='claude' -> removes spec/CLAUDE.md, .claude/commands/fspec.md, and spec/fspec-config.json
+  #   1. spec/fspec-config.json has agent='claude' -> removes spec/AGENTS.md, .claude/commands/fspec.md, and spec/fspec-config.json
   #   2. No config but .gemini/ directory exists -> detects gemini, removes spec/GEMINI.md and .gemini/commands/fspec.toml (toml format)
-  #   3. keepConfig=true with claude installed -> removes spec/CLAUDE.md and .claude/commands/fspec.md but NOT spec/fspec-config.json
+  #   3. keepConfig=true with claude installed -> removes spec/AGENTS.md and .claude/commands/fspec.md but NOT spec/fspec-config.json
   #   4. No agent files and no config -> error 'No fspec agent installation detected. Nothing to remove.' exit 1
-  #   5. claude detected but spec/CLAUDE.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)
+  #   5. claude detected but spec/AGENTS.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)
   #
   # QUESTIONS (ANSWERED):
   #   Q: @supervisor: No Rust port of AGENT_REGISTRY exists in fspec-core (init.rs is still a stub). I will create a local const agent table inside commands/remove_init_files.rs covering the needed fields (id, docTemplate, slashCommandPath, slashCommandFormat, detectionPaths) for the 20 agents — confirm this is acceptable vs. a new shared module rust/fspec-core/src/agents.rs (which would require touching lib.rs/mod). Also confirm the headless default for an unspecified keepConfig should be false (remove config).
@@ -43,13 +43,13 @@ Feature: Port remove-init-files command to Rust
 
   Scenario: Removes agent files and config when the config names claude
     Given a workspace with spec/fspec-config.json containing agent='claude'
-    And the files spec/CLAUDE.md and .claude/commands/fspec.md exist
+    And the files spec/AGENTS.md and .claude/commands/fspec.md exist
     When I dispatch remove-init-files with no keepConfig
     Then the dispatcher returns success=true
-    And the returned JSON filesRemoved includes 'spec/CLAUDE.md'
+    And the returned JSON filesRemoved includes 'spec/AGENTS.md'
     And the returned JSON filesRemoved includes '.claude/commands/fspec.md'
     And the returned JSON filesRemoved includes 'spec/fspec-config.json'
-    And spec/CLAUDE.md no longer exists
+    And spec/AGENTS.md no longer exists
     And spec/fspec-config.json no longer exists
 
   Scenario: Detects a toml agent by its detection directory when no config is present
@@ -62,10 +62,10 @@ Feature: Port remove-init-files command to Rust
 
   Scenario: keepConfig=true preserves spec/fspec-config.json
     Given a workspace with spec/fspec-config.json containing agent='claude'
-    And the files spec/CLAUDE.md and .claude/commands/fspec.md exist
+    And the files spec/AGENTS.md and .claude/commands/fspec.md exist
     When I dispatch remove-init-files with keepConfig=true
     Then the dispatcher returns success=true
-    And the returned JSON filesRemoved includes 'spec/CLAUDE.md'
+    And the returned JSON filesRemoved includes 'spec/AGENTS.md'
     And the returned JSON filesRemoved does NOT include 'spec/fspec-config.json'
     And spec/fspec-config.json still exists
 
@@ -76,10 +76,10 @@ Feature: Port remove-init-files command to Rust
 
   Scenario: Force removal is idempotent when an agent file is already absent
     Given a workspace with spec/fspec-config.json containing agent='claude'
-    And spec/CLAUDE.md does NOT exist but .claude/commands/fspec.md exists
+    And spec/AGENTS.md does NOT exist but .claude/commands/fspec.md exists
     When I dispatch remove-init-files with no keepConfig
     Then the dispatcher returns success=true
-    And the returned JSON filesRemoved includes 'spec/CLAUDE.md'
+    And the returned JSON filesRemoved includes 'spec/AGENTS.md'
 
   Scenario: Errors when the config names an unknown agent
     Given a workspace with spec/fspec-config.json containing agent='not-a-real-agent'

@@ -67,7 +67,7 @@ None.
 - **File:** `codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs:3`
 - **Before:** `//! Feature: spec/features/rpc019-agent-input-and-scrollback.feature`
 - **Problem:** That file does NOT exist. The actual feature is
-  `spec/features/rpc019-multiline-input.feature`. The CLAUDE.md test-file
+  `spec/features/rpc019-multiline-input.feature`. The AGENTS.md test-file
   header requirement is "Feature: <real feature path>".
 - **Fix applied:** Updated the header doc-comment to reference
   `spec/features/rpc019-multiline-input.feature`.

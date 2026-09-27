@@ -65,8 +65,8 @@ fn installs_claude_agent_files_and_writes_the_config() {
     let data: Value = serde_json::from_str(&result.data).expect("dispatcher data is JSON");
     assert_eq!(data["cancelled"].as_bool(), Some(false));
 
-    // @step Then spec/CLAUDE.md exists in the project root
-    assert!(tmp.path().join("spec/CLAUDE.md").exists());
+    // @step Then spec/AGENTS.md exists in the project root
+    assert!(tmp.path().join("spec/AGENTS.md").exists());
 
     // @step Then .claude/commands/fspec.md exists in the project root
     assert!(tmp.path().join(".claude/commands/fspec.md").exists());
@@ -74,10 +74,10 @@ fn installs_claude_agent_files_and_writes_the_config() {
     // @step Then spec/fspec-config.json contains the agent field 'claude'
     assert_eq!(read_config(tmp.path())["agent"].as_str(), Some("claude"));
 
-    // @step Then the filesInstalled array contains 'spec/CLAUDE.md' and '.claude/commands/fspec.md'
+    // @step Then the filesInstalled array contains 'spec/AGENTS.md' and '.claude/commands/fspec.md'
     let files = files_installed(&data);
     assert!(
-        files.contains(&"spec/CLAUDE.md".to_string()),
+        files.contains(&"spec/AGENTS.md".to_string()),
         "got: {files:?}"
     );
     assert!(
@@ -146,21 +146,21 @@ fn replaces_all_template_placeholders_with_agent_specific_values() {
     let result = dispatch_command(req(tmp.path(), &["claude"]));
     assert!(result.success, "expected success=true; got {result:?}");
 
-    let doc = read_to_string(tmp.path(), "spec/CLAUDE.md");
+    let doc = read_to_string(tmp.path(), "spec/AGENTS.md");
 
-    // @step Then the doc file spec/CLAUDE.md does NOT contain the substring '{{AGENT_NAME}}'
+    // @step Then the doc file spec/AGENTS.md does NOT contain the substring '{{AGENT_NAME}}'
     assert!(
         !doc.contains("{{AGENT_NAME}}"),
         "AGENT_NAME placeholder leaked"
     );
 
-    // @step Then the doc file spec/CLAUDE.md does NOT contain the substring '{{DOC_TEMPLATE}}'
+    // @step Then the doc file spec/AGENTS.md does NOT contain the substring '{{DOC_TEMPLATE}}'
     assert!(
         !doc.contains("{{DOC_TEMPLATE}}"),
         "DOC_TEMPLATE placeholder leaked"
     );
 
-    // @step Then the doc file spec/CLAUDE.md does NOT contain the substring '{{SLASH_COMMAND_PATH}}'
+    // @step Then the doc file spec/AGENTS.md does NOT contain the substring '{{SLASH_COMMAND_PATH}}'
     assert!(
         !doc.contains("{{SLASH_COMMAND_PATH}}"),
         "SLASH_COMMAND_PATH placeholder leaked"
@@ -179,14 +179,14 @@ fn installs_multiple_agents_in_order_and_records_only_the_first_in_config() {
     assert!(result.success, "expected success=true; got {result:?}");
     let data: Value = serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
-    // @step Then spec/CLAUDE.md and spec/CURSOR.md both exist in the project root
-    assert!(tmp.path().join("spec/CLAUDE.md").exists());
+    // @step Then spec/AGENTS.md and spec/CURSOR.md both exist in the project root
+    assert!(tmp.path().join("spec/AGENTS.md").exists());
     assert!(tmp.path().join("spec/CURSOR.md").exists());
 
     // @step Then the filesInstalled array contains all four installed paths
     let files = files_installed(&data);
     assert_eq!(files.len(), 4, "expected 4 installed paths; got: {files:?}");
-    assert!(files.contains(&"spec/CLAUDE.md".to_string()));
+    assert!(files.contains(&"spec/AGENTS.md".to_string()));
     assert!(files.contains(&"spec/CURSOR.md".to_string()));
 
     // @step Then spec/fspec-config.json contains the agent field 'claude'
@@ -287,7 +287,7 @@ fn shares_one_implementation_between_the_dispatcher_and_the_cli_bridge() {
         "core impl must use blocking std::fs scaffolding"
     );
     assert!(
-        core_src.contains("CLAUDE.md") && core_src.contains("GEMINI.md"),
+        core_src.contains("AGENTS.md") && core_src.contains("GEMINI.md"),
         "core impl must inline the agent registry table"
     );
 
@@ -299,7 +299,7 @@ fn shares_one_implementation_between_the_dispatcher_and_the_cli_bridge() {
         "bridge must delegate to init::run"
     );
     for forbidden in [
-        "CLAUDE.md",
+        "AGENTS.md",
         "create_dir_all",
         "AGENT_REGISTRY",
         "docTemplate",
@@ -367,7 +367,7 @@ fn generated_docs_match_typescript_byte_for_byte() {
     let cases: &[(&str, &str, &str)] = &[
         (
             "claude",
-            "spec/CLAUDE.md",
+            "spec/AGENTS.md",
             include_str!("fixtures/init_docs/claude.md"),
         ),
         (

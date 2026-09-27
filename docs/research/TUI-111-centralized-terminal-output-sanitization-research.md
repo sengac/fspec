@@ -471,7 +471,7 @@ TUI-112, or deliver as one card with 2 waves.
 - Golden-string parity tests already exist for the chunk processor; they
   must be the regression net for R2/R5.
 - Scope test runs: `cargo test -p codelet-fspec-tui --test <name>` per
-  file (NEVER unscoped `cargo test --workspace` — see CLAUDE.md).
+  file (NEVER unscoped `cargo test --workspace` — see AGENTS.md).
 
 ---
 

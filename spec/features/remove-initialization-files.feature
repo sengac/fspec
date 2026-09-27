@@ -21,7 +21,7 @@ Feature: Remove initialization files
   #
   # EXAMPLES:
   #   1. User runs 'fspec remove-init-files', interactive prompt asks 'Keep spec/fspec-config.json?', user selects 'No', all files removed including config
-  #   2. User runs 'fspec remove-init-files', interactive prompt asks 'Keep spec/fspec-config.json?', user selects 'Yes', only agent files removed (spec/CLAUDE.md, .claude/commands/fspec.md), config preserved
+  #   2. User runs 'fspec remove-init-files', interactive prompt asks 'Keep spec/fspec-config.json?', user selects 'Yes', only agent files removed (spec/AGENTS.md, .claude/commands/fspec.md), config preserved
   #   3. User runs 'fspec remove-init-files', spec/fspec-config.json contains 'claude' agent, only Claude files removed (not Cursor or other agents)
   #   4. User runs 'fspec remove-init-files', .claude/commands/fspec.md already missing, command silently skips and removes other files without error
   #
@@ -50,7 +50,7 @@ Feature: Remove initialization files
     When I run 'fspec remove-init-files'
     When the interactive prompt asks 'Keep spec/fspec-config.json?'
     When I select 'No'
-    Then spec/CLAUDE.md should be removed
+    Then spec/AGENTS.md should be removed
     Then .claude/commands/fspec.md should be removed
     Then spec/fspec-config.json should be removed
 
@@ -60,7 +60,7 @@ Feature: Remove initialization files
     When I run 'fspec remove-init-files'
     When the interactive prompt asks 'Keep spec/fspec-config.json?'
     When I select 'Yes'
-    Then spec/CLAUDE.md should be removed
+    Then spec/AGENTS.md should be removed
     Then .claude/commands/fspec.md should be removed
     Then spec/fspec-config.json should still exist
 
@@ -70,15 +70,15 @@ Feature: Remove initialization files
     Given Cursor files do not exist
     When I run 'fspec remove-init-files'
     When I select 'No' to keep config prompt
-    Then only Claude files should be removed (spec/CLAUDE.md, .claude/commands/fspec.md)
+    Then only Claude files should be removed (spec/AGENTS.md, .claude/commands/fspec.md)
     Then Cursor files should not be attempted for removal
 
   Scenario: Handle missing files gracefully
     Given I have spec/fspec-config.json with agent 'claude'
-    Given spec/CLAUDE.md exists
+    Given spec/AGENTS.md exists
     Given .claude/commands/fspec.md is already deleted
     When I run 'fspec remove-init-files'
     When I select 'No' to keep config prompt
     Then the command should succeed without errors
-    Then spec/CLAUDE.md should be removed
+    Then spec/AGENTS.md should be removed
     Then the missing .claude/commands/fspec.md should be silently skipped

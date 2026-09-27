@@ -23,7 +23,7 @@ const EXAMPLES: &[CommandExample] = &[
         command: "fspec remove-init-files",
         description: Some("Remove fspec init files for detected agent"),
         output: Some(
-            "✓ Successfully removed fspec init files\n  - Removed spec/CLAUDE.md\n  - Removed .claude/commands/fspec.md\n  - Removed spec/fspec-config.json",
+            "✓ Successfully removed fspec init files\n  - Removed spec/AGENTS.md\n  - Removed .claude/commands/fspec.md\n  - Removed spec/fspec-config.json",
         ),
     },
     CommandExample {

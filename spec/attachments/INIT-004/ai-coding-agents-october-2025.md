@@ -255,7 +255,7 @@ spec-kit is intentionally "technology independent" - designed to work across div
 
 4. **Agent-Specific Templates**:
    - Each agent may need customized:
-     - Documentation format (CLAUDE.md → AGENT.md pattern)
+     - Documentation format (AGENTS.md → AGENT.md pattern)
      - System-reminder patterns (Claude-specific)
      - Slash command syntax
      - Help output formatting

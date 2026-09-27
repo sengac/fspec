@@ -56,7 +56,7 @@ Architecture [3] says:
 ## 🟢 Observations (Nice to Have)
 
 ### O1 — `views/blocklist/mod.rs` is 418 lines
-CLAUDE.md (the TypeScript-flavoured agent guide) recommends files under 300 lines. The Rust codebase doesn't enforce this rule strictly — `provider_settings/mod.rs` is 520 lines and several agent-view files are at 294-297. The 418 lines here are well-organised (struct, key handler, two render helpers, free function `derive_category`, tests) and refactoring would not improve readability. No action.
+AGENTS.md (the TypeScript-flavoured agent guide) recommends files under 300 lines. The Rust codebase doesn't enforce this rule strictly — `provider_settings/mod.rs` is 520 lines and several agent-view files are at 294-297. The 418 lines here are well-organised (struct, key handler, two render helpers, free function `derive_category`, tests) and refactoring would not improve readability. No action.
 
 ### O2 — Example [5] mixing rule + example concerns
 Example [5] embeds a long architectural justification ("Rust mirrors TS by storing the disabled set on AgentViewStore..."). This crosses example-card and architecture-note boundaries. Could be split into a cleaner example + a separate note. Low priority. No action.

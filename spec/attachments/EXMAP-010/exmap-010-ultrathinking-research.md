@@ -697,7 +697,7 @@ describe('Scenario: Add bounded context to foundation with no Event Storm', () =
 - https://www.eventstorming.com/
 
 **fspec Architecture:**
-- `spec/CLAUDE.md` - Claude developer guidelines
+- `spec/AGENTS.md` - Claude developer guidelines
 - `spec/FOUNDATION.md` - Project foundation
 - `src/types/generic-foundation.ts` - GenericFoundation type
 - `src/types/index.ts` - EventStorm types

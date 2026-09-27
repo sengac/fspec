@@ -25,7 +25,7 @@ Feature: Conversational Test and Quality Check Tool Detection
   - MUST support command storage via --test-command and --quality-commands flags
   - MUST be framework-agnostic (works with ANY language/platform)
   - MUST include date-aware search queries when no tools detected
-  - MUST update all documentation (CLAUDE.md, help files, README.md) to remove hardcoded npm/platform-specific references
+  - MUST update all documentation (AGENTS.md, help files, README.md) to remove hardcoded npm/platform-specific references
   - Config schema: {tools: {test: {command: string}, qualityCheck: {commands: string[]}}}
 
   """
@@ -43,7 +43,7 @@ Feature: Conversational Test and Quality Check Tool Detection
   #   6. Store in spec/fspec-config.json with a 'tools' section (extend existing file that already stores agent config)
   #   7. One-time setup via explicit 'fspec configure-tools' command (like fspec init). Commands emit system-reminder if config missing, telling AI to run configure-tools. Detection happens once, used many times.
   #   8. Yes - 'fspec configure-tools' supports both initial setup AND reconfiguration. Includes --reconfigure flag for re-detection, manual override flags for explicit commands. Handles tool changes (switching frameworks, adding quality checks) conversationally.
-  #   9. ALL documentation MUST be updated: src/help.ts, src/commands/*-help.ts, spec/CLAUDE.md, docs/, README.md for every aspect of tool configuration
+  #   9. ALL documentation MUST be updated: src/help.ts, src/commands/*-help.ts, spec/AGENTS.md, docs/, README.md for every aspect of tool configuration
   #   10. When AI detects multiple frameworks, chain them with && (e.g., '<framework1> && <framework2>'). All detected tools run sequentially.
   #   11. Include date-aware search queries in system-reminders (e.g., 'best <platform> testing tools'). Platform placeholder filled by fspec based on project detection.
   #
@@ -123,21 +123,21 @@ Feature: Conversational Test and Quality Check Tool Detection
     And AI should detect new tools and update configuration
 
   Scenario: Validate all documentation uses dynamic command placeholders not hardcoded npm
-    Given fspec has help files, slash command sections, project management sections, and CLAUDE.md documentation
+    Given fspec has help files, slash command sections, project management sections, and AGENTS.md documentation
     When validation test scans all documentation files for hardcoded npm test, npm run build, npm check patterns
     Then test should pass when all examples use <test-command> or <quality-check-commands> placeholders
-    Given fspec has help files, slash command sections, project management sections, and CLAUDE.md documentation
+    Given fspec has help files, slash command sections, project management sections, and AGENTS.md documentation
     When validation test scans all documentation files for hardcoded npm test, npm run build, npm check patterns
     Then test should pass when all examples use <test-command> or <quality-check-commands> placeholders
     And test should fail if any npm test, npm run, or npm check hardcoded patterns found
 
-  Scenario: Replace placeholders in generated spec/CLAUDE.md with configured commands
+  Scenario: Replace placeholders in generated spec/AGENTS.md with configured commands
     Given slash command section generators (src/utils/slashCommandSections/*.ts) return content with <test-command> and <quality-check-commands> placeholders
     And spec/fspec-config.json has tools.test.command = 'npm test' configured
     When fspec init command calls slash command section generators and assembles the output
-    Then the generated spec/CLAUDE.md file should have all <test-command> placeholders replaced with 'npm test'
+    Then the generated spec/AGENTS.md file should have all <test-command> placeholders replaced with 'npm test'
     And placeholder replacement logic reads spec/fspec-config.json to get configured commands
-    And the generated spec/CLAUDE.md file should have all <quality-check-commands> placeholders replaced with configured quality commands
+    And the generated spec/AGENTS.md file should have all <quality-check-commands> placeholders replaced with configured quality commands
 
   Scenario: configure-tools command appears in help output
     Given configure-tools command is registered in src/index.ts

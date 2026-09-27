@@ -68,8 +68,8 @@ fn removes_agent_files_and_config_when_the_config_names_claude() {
     let tmp = TempDir::new().expect("tempdir");
     write_config(tmp.path(), "claude");
 
-    // @step And the files spec/CLAUDE.md and .claude/commands/fspec.md exist
-    touch(tmp.path(), "spec/CLAUDE.md");
+    // @step And the files spec/AGENTS.md and .claude/commands/fspec.md exist
+    touch(tmp.path(), "spec/AGENTS.md");
     touch(tmp.path(), ".claude/commands/fspec.md");
 
     // @step When I dispatch remove-init-files with no keepConfig
@@ -80,10 +80,10 @@ fn removes_agent_files_and_config_when_the_config_names_claude() {
 
     let removed = files_removed(&result.data);
 
-    // @step And the returned JSON filesRemoved includes 'spec/CLAUDE.md'
+    // @step And the returned JSON filesRemoved includes 'spec/AGENTS.md'
     assert!(
-        removed.iter().any(|f| f == "spec/CLAUDE.md"),
-        "filesRemoved must include spec/CLAUDE.md; got {removed:?}"
+        removed.iter().any(|f| f == "spec/AGENTS.md"),
+        "filesRemoved must include spec/AGENTS.md; got {removed:?}"
     );
 
     // @step And the returned JSON filesRemoved includes '.claude/commands/fspec.md'
@@ -98,10 +98,10 @@ fn removes_agent_files_and_config_when_the_config_names_claude() {
         "filesRemoved must include spec/fspec-config.json; got {removed:?}"
     );
 
-    // @step And spec/CLAUDE.md no longer exists
+    // @step And spec/AGENTS.md no longer exists
     assert!(
-        !tmp.path().join("spec/CLAUDE.md").exists(),
-        "spec/CLAUDE.md must be removed"
+        !tmp.path().join("spec/AGENTS.md").exists(),
+        "spec/AGENTS.md must be removed"
     );
 
     // @step And spec/fspec-config.json no longer exists
@@ -152,8 +152,8 @@ fn keep_config_true_preserves_spec_fspec_config_json() {
     let tmp = TempDir::new().expect("tempdir");
     write_config(tmp.path(), "claude");
 
-    // @step And the files spec/CLAUDE.md and .claude/commands/fspec.md exist
-    touch(tmp.path(), "spec/CLAUDE.md");
+    // @step And the files spec/AGENTS.md and .claude/commands/fspec.md exist
+    touch(tmp.path(), "spec/AGENTS.md");
     touch(tmp.path(), ".claude/commands/fspec.md");
 
     // @step When I dispatch remove-init-files with keepConfig=true
@@ -164,10 +164,10 @@ fn keep_config_true_preserves_spec_fspec_config_json() {
 
     let removed = files_removed(&result.data);
 
-    // @step And the returned JSON filesRemoved includes 'spec/CLAUDE.md'
+    // @step And the returned JSON filesRemoved includes 'spec/AGENTS.md'
     assert!(
-        removed.iter().any(|f| f == "spec/CLAUDE.md"),
-        "filesRemoved must include spec/CLAUDE.md; got {removed:?}"
+        removed.iter().any(|f| f == "spec/AGENTS.md"),
+        "filesRemoved must include spec/AGENTS.md; got {removed:?}"
     );
 
     // @step And the returned JSON filesRemoved does NOT include 'spec/fspec-config.json'
@@ -210,11 +210,11 @@ fn force_removal_is_idempotent_when_an_agent_file_is_already_absent() {
     let tmp = TempDir::new().expect("tempdir");
     write_config(tmp.path(), "claude");
 
-    // @step And spec/CLAUDE.md does NOT exist but .claude/commands/fspec.md exists
+    // @step And spec/AGENTS.md does NOT exist but .claude/commands/fspec.md exists
     touch(tmp.path(), ".claude/commands/fspec.md");
     assert!(
-        !tmp.path().join("spec/CLAUDE.md").exists(),
-        "precondition: spec/CLAUDE.md must not exist"
+        !tmp.path().join("spec/AGENTS.md").exists(),
+        "precondition: spec/AGENTS.md must not exist"
     );
 
     // @step When I dispatch remove-init-files with no keepConfig
@@ -223,11 +223,11 @@ fn force_removal_is_idempotent_when_an_agent_file_is_already_absent() {
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
 
-    // @step And the returned JSON filesRemoved includes 'spec/CLAUDE.md'
+    // @step And the returned JSON filesRemoved includes 'spec/AGENTS.md'
     let removed = files_removed(&result.data);
     assert!(
-        removed.iter().any(|f| f == "spec/CLAUDE.md"),
-        "filesRemoved must include spec/CLAUDE.md (idempotent force removal); got {removed:?}"
+        removed.iter().any(|f| f == "spec/AGENTS.md"),
+        "filesRemoved must include spec/AGENTS.md (idempotent force removal); got {removed:?}"
     );
 }
 

@@ -54,10 +54,10 @@ fn test_ai_has_no_memory_of_prior_conversation_after_clear() {
 /// This tests that inject_context_reminders() is called after clearing
 #[test]
 fn test_system_reminders_preserved_after_clear() {
-    // @step Given I have a TUI session with CLAUDE.md loaded
+    // @step Given I have a TUI session with AGENTS.md loaded
     let mut messages: Vec<Message> = vec![Message::User {
         content: OneOrMany::one(UserContent::text(
-            "System context from CLAUDE.md - fspec project",
+            "System context from AGENTS.md - fspec project",
         )),
     }];
 
@@ -68,7 +68,7 @@ fn test_system_reminders_preserved_after_clear() {
     messages.clear();
 
     // Simulate inject_context_reminders() being called by session_clear_history
-    // In real implementation, this reinjects CLAUDE.md and environment info
+    // In real implementation, this reinjects AGENTS.md and environment info
     let has_project_context = true; // inject_context_reminders() restores project context
     let has_date_context = true; // inject_context_reminders() restores date from environment
 
@@ -78,7 +78,7 @@ fn test_system_reminders_preserved_after_clear() {
     // @step Then the AI should still know it's working on fspec project
     assert!(
         has_project_context,
-        "AI should know it's working on fspec project from CLAUDE.md"
+        "AI should know it's working on fspec project from AGENTS.md"
     );
 
     // @step And the AI should still know the current date

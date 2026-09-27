@@ -32,7 +32,7 @@ Implement the set_role action for AgentManager and the /role TUI command. A role
 
 ## How Role is Applied
 
-The role string is stored on the BackgroundSession. When the agent_loop builds the next prompt, the role is included as part of the system context — similar to how CLAUDE.md or work unit reminders are injected. The exact injection mechanism (system-reminder tag, prepend to preamble, etc.) follows existing patterns.
+The role string is stored on the BackgroundSession. When the agent_loop builds the next prompt, the role is included as part of the system context — similar to how AGENTS.md or work unit reminders are injected. The exact injection mechanism (system-reminder tag, prepend to preamble, etc.) follows existing patterns.
 
 ## Scenarios
 

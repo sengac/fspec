@@ -19,7 +19,7 @@ plus `executeRemoveInitFiles({keepConfig?, promptKeepConfig?})` (interactive wra
 2. If no agent → `throw new Error('No fspec agent installation detected. Nothing to remove.')`.
 3. `agent = getAgentById(id)`; if unknown → `throw Error(`Unknown agent: ${id}`)`.
 4. `removeAgentFiles(cwd, agent.id)`:
-   - `rm(join(cwd,'spec',agent.docTemplate), {force:true})` → push `spec/${docTemplate}` (e.g. `spec/CLAUDE.md`).
+   - `rm(join(cwd,'spec',agent.docTemplate), {force:true})` → push `spec/${docTemplate}` (e.g. `spec/AGENTS.md`).
    - filename = `agent.slashCommandFormat==='toml' ? 'fspec.toml' : 'fspec.md'`.
    - `rm(join(cwd, agent.slashCommandPath, filename), {force:true})` → push `${slashCommandPath}${filename}`
      (e.g. `.claude/commands/fspec.md`).
