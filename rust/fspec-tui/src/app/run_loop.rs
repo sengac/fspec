@@ -38,7 +38,11 @@ impl App {
                 );
                 self.compositor.render(frame.area(), frame.buffer_mut());
                 if let ViewMode::Agent = self.navigator.active_view {
-                    if self.navigator.agent.is_cursor_visible(session_status) {
+                    if self
+                        .navigator
+                        .agent
+                        .is_cursor_visible(&self.agent_view_store, session_status)
+                    {
                         if let Some((x, y)) = self.navigator.agent.cursor_position() {
                             frame.set_cursor_position((x, y));
                         }
@@ -98,7 +102,10 @@ impl App {
                             );
                             self.compositor.render(frame.area(), frame.buffer_mut());
                             if let ViewMode::Agent = self.navigator.active_view {
-                                if self.navigator.agent.is_cursor_visible(session_status) {
+                                if self.navigator.agent.is_cursor_visible(
+                                    &self.agent_view_store,
+                                    session_status,
+                                ) {
                                     if let Some((x, y)) = self.navigator.agent.cursor_position() {
                                         frame.set_cursor_position((x, y));
                                     }

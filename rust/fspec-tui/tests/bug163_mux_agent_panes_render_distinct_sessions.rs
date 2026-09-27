@@ -330,13 +330,22 @@ async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: an unfocused agent pane renders its ghost draft instead of a
-// live spinner
+// Scenario: an idle unfocused agent pane renders its ghost draft with no
+// spinner
+//
+// BUG-194 superseded the old reading of this example ("unfocused pane is
+// never the live spinner"). The amended rule: an UNFOCUSED pane at
+// Idle transition renders its read-only ghost draft with no spinner;
+// an unfocused pane whose session is Running/Compacting renders the
+// same live spinner row as its focused twin (see
+// spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature).
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: an unfocused agent pane renders its ghost draft instead of a live spinner
+/// Scenario: an idle unfocused agent pane renders its ghost draft with no spinner
+///
+/// Feature: spec/features/mux-agent-panes-render-distinct-window-sessions.feature
 #[tokio::test]
-async fn an_unfocused_agent_pane_renders_its_ghost_draft_instead_of_a_live_spinner() {
+async fn an_idle_unfocused_agent_pane_renders_its_ghost_draft_with_no_spinner() {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut app, _mock) = fresh_app();
     app_with_sessions_and_panes(
@@ -347,10 +356,10 @@ async fn an_unfocused_agent_pane_renders_its_ghost_draft_instead_of_a_live_spinn
     .await;
     // @step And two agent sessions are open
     assert_eq!(app.agent_view_store().open_sessions().len(), 2);
-    // @step And the agent 2 session is running
+    // @step And the agent 2 session is idle
     app.dispatch(Action::SessionStatusChanged(
         sid("s-2"),
-        codelet_rpc_types::SessionStatus::Running,
+        codelet_rpc_types::SessionStatus::Idle,
     ));
     // @step And the agent 1 pane is focused
     click_pane(&mut app, 1);
@@ -369,10 +378,10 @@ async fn an_unfocused_agent_pane_renders_its_ghost_draft_instead_of_a_live_spinn
     let right_text = pane_text(&buf, right_pane);
     assert!(
         !right_text.contains("Thinking"),
-        "the unfocused agent 2 pane must NOT paint the live 'Thinking' spinner; pane: {right_text}"
+        "the unfocused idle agent 2 pane must NOT paint a 'Thinking' spinner; pane: {right_text}"
     );
     assert!(
         right_text.contains("Type a message..."),
-        "the unfocused agent 2 pane (empty draft) must show the placeholder ghost; pane: {right_text}"
+        "the unfocused idle agent 2 pane (empty draft) must show the placeholder ghost; pane: {right_text}"
     );
 }

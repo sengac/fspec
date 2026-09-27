@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-27T03:57:21.718Z",
+    "lastUpdated": "2026-09-27T23:08:56.253Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 193,
+    "BUG": 194,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1738,7 +1738,8 @@
       "BUG-186",
       "BUG-193",
       "CONFIG-009",
-      "CLEAN-008"
+      "CLEAN-008",
+      "BUG-194"
     ],
     "blocked": [
       "QUERY-001",
@@ -234735,6 +234736,111 @@
         }
       ],
       "nextNoteId": 1
+    },
+    "BUG-194": {
+      "id": "BUG-194",
+      "title": "Mux: thinking indicator disappears when focus moves off a running agent pane",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-09-27T07:19:19.145Z",
+      "updatedAt": "2026-09-27T23:08:56.253Z",
+      "description": "In mux mode, when the focused pane is a running agent session (Thinking... spinner shown) and the user selects a different view/pane, the thinking indicator is lost even though the agent is still Running. Selecting the agent pane again makes the indicator reappear. Root cause: InputTransitionState/spinner state is view-level on AgentView and only ticked by the FOCUSED agent pane (tick_animation), while per-session SessionStatus is correct. Focus changes re-follow the store's current session (sync_mux_focus_to_session), so the shared state machine is driven by the wrong session. Fix: make the thinking-indicator transition state per-session and tick every rendered agent pane from its own session status.",
+      "epic": "mux",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-194/bug-194-mux-thinking-indicator-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-27T07:22:44.886Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-27T08:12:19.947Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-27T10:27:08.637Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-27T17:31:57.689Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-27T23:08:56.253Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user supervising parallel agents in mux mode",
+        "action": "keep the thinking indicator of a running agent pane visible and animating",
+        "benefit": "not misread an active agent as idle when I move focus to another pane"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The thinking indicator (InputTransitionState machine: Loading/Compacting/Hiding/Showing) MUST be per-session, not a single shared view-level state on AgentView",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:48:11.837Z"
+        },
+        {
+          "id": 1,
+          "text": "Every rendered agent pane MUST paint the SAME thinking spinner/finish-sweep rows as the focused pane when its session is Running/Compacting/idle-transition — the indicator must be visually identical to the focused pane's, driven by that pane's OWN session status (user decision: 'it's supposed to be the same thinking spinner - it's not supposed to change')",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:48:24.962Z"
+        },
+        {
+          "id": 2,
+          "text": "Moving mux focus (Shift+Left/Right, click-to-focus, window rotation, /mux pane changes) MUST NOT reset, skip, or otherwise mutate any session's transition state — the only input to a session's transition machine is that session's own SessionStatus",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:48:40.440Z"
+        },
+        {
+          "id": 3,
+          "text": "When a session goes Idle, its finish sweep (Hiding -> Showing -> Idle) MUST run to completion for THAT session's pane even if no pane is focused on it; the run-loop redraw gate (tick_should_draw) stays open while ANY session's transition is mid-animation or ANY session is Running/Compacting",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:48:58.298Z"
+        },
+        {
+          "id": 4,
+          "text": "The live MultiLineInput composer stays exclusive to the FOCUSED agent pane (BUG-163 invariant): only the focused pane's input row hosts the editable composer/cursor; unfocused panes that are idle (transition Idle) keep painting their read-only ghost draft. Only the indicator rows (Loading/Compacting/Hiding/Showing) become per-pane and identical to the focused pane's",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:49:13.751Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Mux grid [Board | Agent1 | Agent2]; Agent1 is Running. Focus Agent1 -> its input row shows the animated 'Thinking...' spinner. Press Shift+Right to focus Agent2 (Idle): Agent1's pane STILL shows its 'Thinking...' spinner (identical to before, still animating), Agent2's pane shows its idle composer; focus stays on Agent2 for typing",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:49:24.936Z"
+        },
+        {
+          "id": 1,
+          "text": "Mux grid [Board | Agent1]; Agent1 is Running and the BOARD pane is focused: Agent1's pane still shows its 'Thinking...' spinner exactly as it did before focus moved; the board keeps receiving keyboard input",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:49:39.106Z"
+        },
+        {
+          "id": 2,
+          "text": "Mux grid [Agent1 | Agent2]; Agent1 is Running, Agent2 is focused (Idle). Agent1 finishes its turn (goes Idle): Agent1's pane plays the same finish sweep (spinner text sweeps out 5 chars/frame, placeholder grows in) and ends with its ghost draft row — even though Agent2's pane has keyboard focus the whole time",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:49:55.400Z"
+        },
+        {
+          "id": 3,
+          "text": "Mux grid [Board | Agent1 | Agent2]; Agent2 is Compacting while Agent1's pane (Idle) is focused: Agent2's pane shows its 'Compacting...' spinner row (same style/cadence as Thinking, with the compaction label) while Agent1's pane shows its idle composer",
+          "deleted": false,
+          "createdAt": "2026-09-27T07:50:17.867Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "assumptions": [
+        "User decision (2026-09-27): unfocused panes show the SAME full thinking spinner as the focused pane (not a dimmed/badged variant), and the finish sweep behaves per-pane identically too ('it's supposed to be the same thinking spinner - it's not supposed to change'). Single-view mode remains byte-for-byte unchanged because the focused pane == the only pane there."
+      ],
+      "estimate": 5
     }
   }
 }

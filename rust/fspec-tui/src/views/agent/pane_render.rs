@@ -114,17 +114,25 @@ impl AgentView {
             self.last_scrollback_viewport = areas.scrollback.height;
             self.last_scrollback_area = Some(areas.scrollback);
         }
-        // BUG-163: tick the live-composer animation only for the focused
-        // pane — spinner/transition state belongs to the live session.
-        // Unfocused panes read the status directly (no animation tick).
-        let (session_status, is_loading) = if pane.is_focused {
-            self.tick_animation(store, sid.as_ref())
-        } else {
-            let status = sid
-                .as_ref()
-                .and_then(|s| store.session_status_for(s).copied());
-            (status, matches!(status, Some(SessionStatus::Running)))
-        };
+        // BUG-194: EVERY rendered agent pane ticks its OWN session's
+        // transition slot from its OWN status (focused or not) — focus
+        // movement no longer drives the thinking indicator. The focused
+        // pane additionally drives the view-level COMPACTING-DIAG log
+        // and the `is_busy` mirror (RPC-093).
+        let session_status = sid
+            .as_ref()
+            .and_then(|s| store.session_status_for(s).copied());
+        let is_loading = matches!(session_status, Some(SessionStatus::Running));
+        if let Some(sid_ref) = sid.as_ref() {
+            if let Some(ctx) = store.session_context_mut_for(sid_ref) {
+                self.tick_session_transition(
+                    session_status,
+                    Some(sid_ref),
+                    &mut ctx.input_transition,
+                    pane.is_focused,
+                );
+            }
+        }
         if pane.is_focused {
             self.last_is_compacting = matches!(session_status, Some(SessionStatus::Compacting));
         }

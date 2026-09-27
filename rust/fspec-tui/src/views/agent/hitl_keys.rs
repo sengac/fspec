@@ -51,8 +51,12 @@ impl AgentView {
     /// RPC-406/RPC-411 cursor gate: no hardware cursor inside the
     /// pause prompt or an options-mode HITL prompt; freeform/Other
     /// mode shows the cursor inside the SHARED composer input.
+    /// BUG-194: the transition operand is the focused session's OWN
+    /// per-session slot (from the store), not a view-level shared
+    /// state.
     pub(super) fn is_cursor_visible_with_prompts(
         &self,
+        store: &crate::store::AgentViewStore,
         session_status: Option<codelet_rpc_types::SessionStatus>,
     ) -> bool {
         // TOOL-022 P2: the exec-stdin overlay is live — the shared
@@ -63,16 +67,22 @@ impl AgentView {
         if self.last_exec_stdin.is_some() {
             return true;
         }
+        // BUG-194: the focused session's own per-session transition
+        // state (the view no longer holds a shared machine).
+        let transition_state = store
+            .current_session_context()
+            .map(|c| c.input_transition.state.clone())
+            .unwrap_or_default();
         if let Some((_, mode)) = &self.last_hitl {
             if matches!(mode, HitlKeyMode::Options) {
                 return false;
             }
-            return Self::is_cursor_visible_for(session_status, &self.input_transition_state);
+            return Self::is_cursor_visible_for(session_status, &transition_state);
         }
         if self.last_pause.is_some() {
             return false;
         }
-        Self::is_cursor_visible_for(session_status, &self.input_transition_state)
+        Self::is_cursor_visible_for(session_status, &transition_state)
     }
 
     /// Consume a key event for the active HITL prompt. Returns `None`

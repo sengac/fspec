@@ -2402,6 +2402,10 @@
           "description": "Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation"
         },
         {
+          "name": "@bug-194",
+          "description": "Work unit identifier for BUG-194 — mux thinking indicator must keep animating when focus moves off a running agent pane (per-session transition state)"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -3134,7 +3138,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-24T04:42:16.797Z",
+    "lastUpdated": "2026-09-27T22:27:57.591Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

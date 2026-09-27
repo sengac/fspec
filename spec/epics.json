@@ -1398,7 +1398,8 @@
         "BUG-179",
         "BUG-182",
         "BUG-183",
-        "MUX-009"
+        "MUX-009",
+        "BUG-194"
       ]
     },
     "provider-settings": {

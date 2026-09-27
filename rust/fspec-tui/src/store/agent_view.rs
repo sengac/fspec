@@ -33,6 +33,7 @@ pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
 pub mod record_chunk;
 pub mod role_state;
+pub mod scrollback_mutate;
 pub mod session_context;
 pub mod session_indexing;
 pub mod stderr;
@@ -202,6 +203,27 @@ impl AgentViewStore {
 
     pub fn current_session(&self) -> Option<&SessionId> {
         self.current_session_context().map(|c| &c.id)
+    }
+
+    /// BUG-194: true iff ANY open session is Running or Compacting —
+    /// the run-loop redraw-gate operand (replaces the current-session
+    /// check so an unfocused busy pane keeps the 16ms tick alive).
+    pub fn any_session_busy(&self) -> bool {
+        self.open_sessions.iter().any(|c| {
+            matches!(
+                self.session_status_for(&c.id),
+                Some(SessionStatus::Running) | Some(SessionStatus::Compacting)
+            )
+        })
+    }
+
+    /// BUG-194: true iff ANY open session's thinking-indicator finish
+    /// sweep (Hiding/Showing) is mid-flight — the run-loop redraw-gate
+    /// operand so an unfocused pane's sweep completes.
+    pub fn any_session_transition_animating(&self) -> bool {
+        self.open_sessions
+            .iter()
+            .any(|c| c.input_transition.is_animating())
     }
 
     // ── Legacy slot accessors ────────────────────────────────────────────

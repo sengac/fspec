@@ -646,6 +646,7 @@ Tags tracking development status of features.
 | `@bug-186` | Bug fix work unit BUG-186 — rpc002_session_persistence tests fail in a clean test env: model registry cache missing → create_session declines (PROV-101) → empty SessionId. Fix: seed the temp data dir with the shared prov101 model-cache fixture + dummy ANTHROPIC creds, and use a fixture model as the offline default. |
 | `@bug-190` | Bug fix work unit BUG-190 — 60fps busy-state TUI repaint re-wraps + re-grapheme-scans every scrollback row every frame: memoize the reflected scrollback row per (chunk content, width) so steady-state frames blit cached rows |
 | `@bug-192` | Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation |
+| `@bug-194` | Work unit identifier for BUG-194 — mux thinking indicator must keep animating when focus moves off a running agent pane (per-session transition state) |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
@@ -803,4 +804,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-24T04:42:16.797Z_
+_Last updated: 2026-09-27T22:27:57.591Z_

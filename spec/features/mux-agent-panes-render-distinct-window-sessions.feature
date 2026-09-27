@@ -1,3 +1,4 @@
+@tui-component
 @done
 @BUG-163
 @mux
@@ -30,7 +31,7 @@ Feature: Mux agent panes render distinct window sessions
   #   1. /mux board agent agent with one open session (agent 1) and the agent 1 pane focused: the grid shows [Board][agent 1] — exactly one agent pane; its header shows agent 1's tokens and its input shows the live composer.
   #   2. The same grid after creating session 2 and rotating the window so both slots are filled ([agent 1][agent 2]): the left agent pane's scrollback shows agent 1's messages and the right agent pane's scrollback shows agent 2's messages — the two panes are never identical.
   #   3. Agent 1's pane holds a live draft "hello"; the user moves focus to the agent 2 pane: agent 1's pane keeps showing "hello" as its ghost draft while agent 2's pane shows the live composer (agent 2's draft, or the placeholder when empty).
-  #   4. Agent 1's session is Idle and agent 2's session is Running: agent 1's pane shows its input composer; agent 2's pane (if unfocused) shows its ghost draft, NOT a live "Thinking" spinner — the spinner is only painted in the focused pane.
+  #   4. Agent 1's session is Idle and agent 2's session is Idle: agent 1's pane shows its input composer; agent 2's pane (if unfocused) shows its ghost draft, NOT a live "Thinking" spinner. SUPERSEDED (BUG-194, 2026-09-27): an unfocused RUNNING pane now renders the SAME live spinner row as the focused pane — only an unfocused IDLE (Idle transition) pane renders the ghost draft. See spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature.
   #
   # ========================================
   Background: User Story
@@ -76,11 +77,13 @@ Feature: Mux agent panes render distinct window sessions
     Then the agent 1 pane still shows the draft "hello" as its ghost input
     And the agent 2 pane shows the live composer
 
-  # Example 4: only the focused agent pane renders the live spinner
-  Scenario: an unfocused agent pane renders its ghost draft instead of a live spinner
+  # Example 4 (amended by BUG-194): the ghost draft is the UNFOCUSED
+  # IDLE pane's input row — an unfocused RUNNING pane now paints the
+  # live spinner (spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature)
+  Scenario: an idle unfocused agent pane renders its ghost draft with no spinner
     Given mux mode is active with the pane list board, agent and agent
     And two agent sessions are open
-    And the agent 2 session is running
+    And the agent 2 session is idle
     And the agent 1 pane is focused
     When the grid is rendered
     Then the agent 1 pane input shows the live composer

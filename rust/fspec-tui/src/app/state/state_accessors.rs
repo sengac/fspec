@@ -92,23 +92,23 @@ impl App {
         self.agent_view_store.session_status_for(sid).copied()
     }
 
-    /// RPC-093 rule [6]: true iff the current session is Running or
+    /// RPC-093 rule [6]: true iff ANY session is Running or
     /// Compacting — drives the run-loop "redraw every tick" bypass so
-    /// the spinner advances even without inbound chunks.
+    /// the spinner advances even without inbound chunks. BUG-194: any
+    /// session (not just the focused one) keeps its pane's spinner
+    /// alive.
     pub fn is_session_busy(&self) -> bool {
-        matches!(
-            self.current_session_status(),
-            Some(codelet_rpc_types::SessionStatus::Running)
-                | Some(codelet_rpc_types::SessionStatus::Compacting)
-        )
+        self.agent_view_store.any_session_busy()
     }
 
-    /// RPC-093: true iff the AgentView input row is mid-finish-animation
+    /// RPC-093: true iff an AgentView input row is mid-finish-animation
     /// (Hiding/Showing). Plumbed into `tick_should_draw` so the
     /// run loop keeps drawing every 16ms tick even AFTER the session
     /// has gone Idle, letting the 5 char/17ms sweep complete.
+    /// BUG-194: any session's in-flight sweep (including unfocused
+    /// panes) keeps the gate open.
     pub fn is_input_animating(&self) -> bool {
-        self.navigator.agent.is_input_animating()
+        self.agent_view_store.any_session_transition_animating()
     }
 
     /// TUI-106: true iff the active lazy mode-view (Checkpoints or
