@@ -15,6 +15,7 @@ use crate::compositor::Compositor;
 
 pub mod attachment_picker_dialog;
 pub mod board_exit_confirmation_dialog;
+pub mod board_keybinding_dialog;
 pub mod checkpoint_restore_dialog;
 pub mod create_session_dialog;
 pub mod dialog_theme;
@@ -1323,6 +1324,26 @@ pub enum Action {
     /// `BoardView::handle_event`; App::dispatch routes it to
     /// `handle_open_mux_config_dialog` (idempotent, one instance).
     OpenMuxConfigDialog,
+    /// BOARD-023: the Board view's modifier-free 'u'/'U' keybinding
+    /// (case-insensitive) opens the actions popup dialog
+    /// (Priority::Foreground, Yellow accent, stable id
+    /// 'board-actions-dialog'). Serves the single Board view AND the
+    /// focused Board pane in mux mode (the binding lives in
+    /// BoardView::handle_event, which mux routes through). App::dispatch
+    /// routes it to `handle_open_board_keybinding_dialog` (idempotent,
+    /// one instance).
+    OpenBoardKeybindingDialog,
+    /// BOARD-023: the actions dialog's '? Help' row — App::dispatch
+    /// routes this to the SAME push helper the stage-4 '?' shortcut
+    /// uses (HelpDialog::for_board), so both entry points share one
+    /// code path (R6, DRY).
+    OpenBoardHelp,
+    /// BOARD-023: the actions dialog's 'Esc Exit' row — App::dispatch
+    /// routes this to the SAME push helper the stage-4 Esc shortcut
+    /// uses (BoardExitConfirmationDialog). This is the ONLY path from
+    /// the actions dialog to the exit confirmation — the dialog's own
+    /// Esc key always closes the dialog instead (R8).
+    OpenBoardExitConfirmation,
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

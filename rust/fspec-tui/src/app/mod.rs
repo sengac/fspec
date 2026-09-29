@@ -23,6 +23,7 @@ pub mod dispatch;
 pub mod dispatch_agent_exit;
 pub mod dispatch_attach;
 pub mod dispatch_blocklist;
+pub mod dispatch_board_keybinding; // BOARD-023: board ',' keybindings dialog + help/exit rows
 pub mod dispatch_capability;
 pub mod dispatch_changed_files;
 pub mod dispatch_checkpoint_delete;

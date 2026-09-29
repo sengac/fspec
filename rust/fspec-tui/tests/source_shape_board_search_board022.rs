@@ -126,9 +126,12 @@ fn board_view_handle_event_gains_the_slash_arm() {
 }
 
 /// Scenario: the board header chord gains the '/ Search' segment
+/// (BOARD-023 R10 supersession: the chord row now paints the single-source-
+/// of-truth short hint CHORD_HINT — the '/ Search' entry moved to the
+/// keybindings dialog)
 #[test]
 fn board_header_chord_gains_the_search_segment() {
-    // @step Given rust/fspec-tui/src/views/board/keybinding_shortcuts.rs after BOARD-022 lands
+    // @step Given rust/fspec-tui/src/views/board/keybinding_shortcuts.rs after BOARD-023 lands
     let body = read_raw(
         &workspace_codelet_dir()
             .join("fspec-tui")
@@ -137,10 +140,10 @@ fn board_header_chord_gains_the_search_segment() {
             .join("board")
             .join("keybinding_shortcuts.rs"),
     );
-    // @step Then the file contains the substring "/ Search"
+    // @step Then the file paints the shared CHORD_HINT from board_shortcuts (R11)
     assert!(
-        body.contains("/ Search"),
-        "'/ Search' chord segment missing"
+        body.contains("CHORD_HINT"),
+        "header must paint the single-source-of-truth CHORD_HINT (BOARD-023 R10/R11)"
     );
 }
 

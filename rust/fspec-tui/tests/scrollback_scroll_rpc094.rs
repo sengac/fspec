@@ -654,9 +654,12 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     tracks the measured file (1357).
     //   - MUX-009 added 6 lines (OpenMuxConfigDialog variant + a 5-line doc
     //     stanza) — the assertion tracks the measured file (1363).
+    //   - BOARD-023 added 21 lines (OpenBoardKeybindingDialog / OpenBoardHelp /
+    //     OpenBoardExitConfirmation variants + a 3-line doc stanza each) —
+    //     the assertion tracks the measured file (1384).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1363,
-        "components/mod.rs has {n_components} lines — measured ceiling 1363 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog)"
+        n_components <= 1384,
+        "components/mod.rs has {n_components} lines — measured ceiling 1384 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants)"
     );
 }

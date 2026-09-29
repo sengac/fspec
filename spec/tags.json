@@ -1194,6 +1194,10 @@
           "description": "Blob storage for large content"
         },
         {
+          "name": "@board-023",
+          "description": "Work unit BOARD-023 — board actions popup dialog: the modifier-free 'u' key opens the 'Actions' popup (BoardKeybindingDialog) listing every board shortcut; the header chord row collapses to a 'u Actions' hint"
+        },
+        {
           "name": "@boundary",
           "description": "Boundary condition scenarios"
         },
@@ -3138,7 +3142,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-27T22:27:57.591Z",
+    "lastUpdated": "2026-09-28T01:56:55.377Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

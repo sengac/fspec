@@ -1,0 +1,578 @@
+{
+  "scenarios": [
+    {
+      "name": "u opens the actions dialog from the single Board view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "194-245",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "U opens the actions dialog (case-insensitive trigger)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "260-296",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+U does not open the actions dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "298-325",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The actions dialog body lists all board shortcuts with descriptions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "327-377",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The actions dialog has no trigger row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "379-423",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Down moves the selection to the next row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "425-451",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up moves the selection to the previous row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "453-478",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up from the first row wraps to the last row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "480-504",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Down from the last row wraps to the first row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "506-530",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter executes the highlighted action and closes the dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "532-558",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Mux row opens the Mux config dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "560-584",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Help row opens the board help dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "586-609",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_board_keybinding.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Exit row opens the exit confirmation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "611-645",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_board_keybinding.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc closes the dialog without executing the highlighted row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "647-680",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Keys behind the dialog never leak to the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "682-720",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing u again while open is a no-op",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "722-750",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+              "lines": [
+                218,
+                219,
+                220
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board header chord row is replaced by a short Actions hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "752-787",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "u opens the actions dialog from the focused Board pane in mux mode",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "789-817",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board help dialog advertises the u keybinding",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "819-844",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/help_content.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 19,
+    "coveredScenarios": 19,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/board_actions_dialog_board023.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_board_keybinding.rs",
+      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+      "rust/fspec-tui/src/components/help_content.rs"
+    ],
+    "totalLinesCovered": 874
+  }
+}

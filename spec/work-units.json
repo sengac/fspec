@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-09-27T23:08:56.253Z",
+    "lastUpdated": "2026-09-29T12:16:54.841Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -92,7 +92,7 @@
     "VIZ": 4,
     "WATCH": 24,
     "UPD": 4,
-    "BOARD": 22,
+    "BOARD": 23,
     "MUX": 9,
     "WT": 12,
     "LAYA": 9,
@@ -1739,7 +1739,8 @@
       "BUG-193",
       "CONFIG-009",
       "CLEAN-008",
-      "BUG-194"
+      "BUG-194",
+      "BOARD-023"
     ],
     "blocked": [
       "QUERY-001",
@@ -234841,6 +234842,239 @@
         "User decision (2026-09-27): unfocused panes show the SAME full thinking spinner as the focused pane (not a dimmed/badged variant), and the finish sweep behaves per-pane identically too ('it's supposed to be the same thinking spinner - it's not supposed to change'). Single-view mode remains byte-for-byte unchanged because the focused pane == the only pane there."
       ],
       "estimate": 5
+    },
+    "BOARD-023": {
+      "id": "BOARD-023",
+      "title": "Board actions popup dialog triggered by the u key",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-09-28T01:51:03.431Z",
+      "updatedAt": "2026-09-29T12:16:54.841Z",
+      "description": "Collapse the board header's top-row keybinding chord (C Checkpoints / F Changed Files / D FOUNDATION.md / . New Agent / / Search / M Mux) into a popup dialog titled 'Actions'. The modifier-free 'u' key (case-insensitive, like the other board shortcuts — from the single Board view AND the focused Board pane in mux mode) opens a Priority::Foreground BoardKeybindingDialog rendered via the shared dialog_theme (Yellow accent, label_description_row rows). Up/Down (wrap) + mouse wheel select a row; Enter emits the SAME Action the bare key would (OpenCheckpointsView, OpenChangedFilesView, OpenFoundation, OpenAgentView(snapshot), OpenWorkUnitSearch, OpenMuxConfigDialog) and closes; the '? Help' and 'Esc Exit' rows emit new OpenBoardHelp / OpenBoardExitConfirmation actions reusing the stage-4 push helpers. No trigger row inside the dialog (it is already open; Esc closes it). Esc closes; every other key is consumed (BUG-161 true-modal blocking, no leak to the board); 'u' while open is a consumed no-op (idempotent, no stacking). The header chord row is replaced by a short 'u Actions' hint. No new RPC surface; MuxConfig serde unchanged.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "userStory": {
+        "role": "developer working from the Board view",
+        "action": "press the 'u' key to open an actions popup dialog explaining every board shortcut and select one with the up/down arrows",
+        "benefit": "I can discover and trigger board actions without memorizing the top-row chord, and the header stays uncluttered"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-28T01:51:23.732Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-28T01:58:33.315Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-28T02:09:51.171Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-28T04:46:27.569Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-28T05:00:36.805Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-09-29T06:39:51.033Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-09-29T10:26:44.647Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-09-29T10:27:54.719Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-09-29T11:31:58.497Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-09-29T12:16:54.841Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R8: the Esc key ALWAYS closes the dialog (standard modal convention) and NEVER triggers the exit confirmation — even when the 'Esc Exit' row is highlighted. The only way to open the exit confirmation from this dialog is an explicit Enter on the 'Esc Exit' row. Likewise the '?' key is blocked by the modal (R7); only Enter on the '? Help' row opens the HelpDialog. This keeps Esc from creating a double-step accidental-quit path (exit confirmation opens with 'Exit' pre-selected).",
+          "deleted": false,
+          "createdAt": "2026-09-28T01:52:21.259Z"
+        },
+        {
+          "id": 1,
+          "text": "R11: the board shortcut list (key display, label, description, action variant) is a SINGLE source of truth (one table, e.g. views/board/board_shortcuts.rs) consumed by BOTH the keybinding dialog's row builder AND the board key arms' documentation — the dialog can never drift from the actual key handling again.",
+          "deleted": false,
+          "createdAt": "2026-09-28T01:52:32.676Z"
+        },
+        {
+          "id": 2,
+          "text": "Board view only (single Board view + focused Board pane in mux mode). The top-row chord being collapsed only exists on the board; the Agent view keeps its own ? help and slash popup. The binding lives in BoardView::handle_event (views/board/keys.rs), which is exactly what the mux Board pane routes through.",
+          "deleted": false,
+          "createdAt": "2026-09-28T01:53:23.126Z"
+        },
+        {
+          "id": 3,
+          "text": "R1: pressing modifier-free 'u' or 'U' (case-insensitive, mirroring the a/c/f/d/m key arms) in the single Board view opens the BoardKeybindingDialog (Priority::Foreground, shared dialog_theme renderer, Yellow accent, stable id 'board-actions-dialog'). The key is always consumed (no fall-through).",
+          "deleted": false,
+          "createdAt": "2026-09-29T08:38:06.392Z"
+        },
+        {
+          "id": 4,
+          "text": "R2: the trigger is modifier-free only — Ctrl+U (or any Ctrl-chorded u/U) must NOT open the dialog and falls through to the existing App-level handling, consistent with the a/c/f/d/m guard pattern in BoardView. While the dialog is open, pressing 'u'/'U' again is a consumed no-op (idempotent — never stacks a second layer).",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:04:35.761Z"
+        },
+        {
+          "id": 5,
+          "text": "R4: Up/Down arrows move the selection with wrap-around (Up from row 0 goes to row 7; Down from row 7 goes to row 0); the mouse wheel drives the same movement (MuxConfigDialog R4 parity).",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:06:53.310Z"
+        },
+        {
+          "id": 6,
+          "text": "R3: the dialog body lists exactly 8 rows, in this order: C Checkpoints (open the checkpoints view), F Changed Files (open the changed-files view), D FOUNDATION.md (open in the browser), . New Agent (start/open an agent for the focused work unit), / Search (search work units), M Mux (open the mux layout config), ? Help (full keybinding help), Esc Exit (confirm exiting fspec). There is NO trigger row (no 'u Actions' row) — the dialog is already open and Esc closes it. Each row shows the key, the label, and a one-line description via the shared label_description_row renderer; the first row is pre-selected.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:06:53.664Z"
+        },
+        {
+          "id": 7,
+          "text": "R5: Enter on a highlighted row emits the SAME Action the bare board key would emit and closes the dialog: C -> OpenCheckpointsView, F -> OpenChangedFilesView, D -> OpenFoundation, . -> OpenAgentView (with the session target snapshotted at dialog open — the modal blocks board selection while open), / -> OpenWorkUnitSearch, M -> OpenMuxConfigDialog. There is no close-only trigger row (R3).",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:07:41.185Z"
+        },
+        {
+          "id": 8,
+          "text": "R9: when mux is active and the focused pane is the Board pane, the same modifier-free 'u'/'U' opens the dialog overlaying the whole grid (MUX-001 R9: dialogs overlay the mux) — the single binding in BoardView::handle_event serves both surfaces (MUX-009 precedent, same routing through views/multiplex/keys.rs).",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:07:41.567Z"
+        },
+        {
+          "id": 9,
+          "text": "R10: the board header's chord row (row 3 of the header strip, views/board/keybinding_shortcuts.rs) is REPLACED by a short hint 'u Actions' (single plain primary-fg span, same styling as before). The full chord (C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux) no longer renders in the header.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:07:58.770Z"
+        },
+        {
+          "id": 10,
+          "text": "R6: Enter on the '? Help' row emits a new Action::OpenBoardHelp and closes the dialog; Enter on the 'Esc Exit' row emits a new Action::OpenBoardExitConfirmation and closes the dialog. These two actions are routed by App::dispatch to the SAME push helpers the stage-4 App shortcuts use for '?' (HelpDialog::for_board) and Esc (BoardExitConfirmationDialog) — one shared push helper per dialog, no duplicated push logic (DRY). The board help lines (help_content.rs) gain a 'u' row advertising this dialog ('u Actions').",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:07:59.108Z"
+        },
+        {
+          "id": 11,
+          "text": "R12: the dialog title reads 'Actions' (not 'Board Keys' or any 'key bindings' phrasing) — painted via the shared dialog_theme renderer as the bold accent inner title.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:08:15.551Z"
+        },
+        {
+          "id": 12,
+          "text": "R7: the dialog is a TRUE MODAL (BUG-161 parity with WorkUnitSearchDialog): every key it does not explicitly handle (j/k/h/l, [, ], Enter on the board, Shift+arrows, Ctrl-chords, pastes) is CONSUMED as a no-op so the BoardView behind it stays frozen; no key ever leaks through the Compositor to the board while the dialog is open.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:55:54.119Z"
+        }
+      ],
+      "nextRuleId": 13,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In the single Board view, the user presses 'u' and sees a centered 'Actions' dialog listing every board shortcut with a one-line description; the first row ('C Checkpoints') is highlighted. The board is still visible underneath.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:53:46.380Z"
+        },
+        {
+          "id": 1,
+          "text": "In the single Board view, the user presses Ctrl+U. The Actions dialog does NOT open — Ctrl-chorded u/U falls through to the existing App-level handling, exactly like Ctrl+M does today.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:53:46.707Z"
+        },
+        {
+          "id": 2,
+          "text": "With the Actions dialog open, the user presses Down three times: the highlight moves from 'C Checkpoints' to 'F Changed Files' to 'D FOUNDATION.md' to '. New Agent'. Pressing Up once returns the highlight to 'D FOUNDATION.md'.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:53:55.351Z"
+        },
+        {
+          "id": 3,
+          "text": "With the Actions dialog open, the user navigates to 'F Changed Files' and presses Enter. The three-pane Changed Files view opens (the board switches to it) and the Actions dialog is closed — exactly the same outcome as pressing 'f' directly on the board.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:53:55.684Z"
+        },
+        {
+          "id": 4,
+          "text": "With the Actions dialog open, the user navigates to the 'Esc Exit' row and presses Enter. The Actions dialog closes and the 'Exit fspec?' confirmation dialog opens (Exit pre-selected) — the same confirmation the plain Esc key on the board opens. Pressing Esc inside the confirmation cancels it and the user stays on the board.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:54:08.704Z"
+        },
+        {
+          "id": 5,
+          "text": "With the Actions dialog open and the 'C Checkpoints' row highlighted, the user presses Esc. The Actions dialog closes WITHOUT opening the exit confirmation and without opening the checkpoints view — the user stays on the board. (Esc is 'close this dialog', never 'execute the highlighted row'.)",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:54:09.034Z"
+        },
+        {
+          "id": 6,
+          "text": "With the Actions dialog open, the user presses 'j' and 'f'. The board behind the dialog stays frozen: the selection does not move and the changed-files view does NOT open — every key the dialog does not explicitly handle is swallowed (true-modal blocking, BUG-161 parity).",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:54:22.572Z"
+        },
+        {
+          "id": 7,
+          "text": "In the single Board view, the user looks at the board header's top-right area: the keybinding hint row reads 'u Actions' (a single short hint in plain foreground style) — the old six-action chord (C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux) is no longer rendered there.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:54:22.860Z"
+        },
+        {
+          "id": 8,
+          "text": "In the single Board view, the user opens the board help with '?'. The help lists a 'u Actions' row advertising that 'u' opens the actions dialog — no separate 'u' entry appears in the Actions dialog itself.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:54:33.500Z"
+        },
+        {
+          "id": 9,
+          "text": "In mux mode (Board | Agent grid) with the Board pane focused, the user presses 'u'. The Actions dialog opens over the whole grid (dialogs overlay the mux). Pressing Up until 'M Mux' and Enter opens the Mux config dialog over the grid, seeded from the live mux config — the same dialog bare /mux opens.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:54:33.814Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the ',' trigger ONLY fire from the Board view (single Board view AND the focused Board pane in mux mode), or should it ALSO open the dialog from the Agent view? (The top-row chord only exists on the board; the Agent view has its own ? help + slash popup.)",
+          "deleted": false,
+          "createdAt": "2026-09-28T01:53:18.838Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Board view only (single Board view + focused Board pane in mux mode). The top-row chord being collapsed only exists on the board; the Agent view keeps its own ? help and slash popup. The binding lives in BoardView::handle_event (views/board/keys.rs), which is exactly what the mux Board pane routes through."
+        }
+      ],
+      "nextQuestionId": 1,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation approach (u-key/Actions supersedes the comma-key/Board-Keys version in the staged tree): (1) single source of truth — a BoardShortcut table (key display, label, description, Action variant) in views/board/board_shortcuts.rs consumed by BOTH the BoardKeybindingDialog row builder AND the board key arm docs (R11); the SHORTCUTS array stays the six bare board shortcuts (no trigger entry) and CHORD_HINT becomes 'u Actions'; (2) BoardKeybindingDialog component in components/board_keybinding_dialog.rs — stable id 'board-actions-dialog', title 'Actions' (R12), Priority::Foreground, Yellow accent, 8 rows (R3: the six shortcuts + '? Help' + 'Esc Exit', NO trigger row), wrap-around Up/Down cursor (R4) + mouse wheel, Enter emits the row's action and closes (R5/R6), Esc closes without executing (R8); every other key including 'u'/'U' is consumed (true-modal, BUG-161 parity, R2/R7); (3) trigger arm in views/board/keys.rs handle_mode_view_key: KeyCode::Char('u') | KeyCode::Char('U') with the no-CONTROL guard mirroring a/c/f/d/m (R1/R2/R9) — serves BOTH the single Board view and the focused Board pane in mux mode via the existing forward_to_pane routing; (4) Action::OpenBoardKeybindingDialog / OpenBoardHelp / OpenBoardExitConfirmation variants + app/dispatch_board_keybinding.rs idempotent handle_open_board_keybinding_dialog (compositor.contains guard on 'board-actions-dialog', seeds Option<SessionId> snapshot for the '.' row) + try_dispatch_board_keybinding in the capability chain; OpenBoardHelp/OpenBoardExitConfirmation route to the SAME push helpers the stage-4 shortcuts in app/events.rs use for '?' and Esc; (5) keybinding_shortcuts.rs header row paints the shared CHORD_HINT ('u Actions') with unchanged span styling (R10); (6) help_content.rs board lines gain a 'u Actions' row and drop the old comma row. No new RPC surface; MuxConfig serde unchanged.",
+          "deleted": false,
+          "createdAt": "2026-09-29T09:56:48.002Z"
+        },
+        {
+          "id": 1,
+          "text": "Test strategy: rust/fspec-tui/tests/board_actions_dialog_board023.rs (MockBackend harness per mux009_board_m_key.rs: fresh_app + drain_pending + full-App render into TestBackend, App::compositor().contains('board-actions-dialog') for open/close assertions). 19 scenarios, strict arrange-act-assert (one Given setup, one When act, Then + And asserts — no repeated When/Then): 1) 'u' opens the dialog (title 'Actions', 8 rows in order, first row highlighted), 2) uppercase 'U' opens it too, 3) Ctrl+U does NOT open it (falls through), 4) the 8 body rows in order with descriptions + footer, 5) no trigger row — exactly 8 rows, body contains no 'u Actions'/', Keys' and no 'Actions' text, 6) Down moves to the next row, 7) Up moves to the previous row, 8) Up from row 0 wraps to the last row, 9) Down from the last row wraps to row 0, 10) Enter on F opens Changed Files + closes, 11) Enter on M opens mux config + closes, 12) Enter on ? Help opens board help + closes, 13) Enter on Esc Exit opens the exit confirmation + closes (Esc inside the confirmation cancels), 14) Esc closes without executing the highlighted row, 15) j/f never leak to the board (true-modal), 16) 'u' while open is a no-op (no stacked layer), 17) header hint row reads 'u Actions' and the old chord is gone (supersedes the RPC-015/MUX-009/BOARD-022/RPC-395/BOARD-021 chord assertions in view_board_unit_rpc015.rs, mux009_board_m_key.rs scenario 4, board_search_dialog_board022.rs, board_period_new_agent_rpc395.rs, view_board_version_under_logo_board021.rs, source_shape_board_search_board022.rs — those tests are UPDATED to the new hint), 18) mux-mode focused Board pane 'u' opens the dialog over the grid, 19) board help lists the 'u Actions' row. Two insta snapshots (app_with_mock_backend__help_dialog_dismissed.snap, app_with_mock_backend_repl__repl_bootstrap_rpc012.snap) show the header hint row and must be regenerated (', Keys' → 'u Actions'). The dialog title row is located as the LAST 'Actions' row below the footer search (the header hint 'u Actions' also matches).",
+          "deleted": false,
+          "createdAt": "2026-09-29T10:27:34.388Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/BOARD-023/ast-research-board-keybindings-dialog.md"
+      ]
     }
   }
 }

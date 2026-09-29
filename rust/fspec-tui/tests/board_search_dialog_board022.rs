@@ -448,6 +448,8 @@ fn opening_the_dialog_on_an_empty_board_shows_the_board_is_empty_state() {
 }
 
 /// Scenario: The board header chord shows the '/' search shortcut
+/// (BOARD-023 R10 supersession: the six-action chord — including the
+/// '/ Search' segment — was collapsed into the short 'u Actions' hint)
 #[test]
 fn the_board_header_chord_shows_the_slash_search_shortcut() {
     // @step Given a board with any selection state
@@ -456,10 +458,10 @@ fn the_board_header_chord_shows_the_slash_search_shortcut() {
     // @step When the board is rendered
     let rendered = render_board(&store);
 
-    // @step Then the header chord row contains the segment "/ Search"
+    // @step Then the header shows the short 'u Actions' hint (BOARD-023 R10)
     assert!(
-        rendered.contains("/ Search"),
-        "header chord must contain '/ Search':\n{rendered}"
+        rendered.contains("u Actions"),
+        "header must contain the short 'u Actions' hint: {rendered}"
     );
 }
 

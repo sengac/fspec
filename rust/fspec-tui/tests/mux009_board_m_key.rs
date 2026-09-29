@@ -278,6 +278,8 @@ async fn m_opens_the_mux_config_dialog_from_the_focused_board_pane_in_mux_mode()
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario 4: The Board header top chord row advertises the M Mux binding
+// (BOARD-023 R10 supersession: the full chord is collapsed into the short
+// 'u Actions' hint — the 'M Mux' entry now lives in the actions dialog)
 // ─────────────────────────────────────────────────────────────────────────
 
 /// Scenario: The Board header top chord row advertises the M Mux binding
@@ -289,30 +291,21 @@ async fn board_header_top_chord_row_advertises_m_mux_binding() {
     // @step When I look at the board header's keybinding chord row
     let text = render_app_text(&mut app);
     // @step Then the chord row reads "C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux"
-    let chord_row = text
+    // BOARD-023 R10 (supersedes MUX-009): the six-action chord is REPLACED
+    // by the short 'u Actions' hint — the 'M Mux' entry now lives in the
+    // actions dialog ('u') instead of the header.
+    let hint_row = text
         .lines()
-        .find(|l| l.contains("C Checkpoints"))
-        .expect("the board header must contain the keybinding chord row");
-    assert!(
-        chord_row.contains("M Mux"),
-        "the chord row must advertise 'M Mux'; got: {chord_row}"
-    );
-    assert!(
-        chord_row.contains("/ Search"),
-        "the chord row must retain the existing '/ Search' entry; got: {chord_row}"
-    );
+        .find(|l| l.contains("u Actions"))
+        .expect("the board header must contain the short 'u Actions' hint row");
     // @step And the chord is painted as a single plain foreground span
-    // (no per-chord styling — verify the chord row has no color/style
-    //  differentiation: the entire row is a single span, so it has a
-    //  uniform style. We assert the row exists and contains the full
-    //  chord text as a contiguous string.)
     assert!(
-        chord_row.contains("C Checkpoints")
-            && chord_row.contains("F Changed Files")
-            && chord_row.contains("D FOUNDATION.md")
-            && chord_row.contains(". New Agent")
-            && chord_row.contains("/ Search")
-            && chord_row.contains("M Mux"),
-        "the chord row must contain all entries in sequence; got: {chord_row}"
+        hint_row.contains("u Actions"),
+        "the header must paint the short hint; got: {hint_row}"
+    );
+    // And the old full chord is gone from the header.
+    assert!(
+        !text.contains("C Checkpoints"),
+        "the old six-action chord must no longer render in the header; got:\n{text}"
     );
 }

@@ -120,6 +120,9 @@ fn pressing_period_with_no_work_unit_selected_still_opens_the_agent_view_with_no
 }
 
 /// Scenario: The board header hint row displays '. New Agent'
+/// (BOARD-023 R10 supersession: the header's keybinding row was collapsed
+/// into the short 'u Actions' hint — the '. New Agent' entry now lives in
+/// the actions dialog)
 #[test]
 fn the_board_header_hint_row_displays_period_new_agent() {
     // @step Given a BoardStore with any selection state
@@ -127,14 +130,14 @@ fn the_board_header_hint_row_displays_period_new_agent() {
     // @step When the App renders BoardView against a 120x24 TestBackend
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
-    // @step Then the rendered buffer contains the substring ". New Agent"
+    // @step Then the rendered buffer contains the short 'u Actions' hint (BOARD-023 R10)
     assert!(
-        joined.contains(". New Agent"),
-        "missing '. New Agent':\n{joined}"
+        joined.contains("u Actions"),
+        "missing the short 'u Actions' header hint: {joined}"
     );
     // @step And the rendered buffer does not contain the substring "/ New Agent"
     assert!(
         !joined.contains("/ New Agent"),
-        "unexpected '/ New Agent' still present:\n{joined}"
+        "unexpected '/ New Agent' still present: {joined}"
     );
 }

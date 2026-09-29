@@ -15,7 +15,7 @@ expression: rows_visible
 - │ │ Enter         Work / open focused unit                                 ■ │ │
 - ├─│ Shift+Right   Open agent view                                          ■ │─┤
 - │B│ .             New Agent                                                ■ │ │
-- "├─│ [ / ]         Reorder (up / down)                                      ■ │─┤"
+- "├─│ [ / ]         Reorder (up / down)                                      │ │─┤"
 - │ │ PageUp/PageDn Scroll column                                            │ │ │
 - │ │ Home / End    First / Last                                             │ │ │
 - │ │ f             Changed Files                                            │ │ │

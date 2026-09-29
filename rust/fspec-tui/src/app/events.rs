@@ -26,6 +26,11 @@ use crate::views::ViewMode;
 
 use super::state::App;
 
+/// BOARD-023 R6: the HelpDialog's stable compositor id — shared between
+/// the stage-4 `?` shortcut's push helper and its idempotency guard
+/// (the dialog hardcodes this id in `help_dialog.rs`).
+const HELP_DIALOG_ID: &str = "help-dialog";
+
 impl App {
     /// Process a single crossterm event. Dispatch order:
     ///   1. DisconnectDialog (critical, unchanged — RPC-011 CR-1).
@@ -167,8 +172,10 @@ impl App {
 
     fn handle_app_shortcut(&mut self, key: &KeyEvent) -> Option<EventResult> {
         if key.code == KeyCode::Char('?') && key.modifiers == KeyModifiers::NONE {
-            self.compositor.push(Box::new(HelpDialog::for_board()));
-            self.should_render = true;
+            // BOARD-023 R6: the shared push helper — the actions
+            // dialog's '? Help' row (Action::OpenBoardHelp) routes here
+            // too, so both entry points share one code path.
+            self.open_board_help();
             return Some(EventResult::consumed());
         }
         // RPC-102: BoardView ESC opens "Exit fspec?" confirmation dialog.
@@ -190,12 +197,11 @@ impl App {
             && (self.navigator.active_view == ViewMode::Board
                 || (self.navigator.active_view == ViewMode::Mux && self.mux_board_pane_focused()))
         {
-            if !self.compositor.contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID) {
-                let dialog =
-                    BoardExitConfirmationDialog::new().with_action_tx(self.action_tx.clone());
-                self.compositor.push(Box::new(dialog));
-                self.should_render = true;
-            }
+            // BOARD-023 R6: the shared push helper — the actions
+            // dialog's 'Esc Exit' row
+            // (Action::OpenBoardExitConfirmation) routes here too, so
+            // both entry points share one code path.
+            self.open_board_exit_confirmation();
             return Some(EventResult::consumed());
         }
         if key.code == KeyCode::Char('d') && key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -246,6 +252,39 @@ impl App {
             .render_with_stores(area, buf, &self.board_store, &mut self.agent_view_store);
         self.compositor.render(area, buf);
         self.should_render = false;
+    }
+
+    /// BOARD-023 R6: shared push helper for the board `?` help dialog —
+    /// used by BOTH the stage-4 `?` shortcut (above) and the
+    /// actions dialog's `? Help` row (`Action::OpenBoardHelp`,
+    /// routed in `dispatch_board_keybinding.rs`) so both entry points
+    /// share one code path (DRY).
+    ///
+    /// Idempotency: the `compositor.contains()` guard prevents
+    /// double-push on rapid `?` presses (the same guard the stage-4 Esc
+    /// arm has always carried).
+    pub(crate) fn open_board_help(&mut self) {
+        if !self.compositor.contains(HELP_DIALOG_ID) {
+            self.compositor.push(Box::new(HelpDialog::for_board()));
+            self.should_render = true;
+        }
+    }
+
+    /// BOARD-023 R6: shared push helper for the board exit-confirmation
+    /// dialog — used by BOTH the stage-4 Esc shortcut (above, guarded
+    /// by the Board/Mux-board-pane view check) and the keybindings
+    /// dialog's `Esc Exit` row
+    /// (`Action::OpenBoardExitConfirmation`, routed in
+    /// `dispatch_board_keybinding.rs`).
+    ///
+    /// The compositor `contains()` guard (the pre-BOARD-023 behavior of
+    /// the stage-4 arm) prevents double-push on rapid opens.
+    pub(crate) fn open_board_exit_confirmation(&mut self) {
+        if !self.compositor.contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID) {
+            let dialog = BoardExitConfirmationDialog::new().with_action_tx(self.action_tx.clone());
+            self.compositor.push(Box::new(dialog));
+            self.should_render = true;
+        }
     }
 }
 

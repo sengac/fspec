@@ -323,6 +323,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@beta-headers` | Anthropic beta header configuration |
 | `@blob` | Blob storage scenarios |
 | `@blob-storage` | Blob storage for large content |
+| `@board-023` | Work unit BOARD-023 — board actions popup dialog: the modifier-free 'u' key opens the 'Actions' popup (BoardKeybindingDialog) listing every board shortcut; the header chord row collapses to a 'u Actions' hint |
 | `@boundary` | Boundary condition scenarios |
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@budget-ignored` | User-provided budget tokens are ignored |
@@ -804,4 +805,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-27T22:27:57.591Z_
+_Last updated: 2026-09-28T01:56:55.377Z_

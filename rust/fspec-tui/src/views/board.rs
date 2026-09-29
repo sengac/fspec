@@ -33,6 +33,7 @@ use crate::mouse::selection::Selection;
 use crate::store::BoardStore;
 use crate::theme::Theme;
 
+pub mod board_shortcuts;
 pub mod borders;
 pub mod checkpoint_status;
 pub mod columns;

@@ -103,6 +103,8 @@ fn non_zero_checkpoint_counts_paint_the_manual_auto_breakdown() {
 }
 
 /// Scenario: KeybindingShortcuts chord row is painted in the header
+/// (BOARD-023 R10 supersession: the six-action chord was replaced by the
+/// short ', Keys' hint)
 #[test]
 fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
     // @step Given a BoardStore with any selection state
@@ -110,25 +112,15 @@ fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
     // @step When the App renders BoardView against a 120x24 TestBackend
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
-    // @step Then the rendered buffer contains the substring "C Checkpoints"
+    // @step Then the rendered buffer contains the short 'u Actions' hint (BOARD-023 R10)
     assert!(
-        joined.contains("C Checkpoints"),
-        "missing 'C Checkpoints':\n{joined}"
+        joined.contains("u Actions"),
+        "missing the short 'u Actions' header hint: {joined}"
     );
-    // @step And the rendered buffer contains the substring "F Changed Files"
+    // And the old six-action chord segments no longer render in the header.
     assert!(
-        joined.contains("F Changed Files"),
-        "missing 'F Changed Files':\n{joined}"
-    );
-    // @step And the rendered buffer contains the substring "D FOUNDATION.md"
-    assert!(
-        joined.contains("D FOUNDATION.md"),
-        "missing 'D FOUNDATION.md':\n{joined}"
-    );
-    // @step And the rendered buffer contains the substring ". New Agent"
-    assert!(
-        joined.contains(". New Agent"),
-        "missing '. New Agent':\n{joined}"
+        !joined.contains("C Checkpoints"),
+        "the old chord must no longer render in the header: {joined}"
     );
 }
 

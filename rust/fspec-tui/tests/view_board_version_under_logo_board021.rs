@@ -132,11 +132,11 @@ fn logo_glyph_rows_are_unchanged_when_the_version_row_is_painted() {
         row1.contains("Checkpoints: None"),
         "missing 'Checkpoints: None' on the checkpoint row:\n{row1}"
     );
-    // @step And the rendered buffer contains the substring "C Checkpoints"
+    // @step And the rendered buffer contains the short 'u Actions' header hint (BOARD-023 R10)
     let row4 = row_string(&buf, 4);
     assert!(
-        row4.contains("C Checkpoints"),
-        "missing keybinding chord:\n{row4}"
+        row4.contains("u Actions"),
+        "missing the short 'u Actions' header hint:\n{row4}"
     );
 }
 
@@ -204,10 +204,10 @@ fn the_version_text_never_overflows_the_12_cell_logo_block() {
         VERSION_LINE.len(),
         version_x + VERSION_LINE.len()
     );
-    // @step And the keybinding chord on the 4th header row begins at the same x position as before (right after the 12-cell logo block)
-    let chord_x = find_cell(&row4, "C Checkpoints").expect("keybinding chord must be present");
+    // @step And the keybinding hint on the 4th header row begins at the same x position as before (right after the 12-cell logo block)
+    let hint_x = find_cell(&row4, "u Actions").expect("short 'u Actions' hint must be present");
     assert_eq!(
-        chord_x, 14,
-        "chord must start right after the 12-cell logo block (x=14); got x={chord_x}"
+        hint_x, 14,
+        "hint must start right after the 12-cell logo block (x=14); got x={hint_x}"
     );
 }
