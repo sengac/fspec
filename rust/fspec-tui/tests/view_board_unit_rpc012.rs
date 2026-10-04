@@ -8,7 +8,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, EventResult, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, EventResult, Theme};
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -96,7 +96,13 @@ fn render_with_store_paints_seven_column_headers() {
 
     let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), &store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            &store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();

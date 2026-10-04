@@ -21,7 +21,7 @@ Feature: Support multiple AI agents beyond Claude
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Each AI agent must have its own documentation template (e.g., CLAUDE.md, AIDER.md, CURSOR.md)
+  #   1. Each AI agent must have its own documentation template (e.g., AGENTS.md, AIDER.md, CURSOR.md)
   #   2. System-reminder tags are Claude Code specific and must be abstracted or made optional for other agents
   #   3. fspec init command must support --agent flag to specify which AI agent to configure
   #   4. Slash command directory paths vary by agent (e.g., .claude/commands/ vs .continue/commands/)
@@ -37,7 +37,7 @@ Feature: Support multiple AI agents beyond Claude
   #   14. Yes, auto-detect installed agents by checking for directories (.claude/, .cursor/, etc.). Sort list with: 1) Detected agents at top (pre-selected), 2) Popular agents (Claude Code, Codex, Copilot), 3) Remaining agents alphabetically
   #   15. Support all 18 agents in v1. Use dynamic generation - ONE base template that gets transformed based on agent capabilities (system-reminder support, meta-cognition support, slash command format). No separate template files per agent.
   #   16. Install THREE files per agent: 1) Root stub (AGENTS.md or AGENT_NAME.md) for auto-loading, 2) Full doc (spec/AGENT_NAME.md) for comprehensive workflow, 3) Slash command (.agent/commands/fspec.md) for manual trigger. Most agents (Claude, Cursor, Cline, Windsurf, Copilot, etc.) auto-load root stubs; CLI-only tools need slash commands.
-  #   17. fspec init is idempotent and supports agent switching. Running 'fspec init --agent=cursor' after 'fspec init --agent=claude' should remove Claude-specific files (CLAUDE.md, spec/CLAUDE.md, .claude/commands/) and install Cursor-specific files (CURSOR.md or AGENTS.md, spec/CURSOR.md, .cursor/commands/). All files are auto-generated, safe to replace.
+  #   17. fspec init is idempotent and supports agent switching. Running 'fspec init --agent=cursor' after 'fspec init --agent=claude' should remove Claude-specific files (AGENTS.md, spec/AGENTS.md, .claude/commands/) and install Cursor-specific files (CURSOR.md or AGENTS.md, spec/CURSOR.md, .cursor/commands/). All files are auto-generated, safe to replace.
   #   18. Interactive selector is SINGLE-SELECT: arrow keys to navigate/highlight, Enter to confirm the currently highlighted agent. No multi-select, no checkboxes. For multiple agents, user must run 'fspec init --agent=X --agent=Y' using CLI flags.
   #   19. Default highlighted agent should be the FIRST DETECTED agent (if any were auto-detected). If no agents detected, default to first agent in sorted list.
   #   20. No --no-interactive flag needed. Presence of --agent flags is sufficient to determine mode: if --agent present, use CLI mode; if no --agent, use interactive mode. A --no-interactive flag without --agent makes no sense.
@@ -53,7 +53,7 @@ Feature: Support multiple AI agents beyond Claude
   #   3. User runs 'fspec init --agent=cline' and gets Cline-specific docs without system-reminder references
   #   4. User runs 'fspec init --agent=cursor' and gets 20+ slash commands created (.cursor/commands/fspec-validate.md, .cursor/commands/fspec-format.md, etc.) plus spec/CURSOR.md
   #   5. After 'npm install -g fspec', global installation contains bundled templates at node_modules/fspec/dist/spec/templates/cursor/CURSOR.md
-  #   6. CLAUDE.md contains 'ultrathink your next steps' but AIDER.md (CLI-based) removes meta-cognitive prompts entirely
+  #   6. AGENTS.md contains 'ultrathink your next steps' but AIDER.md (CLI-based) removes meta-cognitive prompts entirely
   #
   # QUESTIONS (ANSWERED):
   #   Q: Should fspec init auto-detect which AI agent is being used, or always require explicit --agent flag?
@@ -134,7 +134,7 @@ Feature: Support multiple AI agents beyond Claude
   #   9. id: string, name: string, description: string, slashCommandPath: string, slashCommandFormat: 'markdown' | 'toml', supportsSystemReminders: boolean, supportsMetaCognition: boolean, docTemplate: string, rootStubFile: string, detectionPaths: string[], available: boolean, category: 'ide' | 'cli' | 'extension'
   #   10. Transform 'ultrathink' → removed (CLI agents) or kept (IDE agents). System-reminder: '<system-reminder>' → '**⚠️ IMPORTANT:**' (IDE with emoji) or '**IMPORTANT:**' (CLI). Also transform: 'deeply consider', 'take a moment to reflect' → removed for CLI agents. Use regex replacement: /<system-reminder>([\s\S]*?)<\/system-reminder>/g. Placeholders: {{AGENT_NAME}}, {{SLASH_COMMAND_PATH}} via string.replace().
   #   11. Bundle base template files using viteStaticCopy plugin. Structure: dist/spec/templates/base/AGENT.md (ONE base template with placeholders). Runtime: templateGenerator.ts reads from dist/spec/templates/base/, transforms based on agent config, outputs to spec/AGENT.md. Dev mode: reads from spec/templates/base/. Template resolver tries production path first, falls back to dev.
-  #   12. AgentConfig fields confirmed: id (string), name (string), description (string), slashCommandPath (string), slashCommandFormat ('markdown' | 'toml'), supportsSystemReminders (boolean), supportsMetaCognition (boolean), docTemplate (string, e.g. 'CLAUDE.md'), rootStubFile (string, e.g. 'CLAUDE.md' or 'AGENTS.md'), detectionPaths (string[], e.g. ['.claude/', '.claude/commands/']), available (boolean), category ('ide' | 'cli' | 'extension'). Optional: popularity (number) for sorting.
+  #   12. AgentConfig fields confirmed: id (string), name (string), description (string), slashCommandPath (string), slashCommandFormat ('markdown' | 'toml'), supportsSystemReminders (boolean), supportsMetaCognition (boolean), docTemplate (string, e.g. 'AGENTS.md'), rootStubFile (string, e.g. 'AGENTS.md' or 'AGENTS.md'), detectionPaths (string[], e.g. ['.claude/', '.claude/commands/']), available (boolean), category ('ide' | 'cli' | 'extension'). Optional: popularity (number) for sorting.
   #
   # ========================================
   Background: User Story
@@ -211,7 +211,7 @@ Feature: Support multiple AI agents beyond Claude
   Scenario: Agent switching (idempotent behavior)
     Given I am in a project directory
     And I have previously run "fspec init --agent=claude"
-    And files "CLAUDE.md", "spec/CLAUDE.md", ".claude/commands/fspec.md" exist
+    And files "AGENTS.md", "spec/AGENTS.md", ".claude/commands/fspec.md" exist
     When I run "fspec init --agent=cursor"
     Then Claude-specific files should be removed
     And Cursor-specific files should be created

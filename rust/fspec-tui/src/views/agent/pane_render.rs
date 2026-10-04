@@ -9,6 +9,11 @@
 //! `input_draft`. `PaneSession` carries the per-pane selection into
 //! `AgentView::render_session_pane` without touching the live input
 //! state of unfocused panes.
+//!
+//! MENU-003: `PaneSession.menu_row` gates the 2-zone menu bar row that
+//! sits directly below the SessionHeader. Single-view sets it true (the
+//! 6-constraint layout); mux agent panes set it false (the pinned
+//! 5-constraint layout, byte-identical — rpc013-source-shape).
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Direction, Layout, Rect};
@@ -20,7 +25,8 @@ use crate::store::AgentViewStore;
 use super::chrome_paint;
 use super::AgentView;
 
-/// Which session an agent pane paints + whether it hosts the live composer.
+/// Which session an agent pane paints + whether it hosts the live
+/// composer + whether it carries the 2-zone menu bar row.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PaneSession {
     /// `None` = the store's current session (single-view mode and the
@@ -31,15 +37,20 @@ pub struct PaneSession {
     /// pane). Unfocused panes render a read-only ghost draft and never
     /// mutate the live input / viewport state.
     pub is_focused: bool,
+    /// MENU-003: paint the 2-zone menu bar row directly below the
+    /// SessionHeader. Single-view = true; mux agent panes = false
+    /// (the mux-level bar, MENU-004, is the only bar on screen).
+    pub menu_row: bool,
 }
 
 impl PaneSession {
     /// Single-view mode: paint the store's current session with the
-    /// live composer.
+    /// live composer + the menu bar row.
     pub fn current_session() -> Self {
         Self {
             session: None,
             is_focused: true,
+            menu_row: true,
         }
     }
 }
@@ -51,6 +62,24 @@ fn role_banner_height(store: &AgentViewStore, sid: Option<&codelet_rpc_types::Se
 }
 
 impl AgentView {
+    /// MENU-003: the 6-constraint layout for the `menu_row` panes —
+    /// Header, MenuBar, RoleBanner, Scrollback, Footer, Input. The
+    /// pinned 5-list ([`Self::pane_layout_constraints`]) stays
+    /// byte-identical for the flag-off panes.
+    pub fn pane_layout_constraints_menu(
+        role_height: u16,
+        input_height: u16,
+    ) -> [ratatui::layout::Constraint; 6] {
+        [
+            ratatui::layout::Constraint::Length(1), // header
+            ratatui::layout::Constraint::Length(1), // menu bar
+            ratatui::layout::Constraint::Length(role_height),
+            ratatui::layout::Constraint::Min(0),
+            ratatui::layout::Constraint::Length(1),
+            ratatui::layout::Constraint::Length(input_height),
+        ]
+    }
+
     /// BUG-163 — pane-targeted render: paints the session selected by
     /// `pane` (the store's current session for single-view mode, or the
     /// mux agent pane's window session) with either the live composer
@@ -85,23 +114,44 @@ impl AgentView {
         } else {
             1
         };
-        // RPC-029 layout: Header(1), RoleBanner(0|1), Scrollback flex Min(0), Footer Length(1), Input Length(input_height).
-        // BUG-163: the constraint list itself is pinned on AgentView
-        // (`pane_layout_constraints`) for the rpc013 source-shape test.
-        let constraints = AgentView::pane_layout_constraints(
-            role_banner_height(store, sid.as_ref()),
-            input_height,
-        );
-        let split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(constraints)
-            .split(area);
-        let areas = chrome_paint::ChromeAreas {
-            header: split[0],
-            role: split[1],
-            scrollback: split[2],
-            footer: split[3],
-            input: split[4],
+        let role_height = role_banner_height(store, sid.as_ref());
+        // RPC-029 layout (pinned 5-list) or the MENU-003 6-list (bar row
+        // between header and role). The 5-list stays byte-identical
+        // (rpc013-source-shape) when the flag is off.
+        let split = if pane.menu_row {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(Self::pane_layout_constraints_menu(
+                    role_height,
+                    input_height,
+                ))
+                .split(area)
+        } else {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(Self::pane_layout_constraints(role_height, input_height))
+                .split(area)
+        };
+        let areas = if pane.menu_row {
+            chrome_paint::ChromeAreas {
+                header: split[0],
+                menu: split[1],
+                role: split[2],
+                scrollback: split[3],
+                footer: split[4],
+                input: split[5],
+            }
+        } else {
+            chrome_paint::ChromeAreas {
+                header: split[0],
+                // Flag off: a zero-height bar rect below the header so the
+                // bar painters no-op (BUG-163 rule: height 0 = no paint).
+                menu: Rect::new(area.x, area.y, area.width, 0),
+                role: split[1],
+                scrollback: split[2],
+                footer: split[3],
+                input: split[4],
+            }
         };
         // BUG-163: the view-level geometry caches back mouse hit-testing
         // (mouse_dispatch.rs) and the hardware cursor (cursor_position) —
@@ -114,17 +164,25 @@ impl AgentView {
             self.last_scrollback_viewport = areas.scrollback.height;
             self.last_scrollback_area = Some(areas.scrollback);
         }
-        // BUG-163: tick the live-composer animation only for the focused
-        // pane — spinner/transition state belongs to the live session.
-        // Unfocused panes read the status directly (no animation tick).
-        let (session_status, is_loading) = if pane.is_focused {
-            self.tick_animation(store, sid.as_ref())
-        } else {
-            let status = sid
-                .as_ref()
-                .and_then(|s| store.session_status_for(s).copied());
-            (status, matches!(status, Some(SessionStatus::Running)))
-        };
+        // BUG-194: EVERY rendered agent pane ticks its OWN session's
+        // transition slot from its OWN status (focused or not) — focus
+        // movement no longer drives the thinking indicator. The focused
+        // pane additionally drives the view-level COMPACTING-DIAG log
+        // and the `is_busy` mirror (RPC-093).
+        let session_status = sid
+            .as_ref()
+            .and_then(|s| store.session_status_for(s).copied());
+        let is_loading = matches!(session_status, Some(SessionStatus::Running));
+        if let Some(sid_ref) = sid.as_ref() {
+            if let Some(ctx) = store.session_context_mut_for(sid_ref) {
+                self.tick_session_transition(
+                    session_status,
+                    Some(sid_ref),
+                    &mut ctx.input_transition,
+                    pane.is_focused,
+                );
+            }
+        }
         if pane.is_focused {
             self.last_is_compacting = matches!(session_status, Some(SessionStatus::Compacting));
         }
@@ -141,6 +199,14 @@ impl AgentView {
             self.turn_select_mode,
             session_index,
         );
+        // MENU-003: the 2-zone bar row, gated by `menu_row`. The focused
+        // bar row pane refreshes the view-level geometry caches (BUG-163);
+        // a focused flag-OFF pane clears the stale bar geometry.
+        if pane.menu_row {
+            self.paint_menu_bar_row(&areas, buf, store, pane.is_focused);
+        } else if pane.is_focused {
+            self.menu_state.clear_geometry();
+        }
 
         if let Some(sid) = sid.as_ref() {
             if let Some(ctx) = store.session_context_mut_for(sid) {
@@ -176,5 +242,6 @@ impl AgentView {
         } else {
             self.paint_ghost_input_row(areas.input, buf, store, sid.as_ref());
         }
+        // MENU-007: the agent bar is dropdown-free — no overlay paint.
     }
 }

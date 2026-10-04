@@ -114,7 +114,7 @@ export const AGENT_REGISTRY: AgentConfig[] = [
     slashCommandFormat: 'markdown',
     supportsSystemReminders: true,
     supportsMetaCognition: true,
-    docTemplate: 'CLAUDE.md',
+    docTemplate: 'AGENTS.md',
     detectionPaths: ['.claude/commands/', '.claude/'],
     available: true,
     category: 'cli',
@@ -900,7 +900,7 @@ After pressing Enter:
 ```bash
 Installing fspec for: claude, cursor, aider
 ✓ fspec initialized successfully
-  • Claude Code: spec/CLAUDE.md, .claude/commands/
+  • Claude Code: spec/AGENTS.md, .claude/commands/
   • Cursor: spec/CURSOR.md, .cursor/commands/
   • Aider: spec/AIDER.md, .aider/
 ```

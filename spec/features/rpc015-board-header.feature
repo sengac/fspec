@@ -20,7 +20,7 @@ Feature: RPC-015 BoardView header — FSPEC Logo + CheckpointStatus + Keybinding
   - Right of the header (row 1): `Checkpoints: None` when both counts are 0,
   otherwise `Checkpoints: {manual} Manual, {auto} Auto`.
   - Right of the header (row 2): a `─` divider line matching TS borderTop.
-  - Right of the header (row 3): `C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent`.
+  - Right of the header (row 3): the 2-zone menu bar (MENU-002 R1 supersedes: the old chord `C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent` and the later `u Actions` hint became the live Zone A `Actions`/`Help` items + Zone B session chips).
 
   The C / F / D / / keybindings are HINT-ONLY in this card — wiring lands in
   subsequent RPC-002 children. BoardStore gains a `checkpoint_counts` field
@@ -49,14 +49,17 @@ Feature: RPC-015 BoardView header — FSPEC Logo + CheckpointStatus + Keybinding
     When the App renders BoardView against a 120x24 TestBackend
     Then the rendered buffer contains the substring "Checkpoints: 2 Manual, 5 Auto"
 
-  Scenario: KeybindingShortcuts chord row is painted in the header
+  Scenario: The 2-zone menu bar row is painted in the header
     Given a BoardStore with any selection state
     When the App renders BoardView against a 120x24 TestBackend
-    Then the rendered buffer contains the substring "C Checkpoints"
-    And the rendered buffer contains the substring "F Changed Files"
-    And the rendered buffer contains the substring "D FOUNDATION.md"
-    And the rendered buffer contains the substring "/ New Agent"
+    Then the rendered buffer contains the substring "Actions"
+    And the rendered buffer contains the substring "Help"
+    And the rendered buffer does NOT contain the substring "u Actions"
+    And the rendered buffer does NOT contain the substring "C Checkpoints"
 
+    # MENU-002 R1 supersedes: the old six-action chord (and the later
+    # "u Actions" hint) became the live 2-zone menu bar; a fresh store
+    # paints Zone A "Actions"/"Help" only (no session chips yet).
   Scenario: New ├──┤ separator sits between the header strip and the details strip
     Given a BoardStore containing AUTH-001 in backlog
     When the App renders BoardView against a 120x24 TestBackend

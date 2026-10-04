@@ -38,7 +38,8 @@ pub mod show_foundation_event_storm;
 pub mod show_test_patterns;
 pub mod show_work_unit;
 pub mod tag_stats;
-// Batch 7 (2026-06-10) — mutation commands
+pub mod validate_config; // CONFIG-009 — Rust-only extension
+                         // Batch 7 (2026-06-10) — mutation commands
 pub mod add_dependencies;
 pub mod clear_dependencies;
 pub mod create_epic;

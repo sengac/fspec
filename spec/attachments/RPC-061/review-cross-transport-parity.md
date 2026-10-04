@@ -21,7 +21,7 @@ None — All 7 tests pass, all 7 scenarios mapped, build is clean, no `todo!`/`u
 
 ## 🟢 Observations (Nice to Have)
 
-1. **`session_manager_handle.rs` is 2240 lines** (well over the 300-LoC ceiling stated in `ClaudeMd`). Pre-existing oversize file, RPC-061 added ~80 lines (873-883 struct fields, 985-994 init, 1225-1260 accessors, 1626-1745 trait impl). Consider splitting `StubSessionManagerHandle` into a sub-module like `stub_session_manager_handle.rs`. The 300-LoC rule in CLAUDE.md is a TypeScript-targeted guideline, but the policy is project-wide.
+1. **`session_manager_handle.rs` is 2240 lines** (well over the 300-LoC ceiling stated in `SystemPrompt`). Pre-existing oversize file, RPC-061 added ~80 lines (873-883 struct fields, 985-994 init, 1225-1260 accessors, 1626-1745 trait impl). Consider splitting `StubSessionManagerHandle` into a sub-module like `stub_session_manager_handle.rs`. The 300-LoC rule in AGENTS.md is a TypeScript-targeted guideline, but the policy is project-wide.
 
 2. **`embedded.rs` is 754 lines and `websocket.rs` is 1279 lines** — same oversize concern. RPC-061 contributed lines 416-463 and 726-786 respectively, all clean and following the established RPC-037 pattern.
 

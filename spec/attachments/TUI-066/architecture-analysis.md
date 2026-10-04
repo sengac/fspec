@@ -116,7 +116,7 @@ pub fn clear_history(&self) -> Result<()> {
     session.turns.clear();
     session.token_tracker = codelet_core::compaction::TokenTracker::default();
 
-    // Reinject context reminders to restore CLAUDE.md and environment info
+    // Reinject context reminders to restore AGENTS.md and environment info
     session.inject_context_reminders();
 
     Ok(())

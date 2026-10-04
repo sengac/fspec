@@ -5,7 +5,7 @@
       "name": "new",
       "line": 49,
       "column": 4,
-      "text": "pub fn new(provider_name: Option<String>) -> Result<Self> {\n        // Load environment variables from .env file (if present)\n        // This is required for API keys to be available when running from Node.js\n        let _ = dotenvy::dotenv();\n\n        let session = codelet_cli::session::Session::new(provider_name.as_deref())\n            .map_err(|e| Error::from_reason(format!(\"Failed to create session: {e}\")))?;\n\n        // Inject context reminders (CLAUDE.md discovery, environment info)\n        let mut session = session;\n        session.inject_context_reminders();\n\n        Ok(Self {\n            inner: Arc::new(Mutex::new(session)),\n            is_interrupted: Arc::new(AtomicBool::new(false)),\n            interrupt_notify: Arc::new(Notify::new()),\n        })\n    }"
+      "text": "pub fn new(provider_name: Option<String>) -> Result<Self> {\n        // Load environment variables from .env file (if present)\n        // This is required for API keys to be available when running from Node.js\n        let _ = dotenvy::dotenv();\n\n        let session = codelet_cli::session::Session::new(provider_name.as_deref())\n            .map_err(|e| Error::from_reason(format!(\"Failed to create session: {e}\")))?;\n\n        // Inject context reminders (AGENTS.md discovery, environment info)\n        let mut session = session;\n        session.inject_context_reminders();\n\n        Ok(Self {\n            inner: Arc::new(Mutex::new(session)),\n            is_interrupted: Arc::new(AtomicBool::new(false)),\n            interrupt_notify: Arc::new(Notify::new()),\n        })\n    }"
     },
     {
       "type": "function_item",

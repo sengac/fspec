@@ -1,0 +1,1338 @@
+{
+  "scenarios": [
+    {
+      "name": "The mux top row paints the 2-zone menu bar full width",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "303-366",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_render.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The focused pane label is active and the chips use the global session list",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "370-416",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bar omits the separator and chips when no sessions are open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "420-463",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board pane's header row 3 is blank in mux",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "467-494",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/render.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent panes paint no per-pane menu bar in mux",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "498-532",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board column ring continues into the mux bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "536-590",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The mux bar ring wraps in both directions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "594-633",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent pane's empty-input Left enters the mux bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "637-655",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A character key while the bar is focused dismisses it and types into the focused pane input",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "659-691",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up and Down from a closed bar drop focus back into the focused pane input",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "695-753",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "695-753",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Files pane does not feed the mux bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "757-796",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a menu item opens its dropdown at row 0",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "800-828",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up and Down move the dropdown cursor wrapping at the ends",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "832-868",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "While a dropdown is open Left and Right walk the ring and re-anchor",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "872-898",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on an open dropdown executes the highlighted row and closes the dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "902-934",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc closes the open dropdown and keeps the item focused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "938-965",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "While a dropdown is open all other keys are swallowed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "969-1001",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a chip focuses that session without flipping out of mux",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1005-1041",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a pane view label focuses that pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1045-1080",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a menu item focuses it and opens its dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1084-1111",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking the already open item closes the dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1115-1144",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a chip activates that session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1148-1175",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a pane label focuses that pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1179-1204",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking outside the dropdown closes it while the click still lands on the pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1208-1252",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel left and right over the bar walk the ring",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1256-1289",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel up and down over an open dropdown move the cursor",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1293-1329",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel over the bar with no bar focus and no open dropdown is ignored",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1333-1362",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left and Shift+Right cycle the focused pane without touching the bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1366-1398",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The draw tick stays open while a session is Running and a bar is painted",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1402-1425",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_menu_bar.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The draw tick closes when every session is idle",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1429-1447",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_menu_bar.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A 3-row terminal does not paint the bar and keeps the legacy layout",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1451-1485",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 31,
+    "coveredScenarios": 31,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu004_mux_surface.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/multiplex/menu_render.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+      "rust/fspec-tui/src/views/board/render.rs",
+      "rust/fspec-tui/src/views/multiplex/render.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+      "rust/fspec-tui/src/app/dispatch_menu.rs",
+      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_state.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+      "rust/fspec-tui/src/views/multiplex/keys.rs",
+      "rust/fspec-tui/src/views/navigator_menu_bar.rs"
+    ],
+    "totalLinesCovered": 1957
+  }
+}

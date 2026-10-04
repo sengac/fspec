@@ -66,6 +66,10 @@
       {
         "name": "Foundation Discovery",
         "description": "AI-guided field-by-field project foundation bootstrapping that defines project context, personas, capabilities, and problem space"
+      },
+      {
+        "name": "Config Scope Validation",
+        "description": "Codified config-scope key ownership rule (user scope holds providers/tui.*/rlcd/research; project scope holds tools/agent/research) plus fspec validate-config, which flags project-scope keys (tools, agent) leaking into ~/.fspec/fspec-config.json as non-fatal warnings with remediation text (CONFIG-009/BUG-193)"
       }
     ]
   },

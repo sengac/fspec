@@ -12,9 +12,11 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 
 use crate::store::{AgentViewStore, BoardStore};
+use crate::theme::Theme;
 use crate::views::{AgentView, BoardView, ChangedFilesView, CheckpointsView};
 
 use super::layout::{calculate_pane_rects_with_override, divider_rects};
+use super::menu_render;
 use super::{MultiplexLayout, MuxOrientation};
 
 /// MUX-005: dark purple background of the mux footer bar (white fg text).
@@ -38,6 +40,7 @@ pub fn render_with_stores(
     board_store: &BoardStore,
     agent_store: &mut AgentViewStore,
     views: &mut MuxRenderViews<'_>,
+    theme: &Theme,
 ) {
     if !layout.config.enabled || area.height < 3 || area.width < 2 {
         return;
@@ -58,11 +61,25 @@ pub fn render_with_stores(
     // session, duplicating the focused session into the other panes.
     let window_sessions = layout.window_session_ids();
 
-    let body = Rect {
-        x: area.x,
-        y: area.y,
-        width: area.width,
-        height: area.height - 1, // reserve the footer row
+    // MENU-004 R-LAYOUT: reserve the TOP row for the 2-zone menu bar
+    // (body = area.y+1 .. area.height-2). The 3-row degradation: too
+    // short for bar + body + footer → the legacy layout (panes span the
+    // old body height, NO bar — graceful, no regression).
+    let bar_painted_this_frame = area.height >= 4;
+    let body = if bar_painted_this_frame {
+        Rect {
+            x: area.x,
+            y: area.y + 1,
+            width: area.width,
+            height: area.height - 2,
+        }
+    } else {
+        Rect {
+            x: area.x,
+            y: area.y,
+            width: area.width,
+            height: area.height - 1, // reserve the footer row
+        }
     };
     layout.body_area = Some(body);
 
@@ -83,7 +100,15 @@ pub fn render_with_stores(
     for (i, rect) in rects.iter().enumerate() {
         let kind = layout.effective_panes().get(i).copied().unwrap_or_default();
         match kind {
-            super::MuxPaneKind::Board => views.board.render_with_store(*rect, buf, board_store),
+            super::MuxPaneKind::Board => {
+                // MENU-004 R-SUPPRESS: the mux board pane paints NO
+                // per-pane bar (the mux top row is the only bar on
+                // screen) — row 3 stays blank and the pane's mouse
+                // arms stay inert.
+                views
+                    .board
+                    .render_with_store(*rect, buf, board_store, agent_store, true)
+            }
             super::MuxPaneKind::Agent => {
                 // BUG-163: each agent pane paints the session at its
                 // window slot (Nth agent slot in the rendered list →
@@ -99,6 +124,10 @@ pub fn render_with_stores(
                 let pane = crate::views::agent::pane_render::PaneSession {
                     session: window_sessions.get(agent_slot).cloned(),
                     is_focused: i == focus,
+                    // MENU-003: the mux agent panes carry NO bar row —
+                    // the mux-level bar (MENU-004) is the only bar on
+                    // screen in mux mode.
+                    menu_row: false,
                 };
                 views
                     .agent
@@ -125,8 +154,28 @@ pub fn render_with_stores(
     paint_focus_flash(layout, &rects, buf);
     layout.advance_flash_clock();
 
+    // MENU-004 R-LAYOUT: the 2-zone menu bar in the top row — AFTER the
+    // panes + focus flash (the bar owns its row; the flash never
+    // touches it) and BEFORE dividers/footer (the dividers run within
+    // the body only, so the order is paint-safe). No bar on the 3-row
+    // degradation (legacy layout).
+    if bar_painted_this_frame {
+        if menu_render::paint_bar(layout, area, buf, agent_store, theme).is_none() {
+            // The bar content did not fit (degenerate width) — keep the
+            // mouse arms inert on this frame.
+            layout.clear_menu_geometry();
+        }
+    } else {
+        layout.clear_menu_geometry();
+    }
+
     paint_dividers(layout, buf);
     paint_footer(layout, area, buf);
+
+    // MENU-004 R-MOUSE: the open dropdown is an OVERLAY — painted last
+    // so it sits over the panes it anchors down from (the panel's bg
+    // fill clears what was beneath).
+    menu_render::paint_dropdown(layout, buf, theme);
 }
 
 /// MUX-006/MUX-007/MUX-008: paint the focus-flash cells (dark purple

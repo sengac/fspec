@@ -22,17 +22,17 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
   # BUSINESS RULES:
   #   1. Detect the installed agent: read spec/fspec-config.json and use its .agent field if present and parseable; otherwise scan each agent's detectionPaths and pick the first agent whose any detection path exists in cwd
   #   2. If no agent is detected, error 'No fspec agent installation detected. Nothing to remove.'; if the detected agent id is unknown, error 'Unknown agent: <id>'
-  #   3. Remove agent files: spec/<docTemplate> (e.g. spec/CLAUDE.md) and <slashCommandPath><fspec.md|fspec.toml> (filename depends on slashCommandFormat); both use force removal so missing files are silently skipped (idempotent)
+  #   3. Remove agent files: spec/<docTemplate> (e.g. spec/AGENTS.md) and <slashCommandPath><fspec.md|fspec.toml> (filename depends on slashCommandFormat); both use force removal so missing files are silently skipped (idempotent)
   #   4. The interactive Ink ConfirmPrompt (used when keepConfig is undefined in TS) is not reproducible in headless Rust; the Rust port treats an unspecified keepConfig as false (remove config), matching the destructive --no-keep-config default — see supervisor question
   #   5. Success output: '✓ Successfully removed fspec init files' then each removed file as '  - <path>', exit 0; error: stderr '✗ Failed to remove init files: <msg>', exit 1
   #   6. The command must NOT remove spec/features/, spec/work-units.json, or other project files — only agent docs, slash command files, and (optionally) fspec-config.json
   #
   # EXAMPLES:
-  #   1. spec/fspec-config.json has agent='claude' -> removes spec/CLAUDE.md, .claude/commands/fspec.md, and spec/fspec-config.json
+  #   1. spec/fspec-config.json has agent='claude' -> removes spec/AGENTS.md, .claude/commands/fspec.md, and spec/fspec-config.json
   #   2. No config but .gemini/ directory exists -> detects gemini, removes spec/GEMINI.md and .gemini/commands/fspec.toml (toml format)
-  #   3. keepConfig=true with claude installed -> removes spec/CLAUDE.md and .claude/commands/fspec.md but NOT spec/fspec-config.json
+  #   3. keepConfig=true with claude installed -> removes spec/AGENTS.md and .claude/commands/fspec.md but NOT spec/fspec-config.json
   #   4. No agent files and no config -> error 'No fspec agent installation detected. Nothing to remove.' exit 1
-  #   5. claude detected but spec/CLAUDE.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)
+  #   5. claude detected but spec/AGENTS.md already deleted -> still succeeds, filesRemoved still lists the attempted paths (force removal is idempotent)
   #
   # QUESTIONS (ANSWERED):
   #   Q: @supervisor: No Rust port of AGENT_REGISTRY exists in fspec-core (init.rs is still a stub). I will create a local const agent table inside commands/remove_init_files.rs covering the needed fields (id, docTemplate, slashCommandPath, slashCommandFormat, detectionPaths) for the 20 agents — confirm this is acceptable vs. a new shared module rust/fspec-core/src/agents.rs (which would require touching lib.rs/mod). Also confirm the headless default for an unspecified keepConfig should be false (remove config).
@@ -54,15 +54,15 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
     And stdout contains the substring 'remove-init-files'
 
   Scenario: CLI removes claude agent files and prints the success summary
-    Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
+    Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/AGENTS.md and .claude/commands/fspec.md
     When I run `./rust/target/release/fspec remove-init-files --no-keep-config` from that workspace
     Then the command exits 0
     And stdout contains the substring '✓ Successfully removed fspec init files'
-    And stdout contains the substring 'spec/CLAUDE.md'
-    And spec/CLAUDE.md no longer exists
+    And stdout contains the substring 'spec/AGENTS.md'
+    And spec/AGENTS.md no longer exists
 
   Scenario: CLI --keep-config preserves spec/fspec-config.json
-    Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
+    Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/AGENTS.md and .claude/commands/fspec.md
     When I run `./rust/target/release/fspec remove-init-files --keep-config` from that workspace
     Then the command exits 0
     And spec/fspec-config.json still exists
@@ -74,9 +74,9 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
     And stderr contains the substring 'No fspec agent installation detected. Nothing to remove.'
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
-    Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
+    Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/AGENTS.md and .claude/commands/fspec.md
     When I dispatch remove-init-files through fspec_core::dispatch::dispatch_command with keepConfig=true against that workspace
-    Then the dispatcher returns JSON whose filesRemoved includes 'spec/CLAUDE.md'
+    Then the dispatcher returns JSON whose filesRemoved includes 'spec/AGENTS.md'
     And the CLI bridge module rust/fspec/src/remove_init_files.rs contains NO inline detection or deletion logic — its only computation is JSON arg marshalling and stdout printing
 
   Scenario: remove-init-files --help is byte-for-byte identical to TS reference

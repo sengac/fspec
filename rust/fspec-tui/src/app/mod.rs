@@ -23,6 +23,7 @@ pub mod dispatch;
 pub mod dispatch_agent_exit;
 pub mod dispatch_attach;
 pub mod dispatch_blocklist;
+pub mod dispatch_board_keybinding; // BOARD-023/MENU-005: board 'u' menu-bar help dialog + help/exit rows
 pub mod dispatch_capability;
 pub mod dispatch_changed_files;
 pub mod dispatch_checkpoint_delete;
@@ -40,6 +41,7 @@ pub mod dispatch_git_state; // BUG-182: git-state frame fold (R3/R4)
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
 pub mod dispatch_isolation_toggle; // WT-009: /isolation state toggle
+pub mod dispatch_menu; // MENU-002: board 2-zone menu bar + ring Action arms
 pub mod dispatch_merge_worktree;
 pub mod dispatch_model_selector;
 pub mod dispatch_model_thinking_dialogs;
@@ -111,6 +113,11 @@ pub use state::App;
 ///   this fifth flag the bottom-to-top scan row freezes after the
 ///   focus-change event's own redraw because an idle session produces no
 ///   render ticks.
+/// - MENU-004: `is_menu_bar_animating=true` keeps the 16ms tick
+///   redrawing while the ACTIVE surface paints a menu bar AND any open
+///   session is Running/Compacting — without this sixth operand the
+///   Running chip's braille frame freezes in mux mode when the user
+///   sits still (the BUG-194 class of frozen spinner).
 #[must_use]
 pub fn tick_should_draw(
     should_render: bool,
@@ -118,8 +125,14 @@ pub fn tick_should_draw(
     is_animating: bool,
     is_view_loading: bool,
     is_mux_flash_active: bool,
+    is_menu_bar_animating: bool,
 ) -> bool {
-    should_render || is_busy || is_animating || is_view_loading || is_mux_flash_active
+    should_render
+        || is_busy
+        || is_animating
+        || is_view_loading
+        || is_mux_flash_active
+        || is_menu_bar_animating
 }
 
 #[cfg(test)]
@@ -127,30 +140,36 @@ mod tick_should_draw_tests {
     use super::tick_should_draw;
     #[test]
     fn idle_no_event_skips() {
-        assert!(!tick_should_draw(false, false, false, false, false));
+        assert!(!tick_should_draw(false, false, false, false, false, false));
     }
     #[test]
     fn busy_bypasses_should_render() {
-        assert!(tick_should_draw(false, true, false, false, false));
+        assert!(tick_should_draw(false, true, false, false, false, false));
     }
     #[test]
     fn event_triggers_draw() {
-        assert!(tick_should_draw(true, false, false, false, false));
+        assert!(tick_should_draw(true, false, false, false, false, false));
     }
     #[test]
     fn animating_bypasses_should_render_when_not_busy() {
         // RPC-093 fix: post-busy finish animation must keep ticking.
-        assert!(tick_should_draw(false, false, true, false, false));
+        assert!(tick_should_draw(false, false, true, false, false, false));
     }
     #[test]
     fn view_loading_bypasses_should_render() {
         // TUI-106: a lazy mode-view cascade keeps the spinner ticking.
-        assert!(tick_should_draw(false, false, false, true, false));
+        assert!(tick_should_draw(false, false, false, true, false, false));
     }
     #[test]
     fn mux_flash_bypasses_should_render() {
         // MUX-006: the focus flash must keep the 16ms tick redrawing
         // while idle.
-        assert!(tick_should_draw(false, false, false, false, true));
+        assert!(tick_should_draw(false, false, false, false, true, false));
+    }
+    #[test]
+    fn menu_bar_animating_bypasses_should_render() {
+        // MENU-004 R-TICK: the active surface's menu bar must keep the
+        // 16ms tick redrawing while a session is Running/Compacting.
+        assert!(tick_should_draw(false, false, false, false, false, true));
     }
 }

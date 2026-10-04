@@ -36,6 +36,10 @@ mod hitl_keys;
 pub mod hitl_prompt;
 mod input_area;
 pub mod input_transition;
+mod menu_keys;
+mod menu_mouse;
+pub mod menu_render;
+pub mod menu_state;
 pub mod merge_confirm_dialog;
 pub mod mode_view_render;
 pub mod mouse_dispatch;
@@ -61,6 +65,7 @@ pub mod scrollback_paint;
 pub mod search_history_view;
 pub mod search_history_view_mouse;
 pub mod search_history_view_render;
+pub mod session_transition;
 pub mod session_worktrees_dialog;
 pub mod slash_command_popup;
 pub mod slash_command_popup_mouse;
@@ -134,13 +139,10 @@ pub struct AgentView {
     pub(crate) scrollback_wheel: WheelVelocity,
     pub(crate) spinner_started_at: Option<Instant>,
     pub(crate) last_is_compacting: bool,
-    /// COMPACTING-DIAG: last display mode logged by tick_animation
+    /// COMPACTING-DIAG: last display mode logged by tick_session_transition
     /// ("thinking" / "compacting" / "idle") — flip-detection for the
     /// diagnostic log. `""` (Default) means "log on first frame".
     pub(crate) last_compaction_diag_display: &'static str,
-    pub(crate) input_transition_state: InputTransitionState,
-    pub(crate) last_spinner_line: Option<String>,
-    pub(crate) animation_clock_ms: u64,
     /// RPC-406: `(session, kind)` of the pause prompt painted last frame.
     pub(crate) last_pause: Option<(codelet_rpc_types::SessionId, codelet_rpc_types::PauseKind)>,
     /// RPC-411: `(session, mode)` of the HITL prompt painted last frame.
@@ -168,6 +170,12 @@ pub struct AgentView {
     pub(crate) turn_modal_total_rows: usize,
     /// TUI-103: cached viewport rows for the turn modal scrollbar geometry.
     pub(crate) turn_modal_viewport_rows: usize,
+    /// MENU-003: the 2-zone bar row's state (focus, open dropdown,
+    /// cached geometry) — plain field, focused-pane-refreshed (BUG-163).
+    pub(crate) menu_state: menu_state::MenuBarState,
+    /// MENU-003 TEST SEAM: shared store handle for chip activation
+    /// (`None` in production — `App::dispatch_menu` resolves it).
+    pub store_handle: Option<std::sync::Arc<std::sync::Mutex<AgentViewStore>>>,
 }
 
 impl AgentView {
@@ -199,15 +207,6 @@ impl AgentView {
         self.spinner_started_at.is_some()
     }
 
-    /// RPC-093: true iff the input row is mid-finish-animation
-    /// (`Hiding` or `Showing`). The run loop reads this to keep
-    /// drawing every tick AFTER the session has gone Idle so the
-    /// 5 char/17ms sweep advances instead of freezing at full
-    /// captured text.
-    pub fn is_input_animating(&self) -> bool {
-        self.input_transition_state.is_animating()
-    }
-
     /// RPC-093 rule [8]: cursor visible only when (a) status is not
     /// Running/Compacting AND (b) transition is Idle.
     pub fn is_cursor_visible_for(
@@ -224,8 +223,14 @@ impl AgentView {
     }
 
     /// Cursor gate — RPC-411 HITL-mode logic lives in `hitl_keys.rs`.
-    pub fn is_cursor_visible(&self, session_status: Option<SessionStatus>) -> bool {
-        self.is_cursor_visible_with_prompts(session_status)
+    /// BUG-194: the transition operand is the focused session's own
+    /// per-session slot (store), not a view-level shared state.
+    pub fn is_cursor_visible(
+        &self,
+        store: &AgentViewStore,
+        session_status: Option<SessionStatus>,
+    ) -> bool {
+        self.is_cursor_visible_with_prompts(store, session_status)
     }
 
     pub fn push_line<S: Into<String>>(&mut self, store: &mut AgentViewStore, line: S) {
@@ -268,10 +273,8 @@ impl AgentView {
     /// RPC-013/RPC-019/RPC-029 — the AgentView vertical layout
     /// contract: Header `Length(1)`, RoleBanner `Length(role_height)`,
     /// Scrollback flex `Min(0)`, Footer `Length(1)`, Input
-    /// `Length(input_height)`. Pinned by
-    /// rpc013-source-shape.feature (`agent_view_splits_into_scrollback_input_and_footer_rows`);
-    /// BUG-163's pane render (`pane_render.rs`) consumes these exact
-    /// rows so the structural invariants live in one place.
+    /// `Length(input_height)`. Pinned by rpc013-source-shape; the pane
+    /// render (`pane_render.rs`) consumes these exact rows.
     pub fn pane_layout_constraints(role_height: u16, input_height: u16) -> [Constraint; 5] {
         [
             Constraint::Length(1),

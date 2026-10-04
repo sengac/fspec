@@ -398,7 +398,7 @@ pub(super) fn subjective_review_reminder(id: &str, data: &Data) -> Option<String
     lines
         .push("  1. Read AST research attachments - verify they reference actual code".to_string());
     lines.push(
-        "  2. Check architectural notes align with FOUNDATION.md/CLAUDE.md/AGENTS.md".to_string(),
+        "  2. Check architectural notes align with FOUNDATION.md/AGENTS.md".to_string(),
     );
     lines.push(
         "  3. Verify not reinventing existing utilities (check for duplicate function names)"

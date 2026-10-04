@@ -11,7 +11,9 @@ use crossterm::event::Event;
 
 use crate::components::{Action, EventResult};
 use crate::store::BoardStore;
-use crate::views::multiplex::{keys as mux_keys, mouse as mux_mouse, MuxOrientation};
+use crate::views::multiplex::{
+    keys as mux_keys, menu_keys, menu_mouse, mouse as mux_mouse, MuxOrientation,
+};
 
 use super::navigator::Navigator;
 
@@ -27,6 +29,31 @@ impl Navigator {
     ) -> EventResult {
         let is_mouse = matches!(event, Event::Mouse(_));
         if is_mouse {
+            // MENU-004 R-MOUSE: the top-row bar hit-tests run BEFORE the
+            // dividers/panes (the bar is an overlay control — R-MOUSE:
+            // "a bar click never changes pane focus"). `Pass` falls
+            // through to the usual divider/pane routing below.
+            match menu_mouse::classify_bar_mouse(&self.mux, event) {
+                menu_mouse::MuxBarMouseDecision::Pass => {}
+                menu_mouse::MuxBarMouseDecision::Claimed(action) => {
+                    self.emit_menu_action(*action);
+                    return EventResult::consumed();
+                }
+                menu_mouse::MuxBarMouseDecision::Swallowed => {
+                    return EventResult::consumed();
+                }
+                menu_mouse::MuxBarMouseDecision::Ignore => {
+                    return EventResult::ignored();
+                }
+                // A left click outside the open dropdown closes it (the
+                // App's Mux branch runs `menu_close_dropdown` — the
+                // item stays highlighted) AND the click still lands:
+                // the divider/pane routing below runs on the same
+                // event (R-MOUSE: "the click still lands on the pane").
+                menu_mouse::MuxBarMouseDecision::CloseOutsideThenLand => {
+                    self.emit_menu_action(Action::MenuCloseDropdown);
+                }
+            }
             let decision = mux_mouse::classify_mouse(&self.mux, event);
             return match decision {
                 mux_mouse::MouseDecision::DividerDown { index } => {
@@ -88,6 +115,28 @@ impl Navigator {
             return EventResult::ignored();
         };
         let key = *key;
+        // MENU-004 R-KEYS: the top-row bar claims its keys BEFORE the
+        // R8 board-Enter interceptor and before the focused pane sees
+        // them (an open dropdown is true-modal; a focused bar swallows
+        // unknown keys; the entry rules land on Item(0) via
+        // `MenuMoveToItem(0)`).
+        match menu_keys::classify_bar_key(&self.mux, board_store, &self.agent, &key) {
+            menu_keys::MuxBarKeyOutcome::Emit(action) => {
+                self.emit_menu_action(*action);
+                return EventResult::consumed();
+            }
+            menu_keys::MuxBarKeyOutcome::Swallow => {
+                return EventResult::consumed();
+            }
+            menu_keys::MuxBarKeyOutcome::DismissAndForward => {
+                // A bare character with the bar focused: clear the bar
+                // focus AND type the SAME key into the focused pane's
+                // input on this keystroke (R-KEYS).
+                self.mux.menu_dismiss();
+                return self.forward_mux_event_to_focused_pane(&Event::Key(key), board_store);
+            }
+            menu_keys::MuxBarKeyOutcome::Forward => {}
+        }
         // R8: Enter on the focused BOARD pane in mux mode binds the
         // selected work unit + focuses the agent pane WITHOUT flipping
         // the whole view. Intercepted here (before the board handler
@@ -127,6 +176,15 @@ impl Navigator {
                 // single-view cascade.
                 self.forward_mux_event_to_focused_pane(&Event::Key(key), board_store)
             }
+        }
+    }
+
+    /// MENU-004: emit a menu-bar `Action` onto the bus (the App's
+    /// `dispatch_menu` Mux branch mutates the mux layout's bar state —
+    /// the single-mutation-surface pattern, board store parity).
+    fn emit_menu_action(&self, action: Action) {
+        if let Some(tx) = &self.action_tx {
+            let _ = tx.send(action);
         }
     }
 

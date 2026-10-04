@@ -59,7 +59,7 @@ Why this matters:
 - Provides foundation for architectural documentation
 - Supports EXMAP-004 tag discovery workflow
 
-See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
+See spec/AGENTS.md "Big Picture Event Storming" section for detailed guidance.`,
     type: 'story',
     status: 'backlog',
     createdAt: new Date().toISOString(),
@@ -102,13 +102,13 @@ See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
    - Clear explanation of what to do
    - List of Event Storming commands to use
    - Explanation of why Big Picture Event Storming matters
-   - Reference to CLAUDE.md documentation
+   - Reference to AGENTS.md documentation
 7. ✅ Console output confirms work unit creation
 8. ✅ Console output shows command to view work unit details
 
 ## Dependencies
 
-- **FOUND-014**: CLAUDE.md must be updated first (reference in description)
+- **FOUND-014**: AGENTS.md must be updated first (reference in description)
 - **Existing commands**: Uses existing Event Storming commands (no new commands needed)
 
 ## Testing
@@ -128,7 +128,7 @@ See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
 ## Related Work Units
 
 - **EXMAP-004**: Event Storming + Tag Integration (depends on foundation Event Storm)
-- **FOUND-014**: CLAUDE.md documentation (must be completed first)
+- **FOUND-014**: AGENTS.md documentation (must be completed first)
 - **FOUND-015**: Bootstrap guidance (complementary)
 
 ## Notes

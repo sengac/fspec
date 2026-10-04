@@ -377,7 +377,7 @@ fn pause_prompt_replaces_the_draft_and_paints_no_hardware_cursor() {
 
     // @step And the cursor is not visible while the pause prompt is showing
     assert!(
-        !view.is_cursor_visible(Some(SessionStatus::Paused)),
+        !view.is_cursor_visible(&store, Some(SessionStatus::Paused)),
         "hardware cursor must not be painted inside the pause prompt"
     );
 }

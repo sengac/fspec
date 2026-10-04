@@ -492,6 +492,9 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         // DISC-003: foundation-status CLI bridge (Rust-only extension
         // command; read-only progress report for foundation discovery).
         "foundation_status.rs",
+        // CONFIG-009: validate-config CLI bridge (Rust-only extension
+        // command; user-scope config key-ownership validation).
+        "validate_config.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -623,6 +626,9 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         // DISC-003: foundation-status CLI bridge (Rust-only extension
         // command; read-only progress report for foundation discovery).
         "foundation_status.rs",
+        // CONFIG-009: validate-config CLI bridge (Rust-only extension
+        // command; user-scope config key-ownership validation).
+        "validate_config.rs",
         // RPC-233 (foundation markdown regeneration)
         "generate_foundation_md.rs",
         // Batch 14 (2026-06-13): schedules, foundation domain-events,

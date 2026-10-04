@@ -621,7 +621,7 @@ fspec show-coverage
 
 ```
 spec/
-├── CLAUDE.md                    # This file - specification process guide
+├── AGENTS.md                    # This file - specification process guide
 ├── FOUNDATION.md                # Project foundation, architecture, and phases (human-readable)
 ├── foundation.json              # Machine-readable foundation data (diagrams, etc.)
 ├── TAGS.md                      # Tag registry documentation (human-readable)
@@ -1095,7 +1095,7 @@ fspec check
 1. **NO Markdown-Based Specifications**
    - DO NOT create user stories or acceptance criteria in `.md` files
    - ALL specifications MUST be in `.feature` files using Gherkin syntax
-   - Exception: FOUNDATION.md, TAGS.md, and CLAUDE.md are meta-documentation
+   - Exception: FOUNDATION.md, TAGS.md, and AGENTS.md are meta-documentation
 
 2. **Tag Compliance**
    - Every `.feature` file MUST have at minimum: phase tag, component tag, and feature group tag

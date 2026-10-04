@@ -886,7 +886,7 @@ fn build_ai_analysis_reminder(
     lines.push("STEP 3: Check FOUNDATION.md Alignment".to_string());
     lines.push(String::new());
     lines.push(
-        "Read FOUNDATION.md or CLAUDE.md and verify code follows project principles:".to_string(),
+        "Read FOUNDATION.md or AGENTS.md and verify code follows project principles:".to_string(),
     );
     lines.push("  - File size limits (e.g., keep files under 300 lines)".to_string());
     lines.push(

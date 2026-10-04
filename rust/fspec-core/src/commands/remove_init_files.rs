@@ -20,7 +20,7 @@
 //!
 //! ## Removal (parity)
 //!
-//! * `spec/<docTemplate>` (e.g. `spec/CLAUDE.md`).
+//! * `spec/<docTemplate>` (e.g. `spec/AGENTS.md`).
 //! * `<slashCommandPath><fspec.md|fspec.toml>` (filename depends on the
 //!   agent's slash-command format).
 //! * Both use FORCE removal so missing files are silently skipped
@@ -64,7 +64,7 @@ struct Agent {
 const AGENTS: &[Agent] = &[
     Agent {
         id: "claude",
-        doc_template: "CLAUDE.md",
+        doc_template: "AGENTS.md",
         slash_command_path: ".claude/commands/",
         slash_command_toml: false,
         detection_paths: &[".claude/", ".claude/commands/"],
@@ -362,14 +362,14 @@ mod tests {
     async fn claude_removes_all_three() {
         let tmp = TempDir::new().unwrap();
         write_config(tmp.path(), "claude");
-        touch(tmp.path(), "spec/CLAUDE.md");
+        touch(tmp.path(), "spec/AGENTS.md");
         touch(tmp.path(), ".claude/commands/fspec.md");
         let out = run("{}", tmp.path()).await.unwrap();
         let r = removed(&out);
-        assert!(r.contains(&"spec/CLAUDE.md".to_string()));
+        assert!(r.contains(&"spec/AGENTS.md".to_string()));
         assert!(r.contains(&".claude/commands/fspec.md".to_string()));
         assert!(r.contains(&"spec/fspec-config.json".to_string()));
-        assert!(!tmp.path().join("spec/CLAUDE.md").exists());
+        assert!(!tmp.path().join("spec/AGENTS.md").exists());
     }
 
     #[tokio::test]
@@ -392,17 +392,17 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         write_config(tmp.path(), "");
         std::fs::create_dir_all(tmp.path().join(".claude")).unwrap();
-        touch(tmp.path(), "spec/CLAUDE.md");
+        touch(tmp.path(), "spec/AGENTS.md");
         let out = run("{}", tmp.path()).await.unwrap();
         let r = removed(&out);
-        assert!(r.contains(&"spec/CLAUDE.md".to_string()));
+        assert!(r.contains(&"spec/AGENTS.md".to_string()));
     }
 
     #[tokio::test]
     async fn keep_config_preserves() {
         let tmp = TempDir::new().unwrap();
         write_config(tmp.path(), "claude");
-        touch(tmp.path(), "spec/CLAUDE.md");
+        touch(tmp.path(), "spec/AGENTS.md");
         let out = run(r#"{"keepConfig":true}"#, tmp.path()).await.unwrap();
         let r = removed(&out);
         assert!(!r.contains(&"spec/fspec-config.json".to_string()));
@@ -433,6 +433,6 @@ mod tests {
         touch(tmp.path(), ".claude/commands/fspec.md");
         let out = run("{}", tmp.path()).await.unwrap();
         let r = removed(&out);
-        assert!(r.contains(&"spec/CLAUDE.md".to_string()));
+        assert!(r.contains(&"spec/AGENTS.md".to_string()));
     }
 }

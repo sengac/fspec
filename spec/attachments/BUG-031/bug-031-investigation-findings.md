@@ -213,7 +213,7 @@ export function formatAgentOutput(agent: AgentConfig, message: string): string {
 - Already handles system-reminder wrapping
 
 **5. Agent-Specific Files**:
-- `spec/CLAUDE.md`, `spec/CURSOR.md`, etc. - Generated per agent
+- `spec/AGENTS.md`, `spec/CURSOR.md`, etc. - Generated per agent
 - `.claude/commands/fspec.md`, `.cursor/commands/fspec.md` - Slash commands
 - `spec/fspec-config.json` - Stores selected agent
 

@@ -30,7 +30,7 @@ None.
 
 ## 🟢 Observations (Nice to Have)
 
-1. **`codelet/core/src/persistence/message_envelope.rs` is 741 lines** (exceeds the 300-line guideline from CLAUDE.md).
+1. **`codelet/core/src/persistence/message_envelope.rs` is 741 lines** (exceeds the 300-line guideline from AGENTS.md).
    - This is **intentional and required by the card**: RPC-031 mandates a verbatim, byte-for-byte lift to keep the on-disk JSONL wire format byte-identical. Splitting the file now would violate AC #1 and #3.
    - Any future refactor to split this file belongs in a follow-up card (post-RPC-034), not in RPC-031. Recorded here as a known follow-up, not a blocker.
 

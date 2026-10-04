@@ -46,6 +46,14 @@ Feature: RPC-029 AgentView structure alignment with TS Ink original
 
   Pair: render tests live in
   rust/fspec-tui/tests/view_agent_unit_rpc029.rs.
+
+  SUPERSEDED by MENU-003 (2026-09-30): the agent pane now paints the
+  2-zone menu bar row directly below the SessionHeader (single-view
+  panes), whose Zone A/Zone B separator intentionally reuses the
+  '│' box-drawing glyph (MENU-001 registry). The 'Scrollback area
+  has no border and no Agent title' scenario's 'no │' assertions
+  therefore scope to the rows BELOW the bar row (the scrollback /
+  footer / input region), leaving the bar row itself out of scope.
   """
 
   Background: User Story
@@ -59,7 +67,7 @@ Feature: RPC-029 AgentView structure alignment with TS Ink original
     When the App renders AgentView against an 80x20 TestBackend
     Then the rendered buffer does NOT contain the substring "┌"
     And the rendered buffer does NOT contain the substring "└"
-    And the rendered buffer does NOT contain the substring "│"
+    And the rows below the menu bar row do NOT contain the substring "│" (MENU-003: the bar row's zone separator itself uses '│')
     And the rendered buffer does NOT contain the substring " Agent — "
 
   Scenario: Input area has no border and prompt sits at padded column

@@ -133,6 +133,54 @@ fn agent_view_splits_into_scrollback_input_and_footer_rows() {
     );
 }
 
+/// Scenario: The agent pane flag-on layout pins the 6-constraint menu list
+///
+/// MENU-003/MENU-005: the `menu_row` panes (single-view Agent view)
+/// use a 6-constraint list — the 2-zone menu bar row sits between the
+/// SessionHeader and the RoleBanner. The pinned 5-list
+/// (`pane_layout_constraints` in agent.rs) stays byte-identical for
+/// the flag-off panes (mux agent panes, MENU-004).
+#[test]
+fn agent_pane_flag_on_layout_pins_the_6_constraint_menu_list() {
+    // @step Given the AgentView pane layout in rust/fspec-tui/src/views/agent/pane_render.rs
+    let pane_render = read_stripped("views/agent/pane_render.rs");
+    // @step When a developer reads pane_layout_constraints_menu
+    let Some(start) = pane_render.find("pub fn pane_layout_constraints_menu") else {
+        panic!("pane_render.rs must define pane_layout_constraints_menu")
+    };
+    // The function's array literal — up to the closing `]` of the
+    // constraint list.
+    let end = pane_render[start..]
+        .find("\n        ]")
+        .map(|i| start + i)
+        .expect("the menu constraint list must close");
+    let body = &pane_render[start..end];
+    // @step Then it returns [Length(1), Length(1), Length(role_height), Min(0), Length(1), Length(input_height)] in that order
+    let mut pos = 0usize;
+    for needle in [
+        "Constraint::Length(1),", // header
+        "Constraint::Length(1),", // menu bar (MENU-003)
+        "Constraint::Length(role_height),",
+        "Constraint::Min(0),",
+        "Constraint::Length(1),",
+        "Constraint::Length(input_height),",
+    ] {
+        let next = body[pos..].find(needle).unwrap_or_else(|| {
+            panic!("constraint {needle:?} missing from pane_layout_constraints_menu")
+        });
+        pos += next + needle.len();
+    }
+    // @step And the flag-off pane_layout_constraints stays the pinned 5-list (rpc013)
+    let agent = read_stripped("views/agent.rs");
+    assert!(
+        agent.contains("pub fn pane_layout_constraints(role_height: u16, input_height: u16) -> [Constraint; 5]")
+            || agent.contains(
+                "pub fn pane_layout_constraints(role_height: u16, input_height: u16) -> [ratatui::layout::Constraint; 5]"
+            ),
+        "the rpc013-pinned flag-off 5-list must stay byte-identical"
+    );
+}
+
 /// Scenario: File-size invariant preserved for every modified view file
 #[test]
 fn every_modified_view_file_stays_under_300_loc() {

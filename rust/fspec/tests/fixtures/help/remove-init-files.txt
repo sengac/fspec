@@ -21,7 +21,7 @@ EXAMPLES
   1. Remove fspec init files for detected agent
   $ fspec remove-init-files
   ✓ Successfully removed fspec init files
-  - Removed spec/CLAUDE.md
+  - Removed spec/AGENTS.md
   - Removed .claude/commands/fspec.md
   - Removed spec/fspec-config.json
 

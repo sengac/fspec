@@ -11,7 +11,7 @@
       ]
     },
     {
-      "name": "Fix eliminates circular reference in spec/CLAUDE.md",
+      "name": "Fix eliminates circular reference in spec/AGENTS.md",
       "testMappings": [
         {
           "file": "src/utils/__tests__/templateGenerator-comprehensive.test.ts",

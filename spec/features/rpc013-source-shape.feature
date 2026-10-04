@@ -40,6 +40,12 @@ Feature: RPC-013 source-shape — Navigator restructure + FooterView deletion + 
     Then the method contains a Layout split with a Min(0) flex row and a trailing Length(1) footer row
     And the bottom 1-row chunk is painted with the placeholder footer string "Enter=send  Ctrl+C=interrupt  ESC=back"
 
+  Scenario: The agent pane flag-on layout pins the 6-constraint menu list
+    Given the AgentView pane layout in rust/fspec-tui/src/views/agent/pane_render.rs
+    When a developer reads pane_layout_constraints_menu
+    Then it returns [Length(1), Length(1), Length(role_height), Min(0), Length(1), Length(input_height)] in that order
+    And the flag-off pane_layout_constraints stays the pinned 5-list (rpc013)
+
   Scenario: FooterView module and its re-exports are removed
     Given the rust/fspec-tui crate after RPC-013 lands
     When a developer scans the crate source tree
@@ -51,7 +57,9 @@ Feature: RPC-013 source-shape — Navigator restructure + FooterView deletion + 
   Scenario: BoardView source contains the literal UnifiedBoardLayout footer string
     Given the BoardView module at rust/fspec-tui/src/views/board.rs
     When a developer scans the source after comment stripping
-    Then the file contains the substring "← → Columns"
+    Then the file contains the substring "← →"
+    And the file contains the substring "Columns"
+    # MENU-002 R11: the footer literal is now "← → Cycle Columns → menu items → chips".
     And the file contains the substring "↑↓ Work Units"
     And the file contains the substring "[ Priority Up"
     And the file contains the substring "] Priority Down"

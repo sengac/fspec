@@ -81,7 +81,7 @@ This isn't a PROV-054 issue per se, but PROV-054 has now established that OAuth 
 ### W6. `copilot/oauth.rs` is over the 300-line guideline
 **File:** `codelet/providers/src/copilot/oauth.rs` — 364 lines
 
-The CLAUDE.md guideline is "Keep files under 300 lines — refactor when approaching this limit." After extracting the shared device-flow module (W3), `oauth.rs` would shrink to ~150 lines (constants + types + dialect impl + `copilot_device_auth_login` orchestrator), bringing it well under the limit.
+The AGENTS.md guideline is "Keep files under 300 lines — refactor when approaching this limit." After extracting the shared device-flow module (W3), `oauth.rs` would shrink to ~150 lines (constants + types + dialect impl + `copilot_device_auth_login` orchestrator), bringing it well under the limit.
 
 ### W7. Scenario 2 is structurally split between unit-level and integration-level assertions
 **File:** `codelet/providers/tests/copilot_oauth_device_flow_test.rs:143-213`

@@ -81,6 +81,20 @@ pub fn deep_merge(target: Value, source: Value) -> Value {
     }
 }
 
+/// Load the USER-scope config file RAW (no merge).
+///
+/// BUG-193: the counterpart of [`load_config_with_dirs`] for the WRITE half of
+/// user-scope persistence. User-scope save cores must read only this file so
+/// a write can never carry project-scope keys (e.g. `tools`, `agent`) into
+/// `~/.fspec/fspec-config.json`. Semantics mirror [`load_config_file`]:
+///
+/// * A missing file → `Ok(Value::Object(empty))` (silent fallback).
+/// * An empty / whitespace-only file → `Ok(Value::Object(empty))`.
+/// * Invalid JSON → `Err("Invalid JSON in <path>: <msg>")`.
+pub fn load_user_config_file(data_dir: &Path) -> Result<Value, String> {
+    load_config_file(&user_config_path(data_dir))
+}
+
 /// Load + deep-merge user then project scope.
 ///
 /// Project config overrides user config. `data_dir` selects the user file;

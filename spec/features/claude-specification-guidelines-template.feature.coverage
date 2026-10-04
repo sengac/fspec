@@ -1,7 +1,7 @@
 {
   "scenarios": [
     {
-      "name": "Init command copies CLAUDE.md template to new project",
+      "name": "Init command copies AGENTS.md template to new project",
       "testMappings": [
         {
           "file": "src/commands/__tests__/init-claude-template.test.ts",
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "name": "Init command overwrites existing CLAUDE.md without prompting",
+      "name": "Init command overwrites existing AGENTS.md without prompting",
       "testMappings": [
         {
           "file": "src/commands/__tests__/init-claude-template.test.ts",
@@ -115,7 +115,7 @@
       ]
     },
     {
-      "name": "Slash command output confirms CLAUDE.md was copied",
+      "name": "Slash command output confirms AGENTS.md was copied",
       "testMappings": [
         {
           "file": "src/commands/__tests__/init-claude-template.test.ts",
@@ -286,7 +286,7 @@
       ]
     },
     {
-      "name": "spec/CLAUDE.md is bundled with package",
+      "name": "spec/AGENTS.md is bundled with package",
       "testMappings": [
         {
           "file": "src/commands/__tests__/init-claude-template.test.ts",

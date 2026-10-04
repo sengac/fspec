@@ -124,6 +124,12 @@ impl App {
                 );
             }
         });
+        // Mirror the RPC-025 `handle_input_submitted_persistence`
+        // contract: park the JoinHandle on `pending_tasks` so the
+        // `App::next_pending_task` test seam (RPC-012) keeps working —
+        // `drain_pending` harnesses await every spawn, and a handle
+        // that is never parked escapes the drain and races the
+        // assertions (BUG-169 flaky pair).
         self.pending_tasks.push(handle);
     }
 

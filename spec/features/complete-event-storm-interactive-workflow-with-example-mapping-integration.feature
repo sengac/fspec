@@ -7,7 +7,7 @@
 @EXMAP-016
 Feature: Complete Event Storm interactive workflow with Example Mapping integration
   """
-  Uses existing Event Storm commands (add-domain-event, add-command, add-policy, add-hotspot, show-event-storm, generate-example-mapping-from-event-storm). Creates new discover-event-storm command that emits guidance only (no draft/finalize pattern). System-reminder integration in update-work-unit-status.ts when moving to specifying state. Guidance sections in AGENTS.md, spec/CLAUDE.md, and bootstrap. Uses getAgentConfig for agent-aware prompts (Claude Code vs Cursor). NO semantic code analysis - only AST tools and human input. Free-form conversation pattern like Example Mapping, not field-by-field like discover-foundation.
+  Uses existing Event Storm commands (add-domain-event, add-command, add-policy, add-hotspot, show-event-storm, generate-example-mapping-from-event-storm). Creates new discover-event-storm command that emits guidance only (no draft/finalize pattern). System-reminder integration in update-work-unit-status.ts when moving to specifying state. Guidance sections in AGENTS.md, spec/AGENTS.md, and bootstrap. Uses getAgentConfig for agent-aware prompts (Claude Code vs Cursor). NO semantic code analysis - only AST tools and human input. Free-form conversation pattern like Example Mapping, not field-by-field like discover-foundation.
   """
 
   # ========================================
@@ -18,7 +18,7 @@ Feature: Complete Event Storm interactive workflow with Example Mapping integrat
   #   1. Event Storm must have an interactive guided workflow like discover-foundation and Example Mapping (step-by-step with system-reminders)
   #   2. System must automatically detect WHEN Event Storm is needed based on work unit complexity (like Example Mapping is triggered for specifying state)
   #   3. Event Storm artifacts (policies, events, hotspots) must automatically pipe into Example Mapping using generate-example-mapping-from-event-storm command
-  #   4. All guidance documents (AGENTS.md, spec/CLAUDE.md, bootstrap, system-reminders) must explain Event Storm workflow and when to use it
+  #   4. All guidance documents (AGENTS.md, spec/AGENTS.md, bootstrap, system-reminders) must explain Event Storm workflow and when to use it
   #   5. Event Storm guidance must be agent-aware (detect Claude Code vs Cursor) like discover-foundation uses getAgentConfig
   #   6. CRITICAL: NO semantic code understanding allowed - fspec uses only AST/syntax analysis, file operations, and explicit human input
   #   7. Event Storm is a HUMAN-DRIVEN collaborative workshop - AI facilitates but does NOT infer domain knowledge from code semantics

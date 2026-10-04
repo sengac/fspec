@@ -5,13 +5,16 @@
 //! under the 300-LoC ceiling. Routing order:
 //!   0. Non-Press key events (Release/Repeat) are dropped up-front
 //!      (RPC-402 rule [3] — kitty enhancement protocol / Windows).
-//!   1. Ctrl+R chord — opens the search view when no popup / mode
+//!   1. MENU-003: the 2-zone bar row's arms (mouse first, keys after
+//!      the prompt chords) — gated off while any popup / mode view /
+//!      turn modal is open.
+//!   2. Ctrl+R chord — opens the search view when no popup / mode
 //!      view is currently active (RPC-026).
-//!   2. Resume / search MODE VIEW routing — when either is open the
+//!   3. Resume / search MODE VIEW routing — when either is open the
 //!      key event is consumed by the view before anything else.
-//!   3. Slash / file popup routing (RPC-020, in `dispatch_popups.rs`).
-//!   4. Default Esc/Ctrl+C/PageUp/Shift-arrow chord handling.
-//!   5. Forward to MultiLineInput + `sync_popups` to refilter.
+//!   4. Slash / file popup routing (RPC-020, in `dispatch_popups.rs`).
+//!   5. Default Esc/Ctrl+C/PageUp/Shift-arrow chord handling.
+//!   6. Forward to MultiLineInput + `sync_popups` to refilter.
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
@@ -48,9 +51,18 @@ impl AgentView {
     }
 
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
-        // RPC-028: route mouse events to popups / mode views first
-        // (impl in `mouse_dispatch.rs` to keep this file under 300 LoC).
+        // MENU-003: the 2-zone bar row is ABOVE the input/scrollback —
+        // its mouse arms run first, gated off while any popup / mode
+        // view / turn modal is open (those own the frame). The bar
+        // arms are inert until the focused pane has painted the row.
         if let Event::Mouse(m) = event {
+            if self.menu_surface_active() {
+                if let Some(result) = self.handle_menu_mouse(*m) {
+                    return result;
+                }
+            }
+            // RPC-028: route mouse events to popups / mode views first
+            // (impl in `mouse_dispatch.rs` to keep this file under 300 LoC).
             if let Some(result) = self.handle_mode_view_mouse(*m) {
                 return result;
             }
@@ -131,6 +143,16 @@ impl AgentView {
             {
                 self.emit(Action::OpenSearchView);
                 return EventResult::consumed();
+            }
+            // MENU-003: the 2-zone bar row's key arms — an open
+            // dropdown is true-modal, a focused bar item/chip owns the
+            // ring keys, and bare Left on an empty input enters the
+            // bar at Item(0) (R3). `None` = not claimed: the SAME event
+            // continues down the cascade below (R9 character forwarding).
+            if self.menu_surface_active() {
+                if let Some(result) = self.handle_menu_key(key) {
+                    return result;
+                }
             }
             // RPC-026: mode views consume everything when active.
             if let Some(result) = self.handle_mode_view_key(key) {

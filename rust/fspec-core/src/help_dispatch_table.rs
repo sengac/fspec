@@ -17,6 +17,7 @@ use crate::help::CommandHelpConfig;
 pub(crate) fn config_for(name: &str) -> Option<&'static CommandHelpConfig> {
     match name {
         "foundation-status" => Some(&crate::help::configs::foundation_status::CONFIG),
+        "validate-config" => Some(&crate::help::configs::validate_config::CONFIG),
         "add-aggregate" => Some(&crate::help::configs::add_aggregate::CONFIG),
         "add-aggregate-to-foundation" => {
             Some(&crate::help::configs::add_aggregate_to_foundation::CONFIG)

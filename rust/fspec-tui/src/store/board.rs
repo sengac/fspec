@@ -42,7 +42,15 @@ pub fn column_index(column: &str) -> Option<usize> {
 pub struct BoardStore {
     pub(super) work_units: Vec<WorkUnitInfo>,
     pub(super) by_column: HashMap<String, Vec<usize>>,
-    focused_column: usize,
+    pub(super) focused_column: usize,
+    /// MENU-002 (R2): the column⇄menu⇄chip ring focus. `None` = a
+    /// COLUMN owns the focus (then `focused_column` is authoritative).
+    /// Ring math lives in `super::board_menu`.
+    pub(super) menu_focus: Option<crate::components::menu_bar::MenuFocus>,
+    /// R9: the open dropdown `(category, cursor)`; `None` when closed.
+    pub(super) menu_open: Option<(usize, usize)>,
+    /// R8: the dispatch-fed chip count; `0` until first refresh.
+    pub(super) menu_chips: usize,
     pub(super) selected_index_per_column: HashMap<String, usize>,
     /// RPC-016: per-column scroll offset — the index of the first
     /// work unit in the column-content viewport. `0` for every

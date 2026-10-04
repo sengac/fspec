@@ -184,7 +184,7 @@ fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() {
     // row N ("row-N"), making the copied text deterministic.
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16; // header row is 0; scrollback band starts at y=1.
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2 // header row is 0; scrollback band starts at y=1.
 
     // @step When I drag from the middle of one line to the middle of the line below and release
     // Down at the start of "row-0", drag to the far edge of the "row-1"
@@ -237,7 +237,7 @@ fn long_pressing_a_line_selects_and_copies_it() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I press and hold on a line for about half a second and release
     let _ = app.handle_event(&mouse(
@@ -273,7 +273,7 @@ fn wheel_scrolling_still_works_and_does_not_select_or_copy() {
     seed_rows(&mut app, 200);
     render_app(&mut app, 80, 40);
     let before = scroll_offset(&app);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I scroll the mouse wheel over the transcript
     let _ = app.handle_event(&mouse(MouseEventKind::ScrollUp, 10, rect_y + 4));
@@ -306,7 +306,7 @@ fn a_quick_click_does_not_select_or_copy() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I quickly click a line without dragging
     // Down then immediate Up, with NO drag and NO long-press tick between.
@@ -342,8 +342,8 @@ fn esc_clears_an_active_selection_without_copying() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
-    // Drive a Down + Drag to open a live (uncommitted) selection.
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
+                       // Drive a Down + Drag to open a live (uncommitted) selection.
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 3, rect_y));
     drain(&mut app);
     let _ = app.handle_event(&mouse(
@@ -389,7 +389,7 @@ fn scrolling_clears_an_active_selection() {
     // anchor a live selection via Down + Drag.
     app.dispatch(Action::ScrollbackPageUp);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 3, rect_y));
     drain(&mut app);
     let _ = app.handle_event(&mouse(
@@ -446,7 +446,7 @@ fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() {
     // is the first visible row of the scrollback band.
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I select that full line and release
     // Down at the start of the answer row, drag to its far content edge
@@ -486,7 +486,7 @@ fn mouse_capture_remains_enabled_throughout_selection_and_copy() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I complete a drag selection and copy
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 0, rect_y));

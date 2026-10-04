@@ -654,9 +654,24 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     tracks the measured file (1357).
     //   - MUX-009 added 6 lines (OpenMuxConfigDialog variant + a 5-line doc
     //     stanza) — the assertion tracks the measured file (1363).
+    //   - BOARD-023 added 21 lines (OpenBoardKeybindingDialog / OpenBoardHelp /
+    //     OpenBoardExitConfirmation variants + a 3-line doc stanza each) —
+    //     the assertion tracks the measured file (1384).
+    //   - MENU-001 added 1 line (`pub mod menu_bar;` — the MENU-001/002/003/004
+    //     menu-bar component module) — the assertion tracks the measured file
+    //     (1385).
+    //   - MENU-002 added 33 lines (the 8 menu ring Action variants —
+    //     MenuMove / MenuFocusToColumns / MenuOpenDropdown / MenuCloseDropdown
+    //     / MenuDropdownCursor / MenuExecuteItem / MenuChipActivate /
+    //     MenuMoveToItem — with a 2-line doc stanza each; `MenuExecuteItem`
+    //     reflows to a 4-line struct form under `cargo fmt`) — the
+    //     assertion tracks the measured file (1418).
+    //   - MENU-004 added 6 lines (`MenuFocusPane` variant + a 5-line
+    //     doc stanza + a 1-line group comment) — the assertion tracks
+    //     the measured file (1424).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1363,
-        "components/mod.rs has {n_components} lines — measured ceiling 1363 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog)"
+        n_components <= 1424,
+        "components/mod.rs has {n_components} lines — measured ceiling 1424 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant)"
     );
 }

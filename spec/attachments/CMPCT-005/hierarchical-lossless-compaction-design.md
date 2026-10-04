@@ -58,7 +58,7 @@ Instead of running compaction in a background process with separate LLM calls, *
 - `inner.messages.clear()` — clears the in-memory message array
 - `inner.turns.clear()` — clears the in-memory turn tracker
 - `inner.token_tracker = TokenTracker::default()` — resets token counts
-- Then reinjects system reminders (CLAUDE.md, environment info)
+- Then reinjects system reminders (AGENTS.md, environment info)
 
 It **never** touches the on-disk persistence layer. Messages are written to disk as they stream via `append_message_with_metadata()` into a JSONL store (`messages/messages.jsonl`). The persistence layer has no message deletion path at all.
 
@@ -80,7 +80,7 @@ And `handle_search()` (line 120) also reads from the on-disk store, not in-memor
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐ │
 │  │ System Reminders (stable prefix, cacheable)         │ │
-│  │ CLAUDE.md, environment, fspec workflow              │ │
+│  │ AGENTS.md, environment, fspec workflow              │ │
 │  └────────────────────────────────────────────────────┘ │
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐ │

@@ -11,7 +11,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -48,7 +48,13 @@ fn make_unit_at(id: &str, status: &str, ts: &str) -> WorkUnitInfo {
 fn render(width: u16, height: u16, view: &BoardView, store: &BoardStore) -> Buffer {
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     term.backend().buffer().clone()

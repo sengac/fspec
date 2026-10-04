@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
 use codelet_rpc_types::WorkUnitInfo;
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
@@ -38,7 +38,13 @@ fn render_board(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> String {
     store.replace_work_units(units);
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), &store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            &store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -58,7 +64,13 @@ fn render_board_rows(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> Vec<S
     store.replace_work_units(units);
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), &store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            &store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -81,10 +93,13 @@ fn board_view_renders_literal_unified_board_layout_footer_string() {
     let units = vec![wu("AUTH-001", "backlog")];
     // @step When the App renders against a 120x24 TestBackend
     let joined = render_board(120, 24, units);
-    // @step Then the rendered buffer contains the substring "← → Columns"
+    // @step Then the rendered buffer contains the substring "← → Cycle Columns"
+    // (MENU-002 R11: the footer now describes the full ring — columns →
+    // menu items → chips. The '← → Columns' token became '← → Cycle
+    // Columns'.)
     assert!(
-        joined.contains("← → Columns"),
-        "missing '← → Columns' in:\n{joined}"
+        joined.contains("← → Cycle Columns"),
+        "missing '← → Cycle Columns' in:\n{joined}"
     );
     // @step And the rendered buffer contains the substring "↑↓ Work Units"
     assert!(
@@ -145,11 +160,12 @@ fn board_view_paints_headers_above_footer_row_in_its_own_area() {
     // @step When a developer scans the rendered buffer row by row
     let rows = render_board_rows(120, 24, units);
     assert_eq!(rows.len(), 24);
-    // @step Then row 22 (the last in-bounds row of the box) contains the footer string substring "← → Columns"
+    // @step Then row 22 (the last in-bounds row of the box) contains the footer string substring "← → Cycle Columns"
+    // (MENU-002 R11: the footer now describes the full ring.)
     // The BoardView's outer Block draws on rows 0 and 23 (top/bottom border).
     // The footer 1-row chunk sits just above the bottom border at row 22.
     assert!(
-        rows[22].contains("← → Columns"),
+        rows[22].contains("← → Cycle Columns"),
         "expected footer on row 22, got:\nrow 21: {}\nrow 22: {}\nrow 23: {}",
         rows[21],
         rows[22],

@@ -30,7 +30,9 @@ use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use codelet_common::fspec_config::{load_config_with_dirs, write_config_with_dirs, ConfigScope};
+use codelet_common::fspec_config::{
+    load_config_with_dirs, load_user_config_file, write_config_with_dirs, ConfigScope,
+};
 
 /// Nested config keys holding the persisted mux config: `tui.mux`.
 const TUI_KEY: &str = "tui";
@@ -41,18 +43,23 @@ const MUX_KEY: &str = "mux";
 /// (read-modify-write).
 ///
 /// Path-injectable core used by both the global convenience wrapper and
-/// tests. `data_dir` selects the user `fspec-config.json`; `cwd` is
-/// required so the read half loads the deep-merged view (its write half
-/// always targets USER).
+/// tests. `data_dir` selects the user `fspec-config.json`; `_cwd` is
+/// retained for call-site stability but the save no longer reads the
+/// deep-merged view — BUG-193 requires the write half to read the RAW
+/// user file so project-scope keys are never mirrored into it.
 pub fn save_mux_config_with_dirs(
     data_dir: &Path,
-    cwd: &Path,
+    _cwd: &Path,
     config: &Value,
 ) -> Result<(), String> {
-    // Read the existing merged config; an unreadable / invalid file
-    // degrades to an empty object rather than aborting the save.
-    let mut root =
-        load_config_with_dirs(data_dir, cwd).unwrap_or_else(|_| Value::Object(Map::new()));
+    // BUG-193: read the RAW user file (never the deep-merged
+    // project-over-user view) so the write-back can only ever carry
+    // user-scope keys — project-scope keys such as `tools` or `agent`
+    // must not be mirrored into `~/.fspec/fspec-config.json`. An
+    // unreadable / invalid user file degrades to an empty object rather
+    // than aborting the save. (`cwd` stays in the signature for load-side
+    // call-site stability; the save itself no longer needs it.)
+    let mut root = load_user_config_file(data_dir).unwrap_or_else(|_| Value::Object(Map::new()));
 
     if !root.is_object() {
         root = Value::Object(Map::new());
@@ -72,11 +79,11 @@ pub fn save_mux_config_with_dirs(
         .ok_or_else(|| "config tui section is not a JSON object".to_string())?;
     tui_map.insert(MUX_KEY.to_string(), config.clone());
 
-    match write_config_with_dirs(ConfigScope::User, &root, data_dir, cwd) {
+    match write_config_with_dirs(ConfigScope::User, &root, data_dir, _cwd) {
         Ok(()) => {
             tracing::info!(
                 data_dir = %data_dir.display(),
-                cwd = %cwd.display(),
+                _cwd = %_cwd.display(),
                 "save_mux_config: persisted tui.mux"
             );
             Ok(())
@@ -85,7 +92,7 @@ pub fn save_mux_config_with_dirs(
             tracing::warn!(
                 error = %e,
                 data_dir = %data_dir.display(),
-                cwd = %cwd.display(),
+                _cwd = %_cwd.display(),
                 "save_mux_config: failed to persist (non-fatal)"
             );
             Err(e)

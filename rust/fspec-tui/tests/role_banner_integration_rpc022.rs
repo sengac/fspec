@@ -77,7 +77,7 @@ fn scrollback_block_height(rows: &[String]) -> usize {
             break;
         }
     }
-    let mut top = 1usize; // skip header row 0
+    let mut top = 2usize; // MENU-003: skip header row 0 + menu bar row 1
     if let Some(first) = rows.get(top) {
         if first.trim_start().starts_with("Role:") {
             top += 1;

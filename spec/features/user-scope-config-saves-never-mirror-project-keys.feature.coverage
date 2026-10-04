@@ -1,0 +1,336 @@
+{
+  "scenarios": [
+    {
+      "name": "Saving the mux config does not mirror project-scope keys into the user config",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "54-90",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving the default thinking level does not mirror project-scope keys into the user config",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "99-127",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A user-scope mux save preserves user-scope siblings",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "135-164",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving to a user scope without any user config file still succeeds",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "173-193",
+          "implMappings": [
+            {
+              "file": "rust/common/src/fspec_config.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A malformed user config file degrades to a fresh save without mirroring project keys",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "202-224",
+          "implMappings": [
+            {
+              "file": "rust/common/src/fspec_config.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project-scope tui.mux still overrides the user-scope value on load",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "233-254",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/mux_config_persistence.rs",
+      "rust/sessions/src/default_thinking_level_persistence.rs",
+      "rust/common/src/fspec_config.rs"
+    ],
+    "totalLinesCovered": 384
+  }
+}

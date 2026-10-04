@@ -38,7 +38,11 @@ impl App {
                 );
                 self.compositor.render(frame.area(), frame.buffer_mut());
                 if let ViewMode::Agent = self.navigator.active_view {
-                    if self.navigator.agent.is_cursor_visible(session_status) {
+                    if self
+                        .navigator
+                        .agent
+                        .is_cursor_visible(&self.agent_view_store, session_status)
+                    {
                         if let Some((x, y)) = self.navigator.agent.cursor_position() {
                             frame.set_cursor_position((x, y));
                         }
@@ -81,12 +85,19 @@ impl App {
                     // redrawing during its 350ms window even when the
                     // session is idle.
                     let is_mux_flash_active = self.navigator.is_mux_flash_active();
+                    // MENU-004 R-TICK: the active surface's menu bar
+                    // keeps the 16ms tick redrawing while a session is
+                    // Running/Compacting (the Running chip's braille
+                    // frame advances — the BUG-194 class of frozen
+                    // spinner, now mux-aware).
+                    let is_menu_bar_animating = self.navigator.is_menu_bar_animating();
                     if super::tick_should_draw(
                         self.should_render,
                         is_busy,
                         is_animating,
                         is_view_loading,
                         is_mux_flash_active,
+                        is_menu_bar_animating,
                     ) {
                         let session_status = self.current_session_status();
                         guard.terminal().draw(|frame| {
@@ -98,7 +109,10 @@ impl App {
                             );
                             self.compositor.render(frame.area(), frame.buffer_mut());
                             if let ViewMode::Agent = self.navigator.active_view {
-                                if self.navigator.agent.is_cursor_visible(session_status) {
+                                if self.navigator.agent.is_cursor_visible(
+                                    &self.agent_view_store,
+                                    session_status,
+                                ) {
                                     if let Some((x, y)) = self.navigator.agent.cursor_position() {
                                         frame.set_cursor_position((x, y));
                                     }

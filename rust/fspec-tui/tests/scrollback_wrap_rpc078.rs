@@ -322,43 +322,44 @@ fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
         s
     };
 
-    // @step Then row y=1 (the first row of the scrollback area, immediately below the SessionHeader at y=0) contains "You: what is this card about?"
-    let row1 = row_text(1);
+    // @step Then row y=2 (the first row of the scrollback area, below the SessionHeader at y=0 and the MENU-003 menu bar row at y=1) contains "You: what is this card about?"
+    let row2 = row_text(2);
     assert!(
-        row1.contains("You: what is this card about?"),
-        "row y=1 must contain the user line at the TOP of scrollback; \
-         got row1={row1:?}"
+        row2.contains("You: what is this card about?"),
+        "row y=2 must contain the user line at the TOP of scrollback; \
+         got row2={row2:?}"
     );
 
-    // @step Then row y=2 contains "API Error:"
+    // @step Then row y=4 contains "API Error:"
     // RPC-401: each message now emits one trailing blank separator row, so
-    // the user line at y=1 is followed by its gutter at y=2 and the API
-    // Error line lands at y=3.
-    let row3 = row_text(3);
+    // the user line at y=2 is followed by its gutter at y=3 and the API
+    // Error line lands at y=4.
+    let row4 = row_text(4);
     assert!(
-        row3.contains("API Error:"),
-        "row y=3 must contain the API Error line below the user line + gutter; got row3={row3:?}"
+        row4.contains("API Error:"),
+        "row y=4 must contain the API Error line below the user line + gutter; got row4={row4:?}"
     );
-    // The gutter row (y=2) between the two messages is blank.
+    // The gutter row (y=3) between the two messages is blank.
     assert_eq!(
-        row_text(2).trim(),
+        row_text(3).trim(),
         "",
-        "row y=2 must be the blank separator gutter; got {:?}",
-        row_text(2)
+        "row y=3 must be the blank separator gutter; got {:?}",
+        row_text(3)
     );
 
-    // @step Then no row between y=1 and the bottom of the scrollback area (y=h-3 where the footer sits) is blank above the first message — the empty rows fall BELOW the API error line, never above the user line
-    // i.e. there must be NO blank row between y=0 (header) and y=1 (user line).
-    // Equivalent: row y=1 is non-blank (already asserted above). Also
+    // @step Then no row between y=2 and the bottom of the scrollback area (y=h-3 where the footer sits) is blank above the first message — the empty rows fall BELOW the API error line, never above the user line
+    // i.e. there must be NO blank row between y=1 (MENU-003 menu bar) and y=2 (user line).
+    // Equivalent: row y=2 is non-blank (already asserted above). Also
     // assert that NO row strictly above the first message contains any
-    // scrollback content — by definition rows above y=1 are header
+    // scrollback content — by definition rows above y=2 are header/menu
     // territory.
-    // Sanity: row y=0 belongs to the SessionHeader, not scrollback.
-    // Sanity: rows AFTER the API error (RPC-401: its gutter at y=4) up to
+    // Sanity: row y=0 belongs to the SessionHeader, row y=1 to the
+    // MENU-003 menu bar, not scrollback.
+    // Sanity: rows AFTER the API error (RPC-401: its gutter at y=5) up to
     // the footer area are allowed to be blank because there's no more
     // content.
     let footer_y = buf.area.height.saturating_sub(2); // footer above input
-    for y in 5..footer_y {
+    for y in 6..footer_y {
         let r = row_text(y);
         // Below the API error line, blank rows are EXPECTED — assert
         // they don't carry any orphaned message text (defensive: TS

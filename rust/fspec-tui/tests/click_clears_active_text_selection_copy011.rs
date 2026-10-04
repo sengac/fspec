@@ -44,9 +44,9 @@ fn a_quick_click_clears_an_active_scrollback_selection() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
-    // Drag the whole row (col 0 → far edge) then release to commit + keep
-    // the highlight, establishing an active selection.
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
+                       // Drag the whole row (col 0 → far edge) then release to commit + keep
+                       // the highlight, establishing an active selection.
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 0, rect_y));
     drain(&mut app);
     let _ = app.handle_event(&mouse(MouseEventKind::Drag(MouseButton::Left), 79, rect_y));
@@ -283,8 +283,8 @@ fn starting_a_new_drag_replaces_the_old_selection() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
-    // Establish an active selection on the first row ("Hello world").
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
+                       // Establish an active selection on the first row ("Hello world").
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 0, rect_y));
     drain(&mut app);
     let _ = app.handle_event(&mouse(MouseEventKind::Drag(MouseButton::Left), 79, rect_y));
@@ -342,7 +342,7 @@ fn a_quick_click_with_no_active_selection_stays_inert() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
     assert!(!selection_active(&app), "precondition: no selection active");
 
     // @step When I quickly click a line without dragging

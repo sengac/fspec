@@ -76,11 +76,14 @@ impl AgentView {
     /// Paint the input row: inline pause prompt (RPC-406) OR the
     /// spinner / transition slice / MultiLineInput (RPC-093/095).
     /// Caches `last_pause` for the key router and the cursor gate.
+    /// BUG-194: the spinner/transition row is the FOCUSED session's
+    /// OWN per-session slot (store-owned) — `store` is `&mut` so the
+    /// slot's `last_spinner_line` cache updates in place.
     pub(super) fn paint_input_area(
         &mut self,
         input_area: Rect,
         buf: &mut Buffer,
-        store: &AgentViewStore,
+        store: &mut AgentViewStore,
         sid: Option<&SessionId>,
     ) {
         // RPC-029: input has no border; paddingX=1.
@@ -161,23 +164,35 @@ impl AgentView {
         let input_body_width = multiline_input_render::input_body_width(input_area.width);
         self.input
             .sync_viewport(input_body_width, input_area.height);
-        paint_input_or_spinner(padded, buf, &self.input, &self.input_transition_state);
-        if let Some(line) = transition_driver::cached_spinner_line(&self.input_transition_state) {
-            self.last_spinner_line = Some(line);
+        // BUG-194: the focused session's OWN per-session transition
+        // state drives the spinner/finish-sweep row (the view no
+        // longer holds a shared machine).
+        let state = sid
+            .and_then(|s| store.session_context_for(s))
+            .map(|c| c.input_transition.state.clone())
+            .unwrap_or_default();
+        paint_input_or_spinner(padded, buf, &self.input, &state);
+        // BUG-194: cache the spinner line in the session's OWN slot
+        // (the Hiding transition captures this pane's last painted
+        // line, not another pane's).
+        if let Some(line) = transition_driver::cached_spinner_line(&state) {
+            if let Some(ctx) = sid.and_then(|s| store.session_context_mut_for(s)) {
+                ctx.input_transition.last_spinner_line = Some(line);
+            }
         }
     }
 
-    /// BUG-163 — read-only ghost input row for UNfocused mux agent
-    /// panes: paints the session's persisted `input_draft` (or the dim
-    /// placeholder hint when empty) into the same padded input-area
-    /// geometry the live composer uses, WITHOUT touching the shared
-    /// `MultiLineInput` / viewport state. The focused pane is the only
-    /// one that paints the live composer.
+    /// BUG-163 + BUG-194 — ghost input row for UNfocused mux agent
+    /// panes. BUG-194: the pane's OWN session transition slot drives
+    /// the row — a non-Idle slot (Loading/Compacting/Hiding/Showing)
+    /// paints the SAME spinner/finish-sweep row the focused pane
+    /// paints; a slot at Idle falls back to the read-only ghost draft
+    /// (BUG-163: the ghost never touches the shared `MultiLineInput`).
     pub(super) fn paint_ghost_input_row(
         &mut self,
         input_area: Rect,
         buf: &mut ratatui::buffer::Buffer,
-        store: &AgentViewStore,
+        store: &mut AgentViewStore,
         sid: Option<&SessionId>,
     ) {
         // Mirror `paint_input_area`'s padding (RPC-029 paddingX=1).
@@ -188,12 +203,32 @@ impl AgentView {
             width: input_area.width.saturating_sub(pad * 2),
             height: input_area.height.max(1),
         };
-        let draft = sid
+        // BUG-194: this pane's session's OWN transition state (ticked
+        // earlier in `render_session_pane` from its own status).
+        let state = sid
             .and_then(|s| store.session_context_for(s))
-            .map(|c| c.input_draft.clone())
+            .map(|c| c.input_transition.state.clone())
             .unwrap_or_default();
-        self.input
-            .render_ghost_draft(padded, buf, &draft, INPUT_PLACEHOLDER_HINT);
+        if !matches!(state, super::input_transition::InputTransitionState::Idle) {
+            // The running/compacting/finishing pane paints the
+            // identical indicator row as its focused twin.
+            paint_input_or_spinner(padded, buf, &self.input, &state);
+            // Cache the spinner line in this pane's session slot (the
+            // Hiding transition captures the line THIS pane painted
+            // last).
+            if let Some(line) = transition_driver::cached_spinner_line(&state) {
+                if let Some(ctx) = sid.and_then(|s| store.session_context_mut_for(s)) {
+                    ctx.input_transition.last_spinner_line = Some(line);
+                }
+            }
+        } else {
+            let draft = sid
+                .and_then(|s| store.session_context_for(s))
+                .map(|c| c.input_draft.clone())
+                .unwrap_or_default();
+            self.input
+                .render_ghost_draft(padded, buf, &draft, INPUT_PLACEHOLDER_HINT);
+        }
         // BUG-163: no pause/HITL prompt is painted in a ghost pane — the
         // focused pane's `paint_input_area` owns those caches. TOOL-022 P2:
         // the exec-stdin overlay is likewise focused-pane-only.

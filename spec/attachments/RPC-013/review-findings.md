@@ -32,7 +32,7 @@ None.
    - `codelet/fspec-tui/tests/source_shape_rpc013.rs:3`
 
    This breaks the 1:1 test ↔ feature traceability convention required
-   by docs/TESTING.md / CLAUDE.md.
+   by docs/TESTING.md / AGENTS.md.
 
 2. **Fictional Gherkin step in `rpc013-source-shape.feature`.** Scenario
    "Navigator no longer reserves a Length(1) footer row" line 35 reads:

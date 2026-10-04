@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: System Reminder Preservation Through Compaction and Session Restore
 //!
-//! These tests verify that system reminders (environment, claudeMd, fspecWorkflow)
+//! These tests verify that system reminders (environment, systemPrompt, fspecWorkflow)
 //! are properly preserved through compaction and restored on session resume.
 //!
 //! CRITICAL BEHAVIOR:
@@ -11,7 +11,7 @@
 //!
 //! This ensures the LLM always has access to:
 //! - Platform/architecture/shell/user/working directory (environment)
-//! - Project documentation (claudeMd)
+//! - Project documentation (systemPrompt)
 //! - Workflow guidance (fspecWorkflow)
 
 use codelet_cli::session::system_reminders::{
@@ -75,14 +75,14 @@ fn get_message_text(msg: &Message) -> Option<String> {
 
 #[test]
 fn test_system_reminders_preserved_at_start_after_compaction() {
-    // @step Given a session with environment and claudeMd system reminders
+    // @step Given a session with environment and systemPrompt system reminders
     let env_reminder = create_system_reminder_message(
         SystemReminderType::Environment,
         "Platform: linux\nArchitecture: aarch64\nWorking directory: /home/user/project",
     );
-    let claude_md_reminder = create_system_reminder_message(
-        SystemReminderType::ClaudeMd,
-        "# Project\nThis is the CLAUDE.md content",
+    let agents_md_reminder = create_system_reminder_message(
+        SystemReminderType::SystemPrompt,
+        "# Project\nThis is the AGENTS.md content",
     );
 
     // @step And multiple conversation turns
@@ -93,7 +93,7 @@ fn test_system_reminders_preserved_at_start_after_compaction() {
 
     let messages = vec![
         env_reminder,
-        claude_md_reminder,
+        agents_md_reminder,
         user1,
         assistant1,
         user2,
@@ -107,7 +107,7 @@ fn test_system_reminders_preserved_at_start_after_compaction() {
     assert_eq!(
         system_reminders.len(),
         2,
-        "Should extract both environment and claudeMd reminders"
+        "Should extract both environment and systemPrompt reminders"
     );
 
     // @step And compactable messages should not include system reminders
@@ -135,7 +135,7 @@ fn test_system_reminders_preserved_at_start_after_compaction() {
 }
 
 // =============================================================================
-// Scenario: All system reminder types (environment, claudeMd, fspecWorkflow) preserved
+// Scenario: All system reminder types (environment, systemPrompt, fspecWorkflow) preserved
 // =============================================================================
 
 #[test]
@@ -145,23 +145,23 @@ fn test_all_system_reminder_types_preserved_through_compaction() {
         SystemReminderType::Environment,
         "Platform: linux\nArchitecture: aarch64",
     );
-    let claude_md_reminder = create_system_reminder_message(
-        SystemReminderType::ClaudeMd,
+    let agents_md_reminder = create_system_reminder_message(
+        SystemReminderType::SystemPrompt,
         "# fspec - Acceptance Criteria Driven Development",
     );
-    // Note: fspecWorkflow is delivered via claudeMd type with specific content
-    // The actual fspec workflow guidance is injected as claudeMd type
+    // Note: fspecWorkflow is delivered via systemPrompt type with specific content
+    // The actual fspec workflow guidance is injected as systemPrompt type
 
     // @step And multiple conversation turns
     let user1 = create_user_message("Hello");
     let assistant1 = create_assistant_message("Hi there");
 
-    let messages = vec![env_reminder, claude_md_reminder, user1, assistant1];
+    let messages = vec![env_reminder, agents_md_reminder, user1, assistant1];
 
     // @step When I partition for compaction
     let (system_reminders, compactable) = partition_for_compaction(&messages);
 
-    // @step Then both environment and claudeMd reminders should be preserved
+    // @step Then both environment and systemPrompt reminders should be preserved
     assert_eq!(
         system_reminders.len(),
         2,
@@ -174,11 +174,11 @@ fn test_all_system_reminder_types_preserved_through_compaction() {
         .any(|msg| is_reminder_of_type(msg, "<!-- type:environment -->"));
     assert!(has_env, "Environment reminder should be preserved");
 
-    // @step And claudeMd reminder should be present
-    let has_claude_md = system_reminders
+    // @step And systemPrompt reminder should be present
+    let has_agents_md = system_reminders
         .iter()
-        .any(|msg| is_reminder_of_type(msg, "<!-- type:claudeMd -->"));
-    assert!(has_claude_md, "ClaudeMd reminder should be preserved");
+        .any(|msg| is_reminder_of_type(msg, "<!-- type:systemPrompt -->"));
+    assert!(has_agents_md, "SystemPrompt reminder should be preserved");
 
     // @step And conversation messages should be in compactable
     assert_eq!(compactable.len(), 2, "Should have 2 conversation messages");
@@ -288,9 +288,9 @@ fn test_simulated_compaction_flow_preserves_reminders() {
         SystemReminderType::Environment,
         "Platform: linux\nArchitecture: aarch64\nShell: /bin/bash\nUser: testuser\nWorking directory: /home/testuser/project",
     );
-    let claude_md_reminder = create_system_reminder_message(
-        SystemReminderType::ClaudeMd,
-        "# My Project\nThis is CLAUDE.md content for the project",
+    let agents_md_reminder = create_system_reminder_message(
+        SystemReminderType::SystemPrompt,
+        "# My Project\nThis is AGENTS.md content for the project",
     );
 
     // Conversation turns
@@ -303,7 +303,7 @@ fn test_simulated_compaction_flow_preserves_reminders() {
 
     let original_messages = vec![
         env_reminder,
-        claude_md_reminder,
+        agents_md_reminder,
         user1,
         assistant1,
         user2,
@@ -350,13 +350,13 @@ fn test_simulated_compaction_flow_preserves_reminders() {
         "Environment reminder should be in first 2 messages"
     );
 
-    // @step And claudeMd reminder should be first or second
-    let claude_md_present = reconstructed[..2]
+    // @step And systemPrompt reminder should be first or second
+    let agents_md_present = reconstructed[..2]
         .iter()
-        .any(|msg| is_reminder_of_type(msg, "<!-- type:claudeMd -->"));
+        .any(|msg| is_reminder_of_type(msg, "<!-- type:systemPrompt -->"));
     assert!(
-        claude_md_present,
-        "ClaudeMd reminder should be in first 2 messages"
+        agents_md_present,
+        "SystemPrompt reminder should be in first 2 messages"
     );
 
     // @step And the summary should come AFTER system reminders
@@ -389,9 +389,9 @@ fn test_simulated_compaction_flow_preserves_reminders() {
 
 #[test]
 fn test_multiple_reminder_types_each_preserve_only_latest() {
-    // @step Given a session where both env and claudeMd were updated
+    // @step Given a session where both env and systemPrompt were updated
     let env_old = create_system_reminder_message(SystemReminderType::Environment, "OLD ENV");
-    let claude_old = create_system_reminder_message(SystemReminderType::ClaudeMd, "OLD CLAUDE.md");
+    let claude_old = create_system_reminder_message(SystemReminderType::SystemPrompt, "OLD AGENTS.md");
     let user1 = create_user_message("conversation");
     let env_new_messages = add_system_reminder(
         std::slice::from_ref(&env_old),
@@ -400,8 +400,8 @@ fn test_multiple_reminder_types_each_preserve_only_latest() {
     );
     let claude_new_messages = add_system_reminder(
         std::slice::from_ref(&claude_old),
-        SystemReminderType::ClaudeMd,
-        "NEW CLAUDE.md",
+        SystemReminderType::SystemPrompt,
+        "NEW AGENTS.md",
     );
 
     // Build message list with old and new reminders interleaved
@@ -470,10 +470,10 @@ fn test_session_with_only_reminders_partition_correctly() {
     // @step Given a fresh session with only system reminders (just created, no conversation yet)
     let env_reminder =
         create_system_reminder_message(SystemReminderType::Environment, "Platform: linux");
-    let claude_md_reminder =
-        create_system_reminder_message(SystemReminderType::ClaudeMd, "# Project");
+    let agents_md_reminder =
+        create_system_reminder_message(SystemReminderType::SystemPrompt, "# Project");
 
-    let messages = vec![env_reminder, claude_md_reminder];
+    let messages = vec![env_reminder, agents_md_reminder];
 
     // @step When I partition for compaction
     let (system_reminders, compactable) = partition_for_compaction(&messages);

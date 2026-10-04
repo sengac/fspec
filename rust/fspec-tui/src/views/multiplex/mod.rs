@@ -25,6 +25,11 @@
 pub mod flash;
 pub mod keys;
 pub mod layout;
+pub mod menu_keys;
+pub mod menu_mouse;
+pub mod menu_render;
+pub mod menu_snapshot;
+pub mod menu_state;
 pub mod mouse;
 pub mod panes;
 pub mod presets;
@@ -84,6 +89,9 @@ impl MultiplexLayout {
         self.drag_axis = None;
         // MUX-006: fresh mux entry re-arms the flash on the board pane.
         self.rearm_flash(0);
+        // MENU-004 R-STATE: a fresh mux entry starts with a clean bar
+        // (no stale focus/dropdown/geometry from a prior session).
+        self.menu_reset();
     }
 
     /// Record the view active before mux was entered (restored on
@@ -112,6 +120,8 @@ impl MultiplexLayout {
         // MUX-006: config-driven entry re-arms the flash on the focused
         // pane (the persisted "home" focus).
         self.rearm_flash(self.focus);
+        // MENU-004 R-STATE: a fresh mux entry starts with a clean bar.
+        self.menu_reset();
     }
 
     /// Disable mux. Returns the pre-mux view (or `Board`).
@@ -129,6 +139,9 @@ impl MultiplexLayout {
         self.divider_rects.clear();
         // MUX-006: mux exit drops the flash (R7: no flash with mux off).
         self.disarm_flash();
+        // MENU-004 R-STATE: mux exit drops the bar state too — no stale
+        // focus/dropdown survives on the saved layout.
+        self.menu_reset();
         self.pre_mux_view.take().unwrap_or_default()
     }
 

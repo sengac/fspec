@@ -1,0 +1,196 @@
+{
+  "scenarios": [
+    {
+      "name": "The active session's chip keeps its blue background in the Agent view after the ring focus clears",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
+          "lines": "250-306",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "In mux mode the active session's chip paints the blue background while view labels keep their styling",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
+          "lines": "340-405",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The active session's chip paints the selected-item blue background without ring focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
+          "lines": "194-247",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A ring-focused active chip with a work-unit id paints the whole cell inverse",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
+          "lines": "307-338",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/chips.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/paint.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+      "rust/fspec-tui/src/components/menu_bar/chips.rs"
+    ],
+    "totalLinesCovered": 323
+  }
+}

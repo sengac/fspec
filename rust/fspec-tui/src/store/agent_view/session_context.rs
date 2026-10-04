@@ -14,16 +14,21 @@
 //! accumulate into a single in-flight AssistantText chunk; ToolCall /
 //! ToolResult / ToolProgress are rendered as cards; Done finalises
 //! markdown tables.
+//!
+//! **BUG-192**: the scrollback push/insert + cap-trim machinery lives in
+//! [`super::scrollback_mutate`] — this file only keeps the one-line
+//! method delegates so the 300-LoC ceiling pinned by
+//! `spec/features/rpc024-multi-session-cycling.feature` holds.
 
 use codelet_rpc_types::{SessionId, StreamChunk};
 use ratatui::style::Color;
 use std::collections::HashMap;
 
-use super::chunk_wrap::{wrap_source, DEFAULT_WRAP_WIDTH};
 use super::pending_tool_diff::PendingToolDiff;
+use super::scrollback_mutate;
 use crate::terminal::sanitize::sanitize_for_terminal;
 use crate::views::agent::{
-    ChunkKind, ChunkSource, RenderedChunk, ScrollbackList, TrimResult, MAX_SCROLLBACK_VISUAL_ROWS,
+    session_transition::SessionTransition, ChunkKind, ChunkSource, ScrollbackList,
 };
 
 #[derive(Debug)]
@@ -47,6 +52,11 @@ pub struct SessionContext {
     /// `src/tui/utils/thinkingBlockManager.ts`: "last streaming
     /// thinking with no `UserInput` after it".
     pub in_flight_thinking: Option<usize>,
+    /// **BUG-194**: the session's own thinking-indicator transition
+    /// slot (per-session `InputTransitionState` + spinner clock).
+    /// Ticked by `AgentView::tick_session_transition` from this
+    /// session's own `SessionStatus` — focus movement never touches it.
+    pub input_transition: SessionTransition,
     /// **RPC-391**: Edit/Write tool inputs captured at tool-call time,
     /// keyed by `ToolCallInfo.id`, consumed on the matching ToolResult to
     /// build the colored diff. Mirrors TS `pendingToolDiffsRef`.
@@ -64,6 +74,7 @@ impl SessionContext {
             in_flight_assistant: None,
             in_flight_thinking: None,
             pending_tool_diffs: HashMap::new(),
+            input_transition: SessionTransition::default(),
         }
     }
 
@@ -107,134 +118,40 @@ impl SessionContext {
         self.in_flight_assistant = None;
         self.in_flight_thinking = None;
         self.pending_tool_diffs.clear();
+        // BUG-194: a session reset drops the in-flight thinking-indicator
+        // transition (no stale spinner/finish-sweep survives a /clear).
+        self.input_transition = SessionTransition::default();
     }
+
+    // ── BUG-192: one-line delegates to `scrollback_mutate` ──────────────
+    // (the machinery itself moved there to keep this file < 300 LoC)
 
     /// Push a chunk with whatever `is_streaming` the caller set.
     /// **RPC-091**: exposed `pub(crate)` so `chunk_processor` can push.
     pub(crate) fn push_chunk(&mut self, source: ChunkSource) {
-        self.push_source(source);
+        scrollback_mutate::push_source(self, source);
     }
 
-    /// **BUG-192**: trim the scrollback to [`MAX_SCROLLBACK_VISUAL_ROWS`]
-    /// and shift the in-flight slot indices to match.
-    ///
-    /// `inserted_at`: when a chunk was just INSERTED at `idx`, slots at or
-    /// beyond `idx` also move right by 1 (the insert itself); a `push`
-    /// (append at the tail) passes `None`. `trim_shift` is the net chunk
-    /// shift from the trim itself (`-removed + marker`); 0 when no trim
-    /// fired.
-    ///
-    /// Invariants that keep this safe:
-    /// - the trim removes a PREFIX of chunks strictly below the protected
-    ///   floor (the in-flight slots' minimum), so no slot ever points at a
-    ///   removed chunk;
-    /// - a slot at index 0 (in-flight chunk IS the oldest) defers the trim
-    ///   (the marker would occupy its index); the insert shift still
-    ///   applies and the trim self-heals on the next mutation.
-    fn shift_in_flight_slots(&mut self, inserted_at: Option<usize>, trim_shift: isize) {
-        for slot in [&mut self.in_flight_assistant, &mut self.in_flight_thinking] {
-            if let Some(i) = slot {
-                let mut new = *i as isize + trim_shift;
-                if let Some(inserted_at) = inserted_at {
-                    if *i >= inserted_at {
-                        new += 1;
-                    }
-                }
-                *slot = Some(new.max(0) as usize);
-            }
-        }
-    }
-
-    /// **BUG-192**: run the widget trim (protecting the in-flight slots) and
-    /// shift the slot indices by the net chunk-count change so they keep
-    /// pointing at the SAME chunks.
-    ///
-    /// Called after every chunk-producing `push_source` /
-    /// `insert_source_at` and after every in-place in-flight growth
-    /// ([`Self::rewrap_and_trim_at`]) — the only two ways the total
-    /// visual-row count grows.
-    ///
-    /// `inserted_at` carries the insert-index shift for `insert_source_at`
-    /// call sites (see [`Self::shift_in_flight_slots`]). Returns the
-    /// [`crate::views::agent::TrimResult`] of the widget trim — `Default`
-    /// when the trim was deferred (in-flight chunk at index 0) or did not
-    /// fire.
-    pub(crate) fn trim_scrollback_to_cap(&mut self, inserted_at: Option<usize>) -> TrimResult {
-        let floor = self
-            .in_flight_assistant
-            .iter()
-            .chain(self.in_flight_thinking.iter())
-            .copied()
-            .min();
-        if floor == Some(0) {
-            // In-flight chunk at index 0 — the trim would remove the
-            // marker's slot; defer (the insert shift still applies below).
-            self.shift_in_flight_slots(inserted_at, 0);
-            return TrimResult::default();
-        }
-        let res = self
-            .scrollback
-            .trim_to_cap(MAX_SCROLLBACK_VISUAL_ROWS, floor.unwrap_or(0));
-        let trim_shift = res.marker_inserted as isize - res.removed_chunks as isize;
-        self.shift_in_flight_slots(inserted_at, trim_shift);
-        res
-    }
-
-    /// **BUG-192**: re-wrap a single (growing) chunk and then trim to the
-    /// cap, shifting the in-flight slots. All store-side in-place growth
-    /// (streaming deltas, tool-card progress, settle re-wraps) funnels
-    /// through here so the cap holds even between chunk pushes.
-    pub(crate) fn rewrap_and_trim_at(&mut self, idx: usize) {
-        self.scrollback.rewrap_at(idx);
-        self.trim_scrollback_to_cap(None);
-    }
-
-    /// Lower-level push that allocates the seq cursor and performs
-    /// the initial wrap. **RPC-091** pub(crate).
-    ///
-    /// **BUG-192**: trims after the push (see
-    /// [`Self::trim_scrollback_to_cap`]); existing in-flight slots are
-    /// shifted by the trim's net change (the pushed chunk is always the
-    /// tail and is never removed by the trim, so callers that adopt it as
-    /// a new in-flight slot read `chunk_count() - 1` afterwards).
+    /// Lower-level push that allocates the seq cursor and performs the
+    /// initial wrap. **RPC-091** pub(crate). Trims after the push and
+    /// shifts the in-flight slots by the trim's net change — see
+    /// [`scrollback_mutate::push_source`].
     pub(crate) fn push_source(&mut self, source: ChunkSource) {
-        let seq = self.scrollback_next_seq;
-        self.scrollback_next_seq = self.scrollback_next_seq.saturating_add(1);
-        let lines = wrap_source(&source, DEFAULT_WRAP_WIDTH);
-        self.scrollback.push(RenderedChunk {
-            seq,
-            lines,
-            source: Some(source),
-        });
-        self.trim_scrollback_to_cap(None);
+        scrollback_mutate::push_source(self, source);
     }
 
     /// Insert a chunk at `idx`, shifting subsequent chunks right.
-    /// Mirrors [`push_source`] but uses
-    /// [`ScrollbackList::insert`]. **RPC-093**: used by
-    /// `chunk_processor::append_thinking` to splice a new thinking
-    /// chunk BEFORE an in-flight assistant chunk (TS parity with
-    /// `appendThinking` splice-before-streaming-assistant rule).
-    ///
-    /// Returns the allocated `seq`.
-    ///
-    /// **BUG-192**: trims after the insert and shifts the in-flight slots
-    /// by BOTH the insert (+1 for slots at or beyond `idx`) and the trim's
-    /// net change, so pre-existing slots keep pointing at the same chunks.
+    /// Returns the allocated `seq`. **RPC-093** / **BUG-192** — see
+    /// [`scrollback_mutate::insert_source_at`].
     pub(crate) fn insert_source_at(&mut self, idx: usize, source: ChunkSource) -> u64 {
-        let seq = self.scrollback_next_seq;
-        self.scrollback_next_seq = self.scrollback_next_seq.saturating_add(1);
-        let lines = wrap_source(&source, DEFAULT_WRAP_WIDTH);
-        self.scrollback.insert(
-            idx,
-            RenderedChunk {
-                seq,
-                lines,
-                source: Some(source),
-            },
-        );
-        self.trim_scrollback_to_cap(Some(idx));
-        seq
+        scrollback_mutate::insert_source_at(self, idx, source)
+    }
+
+    /// **BUG-192**: re-wrap a single (growing) chunk and then trim to
+    /// the cap, shifting the in-flight slots — see
+    /// [`scrollback_mutate::rewrap_and_trim_at`].
+    pub(crate) fn rewrap_and_trim_at(&mut self, idx: usize) {
+        scrollback_mutate::rewrap_and_trim_at(self, idx);
     }
 }
 
@@ -242,7 +159,10 @@ impl SessionContext {
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+    use std::time::Instant;
+
     use super::*;
+    use crate::views::agent::input_transition::InputTransitionState;
 
     #[test]
     fn new_context_has_empty_scrollback_and_draft() {
@@ -272,5 +192,53 @@ mod tests {
         assert_eq!(ctx.scrollback.chunk_count(), 0);
         assert_eq!(ctx.scrollback_next_seq, 0);
         assert!(ctx.in_flight_assistant.is_none());
+    }
+
+    /// BUG-194 rule: the per-session transition slot is reset on
+    /// `reset_scrollback` (the /clear path) — no stale spinner or
+    /// finish-sweep survives a session reset.
+    #[test]
+    fn bug194_reset_scrollback_clears_the_per_session_transition_slot() {
+        let mut ctx = SessionContext::new(SessionId::new("s-1"));
+        // Arm the slot as if the pane had been ticking a Running
+        // session (Loading phase + spinner clock).
+        ctx.input_transition.state = InputTransitionState::Loading { elapsed_ms: 480 };
+        ctx.input_transition.spinner_started_at = Some(Instant::now());
+        assert!(
+            ctx.input_transition.is_animating()
+                || matches!(
+                    ctx.input_transition.state,
+                    InputTransitionState::Loading { .. }
+                )
+        );
+        ctx.reset_scrollback();
+        assert!(
+            matches!(ctx.input_transition.state, InputTransitionState::Idle),
+            "the transition phase must be Idle after a session reset"
+        );
+        assert!(
+            ctx.input_transition.spinner_started_at.is_none(),
+            "the per-session spinner clock must be cleared on reset"
+        );
+        assert!(
+            ctx.input_transition.last_spinner_line.is_none(),
+            "the cached spinner line must be cleared on reset"
+        );
+    }
+
+    /// BUG-194 rule: per-session transition slots must not leak across
+    /// sessions — each context owns its own slot, and one session's
+    /// in-flight state is invisible to another session's context.
+    #[test]
+    fn bug194_transition_slots_do_not_leak_across_sessions() {
+        let mut a = SessionContext::new(SessionId::new("s-1"));
+        let b = SessionContext::new(SessionId::new("s-2"));
+        a.input_transition.state = InputTransitionState::Loading { elapsed_ms: 480 };
+        a.input_transition.last_spinner_line = Some("⠋ Thinking...".to_string());
+        assert!(
+            matches!(b.input_transition.state, InputTransitionState::Idle),
+            "s-2's slot must be untouched by s-1's state"
+        );
+        assert!(b.input_transition.last_spinner_line.is_none());
     }
 }

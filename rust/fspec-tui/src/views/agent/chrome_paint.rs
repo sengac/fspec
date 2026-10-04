@@ -15,6 +15,9 @@ use super::role_banner::RoleBanner;
 /// itself stays in `views/agent.rs` (pinned by source_shape_rpc013).
 pub struct ChromeAreas {
     pub header: Rect,
+    /// MENU-003: the 2-zone menu bar row (`menu_row` flag on; zero
+    /// height — a painter no-op — when the flag is off).
+    pub menu: Rect,
     pub role: Rect,
     pub scrollback: Rect,
     pub footer: Rect,

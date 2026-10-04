@@ -57,7 +57,7 @@ const RELATED: &[&str] = &[
 const NOTES: &[&str] = &[
     "Supports 18 AI agents: Claude Code, Cursor, Windsurf, Cline, Aider, and more",
     "Creates agent-specific slash command (e.g., .claude/commands/fspec.md)",
-    "Creates agent-specific workflow docs (e.g., spec/CLAUDE.md)",
+    "Creates agent-specific workflow docs (e.g., spec/AGENTS.md)",
     "Creates spec/fspec-config.json for runtime agent detection",
     "Embeds current fspec version in slash command file as \"fspec --sync-version <version>\" command",
     "Version sync command runs as first command to auto-update files on version mismatch",

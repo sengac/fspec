@@ -124,9 +124,9 @@ fn test_telegram_clear_resets_context_completely() {
 /// Scenario: System reminders preserved after clear
 ///
 /// @step Given I have an active conversation with the AI via Telegram bridge
-/// @step And the AI has access to project context (CLAUDE.md, environment info)
+/// @step And the AI has access to project context (AGENTS.md, environment info)
 /// @step When I send "/clear" via Telegram
-/// @step Then the AI should still have access to CLAUDE.md project context
+/// @step Then the AI should still have access to AGENTS.md project context
 /// @step And the AI should still know the platform and working directory
 /// @step And the conversation history should be cleared
 #[test]
@@ -140,7 +140,7 @@ fn test_telegram_clear_preserves_system_reminders() {
     let mut session = session_result.unwrap();
 
     // @step Given I have an active conversation with the AI via Telegram bridge
-    // @step And the AI has access to project context (CLAUDE.md, environment info)
+    // @step And the AI has access to project context (AGENTS.md, environment info)
     session.inject_context_reminders();
     let initial_reminder_count = count_system_reminder_messages(&session);
 
@@ -153,7 +153,7 @@ fn test_telegram_clear_preserves_system_reminders() {
     // @step When I send "/clear" via Telegram
     simulate_correct_clear_action(&mut session);
 
-    // @step Then the AI should still have access to CLAUDE.md project context
+    // @step Then the AI should still have access to AGENTS.md project context
     // @step And the AI should still know the platform and working directory
     let final_reminder_count = count_system_reminder_messages(&session);
     assert_eq!(

@@ -1,0 +1,718 @@
+{
+  "scenarios": [
+    {
+      "name": "The registry defines the four categories in Kanban, Tools, Settings, Help order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "173-185",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Kanban category lists the work-unit workflow entries in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "188-209",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Tools category lists the git tools in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "212-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Settings category lists the configuration entries in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "239-262",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Help category is unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "266-291",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every registry entry has a key hint, label, description and a valid action",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "294-355",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bar row paints the four Zone A items",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "358-376",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Focusing the Kanban item opens a 4-row dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "379-399",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Executing the Tools row opens the changed-files view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "430-464",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Executing the Settings Providers row opens the provider settings view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "467-499",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring walks across all four items before reaching Zone B",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "402-427",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/mod.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The P key opens the provider settings view from the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "503-555",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The u help dialog lists all ten registry rows in registry order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "595-657",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tight width still degrades safely with the four items",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "660-737",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/items.rs",
+      "rust/fspec-tui/src/components/menu_bar/paint.rs",
+      "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+      "rust/fspec-tui/src/views/board/menu_keys.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
+      "rust/fspec-tui/src/components/menu_bar/mod.rs",
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/components/menu_bar_help.rs",
+      "rust/fspec-tui/src/components/menu_bar/layout.rs"
+    ],
+    "totalLinesCovered": 1898
+  }
+}

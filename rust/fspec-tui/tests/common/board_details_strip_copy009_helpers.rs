@@ -16,7 +16,7 @@ use std::sync::{Arc, Mutex};
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
 use codelet_rpc_types::WorkUnitInfo;
 use crossterm::event::{Event, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
@@ -95,7 +95,13 @@ pub fn board_with_clipboard(
 pub fn render(view: &BoardView, store: &BoardStore, w: u16, h: u16) -> Buffer {
     let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     term.backend().buffer().clone()

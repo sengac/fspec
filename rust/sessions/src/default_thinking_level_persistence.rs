@@ -26,7 +26,9 @@ use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use codelet_common::fspec_config::{load_config_with_dirs, write_config_with_dirs, ConfigScope};
+use codelet_common::fspec_config::{
+    load_config_with_dirs, load_user_config_file, write_config_with_dirs, ConfigScope,
+};
 use codelet_rpc_types::ThinkingLevel;
 
 /// Nested config keys holding the persisted default level: `tui.defaultThinkingLevel`.
@@ -47,17 +49,22 @@ fn level_from_u8(level: u8) -> ThinkingLevel {
 /// config, preserving any existing sibling keys (read-modify-write).
 ///
 /// Path-injectable core used by both the global convenience wrapper and tests.
-/// `data_dir` selects the user `fspec-config.json`; `cwd` is required so the
-/// read half loads the deep-merged view (its write half always targets USER).
+/// `data_dir` selects the user `fspec-config.json`; `_cwd` is retained for
+/// call-site stability but is only needed for the project-scope WRITE path
+/// (this save always targets USER and reads the RAW user file — see BUG-193:
+/// a user-scope write must never carry project-scope keys into the user file).
 pub fn save_default_thinking_level_with_dirs(
     data_dir: &Path,
-    cwd: &Path,
+    _cwd: &Path,
     level: ThinkingLevel,
 ) -> Result<(), String> {
-    // Read the existing merged config; an unreadable / invalid file degrades to
-    // an empty object rather than aborting the save.
-    let mut config =
-        load_config_with_dirs(data_dir, cwd).unwrap_or_else(|_| Value::Object(Map::new()));
+    // BUG-193: read the RAW user file (never the deep-merged
+    // project-over-user view) so the write-back can only ever carry
+    // user-scope keys — project-scope keys such as `tools` or `agent`
+    // must not be mirrored into `~/.fspec/fspec-config.json`. An
+    // unreadable / invalid user file degrades to an empty object rather
+    // than aborting the save.
+    let mut config = load_user_config_file(data_dir).unwrap_or_else(|_| Value::Object(Map::new()));
 
     // Ensure the root is an object (a non-object persisted value is replaced).
     if !config.is_object() {
@@ -82,7 +89,7 @@ pub fn save_default_thinking_level_with_dirs(
         Value::from(level as u8),
     );
 
-    match write_config_with_dirs(ConfigScope::User, &config, data_dir, cwd) {
+    match write_config_with_dirs(ConfigScope::User, &config, data_dir, _cwd) {
         Ok(()) => {
             // TUI-002: mirror the model path's `set_default_model` success
             // logging (structured fields) so the default-thinking save path is
@@ -90,7 +97,7 @@ pub fn save_default_thinking_level_with_dirs(
             tracing::info!(
                 level = level as u8,
                 data_dir = %data_dir.display(),
-                cwd = %cwd.display(),
+                _cwd = %_cwd.display(),
                 "save_default_thinking_level: persisted tui.defaultThinkingLevel"
             );
             Ok(())
@@ -102,7 +109,7 @@ pub fn save_default_thinking_level_with_dirs(
                 error = %e,
                 level = level as u8,
                 data_dir = %data_dir.display(),
-                cwd = %cwd.display(),
+                _cwd = %_cwd.display(),
                 "save_default_thinking_level: failed to persist (non-fatal)"
             );
             Err(e)

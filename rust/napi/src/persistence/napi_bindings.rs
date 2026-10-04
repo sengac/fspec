@@ -353,11 +353,17 @@ pub fn persistence_update_session_tokens(
 }
 
 /// Set session token usage (REPLACES existing - use for cumulative totals)
+///
+/// NAPI boundary requires flat parameters (mirrors `persistence_update_session_tokens`).
+/// `output` is part of the stable JS signature but unused on the replace path:
+/// `TokenUsage::current_context_tokens` is seeded from `input` and the cumulative
+/// fields come from `cumulative_input` / `cumulative_output`.
 #[napi]
+#[allow(clippy::too_many_arguments)] // NAPI boundary requires flat parameters
 pub fn persistence_set_session_tokens(
     session_id: String,
     input: u32,
-    output: u32,
+    _output: u32,
     cache_read: u32,
     cache_create: u32,
     cumulative_input: u32,

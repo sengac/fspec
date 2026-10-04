@@ -10,7 +10,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
 use codelet_rpc_types::WorkUnitInfo;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -42,7 +42,13 @@ fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
     let (view, _rx) = fresh();
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     term.backend().buffer().clone()
@@ -119,7 +125,11 @@ fn pressing_period_with_no_work_unit_selected_still_opens_the_agent_view_with_no
     );
 }
 
-/// Scenario: The board header hint row displays '. New Agent'
+/// Scenario: The board header hint row displays the menu bar
+/// (BOARD-023 R10 supersession: the header's keybinding row was collapsed
+/// into the short 'u Actions' hint — the '. New Agent' entry moved to the
+/// actions dialog; MENU-002 R1 supersedes that hint with the live 2-zone
+/// menu bar — 'New Agent' now lives in the Actions dropdown)
 #[test]
 fn the_board_header_hint_row_displays_period_new_agent() {
     // @step Given a BoardStore with any selection state
@@ -127,14 +137,16 @@ fn the_board_header_hint_row_displays_period_new_agent() {
     // @step When the App renders BoardView against a 120x24 TestBackend
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
-    // @step Then the rendered buffer contains the substring ". New Agent"
+    // @step Then the header row 3 shows the 2-zone menu bar's Zone A
+    // items (MENU-002 supersedes the 'u Actions' hint; MENU-008: the
+    // items are now Kanban/Tools/Settings/Help)
     assert!(
-        joined.contains(". New Agent"),
-        "missing '. New Agent':\n{joined}"
+        joined.contains("Kanban") && joined.contains("Help"),
+        "missing the 2-zone bar's Zone A items (Kanban ... Help): {joined}"
     );
     // @step And the rendered buffer does not contain the substring "/ New Agent"
     assert!(
         !joined.contains("/ New Agent"),
-        "unexpected '/ New Agent' still present:\n{joined}"
+        "unexpected '/ New Agent' still present: {joined}"
     );
 }

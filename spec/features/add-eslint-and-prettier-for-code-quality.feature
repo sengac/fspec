@@ -25,7 +25,7 @@ Feature: Add ESLint and Prettier for code quality
   - MUST fix ALL existing violations before integration (zero errors/warnings)
   - MUST preserve existing code style (2-space indentation, single quotes)
   - MUST NOT break existing build or test scripts
-  - MUST align with CLAUDE.md coding standards (no any, no require, etc.)
+  - MUST align with AGENTS.md coding standards (no any, no require, etc.)
   - Config stored in project root (eslint.config.js, .prettierrc)
   - Add lint and lint:fix scripts to package.json
 
@@ -36,7 +36,7 @@ Feature: Add ESLint and Prettier for code quality
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. ESLint configuration MUST align with TypeScript strict mode and existing CLAUDE.md coding standards
+  #   1. ESLint configuration MUST align with TypeScript strict mode and existing AGENTS.md coding standards
   #   2. Prettier MUST be configured to match existing code formatting (2-space indentation, single quotes, etc.)
   #   3. All existing code violations MUST be fixed before integration (no warnings/errors in CI)
   #   4. Integration MUST NOT break existing npm scripts (build, test, dev)

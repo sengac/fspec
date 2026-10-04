@@ -4,7 +4,7 @@
 @high
 Feature: Replace generic create-work-unit references with type-specific commands
   """
-  This refactoring requires manual context analysis for each occurrence of 'create-work-unit'. No automated find-replace allowed since context determines the correct command. Files affected: spec/CLAUDE.md, help text files (src/commands/*-help.ts), README.md, and potentially other documentation files. Each instance must be evaluated to determine if it refers to a feature/refactoring (create-story), bug fix (create-bug), or operational task (create-task).
+  This refactoring requires manual context analysis for each occurrence of 'create-work-unit'. No automated find-replace allowed since context determines the correct command. Files affected: spec/AGENTS.md, help text files (src/commands/*-help.ts), README.md, and potentially other documentation files. Each instance must be evaluated to determine if it refers to a feature/refactoring (create-story), bug fix (create-bug), or operational task (create-task).
   """
 
   # ========================================
@@ -19,7 +19,7 @@ Feature: Replace generic create-work-unit references with type-specific commands
   #   5. All changes must preserve the intent and accuracy of the original documentation
   #
   # EXAMPLES:
-  #   1. In spec/CLAUDE.md, example showing 'fspec create-work-unit AUTH "User login feature"' should become 'fspec create-story AUTH "User login feature"'
+  #   1. In spec/AGENTS.md, example showing 'fspec create-work-unit AUTH "User login feature"' should become 'fspec create-story AUTH "User login feature"'
   #   2. In help text, example showing 'fspec create-work-unit DASH "Dashboard"' should become 'fspec create-story DASH "Dashboard"'
   #   3. References to creating work for 'Add ESLint' should use 'fspec create-task' since it's operational setup
   #   4. References to creating work for 'Fix validation bug' should use 'fspec create-bug'

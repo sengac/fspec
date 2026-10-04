@@ -9,10 +9,12 @@ impl App {
     /// Dispatch an [`Action`] into the App. Updates the BoardStore /
     /// AgentViewStore / Navigator + Compositor in lockstep.
     pub fn dispatch(&mut self, action: Action) {
-        // MUX-001: capture the mux enabled-flag before this action so
-        // the post-apply sync can detect a mux EXIT and auto-save
-        // (R6) with the post-exit config.
+        // MUX-001: capture the mux enabled-flag pre-action so the
+        // post-apply sync can detect a mux EXIT and auto-save (R6).
         let mux_enabled_before = self.navigator.mux.config().enabled;
+        // MENU-002 R8: feed the ring its chip count every tick (R8
+        // lockstep — body in dispatch_menu.rs).
+        self.feed_menu_ring_size();
         match &action {
             Action::Quit => {
                 self.should_quit = true;
@@ -257,9 +259,7 @@ impl App {
             Action::SelectionClear => self.handle_selection_clear(),
             Action::CopyToClipboard(text) => self.handle_copy_to_clipboard(text.clone()),
             Action::HistoryPrev => self.handle_history_prev(),
-            Action::HistoryNext => {
-                self.handle_history_next();
-            }
+            Action::HistoryNext => self.handle_history_next(),
             Action::HistorySnapshotLoaded(session, snapshot) => {
                 self.handle_history_snapshot_loaded(session.clone(), snapshot.clone());
             }
@@ -286,8 +286,9 @@ impl App {
                 self.agent_view_store
                     .set_debug_enabled(session_id.clone(), *enabled);
             }
-            // MUX-001: mux mode — handler body lives in dispatch_mux.rs.
+            // MUX-001 / MENU-002: bodies in dispatch_mux.rs / dispatch_menu.rs.
             a if App::is_mux_action(a) => self.dispatch_mux(a),
+            a if App::is_menu_action(a) => self.dispatch_menu(a),
             // Capability dispatchers: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
                 let _ = self.dispatch_capability_fallback(&action);

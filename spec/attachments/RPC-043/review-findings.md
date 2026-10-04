@@ -113,7 +113,7 @@ note's explicit allowance for drift.
 ### O2. File size
 
 - `session_bindings.rs` — 3531 LOC (band: 2500..=4000) ✅
-- `agent_loop.rs` — 1769 LOC. The CLAUDE.md 300-line guideline applies
+- `agent_loop.rs` — 1769 LOC. The AGENTS.md 300-line guideline applies
   to the *fspec TypeScript codebase*; Rust modules in the codelet
   workspace have no such limit, and the architecture decision in rule
   [3] explicitly groups `agent_loop` as a single sibling module.

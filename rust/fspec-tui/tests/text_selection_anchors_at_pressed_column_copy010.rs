@@ -44,7 +44,7 @@ fn dragging_from_a_mid_line_column_in_the_scrollback_copies_from_that_column() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16; // header row is 0; scrollback band starts at y=1.
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2 // header row is 0; scrollback band starts at y=1.
 
     // @step When I press the left mouse button at column 6 of that row and drag to the end of the row and release
     // "Hello world": 'w' of "world" is at char index 6. Press at local
@@ -273,7 +273,7 @@ fn a_long_press_with_no_drag_still_selects_and_copies_the_whole_line() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I press and hold the left mouse button on that row for about half a second without moving and release
     // Press mid-line at column 5 (NOT column 0) so this also proves that
@@ -318,7 +318,7 @@ fn a_zero_width_drag_copies_nothing() {
     render_app(&mut app, 80, 40);
     app.dispatch(Action::ScrollbackHome);
     render_app(&mut app, 80, 40);
-    let rect_y = 1u16;
+    let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I press and release the left mouse button on the same cell without moving
     // Down then immediate Up on the SAME cell, with NO drag and NO

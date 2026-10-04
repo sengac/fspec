@@ -65,5 +65,7 @@ Feature: Board 'M' key opens the Mux config dialog + top-of-screen Mux hint
   Scenario: The Board header top chord row advertises the M Mux binding
     Given I am in the single Board view
     When I look at the board header's keybinding chord row
-    Then the chord row reads "C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux"
-    And the chord is painted as a single plain foreground span
+    Then the header row 3 shows the 2-zone menu bar's Zone A items (Actions Help)
+    And the row contains no chord separators and no C Checkpoints chord segment
+    # MENU-002 R1 supersedes: the header chord (and the later u Actions hint)
+    # became the live 2-zone menu bar; the M Mux entry lives in the Actions dropdown.

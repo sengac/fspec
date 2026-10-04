@@ -1,5 +1,6 @@
 ---
 source: fspec-tui/src/components/help_dialog.rs
+assertion_line: 295
 expression: rows
 ---
 - "                                                                                "
@@ -11,15 +12,15 @@ expression: rows
 - "  │ Board keybindings:                                                     ■ │  "
 - "  │                                                                        ■ │  "
 - "  │ ↑/k, ↓/j      Navigate work units                                      ■ │  "
-- "  │ ←/h, →/l      Switch column                                            ■ │  "
+- "  │ ←/h, →/l      Cycle columns → menu items → chips                       ■ │  "
 - "  │ Enter         Work / open focused unit                                 ■ │  "
-- "  │ Shift+Right   Open agent view                                          ■ │  "
-- "  │ .             New Agent                                                ■ │  "
-- "  │ [ / ]         Reorder (up / down)                                      ■ │  "
+- "  │ Enter (item)  Opens its dropdown menu                                  ■ │  "
+- "  │ Enter (chip)  Opens that session                                       │ │  "
+- "  │ Shift+Right   Open agent view                                          │ │  "
+- "  │ .             New Agent                                                │ │  "
+- "  │ [ / ]         Reorder (up / down)                                      │ │  "
 - "  │ PageUp/PageDn Scroll column                                            │ │  "
 - "  │ Home / End    First / Last                                             │ │  "
-- "  │ f             Changed Files                                            │ │  "
-- "  │ c             Checkpoints                                              │ │  "
 - "  │                                                                          │  "
 - "  │                               ESC to close                               │  "
 - "  │                                                                          │  "

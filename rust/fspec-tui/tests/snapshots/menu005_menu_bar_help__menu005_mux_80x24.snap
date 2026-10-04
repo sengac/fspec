@@ -1,0 +1,28 @@
+---
+source: fspec-tui/tests/menu005_menu_bar_help.rs
+expression: buffer_to_rows(&buf80)
+---
+- " Kanban Tools Settings Help  │ Board  #1 ●  #2 ●                                "
+- "                                       │ #1: Agent         tokens: 0↓ 0↑ [0%] │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │                                      │ "
+- "                                       │ > Type a message... 'Ctrl+J' newline │ "
+- "MUX 3 panes [Board|Agent|Agent]  ●pane 0  /mux config · Shift+←/→ focus · drag d"

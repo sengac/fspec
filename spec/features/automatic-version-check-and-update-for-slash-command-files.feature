@@ -34,7 +34,7 @@ Feature: Automatic version check and update for slash command files
   #   Q: Where should the version number be stored in fspec.md? At the very top as a comment, or in a specific section?
   #   A: true
   #
-  #   Q: Which files need version tracking and auto-replacement? Just .claude/commands/fspec.md, or also spec/CLAUDE.md, or both?
+  #   Q: Which files need version tracking and auto-replacement? Just .claude/commands/fspec.md, or also spec/AGENTS.md, or both?
   #   A: true
   #
   #   Q: Should the auto-update be silent, or should it notify the user that files were updated?
@@ -57,7 +57,7 @@ Feature: Automatic version check and update for slash command files
     And the AI agent executes "fspec --sync-version 0.5.0" as the first command
     Then the command should detect version mismatch (0.5.0 != 0.6.0)
     And it should update .claude/commands/fspec.md with new content including "fspec --sync-version 0.6.0"
-    And it should update spec/CLAUDE.md with latest documentation
+    And it should update spec/AGENTS.md with latest documentation
     And it should print "⚠️  fspec files updated from v0.5.0 to v0.6.0"
     And it should print Claude-specific restart message wrapped in <system-reminder> tags
     And the restart message should say "Exit this conversation and start a new one. Run /fspec again."
@@ -96,7 +96,7 @@ Feature: Automatic version check and update for slash command files
     And the AI agent executes "fspec --sync-version 0.5.0" as the first command
     Then the command should detect version mismatch
     And it should attempt to detect agent from filesystem (.claude/ directory exists)
-    And it should update both files (.claude/commands/fspec.md and spec/CLAUDE.md)
+    And it should update both files (.claude/commands/fspec.md and spec/AGENTS.md)
     And it should detect Claude supports system-reminders and wrap message in tags
     And it should print generic restart instructions "Restart your AI agent and run /fspec again"
     And it should exit with code 1
@@ -107,7 +107,7 @@ Feature: Automatic version check and update for slash command files
     Then it should read version from package.json (0.6.0)
     And it should generate .claude/commands/fspec.md with "fspec --sync-version 0.6.0" as first command in the list
     And the version check command should appear as item 1 in the command list (after "IMMEDIATELY - run these commands" section)
-    And it should create spec/CLAUDE.md with latest documentation
+    And it should create spec/AGENTS.md with latest documentation
     And it should create spec/fspec-config.json with agent "claude"
 
   Scenario: Emit tool config checks when versions match

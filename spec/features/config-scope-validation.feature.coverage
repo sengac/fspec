@@ -1,0 +1,326 @@
+{
+  "scenarios": [
+    {
+      "name": "Project-scope keys in the user config are flagged as warnings",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "64-107",
+          "implMappings": []
+        },
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "64-107",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_config.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A user-scope-only config passes validation without warnings",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "111-135",
+          "implMappings": []
+        },
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "111-135",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_config.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing user config file validates cleanly",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "139-155",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_config.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A malformed user config file is reported as a warning, not a crash",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "159-179",
+          "implMappings": []
+        },
+        {
+          "file": "rust/fspec-core/tests/validate_config.rs",
+          "lines": "159-179",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_config.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/validate_config.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/validate_config.rs"
+    ],
+    "totalLinesCovered": 428
+  }
+}

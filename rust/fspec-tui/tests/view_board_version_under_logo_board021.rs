@@ -11,7 +11,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{AgentViewStore, BoardStore, BoardView, Theme};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::style::Color;
@@ -36,7 +36,13 @@ fn render(width: u16, height: u16, store: &BoardStore) -> (Buffer, u16) {
     let (view, _rx) = fresh();
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -132,11 +138,13 @@ fn logo_glyph_rows_are_unchanged_when_the_version_row_is_painted() {
         row1.contains("Checkpoints: None"),
         "missing 'Checkpoints: None' on the checkpoint row:\n{row1}"
     );
-    // @step And the rendered buffer contains the substring "C Checkpoints"
+    // @step And the header row 3 shows the 2-zone menu bar's Zone A
+    // items (MENU-002 R1 supersedes the 'u Actions' hint; MENU-008
+    // reorganized the items into Kanban/Tools/Settings/Help)
     let row4 = row_string(&buf, 4);
     assert!(
-        row4.contains("C Checkpoints"),
-        "missing keybinding chord:\n{row4}"
+        row4.contains("Kanban") && row4.contains("Help"),
+        "missing the 2-zone bar's Zone A items (Kanban ... Help) on row 4:\n{row4}"
     );
 }
 
@@ -204,10 +212,13 @@ fn the_version_text_never_overflows_the_12_cell_logo_block() {
         VERSION_LINE.len(),
         version_x + VERSION_LINE.len()
     );
-    // @step And the keybinding chord on the 4th header row begins at the same x position as before (right after the 12-cell logo block)
-    let chord_x = find_cell(&row4, "C Checkpoints").expect("keybinding chord must be present");
+    // @step And the 2-zone menu bar on the 4th header row begins at the same x position as before (right after the 12-cell logo block)
+    // (MENU-002 R1: the 'u Actions' hint became the live bar — Zone A
+    // still starts right after the 12-cell logo block; MENU-008: the
+    // first item is now 'Kanban'.)
+    let hint_x = find_cell(&row4, "Kanban").expect("menu bar 'Kanban' item must be present");
     assert_eq!(
-        chord_x, 14,
-        "chord must start right after the 12-cell logo block (x=14); got x={chord_x}"
+        hint_x, 15,
+        "the bar must start right after the 12-cell logo block + 1-cell bar padding (x=15); got x={hint_x}"
     );
 }

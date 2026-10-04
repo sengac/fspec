@@ -24,7 +24,9 @@ Feature: RPC-013 BoardView footer — literal port of TS UnifiedBoardLayout foot
     Given an App with bootstrap complete and Navigator.active_view = ViewMode::Board
     And BoardStore seeded with [AUTH-001 backlog]
     When the App renders against a 120x24 TestBackend
-    Then the rendered buffer contains the substring "← → Columns"
+    Then the rendered buffer contains the substring "← → Cycle Columns"
+    # MENU-002 R11 supersedes: the footer now describes the full ring
+    # (columns → menu items → chips).
     And the rendered buffer contains the substring "↑↓ Work Units"
     And the rendered buffer contains the substring "[ Priority Up"
     And the rendered buffer contains the substring "] Priority Down"
@@ -41,6 +43,6 @@ Feature: RPC-013 BoardView footer — literal port of TS UnifiedBoardLayout foot
   Scenario: BoardView paints headers above the footer in its own area
     Given a BoardView rendered against a 120x24 TestBackend with [AUTH-001 backlog]
     When a developer scans the rendered buffer row by row
-    Then row 22 (the last in-bounds row of the box) contains the footer string substring "← → Columns"
+    Then row 22 (the last in-bounds row of the box) contains the footer string substring "← → Cycle Columns"
     And at least one row above row 22 contains "BACKLOG"
     And the work-unit id "AUTH-001" appears on a row strictly above the footer row

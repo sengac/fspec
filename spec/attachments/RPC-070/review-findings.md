@@ -112,7 +112,7 @@ None blocking.
 
 ## 🟢 Observations (Nice to Have)
 
-1. **Test file length:** `codelet/fspec/tests/rpc070_create_session_no_panic.rs` is 437 lines, which exceeds the 300-line guideline in `CLAUDE.md`. However, the file is **a test binary, not a code module**, and ~150 of those lines are doc-comments and the `strip_comments` / `extract_method_body` helpers that document the source-shape verification approach. Splitting it would only fragment a self-contained regression suite. No fix required.
+1. **Test file length:** `codelet/fspec/tests/rpc070_create_session_no_panic.rs` is 437 lines, which exceeds the 300-line guideline in `AGENTS.md`. However, the file is **a test binary, not a code module**, and ~150 of those lines are doc-comments and the `strip_comments` / `extract_method_body` helpers that document the source-shape verification approach. Splitting it would only fragment a self-contained regression suite. No fix required.
 
 2. **Rule [3] (doc-comment rewrite) is not asserted by an in-file scenario.** The doc-comments WERE rewritten correctly (verified by direct read of `handle_impl.rs:11-27` and `:57-69`), but a brittle "does this exact prose appear" scenario would not add value. Acceptable as-is.
 

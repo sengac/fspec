@@ -5,7 +5,7 @@
 Feature: Foundation discovery workflow cannot update nested fields (capabilities, personas)
   """
   Root Cause: src/commands/discover-foundation.ts emits system-reminders with '--field <path> --value <value>' syntax, but src/commands/update-foundation.ts implements '<section> <content>' syntax with no --field option
-  Impact: Breaks field-by-field discovery feedback loop documented in CLAUDE.md 'Foundation Document Discovery' section. AI cannot complete foundation without manual file editing.
+  Impact: Breaks field-by-field discovery feedback loop documented in AGENTS.md 'Foundation Document Discovery' section. AI cannot complete foundation without manual file editing.
   Current Workaround: AI must manually edit foundation.json or foundation.json.draft using Write tool, which violates the automation principle and bypasses validation
   Affected Fields: capabilities[] (array of {name, description} objects), personas[] (array of {name, description, goals[]} objects), architectureDiagrams[] (array of Mermaid diagrams)
   Schema Reference: src/schemas/generic-foundation.schema.json defines required structure - capabilities[] requires minItems:1, personas[] is optional but must follow persona definition structure

@@ -80,7 +80,8 @@ Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.las
     Given rust/fspec-tui/src/views/board.rs after RPC-016 lands
     When a developer reads the file source raw
     Then the file contains the substring "Action::EnterWorkUnit"
-    And the file contains the substring "Action::FocusNextColumn"
+    And the file contains the substring "Action::MenuMove"
+    # MENU-002 R2 supersedes FocusNextColumn (Left/Right walk the ring).
     And the file contains the substring "Action::ReorderUp"
     And the file does NOT contain the identifier "FooterView"
 

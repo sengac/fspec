@@ -30,6 +30,8 @@ pub mod help_dialog_scroll;
 pub mod list_scrollbar;
 pub mod load_state;
 pub mod loading_dialog;
+pub mod menu_bar;
+pub mod menu_bar_help;
 pub mod model_selector_dialog_rows;
 pub mod mux_config_dialog;
 pub mod mux_config_dialog_rows;
@@ -1323,6 +1325,65 @@ pub enum Action {
     /// `BoardView::handle_event`; App::dispatch routes it to
     /// `handle_open_mux_config_dialog` (idempotent, one instance).
     OpenMuxConfigDialog,
+    /// BOARD-023: the Board view's modifier-free 'u'/'U' keybinding
+    /// (case-insensitive) opens the actions popup dialog
+    /// (Priority::Foreground, Yellow accent, stable id
+    /// 'board-actions-dialog'). Serves the single Board view AND the
+    /// focused Board pane in mux mode (the binding lives in
+    /// BoardView::handle_event, which mux routes through). App::dispatch
+    /// routes it to `handle_open_board_keybinding_dialog` (idempotent,
+    /// one instance).
+    OpenBoardKeybindingDialog,
+    /// BOARD-023: the actions dialog's '? Help' row — App::dispatch
+    /// routes this to the SAME push helper the stage-4 '?' shortcut
+    /// uses (HelpDialog::for_board), so both entry points share one
+    /// code path (R6, DRY).
+    OpenBoardHelp,
+    /// BOARD-023: the actions dialog's 'Esc Exit' row — App::dispatch
+    /// routes this to the SAME push helper the stage-4 Esc shortcut
+    /// uses (BoardExitConfirmationDialog). This is the ONLY path from
+    /// the actions dialog to the exit confirmation — the dialog's own
+    /// Esc key always closes the dialog instead (R8).
+    OpenBoardExitConfirmation,
+
+    // MENU-002: the board's 2-zone menu bar + column⇄menu⇄chip ring.
+    /// Left/Right (h/l) + wheel over the bar: walk the ring by `delta`
+    /// (+1 forward, -1 backward) — owned by `BoardStore`
+    /// (`menu_focus_next/prev`); the store's ring math decides the
+    /// column⇄item⇄chip wrap.
+    MenuMove(i32),
+    /// Up/Down from the bar: drop focus back into the focused column
+    /// (R3) — the bar highlight clears, the column keeps its selection.
+    MenuFocusToColumns,
+    /// Enter / click on the category item at `idx`: open its dropdown
+    /// with the cursor on row 0 (a second open-tick on the ALREADY-open
+    /// item closes it instead — GUI parity, R4/R7).
+    MenuOpenDropdown(usize),
+    /// Close the open dropdown; the focused item (if any) stays
+    /// highlighted (R9). No-op when nothing is open.
+    MenuCloseDropdown,
+    /// Up/Down / wheel over an OPEN dropdown: move its cursor by
+    /// `delta`, wrapping at both ends (R6).
+    MenuDropdownCursor(i32),
+    /// Enter with the category's dropdown open: execute the
+    /// `row`-th entry (resolved through the MenuCategories registry)
+    /// and close the dropdown (R4).
+    MenuExecuteItem {
+        category: usize,
+        row: usize,
+    },
+    /// Enter / click on a session chip: jump to that session's Agent
+    /// view (R5) — dispatch resolves the chip's `SessionId`.
+    MenuChipActivate(usize),
+    /// Mouse click on a menu item: focus it (clearing any column
+    /// bar-highlight) — paired with `MenuOpenDropdown` by the caller.
+    MenuMoveToItem(usize),
+    // MENU-004: the mux bar's Zone B pane view label.
+    /// Enter / click on a Zone B pane view label in the MUX bar: focus
+    /// that pane (`set_focus`). New variant (MENU-004) — chips and
+    /// panes need different resolution (chips activate a session,
+    /// panes move the mux focus).
+    MenuFocusPane(usize),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

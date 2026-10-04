@@ -62,14 +62,14 @@ All four observable transitions named in the Gherkin scenario are now asserted. 
 
 The `crossterm::event::KeyModifiers` import was being kept alive solely by `let _ = KeyModifiers::SHIFT;` at the end of the PageDown test (commented "silence unused-import lint on win32 stubs"). The import is unnecessary because the harness now owns all `KeyModifiers::…` references. Removed.
 
-### 🟢 Observation-1: File sizes exceed CLAUDE.md's 300-line guideline
+### 🟢 Observation-1: File sizes exceed AGENTS.md's 300-line guideline
 
 - `behaviour_parity_rpc065.rs`: 808 lines after fix (was 785).
 - `common/harness.rs`: 366 lines after fix (was 326).
 
-Both exceed the 300-line refactoring threshold in CLAUDE.md. However:
+Both exceed the 300-line refactoring threshold in AGENTS.md. However:
 - Rule [3] / Architecture [D] EXPLICITLY mandate "a single new integration test file" containing the full parity matrix. Splitting would be scope creep against the card.
-- Test scaffolding files are commonly larger than production files; the CLAUDE.md guideline targets production code refactoring.
+- Test scaffolding files are commonly larger than production files; the AGENTS.md guideline targets production code refactoring.
 
 **No action.** The file size is an intentional consequence of the card's design choice.
 

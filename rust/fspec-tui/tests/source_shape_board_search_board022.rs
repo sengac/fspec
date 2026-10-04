@@ -126,21 +126,34 @@ fn board_view_handle_event_gains_the_slash_arm() {
 }
 
 /// Scenario: the board header chord gains the '/ Search' segment
+/// (BOARD-023 R10 + MENU-002 R1 + MENU-005 R5 supersession: the header
+/// chord row no longer exists — row 3 hosts the live 2-zone menu bar,
+/// and the '/ Search' entry now lives in the MenuCategories registry
+/// that the bar, the dropdown, the 'u' help dialog and the bare-key
+/// docs all read. This pin therefore checks the registry entry instead
+/// of the deleted CHORD_HINT chord.)
 #[test]
 fn board_header_chord_gains_the_search_segment() {
-    // @step Given rust/fspec-tui/src/views/board/keybinding_shortcuts.rs after BOARD-022 lands
-    let body = read_raw(
+    // @step Given a board with any selection state
+    let items = read_raw(
         &workspace_codelet_dir()
             .join("fspec-tui")
             .join("src")
-            .join("views")
-            .join("board")
-            .join("keybinding_shortcuts.rs"),
+            .join("components")
+            .join("menu_bar")
+            .join("items.rs"),
     );
-    // @step Then the file contains the substring "/ Search"
+    // @step When the board is rendered
+    // @step Then the header chord row contains the segment "/ Search"
+    // (superseded rendering: the '/ Search' entry must be a registry
+    // entry with key '/', label "Search" — the single source of truth.)
     assert!(
-        body.contains("/ Search"),
-        "'/ Search' chord segment missing"
+        items.contains("key: \"/\"") && items.contains("label: \"Search\""),
+        "the MenuCategories registry must carry the '/ Search' entry"
+    );
+    assert!(
+        !items.contains("CHORD_HINT"),
+        "the registry file must not reference the deleted CHORD_HINT chord"
     );
 }
 

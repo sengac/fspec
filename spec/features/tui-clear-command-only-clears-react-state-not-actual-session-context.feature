@@ -12,11 +12,11 @@ Feature: TUI /clear command only clears React state, not actual session context
   #
   # BUSINESS RULES:
   #   1. After /clear, the AI must have ZERO memory of prior conversation - the messages sent to the LLM API must not include any previous turns
-  #   2. System reminders (CLAUDE.md, environment info) must be preserved - these are project context, not conversation history
+  #   2. System reminders (AGENTS.md, environment info) must be preserved - these are project context, not conversation history
   #
   # EXAMPLES:
   #   1. User discusses topic X for 5 turns, types /clear, asks 'what were we talking about?' - AI should NOT know about topic X
-  #   2. After /clear, AI still knows it's working on fspec project (from CLAUDE.md) and the current date (from environment)
+  #   2. After /clear, AI still knows it's working on fspec project (from AGENTS.md) and the current date (from environment)
   #   3. Token counters reset to 0 after /clear (both displayed UI and actual session state)
   #
   # QUESTIONS (ANSWERED):
@@ -37,7 +37,7 @@ Feature: TUI /clear command only clears React state, not actual session context
     Then the AI should NOT know about "topic X"
 
   Scenario: System reminders preserved after clear
-    Given I have a TUI session with CLAUDE.md loaded
+    Given I have a TUI session with AGENTS.md loaded
     And environment info shows the current date
     When I type "/clear" and press Enter
     And I ask "what project are you working on?"

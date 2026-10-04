@@ -91,7 +91,7 @@ const options: RemoveOptions = { keepConfig: false };
 3. Update success message to show what was removed:
    ```typescript
    console.log(chalk.green('✓ Successfully removed fspec init files'));
-   console.log('  - Removed spec/CLAUDE.md');
+   console.log('  - Removed spec/AGENTS.md');
    console.log('  - Removed .claude/commands/fspec.md');
    if (!keepConfig) {
      console.log('  - Removed spec/fspec-config.json');
@@ -255,7 +255,7 @@ Remove one of the calls (preferably keep it in `installAgents()` since that's th
 ```typescript
 output:
   '✓ Successfully removed fspec init files\n' +
-  '  - Removed spec/CLAUDE.md\n' +
+  '  - Removed spec/AGENTS.md\n' +
   '  - Removed .claude/commands/fspec.md\n' +
   '  - Removed spec/fspec-config.json',
 ```

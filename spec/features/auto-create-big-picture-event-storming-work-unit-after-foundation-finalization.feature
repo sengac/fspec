@@ -9,7 +9,7 @@ Feature: Auto-create Big Picture Event Storming work unit after foundation final
   Architecture notes:
   - Modifies src/commands/discover-foundation.ts to auto-create work unit after successful finalization
   - Uses existing getNextWorkUnitId() utility for FOUND prefix ID generation
-  - Work unit includes description with foundation Event Storm commands and CLAUDE.md reference
+  - Work unit includes description with foundation Event Storm commands and AGENTS.md reference
   - Implementation adds logic after foundation.json write (line ~370-390 in discoverFoundation function)
   - No new commands needed - reuses existing Event Storming infrastructure (SOLID/DRY principles)
   - Work unit creation happens ONLY when --finalize flag used AND validation passes
@@ -24,7 +24,7 @@ Feature: Auto-create Big Picture Event Storming work unit after foundation final
   #   1. Work unit is created ONLY when --finalize flag is used
   #   2. Work unit is created ONLY when validation passes
   #   3. Work unit ID uses FOUND prefix with next available number
-  #   4. Work unit description includes Event Storming commands and CLAUDE.md reference
+  #   4. Work unit description includes Event Storming commands and AGENTS.md reference
   #   5. Console output confirms work unit creation with ID and command to view details
   #
   # EXAMPLES:
@@ -49,7 +49,7 @@ Feature: Auto-create Big Picture Event Storming work unit after foundation final
     And the work unit type should be "task"
     And the work unit title should contain "Big Picture Event Storming"
     And the work unit description should include foundation Event Storm commands
-    And the work unit description should reference CLAUDE.md documentation
+    And the work unit description should reference AGENTS.md documentation
     And console output should confirm work unit creation
     And console output should show command to view work unit details
 
@@ -78,4 +78,4 @@ Feature: Auto-create Big Picture Event Storming work unit after foundation final
     And the description should list "add-domain-event-to-foundation" command
     And the description should list "show-foundation-event-storm" command
     And the description should explain why Big Picture Event Storming matters
-    And the description should reference "spec/CLAUDE.md" for detailed guidance
+    And the description should reference "spec/AGENTS.md" for detailed guidance

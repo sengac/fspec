@@ -1,0 +1,781 @@
+{
+  "scenarios": [
+    {
+      "name": "The agent pane row under the header paints the 2-zone menu bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "209-254",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent pane row is gated by the menu row flag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "256-291",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare Left on an empty input enters the bar at the first item",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "293-320",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare Left with a non-empty draft stays the text cursor",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "322-340",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare Right never enters the bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "342-358",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring walks items then chips then wraps to the first item",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "360-402",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring wraps left from the first item to the last chip",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "404-429",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a chip jumps to that session in the agent view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "431-454",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A character key dismisses the bar and is typed into the input",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "479-500",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up and Down from a closed bar drop focus back into the input",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "502-520",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc with the bar unfocused is unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "522-540",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a chip activates that session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "566-585",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel left and right over the bar walk the ring",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "587-621",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel left and right over the bar with no dropdown and no bar focus are ignored",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "623-640",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bar omits the separator and chips when no sessions are open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "642-665",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the 'Board View' item returns to the Board view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "456-477",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking 'Board View' returns to the Board view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "542-564",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With no chips the ring wraps from the item to itself",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "667-686",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 18,
+    "coveredScenarios": 18,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu003_agent_surface.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
+      "rust/fspec-tui/src/views/agent/pane_render.rs",
+      "rust/fspec-tui/src/views/agent/menu_keys.rs",
+      "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+      "rust/fspec-tui/src/components/menu_bar/layout.rs"
+    ],
+    "totalLinesCovered": 934
+  }
+}

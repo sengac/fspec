@@ -44,7 +44,7 @@ Feature: Kanban Workflow State Management
 
   References:
   - Project Management Design: project-management.md (section 6: Workflow States)
-  - ACDD Methodology: spec/CLAUDE.md
+  - ACDD Methodology: spec/AGENTS.md
   """
 
   Background: User Story

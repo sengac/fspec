@@ -152,6 +152,7 @@ fn snapshot(reason: ContinueStateReason, goal_active: bool) -> ContinueStateEven
 fn painted_footer(app: &App, session: &SessionId) -> String {
     let areas = ChromeAreas {
         header: Rect::new(0, 0, 0, 0),
+        menu: Rect::new(0, 0, 0, 0),
         role: Rect::new(0, 0, 0, 0),
         scrollback: Rect::new(0, 0, 0, 0),
         footer: Rect::new(0, 0, 60, 1),

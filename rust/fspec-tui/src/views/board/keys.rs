@@ -8,6 +8,7 @@
 //!   - spec/features/rpc374-board-attachment-picker.feature (RPC-374)
 //!   - spec/features/rpc395-new-agent-dot-key.feature (RPC-395)
 //!   - spec/features/board-m-key-opens-the-mux-config-dialog-top-of-screen-mux-hint.feature (MUX-009)
+//!   - spec/features/board-actions-popup-dialog-triggered-by-u-key.feature (BOARD-023)
 //!
 //! Mirrors the `mouse.rs` extraction: a free function that matches the
 //! mode-view shortcut keys and emits the corresponding Actions onto the
@@ -62,6 +63,18 @@ pub(super) fn handle_mode_view_key(
             view.emit(Action::OpenMuxConfigDialog);
             Some(EventResult::consumed())
         }
+        // MENU-008 R4: modifier-free 'p'/'P' opens the ProviderSettings
+        // view (the RPC-054 `/provider` target, now reachable from the
+        // board). Serves the single Board view AND the focused Board
+        // pane in mux mode (keyboard isolation routes Board-pane keys
+        // here). Modifier-free only, so Ctrl+P falls through to
+        // App-level handling (consistent with the a/c/f/d/m guards).
+        KeyCode::Char('p') | KeyCode::Char('P')
+            if !key.modifiers.contains(KeyModifiers::CONTROL) =>
+        {
+            view.emit(Action::OpenProviderSettingsView);
+            Some(EventResult::consumed())
+        }
         // RPC-373: open FOUNDATION.md in the browser via the viewer server.
         // Modifier-free only: `Ctrl+D` is reserved as the App-level
         // hard-quit shortcut (RPC-102) and must fall through to Stage 4.
@@ -91,6 +104,20 @@ pub(super) fn handle_mode_view_key(
         KeyCode::Char('.') if !key.modifiers.contains(KeyModifiers::CONTROL) => {
             let target = view.selected_session(store);
             view.emit(Action::OpenAgentView(target));
+            Some(EventResult::consumed())
+        }
+        // BOARD-023 (re-purposed by MENU-005): 'u'/'U'
+        // (case-insensitive, like the a/c/f/d/m arms) opens the
+        // menu-bar help dialog — the same binding serves the
+        // single Board view AND the focused Board pane in mux mode (mux
+        // routes Board-pane keys through BoardView::handle_event).
+        // Modifier-free so Ctrl-chorded keys fall through to App-level
+        // handling (consistent with the a/c/f/d/m guards). Always
+        // consumed (no fall-through).
+        KeyCode::Char('u') | KeyCode::Char('U')
+            if !key.modifiers.contains(KeyModifiers::CONTROL) =>
+        {
+            view.emit(Action::OpenBoardKeybindingDialog);
             Some(EventResult::consumed())
         }
         _ => None,

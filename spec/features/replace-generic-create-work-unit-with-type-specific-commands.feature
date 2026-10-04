@@ -27,7 +27,7 @@ Feature: Replace generic create-work-unit with type-specific commands
   #   11. The group help in src/help.ts must be updated to reference create-story/bug/task instead of create-work-unit
   #   12. All command help files in src/commands/*-help.ts must be updated to remove create-work-unit references and add new command help files
   #   13. README.md must be updated to replace all create-work-unit examples with type-specific command examples
-  #   14. spec/CLAUDE.md (auto-generated) must be regenerated to reflect new commands in all workflow examples
+  #   14. spec/AGENTS.md (auto-generated) must be regenerated to reflect new commands in all workflow examples
   #   15. All documentation files in docs/ directory must be searched and updated to replace create-work-unit with type-specific commands
   #   16. All system-reminders in source code must be found and updated to reference new commands (search for 'create-work-unit' in all .ts files)
   #   17. All test files must be updated to test new commands and verify old command is removed
@@ -51,7 +51,7 @@ Feature: Replace generic create-work-unit with type-specific commands
   #   8. Delete src/commands/create-work-unit-help.ts completely (breaking change)
   #   9. In README.md Quick Start section, replace 'fspec create-work-unit AUTH "Login"' with 'fspec create-story AUTH "Login"'
   #   10. Search all .ts files for 'create-work-unit' string and update to appropriate type-specific command based on context
-  #   11. In spec/CLAUDE.md examples, replace all 'fspec create-work-unit' occurrences with context-appropriate create-story/bug/task
+  #   11. In spec/AGENTS.md examples, replace all 'fspec create-work-unit' occurrences with context-appropriate create-story/bug/task
   #   12. Grep for system-reminder tags containing 'create-work-unit' and update each to reference new commands with type guidance
   #   13. Replace 'Work unit CLI-007' with 'Story CLI-007' in show-work-unit output
   #   14. Rename function updateWorkUnitStatus() to updateWorkUnitStatus() for generic cases, or updateStoryStatus() for type-specific
@@ -127,7 +127,7 @@ Feature: Replace generic create-work-unit with type-specific commands
 
   Scenario: Documentation updated with type-specific commands
     Given I have updated the codebase
-    When I check README.md, spec/CLAUDE.md, and docs/ files
+    When I check README.md, spec/AGENTS.md, and docs/ files
     Then all examples should use create-story, create-bug, or create-task
     And no examples should reference create-work-unit
     And help text in src/help.ts should reference new commands

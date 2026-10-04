@@ -45,7 +45,7 @@ These are all the helper functions within `src/utils/system-reminder.ts` that wr
 
 These files emit `<system-reminder>` blocks directly in template strings:
 
-- `src/utils/templateGenerator.ts` - Generates CLAUDE.md and agent templates
+- `src/utils/templateGenerator.ts` - Generates AGENTS.md and agent templates
 - `src/utils/projectManagementTemplate.ts` - Bootstrap output
 - `src/utils/slashCommandSections/*.ts` - Various section generators
 - `src/utils/agentRuntimeConfig.ts` - Agent configuration templates

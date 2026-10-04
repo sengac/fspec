@@ -1,0 +1,210 @@
+{
+  "scenarios": [
+    {
+      "name": "u opens the actions dialog from the single Board view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "194-245",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "U opens the actions dialog (case-insensitive trigger)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "260-296",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+U does not open the actions dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "298-325",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "The actions dialog body lists all board shortcuts with descriptions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "327-377",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "The actions dialog has no trigger row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "379-423",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Down moves the selection to the next row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "425-451",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Up moves the selection to the previous row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "453-478",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Up from the first row wraps to the last row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "480-504",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Down from the last row wraps to the first row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "506-530",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Enter executes the highlighted action and closes the dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "532-558",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Mux row opens the Mux config dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "560-584",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Help row opens the board help dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "586-609",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Exit row opens the exit confirmation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "611-645",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Esc closes the dialog without executing the highlighted row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "647-680",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Keys behind the dialog never leak to the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "682-720",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Pressing u again while open is a no-op",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "722-750",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "The board header chord row is replaced by a short Actions hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "752-787",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "u opens the actions dialog from the focused Board pane in mux mode",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "789-817",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "The board help dialog advertises the u keybinding",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
+          "lines": "819-844",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 19,
+    "coveredScenarios": 19,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/board_actions_dialog_board023.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_board_keybinding.rs",
+      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+      "rust/fspec-tui/src/components/help_content.rs"
+    ],
+    "totalLinesCovered": 874
+  }
+}

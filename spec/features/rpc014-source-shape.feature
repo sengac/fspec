@@ -64,9 +64,14 @@ Feature: RPC-014 source-shape regressions — board grid + details strip modules
     Given rust/fspec-tui/src/views/board.rs after RPC-014 lands
     When a developer scans the file source raw
     Then the file contains the substring "Action::EnterWorkUnit"
-    And the file contains the substring "Action::FocusNextColumn"
+    And the file contains the substring "Action::MenuMove"
+    # MENU-002 R2 supersedes FocusNextColumn: plain Left/Right (and wheel L/R) now walk
+    # the continuous column⇄menu⇄chip ring via Action::MenuMove.
     And the file contains the substring "Action::ReorderUp"
-    And the file contains the substring "← → Columns"
+    And the file contains the substring "← →"
+    And the file contains the substring "Columns"
+    # MENU-002 R11: the footer now reads "← → Cycle Columns → menu items → chips" —
+    # the raw spans "← →" and "Columns" are what the test pins.
     And the file contains the substring "↵ Work Agent"
     And the file contains the substring "ESC Back"
 

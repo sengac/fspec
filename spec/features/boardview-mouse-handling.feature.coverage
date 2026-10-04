@@ -133,46 +133,6 @@
       ]
     },
     {
-      "name": "Wheel-right inside the content area emits FocusNextColumn",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "173-196",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/mouse.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Wheel-left inside the content area emits FocusPrevColumn",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "199-222",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/mouse.rs",
-              "lines": [
-                61,
-                62,
-                63,
-                64
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Left-click on a column header emits SetFocusedColumn",
       "testMappings": [
         {
@@ -295,12 +255,20 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Wheel-right inside the content area emits MenuMove(1)",
+      "testMappings": []
+    },
+    {
+      "name": "Wheel-left inside the content area emits MenuMove(-1)",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 9,
-    "coveredScenarios": 9,
-    "coveragePercent": 100,
+    "coveredScenarios": 7,
+    "coveragePercent": 78,
     "testFiles": [
       "rust/fspec-tui/tests/board_mouse_rpc023.rs"
     ],

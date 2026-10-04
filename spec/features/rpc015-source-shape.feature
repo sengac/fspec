@@ -38,7 +38,7 @@ Feature: RPC-015 source-shape regressions — header widgets + shared Checkpoint
     When a developer scans the views/board/ directory
     Then the file rust/fspec-tui/src/views/board/logo.rs exists
     And the file rust/fspec-tui/src/views/board/checkpoint_status.rs exists
-    And the file rust/fspec-tui/src/views/board/keybinding_shortcuts.rs exists
+    And the file rust/fspec-tui/src/views/board/keybinding_shortcuts.rs does NOT exist (MENU-005 R5 deleted the dead chord painter)
 
   Scenario: New and modified board modules stay under 300 lines
     Given the directory rust/fspec-tui/src/views/board/ plus the views/board.rs orchestrator
@@ -46,7 +46,7 @@ Feature: RPC-015 source-shape regressions — header widgets + shared Checkpoint
     Then views/board.rs has fewer than 300 lines
     And views/board/logo.rs has fewer than 300 lines
     And views/board/checkpoint_status.rs has fewer than 300 lines
-    And views/board/keybinding_shortcuts.rs has fewer than 300 lines
+    And views/board/ contains no file of 300 lines or more
 
   Scenario: CheckpointCounts shared type lives in rpc-types
     Given rust/rpc-types/src/lib.rs after RPC-015 lands
@@ -84,7 +84,8 @@ Feature: RPC-015 source-shape regressions — header widgets + shared Checkpoint
     And rust/fspec-tui/src/lib.rs does NOT contain the identifier "FooterView"
     And the file rust/fspec-tui/src/views/footer.rs does NOT exist
     And rust/fspec-tui/src/views/board.rs still contains the substring "Action::EnterWorkUnit"
-    And rust/fspec-tui/src/views/board.rs still contains the substring "Action::FocusNextColumn"
+    And rust/fspec-tui/src/views/board.rs still contains the substring "Action::MenuMove"
+    # MENU-002 R2 supersedes FocusNextColumn (Left/Right walk the ring).
     And rust/fspec-tui/src/views/board.rs still contains the substring "Action::ReorderUp"
 
   Scenario: Views still avoid encapsulated transport crates and host runtime construction

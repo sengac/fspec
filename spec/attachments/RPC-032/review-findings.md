@@ -112,7 +112,7 @@ None.
 
 ## 🟢 Observations
 1. `messages.rs` is 448 lines. The TypeScript-specific "<300 lines" convention
-   in `CLAUDE.md` does not apply to this Rust file (and other Rust files in
+   in `AGENTS.md` does not apply to this Rust file (and other Rust files in
    `codelet/core/src/persistence/` exceed 300 lines too). No action.
 2. `message_store_lifted_test.rs::core_consumers_can_construct_lifted_types_without_napi`
    contains a `matches!(msg_ref.source, MessageSource::Native);` whose `bool`

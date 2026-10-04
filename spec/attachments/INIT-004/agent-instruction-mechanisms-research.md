@@ -44,7 +44,7 @@ fspec uses system-reminders extensively for:
 4. **Estimation validation** - Enforcing ACDD workflow order
 5. **Coverage tracking** - Guiding AI to link tests and implementation
 
-**Example from fspec CLAUDE.md**:
+**Example from fspec AGENTS.md**:
 ```xml
 <system-reminder>
 ACDD VIOLATION: Cannot estimate story work unit without completed feature file.
@@ -95,7 +95,7 @@ These agents have NO equivalent to `<system-reminder>` - all instructions must b
 Claude `<system-reminder>` → Other agents visible instruction:
 
 ```markdown
-<!-- Input: CLAUDE.md -->
+<!-- Input: AGENTS.md -->
 <system-reminder>
 PREFILL DETECTED in generated feature file.
 

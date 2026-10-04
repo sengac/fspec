@@ -12,7 +12,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme, COLUMN_ORDER};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme, COLUMN_ORDER};
 use codelet_rpc_types::WorkUnitInfo;
 use crossterm::event::{Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
@@ -42,7 +42,13 @@ fn fresh() -> (BoardView, UnboundedReceiver<Action>) {
 fn render(view: &BoardView, store: &BoardStore) {
     let mut term = Terminal::new(TestBackend::new(120, 30)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
 }
@@ -166,9 +172,11 @@ async fn wheel_event_outside_the_content_area_is_ignored() {
     assert!(rx.try_recv().is_err());
 }
 
-/// Scenario: Wheel-right inside the content area emits FocusNextColumn
+/// Scenario: Wheel-right inside the content area emits MenuMove(1)
+/// (MENU-002 R2 supersedes FocusNextColumn: wheel L/R walks the
+/// continuous column⇄menu⇄chip ring exactly like the keys)
 #[tokio::test]
-async fn wheel_right_inside_the_content_area_emits_focus_next_column() {
+async fn wheel_right_inside_the_content_area_emits_menu_move() {
     // @step Given the BoardStore is seeded with work units across columns
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -187,14 +195,15 @@ async fn wheel_right_inside_the_content_area_emits_focus_next_column() {
 
     // @step Then BoardView::handle_event returns EventResult::Consumed
     assert!(result.is_consumed());
-    // @step And Action::FocusNextColumn is emitted onto the action bus
-    let action = rx.try_recv().expect("FocusNextColumn expected");
-    assert!(matches!(action, Action::FocusNextColumn));
+    // @step And Action::MenuMove(1) is emitted onto the action bus (MENU-002)
+    let action = rx.try_recv().expect("MenuMove(1) expected");
+    assert!(matches!(action, Action::MenuMove(1)));
 }
 
-/// Scenario: Wheel-left inside the content area emits FocusPrevColumn
+/// Scenario: Wheel-left inside the content area emits MenuMove(-1)
+/// (MENU-002 R2 supersedes FocusPrevColumn)
 #[tokio::test]
-async fn wheel_left_inside_the_content_area_emits_focus_prev_column() {
+async fn wheel_left_inside_the_content_area_emits_menu_move() {
     // @step Given the BoardStore is seeded with work units across columns
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -213,9 +222,9 @@ async fn wheel_left_inside_the_content_area_emits_focus_prev_column() {
 
     // @step Then BoardView::handle_event returns EventResult::Consumed
     assert!(result.is_consumed());
-    // @step And Action::FocusPrevColumn is emitted onto the action bus
-    let action = rx.try_recv().expect("FocusPrevColumn expected");
-    assert!(matches!(action, Action::FocusPrevColumn));
+    // @step And Action::MenuMove(-1) is emitted onto the action bus (MENU-002)
+    let action = rx.try_recv().expect("MenuMove(-1) expected");
+    assert!(matches!(action, Action::MenuMove(-1)));
 }
 
 /// Scenario: Left-click on a column header emits SetFocusedColumn

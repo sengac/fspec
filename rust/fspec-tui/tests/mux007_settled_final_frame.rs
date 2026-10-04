@@ -355,7 +355,7 @@ fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing
     assert!(!nav.mux.is_flash_active(), "the scan must be settled");
     // @step Then tick_should_draw reports false (idle — the settled strip is not an animation)
     assert!(
-        !tick_should_draw(false, false, false, false, nav.is_mux_flash_active()),
+        !tick_should_draw(false, false, false, false, nav.is_mux_flash_active(), false),
         "the settled strip must NOT keep the draw gate open"
     );
     // @step And the next user-triggered frame still paints the settled 1-row top bar on the Agent pane

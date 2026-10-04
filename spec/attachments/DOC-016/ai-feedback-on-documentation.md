@@ -1,7 +1,7 @@
 # AI Feedback on fspec Documentation Clarity
 
 **Date**: 2025-11-18
-**Context**: After reading `fspec bootstrap` and `spec/CLAUDE.md`
+**Context**: After reading `fspec bootstrap` and `spec/AGENTS.md`
 
 ## Summary
 

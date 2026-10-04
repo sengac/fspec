@@ -1174,6 +1174,10 @@
           "description": "Features ensuring compatibility with older file formats or legacy systems"
         },
         {
+          "name": "@bare-key",
+          "description": "Bare-key (modifier-free) board shortcut scenarios — single-character key arms in views/board/keys.rs"
+        },
+        {
           "name": "@base64",
           "description": "Base64 encoded content scenarios"
         },
@@ -1192,6 +1196,10 @@
         {
           "name": "@blob-storage",
           "description": "Blob storage for large content"
+        },
+        {
+          "name": "@board-023",
+          "description": "Work unit BOARD-023 — board actions popup dialog: the modifier-free 'u' key opens the 'Actions' popup (BoardKeybindingDialog) listing every board shortcut; the header chord row collapses to a 'u Actions' hint"
         },
         {
           "name": "@boundary",
@@ -1708,6 +1716,46 @@
         {
           "name": "@mcp",
           "description": "Model Context Protocol (MCP) per-session injection plumbing — init_mcp_session / cleanup_mcp_session / McpInjection wiring through codelet-tools and codelet-sessions"
+        },
+        {
+          "name": "@menu-007",
+          "description": "Work unit MENU-007 — the agent view menu bar shows a single 'Board View' Zone A item (no Actions/Help, no dropdown) that returns to the Board view on click/Enter; Zone B keeps the session chips"
+        },
+        {
+          "name": "@menu-bar",
+          "description": "Single-line TUI menu bar (MENU epic) — GUI menu items + anchored dropdown + view/chip switcher, shared across board/agent/mux surfaces"
+        },
+        {
+          "name": "@menu-bar-paint",
+          "description": "Menu bar row painting scenarios (MENU epic) — the Zone A item labels, separator and chip layout in the 1-row bar"
+        },
+        {
+          "name": "@menu-chips",
+          "description": "Menu bar session status chip scenarios (MENU-001) — per-session glyph, color and #n index rendering in Zone B"
+        },
+        {
+          "name": "@menu-dropdown",
+          "description": "Anchored menu dropdown panel scenarios (MENU-001) — R7 geometry, key-hint rows, cursor highlight, clamping and bottom-clip"
+        },
+        {
+          "name": "@menu-focus",
+          "description": "Menu bar focus ring scenarios (MENU-001) — MenuFocus navigation and inverse-video highlight on items and chips"
+        },
+        {
+          "name": "@menu-geometry",
+          "description": "Menu bar geometry scenarios (MENU-001) — row padding, background, separator and the R6 truncation ladder"
+        },
+        {
+          "name": "@menu-help",
+          "description": "The 'u' menu-bar help dialog scenarios (MENU-005) — body rows generated from the full MenuCategories registry"
+        },
+        {
+          "name": "@menu-registry",
+          "description": "MenuCategories registry scenarios (MENU-001) — the single source of truth for menu bar items, dropdown rows, help content and bare-key docs"
+        },
+        {
+          "name": "@menu-ring",
+          "description": "Menu bar ring navigation scenarios (MENU epic) — the continuous column⇄item⇄chip focus ring across Zone A and Zone B"
         },
         {
           "name": "@mermaid",
@@ -2402,6 +2450,14 @@
           "description": "Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation"
         },
         {
+          "name": "@bug-194",
+          "description": "Work unit identifier for BUG-194 — mux thinking indicator must keep animating when focus moves off a running agent pane (per-session transition state)"
+        },
+        {
+          "name": "@bug-195",
+          "description": "Work unit identifier for BUG-195 — clicking a session chip in the Agent view must switch to that session: App::dispatch_menu's MenuChipActivate Agent branch runs the RPC-024 session switch (switch_to_session_index) instead of the old early-return no-op"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2488,6 +2544,10 @@
         {
           "name": "@init-001",
           "description": "Work unit: Add ensureWorkUnitsFile to ALL 48+ commands"
+        },
+        {
+          "name": "@menu-003",
+          "description": "Work unit MENU-003 — agent view surface: 2-zone bar row under the SessionHeader (menu_row flag) + empty-input left-arrow entry with GUI dropdown tracking"
         },
         {
           "name": "@mux-002",
@@ -3134,7 +3194,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-09-24T04:42:16.797Z",
+    "lastUpdated": "2026-10-03T00:12:54.095Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

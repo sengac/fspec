@@ -115,6 +115,13 @@ Feature: Board '/' search dialog with Tab-toggled id/title/description modes
     Then the work-unit search dialog is still open
 
   Scenario: The board header chord shows the '/' search shortcut
+    # Supersession note (BOARD-023 R10 + MENU-002 R1 + MENU-005 R5):
+    # the header chord row no longer exists — row 3 now hosts the live
+    # 2-zone menu bar, and the '/ Search' entry lives in the MenuCategories
+    # registry (components/menu_bar/items.rs) which the bar, the
+    # dropdown, the 'u' help dialog and the bare-key docs all read.
+    # The corresponding source-shape test now pins the registry entry
+    # instead of the deleted CHORD_HINT chord.
     Given a board with any selection state
     When the board is rendered
     Then the header chord row contains the segment "/ Search"

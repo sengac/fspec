@@ -114,11 +114,20 @@ async fn scrollback_area_has_no_border_and_no_agent_title() {
         !full.contains('└'),
         "scrollback must have no bottom-left border glyph"
     );
-    // @step And the rendered buffer does NOT contain the substring "│"
-    assert!(
-        !full.contains('│'),
-        "scrollback must have no vertical border glyph"
-    );
+    // @step And the rows below the menu bar row do NOT contain the substring "│" (MENU-003: the bar row's zone separator itself uses '│')
+    // The single-view pane's bar row is row 1 (one below the header);
+    // everything below it is the scrollback / footer / input region,
+    // which stays border-free.
+    let below_bar = buf.area.y + 2..buf.area.height;
+    for y in below_bar {
+        let row: String = (0..buf.area.width)
+            .map(|x| buf[(x, y)].symbol().to_string())
+            .collect();
+        assert!(
+            !row.contains('│'),
+            "row {y} (below the MENU-003 bar row) must have no vertical border glyph: {row:?}"
+        );
+    }
     // @step And the rendered buffer does NOT contain the substring " Agent — "
     assert!(
         !full.contains(" Agent — "),

@@ -51,7 +51,7 @@
 - Added Gherkin step `Then dispatch_rpc022.rs routes Action::SetThinkingLevelDefault to backend.set_thinking_level_default` to pin the new assertion.
 
 ### File-size hygiene
-- Adding the handler pushed `dispatch_rpc022.rs` from 299 → 324 LoC (over the 300 ceiling per CLAUDE.md).
+- Adding the handler pushed `dispatch_rpc022.rs` from 299 → 324 LoC (over the 300 ceiling per AGENTS.md).
 - Refactor: extracted `parse_slash_command` + `SlashCommandParse` + their unit test into a new sibling module `src/app/slash_parser.rs` (95 LoC).
 - Updated `app/mod.rs` to re-export from `slash_parser` (backwards-compatible — `lib.rs` and external callers still use `App::parse_slash_command`).
 - Updated `src/app/dispatch_rpc020.rs` import to point at `super::slash_parser`.

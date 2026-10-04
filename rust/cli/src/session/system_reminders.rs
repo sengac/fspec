@@ -23,8 +23,8 @@ use rig::OneOrMany;
 /// Matches rust's SystemReminderType from system-reminders.ts:14-19
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SystemReminderType {
-    /// Project documentation (CLAUDE.md/AGENTS.md)
-    ClaudeMd,
+    /// Project documentation (AGENTS.md)
+    SystemPrompt,
     /// Platform, arch, shell, user, cwd
     Environment,
     /// Git working directory state
@@ -42,7 +42,7 @@ impl SystemReminderType {
     /// Convert to string representation for type markers
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::ClaudeMd => "claudeMd",
+            Self::SystemPrompt => "systemPrompt",
             Self::Environment => "environment",
             Self::GitStatus => "gitStatus",
             Self::TokenStatus => "tokenStatus",
@@ -54,7 +54,7 @@ impl SystemReminderType {
     /// Parse from string representation
     pub fn parse(s: &str) -> Option<Self> {
         match s {
-            "claudeMd" => Some(Self::ClaudeMd),
+            "systemPrompt" => Some(Self::SystemPrompt),
             "environment" => Some(Self::Environment),
             "gitStatus" => Some(Self::GitStatus),
             "tokenStatus" => Some(Self::TokenStatus),
@@ -386,7 +386,7 @@ mod tests {
 
     #[test]
     fn test_system_reminder_type_as_str() {
-        assert_eq!(SystemReminderType::ClaudeMd.as_str(), "claudeMd");
+        assert_eq!(SystemReminderType::SystemPrompt.as_str(), "systemPrompt");
         assert_eq!(SystemReminderType::Environment.as_str(), "environment");
         assert_eq!(SystemReminderType::GitStatus.as_str(), "gitStatus");
         assert_eq!(SystemReminderType::TokenStatus.as_str(), "tokenStatus");
@@ -395,8 +395,8 @@ mod tests {
     #[test]
     fn test_system_reminder_type_parse() {
         assert_eq!(
-            SystemReminderType::parse("claudeMd"),
-            Some(SystemReminderType::ClaudeMd)
+            SystemReminderType::parse("systemPrompt"),
+            Some(SystemReminderType::SystemPrompt)
         );
         assert_eq!(
             SystemReminderType::parse("environment"),

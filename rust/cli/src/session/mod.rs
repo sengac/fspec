@@ -8,7 +8,7 @@
 //
 // Reference: spec/features/persistent-context-in-multi-turn-system.feature
 
-pub mod context_gathering; // CLI-016: Context gathering with CLAUDE.md discovery
+pub mod context_gathering; // CLI-016: Context gathering with AGENTS.md discovery
 pub mod system_reminders; // CLI-012: System-reminder infrastructure
 
 pub use system_reminders::SystemReminderType;
@@ -203,7 +203,7 @@ impl Session {
     /// Add system-reminder to messages array
     ///
     /// System-reminders are Messages that persist through compaction.
-    /// Each type (claudeMd, environment, gitStatus, tokenStatus) has exactly one instance.
+    /// Each type (systemPrompt, environment, gitStatus, tokenStatus) has exactly one instance.
     /// Deduplication is automatic via retain+push pattern.
     ///
     /// # Arguments
@@ -271,7 +271,7 @@ impl Session {
 
     /// Inject context reminders at session start (CLI-016)
     ///
-    /// Discovers CLAUDE.md/AGENTS.md files and gathers environment information,
+    /// Discovers AGENTS.md files and gathers environment information,
     /// injecting them as system reminders for the LLM.
     ///
     /// This should be called once after Session::new() to provide initial context.
@@ -313,11 +313,11 @@ impl Session {
         &mut self,
         isolation: Option<&context_gathering::IsolationContext>,
     ) {
-        use context_gathering::{discover_claude_md, gather_environment_info_with_isolation};
+        use context_gathering::{discover_agents_md, gather_environment_info_with_isolation};
 
-        // Inject CLAUDE.md/AGENTS.md content if found
-        if let Some(content) = discover_claude_md(None) {
-            self.add_system_reminder(SystemReminderType::ClaudeMd, &content);
+        // Inject AGENTS.md content if found
+        if let Some(content) = discover_agents_md(None) {
+            self.add_system_reminder(SystemReminderType::SystemPrompt, &content);
         }
 
         // Inject environment information with optional isolation context

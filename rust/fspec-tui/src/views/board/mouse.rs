@@ -16,6 +16,11 @@
 //! `Action::SelectPrev` / `SelectNext` / `FocusPrev/NextColumn` so the
 //! viewport math is reused for free.
 //!
+//! MENU-002: the 2-zone menu bar's hit-tests (bar row L/R wheel →
+//! ring, item/chip clicks, open-dropdown wheel + outside-click close)
+//! run FIRST — `menu_mouse::handle_menu_mouse` claims them before the
+//! details-strip and content tests (R7).
+//!
 //! Decision (Q9) explicitly defers TUI-078 native text selection to
 //! RPC-019; this module never touches `MouseTrackingToggle`.
 
@@ -25,6 +30,7 @@ use crate::components::{Action, EventResult};
 use crate::mouse::rect_contains;
 use crate::store::BoardStore;
 
+use super::menu_mouse;
 use super::BoardView;
 
 /// Handle an [`Event::Mouse`] against the BoardView's cached layout.
@@ -32,12 +38,21 @@ use super::BoardView;
 /// known hit-test region; [`EventResult::Ignored`] otherwise.
 ///
 /// Variants handled:
+///   * MENU-002 bar row / open-dropdown hits (bar-first, R7)
 ///   * `ScrollUp` / `ScrollDown` inside `last_content_area`        → SelectPrev / Next
-///   * `ScrollLeft` / `ScrollRight` inside `last_content_area`     → FocusPrev / NextColumn
+///   * `ScrollLeft` / `ScrollRight` anywhere on the board         → MenuMove (R2 ring)
 ///   * `Down(Left)` inside a `last_column_header_areas[idx]`        → SetFocusedColumn(idx)
 ///   * `Down(Left)` inside a `last_column_content_areas[idx]` cell  → SetFocusedColumn(idx)
 ///    + SelectIndexInFocused(row + scroll_offset)
 pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) -> EventResult {
+    // MENU-002: the bar row + open dropdown hit-tests run FIRST (R7).
+    // `Some(result)` = the menu arm claimed the event; `None` = fall
+    // through to the strip/content logic (an outside dropdown click
+    // already emitted its MenuCloseDropdown inside this call).
+    if let Some(result) = menu_mouse::handle_menu_mouse(view, event, store) {
+        return result;
+    }
+
     let mouse_event = match event {
         Event::Mouse(m) => *m,
         _ => return EventResult::ignored(),
@@ -94,14 +109,16 @@ pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) 
             view.emit(Action::SelectNext);
             EventResult::consumed()
         }
-        MouseEventKind::ScrollLeft if in_content => {
+        MouseEventKind::ScrollLeft => {
+            // MENU-002 R2: wheel L/R walks the continuous ring (the bar
+            // row's own hits were claimed by `menu_mouse` above).
             view.clear_details_selection();
-            view.emit(Action::FocusPrevColumn);
+            view.emit(Action::MenuMove(-1));
             EventResult::consumed()
         }
-        MouseEventKind::ScrollRight if in_content => {
+        MouseEventKind::ScrollRight => {
             view.clear_details_selection();
-            view.emit(Action::FocusNextColumn);
+            view.emit(Action::MenuMove(1));
             EventResult::consumed()
         }
         MouseEventKind::Down(MouseButton::Left) => handle_left_click(view, column, row, store),

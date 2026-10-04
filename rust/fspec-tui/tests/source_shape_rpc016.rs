@@ -214,10 +214,12 @@ fn rpc013_rpc014_rpc015_invariants_preserved() {
         board.contains("Action::EnterWorkUnit"),
         "views/board.rs must still emit Action::EnterWorkUnit after RPC-016"
     );
-    // @step And the file contains the substring "Action::FocusNextColumn"
+    // @step And the file contains the substring "Action::MenuMove"
+    // (MENU-002 R2 supersedes FocusNextColumn: Left/Right walk the
+    // continuous column⇄menu⇄chip ring via Action::MenuMove.)
     assert!(
-        board.contains("Action::FocusNextColumn"),
-        "views/board.rs must still emit Action::FocusNextColumn after RPC-016"
+        board.contains("Action::MenuMove"),
+        "views/board.rs must still emit Action::MenuMove after RPC-016 (MENU-002 supersedes FocusNextColumn)"
     );
     // @step And the file contains the substring "Action::ReorderUp"
     assert!(

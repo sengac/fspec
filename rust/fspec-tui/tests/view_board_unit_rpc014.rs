@@ -9,7 +9,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
 use codelet_rpc_types::WorkUnitInfo;
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -41,7 +41,13 @@ fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
     let (view, _rx) = fresh();
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     term.backend().buffer().clone()
@@ -358,10 +364,12 @@ fn footer_string_and_footer_separator_are_still_painted_at_the_bottom() {
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
     // @step When the App renders BoardView against a 120x24 TestBackend
     let buf = render(120, 24, &store);
-    // @step Then the last in-bounds inner row contains the substring "← → Columns"
+    // @step Then the last in-bounds inner row contains the substring "← → Cycle Columns"
+    // (MENU-002 R11: the footer now describes the full ring — columns →
+    // menu items → chips.)
     let footer_row = row_string(&buf, 22);
     assert!(
-        footer_row.contains("← → Columns"),
+        footer_row.contains("← → Cycle Columns"),
         "expected footer on row 22, got: `{footer_row}`"
     );
     // @step And the same row contains the substring "↵ Work Agent"

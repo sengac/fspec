@@ -41,9 +41,11 @@ pub mod details_strip;
 pub mod footer;
 pub mod grid;
 pub mod header;
-pub mod keybinding_shortcuts;
 pub mod keys;
 pub mod logo;
+pub mod menu_keys;
+pub mod menu_mouse;
+pub mod menu_snapshot;
 pub mod mouse;
 pub mod render;
 pub mod viewport;
@@ -92,6 +94,10 @@ pub struct BoardView {
     /// inside the strip rect) so subsequent drag/release events route to
     /// the recognizer even if the cursor strays onto the border column.
     pub(super) details_press_active: Cell<bool>,
+    /// MENU-002: the 2-zone menu bar's per-frame geometry (bar row y +
+    /// item/cell rects + open panel rect) observed by the most recent
+    /// `render_with_store`. Read by `menu_mouse::handle_menu_mouse`.
+    pub(super) last_menu_bar_geometry: std::cell::RefCell<Option<menu_mouse::MenuBarGeometry>>,
     /// COPY-009: OSC 52 clipboard writer (COPY-001). Production writes to
     /// stdout; tests inject a `Vec<u8>` sink via
     /// [`BoardView::set_clipboard_writer_for_test`].
@@ -112,6 +118,7 @@ impl BoardView {
             details_selection: RefCell::new(None),
             selection_unit_id: RefCell::new(None),
             details_press_active: Cell::new(false),
+            last_menu_bar_geometry: std::cell::RefCell::new(None),
             clipboard: RefCell::new(Osc52Clipboard::new(Box::new(std::io::stdout()))),
         }
     }
@@ -155,6 +162,14 @@ impl BoardView {
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };
+
+        // MENU-002: the 2-zone menu bar + ring. The gate claims the
+        // event when the dropdown is open (true-modal, R6), the bar has
+        // focus (R2/R3/R4/R5), or a plain column focus walks the ring
+        // (R2 — Left/Right supersede FocusPrev/NextColumn).
+        if let Some(result) = menu_keys::handle_menu_keys(self, key, store) {
+            return result;
+        }
 
         // COPY-009: Esc clears an active strip selection with NO copy, and
         // consumes the key so it does not also trigger the RPC-102 exit
@@ -206,14 +221,11 @@ impl BoardView {
                 self.emit(Action::SelectLastInFocused);
                 return EventResult::consumed();
             }
-            KeyCode::Left | KeyCode::Char('h') => {
-                self.emit(Action::FocusPrevColumn);
-                return EventResult::consumed();
-            }
-            KeyCode::Right | KeyCode::Char('l') => {
-                self.emit(Action::FocusNextColumn);
-                return EventResult::consumed();
-            }
+            // MENU-002 R2: plain Left/Right (h/l) walk the continuous
+            // column⇄item⇄chip ring — claimed by `menu_keys` above
+            // (Action::MenuMove), so no FocusPrev/NextColumn arm remains.
+            KeyCode::Left | KeyCode::Char('h') => {}
+            KeyCode::Right | KeyCode::Char('l') => {}
             KeyCode::Down | KeyCode::Char('j') => {
                 self.emit(Action::SelectNext);
                 return EventResult::consumed();
@@ -257,8 +269,18 @@ impl BoardView {
 
     /// Render the rich BoardView against the supplied store. The
     /// box-drawing composition lives in [`self::render`] so this file
-    /// stays under the 300 LoC ceiling.
-    pub fn render_with_store(&self, area: Rect, buf: &mut Buffer, store: &BoardStore) {
-        render::render_with_store(self, area, buf, store);
+    /// stays under the 300 LoC ceiling. `agent_store` feeds the
+    /// 2-zone menu bar's session chips (MENU-002). `menu_suppressed`
+    /// (MENU-004 R-SUPPRESS): the mux board pane passes `true` — its
+    /// header row 3 stays blank (the mux top row is the only bar).
+    pub fn render_with_store(
+        &self,
+        area: Rect,
+        buf: &mut Buffer,
+        store: &BoardStore,
+        agent_store: &crate::store::AgentViewStore,
+        menu_suppressed: bool,
+    ) {
+        render::render_with_store(self, area, buf, store, agent_store, menu_suppressed);
     }
 }

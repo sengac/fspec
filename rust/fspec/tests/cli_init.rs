@@ -92,10 +92,10 @@ fn scenario_cli_installs_the_claude_agent_and_prints_the_success_summary() {
         "stdout must confirm install; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring 'spec/CLAUDE.md'
+    // @step Then stdout contains the substring 'spec/AGENTS.md'
     assert!(
-        stdout.contains("spec/CLAUDE.md"),
-        "stdout must list spec/CLAUDE.md; got:\n{stdout}"
+        stdout.contains("spec/AGENTS.md"),
+        "stdout must list spec/AGENTS.md; got:\n{stdout}"
     );
 
     // @step Then stdout contains the substring 'Next steps:'
@@ -110,8 +110,8 @@ fn scenario_cli_installs_the_claude_agent_and_prints_the_success_summary() {
         "stdout must show the claude activation message; got:\n{stdout}"
     );
 
-    // @step Then spec/CLAUDE.md exists in the directory
-    assert!(ws.path().join("spec/CLAUDE.md").exists());
+    // @step Then spec/AGENTS.md exists in the directory
+    assert!(ws.path().join("spec/AGENTS.md").exists());
 
     // @step Then spec/fspec-config.json exists in the directory
     assert!(ws.path().join("spec/fspec-config.json").exists());
@@ -134,8 +134,8 @@ fn scenario_cli_installs_multiple_agents_from_repeated_agent_flags() {
         "stdout must list both agents; got:\n{stdout}"
     );
 
-    // @step Then spec/CLAUDE.md exists in the directory
-    assert!(ws.path().join("spec/CLAUDE.md").exists());
+    // @step Then spec/AGENTS.md exists in the directory
+    assert!(ws.path().join("spec/AGENTS.md").exists());
 
     // @step Then spec/CURSOR.md exists in the directory
     assert!(ws.path().join("spec/CURSOR.md").exists());
@@ -196,7 +196,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
-    // @step Then the dispatcher result reports filesInstalled including 'spec/CLAUDE.md'
+    // @step Then the dispatcher result reports filesInstalled including 'spec/AGENTS.md'
     let files: Vec<String> = data["filesInstalled"]
         .as_array()
         .expect("filesInstalled array")
@@ -204,8 +204,8 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         .filter_map(|v| v.as_str().map(str::to_string))
         .collect();
     assert!(
-        files.contains(&"spec/CLAUDE.md".to_string()),
-        "filesInstalled must include spec/CLAUDE.md; got: {files:?}"
+        files.contains(&"spec/AGENTS.md".to_string()),
+        "filesInstalled must include spec/AGENTS.md; got: {files:?}"
     );
 
     // @step Then the CLI bridge module rust/fspec/src/init.rs contains NO inline scaffolding, registry or template logic — its only computation is JSON arg marshalling and stdout printing
@@ -216,7 +216,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
     let bridge_src = std::fs::read_to_string(&bridge_path).expect("bridge module readable");
     for forbidden in [
-        "CLAUDE.md",
+        "AGENTS.md",
         "create_dir_all",
         "AGENT_REGISTRY",
         "docTemplate",

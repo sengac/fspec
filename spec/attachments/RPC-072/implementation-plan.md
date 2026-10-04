@@ -338,7 +338,7 @@ When the card lands, update:
 
 - `codelet/agent-loop/README.md` — what the crate does, why it exists.
 - `spec/FOUNDATION.md` § "Bounded Contexts" — register `agent-loop`.
-- `codelet/CLAUDE.md` (if exists) — note the new crate so future
+- `codelet/AGENTS.md` (if exists) — note the new crate so future
   contributors know where the agent loop lives.
 
 ---

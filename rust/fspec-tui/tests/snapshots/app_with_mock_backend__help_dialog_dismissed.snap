@@ -7,7 +7,7 @@ expression: rows_dismissed
 - "│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                │"
 - │ ┣ ┗┓┃┃┣ ┃                                                                    │
 - │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────── │
-- │   v0.10.8   C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent  │
+- │   v0.10.8    Kanban Tools Settings Help                                      │
 - ├──────────────────────────────────────────────────────────────────────────────┤
 - │                                                                              │
 - │                                                                              │
@@ -25,5 +25,5 @@ expression: rows_dismissed
 - │           │           │          │          │          │          │          │
 - │           │           │          │          │          │          │          │
 - ├───────────┴───────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
-- "│← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆│"
+- "│← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Pri│"
 - └──────────────────────────────────────────────────────────────────────────────┘

@@ -15,6 +15,14 @@ Feature: RPC-012 Board ↔ Agent navigation — App-level handoff via stores and
   TS reference: src/tui/components/UnifiedBoardLayout.tsx (Enter +
   Shift+Right handlers) and src/tui/components/AgentView.tsx (ESC + lazy
   session creation + chunks filtering).
+
+  SUPERSEDED by MENU-003 (2026-09-30): the App-level REPL snapshot
+  checkpoints in rust/fspec-tui/tests/app_with_mock_backend_repl.rs now
+  render the single-view AgentView WITH the 2-zone menu bar row (row 2:
+  "Actions Help │ #1 ● …") directly below the SessionHeader. The
+  `repl_after_first_chunk` / `repl_after_submit` snapshots were
+  regenerated on 2026-09-30 to pin that bar row; the bootstrap snapshot
+  (Board view) is unchanged.
   """
 
   Background: User Story

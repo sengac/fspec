@@ -217,7 +217,7 @@ Verified by Agent 1 (Codebase Investigator). All 13 of these files in `codelet/p
 - `codelet/providers/src/manager.rs` — `ProviderType::GitHubCopilot` variant + `has_credentials`, `context_window`, `max_output_tokens` dispatch (L630-L640)
 - `src/tui/utils/copilotLoginFlow.ts` — `startCopilotLogin`, `submitCopilotEnterpriseHost` (orphaned but complete — see §10 item 9)
 
-**Two files exceed the 300-line CLAUDE.md budget** and need splitting (out of scope for PROV-057, track separately):
+**Two files exceed the 300-line AGENTS.md budget** and need splitting (out of scope for PROV-057, track separately):
 - `codelet/providers/src/copilot/oauth.rs` — 364 lines
 - `codelet/providers/src/copilot/provider.rs` — 468 lines
 
@@ -237,7 +237,7 @@ Verified by Agent 1 (Codebase Investigator). All 13 of these files in `codelet/p
 | 7 | Stale cache | `codelet/providers/src/manager.rs:213` (`select_model`) | Call `self.credentials = ProviderCredentials::detect()` before `has_credentials` check (or re-read auth file like `get_claude()` does) | Otherwise login → switch in same session still fails |
 | 8 | Model picker | `src/tui/store/...` + `src/tui/services/modelInitialization.ts` | After OAuth completes, call `copilotListModels()` and merge into model store | TUI picker needs to show Copilot models after login |
 | 9 | UX | `src/tui/components/AgentView.tsx:2917` | If `selectedProvider === 'github-copilot'` and no creds, dispatch `startCopilotLogin()` from `src/tui/utils/copilotLoginFlow.ts` instead of erroring | The orphaned login flow finally gets invoked |
-| 10 | Hygiene | Track separately | Split `oauth.rs` (364 → 2 files) + `provider.rs` (468 → 2 files) | CLAUDE.md 300-line rule (out of scope for PROV-057) |
+| 10 | Hygiene | Track separately | Split `oauth.rs` (364 → 2 files) + `provider.rs` (468 → 2 files) | AGENTS.md 300-line rule (out of scope for PROV-057) |
 
 
 ---

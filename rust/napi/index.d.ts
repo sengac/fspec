@@ -2162,7 +2162,7 @@ export declare function sessionClearActive(): void;
  * TUI-065: Clear session history and reinject context reminders
  *
  * This function clears the session's messages, turns, and token tracker,
- * then reinjects the context reminders (CLAUDE.md, environment info) so
+ * then reinjects the context reminders (AGENTS.md, environment info) so
  * the AI retains project context after clearing.
  *
  * DRY: This is the single source of truth for clear functionality.

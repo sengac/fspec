@@ -66,14 +66,14 @@ fn header_widget_modules_exist_as_separate_files() {
         cs.exists(),
         "views/board/checkpoint_status.rs must exist after RPC-015"
     );
-    // @step And the file rust/fspec-tui/src/views/board/keybinding_shortcuts.rs exists
+    // @step And the file rust/fspec-tui/src/views/board/keybinding_shortcuts.rs does NOT exist (MENU-005 R5 supersession: the dead chord-row painter was deleted — row 3 of the header now hosts the 2-zone menu bar; the single source of truth for the shortcut list is the MenuCategories registry in components/menu_bar/items.rs. The existence pin is inverted — the file must NOT exist anymore.)
     let kb = src_dir()
         .join("views")
         .join("board")
         .join("keybinding_shortcuts.rs");
     assert!(
-        kb.exists(),
-        "views/board/keybinding_shortcuts.rs must exist after RPC-015"
+        !kb.exists(),
+        "views/board/keybinding_shortcuts.rs must be deleted after MENU-005 (dead chord painter)"
     );
 }
 
@@ -99,7 +99,10 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
         .iter()
         .filter_map(|p| p.file_name().and_then(|n| n.to_str()).map(String::from))
         .collect();
-    for required in ["logo.rs", "checkpoint_status.rs", "keybinding_shortcuts.rs"] {
+    // MENU-005 R5: keybinding_shortcuts.rs was deleted (dead chord
+    // painter) — the required list reflects the surviving header
+    // widgets.
+    for required in ["logo.rs", "checkpoint_status.rs"] {
         assert!(
             names.iter().any(|n| n == required),
             "views/board/ must contain {required}; found: {names:?}"
@@ -242,10 +245,12 @@ fn rpc013_and_rpc014_invariants_preserved() {
         board.contains("Action::EnterWorkUnit"),
         "board.rs must still emit Action::EnterWorkUnit"
     );
-    // @step And rust/fspec-tui/src/views/board.rs still contains the substring "Action::FocusNextColumn"
+    // @step And rust/fspec-tui/src/views/board.rs still contains the substring "Action::MenuMove"
+    // (MENU-002 R2 supersedes FocusNextColumn: Left/Right walk the
+    // continuous column⇄menu⇄chip ring via Action::MenuMove.)
     assert!(
-        board.contains("Action::FocusNextColumn"),
-        "board.rs must still emit Action::FocusNextColumn"
+        board.contains("Action::MenuMove"),
+        "board.rs must still emit Action::MenuMove (MENU-002 supersedes FocusNextColumn)"
     );
     // @step And rust/fspec-tui/src/views/board.rs still contains the substring "Action::ReorderUp"
     assert!(

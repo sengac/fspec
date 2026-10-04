@@ -318,11 +318,13 @@ Tags for specific technical concerns or architectural patterns.
 | `@azure` | Azure OpenAI provider |
 | `@backward-compat` | Backward compatibility |
 | `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
+| `@bare-key` | Bare-key (modifier-free) board shortcut scenarios — single-character key arms in views/board/keys.rs |
 | `@base64` | Base64 encoded content scenarios |
 | `@bdd` | Behavior-Driven Development methodology |
 | `@beta-headers` | Anthropic beta header configuration |
 | `@blob` | Blob storage scenarios |
 | `@blob-storage` | Blob storage for large content |
+| `@board-023` | Work unit BOARD-023 — board actions popup dialog: the modifier-free 'u' key opens the 'Actions' popup (BoardKeybindingDialog) listing every board shortcut; the header chord row collapses to a 'u Actions' hint |
 | `@boundary` | Boundary condition scenarios |
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@budget-ignored` | User-provided budget tokens are ignored |
@@ -452,6 +454,16 @@ Tags for specific technical concerns or architectural patterns.
 | `@marked` | Marked library for markdown parsing |
 | `@max-tokens` | Max tokens limit scenarios |
 | `@mcp` | Model Context Protocol (MCP) per-session injection plumbing — init_mcp_session / cleanup_mcp_session / McpInjection wiring through codelet-tools and codelet-sessions |
+| `@menu-007` | Work unit MENU-007 — the agent view menu bar shows a single 'Board View' Zone A item (no Actions/Help, no dropdown) that returns to the Board view on click/Enter; Zone B keeps the session chips |
+| `@menu-bar` | Single-line TUI menu bar (MENU epic) — GUI menu items + anchored dropdown + view/chip switcher, shared across board/agent/mux surfaces |
+| `@menu-bar-paint` | Menu bar row painting scenarios (MENU epic) — the Zone A item labels, separator and chip layout in the 1-row bar |
+| `@menu-chips` | Menu bar session status chip scenarios (MENU-001) — per-session glyph, color and #n index rendering in Zone B |
+| `@menu-dropdown` | Anchored menu dropdown panel scenarios (MENU-001) — R7 geometry, key-hint rows, cursor highlight, clamping and bottom-clip |
+| `@menu-focus` | Menu bar focus ring scenarios (MENU-001) — MenuFocus navigation and inverse-video highlight on items and chips |
+| `@menu-geometry` | Menu bar geometry scenarios (MENU-001) — row padding, background, separator and the R6 truncation ladder |
+| `@menu-help` | The 'u' menu-bar help dialog scenarios (MENU-005) — body rows generated from the full MenuCategories registry |
+| `@menu-registry` | MenuCategories registry scenarios (MENU-001) — the single source of truth for menu bar items, dropdown rows, help content and bare-key docs |
+| `@menu-ring` | Menu bar ring navigation scenarios (MENU epic) — the continuous column⇄item⇄chip focus ring across Zone A and Zone B |
 | `@mermaid` | Mermaid Diagram Support |
 | `@message-deduplication` | Message deduplication and content-addressing scenarios |
 | `@message-id` | Message ID preservation scenarios |
@@ -646,6 +658,8 @@ Tags tracking development status of features.
 | `@bug-186` | Bug fix work unit BUG-186 — rpc002_session_persistence tests fail in a clean test env: model registry cache missing → create_session declines (PROV-101) → empty SessionId. Fix: seed the temp data dir with the shared prov101 model-cache fixture + dummy ANTHROPIC creds, and use a fixture model as the offline default. |
 | `@bug-190` | Bug fix work unit BUG-190 — 60fps busy-state TUI repaint re-wraps + re-grapheme-scans every scrollback row every frame: memoize the reflected scrollback row per (chunk content, width) so steady-state frames blit cached rows |
 | `@bug-192` | Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation |
+| `@bug-194` | Work unit identifier for BUG-194 — mux thinking indicator must keep animating when focus moves off a running agent pane (per-session transition state) |
+| `@bug-195` | Work unit identifier for BUG-195 — clicking a session chip in the Agent view must switch to that session: App::dispatch_menu's MenuChipActivate Agent branch runs the RPC-024 session switch (switch_to_session_index) instead of the old early-return no-op |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
@@ -668,6 +682,7 @@ Tags tracking development status of features.
 | `@enhancement` | Feature enhancement or improvement |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |
+| `@menu-003` | Work unit MENU-003 — agent view surface: 2-zone bar row under the SessionHeader (menu_row flag) + empty-input left-arrow entry with GUI dropdown tracking |
 | `@mux-002` | Work unit MUX-002 — multiple agent panes with grouped agent-view cycling (agent window over open sessions, right-edge prompt, no left-edge wrap) |
 | `@mux-004` | Work unit MUX-004 — mux configuration dialog + /mux slash-popup entry (bare /mux opens the MuxConfigDialog; layout-only scope) |
 | `@mux-006` | Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (1-row-high full-width strip, bottom-to-top — MUX-008) over the focused pane, re-armed on every focus change, live-only (never persisted) |
@@ -803,4 +818,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-09-24T04:42:16.797Z_
+_Last updated: 2026-10-03T00:12:54.095Z_

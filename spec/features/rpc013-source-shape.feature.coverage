@@ -244,11 +244,40 @@
           ]
         }
       ]
+    },
+    {
+      "name": "The agent pane flag-on layout pins the 6-constraint menu list",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/source_shape_rpc013.rs",
+          "lines": "143-182",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/source_shape_rpc013.rs"
@@ -257,8 +286,9 @@
       "rust/fspec-tui/src/views/navigator.rs",
       "rust/fspec-tui/src/views/agent.rs",
       "rust/fspec-tui/src/views/mod.rs",
-      "rust/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/agent/pane_render.rs"
     ],
-    "totalLinesCovered": 285
+    "totalLinesCovered": 338
   }
 }

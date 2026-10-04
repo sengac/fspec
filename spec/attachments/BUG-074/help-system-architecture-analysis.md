@@ -639,7 +639,7 @@ const tool = await getResearchTool(options.tool, cwd);
 - [ ] Update research tool development guide
 - [ ] Document `ResearchToolHelpConfig` structure
 - [ ] Add examples for creating custom research tools
-- [ ] Update CLAUDE.md with new help system
+- [ ] Update AGENTS.md with new help system
 
 ---
 

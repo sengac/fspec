@@ -496,11 +496,11 @@ fn the_flash_keeps_the_render_tick_redrawing_while_idle_and_stops_after_the_wind
     // @step When the run-loop draw gate is evaluated with no other animation in flight
     // @step Then tick_should_draw reports true because the mux flash is active
     assert!(
-        tick_should_draw(false, false, false, false, nav.is_mux_flash_active()),
+        tick_should_draw(false, false, false, false, nav.is_mux_flash_active(), false),
         "tick_should_draw must report true while the mux flash is active"
     );
     assert!(
-        !tick_should_draw(false, false, false, false, false),
+        !tick_should_draw(false, false, false, false, false, false),
         "idle gate must stay false when no operand is set"
     );
     // @step When 350ms of rendered frames have elapsed
@@ -514,7 +514,7 @@ fn the_flash_keeps_the_render_tick_redrawing_while_idle_and_stops_after_the_wind
     );
     assert!(!nav.is_mux_flash_active());
     assert!(
-        !tick_should_draw(false, false, false, false, nav.is_mux_flash_active()),
+        !tick_should_draw(false, false, false, false, nav.is_mux_flash_active(), false),
         "the gate must return to idle once the flash ends"
     );
     // MUX-007/MUX-008: the settled bar is REPAINT content, not an animation —

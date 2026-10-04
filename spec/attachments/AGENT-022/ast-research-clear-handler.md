@@ -33,7 +33,7 @@ It does **NOT**:
 1. Clear `session.messages` (actual conversation history sent to LLM)
 2. Clear `session.turns` (turn-based conversation structure)
 3. Reset `token_tracker` (input/output token counters)
-4. Call `inject_context_reminders()` (to restore CLAUDE.md and environment info)
+4. Call `inject_context_reminders()` (to restore AGENTS.md and environment info)
 
 ### Required Fix
 
@@ -77,7 +77,7 @@ The fix should:
 
 3. **inject_context_reminders method:**
    - Defined in `Session` impl
-   - Restores CLAUDE.md and environment info system reminders
+   - Restores AGENTS.md and environment info system reminders
 
 ### Telegram Bridge Integration
 

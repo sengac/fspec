@@ -6,6 +6,8 @@ use ratatui::layout::Rect;
 
 use codelet_rpc_types::SessionId;
 
+use crate::components::menu_bar::MenuFocus;
+
 /// Which top-level view a mux pane hosts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum MuxPaneKind {
@@ -108,6 +110,28 @@ pub struct MultiplexLayout {
     /// +16ms per rendered mux frame, unbounded (the pattern fn clamps
     /// at the settle boundary).
     pub(super) flash_clock_ms: u64,
+    /// MENU-004: the mux menu bar's ring focus (`None` = a pane has
+    /// focus instead). Owned by the MUX layer (RED CARD 1) — reset on
+    /// mux exit.
+    pub(super) menu_focus: Option<MenuFocus>,
+    /// MENU-004: the open dropdown `(category index, cursor row)` —
+    /// rides on top of the ring focus (BOARD-002/003 parity).
+    pub(super) open_menu: Option<(usize, usize)>,
+    /// MENU-004: cached Zone A item rects (CATEGORIES order) from the
+    /// last painted bar frame (mouse hit-testing).
+    pub(super) menu_item_rects: Option<Vec<Rect>>,
+    /// MENU-004: cached Zone B display cells + hit rects (display
+    /// order) from the last painted bar frame.
+    pub(super) menu_cells: Option<Vec<(crate::components::menu_bar::DisplayCell, Rect)>>,
+    /// MENU-004: the open dropdown's panel rect (if any).
+    pub(super) menu_open_panel: Option<Rect>,
+    /// MENU-004: true when the last render painted the bar (the guard
+    /// for the 3-row degradation — the mouse arms stay inert).
+    pub(super) menu_bar_painted: bool,
+    /// MENU-004 R8: the PAINTED chip count fed by `App::dispatch`
+    /// (the board `set_menu_ring_size` mirror) — the key-time ring
+    /// math stays in lockstep with the bar's paint.
+    pub(super) menu_chips: usize,
 }
 
 impl MultiplexLayout {
@@ -136,6 +160,13 @@ impl MultiplexLayout {
             pre_mux_view: None,
             flash_pane: None,
             flash_clock_ms: 0,
+            menu_focus: None,
+            open_menu: None,
+            menu_item_rects: None,
+            menu_cells: None,
+            menu_open_panel: None,
+            menu_bar_painted: false,
+            menu_chips: 0,
         }
     }
 

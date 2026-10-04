@@ -46,21 +46,24 @@ Feature: BoardView mouse handling — wheel scroll + click focus
     Then BoardView::handle_event returns EventResult::Ignored
     And no Action is emitted onto the action bus
 
-  Scenario: Wheel-right inside the content area emits FocusNextColumn
+  Scenario: Wheel-right inside the content area emits MenuMove(1)
+    # MENU-002 R2 supersedes: wheel L/R walks the continuous
+    # column⇄menu⇄chip ring exactly like the keys.
     Given the BoardStore is seeded with work units across columns
     And the focused column is BACKLOG
     And BoardView has been rendered onto a 120x30 TestBackend so last_content_area is populated
     When an Event::Mouse(ScrollRight) arrives with the cursor inside the column-content area
     Then BoardView::handle_event returns EventResult::Consumed
-    And Action::FocusNextColumn is emitted onto the action bus
+    And Action::MenuMove(1) is emitted onto the action bus
 
-  Scenario: Wheel-left inside the content area emits FocusPrevColumn
+  Scenario: Wheel-left inside the content area emits MenuMove(-1)
+    # MENU-002 R2 supersedes FocusPrevColumn.
     Given the BoardStore is seeded with work units across columns
     And the focused column is IMPLEMENTING
     And BoardView has been rendered onto a 120x30 TestBackend so last_content_area is populated
     When an Event::Mouse(ScrollLeft) arrives with the cursor inside the column-content area
     Then BoardView::handle_event returns EventResult::Consumed
-    And Action::FocusPrevColumn is emitted onto the action bus
+    And Action::MenuMove(-1) is emitted onto the action bus
 
   Scenario: Left-click on a column header emits SetFocusedColumn
     Given the BoardStore is seeded with work units across columns

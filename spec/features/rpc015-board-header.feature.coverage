@@ -136,73 +136,6 @@
       ]
     },
     {
-      "name": "KeybindingShortcuts chord row is painted in the header",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
-          "lines": "97-112",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "New ├──┤ separator sits between the header strip and the details strip",
       "testMappings": [
         {
@@ -501,12 +434,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "The 2-zone menu bar row is painted in the header",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 6,
-    "coveredScenarios": 6,
-    "coveragePercent": 100,
+    "coveredScenarios": 5,
+    "coveragePercent": 83,
     "testFiles": [
       "rust/fspec-tui/tests/view_board_unit_rpc015.rs"
     ],

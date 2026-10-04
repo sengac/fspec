@@ -251,7 +251,7 @@ fn an_options_mode_hitl_prompt_shows_no_hardware_cursor() {
 
     // @step When the cursor visibility is queried for the input area
     let _input = render_frame(100, 14, &mut store, &mut view);
-    let visible = view.is_cursor_visible(Some(SessionStatus::Idle));
+    let visible = view.is_cursor_visible(&store, Some(SessionStatus::Idle));
 
     // @step Then no hardware cursor is reported
     assert!(

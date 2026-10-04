@@ -904,12 +904,14 @@ fn levenshtein_capped(a: &[u8], b: &[u8], max: usize) -> Option<usize> {
 }
 
 /// Every command name a typo suggestion may reference: the 162 canonical
-/// commands + the DISC-003 Rust-only extension `foundation-status`.
+/// commands + the DISC-003 Rust-only extension `foundation-status` + the
+/// CONFIG-009 Rust-only extension `validate-config`.
 fn command_name_source() -> impl Iterator<Item = &'static str> {
     CANONICAL_COMMANDS
         .iter()
         .map(|c| c.name)
         .chain(std::iter::once("foundation-status"))
+        .chain(std::iter::once("validate-config"))
 }
 
 /// Commands that have a real Rust implementation. This set grows
@@ -1097,6 +1099,8 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "review",                                    // RPC-295
     // DISC-003 — Rust-only extension commands (not in the 162 canonical list)
     "foundation-status", // DISC-003 (extension)
+    // CONFIG-009 — validate-config (Rust-only extension)
+    "validate-config",
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

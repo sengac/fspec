@@ -42,5 +42,7 @@ Feature: Board '.' key starts new agent
   Scenario: The board header hint row displays '. New Agent'
     Given a BoardStore with any selection state
     When the App renders BoardView against a 120x24 TestBackend
-    Then the rendered buffer contains the substring ". New Agent"
+    Then the header row 3 shows the 2-zone menu bar Zone A items (Actions Help)
     And the rendered buffer does not contain the substring "/ New Agent"
+    # MENU-002 R1 supersedes: the header chord (and the later u Actions hint)
+    # became the live 2-zone menu bar; New Agent lives in the Actions dropdown.

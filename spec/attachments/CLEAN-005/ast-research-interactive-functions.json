@@ -12,7 +12,7 @@
       "name": "run_interactive_mode",
       "line": 42,
       "column": 0,
-      "text": "pub async fn run_interactive_mode(provider_name: Option<&str>) -> Result<()> {\n    // Initialize session with persistent context (CLI-008)\n    let mut session = Session::new(provider_name)?;\n\n    // CLI-016: Inject context reminders (CLAUDE.md discovery + environment info)\n    session.inject_context_reminders();\n\n    // Display startup card\n    display_startup_card(&session)?;\n\n    // Main REPL loop (raw mode is enabled/disabled per-request, not globally)\n    let result = repl_loop(&mut session).await;\n\n    result\n}"
+      "text": "pub async fn run_interactive_mode(provider_name: Option<&str>) -> Result<()> {\n    // Initialize session with persistent context (CLI-008)\n    let mut session = Session::new(provider_name)?;\n\n    // CLI-016: Inject context reminders (AGENTS.md discovery + environment info)\n    session.inject_context_reminders();\n\n    // Display startup card\n    display_startup_card(&session)?;\n\n    // Main REPL loop (raw mode is enabled/disabled per-request, not globally)\n    let result = repl_loop(&mut session).await;\n\n    result\n}"
     },
     {
       "type": "function_item",

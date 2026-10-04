@@ -54,7 +54,7 @@
       "name": "inject_context_reminders",
       "line": 235,
       "column": 4,
-      "text": "pub fn inject_context_reminders(&mut self) {\n        use context_gathering::{discover_claude_md, gather_environment_info};\n\n        // Inject CLAUDE.md/AGENTS.md content if found\n        if let Some(content) = discover_claude_md(None) {\n            self.add_system_reminder(SystemReminderType::ClaudeMd, &content);\n        }\n\n        // Inject environment information\n        let env_info = gather_environment_info();\n        self.add_system_reminder(\n            SystemReminderType::Environment,\n            &env_info.to_reminder_content(),\n        );\n    }"
+      "text": "pub fn inject_context_reminders(&mut self) {\n        use context_gathering::{discover_agents_md, gather_environment_info};\n\n        // Inject AGENTS.md content if found\n        if let Some(content) = discover_agents_md(None) {\n            self.add_system_reminder(SystemReminderType::SystemPrompt, &content);\n        }\n\n        // Inject environment information\n        let env_info = gather_environment_info();\n        self.add_system_reminder(\n            SystemReminderType::Environment,\n            &env_info.to_reminder_content(),\n        );\n    }"
     },
     {
       "type": "function_item",

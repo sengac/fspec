@@ -18,9 +18,29 @@ use uuid::Uuid;
 /// PROV-132: Serialize tests that swap the process-global data directory.
 static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
-/// Helper: create a temp data directory and return its path.
+/// Trimmed offline models.dev catalog (anthropic/openai/google, one tool-call
+/// model each) PLUS `claude-sonnet-4` under anthropic — the model the
+/// feature file's acceptance criteria pin (`create_session_with_id` with
+/// model "anthropic/claude-sonnet-4"). BUG-186: without a seeded offline
+/// cache, `resolve_provider_manager → ModelRegistry::new →
+/// ModelCache::get()` fails in the fresh temp data dir, the
+/// `create_session` Err is swallowed into an empty SessionId, and
+/// `Uuid::parse_str("")` panics below. Dummy credential env vars keep
+/// `ProviderCredentials::detect()` passing offline too.
+const MODELS_FIXTURE: &str = include_str!("fixtures/rpc422_models.json");
+
+/// Helper: create a temp data directory with a seeded offline model cache
+/// and dummy credentials, and return its path.
 fn make_temp_data_dir() -> PathBuf {
-    tempfile::tempdir().expect("tempdir").keep()
+    // BUG-186: dummy creds so registry-backed selection passes offline.
+    std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
+    std::env::set_var("OPENAI_API_KEY", "sk-test-dummy-key");
+    std::env::set_var("GOOGLE_GENERATIVE_AI_API_KEY", "AIza-test-dummy-key");
+    let dir = tempfile::tempdir().expect("tempdir").keep();
+    let cache_dir = dir.join("cache");
+    std::fs::create_dir_all(&cache_dir).expect("create cache dir");
+    std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models fixture");
+    dir
 }
 
 /// Helper: set the data directory and return a guard that cleans it up.
@@ -591,5 +611,38 @@ async fn resume_session_already_in_memory_preserves_messages() {
         manifest_after.messages.len(),
         manifest_before.messages.len(),
         "manifest message count should not change"
+    );
+}
+
+// ============================================================================
+// Scenario: Session persistence tests survive a clean offline environment
+// ============================================================================
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn session_creation_survives_clean_offline_environment() {
+    let _guard = DATA_DIR_GUARD.lock().await;
+
+    // @step Given a fresh temp data directory without provider credentials or a models.dev cache
+    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let manager = Arc::new(SessionManager::new());
+    let handle: &dyn SessionManagerHandle = &*manager;
+
+    // @step When I run the rpc002 and rpc422 session-persistence test suites in that environment
+    // the default model resolves against the seeded offline cache
+    manager.set_default_model("anthropic/claude-sonnet-4");
+    let sid = handle.create_session(None);
+
+    // @step Then session creation resolves the default model from the seeded offline cache and succeeds
+    assert!(
+        !sid.value.is_empty(),
+        "create_session must succeed offline against the seeded cache, got empty SessionId"
+    );
+    let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+    assert!(
+        data_dir
+            .join("sessions")
+            .join(format!("{uuid}.json"))
+            .exists(),
+        "manifest must exist after offline session creation"
     );
 }

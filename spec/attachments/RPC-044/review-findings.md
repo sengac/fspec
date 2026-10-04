@@ -35,7 +35,7 @@ The actual matching feature file for each test is:
 | `codelet/fspec-tui/tests/no_napi_dependency.rs` | `spec/features/codelet-fspec-tui-no-napi-regression.feature` |
 | `codelet/sessions/tests/no_napi_dependency.rs` | `spec/features/codelet-sessions-no-napi-regression.feature` |
 
-Per project convention (CLAUDE.md test header rule, plus the review-skill C.3
+Per project convention (AGENTS.md test header rule, plus the review-skill C.3
 @step traceability requirement) the feature reference must point at the
 actual `.feature` file so a reader can follow the trace from test → spec.
 

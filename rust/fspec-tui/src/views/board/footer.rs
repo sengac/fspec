@@ -24,8 +24,10 @@ pub(crate) fn render(area: Rect, buf: &mut Buffer, theme: &Theme) {
         return;
     }
     let style = Style::default().fg(theme.fg);
-    let text =
-        "← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back";
+    // MENU-002 R11: the ring is now columns → menu items → chips, so
+    // the hint describes the full walk (the old '← → Columns' token
+    // survives: 'Cycle Columns').
+    let text = "← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back";
     let text_len = text.width() as u16;
     let inner = if text_len < area.width {
         let pad = (area.width - text_len) / 2;

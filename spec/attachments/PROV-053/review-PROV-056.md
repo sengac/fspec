@@ -28,7 +28,7 @@
 ## 🟡 Warnings (Should Fix)
 
 1. **`models.rs` is 438 lines — exceeds the 300-line ceiling**
-   - `wc -l` reports 438 lines for `codelet/providers/src/copilot/models.rs`. The project standard (CLAUDE.md and the review brief) requires files under 300 lines, *or* a refactor.
+   - `wc -l` reports 438 lines for `codelet/providers/src/copilot/models.rs`. The project standard (AGENTS.md and the review brief) requires files under 300 lines, *or* a refactor.
    - With ~140 lines of inline tests at the bottom (`models.rs:308-437`), the **production** code is ≈300 lines, putting it right at the limit. Splitting along clear seams would help:
      - `copilot/models/schema.rs` — `CopilotModelsResponse`, `CopilotModelEntry`, `CopilotModelCapabilities`, `CopilotModelLimits`, `CopilotModelSupports` (currently `models.rs:48-116`)
      - `copilot/models/fetch.rs` — `fetch_models`, `CopilotModelCatalogService` (currently `models.rs:118-193`)

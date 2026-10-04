@@ -14,7 +14,7 @@ Feature: Interactive reverse ACDD strategy planning command
   Reuses existing analysis utilities: file scanners (Glob), Gherkin parser, test file pattern matching
   NO execution logic in command - all work done by AI using existing fspec commands (create-feature, link-coverage, etc.)
   Integration point 1: .claude/commands/fspec.md must mention 'fspec reverse' and deprecate /rspec command
-  Integration point 2: spec/CLAUDE.md section 'Reverse ACDD for Existing Codebases' must be updated with new workflow
+  Integration point 2: spec/AGENTS.md section 'Reverse ACDD for Existing Codebases' must be updated with new workflow
   Strategy templates: A=Spec Gap Filling, B=Test Gap Filling, C=Coverage Mapping, D=Full Reverse ACDD (each has predefined guidance steps)
   """
 
@@ -31,7 +31,7 @@ Feature: Interactive reverse ACDD strategy planning command
   #   6. Must persist session state in OS temp directory (tmpdir) with project-specific hash - ephemeral, OS-managed cleanup
   #   7. Must support CLI flags: --continue, --strategy=X, --status, --reset, --complete
   #   8. Must replace /rspec command in .claude/commands/fspec.md and deprecate it
-  #   9. Must update spec/CLAUDE.md section on Reverse ACDD with new workflow
+  #   9. Must update spec/AGENTS.md section on Reverse ACDD with new workflow
   #   10. Session file must be deleted on completion (--complete) or reset (--reset)
   #   11. State machine phases: analyzing → gap-detection → strategy-planning → executing → complete
   #   12. Show summary with counts, paginate detailed gap list, suggest --strategy to narrow scope

@@ -15,7 +15,7 @@ This document captures the AST research performed for TUI-059, analyzing the exi
 
 **Session Creation Flow:**
 1. `create_session_with_id()` (line ~3230) creates a new session
-2. Calls `inner.inject_context_reminders()` (line 3281) to inject CLAUDE.md and environment info
+2. Calls `inner.inject_context_reminders()` (line 3281) to inject AGENTS.md and environment info
 3. Session is stored in `self.sessions` IndexMap (line 3300)
 4. Active session is set via `self.set_active_session(uuid)` (line 3304)
 

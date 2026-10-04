@@ -11,24 +11,43 @@
 //! content rows, ├┴┤ separator, RPC-013 footer string, bottom border. It
 //! also caches the geometry the keyboard + mouse handlers read back.
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::Style;
 
-use crate::store::{BoardStore, COLUMN_ORDER};
+use crate::components::menu_bar::{dropdown_rect, paint_menu_bar, render_menu_dropdown};
+use crate::store::{AgentViewStore, BoardStore, COLUMN_ORDER};
 
 use super::grid::{build_border_row, column_width_at, slice_column_rects, SeparatorType};
+use super::menu_mouse::MenuBarGeometry;
 use super::{
-    borders, calculate_column_widths, details_strip, footer, header, paint_column_headers,
-    paint_content_rows, BoardView,
+    borders, calculate_column_widths, details_strip, footer, header, menu_snapshot,
+    paint_column_headers, paint_content_rows, BoardView,
 };
 
+/// The wall clock in ms since the epoch — drives the Running chip's
+/// braille frame (MENU-002 R4).
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
 /// Render the rich BoardView against the supplied store.
+/// `menu_suppressed` (MENU-004 R-SUPPRESS): when true the header's
+/// exposed row 3 stays BLANK — the owning surface paints the bar
+/// (the mux top row) and this pane's geometry cache is cleared so the
+/// pane's mouse arms stay inert.
 pub(super) fn render_with_store(
     view: &BoardView,
     area: Rect,
     buf: &mut Buffer,
     store: &BoardStore,
+    agent_store: &AgentViewStore,
+    menu_suppressed: bool,
 ) {
     if area.width < 4 || area.height < 17 {
         return;
@@ -66,7 +85,37 @@ pub(super) fn render_with_store(
         border_style,
     );
     borders::paint_side_borders(split[1], buf, border_style);
-    header::paint(borders::inner_rect(split[1]), buf, store, &view.theme);
+    let rows = header::paint(borders::inner_rect(split[1]), buf, store, &view.theme);
+    // MENU-002: the 2-zone menu bar replaces the 'u Actions' chord in
+    // the header's exposed row 3. Build the per-frame snapshot (R9:
+    // chips from the painted session list), paint the bar, and cache
+    // the geometry the mouse arms hit-test.
+    let snapshot =
+        menu_snapshot::build_snapshot(agent_store, store.menu_focus(), store.open_menu(), now_ms());
+    let bar_rect = rows.bar_row;
+    let mut open_panel = None;
+    // MENU-004 R-SUPPRESS: the mux board pane paints NO per-pane bar —
+    // row 3 stays blank and the geometry cache is cleared (the pane's
+    // mouse arms stay inert; the bar's geometry lives on the mux layer).
+    if !menu_suppressed {
+        if let Some(layout) = paint_menu_bar(bar_rect, buf, &snapshot, &view.theme) {
+            if let Some((cat, _)) = store.open_menu() {
+                let item_x = layout
+                    .item_rects
+                    .get(cat)
+                    .map(|r| r.x)
+                    .unwrap_or(bar_rect.x);
+                open_panel = dropdown_rect(area, item_x, bar_rect.y, cat);
+            }
+            view.cache_menu_geometry(Some(MenuBarGeometry {
+                bar_y: bar_rect.y,
+                layout,
+                open_panel,
+            }));
+        }
+    } else {
+        view.cache_menu_geometry(None);
+    }
     borders::paint_border_string(
         split[2],
         buf,
@@ -122,4 +171,17 @@ pub(super) fn render_with_store(
         &build_border_row(widths, "└", "┘", SeparatorType::Plain),
         border_style,
     );
+    // MENU-002: the open dropdown is an OVERLAY — painted last so it
+    // sits on top of the details strip + column content it anchors
+    // over (the panel's own bg fill clears what was beneath).
+    // MENU-004 R-SUPPRESS: a suppressed pane owns no panel (its bar
+    // never painted — `open_panel` stays `None`), so the overlay is
+    // skipped automatically.
+    if !menu_suppressed {
+        if let Some((cat, cursor)) = store.open_menu() {
+            if let Some(panel) = open_panel {
+                render_menu_dropdown(panel, buf, cat, cursor, &view.theme);
+            }
+        }
+    }
 }

@@ -10,7 +10,7 @@
 
 use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, BoardStore, BoardView, Theme};
+use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
 use codelet_rpc_types::{CheckpointCounts, WorkUnitInfo};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -41,7 +41,13 @@ fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
     let (view, _rx) = fresh();
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     term.backend().buffer().clone()
@@ -103,6 +109,10 @@ fn non_zero_checkpoint_counts_paint_the_manual_auto_breakdown() {
 }
 
 /// Scenario: KeybindingShortcuts chord row is painted in the header
+/// (BOARD-023 R10 supersession: the six-action chord was replaced by the
+/// short 'u Actions' hint; MENU-002 R1 supersedes that hint with the live
+/// 2-zone menu bar — Zone A "Kanban"/"Tools"/"Settings"/"Help" items after
+/// MENU-008, no session chips on a fresh store)
 #[test]
 fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
     // @step Given a BoardStore with any selection state
@@ -110,25 +120,24 @@ fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
     // @step When the App renders BoardView against a 120x24 TestBackend
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
-    // @step Then the rendered buffer contains the substring "C Checkpoints"
+    // @step Then the header row 3 shows the 2-zone menu bar (MENU-002
+    // supersedes the 'u Actions' hint): Zone A items paint, no chips.
     assert!(
-        joined.contains("C Checkpoints"),
-        "missing 'C Checkpoints':\n{joined}"
+        joined.contains("Kanban")
+            && joined.contains("Tools")
+            && joined.contains("Settings")
+            && joined.contains("Help"),
+        "missing the 2-zone bar's Zone A items (Kanban Tools Settings Help): {joined}"
     );
-    // @step And the rendered buffer contains the substring "F Changed Files"
+    // And the old six-action chord segments no longer render in the header.
     assert!(
-        joined.contains("F Changed Files"),
-        "missing 'F Changed Files':\n{joined}"
+        !joined.contains("C Checkpoints"),
+        "the old chord must no longer render in the header: {joined}"
     );
-    // @step And the rendered buffer contains the substring "D FOUNDATION.md"
+    // And the BOARD-023 short hint is gone too (superseded by MENU-002).
     assert!(
-        joined.contains("D FOUNDATION.md"),
-        "missing 'D FOUNDATION.md':\n{joined}"
-    );
-    // @step And the rendered buffer contains the substring ". New Agent"
-    assert!(
-        joined.contains(". New Agent"),
-        "missing '. New Agent':\n{joined}"
+        !joined.contains("u Actions"),
+        "the 'u Actions' hint must be gone, replaced by the menu bar: {joined}"
     );
 }
 
@@ -196,8 +205,16 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
     // Drive a single render to "paint" the header — used only to mirror
     // the Gherkin Given clause; the assertion is on the next key press.
     let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
-    term.draw(|frame| view.render_with_store(frame.area(), frame.buffer_mut(), &store))
-        .expect("draw");
+    term.draw(|frame| {
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            &store,
+            &AgentViewStore::default(),
+            false,
+        )
+    })
+    .expect("draw");
     // @step When the user presses the key 'C'
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::Char('C'), KeyModifiers::empty())),
@@ -238,19 +255,22 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
         }
     }
     // @step And BoardView continues to emit existing Action variants on existing key events (← / → / ↑ / ↓ / Enter / [ / ] / Shift+Right / ESC)
+    // MENU-002 R2 supersedes: Right now walks the continuous
+    // column⇄menu⇄chip ring via Action::MenuMove(1) instead of
+    // Action::FocusNextColumn.
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::empty())),
         &store,
     );
-    let mut had_focus_next = false;
+    let mut had_menu_move = false;
     while let Ok(a) = rx.try_recv() {
-        if matches!(a, Action::FocusNextColumn) {
-            had_focus_next = true;
+        if matches!(a, Action::MenuMove(1)) {
+            had_menu_move = true;
         }
     }
     assert!(
-        had_focus_next,
-        "Right arrow must still emit Action::FocusNextColumn after RPC-015"
+        had_menu_move,
+        "Right arrow must emit Action::MenuMove(1) after MENU-002 (supersedes FocusNextColumn)"
     );
 }
 

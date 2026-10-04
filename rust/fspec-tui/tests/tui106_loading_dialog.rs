@@ -241,23 +241,23 @@ fn flushed_empty_list_clears_loading_so_empty_state_surfaces() {
 #[test]
 fn redraw_gate_runs_while_view_is_loading_and_only_then() {
     assert!(
-        !tick_should_draw(false, false, false, false, false),
+        !tick_should_draw(false, false, false, false, false, false),
         "idle → no redraw"
     );
     assert!(
-        tick_should_draw(false, false, false, true, false),
+        tick_should_draw(false, false, false, true, false, false),
         "view loading → redraw"
     );
     assert!(
-        tick_should_draw(false, true, false, false, false),
+        tick_should_draw(false, true, false, false, false, false),
         "busy → redraw (unchanged)"
     );
     assert!(
-        tick_should_draw(false, false, true, false, false),
+        tick_should_draw(false, false, true, false, false, false),
         "animating → redraw (unchanged)"
     );
     assert!(
-        tick_should_draw(true, false, false, false, false),
+        tick_should_draw(true, false, false, false, false, false),
         "pending render (unchanged)"
     );
 }

@@ -17,7 +17,7 @@ Feature: Fix all failing tests (15 failures across 3 test suites)
   #   1. ALL tests must be passing (0 failures) before this work unit can be marked as done. Run 'npm test' and verify all test suites pass with 100% success rate.
   #   2. AST Research Tool tests (8 failures in src/__tests__/ast-research-tool.test.ts) are OUTDATED - written for old stub implementation. These tests must be DELETED and REWRITTEN for actual tree-sitter parser behavior.
   #   3. TUI formatting tests (5 failures in src/tui/__tests__/work-unit-details-formatting.test.tsx) need investigation - determine if implementation regressed or test expectations are outdated, then fix whichever is wrong.
-  #   4. Research integration tests (2 failures in src/commands/__tests__/integrate-research-guidance.test.ts) need investigation - verify if bootstrap/CLAUDE.md features still exist, update tests accordingly or remove if deprecated.
+  #   4. Research integration tests (2 failures in src/commands/__tests__/integrate-research-guidance.test.ts) need investigation - verify if bootstrap/AGENTS.md features still exist, update tests accordingly or remove if deprecated.
   #
   # EXAMPLES:
   #   1. BEFORE: Run npm test → 15 failures across 3 test suites. AFTER: Run npm test → 0 failures, all tests passing.
@@ -52,6 +52,6 @@ Feature: Fix all failing tests (15 failures across 3 test suites)
 
   Scenario: Fix or remove research integration tests based on feature existence
     Given the research integration tests are failing
-    When I check if bootstrap command and CLAUDE.md generation features still exist
+    When I check if bootstrap command and AGENTS.md generation features still exist
     Then I should either fix the tests to match current implementation
     And all research integration tests should pass with 0 failures

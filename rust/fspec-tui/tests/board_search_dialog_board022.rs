@@ -22,8 +22,8 @@
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    Action, App, BoardStore, BoardView, Component, EventResult, Theme, WorkUnitSearchDialog,
-    WORK_UNIT_SEARCH_DIALOG_ID,
+    Action, AgentViewStore, App, BoardStore, BoardView, Component, EventResult, Theme,
+    WorkUnitSearchDialog, WORK_UNIT_SEARCH_DIALOG_ID,
 };
 use codelet_rpc_types::WorkUnitInfo;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -75,7 +75,13 @@ fn render_board(store: &BoardStore) -> String {
     let (view, _rx) = fresh();
     let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), store);
+        view.render_with_store(
+            frame.area(),
+            frame.buffer_mut(),
+            store,
+            &AgentViewStore::default(),
+            false,
+        );
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -447,7 +453,11 @@ fn opening_the_dialog_on_an_empty_board_shows_the_board_is_empty_state() {
     );
 }
 
-/// Scenario: The board header chord shows the '/' search shortcut
+/// Scenario: The board header shows the search affordance
+/// (BOARD-023 R10 supersession: the six-action chord — including the
+/// '/ Search' segment — was collapsed into the short 'u Actions' hint;
+/// MENU-002 R1 supersedes that hint with the live 2-zone menu bar —
+/// the 'Search' entry now lives in the Actions dropdown)
 #[test]
 fn the_board_header_chord_shows_the_slash_search_shortcut() {
     // @step Given a board with any selection state
@@ -456,10 +466,12 @@ fn the_board_header_chord_shows_the_slash_search_shortcut() {
     // @step When the board is rendered
     let rendered = render_board(&store);
 
-    // @step Then the header chord row contains the segment "/ Search"
+    // @step Then the header shows the 2-zone menu bar (MENU-002
+    // supersedes the 'u Actions' hint; MENU-008: the items are now
+    // Kanban/Tools/Settings/Help)
     assert!(
-        rendered.contains("/ Search"),
-        "header chord must contain '/ Search':\n{rendered}"
+        rendered.contains("Kanban") && rendered.contains("Help"),
+        "header must contain the 2-zone bar's Zone A items: {rendered}"
     );
 }
 

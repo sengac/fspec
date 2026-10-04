@@ -207,10 +207,16 @@ fn board_view_still_emits_action_variants_and_renders_rpc013_footer() {
         board.contains("Action::EnterWorkUnit"),
         "missing Action::EnterWorkUnit in board.rs"
     );
-    // @step And the file contains the substring "Action::FocusNextColumn"
+    // @step And the file contains the substring "Action::MenuMove"
+    // (MENU-002 R2 supersedes: plain Left/Right now walk the continuous
+    // column⇄menu⇄chip ring via Action::MenuMove — the bare
+    // FocusPrev/NextColumn arms moved out of board.rs; the store's
+    // FocusPrev/NextColumn variants are still consumed for wheel L/R in
+    // the content area pre-ring-walk... actually MENU-002 R2 routes ALL
+    // wheel L/R through MenuMove too, so the substring pin moves with it.)
     assert!(
-        board.contains("Action::FocusNextColumn"),
-        "missing Action::FocusNextColumn in board.rs"
+        board.contains("Action::MenuMove"),
+        "missing Action::MenuMove in board.rs (MENU-002 supersedes FocusNextColumn)"
     );
     // @step And the file contains the substring "Action::ReorderUp"
     assert!(

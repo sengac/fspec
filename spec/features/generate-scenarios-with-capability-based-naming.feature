@@ -19,7 +19,7 @@ Feature: Generate Scenarios with Capability-Based Naming
   - Error messages MUST guide user to use capability-based names
 
   References:
-  - spec/CLAUDE.md - File Naming section (lines 372-439)
+  - spec/AGENTS.md - File Naming section (lines 372-439)
   - src/commands/generate-scenarios.ts:78-81 (bug location)
   """
 

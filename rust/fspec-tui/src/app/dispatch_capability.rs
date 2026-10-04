@@ -31,6 +31,7 @@ impl App {
             || self.try_dispatch_slash_loop(action)
             || self.try_dispatch_create_session_dialog(action)
             || self.try_dispatch_supervisor_links(action)
+            || self.try_dispatch_board_keybinding(action)
             || self.try_dispatch_dialog_dismiss(action)
     }
 

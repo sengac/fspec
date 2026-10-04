@@ -12,14 +12,12 @@
 use std::sync::Arc;
 
 use crossterm::event::Event;
-use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::components::{Action, EventResult, Priority};
-use crate::store::{AgentViewStore, BoardStore};
+use crate::store::BoardStore;
 use crate::theme::Theme;
-use crate::views::multiplex::{render as mux_render, MultiplexLayout};
+use crate::views::multiplex::MultiplexLayout;
 use crate::views::{
     AgentView, BlocklistView, BoardView, ChangedFilesView, CheckpointsView, ModelSelectorView,
     ProviderSettingsView,
@@ -76,6 +74,9 @@ pub struct Navigator {
     pub mux: MultiplexLayout,
     pub active_view: ViewMode,
     pub action_tx: Option<UnboundedSender<Action>>,
+    /// MENU-004 R-TICK: the cached "menu bar animating" gate (see
+    /// `navigator_menu_bar.rs`) — recomputed by `render_with_stores`.
+    pub(super) menu_bar_animating: bool,
 }
 
 impl Navigator {
@@ -91,6 +92,7 @@ impl Navigator {
             mux: MultiplexLayout::new(),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),
+            menu_bar_animating: false,
         }
     }
 
@@ -233,63 +235,6 @@ impl Navigator {
                 self.mux.set_focus(agent_idx);
             }
             _ => {}
-        }
-    }
-
-    /// Render against the live stores. Caller is App.
-    ///
-    /// RPC-013: the active child receives the full `area` — the
-    /// Navigator no longer reserves a 1-row footer chunk because each
-    /// view now paints its own view-specific footer.
-    pub fn render_with_stores(
-        &mut self,
-        area: Rect,
-        buf: &mut Buffer,
-        board_store: &BoardStore,
-        agent_store: &mut AgentViewStore,
-    ) {
-        match self.active_view {
-            ViewMode::Board => {
-                self.board.render_with_store(area, buf, board_store);
-            }
-            ViewMode::Agent => {
-                self.agent.render_with_store(area, buf, agent_store);
-            }
-            ViewMode::ProviderSettings => {
-                self.provider_settings.render(area, buf);
-            }
-            ViewMode::Blocklist => {
-                let empty = std::collections::HashSet::new();
-                let disabled = agent_store
-                    .current_session()
-                    .and_then(|sid| agent_store.blocklist_disabled_for(sid))
-                    .unwrap_or(&empty);
-                self.blocklist.render(area, buf, disabled);
-            }
-            ViewMode::ModelSelector => {
-                self.model_selector.render(area, buf);
-            }
-            ViewMode::ChangedFiles => {
-                self.changed_files.render(area, buf);
-            }
-            ViewMode::Checkpoints => {
-                self.checkpoints.render(area, buf);
-            }
-            ViewMode::Mux => {
-                mux_render::render_with_stores(
-                    &mut self.mux,
-                    area,
-                    buf,
-                    board_store,
-                    agent_store,
-                    &mut mux_render::MuxRenderViews {
-                        board: &self.board,
-                        agent: &mut self.agent,
-                        changed_files: &mut self.changed_files,
-                        checkpoints: &mut self.checkpoints,
-                    },
-                );
-            }
         }
     }
 }

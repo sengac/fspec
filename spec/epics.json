@@ -235,7 +235,8 @@
         "BOARD-012",
         "ITF-007",
         "TUI-038",
-        "TUI-091"
+        "TUI-091",
+        "BOARD-023"
       ]
     },
     "domain-knowledge-graph": {
@@ -1398,7 +1399,8 @@
         "BUG-179",
         "BUG-182",
         "BUG-183",
-        "MUX-009"
+        "MUX-009",
+        "BUG-194"
       ]
     },
     "provider-settings": {
@@ -1466,6 +1468,32 @@
         "RLCD-002",
         "RLCD-003",
         "RLCD-004"
+      ]
+    },
+    "config-scoping": {
+      "id": "config-scoping",
+      "title": "CONFIG",
+      "createdAt": "2026-09-26T01:56:43.157Z",
+      "description": "Config scope correctness: which keys live in user-scope (~/.fspec/fspec-config.json) vs project-scope (spec/fspec-config.json), and preventing cross-scope key contamination by the TUI persistence writers",
+      "workUnits": [
+        "BUG-193",
+        "CONFIG-009"
+      ]
+    },
+    "menu-bar": {
+      "id": "menu-bar",
+      "title": "MENU",
+      "createdAt": "2026-09-30T00:17:05.832Z",
+      "description": "Single-line TUI menu bar (v2 model): Zone A is a GUI-style menu bar of items whose selection opens a dropdown anchored under the item; Zone B is the view switcher with per-session agent status chips (pane-ordered in mux mode, chips-only in single-view mode). One bar on the board (replacing the BOARD-023 'u Actions' chord), under the SessionHeader in the agent view, and at the top of the mux view.",
+      "workUnits": [
+        "MENU-001",
+        "MENU-002",
+        "MENU-003",
+        "MENU-004",
+        "MENU-005",
+        "MENU-006",
+        "MENU-007",
+        "MENU-008"
       ]
     }
   }

@@ -444,12 +444,12 @@ Run 'fspec init --help' for more information.
 **Example**:
 ```bash
 # User customizes Claude documentation
-vim spec/CLAUDE.md
+vim spec/AGENTS.md
 # ... adds custom notes
 
 # User switches to Cursor
 fspec init --agent=cursor
-# spec/CLAUDE.md is GONE, no way to recover custom notes
+# spec/AGENTS.md is GONE, no way to recover custom notes
 ```
 
 **Proposed Fix Option A** (Backup):

@@ -148,9 +148,17 @@ impl App {
         let text_for_send = text.clone();
         // Guard sync test dispatchers (no tokio runtime).
         if tokio::runtime::Handle::try_current().is_ok() {
-            tokio::spawn(async move {
+            let handle = tokio::spawn(async move {
                 let _ = backend.send_input(session_for_send, text_for_send).await;
             });
+            // RPC-012 test-seam contract (the same one
+            // `spawn_clear_pending_input` below honours): park the
+            // JoinHandle so `drain_pending` harnesses await it before
+            // asserting on `MockBackend.send_input_calls()`. Unparked,
+            // the spawned call raced the assertions (BUG-169 flaky
+            // pair: registered_name_with_trailing_argument_goes_to_the_llm
+            // / unknown_slash_lines_still_go_to_the_llm).
+            self.pending_tasks.push(handle);
         }
         // RPC-052: clear the durable pending-input draft now that the
         // text has been submitted. Fire-and-forget — errors silently

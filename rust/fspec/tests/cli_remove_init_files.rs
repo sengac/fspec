@@ -55,7 +55,7 @@ fn touch(cwd: &Path, rel: &str) {
 /// Standard claude workspace: config + both agent files present.
 fn setup_claude_workspace(cwd: &Path) {
     write_config(cwd, "claude");
-    touch(cwd, "spec/CLAUDE.md");
+    touch(cwd, "spec/AGENTS.md");
     touch(cwd, ".claude/commands/fspec.md");
 }
 
@@ -90,7 +90,7 @@ fn scenario_clap_exposes_remove_init_files_with_help() {
 
 #[test]
 fn scenario_cli_removes_claude_agent_files_and_prints_the_success_summary() {
-    // @step Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
+    // @step Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/AGENTS.md and .claude/commands/fspec.md
     let ws = tempfile::tempdir().expect("tempdir");
     setup_claude_workspace(ws.path());
 
@@ -106,19 +106,19 @@ fn scenario_cli_removes_claude_agent_files_and_prints_the_success_summary() {
         "got:\n{stdout}"
     );
 
-    // @step And stdout contains the substring 'spec/CLAUDE.md'
-    assert!(stdout.contains("spec/CLAUDE.md"), "got:\n{stdout}");
+    // @step And stdout contains the substring 'spec/AGENTS.md'
+    assert!(stdout.contains("spec/AGENTS.md"), "got:\n{stdout}");
 
-    // @step And spec/CLAUDE.md no longer exists
+    // @step And spec/AGENTS.md no longer exists
     assert!(
-        !ws.path().join("spec/CLAUDE.md").exists(),
-        "spec/CLAUDE.md must be removed"
+        !ws.path().join("spec/AGENTS.md").exists(),
+        "spec/AGENTS.md must be removed"
     );
 }
 
 #[test]
 fn scenario_cli_keep_config_preserves_spec_fspec_config_json() {
-    // @step Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
+    // @step Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/AGENTS.md and .claude/commands/fspec.md
     let ws = tempfile::tempdir().expect("tempdir");
     setup_claude_workspace(ws.path());
 
@@ -158,7 +158,7 @@ fn scenario_cli_exits_1_when_no_agent_installation_is_detected() {
 
 #[test]
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
-    // @step Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/CLAUDE.md and .claude/commands/fspec.md
+    // @step Given a workspace with spec/fspec-config.json containing agent='claude' and the files spec/AGENTS.md and .claude/commands/fspec.md
     let ws = tempfile::tempdir().expect("tempdir");
     setup_claude_workspace(ws.path());
 
@@ -174,14 +174,14 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         "dispatcher path must succeed; got {result:?}"
     );
 
-    // @step Then the dispatcher returns JSON whose filesRemoved includes 'spec/CLAUDE.md'
+    // @step Then the dispatcher returns JSON whose filesRemoved includes 'spec/AGENTS.md'
     let parsed: Value = serde_json::from_str(&result.data).expect("dispatcher data must be JSON");
     let removed = parsed["filesRemoved"]
         .as_array()
         .expect("filesRemoved must be an array");
     assert!(
-        removed.iter().any(|v| v.as_str() == Some("spec/CLAUDE.md")),
-        "filesRemoved must include spec/CLAUDE.md; got {}",
+        removed.iter().any(|v| v.as_str() == Some("spec/AGENTS.md")),
+        "filesRemoved must include spec/AGENTS.md; got {}",
         result.data
     );
 

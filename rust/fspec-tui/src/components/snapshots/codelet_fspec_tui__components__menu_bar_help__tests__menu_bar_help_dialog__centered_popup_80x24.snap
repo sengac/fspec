@@ -1,0 +1,29 @@
+---
+source: fspec-tui/src/components/menu_bar_help.rs
+assertion_line: 395
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "     ╭────────────────────────────────────────────────────────────────────╮     "
+- "     │                                                                    │     "
+- "     │ Menu bar                                                           │     "
+- "     │                                                                    │     "
+- "     │ ▸ . New Agent - Open/start an agent for the focused unit           │     "
+- "     │   / Search - Search work units                                     │     "
+- "     │   D FOUNDATION.md - Open FOUNDATION.md in the browser              │     "
+- "     │   A Attachments - Open the attachment picker for the selected unit │     "
+- "     │   F Changed Files - Open the changed-files view                    │     "
+- "     │   C Checkpoints - Open the checkpoints view                        │     "
+- "     │   M Mux - Open the mux layout config                               │     "
+- "     │   P Providers - Open the provider settings view                    │     "
+- "     │   ? Help - Show the full menu bar help                             │     "
+- "     │   Esc Exit - Confirm exiting fspec                                 │     "
+- "     │                                                                    │     "
+- "     │              ↑↓ Navigate │ Enter Execute │ Esc Close               │     "
+- "     │                                                                    │     "
+- "     ╰────────────────────────────────────────────────────────────────────╯     "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

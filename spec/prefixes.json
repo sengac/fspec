@@ -449,6 +449,11 @@
       "prefix": "RLCD",
       "description": "RLCD decision-engine integration (laya-rs backend; model-agnostic naming — RLCD is the conceptual core, 'laya' is the current backend name)",
       "createdAt": "2026-09-24T00:39:41.029Z"
+    },
+    "MENU": {
+      "prefix": "MENU",
+      "description": "TUI single-line menu bar — always-visible view switcher, per-session agent status chips, and selectable actions (supersedes BOARD-023 header chord; one bar on board, agent, and mux surfaces)",
+      "createdAt": "2026-09-29T23:24:56.954Z"
     }
   }
 }
