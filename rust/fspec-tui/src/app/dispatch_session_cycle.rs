@@ -55,6 +55,11 @@ impl App {
             Some(sid) => {
                 self.agent_view_store.set_navigation_target(Some(sid));
                 self.navigator.active_view = ViewMode::Agent;
+                // BUG-197 R3/R4: leaving the board via a view flip
+                // drops the board bar's ring focus so returning to the
+                // board paints NO stale chip highlight (only the
+                // MENU-006 active-chip path may highlight).
+                self.board_store.menu_focus_to_columns();
             }
             None => {
                 // RPC-097 reopen #2: probe the GLOBAL open-session

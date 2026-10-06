@@ -444,6 +444,110 @@
               ]
             }
           ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "430-463",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "430-463",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
         }
       ]
     },
@@ -468,6 +572,58 @@
                 233,
                 234,
                 235
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "471-504",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
               ]
             }
           ]
@@ -713,6 +869,6 @@
       "rust/fspec-tui/src/components/menu_bar_help.rs",
       "rust/fspec-tui/src/components/menu_bar/layout.rs"
     ],
-    "totalLinesCovered": 1898
+    "totalLinesCovered": 1195
   }
 }

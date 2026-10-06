@@ -16,9 +16,19 @@
 //! - **Left click on a Zone B cell** — a chip activates its session
 //!   (NO view flip, R-CHIPS); a pane view label focuses that pane
 //!   (R-ZONEB).
+//! - **Left click on EMPTY bar-row space** — while the bar is engaged
+//!   (ring focus or open dropdown) it is the 'leave the bar' gesture:
+//!   the `MenuDismissBar` 'close + de-select' token (BUG-197 R2) —
+//!   otherwise inert (no pane focus change).
+//! - **Left click INSIDE an open dropdown's panel** — a hit on an
+//!   entry row executes THAT row on the same event (BUG-196 R2, GUI
+//!   parity with Enter); a hit on the panel's border/ellipsis rows is
+//!   swallowed (the panel owns its rect — no fall-through to the
+//!   pane beneath).
 //! - **Left click OUTSIDE an open dropdown** (off the bar) — close the
-//!   dropdown AND let the click land on the pane (R-MOUSE: "the click
-//!   still lands").
+//!   dropdown AND clear the bar's ring focus (BUG-196 R3: the
+//!   `MenuDismissBar` 'close + de-select' gesture) AND let the click
+//!   land on the pane (R-MOUSE: "the click still lands").
 //! - **Wheel ScrollLeft/ScrollRight over the bar row** — walk the ring
 //!   like the keys (only when the bar has a focus — otherwise ignore).
 //! - **Wheel ScrollUp/ScrollDown over the open dropdown's panel** —
@@ -174,18 +184,48 @@ pub(crate) fn classify_bar_mouse(layout: &MultiplexLayout, event: &Event) -> Mux
                 };
             }
         }
-        // A bar-row click that hit no item/cell: swallow (no pane
-        // focus change — the bar owns its row).
+        // A bar-row click that hit no item/cell (empty bar space).
+        // BUG-197 R2: while the bar is engaged (a ring focus or an open
+        // dropdown) it is the 'leave the bar' gesture — the `MenuDismissBar`
+        // 'close + de-select' token clears the bar's ring focus without
+        // any pane focus change (the bar owns its row, no fall-through).
+        // With nothing engaged it stays inert (Swallowed).
+        if layout.menu_ring_active() {
+            return claim(Action::MenuDismissBar);
+        }
         return MuxBarMouseDecision::Swallowed;
     }
 
+    // Off the bar row: a left click INSIDE the open dropdown's panel —
+    // a hit on an entry row executes THAT row on the same event (BUG-
+    // 196 R2, GUI parity with Enter — the shared `dropdown_row_at`
+    // hit-test reuses the painter's scroll-window math); a hit on the
+    // panel's border/ellipsis rows is swallowed (the panel owns its
+    // rect — the click must NOT fall through to the pane beneath).
+    if let Some((category, cursor)) = layout.open_menu() {
+        if let Some(panel) = layout.menu_open_panel() {
+            if rect_contains(panel, column, row) {
+                if let Some(row) = crate::components::menu_bar::dropdown_row_at(
+                    panel, category, cursor, column, row,
+                ) {
+                    return claim(Action::MenuExecuteItem { category, row });
+                }
+                return MuxBarMouseDecision::Swallowed;
+            }
+        }
+    }
+
     // Off the bar row: a left click OUTSIDE the open dropdown closes it
-    // (the click still lands on the pane — the Navigator focuses +
-    // forwards on the same event).
+    // AND clears the bar's ring focus (BUG-196 R3: the `MenuDismissBar`
+    // 'close + de-select' gesture) — the click still lands on the pane
+    // (the Navigator focuses + forwards on the same event). BUG-197 R1
+    // extends this to EVERY bar focus state: with the dropdown CLOSED
+    // but a ring focus present, the click away must still de-select.
     let outside_panel = layout
         .menu_open_panel()
         .is_none_or(|panel| !rect_contains(panel, column, row));
-    if layout.open_menu().is_some() && outside_panel {
+    let engaged = layout.open_menu().is_some() || layout.menu_focus().is_some();
+    if engaged && outside_panel {
         return MuxBarMouseDecision::CloseOutsideThenLand;
     }
     MuxBarMouseDecision::Pass

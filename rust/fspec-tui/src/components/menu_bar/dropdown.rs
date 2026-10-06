@@ -89,3 +89,169 @@ pub fn scroll_window(panel: Rect, entry_count: usize, cursor: usize) -> usize {
     let cursor = cursor.min(entry_count.saturating_sub(1));
     cursor.saturating_sub(rows - 1)
 }
+
+/// BUG-196 R1: hit-test for a left click on the dropdown panel. Returns
+/// the index of the registry row under `(column, row)`, or `None` when
+/// the click does not hit a painted entry row (border rows, the dim
+/// `⋯` ellipsis row, or positions outside the panel).
+///
+/// The math is the SAME `scroll_window` + `visible_entry_rows` the
+/// painter uses (`dropdown_paint::render_menu_dropdown`), so the
+/// hit-test can never drift from the paint.
+pub fn dropdown_row_at(
+    panel: Rect,
+    category: usize,
+    cursor: usize,
+    column: u16,
+    row: u16,
+) -> Option<usize> {
+    let cat = CATEGORIES.get(category)?;
+    let entries = cat.entries.len();
+    // The inner content area: 1-cell border on all sides (the painter's
+    // `on_edge` rule — `panel.y`, `panel.bottom()-1`, `panel.x`,
+    // `panel.right()-1` are border cells).
+    if row < panel.y + 1 || row >= panel.bottom().saturating_sub(1) {
+        return None;
+    }
+    if column < panel.x + 1 || column >= panel.right().saturating_sub(1) {
+        return None;
+    }
+    let start = scroll_window(panel, entries, cursor);
+    let rows = visible_entry_rows(panel, entries);
+    let content_y = (row - panel.y - 1) as usize;
+    // A clipped panel paints the dim `⋯` indicator on the last content
+    // row (`panel.y + 1 + rows`) — that row is not an entry row.
+    if content_y >= rows {
+        return None;
+    }
+    let entry = start + content_y;
+    (entry < entries).then_some(entry)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+    use super::*;
+
+    /// A Kanban panel (4 entries) in a standard 80x24 area.
+    fn kanban_panel() -> Rect {
+        dropdown_rect(Rect::new(0, 0, 80, 24), 1, 0, 0).expect("panel")
+    }
+
+    #[test]
+    fn click_on_an_entry_row_maps_to_that_entry() {
+        // @step Given the Kanban dropdown panel (4 entries, no clip)
+        let panel = kanban_panel();
+        // @step When a click lands on the first content row (the key column)
+        let hit = dropdown_row_at(panel, 0, 0, panel.x + 1, panel.y + 1);
+        // @step Then it maps to entry 0 (New Agent)
+        assert_eq!(hit, Some(0), "content row 0 maps to entry 0");
+        // The inner-right cell (right-2) of the 4th content row maps to entry 3.
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.right() - 2, panel.y + 1 + 3),
+            Some(3),
+            "content row 3 maps to entry 3 (Attachments)"
+        );
+    }
+
+    #[test]
+    fn click_on_border_rows_maps_to_no_row() {
+        let panel = kanban_panel();
+        // Top border row.
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x + 1, panel.y),
+            None,
+            "the top border row maps to no entry"
+        );
+        // Bottom border row.
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x + 1, panel.bottom() - 1),
+            None,
+            "the bottom border row maps to no entry"
+        );
+        // Left border column.
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x, panel.y + 1),
+            None,
+            "the left border column maps to no entry"
+        );
+        // Right border column.
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.right() - 1, panel.y + 1),
+            None,
+            "the right border column maps to no entry"
+        );
+    }
+
+    #[test]
+    fn click_outside_the_panel_maps_to_no_row() {
+        let panel = kanban_panel();
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x, panel.y - 1),
+            None,
+            "above the panel maps to no entry"
+        );
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x + 1, panel.bottom()),
+            None,
+            "below the panel maps to no entry"
+        );
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.right(), panel.y + 1),
+            None,
+            "right of the panel maps to no entry"
+        );
+    }
+
+    #[test]
+    fn click_on_the_ellipsis_row_maps_to_no_row() {
+        // A short area: 5 rows below the bar → content = 3 rows →
+        // 2 entry rows + the dim `⋯` indicator on the last content row.
+        let panel = dropdown_rect(Rect::new(0, 0, 80, 6), 1, 0, 0).expect("panel");
+        assert_eq!(visible_entry_rows(panel, 4), 2, "2 entry rows visible");
+        let ellipsis_y = panel.y + 1 + 2;
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x + 1, ellipsis_y),
+            None,
+            "the dim ellipsis row maps to no entry"
+        );
+        // The 2 visible entry rows still map.
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x + 1, panel.y + 1),
+            Some(0)
+        );
+        assert_eq!(
+            dropdown_row_at(panel, 0, 0, panel.x + 1, panel.y + 2),
+            Some(1)
+        );
+    }
+
+    #[test]
+    fn click_respects_the_scroll_window() {
+        // Same short panel, cursor on the LAST entry (3) → the window
+        // scrolls to start = 2 (rows 2..3 visible).
+        let panel = dropdown_rect(Rect::new(0, 0, 80, 6), 1, 0, 0).expect("panel");
+        assert_eq!(scroll_window(panel, 4, 3), 2, "window starts at entry 2");
+        assert_eq!(
+            dropdown_row_at(panel, 0, 3, panel.x + 1, panel.y + 1),
+            Some(2),
+            "the first VISIBLE content row maps to entry 2 (the scrolled window)"
+        );
+        assert_eq!(
+            dropdown_row_at(panel, 0, 3, panel.x + 1, panel.y + 2),
+            Some(3),
+            "the second visible content row maps to entry 3 (the cursor row)"
+        );
+    }
+
+    #[test]
+    fn unknown_category_maps_to_no_row() {
+        let panel = kanban_panel();
+        assert_eq!(
+            dropdown_row_at(panel, 99, 0, panel.x + 1, panel.y + 1),
+            None,
+            "an out-of-range category maps to no entry"
+        );
+    }
+}

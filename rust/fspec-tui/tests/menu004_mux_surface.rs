@@ -1278,6 +1278,12 @@ async fn scenario_clicking_outside_the_dropdown_closes_it_while_the_click_still_
         1,
         "the Files pane (index 1) must be focused"
     );
+    // BUG-196 R3: the outside click is the 'leave the bar' gesture —
+    // the bar's ring focus clears (de-selects the Kanban item).
+    assert!(
+        app.navigator().mux.menu_focus().is_none(),
+        "clicking away must de-select the parent menu item (BUG-196)"
+    );
 }
 
 /// Scenario: Wheel left and right over the bar walk the ring

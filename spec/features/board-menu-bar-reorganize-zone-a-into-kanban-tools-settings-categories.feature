@@ -97,14 +97,14 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
     Given the Tools dropdown open with the cursor on row 0
     When Enter is pressed
     Then the Changed Files dual-pane view opens (OpenChangedFilesView)
-    And the dropdown closes
+    And the dropdown closes and the bar highlight clears (BUG-196 R2: execute de-selects the bar)
 
   @menu-dropdown
   Scenario: Executing the Settings Providers row opens the provider settings view
     Given the Settings dropdown open with the cursor on row 1
     When Enter is pressed
     Then the ProviderSettings view opens (OpenProviderSettingsView)
-    And the dropdown closes
+    And the dropdown closes and the bar highlight clears (BUG-196 R2: execute de-selects the bar)
 
   @menu-ring
   Scenario: The ring walks across all four items before reaching Zone B

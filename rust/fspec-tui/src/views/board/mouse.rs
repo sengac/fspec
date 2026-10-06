@@ -48,7 +48,7 @@ pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) 
     // MENU-002: the bar row + open dropdown hit-tests run FIRST (R7).
     // `Some(result)` = the menu arm claimed the event; `None` = fall
     // through to the strip/content logic (an outside dropdown click
-    // already emitted its MenuCloseDropdown inside this call).
+    // already emitted its MenuDismissBar inside this call — BUG-196 R3).
     if let Some(result) = menu_mouse::handle_menu_mouse(view, event, store) {
         return result;
     }

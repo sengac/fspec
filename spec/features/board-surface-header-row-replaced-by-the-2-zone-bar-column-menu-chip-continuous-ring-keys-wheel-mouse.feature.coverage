@@ -286,6 +286,24 @@
               ]
             }
           ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/menu002_board_surface.rs",
+          "lines": "282-318",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
         }
       ]
     },
@@ -3240,6 +3258,6 @@
       "rust/fspec-tui/src/views/board/footer.rs",
       "rust/fspec-tui/src/views/board/menu_mouse.rs"
     ],
-    "totalLinesCovered": 3556
+    "totalLinesCovered": 3600
   }
 }

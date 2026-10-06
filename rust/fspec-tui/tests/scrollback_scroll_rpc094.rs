@@ -669,9 +669,12 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //   - MENU-004 added 6 lines (`MenuFocusPane` variant + a 5-line
     //     doc stanza + a 1-line group comment) — the assertion tracks
     //     the measured file (1424).
+    //   - BUG-196 added 9 lines (`MenuDismissBar` variant + an 8-line
+    //     doc stanza — the click-away 'close + de-select' bus token) —
+    //     the assertion tracks the measured file (1433).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1424,
-        "components/mod.rs has {n_components} lines — measured ceiling 1424 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant)"
+        n_components <= 1433,
+        "components/mod.rs has {n_components} lines — measured ceiling 1433 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant + BUG-196 MenuDismissBar variant)"
     );
 }

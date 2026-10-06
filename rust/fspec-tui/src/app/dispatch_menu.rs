@@ -52,6 +52,7 @@ impl App {
                 | Action::MenuFocusToColumns
                 | Action::MenuOpenDropdown(_)
                 | Action::MenuCloseDropdown
+                | Action::MenuDismissBar
                 | Action::MenuDropdownCursor(_)
                 | Action::MenuExecuteItem { .. }
                 | Action::MenuChipActivate(_)
@@ -105,6 +106,7 @@ impl App {
             Action::MenuFocusToColumns => mux.menu_dismiss(),
             Action::MenuOpenDropdown(category) => mux.menu_open_or_close(*category),
             Action::MenuCloseDropdown => mux.menu_close_dropdown(),
+            Action::MenuDismissBar => mux.menu_dismiss(),
             Action::MenuDropdownCursor(delta) => mux.menu_dropdown_cursor(*delta),
             Action::MenuMoveToItem(index) => mux.menu_move_to_item(*index),
             Action::MenuFocusPane(pane) => {
@@ -166,6 +168,7 @@ impl App {
             Action::MenuFocusToColumns => self.board_store.menu_focus_to_columns(),
             Action::MenuOpenDropdown(category) => self.board_store.open_or_close_menu(*category),
             Action::MenuCloseDropdown => self.board_store.close_menu(),
+            Action::MenuDismissBar => self.board_store.dismiss_menu(),
             Action::MenuDropdownCursor(delta) => {
                 let entries = self
                     .board_store
@@ -249,6 +252,11 @@ impl App {
                     self.agent_view_store
                         .set_navigation_target(Some(session.clone()));
                     self.navigator.active_view = ViewMode::Agent;
+                    // BUG-197 R3: the chip activation leaves the board
+                    // bar — drop the board's ring focus so returning to
+                    // the board paints NO stale chip highlight (only
+                    // the MENU-006 active-chip path may highlight).
+                    self.board_store.dismiss_menu();
                 }
             }
             Action::MenuMoveToItem(index) => self.board_store.set_menu_focus_item(*index),

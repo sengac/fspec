@@ -1,0 +1,805 @@
+{
+  "scenarios": [
+    {
+      "name": "Clicking a dropdown entry row executes that entry",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "288-336",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "288-339",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a non-cursor dropdown row executes the clicked row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "340-380",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "340-383",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking the Help dropdown Exit row opens the exit confirmation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "384-412",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "384-415",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A click on the dropdown border rows does nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "416-447",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "416-450",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking away closes the dropdown and de-selects the bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "451-495",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                170,
+                171
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "451-498",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board key bindings are live again after a click away",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "499-525",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "499-528",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a mux dropdown row executes that entry",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "529-578",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "529-581",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking away in mux closes the dropdown and de-selects the bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "582-635",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                108,
+                109
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "582-638",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mux click on the dropdown border rows does nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "639-682",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "639-685",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc still closes the dropdown and keeps the item focused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "686-713",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+          "lines": "686-713",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
+      "rust/fspec-tui/src/views/board/menu_mouse.rs",
+      "rust/fspec-tui/src/store/board_menu.rs",
+      "rust/fspec-tui/src/app/dispatch_menu.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+      "rust/fspec-tui/src/views/navigator_mux_events.rs"
+    ],
+    "totalLinesCovered": 1304
+  }
+}

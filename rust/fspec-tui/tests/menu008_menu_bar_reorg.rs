@@ -449,12 +449,16 @@ async fn scenario_executing_the_tools_row_opens_the_changed_files_view() {
         "Enter on the Tools dropdown's 'Changed Files' row must open the Changed Files view"
     );
 
-    // @step And the dropdown closes
+    // @step And the dropdown closes and the bar highlight clears (BUG-196 R2: execute de-selects the bar)
     let buf = render_app(&mut app);
     let text = buf_text(&buf);
     assert!(
         !text.contains("New Agent"),
         "the dropdown panel must be closed after execute:\n{text}"
+    );
+    assert!(
+        app.board_store().menu_focus().is_none(),
+        "the bar highlight must clear after executing the row (BUG-196 R2)"
     );
 }
 
@@ -486,12 +490,16 @@ async fn scenario_executing_the_settings_providers_row_opens_the_provider_settin
         "Enter on the Settings dropdown's 'Providers' row must open the ProviderSettings view"
     );
 
-    // @step And the dropdown closes
+    // @step And the dropdown closes and the bar highlight clears (BUG-196 R2: execute de-selects the bar)
     let buf = render_app(&mut app);
     let text = buf_text(&buf);
     assert!(
         !text.contains("New Agent"),
         "the dropdown panel must be closed after execute:\n{text}"
+    );
+    assert!(
+        app.board_store().menu_focus().is_none(),
+        "the bar highlight must clear after executing the row (BUG-196 R2)"
     );
 }
 

@@ -10,8 +10,14 @@
 //! 1. **A left click on the bar row** — the 'Board View' item
 //!    ACTIVATES it (returns to the Board view, MENU-007 — no
 //!    dropdowns in the agent view); a chip activates (R5, same as
-//!    Enter on the chip).
-//! 2. **Wheel over the bar row** — `ScrollLeft/ScrollRight` walk the
+//!    Enter on the chip). A hit on EMPTY bar space de-selects the bar
+//!    (BUG-197 R2: the ring focus clears so the composer regains the
+//!    keys) — otherwise inert.
+//! 2. **A left click OFF the bar row** (scrollback / input) is the
+//!    'leave the bar' gesture (BUG-197 R1): the ring focus clears and
+//!    the click STILL lands — the caller's input/scrollback arms run
+//!    on the same event.
+//! 3. **Wheel over the bar row** — `ScrollLeft/ScrollRight` walk the
 //!    ring exactly like the keys (R2/R7 parity) but ONLY while a bar
 //!    item is focused (unfocused bar → ignored, R7).
 //!
@@ -73,10 +79,30 @@ impl AgentView {
                             }
                         }
                     }
+                    // BUG-197 R2: a bar-row click that hits NO zone (empty
+                    // bar space) is the 'leave the bar' gesture — the ring
+                    // focus clears (the composer regains the keys) without
+                    // any selection change. The bar owns its row, so the
+                    // click is otherwise inert (no fall-through).
+                    if self.menu_state.focus().is_some() {
+                        self.menu_state.clear_focus();
+                        return Some(EventResult::consumed());
+                    }
                     return Some(EventResult::ignored());
                 }
                 _ => {}
             }
+        }
+
+        // BUG-197 R1: a left click OFF the bar row (on the scrollback /
+        // input area) is the 'leave the bar' gesture — clear the ring
+        // focus so the surface's key bindings are live again, while the
+        // click STILL lands: returning `None` lets the caller's
+        // scrollback/composer arms run on the same event.
+        if matches!(kind, MouseEventKind::Down(MouseButton::Left))
+            && self.menu_state.focus().is_some()
+        {
+            self.menu_state.clear_focus();
         }
 
         None

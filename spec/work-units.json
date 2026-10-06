@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-04T00:36:52.374Z",
+    "lastUpdated": "2026-10-06T04:19:02.583Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 195,
+    "BUG": 198,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -98,7 +98,7 @@
     "LAYA": 9,
     "AUDIT": 2,
     "RLCD": 4,
-    "MENU": 8
+    "MENU": 9
   },
   "states": {
     "backlog": [
@@ -237,7 +237,8 @@
       "VIZ-003",
       "VIZ-004",
       "WATCH-022",
-      "AUDIT-001"
+      "AUDIT-001",
+      "MENU-009"
     ],
     "specifying": [
       "AGENT-001",
@@ -1750,7 +1751,10 @@
       "BUG-195",
       "MENU-006",
       "MENU-007",
-      "MENU-008"
+      "MENU-008",
+      "BUG-196",
+      "BUG-197",
+      "BUG-198"
     ],
     "blocked": [
       "QUERY-001",
@@ -236401,6 +236405,312 @@
       "attachments": [
         "spec/attachments/MENU-008/ast-research-menu-bar-reorg.md"
       ]
+    },
+    "BUG-196": {
+      "id": "BUG-196",
+      "title": "Menu dropdown: row click must execute the entry; click away must close + de-select the bar",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-05T07:17:17.528Z",
+      "updatedAt": "2026-10-05T13:19:48.157Z",
+      "description": "The anchored dropdown panels (board/mux surfaces) are paint-only: a left click on an entry row is not hit-tested (the click falls through to the surface behind), and a click outside the panel closes the dropdown but keeps the parent item's bar focus, which swallows the surface's key bindings (e.g. the board '.' new-agent arm). Fix with a shared pure dropdown click hit-test (scroll-window aware) in the menu_bar component + a MenuDismissBar bus token (close + de-select) used by the board outside-click and the mux outside-click arms.",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-05T07:17:24.994Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-05T09:04:29.043Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-05T10:01:49.933Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-05T12:53:19.172Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-05T13:19:16.274Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "drive the menu dropdowns with the mouse",
+        "benefit": "I can select a menu entry by clicking it and regain my key bindings by clicking away"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: The dropdown row hit-test is ONE pure function in the shared menu_bar component (dropdown_row_at): given the open panel rect, category and cursor it returns the registry row index under a (column, row) click. It reuses the painter's existing scroll-window math (scroll_window + visible_entry_rows) so the hit-test can never drift from the paint; clicks on border rows, the dim ellipsis row, and positions outside the panel map to no row. All surfaces (board, mux) route left clicks on the open panel through this helper — DRY/SOLID, no per-surface duplication of the row math.",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:23:41.593Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: A left click on an open dropdown's entry row executes that row on the SAME event: the panel closes, the bar focus clears (board store and mux layout), and the resolved MenuAction is re-dispatched on the bus through the existing MenuExecuteItem path — exactly what Enter on the highlighted row does today. Clicking a non-cursor row executes THAT row, not the cursor row (GUI parity: click selects + confirms). The board store arm and the mux layout arm already resolve rows through the MenuCategories registry; no new Action variant is needed for execution.",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:23:58.458Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: A left click OUTSIDE the open dropdown (off the bar row, off the panel) closes the dropdown AND clears the bar's ring focus (de-selects the parent menu item) so the surface's key bindings are live again immediately. The click STILL lands on the surface it hit (a kanban card in the board view, a pane in mux — the existing outside-click 'the click still lands' behavior is preserved). The new MenuDismissBar bus token expresses 'close + de-select' as one intent: the board store arm closes the dropdown and drops the bar focus (focused column mirrors as before); the mux arm closes the dropdown and drops the mux bar focus. A bar-row click that hits no item/cell still swallows as today (no focus change, no de-select).",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:24:25.599Z"
+        },
+        {
+          "id": 3,
+          "text": "R4 (no regression): Esc with the dropdown open still closes the dropdown AND keeps the parent item focused (MENU-002 R9 / MENU-004 parity — the keyboard close is a 'stay on the bar' gesture, the click-away is a 'leave the bar' gesture). The board store's `close_menu()` and the mux's `menu_close_dropdown()` are unchanged; only the outside-click path gains the de-select.",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:27:25.840Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board view: with the Kanban dropdown open and the cursor on row 0, a left click on the row painted at panel.y+2+1 (the '/ Search' entry, panel inner x+1..right-1) opens the work-unit search dialog, the dropdown closes, and no bar highlight remains (menu_focus None, focused column unchanged).",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:27:38.810Z"
+        },
+        {
+          "id": 1,
+          "text": "Board view: with the Kanban dropdown open, a left click on a work-unit card in another column closes the dropdown, de-selects the Kanban item from the bar, and selects that card — after the click, pressing '.' opens the new-agent flow (the '.' board key binding is live again, not swallowed by the bar).",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:27:48.179Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New pure helper in the shared component (components/menu_bar/dropdown.rs): dropdown_row_at(panel, category, cursor, column, row) -> Option<usize> — computes the painted entry offset via scroll_window/visible_entry_rows (the SAME math the painter uses) and maps a click (x,y) inside the panel's inner area (panel.x+1..right-1, content rows panel.y+1..panel.bottom-2) to a registry row index; None for border rows, the dim ellipsis row, and positions outside the panel. Both mouse arms (views/board/menu_mouse.rs, views/multiplex/menu_mouse.rs) call it on a left click over the open panel; on Some(row) they emit the existing Action::MenuExecuteItem{category,row}; on None inside the panel they swallow (no fall-through).",
+          "deleted": false,
+          "createdAt": "2026-10-05T07:29:19.368Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 5,
+      "iterations": 1
+    },
+    "MENU-009": {
+      "id": "MENU-009",
+      "title": "Menu bar Zone C — right-aligned action buttons (New Agent on board+agent, Close Agent on agent only)",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-10-05T22:12:50.662Z",
+      "updatedAt": "2026-10-05T22:25:54.583Z",
+      "description": "Add a third zone (Zone C) to the shared 2-zone menu bar component: right-aligned action buttons painted at the right edge of the bar row. 'New Agent' appears on the board view and the agent view; 'Close Agent' appears only on the agent view. Both buttons reuse existing bus actions (OpenAgentView / AgentExitChoice{CloseSession}). Mux surface carries an empty Zone C. Buttons join the unified ring focus and gain inverse-video highlight parity; mouse click + Enter both activate.",
+      "epic": "menu-bar",
+      "children": [],
+      "attachments": [
+        "spec/attachments/MENU-009/menu-009-research-zone-c.md"
+      ]
+    },
+    "BUG-197": {
+      "id": "BUG-197",
+      "title": "Menu bar: click-away must de-select a focused item/chip (all 3 surfaces) and stale ring focus leaves chips highlighted after view flips",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-05T23:17:07.766Z",
+      "updatedAt": "2026-10-06T02:10:50.354Z",
+      "description": "BUG-196 only de-selected the bar when a dropdown was OPEN (MenuDismissBar gated on open_menu().is_some()). Gaps: (1) Board — a focused item/chip with NO dropdown clicked away from keeps its highlight; a chip click that flips to the Agent view never clears board_store.menu_focus, so the chip paints inverse-video on the board bar when returning. (2) Agent — an empty left click on the bar row returns Ignored without clearing menu_state.focus. (3) Mux — same two gaps: CloseOutsideThenLand is gated on open_menu, and an empty bar-row click is Swallowed without de-selecting. Result: agent chips appear focused 'any other time' — they must ONLY be highlighted when the arrow-key ring selector is on them OR they are the active session (MENU-006).",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-05T23:17:25.737Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-05T23:41:46.805Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-06T02:06:08.577Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-06T02:06:12.282Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-06T02:10:50.354Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: A left click OUTSIDE the open dropdown closes the dropdown AND clears the bar's ring focus — extending BUG-196 R3 to ALL bar focus states, not just open-dropdown: the board store's MenuDismissBar arm, the agent view's in-view clear, and the mux layout's arm all run whenever a left click lands OFF the bar row (on content/panes), whether or not a dropdown is open.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:17:43.653Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: A left click on the bar row that hits NO zone (empty bar space) clears the bar's ring focus — it does NOT leave the bar engaged. Applies to all three surfaces: board (MenuDismissBar or in-view clear), agent (menu_state.clear_focus), mux (menu_dismiss). The click is otherwise inert (no selection change, no focus landing).",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:28:15.555Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: On the board, when a chip activation (MenuChipActivate) flips the active view to the Agent view, the board store's bar ring focus (menu_focus) must be cleared so that returning to the board does not show a stale chip highlight. The focused column / card selection is preserved.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:29:15.976Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: A session chip may carry the inverse-video highlight ONLY when (a) the arrow-key ring selector (MenuFocus::ZoneB) is on that chip, or (b) the chip's session is the store's CURRENT session (MENU-006 active-chip highlight, independent of the ring). No other highlight path is permitted — the fix achieves this by eliminating the STALE ring-focus states (R1-R3), NOT by changing the MENU-006 painter logic.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:29:24.880Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board: Kanban item focused (dropdown CLOSED). Left click on a work-unit card in another column → card selected, bar highlight clears (menu_focus None, focused_column = clicked column). Pressing '.' afterwards opens the new-agent flow (key binding live again).",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:29:28.715Z"
+        },
+        {
+          "id": 1,
+          "text": "Board: 2 open sessions, ring selector walked onto chip #2 (item highlight on the chip). Left click a card in the BACKLOG column → the card is selected, the chip highlight disappears, and returning via keyboard walks a fresh ring (no chip pre-highlighted).",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:29:33.246Z"
+        },
+        {
+          "id": 2,
+          "text": "Board: ring selector on chip #1, click the chip → jump into that session's Agent view. Return to the Board (Esc cascade or BackToBoard). The board bar must NOT pre-highlight chip #1 — only the store's current session chip (MENU-006) is allowed to be highlighted.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:29:37.237Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent view: ring selector walked onto the 'Board View' item or a chip (highlight visible). Left click on empty bar-row space (between zones) → the highlight clears; the input composer regains keyboard focus. No session switch, no view flip.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:29:40.429Z"
+        },
+        {
+          "id": 4,
+          "text": "Agent view: ring selector on chip #2, activate 'Board View' (Enter or click) → flip to the Board view. The board bar must not show a pre-highlighted chip — on return, only the current session's active-chip highlight (MENU-006) may paint.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:30:05.794Z"
+        },
+        {
+          "id": 5,
+          "text": "Mux: a bar item focused with its dropdown CLOSED (e.g. 'Kanban' highlighted). Left click the Files pane → the Files pane gains focus AND the bar highlight clears. Keyboard bindings of the focused pane are live again immediately.",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:30:09.757Z"
+        },
+        {
+          "id": 6,
+          "text": "Mux: ring selector on a chip (highlight visible). Left click empty bar-row space (no item, no cell hit) → the chip highlight clears; the focused pane keeps its focus (the click does not land on a pane).",
+          "deleted": false,
+          "createdAt": "2026-10-05T23:30:13.546Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "userStory": {
+        "role": "TUI user driving the menu bar with mouse and arrow keys",
+        "action": "click away from a focused bar item/chip to de-select it, and never see a chip highlighted unless my selector is on it or it is my active session",
+        "benefit": "the bar highlight always reflects my actual selection, so I can tell at a glance which item/chip is engaged"
+      },
+      "estimate": 5
+    },
+    "BUG-198": {
+      "id": "BUG-198",
+      "title": "Menu dropdown does not follow the left/right ring walk on the board surface (mux re-anchors, board closes)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-06T03:50:44.039Z",
+      "updatedAt": "2026-10-06T04:19:02.583Z",
+      "description": "With the board bar's dropdown open, pressing Left/Right (or wheel L/R) walks the ring: on the mux surface the open panel RE-ANCHORS under the newly focused item (MENU-004 R-KEYS, pinned by menu004 'While a dropdown is open Left and Right walk the ring and re-anchor'), but on the board surface BoardStore::menu_move walks the focus WITHOUT touching menu_open — so the open Kanban panel stays painted under the Kanban item while the highlight moves to Tools/Settings/Help (a stale, mismatched dropdown), and the board's R7 mouse wheel L/R arms (which dispatch the same MenuMove) inherit the mismatch. GUI menu bars cycle the open dialog between items when a menu item is selected and the previous dialog was open; the board must mirror the mux behavior.",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-06T03:51:28.735Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-06T04:03:47.938Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-06T04:17:16.121Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-06T04:17:20.289Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-06T04:19:02.583Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user on the board surface",
+        "action": "cycle the open dropdown between menu items with Left/Right",
+        "benefit": "the dropdown follows my cursor like a GUI menu bar, on the board exactly as on the mux surface"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: While the board bar's dropdown is open, a Left/Right (h/l) ring walk re-anchors the panel on every landing: an item landing moves the open panel under that item with the cursor re-armed at row 0; a landing off the items (a kanban column or a session chip) closes the panel. BoardStore::menu_move owns this (the board mirror of the mux surface's MultiplexLayout::menu_reanchor_or_close).",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:30.564Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: The wheel L/R ring walks over the bar row (R7, MenuMove dispatch) follow the SAME re-anchor rule — the wheel and the keys are parity by construction (both arms dispatch Action::MenuMove).",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:34.269Z"
+        },
+        {
+          "id": 2,
+          "text": "R3 (no regression): with NO dropdown open the ring walk is byte-for-byte unchanged (columns ⇄ items ⇄ chips, menu_open stays None); Esc keeps its MENU-002 R9 semantics (close, item stays focused); Enter-on-open-dropdown executes + clears (BUG-196 R2); click-away de-selects (BUG-196 R3 / BUG-197).",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:37.467Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Kanban dropdown open, cursor on row 1 (Search): Right → the Tools item holds the highlight and the Tools panel (Changed Files / Checkpoints) paints under Tools with the cursor on row 0; Left → the panel re-anchors under Kanban again at row 0.",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:37.827Z"
+        },
+        {
+          "id": 1,
+          "text": "Help dropdown open, 1 open session: Right walks onto chip #1 and the panel closes; Left walks back onto Help and the Help panel re-opens under Help at row 0.",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:41.741Z"
+        },
+        {
+          "id": 2,
+          "text": "Kanban dropdown open: Left from the first item walks into the last column (blocked) — the bar highlight clears, the column keeps its selection, and the panel closes.",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:42.154Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix site is BoardStore::menu_move (rust/fspec-tui/src/store/board_menu.rs): after the ring walk computes the new menu_focus, a re-anchor match applies the rule — Some(Item(cat)) with menu_open.is_some() → menu_open = Some((cat, 0)); any other landing (None = column, ZoneB = chip) → menu_open = None. The mux surface (dispatch_menu_mux → menu_reanchor_or_close) already had this and is untouched. Board key arms (views/board/menu_keys.rs) and wheel arms (views/board/menu_mouse.rs) are unchanged — they emit MenuMove, which now re-anchors. Tests: 5 inline #[test] in store/board_menu.rs (store-level, red-verified) + 5 integration scenarios in tests/menu002_board_surface.rs (full-App harness, red-verified: 'Right must have re-anchored the open panel under Tools at row 0' etc.).",
+          "deleted": false,
+          "createdAt": "2026-10-06T04:03:48.268Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 3
     }
   }
 }

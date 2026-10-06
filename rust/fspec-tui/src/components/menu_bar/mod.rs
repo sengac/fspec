@@ -43,7 +43,7 @@ pub mod paint;
 mod items_tests;
 
 pub use chips::{build_chips, index_prefix, ChipInput, MenuChip};
-pub use dropdown::{dropdown_rect, scroll_window, visible_entry_rows};
+pub use dropdown::{dropdown_rect, dropdown_row_at, scroll_window, visible_entry_rows};
 pub use dropdown_paint::render_menu_dropdown;
 pub use dropdown_text::{key as dropdown_key, truncate as dropdown_truncate, KEY_COL};
 pub use items::{MenuAction, MenuCategory, MenuEntry, CATEGORIES, HELP, KANBAN, SETTINGS, TOOLS};

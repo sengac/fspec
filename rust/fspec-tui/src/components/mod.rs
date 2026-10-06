@@ -1362,6 +1362,15 @@ pub enum Action {
     /// Close the open dropdown; the focused item (if any) stays
     /// highlighted (R9). No-op when nothing is open.
     MenuCloseDropdown,
+    /// BUG-196 R3: a left click OUTSIDE the open dropdown — 'close +
+    /// de-select' as one intent: the dropdown closes AND the bar's ring
+    /// focus clears (the parent item is de-selected), so the surface's
+    /// key bindings are live again immediately. The click STILL lands
+    /// on the surface it hit (the outside-click caller decides).
+    /// `MenuCloseDropdown` keeps its 'item stays focused' semantics for
+    /// the keyboard path (R4: Esc is a 'stay on the bar' gesture; the
+    /// click-away is a 'leave the bar' gesture).
+    MenuDismissBar,
     /// Up/Down / wheel over an OPEN dropdown: move its cursor by
     /// `delta`, wrapping at both ends (R6).
     MenuDropdownCursor(i32),

@@ -2458,6 +2458,10 @@
           "description": "Work unit identifier for BUG-195 — clicking a session chip in the Agent view must switch to that session: App::dispatch_menu's MenuChipActivate Agent branch runs the RPC-024 session switch (switch_to_session_index) instead of the old early-return no-op"
         },
         {
+          "name": "@bug-197",
+          "description": "Work unit identifier for BUG-197 — menu bar click-away must de-select a focused item/chip on all 3 surfaces (board/agent/mux) and a stale ring focus must never leave a chip highlighted after view flips: the 'leave the bar' gesture (MenuDismissBar / in-view clear_focus) runs on every off-bar-row left click and on empty bar-row space, and chip activation / OpenAgentView flips drop the board store's ring focus"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -3194,7 +3198,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-03T00:12:54.095Z",
+    "lastUpdated": "2026-10-06T02:11:15.113Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

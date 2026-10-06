@@ -45,9 +45,10 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
     Then chip #3 paints inverse-video
 
   Scenario: Enter on an open dropdown executes the highlighted row
-    Given the Actions dropdown is open with the cursor on row 2 (Checkpoints)
+    Given the Tools dropdown is open with the cursor on row 1 (Checkpoints)
     When I press Enter once
     Then the Checkpoints view opens and the dropdown closes
+    And the bar highlight clears (BUG-196 R2: execute is the 'leave the bar' gesture)
 
   Scenario: Enter on a chip opens that session agent view
     Given the board has 3 open sessions and the menu bar is focused on chip #2

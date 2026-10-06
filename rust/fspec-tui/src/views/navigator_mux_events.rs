@@ -45,13 +45,15 @@ impl Navigator {
                 menu_mouse::MuxBarMouseDecision::Ignore => {
                     return EventResult::ignored();
                 }
-                // A left click outside the open dropdown closes it (the
-                // App's Mux branch runs `menu_close_dropdown` — the
-                // item stays highlighted) AND the click still lands:
-                // the divider/pane routing below runs on the same
-                // event (R-MOUSE: "the click still lands on the pane").
+                // A left click outside the open dropdown closes it AND
+                // clears the bar's ring focus (BUG-196 R3: the
+                // `MenuDismissBar` 'close + de-select' gesture — the
+                // board store / mux layout each drop their focus) AND
+                // the click still lands: the divider/pane routing below
+                // runs on the same event (R-MOUSE: "the click still
+                // lands on the pane").
                 menu_mouse::MuxBarMouseDecision::CloseOutsideThenLand => {
-                    self.emit_menu_action(Action::MenuCloseDropdown);
+                    self.emit_menu_action(Action::MenuDismissBar);
                 }
             }
             let decision = mux_mouse::classify_mouse(&self.mux, event);

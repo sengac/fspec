@@ -660,6 +660,7 @@ Tags tracking development status of features.
 | `@bug-192` | Bug fix work unit BUG-192 — AgentView scrollback unbounded growth: cap per-session scrollback at MAX_SCROLLBACK_VISUAL_ROWS = 20,000 visual rows; trim the oldest complete chunks after every chunk-producing push/insert and replace them with a single dim opaque '… N older lines trimmed …' marker whose count accumulates; compensate the scroll offset (scrolled-up viewports stay pinned, offsets inside the removed region clamp to the marker, stick-to-bottom re-anchors); shift in-flight slot indices so streaming chunks survive; reset clears chunks, marker and counter; per-session isolation |
 | `@bug-194` | Work unit identifier for BUG-194 — mux thinking indicator must keep animating when focus moves off a running agent pane (per-session transition state) |
 | `@bug-195` | Work unit identifier for BUG-195 — clicking a session chip in the Agent view must switch to that session: App::dispatch_menu's MenuChipActivate Agent branch runs the RPC-024 session switch (switch_to_session_index) instead of the old early-return no-op |
+| `@bug-197` | Work unit identifier for BUG-197 — menu bar click-away must de-select a focused item/chip on all 3 surfaces (board/agent/mux) and a stale ring focus must never leave a chip highlighted after view flips: the 'leave the bar' gesture (MenuDismissBar / in-view clear_focus) runs on every off-bar-row left click and on empty bar-row space, and chip activation / OpenAgentView flips drop the board store's ring focus |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
@@ -818,4 +819,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-03T00:12:54.095Z_
+_Last updated: 2026-10-06T02:11:15.113Z_
